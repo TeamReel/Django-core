@@ -1110,7 +1110,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
             {!isLoading && !error && users.length > 0 && (
                 <Card>
-                    <div className="overflow-x-auto">
+                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
                         <Table style={compactTableStyle}>
                             <thead>
                                 <tr>

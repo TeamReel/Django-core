@@ -95,6 +95,43 @@ export default function UserEditModal({
     { value: 'manager', label: 'Manager' },
   ];
 
+  // ── RBAC role mapping ──────────────────────────────────────────────
+  const ADMIN_LIKE_ROLES = new Set(['admin', 'editor', 'owner', 'manager', 'coach']);
+
+  const getRbacLabel = (accessRole: string, isTeam: boolean): string => {
+    const isAdmin = ADMIN_LIKE_ROLES.has(accessRole);
+    if (isAdmin) return isTeam ? 'Team Admin' : 'Club Admin';
+    return isTeam ? 'Team Member' : 'Supporter';
+  };
+
+  const getRbacColor = (label: string): string => {
+    switch (label) {
+      case 'Club Admin': return '#f59e0b';
+      case 'Team Admin': return '#3b82f6';
+      case 'Team Member': return '#10b981';
+      case 'Supporter': return '#8b5cf6';
+      case 'Land Admin': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const RbacBadge = ({ label }: { label: string }) => (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '5px',
+      padding: '4px 10px',
+      borderRadius: '999px',
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#fff',
+      backgroundColor: getRbacColor(label),
+      letterSpacing: '0.02em',
+    }}>
+      🔰 {label}
+    </span>
+  );
+
   const getCookie = (name: string) => {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -826,6 +863,29 @@ export default function UserEditModal({
 
             {activeTab === 'access' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+                {/* RBAC role summary */}
+                <div style={{
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--app-border)',
+                  background: 'var(--app-surface-2)',
+                }}>
+                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '8px', fontWeight: 700 }}>
+                    Huidige TeamReel rollen
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {orgMembershipId && orgRole === 'admin' && <RbacBadge label="Land Admin" />}
+                    {selectedClubKey && clubMembershipId && <RbacBadge label={getRbacLabel(clubAccessRole, false)} />}
+                    {selectedTeamKey && teamMembershipId && <RbacBadge label={getRbacLabel(teamAccessRole, true)} />}
+                    {!orgMembershipId && !clubMembershipId && !teamMembershipId && (
+                      <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                        Geen actieve rollen gevonden. Selecteer een club of team hieronder.
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 <div>
                   <div style={{ fontWeight: 800, marginBottom: '6px' }}>Federation settings</div>
                   {organisationSlug ? (
@@ -839,15 +899,18 @@ export default function UserEditModal({
                         {orgMembershipId ? (
                           <div style={{ flex: '1 1 220px' }}>
                             <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Org role</label>
-                            <select
-                              value={orgRole}
-                              onChange={(e) => setOrgRole(e.target.value as any)}
-                              style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
-                              disabled={saving}
-                            >
-                              <option value="member">member</option>
-                              <option value="admin">admin</option>
-                            </select>
+                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              <select
+                                value={orgRole}
+                                onChange={(e) => setOrgRole(e.target.value as any)}
+                                style={{ flex: '1 1 140px', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                                disabled={saving}
+                              >
+                                <option value="member">member</option>
+                                <option value="admin">admin → Land Admin</option>
+                              </select>
+                              {orgRole === 'admin' && <RbacBadge label="Land Admin" />}
+                            </div>
                           </div>
                         ) : (
                           <div style={{ flex: '1 1 360px' }}>
@@ -917,20 +980,28 @@ export default function UserEditModal({
 
                   {selectedClubKey && clubMembershipId ? (
                     <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
-                        <select
-                          value={clubAccessRole}
-                          onChange={(e) => setClubAccessRole(e.target.value as any)}
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
-                        >
-                          <option value="viewer">viewer</option>
-                          <option value="editor">editor</option>
-                          <option value="admin">admin</option>
-                        </select>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>TeamReel rol</label>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <select
+                            value={clubAccessRole}
+                            onChange={(e) => setClubAccessRole(e.target.value as any)}
+                            style={{ flex: '1 1 200px', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                          >
+                            <option value="admin">admin → Club Admin</option>
+                            <option value="editor">editor → Club Admin</option>
+                            <option value="viewer">viewer → Supporter</option>
+                          </select>
+                          <RbacBadge label={getRbacLabel(clubAccessRole, false)} />
+                        </div>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                          {ADMIN_LIKE_ROLES.has(clubAccessRole)
+                            ? 'Club Admin — volledige toegang tot alle teams en content van deze club.'
+                            : 'Supporter — kan content bekijken, geen bewerkrechten.'}
+                        </div>
                     </div>
                   ) : selectedClubKey ? (
                     <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                         User is not a member of this club. Go to "Add to club/team" tabs to add them.
+                         Gebruiker is geen lid van deze club. Ga naar "Add to club/team" om toe te voegen.
                     </div>
                   ) : null}
                 </div>
@@ -960,16 +1031,24 @@ export default function UserEditModal({
                   {selectedTeamKey && teamMembershipId ? (
                     <>
                       <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Access role</label>
-                        <select
-                          value={teamAccessRole}
-                          onChange={(e) => setTeamAccessRole(e.target.value as any)}
-                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
-                        >
-                          <option value="viewer">viewer</option>
-                          <option value="editor">editor</option>
-                          <option value="admin">admin</option>
-                        </select>
+                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>TeamReel rol</label>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <select
+                            value={teamAccessRole}
+                            onChange={(e) => setTeamAccessRole(e.target.value as any)}
+                            style={{ flex: '1 1 200px', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
+                          >
+                            <option value="admin">admin → Team Admin</option>
+                            <option value="editor">editor → Team Admin</option>
+                            <option value="viewer">viewer → Team Member</option>
+                          </select>
+                          <RbacBadge label={getRbacLabel(teamAccessRole, true)} />
+                        </div>
+                        <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                          {ADMIN_LIKE_ROLES.has(teamAccessRole)
+                            ? 'Team Admin — kan teamleden, content en wedstrijden beheren.'
+                            : 'Team Member — kan eigen content uploaden en teamcontent bekijken.'}
+                        </div>
                       </div>
 
                       <div>
@@ -1017,7 +1096,7 @@ export default function UserEditModal({
                     </>
                   ) : selectedTeamKey ? (
                     <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
-                        User is not a member of this team.
+                        Gebruiker is geen lid van dit team. Ga naar "Add to club/team" om toe te voegen.
                     </div>
                   ) : null}
                 </div>

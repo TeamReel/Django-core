@@ -1,9 +1,9 @@
 import React from 'react';
 
 export const compactTableStyle: React.CSSProperties = {
-  tableLayout: 'fixed',
+  tableLayout: 'auto',
   width: '100%',
-  minWidth: '1200px',
+  minWidth: '900px',
   borderCollapse: 'collapse',
   fontSize: '13px' // Slightly smaller for compactness
 };
