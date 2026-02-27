@@ -469,6 +469,7 @@ export default function ContentGenerationModal({
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(0);
   const [savingAsset, setSavingAsset] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [savedVariantIndices, setSavedVariantIndices] = useState<Set<number>>(new Set());
 
   // Lineup flyer options
   const [lineupFormation, setLineupFormation] = useState<string>(matchData?.metadata?.formation || '4-3-3');
@@ -646,6 +647,7 @@ export default function ContentGenerationModal({
       setSelectedVariantIndex(0);
       setSavingAsset(false);
       setSaveSuccess(false);
+      setSavedVariantIndices(new Set());
       setVideoJobId(null);
       setVideoJobStatus(null);
       setVideoJobProgressRaw(0);
@@ -1568,6 +1570,7 @@ export default function ContentGenerationModal({
     setGeneratedVariants([]);
     setSelectedVariantIndex(0);
     setSaveSuccess(false);
+    setSavedVariantIndices(new Set());
     setGenerationStartedAtMs(Date.now());
     setVideoJobId(null);
     setVideoJobStatus(null);
@@ -1736,29 +1739,28 @@ export default function ContentGenerationModal({
     }
   };
 
-  // Save selected variant as BrandAsset
-  const handleSaveAsAsset = async () => {
-    const selectedVariant = generatedVariants[selectedVariantIndex];
-    if (!selectedVariant) return;
+  // Save a specific variant as BrandAsset (by index)
+  const handleSaveVariantByIndex = async (variantIdx: number, opts?: { skipAutoClose?: boolean }) => {
+    const variant = generatedVariants[variantIdx];
+    if (!variant) return;
 
     setSavingAsset(true);
-    setSaveSuccess(false);
 
     try {
       // Determine the asset type based on template
       const templateSubtype = selectedType?.subtype || selectedTemplate?.template_subtype || '';
       let brandAssetType = assetType;
 
-      const isVideo = (selectedVariant.mime_type || '').startsWith('video/');
+      const isVideo = (variant.mime_type || '').startsWith('video/');
 
       // Map template subtype to BrandAsset type
       if (templateSubtype.includes('logo')) {
-        brandAssetType = 'logo'; // AI-processed logo
+        brandAssetType = 'logo';
       } else if (templateSubtype.includes('sponsor')) {
-        brandAssetType = 'sponsor_logo'; // AI-processed sponsor
+        brandAssetType = 'sponsor_logo';
       } else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {
         const kitType = (selectedTemplate as ContentTemplate & { params?: { kit_type?: string } })?.params?.kit_type || 'home';
-        brandAssetType = `kit_${kitType}`; // e.g. kit_home, kit_away
+        brandAssetType = `kit_${kitType}`;
       } else if (templateSubtype === 'lineup_flyer') {
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `lineup_flyer_${matchSuffix}`;
@@ -1775,20 +1777,21 @@ export default function ContentGenerationModal({
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `poster_${matchSuffix}`;
       } else if (templateSubtype === 'lineup' || isVideo) {
-        // Lineup videos need a non-empty asset_type. Use a per-match unique value to avoid
-        // overwriting due to unique(profile, asset_type).
         const matchSuffix = (matchData?.id || '').toString().slice(0, 8) || 'unknown';
         brandAssetType = `lineup_${matchSuffix}`;
       }
 
-      // Final fallback: API requires asset_type
       if (!brandAssetType) {
         brandAssetType = 'other';
       }
 
-      const filename = selectedVariant.filename || (isVideo ? 'lineup.mp4' : 'saved_asset.png');
+      // For multi-variant saves, append variant index to avoid unique constraint conflicts
+      if (generatedVariants.length > 1) {
+        brandAssetType = `${brandAssetType}_v${variantIdx + 1}`;
+      }
 
-      // Call API to save as BrandAsset
+      const filename = variant.filename || (isVideo ? 'lineup.mp4' : 'saved_asset.png');
+
       const response = await fetch(`${getApiBaseUrl()}/api/v1/generative/assets/save/`, {
         method: 'POST',
         credentials: 'include',
@@ -1797,20 +1800,16 @@ export default function ContentGenerationModal({
           'X-CSRFToken': getCsrfToken(),
         },
         body: JSON.stringify({
-          // Pass the storage path of the selected variant
-          storage_path: selectedVariant.storage_info?.storage_path,
-          presigned_url: selectedVariant.presigned_url,
-          video_url: isVideo ? selectedVariant.presigned_url : null,
-          image_base64: selectedVariant.image_base64,
+          storage_path: variant.storage_info?.storage_path,
+          presigned_url: variant.presigned_url,
+          video_url: isVideo ? variant.presigned_url : null,
+          image_base64: variant.image_base64,
           filename,
-          mime_type: selectedVariant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
-          file_size_bytes: selectedVariant.storage_info?.file_size_bytes || 0,
-          // Context
+          mime_type: variant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
+          file_size_bytes: variant.storage_info?.file_size_bytes || 0,
           organisation_id: organisationId,
           project_id: matchData?.project?.id,
-          // Activity (match) context — creates MediaItem instead of BrandAsset
           activity_id: matchData?.id || null,
-          // Asset type
           asset_type: brandAssetType,
         }),
       });
@@ -1821,14 +1820,10 @@ export default function ContentGenerationModal({
       }
 
       const result = await response.json();
-      console.log('✅ Asset saved:', result);
+      console.log(`✅ Asset saved (variant ${variantIdx + 1}):`, result);
 
-      setSaveSuccess(true);
-
-      // Auto-close modal after a short delay so user sees the success state
-      setTimeout(() => {
-        onClose();
-      }, 1200);
+      // Mark this variant as saved
+      setSavedVariantIndices(prev => new Set([...prev, variantIdx]));
 
       // Update the variant's storage_info with the new IDs
       const updatedVariants = [...generatedVariants];
@@ -1838,14 +1833,13 @@ export default function ContentGenerationModal({
         const returnedMediaItemId = result.data?.media_item_id || result.media_item_id;
         const returnedStoragePath = result.data?.storage_path || result.storage_path;
 
-        const nextStorageInfo: NonNullable<GeneratedVariant['storage_info']> = selectedVariant.storage_info
-          ? { ...selectedVariant.storage_info }
+        const nextStorageInfo: NonNullable<GeneratedVariant['storage_info']> = variant.storage_info
+          ? { ...variant.storage_info }
           : {
-              // Backend isn't returned by the save endpoint; default to s3 for UI typing.
               storage_backend: 's3',
-              storage_path: returnedStoragePath || selectedVariant.presigned_url || '',
+              storage_path: returnedStoragePath || variant.presigned_url || '',
               file_size_bytes: 0,
-              mime_type: selectedVariant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
+              mime_type: variant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
             };
 
         if (returnedStoragePath) nextStorageInfo.storage_path = returnedStoragePath;
@@ -1853,19 +1847,47 @@ export default function ContentGenerationModal({
         if (returnedBrandAssetId) nextStorageInfo.brand_asset_id = returnedBrandAssetId;
         if (returnedMediaItemId) (nextStorageInfo as Record<string, unknown>).media_item_id = returnedMediaItemId;
 
-        updatedVariants[selectedVariantIndex] = {
-          ...selectedVariant,
+        updatedVariants[variantIdx] = {
+          ...variant,
           storage_info: nextStorageInfo,
         };
         setGeneratedVariants(updatedVariants);
       }
 
+      // Auto-close only for single saves (not batch)
+      if (!opts?.skipAutoClose && generatedVariants.length <= 1) {
+        setSaveSuccess(true);
+        setTimeout(() => { onClose(); }, 1200);
+      }
+
     } catch (err) {
-      console.error('❌ Failed to save as asset:', err);
+      console.error(`❌ Failed to save variant ${variantIdx + 1}:`, err);
       setGenerationError(err instanceof Error ? err.message : 'Failed to save as asset');
     } finally {
       setSavingAsset(false);
     }
+  };
+
+  // Save selected variant (backwards-compatible)
+  const handleSaveAsAsset = async () => {
+    await handleSaveVariantByIndex(selectedVariantIndex);
+  };
+
+  // Save ALL variants at once
+  const handleSaveAllAsAssets = async () => {
+    setSavingAsset(true);
+    setSaveSuccess(false);
+
+    for (let i = 0; i < generatedVariants.length; i++) {
+      if (savedVariantIndices.has(i)) continue; // skip already saved
+      await handleSaveVariantByIndex(i, { skipAutoClose: true });
+    }
+
+    setSaveSuccess(true);
+    setSavingAsset(false);
+
+    // Auto-close after all saved
+    setTimeout(() => { onClose(); }, 1200);
   };
 
   const handleGenerate = () => {
@@ -3864,11 +3886,13 @@ export default function ContentGenerationModal({
             <div className="flex flex-col items-center justify-center h-full py-8 text-center overflow-y-auto">
               <div className="text-4xl mb-2">✨</div>
               <h3 className="text-xl font-bold mb-1">
-                {generatedVariants.length > 1 ? 'Select Your Favorite' : 'Content Ready!'}
+                {generatedVariants.length > 1
+                  ? (savedVariantIndices.size === generatedVariants.length ? '✅ Alles opgeslagen!' : 'Content Ready!')
+                  : 'Content Ready!'}
               </h3>
               <p className="text-gray-600 mb-4 max-w-sm text-sm">
                 {generatedVariants.length > 1
-                  ? `${generatedVariants.length} variants generated. Select one to save.`
+                  ? `${generatedVariants.length} varianten gegenereerd. Sla ze individueel op, of allemaal tegelijk.`
                   : `Your ${selectedType?.label || 'content'} has been generated.`
                 }
               </p>
@@ -3879,6 +3903,7 @@ export default function ContentGenerationModal({
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {generatedVariants.map((variant, index) => {
                       const isSelected = selectedVariantIndex === index;
+                      const isSaved = savedVariantIndices.has(index);
 
                       // Calculate image source with secure mime type detection
                       let mimeType = variant.mime_type;
@@ -3895,9 +3920,11 @@ export default function ContentGenerationModal({
                           key={variant.variant_index}
                           onClick={() => setSelectedVariantIndex(index)}
                           className={`relative cursor-pointer rounded-lg border-2 overflow-hidden transition-all ${
-                            isSelected
-                              ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
-                              : 'border-gray-200 hover:border-gray-300'
+                            isSaved
+                              ? 'border-green-500 ring-2 ring-green-200 shadow-lg'
+                              : isSelected
+                                ? 'border-blue-500 ring-2 ring-blue-200 shadow-lg'
+                                : 'border-gray-200 hover:border-gray-300'
                           }`}
                         >
                           {mimeType?.startsWith('video/') ? (
@@ -3918,17 +3945,32 @@ export default function ContentGenerationModal({
                             </div>
                           )}
                           <div className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                            isSelected ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
+                            isSaved ? 'bg-green-500 text-white' : isSelected ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
                           }`}>
-                            {index + 1}
+                            {isSaved ? '✓' : index + 1}
                           </div>
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 text-blue-500">
-                              ✓
+                          {isSaved && (
+                            <div className="absolute top-2 right-2 text-green-500 text-sm font-bold">
+                              ✅
                             </div>
                           )}
-                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs py-1 px-2">
-                            {variant.storage_info ? `${(variant.storage_info.file_size_bytes / 1024).toFixed(0)} KB` : 'Preview'}
+                          {/* Per-tile save button */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs py-1.5 px-2 flex items-center justify-between">
+                            <span>{variant.storage_info ? `${(variant.storage_info.file_size_bytes / 1024).toFixed(0)} KB` : `Variant ${index + 1}`}</span>
+                            {isSaved ? (
+                              <span className="text-green-400 font-bold">Opgeslagen</span>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleSaveVariantByIndex(index, { skipAutoClose: true });
+                                }}
+                                disabled={savingAsset}
+                                className="px-2 py-0.5 bg-blue-500 hover:bg-blue-600 rounded text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                              >
+                                {savingAsset && selectedVariantIndex === index ? '⏳' : '💾 Opslaan'}
+                              </button>
+                            )}
                           </div>
                         </div>
                       );
@@ -4073,6 +4115,7 @@ export default function ContentGenerationModal({
                                     // Reset state — effectively deletes from modal context
                                     setGeneratedVariants([]);
                                     setSaveSuccess(false);
+                                    setSavedVariantIndices(new Set());
                                     setStep('confirm');
                                   }
                                 }}
@@ -4355,13 +4398,39 @@ export default function ContentGenerationModal({
                         ⬇️ Download
                       </Button>
                     )}
-                    {/* Save as BrandAsset button */}
-                    <Button
-                      onClick={handleSaveAsAsset}
-                      disabled={savingAsset || saveSuccess}
-                    >
-                      {savingAsset ? '⏳ Saving...' : saveSuccess ? '✅ Saved' : '💾 Save as Asset'}
-                    </Button>
+                    {/* Save as BrandAsset button(s) */}
+                    {generatedVariants.length > 1 ? (
+                      <>
+                        <Button
+                          onClick={handleSaveAsAsset}
+                          disabled={savingAsset || savedVariantIndices.has(selectedVariantIndex)}
+                          variant="secondary"
+                        >
+                          {savedVariantIndices.has(selectedVariantIndex)
+                            ? '✅ Opgeslagen'
+                            : savingAsset
+                              ? '⏳ Opslaan...'
+                              : `💾 Sla variant ${selectedVariantIndex + 1} op`}
+                        </Button>
+                        <Button
+                          onClick={handleSaveAllAsAssets}
+                          disabled={savingAsset || savedVariantIndices.size === generatedVariants.length}
+                        >
+                          {savedVariantIndices.size === generatedVariants.length
+                            ? '✅ Alles opgeslagen'
+                            : savingAsset
+                              ? '⏳ Opslaan...'
+                              : `💾 Alles opslaan (${generatedVariants.length})`}
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={handleSaveAsAsset}
+                        disabled={savingAsset || saveSuccess}
+                      >
+                        {savingAsset ? '⏳ Saving...' : saveSuccess ? '✅ Saved' : '💾 Save as Asset'}
+                      </Button>
+                    )}
                   </>
                 )}
               </>
