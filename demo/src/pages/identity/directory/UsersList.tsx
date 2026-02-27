@@ -173,192 +173,6 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         return selectedOrg?.slug || (!selectedOrgId ? context.organisation?.slug : '') || selectedOrgId;
     };
 
-    // ── Batch selection helpers ──────────────────────────────────────
-    const handleSelectAll = useCallback(() => {
-        if (selectedIds.size === sortedUsers.length && sortedUsers.length > 0) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(sortedUsers.map((u: any) => String(u.id))));
-        }
-    }, [selectedIds, sortedUsers]);
-
-    const handleSelectOne = useCallback((id: string) => {
-        setSelectedIds(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id);
-            else next.add(id);
-            return next;
-        });
-    }, []);
-
-    const allSelected = sortedUsers.length > 0 && sortedUsers.every((u: any) => selectedIds.has(String(u.id)));
-    const someSelected = selectedIds.size > 0;
-
-    // Clear selection when users list changes
-    useEffect(() => {
-        setSelectedIds(new Set());
-    }, [users]);
-
-    // ── Batch action execution ────────────────────────────────────────
-    const getSelectedUsers = () => sortedUsers.filter((u: any) => selectedIds.has(String(u.id)));
-
-    const executeBatchRoleChange = async (newRole: string) => {
-        setBatchUpdating(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const selected = getSelectedUsers();
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const u of selected) {
-            try {
-                if (teamLocked && preselectedTeamId) {
-                    // Team context: PATCH project membership
-                    const pmId = u?.project_membership_id;
-                    if (!pmId) { errorCount++; continue; }
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
-                        {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            body: JSON.stringify({ role: newRole }),
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok) successCount++; else errorCount++;
-                } else {
-                    // Club/org context: PATCH project memberships for each club membership
-                    const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
-                    const relevantPm = memberships.find((m: any) => {
-                        const projectId = String(m?.project_id ?? m?.project?.id ?? '');
-                        if (selectedClubId) return projectId === String(selectedClubId);
-                        // If no club filter, pick first club-level membership
-                        const parentId = m?.project?.parent_id ?? m?.project?.parent_project_id;
-                        return !parentId;
-                    });
-                    if (relevantPm?.id) {
-                        const projectId = String(relevantPm.project_id ?? relevantPm.project?.id ?? '');
-                        const res = await fetch(
-                            `${apiBaseUrl}/api/v1/projects/${projectId}/members/${relevantPm.id}/`,
-                            {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                                body: JSON.stringify({ role: newRole }),
-                                credentials: 'include',
-                            }
-                        );
-                        if (res.ok) successCount++; else errorCount++;
-                    } else {
-                        errorCount++;
-                    }
-                }
-            } catch {
-                errorCount++;
-            }
-        }
-
-        setBatchUpdating(false);
-        setBatchConfirm(null);
-        setSelectedIds(new Set());
-        if (errorCount > 0) {
-            alert(`${successCount} gewijzigd, ${errorCount} mislukt.`);
-        }
-        setRefreshKey(k => k + 1);
-    };
-
-    const executeBatchAssignTeam = async (targetTeamId: string) => {
-        setBatchUpdating(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const selected = getSelectedUsers();
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const u of selected) {
-            try {
-                // POST to project members to add user to team
-                const userId = u?.id;
-                if (!userId) { errorCount++; continue; }
-                const res = await fetch(
-                    `${apiBaseUrl}/api/v1/projects/${targetTeamId}/members/`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                        body: JSON.stringify({ user_id: Number(userId), role: 'viewer' }),
-                        credentials: 'include',
-                    }
-                );
-                if (res.ok || res.status === 201) successCount++;
-                else if (res.status === 400) {
-                    // Possibly already a member
-                    successCount++;
-                } else {
-                    errorCount++;
-                }
-            } catch {
-                errorCount++;
-            }
-        }
-
-        setBatchUpdating(false);
-        setBatchConfirm(null);
-        setSelectedIds(new Set());
-        if (errorCount > 0) {
-            alert(`${successCount} toegewezen, ${errorCount} mislukt.`);
-        }
-        setRefreshKey(k => k + 1);
-    };
-
-    const executeBatchDelete = async () => {
-        setBatchUpdating(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const selected = getSelectedUsers();
-        const orgSlug = getSelectedOrgSlug();
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const u of selected) {
-            try {
-                if (teamLocked && preselectedTeamId) {
-                    const pmId = u?.project_membership_id;
-                    if (!pmId) { errorCount++; continue; }
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
-                        {
-                            method: 'DELETE',
-                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok || res.status === 204) successCount++; else errorCount++;
-                } else {
-                    const membershipId = u?.membership?.id;
-                    if (!membershipId || !orgSlug) { errorCount++; continue; }
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
-                        {
-                            method: 'DELETE',
-                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok || res.status === 204) successCount++; else errorCount++;
-                }
-            } catch {
-                errorCount++;
-            }
-        }
-
-        setBatchUpdating(false);
-        setBatchConfirm(null);
-        setSelectedIds(new Set());
-        if (errorCount > 0) {
-            alert(`${successCount} verwijderd, ${errorCount} mislukt.`);
-        }
-        setRefreshKey(k => k + 1);
-    };
-
     const handleEditClick = (u: any) => {
         const userData = u.user || u;
         // Carry project_memberships from the outer membership entry so the
@@ -846,6 +660,187 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         });
         return list;
     }, [users]);
+
+    // ── Batch selection helpers ──────────────────────────────────────
+    const handleSelectAll = useCallback(() => {
+        if (selectedIds.size === sortedUsers.length && sortedUsers.length > 0) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(sortedUsers.map((u: any) => String(u.id))));
+        }
+    }, [selectedIds, sortedUsers]);
+
+    const handleSelectOne = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
+    }, []);
+
+    const allSelected = sortedUsers.length > 0 && sortedUsers.every((u: any) => selectedIds.has(String(u.id)));
+    const someSelected = selectedIds.size > 0;
+
+    // Clear selection when users list changes
+    useEffect(() => {
+        setSelectedIds(new Set());
+    }, [users]);
+
+    // ── Batch action execution ────────────────────────────────────────
+    const getSelectedUsers = () => sortedUsers.filter((u: any) => selectedIds.has(String(u.id)));
+
+    const executeBatchRoleChange = async (newRole: string) => {
+        setBatchUpdating(true);
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const selected = getSelectedUsers();
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const u of selected) {
+            try {
+                if (teamLocked && preselectedTeamId) {
+                    const pmId = u?.project_membership_id;
+                    if (!pmId) { errorCount++; continue; }
+                    const res = await fetch(
+                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
+                        {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                            body: JSON.stringify({ role: newRole }),
+                            credentials: 'include',
+                        }
+                    );
+                    if (res.ok) successCount++; else errorCount++;
+                } else {
+                    const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
+                    const relevantPm = memberships.find((m: any) => {
+                        const projectId = String(m?.project_id ?? m?.project?.id ?? '');
+                        if (selectedClubId) return projectId === String(selectedClubId);
+                        const parentId = m?.project?.parent_id ?? m?.project?.parent_project_id;
+                        return !parentId;
+                    });
+                    if (relevantPm?.id) {
+                        const projectId = String(relevantPm.project_id ?? relevantPm.project?.id ?? '');
+                        const res = await fetch(
+                            `${apiBaseUrl}/api/v1/projects/${projectId}/members/${relevantPm.id}/`,
+                            {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                                body: JSON.stringify({ role: newRole }),
+                                credentials: 'include',
+                            }
+                        );
+                        if (res.ok) successCount++; else errorCount++;
+                    } else {
+                        errorCount++;
+                    }
+                }
+            } catch {
+                errorCount++;
+            }
+        }
+
+        setBatchUpdating(false);
+        setBatchConfirm(null);
+        setSelectedIds(new Set());
+        if (errorCount > 0) {
+            alert(`${successCount} gewijzigd, ${errorCount} mislukt.`);
+        }
+        setRefreshKey(k => k + 1);
+    };
+
+    const executeBatchAssignTeam = async (targetTeamId: string) => {
+        setBatchUpdating(true);
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const selected = getSelectedUsers();
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const u of selected) {
+            try {
+                const userId = u?.id;
+                if (!userId) { errorCount++; continue; }
+                const res = await fetch(
+                    `${apiBaseUrl}/api/v1/projects/${targetTeamId}/members/`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                        body: JSON.stringify({ user_id: Number(userId), role: 'viewer' }),
+                        credentials: 'include',
+                    }
+                );
+                if (res.ok || res.status === 201) successCount++;
+                else if (res.status === 400) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch {
+                errorCount++;
+            }
+        }
+
+        setBatchUpdating(false);
+        setBatchConfirm(null);
+        setSelectedIds(new Set());
+        if (errorCount > 0) {
+            alert(`${successCount} toegewezen, ${errorCount} mislukt.`);
+        }
+        setRefreshKey(k => k + 1);
+    };
+
+    const executeBatchDelete = async () => {
+        setBatchUpdating(true);
+        const apiBaseUrl = getApiBaseUrl();
+        const csrfToken = getCsrfToken();
+        const selected = getSelectedUsers();
+        const orgSlug = getSelectedOrgSlug();
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const u of selected) {
+            try {
+                if (teamLocked && preselectedTeamId) {
+                    const pmId = u?.project_membership_id;
+                    if (!pmId) { errorCount++; continue; }
+                    const res = await fetch(
+                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
+                        {
+                            method: 'DELETE',
+                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'include',
+                        }
+                    );
+                    if (res.ok || res.status === 204) successCount++; else errorCount++;
+                } else {
+                    const membershipId = u?.membership?.id;
+                    if (!membershipId || !orgSlug) { errorCount++; continue; }
+                    const res = await fetch(
+                        `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
+                        {
+                            method: 'DELETE',
+                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
+                            credentials: 'include',
+                        }
+                    );
+                    if (res.ok || res.status === 204) successCount++; else errorCount++;
+                }
+            } catch {
+                errorCount++;
+            }
+        }
+
+        setBatchUpdating(false);
+        setBatchConfirm(null);
+        setSelectedIds(new Set());
+        if (errorCount > 0) {
+            alert(`${successCount} verwijderd, ${errorCount} mislukt.`);
+        }
+        setRefreshKey(k => k + 1);
+    };
 
     const clubsById = useMemo(() => {
         const map = new Map<string, ProjectOption>();
