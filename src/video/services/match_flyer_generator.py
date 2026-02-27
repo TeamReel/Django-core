@@ -54,6 +54,10 @@ class MatchFlyerData:
     # Player action photos (for variant 2 — "action")
     action_photo_urls: list[str] | None = None
 
+    # Club names (parent project) — displayed large, team names shown smaller
+    own_club_name: str | None = None
+    opponent_club_name: str | None = None
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -142,6 +146,72 @@ def _clean_logo(img: Image.Image) -> Image.Image:
     from src.video.services.header_generator import _clean_logo_alpha
 
     return _clean_logo_alpha(img)
+
+
+# ── Name helpers ───────────────────────────────────────────────────────────
+
+
+def _resolve_display_names(data: MatchFlyerData) -> tuple[str, str | None, str, str | None]:
+    """Return (home_club, home_team, away_club, away_team) for display.
+
+    Club name is the primary (large) label; team name is the secondary
+    (small) label shown underneath.  When no club name is set, the team
+    name is promoted to primary and no secondary is drawn.
+    """
+    own_club = data.own_club_name or data.own_team_name
+    own_team = data.own_team_name if data.own_club_name else None
+    opp_club = data.opponent_club_name or data.opponent_name
+    opp_team = data.opponent_name if data.opponent_club_name else None
+
+    # Skip secondary if it equals the primary (no point repeating)
+    if own_team and own_team == own_club:
+        own_team = None
+    if opp_team and opp_team == opp_club:
+        opp_team = None
+
+    if data.is_home:
+        return own_club, own_team, opp_club, opp_team
+    return opp_club, opp_team, own_club, own_team
+
+
+def _draw_team_block(
+    draw: ImageDraw.ImageDraw,
+    cx: int,
+    y: int,
+    club_name: str,
+    team_name: str | None,
+    club_font,
+    team_font,
+    fill=(255, 255, 255),
+    stroke_fill=None,
+    stroke_width: int = 0,
+) -> int:
+    """Draw a club name (large) + optional team name (smaller) centred at *cx*.
+
+    Returns the new y cursor position after the block.
+    """
+    _draw_centered(
+        draw,
+        club_name.upper(),
+        cx,
+        y,
+        club_font,
+        fill=fill,
+        stroke_fill=stroke_fill,
+        stroke_width=stroke_width,
+    )
+    y += int(club_font.size * 1.1) if hasattr(club_font, "size") else 60
+    if team_name:
+        _draw_centered(
+            draw,
+            team_name,
+            cx,
+            y,
+            team_font,
+            fill=(*fill[:3], 180) if len(fill) >= 3 else fill,
+        )
+        y += int(team_font.size * 1.3) if hasattr(team_font, "size") else 30
+    return y
 
 
 # ── Variant Renderers ─────────────────────────────────────────────────────
@@ -276,9 +346,8 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
             fill=(*secondary_rgb, 200),
         )
 
-    # -- Team names (large, centered, stacked with VS) --
-    home_name = data.own_team_name if data.is_home else data.opponent_name
-    away_name = data.opponent_name if data.is_home else data.own_team_name
+    # -- Club + team names (large club, small team, stacked with VS) --
+    home_club, home_team, away_club, away_team = _resolve_display_names(data)
 
     # Accent line
     line_y = HEADER_HEIGHT + 110
@@ -288,15 +357,19 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
         fill=(*secondary_rgb, 255),
     )
 
-    # Home team
-    team_font = _get_font(72, bold=True)
-    home_y = int(HEIGHT * 0.30)
-    _draw_centered(
+    club_font = _get_font(72, bold=True)
+    sub_font = _get_font(28, bold=False)
+
+    # Home club + team
+    home_y = int(HEIGHT * 0.28)
+    home_y = _draw_team_block(
         draw,
-        home_name.upper(),
         cx,
         home_y,
-        team_font,
+        home_club,
+        home_team,
+        club_font,
+        sub_font,
         fill=(255, 255, 255, 255),
         stroke_fill=(*dark_primary, 255),
         stroke_width=2,
@@ -305,7 +378,6 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
     # VS circle
     vs_y = int(HEIGHT * 0.40)
     circle_r = 65
-    # Draw filled circle with brand secondary
     for offset in range(circle_r, 0, -1):
         draw.ellipse(
             [cx - offset, vs_y - offset, cx + offset, vs_y + offset],
@@ -321,14 +393,16 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
         fill=(*dark_primary, 255),
     )
 
-    # Away team
-    away_y = int(HEIGHT * 0.50)
-    _draw_centered(
+    # Away club + team
+    away_y = int(HEIGHT * 0.48)
+    _draw_team_block(
         draw,
-        away_name.upper(),
         cx,
         away_y,
-        team_font,
+        away_club,
+        away_team,
+        club_font,
+        sub_font,
         fill=(255, 255, 255, 255),
         stroke_fill=(*dark_primary, 255),
         stroke_width=2,
@@ -588,32 +662,49 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     draw = ImageDraw.Draw(canvas)
 
     cx = WIDTH // 2
-    home_name = data.own_team_name if data.is_home else data.opponent_name
-    away_name = data.opponent_name if data.is_home else data.own_team_name
+    home_club, home_team, away_club, away_team = _resolve_display_names(data)
 
-    y_cursor = info_top + 35
+    y_cursor = info_top + 30
 
-    # Home team
-    team_font = _get_font(54, bold=True)
-    _draw_centered(draw, home_name.upper(), cx, y_cursor, team_font, fill=(255, 255, 255))
-    y_cursor += 60
+    club_font = _get_font(50, bold=True)
+    sub_font = _get_font(22, bold=False)
+
+    # Home club + team
+    y_cursor = _draw_team_block(
+        draw,
+        cx,
+        y_cursor,
+        home_club,
+        home_team,
+        club_font,
+        sub_font,
+        fill=(255, 255, 255),
+    )
 
     # VS badge
     vs_font = _get_font(34, bold=True)
     vs_badge = Image.new("RGBA", (90, 48), (*primary_rgb, 220))
     vs_badge_draw = ImageDraw.Draw(vs_badge)
-    # rounded-ish pill
     vs_badge_draw.rectangle([(0, 0), (90, 48)], fill=(*primary_rgb, 220))
     canvas_rgba = canvas.convert("RGBA")
     canvas_rgba.paste(vs_badge, (cx - 45, y_cursor - 16), vs_badge)
     canvas = canvas_rgba.convert("RGB")
     draw = ImageDraw.Draw(canvas)
     _draw_centered(draw, "VS", cx, y_cursor + 4, vs_font, fill=(*secondary_rgb,))
-    y_cursor += 55
+    y_cursor += 50
 
-    # Away team
-    _draw_centered(draw, away_name.upper(), cx, y_cursor, team_font, fill=(255, 255, 255))
-    y_cursor += 70
+    # Away club + team
+    y_cursor = _draw_team_block(
+        draw,
+        cx,
+        y_cursor,
+        away_club,
+        away_team,
+        club_font,
+        sub_font,
+        fill=(255, 255, 255),
+    )
+    y_cursor += 10
 
     # Accent line
     line_w = 140
@@ -739,18 +830,21 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
             fill=(*secondary_rgb, 200),
         )
 
-    # -- Team names (centered, stacked with VS — no logos in body) --
-    home_name = data.own_team_name if data.is_home else data.opponent_name
-    away_name = data.opponent_name if data.is_home else data.own_team_name
+    # -- Club + team names (centered, stacked with VS — no logos in body) --
+    home_club, home_team, away_club, away_team = _resolve_display_names(data)
 
-    team_font = _get_font(68, bold=True)
-    home_y = int(HEIGHT * 0.33)
-    _draw_centered(
+    club_font = _get_font(68, bold=True)
+    sub_font = _get_font(26, bold=False)
+
+    home_y = int(HEIGHT * 0.31)
+    _draw_team_block(
         draw,
-        home_name.upper(),
         cx,
         home_y,
-        team_font,
+        home_club,
+        home_team,
+        club_font,
+        sub_font,
         fill=(255, 255, 255),
         stroke_fill=(0, 0, 0),
         stroke_width=3,
@@ -770,13 +864,15 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
         stroke_width=2,
     )
 
-    away_y = int(HEIGHT * 0.53)
-    _draw_centered(
+    away_y = int(HEIGHT * 0.51)
+    _draw_team_block(
         draw,
-        away_name.upper(),
         cx,
         away_y,
-        team_font,
+        away_club,
+        away_team,
+        club_font,
+        sub_font,
         fill=(255, 255, 255),
         stroke_fill=(0, 0, 0),
         stroke_width=3,
@@ -896,7 +992,7 @@ def build_match_flyer(
 
     activity = Activity.objects.select_related(
         "project__parent_project",
-        "opponent_project",
+        "opponent_project__parent_project",
         "period",
     ).get(id=activity_id)
 
@@ -910,6 +1006,16 @@ def build_match_flyer(
     own_team_name = project.name or ""
     opponent_name = activity.opponent_project.name if activity.opponent_project else ""
     is_home = meta.get("is_home", meta.get("venue", "Home") == "Home")
+
+    # Resolve club names from parent project (club → team hierarchy)
+    club_project = getattr(project, "parent_project", None)
+    own_club_name = club_project.name if club_project else None
+
+    opponent_project = activity.opponent_project
+    opp_club_project = (
+        getattr(opponent_project, "parent_project", None) if opponent_project else None
+    )
+    opponent_club_name = opp_club_project.name if opp_club_project else None
 
     # Venue: prefer location field + teamreel metadata
     raw_venue = (
@@ -1005,11 +1111,19 @@ def build_match_flyer(
                     if not opponent_logo_url and asset.file:
                         opponent_logo_url = _get_presigned_url(asset.file.storage_path)
 
-    # -- Brand colours --
-    brand_primary = "#D2122E"  # default red
+    # -- Brand colours (priority: club brand → team brand → org brand) --
+    brand_primary = "#333333"  # neutral dark default (not red)
     brand_secondary = "#FFFFFF"
 
-    for proj in [project, getattr(project, "parent_project", None)]:
+    # Search club (parent_project) first, then team, then org
+    brand_search_projects = []
+    parent = getattr(project, "parent_project", None)
+    if parent:
+        brand_search_projects.append(parent)
+    brand_search_projects.append(project)
+
+    found_colors = False
+    for proj in brand_search_projects:
         if not proj:
             continue
         brand = BrandProfile.objects.filter(project=proj, is_active=True).first()
@@ -1017,10 +1131,13 @@ def build_match_flyer(
             tokens = brand.get_tokens()
             if tokens.get("primary_color"):
                 brand_primary = tokens["primary_color"]
+                found_colors = True
             if tokens.get("secondary_color"):
                 brand_secondary = tokens["secondary_color"]
-            break
-    else:
+            if found_colors:
+                break
+
+    if not found_colors:
         # Fallback: org-level brand
         org = getattr(project, "organisation", None)
         if org:
@@ -1069,6 +1186,8 @@ def build_match_flyer(
         brand_primary=brand_primary,
         brand_secondary=brand_secondary,
         action_photo_urls=action_photo_urls or None,
+        own_club_name=own_club_name,
+        opponent_club_name=opponent_club_name,
     )
 
     return generate_match_flyer(flyer_data, variant=variant)

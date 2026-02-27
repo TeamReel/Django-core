@@ -3041,12 +3041,19 @@ export default function ContentGenerationModal({
 
               {/* Match info */}
               {matchData && (
-                <div className="bg-blue-50 rounded-lg p-4 w-full max-w-md">
-                  <div className="text-sm text-blue-800">
+                <div style={{
+                  width: '100%',
+                  maxWidth: 480,
+                  padding: '14px 18px',
+                  borderRadius: 10,
+                  border: '1px solid var(--vscode-widget-border, #333)',
+                  background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2d2e)',
+                }}>
+                  <div style={{ fontSize: 13, color: 'var(--vscode-foreground, #ccc)' }}>
                     <strong>Wedstrijd:</strong> {matchData.title || `${matchData.project?.name} vs ${matchData.opponent_project?.name || 'Opponent'}`}
                   </div>
                   {matchData.start_time && (
-                    <div className="text-sm text-blue-600 mt-1">
+                    <div style={{ fontSize: 13, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 4 }}>
                       {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                   )}
@@ -3055,25 +3062,17 @@ export default function ContentGenerationModal({
 
               {/* Match Flyer Variant Picker */}
               {selectedType?.subtype === 'flyer' && (
-                <div style={{
-                  width: '100%',
-                  maxWidth: 480,
-                  marginTop: 20,
-                  border: '1px solid var(--vscode-widget-border, #ddd)',
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  background: 'var(--vscode-editor-background, #fff)',
-                }}>
-                  <div style={{
-                    padding: '14px 20px',
-                    borderBottom: '1px solid var(--vscode-widget-border, #ddd)',
-                    background: 'var(--vscode-editor-inactiveSelectionBackground, #f5f5f5)',
-                  }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #333)' }}>
-                      🎨 Kies Ontwerpstijl
-                    </h4>
-                  </div>
-                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ width: '100%', maxWidth: 480, marginTop: 20 }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    marginBottom: 10,
+                    color: 'var(--vscode-foreground, #ccc)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                  }}>Ontwerpstijl</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {([
                       { key: 'modern' as const, label: 'Modern', desc: 'Geometrisch design met clubkleuren en vormen', icon: '🎨' },
                       { key: 'action' as const, label: 'Actie', desc: 'Samengestelde flyer met actiefoto & clubkleuren', icon: '⚡' },
@@ -3081,37 +3080,45 @@ export default function ContentGenerationModal({
                     ]).map((opt) => {
                       const isSelected = matchFlyerVariant === opt.key;
                       return (
-                        <div
+                        <button
                           key={opt.key}
                           onClick={() => setMatchFlyerVariant(opt.key)}
                           style={{
+                            position: 'relative',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 12,
-                            padding: '12px 16px',
+                            gap: 10,
+                            padding: '10px 14px',
+                            border: isSelected
+                              ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                              : '1px solid var(--vscode-widget-border, #333)',
                             borderRadius: 8,
-                            border: isSelected ? '2px solid #3b82f6' : '2px solid transparent',
-                            background: isSelected ? '#eff6ff' : 'var(--vscode-editor-background, #f9fafb)',
+                            background: isSelected
+                              ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                              : 'var(--vscode-editor-background, #1e1e1e)',
+                            color: 'var(--vscode-foreground, #ccc)',
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
+                            textAlign: 'left',
                           }}
                         >
-                          <div style={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            border: isSelected ? '6px solid #3b82f6' : '2px solid #d1d5db',
-                            flexShrink: 0,
-                          }} />
+                          <span style={{ fontSize: 26, flexShrink: 0 }}>{opt.icon}</span>
                           <div>
-                            <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--vscode-foreground, #333)' }}>
-                              {opt.icon} {opt.label}
-                            </div>
-                            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+                            <div style={{ fontWeight: 700, fontSize: 13 }}>{opt.label}</div>
+                            <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 1 }}>
                               {opt.desc}
                             </div>
                           </div>
-                        </div>
+                          {isSelected && (
+                            <div style={{
+                              position: 'absolute', top: 6, right: 6,
+                              width: 18, height: 18, borderRadius: '50%',
+                              background: '#10b981', display: 'flex',
+                              alignItems: 'center', justifyContent: 'center',
+                              fontSize: 10, color: '#fff', fontWeight: 700,
+                            }}>✓</div>
+                          )}
+                        </button>
                       );
                     })}
                   </div>
