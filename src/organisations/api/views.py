@@ -248,6 +248,8 @@ class MembershipViewSet(viewsets.ModelViewSet):
         - include_role_assignments=true: include RoleAssignments as virtual entries
         - include_project_memberships=true: include ProjectMembership users as virtual entries
         - include_project_membership_details=true: attach each user's ProjectMemberships in this organisation
+        - project_id=<id>: filter to only users with a ProjectMembership at this project
+          or any of its child projects (server-side club/team scoping)
         """
         org_slug = self.kwargs.get("organisation_pk")
         try:
@@ -262,7 +264,7 @@ class MembershipViewSet(viewsets.ModelViewSet):
         user = request.user
         from django.db import models
         from permissions.models import RoleAssignment
-        from projects.models import ProjectMembership
+        from projects.models import Project, ProjectMembership
 
         has_direct_org_membership = Membership.objects.filter(
             organisation=org, user=user, is_active=True
@@ -313,10 +315,45 @@ class MembershipViewSet(viewsets.ModelViewSet):
             == "true"
         )
 
-        if not (
-            include_role_assignments
-            or include_project_memberships
-            or include_project_membership_details
+        # ── project_id scoping ──────────────────────────────────────────
+        # When project_id is given, restrict the result set to users who
+        # have a ProjectMembership at that project *or* any of its child
+        # projects.  This avoids returning the entire org member list when
+        # the frontend only needs a single club/team scope.
+        scope_project_ids: set[int] | None = None
+        raw_project_id = request.query_params.get("project_id", "").strip()
+        if raw_project_id:
+            try:
+                scope_project = Project.objects.get(pk=int(raw_project_id), organisation=org)
+                child_ids = list(
+                    Project.objects.filter(parent_project=scope_project).values_list(
+                        "id", flat=True
+                    )
+                )
+                scope_project_ids = {scope_project.id, *child_ids}
+            except (Project.DoesNotExist, ValueError, TypeError):
+                scope_project_ids = None  # invalid id → ignore filter
+
+        # Helper: set of user-ids that have a membership in the scoped projects
+        _scoped_user_ids: set[str] | None = None
+        if scope_project_ids is not None:
+            _scoped_user_ids = set(
+                ProjectMembership.objects.filter(
+                    project_id__in=scope_project_ids,
+                    deleted_at__isnull=True,
+                )
+                .values_list("user_id", flat=True)
+                .distinct()
+            )
+            _scoped_user_ids = {str(uid) for uid in _scoped_user_ids}
+
+        if (
+            not (
+                include_role_assignments
+                or include_project_memberships
+                or include_project_membership_details
+            )
+            and _scoped_user_ids is None
         ):
             return response
 
@@ -335,13 +372,26 @@ class MembershipViewSet(viewsets.ModelViewSet):
             # Get existing user IDs (ensure strings for comparison)
             existing_user_ids = {str(m["user"]["id"]) for m in results}
 
+            # ── Apply project_id scope: drop base members not in scope ───
+            if _scoped_user_ids is not None:
+                results = [
+                    m for m in results if str(m.get("user", {}).get("id", "")) in _scoped_user_ids
+                ]
+                existing_user_ids = {str(m["user"]["id"]) for m in results}
+
             additional_members = []
 
             if include_role_assignments:
                 # RoleAssignments in this org OR projects in this org
-                assignments = RoleAssignment.objects.filter(
-                    models.Q(target_organization=org) | models.Q(target_project__organisation=org)
-                ).select_related("user", "role", "target_project")
+                ra_q = models.Q(target_organization=org) | models.Q(
+                    target_project__organisation=org
+                )
+                # Scope to project + children when project_id is given
+                if scope_project_ids is not None:
+                    ra_q = models.Q(target_project_id__in=scope_project_ids)
+                assignments = RoleAssignment.objects.filter(ra_q).select_related(
+                    "user", "role", "target_project"
+                )
 
                 for ra in assignments:
                     if str(ra.user.id) not in existing_user_ids:
@@ -373,11 +423,16 @@ class MembershipViewSet(viewsets.ModelViewSet):
                         existing_user_ids.add(str(ra.user.id))
 
             if include_project_memberships:
+                pm_filter = dict(
+                    project__organisation=org,
+                    deleted_at__isnull=True,
+                )
+                # Scope to project + children when project_id is given
+                if scope_project_ids is not None:
+                    pm_filter["project_id__in"] = scope_project_ids
+
                 project_users = (
-                    ProjectMembership.objects.filter(
-                        project__organisation=org,
-                        deleted_at__isnull=True,
-                    )
+                    ProjectMembership.objects.filter(**pm_filter)
                     .select_related("user")
                     .values(
                         "user_id",

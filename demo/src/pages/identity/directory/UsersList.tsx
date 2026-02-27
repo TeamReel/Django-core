@@ -372,6 +372,13 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 params.set('include_project_memberships', 'true');
                 params.set('include_project_membership_details', 'true');
 
+                // Server-side scoping: when a club (or team) is selected, pass
+                // project_id so the backend only returns members with a
+                // ProjectMembership at that project or its children.
+                if (selectedClubId) {
+                    params.set('project_id', String(selectedClubId));
+                }
+
                 // Use the organisations/:slug/members/ endpoint.
                 // Only use context org when no explicit selection was made.
                 let orgSlug =
