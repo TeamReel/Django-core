@@ -3552,7 +3552,8 @@ export default function ProjectSeasonMemberDetailPage() {
                             const normalized: AssetVariantValue | null = typeof variantValue === 'string'
                               ? { raw: variantValue, processed: null, processing_state: 'raw' }
                               : (variantValue as AssetVariantValue | null);
-                            const url = normalized?.processed || normalized?.raw || null;
+                            const storagePath = normalized?.processed || normalized?.raw || null;
+                            const url = resolveDisplayUrl(storagePath);
                             const state = normalized?.processing_state || 'raw';
                             return { style, variantKey, url, state, normalized };
                           });

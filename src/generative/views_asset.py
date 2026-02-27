@@ -3627,13 +3627,12 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
             kit_type = f"{kit_type}_{style_variant}"
 
     if storage_path:
-        # Photo composite / walking composite / action photo images are already
-        # composited — no bg removal needed.  They go directly to "processed"
-        # state so they can be used immediately.
+        # Photo composite / walking composite images are already composited —
+        # no bg removal needed.  They go directly to "processed" state.
+        # Action photo DOES need processing (bg removal) like fullbody.
         needs_processing = asset_type not in (
             "photo_composite",
             "walking_composite",
-            "action_photo",
         )
         asset_type_dict[kit_type] = {
             "raw": storage_path,
@@ -3665,8 +3664,8 @@ def _propagate_approved_image_to_membership(job) -> None:  # noqa: ANN001
             return
 
         # Queue background removal + resize via existing Celery task
-        # Skip for photo_composite / action_photo — those are already final.
-        if asset_type not in ("photo_composite", "action_photo"):
+        # Skip for photo_composite — those are already final composites.
+        if asset_type not in ("photo_composite",):
             try:
                 from src.video.tasks.asset_processing import process_member_asset
 

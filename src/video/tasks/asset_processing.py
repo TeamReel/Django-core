@@ -44,7 +44,7 @@ def _update_variant_metadata(
     meta = getattr(membership, "metadata", None) or {}
     tr = meta.get("teamreel_assets", {})
 
-    if asset_type in ("fullbody", "closeup", "halfbody"):
+    if asset_type in ("fullbody", "closeup", "halfbody", "action_photo"):
         images = tr.setdefault("images", {})
         cat = images.setdefault(asset_type, {})
         cat[kit_type] = variant_value
@@ -94,7 +94,7 @@ def _get_variant_state(
     meta = getattr(membership, "metadata", None) or {}
     tr = meta.get("teamreel_assets", {})
 
-    if asset_type in ("fullbody", "closeup", "halfbody"):
+    if asset_type in ("fullbody", "closeup", "halfbody", "action_photo"):
         variant_val = (tr.get("images", {}).get(asset_type, {}) or {}).get(kit_type)
     else:
         composite_key = f"{kit_type}_{variant_id}" if variant_id else kit_type
