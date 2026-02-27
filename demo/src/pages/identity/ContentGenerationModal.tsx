@@ -494,6 +494,11 @@ export default function ContentGenerationModal({
   const [goalScoreAway, setGoalScoreAway] = useState<number>(0);
   const [goalScorerId, setGoalScorerId] = useState<string | null>(null);
 
+  // Match summary options
+  const [summaryScoreHome, setSummaryScoreHome] = useState<number>(0);
+  const [summaryScoreAway, setSummaryScoreAway] = useState<number>(0);
+  const [summaryGoalScorers, setSummaryGoalScorers] = useState<string>('');  // newline-separated
+
   // Selected members per role
   const [selectedMembers, setSelectedMembers] = useState<Record<string, string[]>>({
     goalkeeper: [],
@@ -1170,6 +1175,81 @@ export default function ContentGenerationModal({
     }
   };
 
+  // Generate match summary flyer (post-match result)
+  const handleGenerateMatchSummary = async () => {
+    setProgress(10);
+    try {
+      if (!matchData?.id) {
+        throw new Error('No match data available');
+      }
+
+      const projectId = matchData?.project?.id || season?.project_id;
+      if (!projectId) {
+        throw new Error('No project ID found');
+      }
+
+      setProgress(30);
+
+      // Parse goal scorers from newline-separated text
+      const scorers = summaryGoalScorers
+        .split('\n')
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+          'X-Project-ID': String(projectId),
+        },
+        body: JSON.stringify({
+          activity_id: matchData.id,
+          variant: 'summary',
+          score_home: summaryScoreHome,
+          score_away: summaryScoreAway,
+          goal_scorers: scorers.length > 0 ? scorers : undefined,
+          ...(selectedBackgroundUrl ? { background_url: selectedBackgroundUrl } : {}),
+        }),
+      });
+
+      setProgress(70);
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData?.error || errData?.detail || `Failed to generate match summary: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('📊 Match summary generated:', data);
+
+      const flyerUrl = data.data?.flyer_url || data.flyer_url;
+      if (!flyerUrl) {
+        throw new Error('Summary generated but no URL returned');
+      }
+
+      setGeneratedVariants([{
+        variant_index: 0,
+        image_base64: null,
+        presigned_url: flyerUrl,
+        mime_type: 'image/png',
+        filename: `match_summary_${matchData.id}.png`,
+        error: null,
+        storage_info: null,
+        metadata: { type: 'match_summary', activity_id: matchData.id },
+      }]);
+
+      setProgress(100);
+      setTimeout(() => setStep('success'), 300);
+
+    } catch (err) {
+      console.error('❌ Match summary generation failed:', err);
+      setGenerationError(err instanceof Error ? err.message : 'Match summary generation failed');
+      setStep('error');
+    }
+  };
+
   // Generate lineup video using video module
   const handleGenerateLineupVideo = async () => {
     // If a previous job poll is still running (e.g. user retried or reopened), stop it.
@@ -1620,6 +1700,13 @@ export default function ContentGenerationModal({
       if (templateSubtype === 'flyer') {
         clearInterval(progressInterval);
         await handleGenerateMatchFlyer();
+        return;
+      }
+
+      // Check if this is a match summary generation
+      if (templateSubtype === 'match_summary') {
+        clearInterval(progressInterval);
+        await handleGenerateMatchSummary();
         return;
       }
 
@@ -3624,6 +3711,190 @@ export default function ContentGenerationModal({
                       </div>
                     );
                   })()}
+                </div>
+              )}
+
+              {/* Match Summary Options */}
+              {selectedType?.subtype === 'match_summary' && (
+                <div style={{
+                  width: '100%',
+                  maxWidth: 480,
+                  marginTop: 20,
+                  border: '1px solid var(--vscode-widget-border, #333)',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  background: 'var(--vscode-editor-background, #1e1e1e)',
+                }}>
+                  <div style={{
+                    padding: '14px 20px',
+                    borderBottom: '1px solid var(--vscode-widget-border, #333)',
+                    background: 'var(--vscode-editor-inactiveSelectionBackground, #1a1a2e)',
+                  }}>
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #ccc)' }}>
+                      📊 Wedstrijd Samenvatting
+                    </h4>
+                  </div>
+
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {/* Score input */}
+                    <div>
+                      <label style={{
+                        display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 8,
+                        color: 'var(--vscode-descriptionForeground, #888)',
+                        textTransform: 'uppercase', letterSpacing: '0.05em',
+                      }}>Eindstand</label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 4 }}>
+                            {matchData?.metadata?.is_home !== false ? (matchData?.project?.name || 'Thuis') : (matchData?.opponent_project?.name || 'Uit')}
+                          </div>
+                          <input
+                            type="number"
+                            min={0}
+                            max={99}
+                            value={summaryScoreHome}
+                            onChange={(e) => setSummaryScoreHome(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{
+                              width: 60, padding: '10px', fontSize: 28, fontWeight: 700,
+                              textAlign: 'center', borderRadius: 8,
+                              border: '1px solid var(--vscode-widget-border, #444)',
+                              background: 'var(--vscode-input-background, #2a2a3e)',
+                              color: 'var(--vscode-foreground, #fff)',
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--vscode-foreground, #ccc)' }}>-</span>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 4 }}>
+                            {matchData?.metadata?.is_home !== false ? (matchData?.opponent_project?.name || 'Uit') : (matchData?.project?.name || 'Thuis')}
+                          </div>
+                          <input
+                            type="number"
+                            min={0}
+                            max={99}
+                            value={summaryScoreAway}
+                            onChange={(e) => setSummaryScoreAway(Math.max(0, parseInt(e.target.value) || 0))}
+                            style={{
+                              width: 60, padding: '10px', fontSize: 28, fontWeight: 700,
+                              textAlign: 'center', borderRadius: 8,
+                              border: '1px solid var(--vscode-widget-border, #444)',
+                              background: 'var(--vscode-input-background, #2a2a3e)',
+                              color: 'var(--vscode-foreground, #fff)',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Goal scorers */}
+                    <div>
+                      <label style={{
+                        display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 6,
+                        color: 'var(--vscode-descriptionForeground, #888)',
+                        textTransform: 'uppercase', letterSpacing: '0.05em',
+                      }}>Doelpuntenmakers (1 per regel)</label>
+                      <textarea
+                        value={summaryGoalScorers}
+                        onChange={(e) => setSummaryGoalScorers(e.target.value)}
+                        placeholder={"De Jong 23'\nBerghuis 67'\nKluivert 89'"}
+                        rows={5}
+                        style={{
+                          width: '100%', padding: '10px', fontSize: 13,
+                          borderRadius: 8, resize: 'vertical',
+                          border: '1px solid var(--vscode-widget-border, #444)',
+                          background: 'var(--vscode-input-background, #2a2a3e)',
+                          color: 'var(--vscode-foreground, #ccc)',
+                          fontFamily: 'inherit',
+                        }}
+                      />
+                    </div>
+
+                    {/* Background selector (reuse appBackgrounds) */}
+                    {appBackgrounds.length > 0 && (
+                      <div>
+                        <label style={{
+                          display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 8,
+                          color: 'var(--vscode-descriptionForeground, #888)',
+                          textTransform: 'uppercase', letterSpacing: '0.05em',
+                        }}>Achtergrond</label>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
+                          gap: 6,
+                        }}>
+                          <button
+                            onClick={() => setSelectedBackgroundUrl(null)}
+                            style={{
+                              position: 'relative',
+                              border: !selectedBackgroundUrl
+                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                : '1px solid var(--vscode-widget-border, #444)',
+                              borderRadius: 6, overflow: 'hidden', cursor: 'pointer', padding: 0,
+                              background: !selectedBackgroundUrl
+                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                : 'var(--vscode-editor-background, #1e1e1e)',
+                            }}
+                          >
+                            <div style={{
+                              width: '100%', aspectRatio: '9/16',
+                              background: 'linear-gradient(to bottom, #16a34a, #14532d)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              <span style={{ fontSize: 18 }}>⚽</span>
+                            </div>
+                            <div style={{
+                              padding: '2px 0', textAlign: 'center', fontWeight: 600, fontSize: 9,
+                              color: !selectedBackgroundUrl ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                              background: !selectedBackgroundUrl
+                                ? 'var(--vscode-focusBorder, #007fd4)'
+                                : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                            }}>Standaard</div>
+                          </button>
+                          {appBackgrounds.map((bg) => {
+                            const isSelected = selectedBackgroundUrl === bg.url;
+                            return (
+                              <button
+                                key={bg.id}
+                                onClick={() => setSelectedBackgroundUrl(bg.url)}
+                                style={{
+                                  position: 'relative',
+                                  border: isSelected
+                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                                    : '1px solid var(--vscode-widget-border, #444)',
+                                  borderRadius: 6, overflow: 'hidden', cursor: 'pointer', padding: 0,
+                                  background: isSelected
+                                    ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                                    : 'var(--vscode-editor-background, #1e1e1e)',
+                                }}
+                              >
+                                <div style={{
+                                  width: '100%', aspectRatio: '9/16',
+                                  background: `url(${bg.url}) center/cover`,
+                                }} />
+                                <div style={{
+                                  padding: '2px 0', textAlign: 'center', fontWeight: 600, fontSize: 9,
+                                  color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                  background: isSelected
+                                    ? 'var(--vscode-focusBorder, #007fd4)'
+                                    : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                }}>{bg.label || bg.profile_name || 'Locatie'}</div>
+                                {isSelected && (
+                                  <div style={{
+                                    position: 'absolute', top: 2, right: 2,
+                                    width: 14, height: 14, borderRadius: '50%',
+                                    background: '#10b981', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 8, color: '#fff', fontWeight: 700,
+                                  }}>✓</div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 

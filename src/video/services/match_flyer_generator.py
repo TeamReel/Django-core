@@ -61,6 +61,11 @@ class MatchFlyerData:
     own_club_name: str | None = None
     opponent_club_name: str | None = None
 
+    # Match summary (post-match) fields
+    score_home: int | None = None
+    score_away: int | None = None
+    goal_scorers: list[str] | None = None  # e.g. ["De Jong 23'", "Berghuis 67'"]
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -532,7 +537,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     darker_primary = tuple(max(0, c - 120) for c in primary_rgb)
 
     BAND_H = 40  # height of each gradient band
-    INFO_H = 360  # height of the info panel
+    INFO_H = 170  # height of the compact info panel (clubs + VS only)
     PHOTO_TOP = HEADER_HEIGHT + BAND_H
     PHOTO_BOTTOM = HEIGHT - BAND_H - INFO_H
     photo_zone_h = PHOTO_BOTTOM - PHOTO_TOP
@@ -769,29 +774,6 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     draw.rectangle(
         [(cx - line_w // 2, y_cursor), (cx + line_w // 2, y_cursor + 3)], fill=(*primary_rgb,)
     )
-    y_cursor += 30
-
-    # Date / time
-    if data.match_date:
-        date_str = data.match_date
-        if data.kickoff_time:
-            date_str += f"  \u2022  {data.kickoff_time}"
-        date_font = _get_font(38, bold=True)
-        _draw_centered(draw, date_str, cx, y_cursor, date_font, fill=(255, 255, 255))
-        y_cursor += 50
-
-    # Venue
-    if data.venue:
-        venue_font = _get_font(24, bold=False)
-        _draw_centered(
-            draw, f"\U0001f4cd {data.venue}", cx, y_cursor, venue_font, fill=(200, 200, 200)
-        )
-        y_cursor += 40
-
-    # Competition
-    if data.competition_name:
-        comp_font = _get_font(20, bold=False)
-        _draw_centered(draw, data.competition_name, cx, y_cursor, comp_font, fill=(170, 170, 170))
 
     # -- Sponsor at bottom --
     canvas = _draw_sponsor_bar(canvas, data)
@@ -993,12 +975,196 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
     return canvas
 
 
+def _render_summary(data: MatchFlyerData) -> Image.Image:
+    """Variant 4: Match Summary — post-match result with score & goal scorers.
+
+    Layout (top to bottom):
+    - Header bar (logos + "EINDSTAND")
+    - Gradient band
+    - Background image (or solid dark brand)
+    - Large score display
+    - Goal scorers list
+    - Gradient band
+    - Compact info panel (clubs + VS replacement = score)
+    - Sponsor overlay
+    """
+    primary_rgb = _hex_to_rgb(data.brand_primary)
+    secondary_rgb = _hex_to_rgb(data.brand_secondary)
+    dark_primary = tuple(max(0, c - 70) for c in primary_rgb)
+    darker_primary = tuple(max(0, c - 120) for c in primary_rgb)
+    light_primary = tuple(min(255, c + 80) for c in primary_rgb)
+
+    BAND_H = 40
+    FOOTER_H = 140
+    PHOTO_TOP = HEADER_HEIGHT + BAND_H
+    PHOTO_BOTTOM = HEIGHT - BAND_H - FOOTER_H
+    content_h = PHOTO_BOTTOM - PHOTO_TOP
+
+    # -- Canvas --
+    canvas = Image.new("RGB", (WIDTH, HEIGHT), darker_primary)
+
+    # -- Background image --
+    if data.field_background_url:
+        bg_img = _download_image(data.field_background_url)
+        if bg_img:
+            bg_img = bg_img.convert("RGB").resize((WIDTH, content_h), Image.Resampling.LANCZOS)
+            color_layer = Image.new("RGB", (WIDTH, content_h), darker_primary)
+            bg_img = Image.blend(bg_img, color_layer, alpha=0.55)
+            canvas.paste(bg_img, (0, PHOTO_TOP))
+
+    # -- Action photo as background if available --
+    if data.action_photo_urls:
+        photo_img = _download_image(data.action_photo_urls[0])
+        if photo_img:
+            photo_img = photo_img.convert("RGBA")
+            scale = max(WIDTH / photo_img.width, content_h / photo_img.height)
+            new_w = int(photo_img.width * scale)
+            new_h = int(photo_img.height * scale)
+            photo_img = photo_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+            px = (WIDTH - new_w) // 2
+            py = PHOTO_TOP + (content_h - new_h) // 2
+            canvas_rgba = canvas.convert("RGBA")
+            canvas_rgba.paste(photo_img, (px, py), photo_img)
+            # Dark overlay so text is readable
+            overlay = Image.new("RGBA", (WIDTH, content_h), (*darker_primary, 160))
+            canvas_rgba.paste(overlay, (0, PHOTO_TOP), overlay)
+            canvas = canvas_rgba.convert("RGB")
+
+    draw = ImageDraw.Draw(canvas)
+    cx = WIDTH // 2
+
+    # -- Score display --
+    score_home = data.score_home if data.score_home is not None else 0
+    score_away = data.score_away if data.score_away is not None else 0
+
+    home_club, home_team, away_club, away_team = _resolve_display_names(data)
+
+    # Club names above score
+    club_font = _get_font(42, bold=True)
+    score_area_top = PHOTO_TOP + int(content_h * 0.08)
+
+    _draw_centered(
+        draw, home_club.upper(), WIDTH // 4, score_area_top, club_font, fill=(255, 255, 255)
+    )
+    _draw_centered(
+        draw, away_club.upper(), WIDTH * 3 // 4, score_area_top, club_font, fill=(255, 255, 255)
+    )
+
+    # Team names (smaller)
+    sub_font = _get_font(22, bold=False)
+    if home_team and home_team != home_club:
+        _draw_centered(
+            draw, home_team, WIDTH // 4, score_area_top + 55, sub_font, fill=(200, 200, 200)
+        )
+    if away_team and away_team != away_club:
+        _draw_centered(
+            draw, away_team, WIDTH * 3 // 4, score_area_top + 55, sub_font, fill=(200, 200, 200)
+        )
+
+    # Large score
+    score_font = _get_font(160, bold=True)
+    score_y = score_area_top + 100
+    score_text = f"{score_home}  -  {score_away}"
+    _draw_centered(draw, score_text, cx, score_y, score_font, fill=(255, 255, 255))
+
+    # "EINDSTAND" badge below score
+    badge_font = _get_font(24, bold=True)
+    badge_y = score_y + 180
+    badge_w, badge_h = 220, 38
+    badge = Image.new("RGBA", (badge_w, badge_h), (*primary_rgb, 230))
+    canvas_rgba = canvas.convert("RGBA")
+    canvas_rgba.paste(badge, (cx - badge_w // 2, badge_y), badge)
+    canvas = canvas_rgba.convert("RGB")
+    draw = ImageDraw.Draw(canvas)
+    _draw_centered(draw, "EINDSTAND", cx, badge_y + 8, badge_font, fill=(255, 255, 255))
+
+    # -- Goal scorers --
+    if data.goal_scorers:
+        scorer_font = _get_font(28, bold=False)
+        y = badge_y + 60
+
+        # Section title
+        _draw_centered(draw, "DOELPUNTEN", cx, y, _get_font(18, bold=True), fill=(*light_primary,))
+        y += 40
+
+        for scorer in data.goal_scorers[:8]:  # max 8 scorers
+            _draw_centered(draw, f"⚽  {scorer}", cx, y, scorer_font, fill=(255, 255, 255))
+            y += 42
+
+    # -- Header bar (logos + EINDSTAND) --
+    from src.video.services.header_generator import render_header_pil
+
+    header = render_header_pil(
+        width=WIDTH,
+        height=HEADER_HEIGHT,
+        logo_url=data.logo_url,
+        opponent_logo_url=data.opponent_logo_url,
+        sponsor_url=data.sponsor_url,
+        match_date=data.match_date or "",
+        own_team_name=data.own_team_name,
+        opponent_name=data.opponent_name,
+        is_home=data.is_home,
+        kickoff_time=data.kickoff_time,
+        competition_name=data.competition_name,
+        venue=data.venue,
+        background_color=data.brand_primary,
+        title_text="EINDSTAND",
+    )
+    canvas.paste(header.convert("RGB"), (0, 0))
+
+    # -- Gradient bands --
+    canvas = _render_brand_shade_band(
+        canvas, HEADER_HEIGHT, BAND_H, primary_rgb, secondary_rgb, direction="down"
+    )
+    canvas = _render_brand_shade_band(
+        canvas, PHOTO_BOTTOM, BAND_H, primary_rgb, secondary_rgb, direction="up"
+    )
+
+    # -- Footer panel --
+    footer_top = PHOTO_BOTTOM + BAND_H
+    footer = Image.new("RGB", (WIDTH, FOOTER_H), dark_primary)
+    footer_draw = ImageDraw.Draw(footer)
+    footer_draw.rectangle([(0, 0), (WIDTH, 5)], fill=(*primary_rgb, 255))
+
+    # Subtle gradient stripe on left edge
+    for y in range(FOOTER_H):
+        t = y / max(FOOTER_H - 1, 1)
+        fade = int(80 * (1 - t))
+        shade = tuple(min(255, c + fade) for c in primary_rgb)
+        footer_draw.rectangle([(0, y), (8, y + 1)], fill=shade)
+
+    canvas.paste(footer, (0, footer_top))
+    draw = ImageDraw.Draw(canvas)
+
+    # Competition + date in footer (compact)
+    footer_cx = WIDTH // 2
+    footer_y = footer_top + 30
+    if data.competition_name:
+        comp_font = _get_font(26, bold=True)
+        _draw_centered(
+            draw, data.competition_name, footer_cx, footer_y, comp_font, fill=(255, 255, 255)
+        )
+        footer_y += 40
+    if data.match_date:
+        date_str = data.match_date
+        if data.venue:
+            date_str += f"  •  {data.venue}"
+        date_font = _get_font(20, bold=False)
+        _draw_centered(draw, date_str, footer_cx, footer_y, date_font, fill=(180, 180, 180))
+
+    # -- Sponsor --
+    canvas = _draw_sponsor_bar(canvas, data)
+
+    return canvas
+
+
 # ── Variant registry ──────────────────────────────────────────────────────
 
 VARIANT_RENDERERS = {
     "modern": (_render_modern, "Modern — geometrische vormen met teamkleuren"),
     "action": (_render_action, "Actie — samengestelde flyer met actiefoto & clubkleuren"),
     "stadium": (_render_stadium_ai, "Stadium — AI-gegenereerde stadion sfeer"),
+    "summary": (_render_summary, "Summary — nabeschouwing met uitslag & doelpunten"),
 }
 
 
@@ -1040,6 +1206,9 @@ def build_match_flyer(
     background_url: str | None = None,
     photo_layout: str = "single",
     photo_slots: list[dict] | None = None,
+    score_home: int | None = None,
+    score_away: int | None = None,
+    goal_scorers: list[str] | None = None,
 ) -> str:
     """High-level entry point: gather data from DB, resolve brand, generate.
 
@@ -1346,6 +1515,9 @@ def build_match_flyer(
         photo_layout=photo_layout,
         own_club_name=own_club_name,
         opponent_club_name=opponent_club_name,
+        score_home=score_home,
+        score_away=score_away,
+        goal_scorers=goal_scorers,
     )
 
     return generate_match_flyer(flyer_data, variant=variant)

@@ -1531,6 +1531,10 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         photo_slots = request.data.get(
             "photo_slots"
         )  # Optional: per-slot [{member_id, style_variant}]
+        # Summary fields (post-match)
+        score_home = request.data.get("score_home")  # Optional: int
+        score_away = request.data.get("score_away")  # Optional: int
+        goal_scorers = request.data.get("goal_scorers")  # Optional: list[str]
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -1556,6 +1560,9 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 background_url=background_url,
                 photo_layout=photo_layout,
                 photo_slots=photo_slots,
+                score_home=int(score_home) if score_home is not None else None,
+                score_away=int(score_away) if score_away is not None else None,
+                goal_scorers=goal_scorers,
             )
 
             return Response(
