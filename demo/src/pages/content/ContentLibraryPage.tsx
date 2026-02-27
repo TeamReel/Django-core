@@ -27,6 +27,7 @@ import { Card, Stack, Text, Alert, Badge, Button } from '@django-core/design-sys
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import MobileTabBar from '../../components/MobileTabBar';
+import MobileFilterSheet from '../../components/MobileFilterSheet';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUserRole } from '../../components/PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
@@ -465,50 +466,52 @@ function FilterChip({ active, onClick, label, count }: {
 // Empty State Component
 // ============================================================================
 
-function EmptyState({ icon, message, sub }: { icon: string; message: string; sub: string }) {
+function EmptyState({ icon, message, sub, action }: { icon: string; message: string; sub: string; action?: React.ReactNode }) {
   return (
     <Card style={{ textAlign: 'center', padding: 48 }}>
       <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.4 }}>{icon}</div>
       <Text color="secondary">{message}</Text>
       <Text size="sm" color="secondary" style={{ marginTop: 4 }}>{sub}</Text>
+      {action && <div style={{ marginTop: 16 }}>{action}</div>}
     </Card>
   );
 }
 
 // ============================================================================
-// Gallery Create Content Button
+// Gallery Create Content Button + Modal
 // ============================================================================
 
 const GALLERY_QUICK_TYPES = [
-  { key: 'flyer', label: 'Match Flyer', icon: '📣' },
-  { key: 'lineup', label: 'Lineup', icon: '📋' },
-  { key: 'walkon', label: 'Walk-on', icon: '🚶' },
-  { key: 'goal', label: 'Goal', icon: '⚽' },
-  { key: 'end_score', label: 'Score', icon: '🏁' },
-  { key: 'highlights', label: 'Highlights', icon: '🎬' },
+  { key: 'flyer', label: 'Match Flyer', icon: '📣', desc: 'Wedstrijdposter voor social media' },
+  { key: 'lineup', label: 'Lineup', icon: '📋', desc: 'Opstelling met foto\'s en formatie' },
+  { key: 'walkon', label: 'Walk-on Video', icon: '🚶', desc: 'Intro video met spelersnamen' },
+  { key: 'anthem', label: 'Anthem Video', icon: '🎵', desc: 'Anthem of clublied video' },
+  { key: 'goal', label: 'Goal Celebration', icon: '⚽', desc: 'Doelpunt viering animatie' },
+  { key: 'end_score', label: 'Final Score', icon: '🏁', desc: 'Eindstand graphic' },
+  { key: 'highlights', label: 'Highlights', icon: '🎬', desc: 'Hoogtepunten compilatie' },
 ];
 
 function GalleryCreateContentButton() {
   const navigate = useNavigate();
   const { matchId } = useAppSelection();
   const { isPlayer } = useUserRole();
-  const [showMenu, setShowMenu] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   if (isPlayer) return null;
 
   if (!matchId) {
     return (
-      <span style={{ fontSize: 12, color: 'var(--app-muted-text)', whiteSpace: 'nowrap' }}>
+      <span className="hide-mobile" style={{ fontSize: 12, color: 'var(--app-muted-text)', whiteSpace: 'nowrap' }}>
         Set a match active to create content
       </span>
     );
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <>
       <button
         type="button"
-        onClick={() => setShowMenu(!showMenu)}
+        onClick={() => setShowModal(true)}
         style={{
           padding: '8px 16px', borderRadius: 8, border: 'none',
           background: 'var(--app-primary, #3b82f6)', color: '#fff',
@@ -516,38 +519,72 @@ function GalleryCreateContentButton() {
           display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
         }}
       >
-        + Create Content
+        + Create
       </button>
-      {showMenu && (
+
+      {/* Content type selection modal */}
+      {showModal && (
         <>
-          <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowMenu(false)} />
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 998, background: 'rgba(0,0,0,0.5)' }}
+            onClick={() => setShowModal(false)}
+          />
           <div style={{
-            position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 999,
-            background: 'var(--app-surface)', border: '1px solid var(--app-border)',
-            borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-            padding: 8, minWidth: 180,
+            position: 'fixed', zIndex: 999,
+            top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            background: 'var(--app-surface)', borderRadius: 16,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+            width: 'min(420px, calc(100vw - 32px))',
+            maxHeight: 'calc(100vh - 64px)', overflowY: 'auto',
+            padding: '24px 20px',
           }}>
-            {GALLERY_QUICK_TYPES.map((ct) => (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--app-text)' }}>
+                Content aanmaken
+              </h3>
               <button
-                key={ct.key}
-                onClick={() => { setShowMenu(false); navigate(`/matches/${matchId}?tab=content`); }}
+                type="button"
+                onClick={() => setShowModal(false)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
-                  padding: '10px 12px', border: 'none', borderRadius: 6,
-                  background: 'transparent', cursor: 'pointer',
-                  fontSize: 13, color: 'var(--app-text)', textAlign: 'left',
+                  background: 'none', border: 'none', fontSize: 20, cursor: 'pointer',
+                  color: 'var(--app-muted-text)', padding: 4, lineHeight: 1,
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--app-surface-2)')}
-                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
               >
-                <span style={{ fontSize: 18 }}>{ct.icon}</span>
-                {ct.label}
+                &times;
               </button>
-            ))}
+            </div>
+            <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--app-muted-text)' }}>
+              Kies het type content dat je wilt genereren voor de actieve wedstrijd.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {GALLERY_QUICK_TYPES.map((ct) => (
+                <button
+                  key={ct.key}
+                  onClick={() => {
+                    setShowModal(false);
+                    navigate(`/matches/${matchId}?tab=content`);
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+                    padding: '14px 16px', border: '1px solid var(--app-border)', borderRadius: 10,
+                    background: 'var(--app-surface)', cursor: 'pointer', textAlign: 'left',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = 'var(--app-surface-2)')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = 'var(--app-surface)')}
+                >
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>{ct.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--app-text)' }}>{ct.label}</div>
+                    <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginTop: 2 }}>{ct.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}
-    </div>
+    </>
   );
 }
 
@@ -571,6 +608,8 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
   overrideLevel,
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { matchId } = useAppSelection();
   const { context, organisations: myOrganisations } = useContextSwitcher();
   const { user } = useAuth();
   const orgId = (context as any)?.organisation?.id as string | undefined;
@@ -1052,151 +1091,179 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
         </div>
       )}
 
-      {/* Toolbar: directory-style filters */}
+      {/* Toolbar: directory-style filters — wrapped in MobileFilterSheet for mobile */}
       <div className="gallery-toolbar" style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
-        {/* Search */}
+        {/* Search — always visible */}
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Zoeken..."
           style={{
-            flex: 1, minWidth: 180, padding: '8px 12px', borderRadius: 6,
+            flex: 1, minWidth: 120, padding: '8px 12px', borderRadius: 6,
             border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)',
             fontSize: 13,
           }}
         />
 
-        {/* Sort dropdown */}
-        <select
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value as SortOption)}
-          style={{
-            padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-            backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 140,
-          }}
+        {/* All other filters in MobileFilterSheet (button on mobile, inline on desktop) */}
+        <MobileFilterSheet
+          activeFilterCount={
+            (sortBy !== 'newest' ? 1 : 0) +
+            (selectedOrgId ? 1 : 0) +
+            (selectedClubId ? 1 : 0) +
+            (selectedTeamId ? 1 : 0) +
+            (selectedSeasonId ? 1 : 0) +
+            (selectedMatchId ? 1 : 0)
+          }
         >
-          <option value="newest">Nieuwste eerst</option>
-          <option value="oldest">Oudste eerst</option>
-          <option value="title">A-Z op titel</option>
-          <option value="type">Op type</option>
-        </select>
-
-        {/* Organisation filter (only for superadmin) */}
-        {isSuperAdmin && organisations.length > 1 && (
+          {/* Sort dropdown */}
+          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Sortering</label>
           <select
-            value={selectedOrgId}
-            onChange={(e) => {
-              setSelectedOrgId(e.target.value);
-              setSelectedClubId('');
-              setSelectedTeamId('');
-              setSelectedSeasonId('');
-              setSelectedMatchId('');
-            }}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
             style={{
               padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
+              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 140, width: '100%',
             }}
           >
-            <option value="">Federation: All</option>
-            {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
-              <option key={org.id} value={org.id}>{org.name}</option>
-            ))}
+            <option value="newest">Nieuwste eerst</option>
+            <option value="oldest">Oudste eerst</option>
+            <option value="title">A-Z op titel</option>
+            <option value="type">Op type</option>
           </select>
-        )}
 
-        {/* Club filter */}
-        {clubs.length > 0 && (
-          <select
-            value={selectedClubId}
-            onChange={(e) => {
-              setSelectedClubId(e.target.value);
-              setSelectedTeamId('');
-              setSelectedSeasonId('');
-              setSelectedMatchId('');
-            }}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
-            }}
+          {/* Organisation filter (only for superadmin) */}
+          {isSuperAdmin && organisations.length > 1 && (
+            <>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Federatie</label>
+              <select
+                value={selectedOrgId}
+                onChange={(e) => {
+                  setSelectedOrgId(e.target.value);
+                  setSelectedClubId('');
+                  setSelectedTeamId('');
+                  setSelectedSeasonId('');
+                  setSelectedMatchId('');
+                }}
+                style={{
+                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                }}
+              >
+                <option value="">Federation: All</option>
+                {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
+                  <option key={org.id} value={org.id}>{org.name}</option>
+                ))}
+              </select>
+            </>
+          )}
+
+          {/* Club filter */}
+          {clubs.length > 0 && (
+            <>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Club</label>
+              <select
+                value={selectedClubId}
+                onChange={(e) => {
+                  setSelectedClubId(e.target.value);
+                  setSelectedTeamId('');
+                  setSelectedSeasonId('');
+                  setSelectedMatchId('');
+                }}
+                style={{
+                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                }}
+              >
+                <option value="">Club: All</option>
+                {[...clubs].sort((a, b) => a.name.localeCompare(b.name)).map((club) => (
+                  <option key={club.id} value={club.id}>{club.name}</option>
+                ))}
+              </select>
+            </>
+          )}
+
+          {/* Team filter */}
+          {filteredTeams.length > 0 && (
+            <>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Team</label>
+              <select
+                value={selectedTeamId}
+                onChange={(e) => {
+                  setSelectedTeamId(e.target.value);
+                  setSelectedSeasonId('');
+                  setSelectedMatchId('');
+                }}
+                style={{
+                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                }}
+              >
+                <option value="">Team: All</option>
+                {[...filteredTeams].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
+            </>
+          )}
+
+          {/* Season filter */}
+          {seasons.length > 0 && (
+            <>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Seizoen</label>
+              <select
+                value={selectedSeasonId}
+                onChange={(e) => {
+                  setSelectedSeasonId(e.target.value);
+                  setSelectedMatchId('');
+                }}
+                style={{
+                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                }}
+              >
+                <option value="">Season: All</option>
+                {seasons.map((season) => (
+                  <option key={season.id} value={season.id}>{season.name}</option>
+                ))}
+              </select>
+            </>
+          )}
+
+          {/* Match filter (only show on match tab) */}
+          {activeLevel === 'match' && matches.length > 0 && (
+            <>
+              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Wedstrijd</label>
+              <select
+                value={selectedMatchId}
+                onChange={(e) => setSelectedMatchId(e.target.value)}
+                style={{
+                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
+                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 200, width: '100%',
+                }}
+              >
+                <option value="">Match: All</option>
+                {matches.map((match) => (
+                  <option key={match.id} value={match.id}>
+                    {match.title}
+                    {match.activity_date && ` (${new Date(match.activity_date).toLocaleDateString('nl-NL')})`}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
+
+          {/* Clear button inside sheet on mobile */}
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={clearFilters}
+            style={{ width: '100%', marginTop: 4 }}
           >
-            <option value="">Club: All</option>
-            {[...clubs].sort((a, b) => a.name.localeCompare(b.name)).map((club) => (
-              <option key={club.id} value={club.id}>{club.name}</option>
-            ))}
-          </select>
-        )}
-
-        {/* Team filter */}
-        {filteredTeams.length > 0 && (
-          <select
-            value={selectedTeamId}
-            onChange={(e) => {
-              setSelectedTeamId(e.target.value);
-              setSelectedSeasonId('');
-              setSelectedMatchId('');
-            }}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
-            }}
-          >
-            <option value="">Team: All</option>
-            {[...filteredTeams].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
-              <option key={team.id} value={team.id}>{team.name}</option>
-            ))}
-          </select>
-        )}
-
-        {/* Season filter */}
-        {seasons.length > 0 && (
-          <select
-            value={selectedSeasonId}
-            onChange={(e) => {
-              setSelectedSeasonId(e.target.value);
-              setSelectedMatchId('');
-            }}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
-            }}
-          >
-            <option value="">Season: All</option>
-            {seasons.map((season) => (
-              <option key={season.id} value={season.id}>{season.name}</option>
-            ))}
-          </select>
-        )}
-
-        {/* Match filter (only show on match tab) */}
-        {activeLevel === 'match' && matches.length > 0 && (
-          <select
-            value={selectedMatchId}
-            onChange={(e) => setSelectedMatchId(e.target.value)}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 200,
-            }}
-          >
-            <option value="">Match: All</option>
-            {matches.map((match) => (
-              <option key={match.id} value={match.id}>
-                {match.title}
-                {match.activity_date && ` (${new Date(match.activity_date).toLocaleDateString('nl-NL')})`}
-              </option>
-            ))}
-          </select>
-        )}
-
-        {/* Clear button */}
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={clearFilters}
-          style={{ marginLeft: 'auto' }}
-        >
-          Clear
-        </Button>
+            Filters wissen
+          </Button>
+        </MobileFilterSheet>
       </div>
 
       {/* Content area */}
@@ -1278,11 +1345,31 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
             ) : (
               <EmptyState
                 icon="🎬"
-                message="Geen content gevonden."
+                message={
+                  contentItems.length > 0
+                    ? 'Geen content gevonden.'
+                    : matchId
+                      ? 'Nog geen content voor deze wedstrijd.'
+                      : 'Selecteer een wedstrijd om content te maken.'
+                }
                 sub={
                   contentItems.length > 0
                     ? 'Pas je filters of zoekopdracht aan.'
-                    : 'Genereer content via de match of season pagina.'
+                    : matchId
+                      ? 'Gebruik de + Create knop hierboven om te beginnen.'
+                      : 'Kies eerst een actieve wedstrijd via Matches.'
+                }
+                action={
+                  contentItems.length === 0 && !matchId ? (
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={() => navigate('/matches')}
+                      style={{ marginTop: 4 }}
+                    >
+                      Ga naar Wedstrijden
+                    </Button>
+                  ) : undefined
                 }
               />
             )

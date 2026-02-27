@@ -1099,9 +1099,8 @@ header [role="alert"] {
     padding: 16px !important;
   }
 
-  /* Gallery toolbar: stack filters vertically, reduce gap */
+  /* Gallery toolbar: compact + search visible, rest in MobileFilterSheet */
   .gallery-toolbar {
-    flex-direction: column !important;
     gap: 8px !important;
     padding: 12px 16px !important;
   }
@@ -1112,17 +1111,17 @@ header [role="alert"] {
     width: 100% !important;
   }
 
-  /* Gallery grid: single-column timeline layout on mobile */
+  /* Gallery grid: Instagram-style 3-column square grid on mobile */
   .gallery-grid,
   div[style*="gridTemplateColumns: 'repeat(auto-fill, minmax(220px"],
   div[style*="repeat(auto-fill, minmax(220px"] {
-    grid-template-columns: 1fr !important;
-    gap: 0 !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 2px !important;
   }
 
-  /* Gallery content area: reduce padding */
+  /* Gallery content area: reduce padding for edge-to-edge grid */
   .gallery-content {
-    padding: 8px 12px !important;
+    padding: 4px 2px !important;
   }
 
   /* Filter chips: horizontal scroll, no wrap */
@@ -1137,51 +1136,61 @@ header [role="alert"] {
     display: none;
   }
 
-  /* Timeline cards: horizontal layout (thumb left, info right) */
+  /* Instagram grid: square cells with no border gaps */
   .gallery-grid > div {
     border-radius: 0 !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--app-border) !important;
+    border: none !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
   }
 
-  /* Card inner: force horizontal row */
+  /* Card inner: fill entire square cell */
   .gallery-card-inner {
-    flex-direction: row !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    position: relative !important;
   }
 
-  /* Content card thumbnail — small square on mobile */
+  /* Content card thumbnail — fill entire square */
   .gallery-card-thumb {
-    width: 88px !important;
-    min-width: 88px !important;
-    height: auto !important;
-    min-height: 88px !important;
-    border-bottom: none !important;
-    border-right: 1px solid var(--app-border) !important;
+    width: 100% !important;
+    min-width: unset !important;
+    height: 100% !important;
+    min-height: unset !important;
+    border: none !important;
+    position: absolute !important;
+    inset: 0 !important;
   }
 
   .gallery-card-thumb img,
   .gallery-card-thumb video {
-    width: 88px !important;
-    height: 88px !important;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: cover !important;
   }
 
-  /* Type badge inside thumbnail: smaller on mobile */
+  /* Type badge overlay: bottom-left inside thumbnail */
   .gallery-card-thumb span[style*="position: absolute"] {
-    font-size: 9px !important;
-    padding: 1px 5px !important;
+    font-size: 8px !important;
+    padding: 1px 4px !important;
+    bottom: 4px !important;
+    left: 4px !important;
+    top: auto !important;
+    right: auto !important;
   }
 
-  /* Hide verbose metadata on mobile gallery cards */
+  /* Hide ALL text/metadata on mobile gallery — thumbnail only */
   .gallery-card-verbose {
     display: none !important;
   }
 
-  /* Action buttons: inline compact row */
+  /* Hide the info section (title, dates, buttons) below thumbnail */
+  .gallery-card .gallery-card-inner > div:not(.gallery-card-thumb) {
+    display: none !important;
+  }
+
+  /* Action buttons: hidden in grid view */
   .gallery-card .gallery-card-inner > div:last-child > div:last-child {
-    border-top: none !important;
-    margin-top: 4px !important;
-    padding-top: 0 !important;
+    display: none !important;
   }
 }

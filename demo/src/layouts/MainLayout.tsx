@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
@@ -9,6 +9,15 @@ export default function MainLayout() {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const openSearchRef = useRef<(() => void) | null>(null);
+  const location = useLocation();
+
+  // Auto-close mobile sidebar on route change
+  useEffect(() => {
+    if (isMobile && mobileMenuOpen) {
+      setMobileMenuOpen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, location.search]);
 
   // Store the openSearch function from TopNavbar
   const handleOpenSearchRef = useCallback((openSearch: () => void) => {
