@@ -27,14 +27,14 @@ interface NavItem {
   path: string;
   label: string;
   icon: LucideIcon;
-  visibility: 'everyone' | 'org_admin' | 'staff';
+  visibility: 'everyone' | 'org_admin' | 'staff' | 'superadmin';
 }
 
 interface NavSection {
   id: string;
   title?: string;
   items: NavItem[];
-  visibility: 'everyone' | 'org_admin' | 'staff';
+  visibility: 'everyone' | 'org_admin' | 'staff' | 'superadmin';
   bottom?: boolean;
 }
 
@@ -45,7 +45,7 @@ const NAV_CONFIG: NavSection[] = [
     visibility: 'everyone',
     items: [
       { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, visibility: 'everyone' },
-      { path: '/directory', label: 'Directory', icon: Folder, visibility: 'everyone' },
+      { path: '/directory', label: 'Directory', icon: Folder, visibility: 'superadmin' },
     ]
   },
   {
@@ -71,10 +71,10 @@ const NAV_CONFIG: NavSection[] = [
         visibility: 'everyone',
         items: [
             { path: '/preferences?tab=profile', label: 'Preferences', icon: Settings, visibility: 'everyone' },
-            { path: '/content-templates', label: 'Templates', icon: Palette, visibility: 'staff' },
-            { path: '/workflow-templates', label: 'Workflows', icon: GitBranch, visibility: 'staff' },
-            { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'org_admin' },
-            { path: '/health', label: 'Platform', icon: Activity, visibility: 'staff' },
+            { path: '/content-templates', label: 'Templates', icon: Palette, visibility: 'superadmin' },
+            { path: '/workflow-templates', label: 'Workflows', icon: GitBranch, visibility: 'superadmin' },
+            { path: '/permissions', label: 'Organisation', icon: Users, visibility: 'superadmin' },
+            { path: '/health', label: 'Platform', icon: Activity, visibility: 'superadmin' },
         ]
   },
   {
@@ -940,6 +940,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       // 1. Check Primary Group Permission
       const isGroupVisible =
         group.visibility === 'everyone' ||
+        (group.visibility === 'superadmin' && isSystemAdmin) ||
         (group.visibility === 'org_admin' && (isOrgAdmin || isSystemAdmin)) ||
         (group.visibility === 'staff' && isStaff);
 
@@ -948,6 +949,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       // 2. Check Secondary Items Permission
       const visibleItems = group.items.filter(item => {
          if (item.visibility === 'everyone') return true;
+         if (item.visibility === 'superadmin') return isSystemAdmin;
          if (item.visibility === 'org_admin') return isOrgAdmin || isSystemAdmin;
          if (item.visibility === 'staff') return isStaff;
          return false;
@@ -1077,13 +1079,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         const currentUserId = String((user as any)?.id || '').trim();
 
         return [
-            { label: federationLabel, path: federationPath, icon: Globe, visibility: 'everyone' },
-            { label: clubLabel, path: clubPath, icon: Shield, visibility: 'everyone' },
-            { label: teamLabel, path: teamPath, icon: Shirt, visibility: 'everyone' },
-            { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' },
-            { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' },
-            { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' },
-            { label: memberLabel, path: memberPath, icon: Users, visibility: 'everyone' },
+            { label: federationLabel, path: federationPath, icon: Globe, visibility: 'staff' as const },
+            { label: clubLabel, path: clubPath, icon: Shield, visibility: 'org_admin' as const },
+            { label: teamLabel, path: teamPath, icon: Shirt, visibility: 'everyone' as const },
+            { label: seasonLabel, path: seasonPath, icon: CalendarDays, visibility: 'everyone' as const },
+            { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' as const },
+            { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' as const },
+            { label: memberLabel, path: memberPath, icon: Users, visibility: 'everyone' as const },
             ...(currentUserId ? [{ label: 'User', path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'everyone' as const }] : []),
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
@@ -1092,14 +1094,22 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
         return visibleSections
             .map((section) => {
                 if (section.id !== 'app') return section;
+                // Apply same visibility filter to dynamic APP items
+                const filteredAppItems = appDetailItems.filter(item => {
+                    if (item.visibility === 'everyone') return true;
+                    if (item.visibility === 'superadmin') return isSystemAdmin;
+                    if (item.visibility === 'org_admin') return isOrgAdmin || isSystemAdmin;
+                    if (item.visibility === 'staff') return isStaff;
+                    return false;
+                });
                 return {
                     ...section,
-                    items: appDetailItems,
+                    items: filteredAppItems,
                 };
             })
             // Always keep the APP section visible (it now contains stable hierarchy links).
             ;
-    }, [visibleSections, appDetailItems]);
+    }, [visibleSections, appDetailItems, isSystemAdmin, isOrgAdmin, isStaff]);
 
 
   return (
