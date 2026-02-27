@@ -954,6 +954,7 @@ class Command(BaseCommand):
                         ("celebrating", "Vieren"),
                         ("heading", "Koppen"),
                         ("sliding_tackle", "Sliding"),
+                        ("karate_kick", "Karatetrap"),
                     ]
                     for style_key, style_label in action_photo_styles:
                         template_definitions.append(

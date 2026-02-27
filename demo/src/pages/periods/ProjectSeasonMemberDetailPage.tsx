@@ -3516,7 +3516,7 @@ export default function ProjectSeasonMemberDetailPage() {
                 {/* Action Photo Tab - Grouped by tenue type */}
                 {activeTab === 'action_photo' && (() => {
                   const actionVariants = videoVariants.action_photo || {};
-                  const styleVariants = ['dribbling', 'shooting', 'ball_at_feet', 'celebrating', 'heading', 'sliding_tackle'];
+                  const styleVariants = ['dribbling', 'shooting', 'ball_at_feet', 'celebrating', 'heading', 'sliding_tackle', 'karate_kick'];
                   const styleLabels: Record<string, string> = {
                     dribbling: '🏃 Dribbelen',
                     shooting: '⚽ Schieten',
@@ -3524,6 +3524,7 @@ export default function ProjectSeasonMemberDetailPage() {
                     celebrating: '🎉 Vieren',
                     heading: '🤕 Koppen',
                     sliding_tackle: '🦵 Sliding',
+                    karate_kick: '🥋 Karatetrap',
                   };
 
                   return (

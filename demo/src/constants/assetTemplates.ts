@@ -888,6 +888,7 @@ export const ASSET_TEMPLATES: AssetTemplate[] = [
           { value: 'celebrating', label: '🎉 Vieren' },
           { value: 'heading', label: '🤕 Koppen' },
           { value: 'sliding_tackle', label: '🦵 Sliding' },
+          { value: 'karate_kick', label: '🥋 Karatetrap' },
         ],
         default: 'dribbling',
       },
