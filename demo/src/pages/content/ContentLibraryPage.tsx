@@ -22,11 +22,13 @@
  */
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, Stack, Text, Alert, Badge, Button } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useAppSelection } from '../../hooks/useAppSelection';
+import { useUserRole } from '../../components/PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
@@ -230,14 +232,16 @@ function ContentCard({
 
   return (
     <Card
+      className="gallery-card"
       style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
       onClick={() => onPreview?.(item)}
     >
+      <div className="gallery-card-inner" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
       {/* Thumbnail */}
-      <div style={{
+      <div className="gallery-card-thumb" style={{
         height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
-        overflow: 'hidden', position: 'relative',
+        overflow: 'hidden', position: 'relative', flexShrink: 0,
       }}>
         {url ? (
           isVideo ? (
@@ -298,7 +302,7 @@ function ContentCard({
 
         {/* Context: Club / Team / Activity */}
         {(clubName || teamName || projectName || activityTitle) && (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="gallery-card-verbose" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
             {clubName && (
               <span style={{ fontSize: 11, color: 'var(--app-text-secondary)', display: 'flex', alignItems: 'center', gap: 2 }}>
                 🏟️ {clubName}
@@ -347,7 +351,7 @@ function ContentCard({
 
         {/* Tags */}
         {tags.length > 0 && (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          <div className="gallery-card-verbose" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {tags.slice(0, 3).map((tag, i) => (
               <span key={i} style={{
                 fontSize: 10, padding: '1px 6px', borderRadius: 6,
@@ -366,7 +370,7 @@ function ContentCard({
         )}
 
         {/* Metadata row */}
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 'auto' }}>
+        <div className="gallery-card-verbose" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 'auto' }}>
           <Badge size="sm" variant="default">
             {item.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}
           </Badge>
@@ -421,6 +425,7 @@ function ContentCard({
           </button>
         </div>
       </div>
+      </div>
     </Card>
   );
 }
@@ -467,6 +472,82 @@ function EmptyState({ icon, message, sub }: { icon: string; message: string; sub
       <Text color="secondary">{message}</Text>
       <Text size="sm" color="secondary" style={{ marginTop: 4 }}>{sub}</Text>
     </Card>
+  );
+}
+
+// ============================================================================
+// Gallery Create Content Button
+// ============================================================================
+
+const GALLERY_QUICK_TYPES = [
+  { key: 'flyer', label: 'Match Flyer', icon: '📣' },
+  { key: 'lineup', label: 'Lineup', icon: '📋' },
+  { key: 'walkon', label: 'Walk-on', icon: '🚶' },
+  { key: 'goal', label: 'Goal', icon: '⚽' },
+  { key: 'end_score', label: 'Score', icon: '🏁' },
+  { key: 'highlights', label: 'Highlights', icon: '🎬' },
+];
+
+function GalleryCreateContentButton() {
+  const navigate = useNavigate();
+  const { matchId } = useAppSelection();
+  const { isPlayer } = useUserRole();
+  const [showMenu, setShowMenu] = useState(false);
+
+  if (isPlayer) return null;
+
+  if (!matchId) {
+    return (
+      <span style={{ fontSize: 12, color: 'var(--app-muted-text)', whiteSpace: 'nowrap' }}>
+        Set a match active to create content
+      </span>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        type="button"
+        onClick={() => setShowMenu(!showMenu)}
+        style={{
+          padding: '8px 16px', borderRadius: 8, border: 'none',
+          background: 'var(--app-primary, #3b82f6)', color: '#fff',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
+        }}
+      >
+        + Create Content
+      </button>
+      {showMenu && (
+        <>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setShowMenu(false)} />
+          <div style={{
+            position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 999,
+            background: 'var(--app-surface)', border: '1px solid var(--app-border)',
+            borderRadius: 10, boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            padding: 8, minWidth: 180,
+          }}>
+            {GALLERY_QUICK_TYPES.map((ct) => (
+              <button
+                key={ct.key}
+                onClick={() => { setShowMenu(false); navigate(`/matches/${matchId}?tab=content`); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                  padding: '10px 12px', border: 'none', borderRadius: 6,
+                  background: 'transparent', cursor: 'pointer',
+                  fontSize: 13, color: 'var(--app-text)', textAlign: 'left',
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--app-surface-2)')}
+                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span style={{ fontSize: 18 }}>{ct.icon}</span>
+                {ct.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -940,12 +1021,15 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       {/* Header - only show when not embedded */}
       {!embedded && (
         <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-          <Stack direction="column" gap="1">
-            <Text size="xl" weight="bold">Gallery</Text>
-            <Text size="md" color="secondary">
-              Al je gegenereerde content op één plek
-            </Text>
-          </Stack>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <Stack direction="column" gap="1">
+              <Text size="xl" weight="bold">Gallery</Text>
+              <Text size="md" color="secondary">
+                Al je gegenereerde content op één plek
+              </Text>
+            </Stack>
+            <GalleryCreateContentButton />
+          </div>
         </div>
       )}
 

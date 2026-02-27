@@ -1,17 +1,33 @@
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
 import { useNavRecents } from '../hooks/useNavItems';
+import { useAppSelection } from '../hooks/useAppSelection';
+import { useUserRole } from '../components/PermissionGuards';
+
+/** Content types available from the dashboard quick-create */
+const QUICK_CREATE_TYPES = [
+  { key: 'flyer', label: 'Match Flyer', icon: '📣' },
+  { key: 'lineup', label: 'Lineup', icon: '📋' },
+  { key: 'walkon', label: 'Walk-on Video', icon: '🚶' },
+  { key: 'anthem', label: 'Anthem Video', icon: '🎵' },
+  { key: 'goal', label: 'Goal Celebration', icon: '⚽' },
+  { key: 'end_score', label: 'Final Score', icon: '🏁' },
+  { key: 'highlights', label: 'Highlights', icon: '🎬' },
+];
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
+  const navigate = useNavigate();
   const organisation = context.organisation as any;
   const recents = useNavRecents();
+  const { matchId } = useAppSelection();
+  const { isPlayer } = useUserRole();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     context.organisation?.slug,
@@ -219,6 +235,52 @@ export default function DashboardPage() {
 
             <div style={{ marginTop: '24px' }}>
               <UpcomingMatchesWidget />
+
+              {/* Create Content — quick access to content generation */}
+              {!isPlayer && (
+                <div style={{
+                  marginTop: '16px', marginBottom: '16px', padding: '16px',
+                  backgroundColor: 'var(--app-surface)', borderRadius: '8px',
+                  border: '1px solid var(--app-border)', color: 'var(--app-text)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <h3 style={{ margin: 0, fontSize: '16px' }}>Create Content</h3>
+                    {matchId && (
+                      <Link
+                        to={`/matches/${matchId}?tab=content`}
+                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-primary, #3b82f6)', textDecoration: 'none' }}
+                      >
+                        View all &rarr;
+                      </Link>
+                    )}
+                  </div>
+                  {matchId ? (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
+                      {QUICK_CREATE_TYPES.map((ct) => (
+                        <button
+                          key={ct.key}
+                          onClick={() => navigate(`/matches/${matchId}?tab=content`)}
+                          style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                            padding: '12px 8px', borderRadius: 8,
+                            border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)',
+                            cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--app-text)',
+                            minHeight: 64,
+                          }}
+                        >
+                          <span style={{ fontSize: 22 }}>{ct.icon}</span>
+                          <span style={{ textAlign: 'center', lineHeight: 1.2 }}>{ct.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>
+                      Set a match as active to generate content. Go to a match and tap "Make active".
+                    </p>
+                  )}
+                </div>
+              )}
+
               <h3 style={{ color: 'var(--app-text)', fontSize: '16px' }}>Your Profile</h3>
               <div style={{
                 padding: '12px',

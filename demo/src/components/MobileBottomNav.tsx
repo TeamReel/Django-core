@@ -8,7 +8,7 @@
  * Only visible on mobile (<640px)
  */
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Sparkles, Swords, Library, Menu, Shirt } from 'lucide-react';
+import { Home, Sparkles, Swords, Library, Menu, Shirt, Clapperboard } from 'lucide-react';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 
@@ -41,11 +41,16 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
       ? teamPath  // fallback to team if no match
       : '/dashboard';
 
+  // Content tab: active match content if available, else gallery
+  const contentPath = matchId
+    ? `/matches/${matchId}?tab=content`
+    : '/studio';
+
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
     { id: 'team', icon: Shirt, label: 'Team', path: teamPath },
     { id: 'match', icon: Swords, label: 'Match', path: matchPath },
-    { id: 'gallery', icon: Sparkles, label: 'Gallery', path: '/studio' },
+    { id: 'content', icon: Clapperboard, label: 'Content', path: contentPath },
     { id: 'more', icon: Menu, label: 'More', action: onToggleMenu },
   ];
 
@@ -66,11 +71,16 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
     }
 
     if (tab.id === 'match') {
-      return currentPath.startsWith('/matches/');
+      // Active when on match page without content tab
+      const searchParams = new URLSearchParams(location.search);
+      return currentPath.startsWith('/matches/') && searchParams.get('tab') !== 'content';
     }
 
-    if (tabBasePath === '/studio') {
-      return currentPath.startsWith('/studio');
+    if (tab.id === 'content') {
+      const searchParams = new URLSearchParams(location.search);
+      // Active on match content tab or studio/gallery
+      return (currentPath.startsWith('/matches/') && searchParams.get('tab') === 'content') ||
+             currentPath.startsWith('/studio');
     }
 
     return currentPath.startsWith(tabBasePath);

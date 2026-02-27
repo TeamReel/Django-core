@@ -1112,17 +1112,17 @@ header [role="alert"] {
     width: 100% !important;
   }
 
-  /* Gallery grid: 2 columns on phone */
+  /* Gallery grid: single-column timeline layout on mobile */
   .gallery-grid,
   div[style*="gridTemplateColumns: 'repeat(auto-fill, minmax(220px"],
   div[style*="repeat(auto-fill, minmax(220px"] {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
   }
 
   /* Gallery content area: reduce padding */
   .gallery-content {
-    padding: 12px !important;
+    padding: 8px 12px !important;
   }
 
   /* Filter chips: horizontal scroll, no wrap */
@@ -1137,10 +1137,51 @@ header [role="alert"] {
     display: none;
   }
 
-  /* Content cards: smaller on mobile */
-  .gallery-grid > div img,
-  .gallery-grid > div video {
-    height: 120px !important;
-    object-fit: cover;
+  /* Timeline cards: horizontal layout (thumb left, info right) */
+  .gallery-grid > div {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--app-border) !important;
+  }
+
+  /* Card inner: force horizontal row */
+  .gallery-card-inner {
+    flex-direction: row !important;
+  }
+
+  /* Content card thumbnail — small square on mobile */
+  .gallery-card-thumb {
+    width: 88px !important;
+    min-width: 88px !important;
+    height: auto !important;
+    min-height: 88px !important;
+    border-bottom: none !important;
+    border-right: 1px solid var(--app-border) !important;
+  }
+
+  .gallery-card-thumb img,
+  .gallery-card-thumb video {
+    width: 88px !important;
+    height: 88px !important;
+    object-fit: cover !important;
+  }
+
+  /* Type badge inside thumbnail: smaller on mobile */
+  .gallery-card-thumb span[style*="position: absolute"] {
+    font-size: 9px !important;
+    padding: 1px 5px !important;
+  }
+
+  /* Hide verbose metadata on mobile gallery cards */
+  .gallery-card-verbose {
+    display: none !important;
+  }
+
+  /* Action buttons: inline compact row */
+  .gallery-card .gallery-card-inner > div:last-child > div:last-child {
+    border-top: none !important;
+    margin-top: 4px !important;
+    padding-top: 0 !important;
   }
 }
