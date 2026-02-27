@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
+import QuickCreateFAB from '../components/QuickCreateFAB';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -132,10 +133,13 @@ export default function MainLayout() {
 
         {/* Mobile Bottom Navigation */}
         {isMobile && (
-          <MobileBottomNav
-            onOpenSearch={() => openSearchRef.current?.()}
-            onToggleMenu={toggleSidebar}
-          />
+          <>
+            <QuickCreateFAB />
+            <MobileBottomNav
+              onOpenSearch={() => openSearchRef.current?.()}
+              onToggleMenu={toggleSidebar}
+            />
+          </>
         )}
       </div>
     </div>

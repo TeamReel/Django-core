@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, Badge, Button } from '@django-core/design-system';
 import { useActivities, Activity } from '../../hooks/useActivities';
+import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
+import { SkeletonList } from '../Skeleton';
 
 interface ActivityFeedProps {
   projectId?: string;
@@ -11,9 +14,17 @@ interface ActivityFeedProps {
 
 type ActivityFilter = 'all' | 'league' | 'cup';
 
-const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
+const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ activity, onClick }) => {
   const startDate = new Date(activity.start_time);
   const isPast = startDate < new Date();
+  const relativeTime = formatRelativeTime(startDate, 'nl');
+  const urgency = getDateUrgency(startDate);
+
+  // Urgency color for relative time badge
+  const urgencyColor = urgency === 'urgent' ? '#ef4444' :
+                       urgency === 'soon' ? '#f59e0b' :
+                       urgency === 'upcoming' ? '#3b82f6' :
+                       'var(--app-text-muted)';
 
   // Format date: "Mon, Jan 6 • 14:00"
   const dateStr = startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
@@ -56,14 +67,29 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      gap: '12px',
-      padding: '12px 0',
-      borderBottom: '1px solid var(--app-border)',
-      opacity: isPast ? 0.6 : 1,
-      alignItems: 'center'
-    }}>
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex',
+        gap: '12px',
+        padding: '12px 0',
+        borderBottom: '1px solid var(--app-border)',
+        opacity: isPast ? 0.6 : 1,
+        alignItems: 'center',
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'background-color 0.15s ease',
+        margin: '0 -8px',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+        borderRadius: '8px',
+      }}
+      onMouseEnter={e => {
+        if (onClick) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--app-surface-2)';
+      }}
+      onMouseLeave={e => {
+        if (onClick) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+      }}
+    >
       {/* Date Box */}
       <div style={{
         display: 'flex',
@@ -119,6 +145,9 @@ const ActivityItem: React.FC<{ activity: Activity }> = ({ activity }) => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--app-text-muted)' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: urgencyColor }}>
+            {relativeTime}
+          </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <span>🕒</span> {timeStr}
           </span>
@@ -139,6 +168,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   limit = 10,
   title = "Recent Activity"
 }) => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<ActivityFilter>('all');
 
   // Fetch more items than limit to account for filtering
@@ -173,7 +203,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
       <Card>
         <div style={{ padding: '16px' }}>
           <h3 style={{ margin: '0 0 16px', fontSize: '18px' }}>{title}</h3>
-          <div style={{ opacity: 0.5 }}>Loading activities...</div>
+          <SkeletonList count={4} variant="row" gap={8} />
         </div>
       </Card>
     );
@@ -250,7 +280,16 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
             </div>
           ) : (
             activities.map(activity => (
-              <ActivityItem key={activity.id} activity={activity} />
+              <ActivityItem
+                key={activity.id}
+                activity={activity}
+                onClick={() => {
+                  // Navigate to search for this match, since we don't have match_id
+                  // TODO: Link directly to match when activity has match_id
+                  const searchQuery = encodeURIComponent(activity.title.replace(/^(vs |@ )/, ''));
+                  navigate(`/search?q=${searchQuery}`);
+                }}
+              />
             ))
           )}
         </div>
