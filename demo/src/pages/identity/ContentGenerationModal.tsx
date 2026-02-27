@@ -483,6 +483,11 @@ export default function ContentGenerationModal({
   const [flyerMemberId, setFlyerMemberId] = useState<string | null>(null);
   const [flyerActionStyle, setFlyerActionStyle] = useState<string>('dribbling');
   const [flyerPhotoLayout, setFlyerPhotoLayout] = useState<'single' | 'triple' | 'hero_duo'>('single');
+  const [flyerPhotoSlots, setFlyerPhotoSlots] = useState<Array<{ member_id: string | null; style_variant: string }>>([
+    { member_id: null, style_variant: 'dribbling' },
+    { member_id: null, style_variant: 'dribbling' },
+    { member_id: null, style_variant: 'dribbling' },
+  ]);
 
   // Goal celebration options
   const [goalScoreHome, setGoalScoreHome] = useState<number>(0);
@@ -1106,7 +1111,16 @@ export default function ContentGenerationModal({
         body: JSON.stringify({
           activity_id: matchData.id,
           variant: matchFlyerVariant,
-          ...(matchFlyerVariant === 'action' && flyerMemberId ? {
+          ...(matchFlyerVariant === 'action' && flyerPhotoLayout !== 'single' ? {
+            // Per-slot selection for triple / hero_duo
+            photo_slots: flyerPhotoSlots.filter(s => s.member_id).length > 0
+              ? flyerPhotoSlots.map(s => ({
+                  member_id: s.member_id,
+                  style_variant: s.style_variant,
+                }))
+              : undefined,
+          } : {}),
+          ...(matchFlyerVariant === 'action' && flyerPhotoLayout === 'single' && flyerMemberId ? {
             member_id: flyerMemberId,
             style_variant: flyerActionStyle,
           } : {}),
@@ -3167,6 +3181,7 @@ export default function ContentGenerationModal({
                       { key: 'celebrating', label: '🎉 Vieren' },
                       { key: 'heading', label: '🤕 Koppen' },
                       { key: 'sliding_tackle', label: '🦵 Sliding' },
+                      { key: 'karate_kick', label: '🥋 Karatetrap' },
                     ];
 
                     // Find members that have at least one action photo (dedup by user identity)
@@ -3215,92 +3230,226 @@ export default function ContentGenerationModal({
                         </div>
 
                         {/* Member selector */}
-                        <label style={{
-                          display: 'block',
-                          fontSize: 11,
-                          fontWeight: 600,
-                          marginBottom: 6,
-                          color: 'var(--vscode-descriptionForeground, #888)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                        }}>Speler</label>
-                        <select
-                          value={flyerMemberId || ''}
-                          onChange={(e) => {
-                            setFlyerMemberId(e.target.value || null);
-                            // Reset style when member changes
-                            setFlyerActionStyle('dribbling');
-                          }}
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            fontSize: 13,
-                            border: '1px solid var(--vscode-widget-border, #444)',
-                            borderRadius: 6,
-                            background: 'var(--vscode-input-background, #2a2a3e)',
-                            color: 'var(--vscode-foreground, #ccc)',
-                            cursor: 'pointer',
-                            marginBottom: 12,
-                          }}
-                        >
-                          <option value="">-- Automatisch (eerste beschikbare) --</option>
-                          {membersWithActionPhotos.map((member) => {
-                            const user = member.user || member.member;
-                            const name = user ? (
-                              ('name' in user && user.name) ||
-                              ('user_name' in user && user.user_name) ||
-                              `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                            ) : 'Unknown';
-                            const shirtNr = (member.metadata as any)?.shirt_number;
-                            return (
-                              <option key={member.id} value={member.id}>
-                                {shirtNr ? `#${shirtNr} ` : ''}{name} ⚡
-                              </option>
-                            );
-                          })}
-                          {membersWithActionPhotos.length === 0 && (
-                            <option disabled>Geen spelers met actiefoto's</option>
-                          )}
-                        </select>
+                        {flyerPhotoLayout === 'single' ? (
+                          <>
+                            <label style={{
+                              display: 'block',
+                              fontSize: 11,
+                              fontWeight: 600,
+                              marginBottom: 6,
+                              color: 'var(--vscode-descriptionForeground, #888)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}>Speler</label>
+                            <select
+                              value={flyerMemberId || ''}
+                              onChange={(e) => {
+                                setFlyerMemberId(e.target.value || null);
+                                setFlyerActionStyle('dribbling');
+                              }}
+                              style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                fontSize: 13,
+                                border: '1px solid var(--vscode-widget-border, #444)',
+                                borderRadius: 6,
+                                background: 'var(--vscode-input-background, #2a2a3e)',
+                                color: 'var(--vscode-foreground, #ccc)',
+                                cursor: 'pointer',
+                                marginBottom: 12,
+                              }}
+                            >
+                              <option value="">-- Automatisch (eerste beschikbare) --</option>
+                              {membersWithActionPhotos.map((member) => {
+                                const user = member.user || member.member;
+                                const name = user ? (
+                                  ('name' in user && user.name) ||
+                                  ('user_name' in user && user.user_name) ||
+                                  `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                                ) : 'Unknown';
+                                const shirtNr = (member.metadata as any)?.shirt_number;
+                                return (
+                                  <option key={member.id} value={member.id}>
+                                    {shirtNr ? `#${shirtNr} ` : ''}{name} ⚡
+                                  </option>
+                                );
+                              })}
+                              {membersWithActionPhotos.length === 0 && (
+                                <option disabled>Geen spelers met actiefoto's</option>
+                              )}
+                            </select>
 
-                        {/* Style selector */}
-                        <label style={{
-                          display: 'block',
-                          fontSize: 11,
-                          fontWeight: 600,
-                          marginBottom: 6,
-                          color: 'var(--vscode-descriptionForeground, #888)',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                        }}>Stijl</label>
-                        <select
-                          value={flyerActionStyle}
-                          onChange={(e) => setFlyerActionStyle(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '8px 10px',
-                            fontSize: 13,
-                            border: '1px solid var(--vscode-widget-border, #444)',
-                            borderRadius: 6,
-                            background: 'var(--vscode-input-background, #2a2a3e)',
-                            color: 'var(--vscode-foreground, #ccc)',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {actionStyleOptions.map((opt) => {
-                            const available = !flyerMemberId || selectedMemberStyles.includes(opt.key);
-                            return (
-                              <option key={opt.key} value={opt.key} disabled={!available}>
-                                {opt.label}{!available ? ' (niet beschikbaar)' : ''}
-                              </option>
-                            );
-                          })}
-                        </select>
+                            <label style={{
+                              display: 'block',
+                              fontSize: 11,
+                              fontWeight: 600,
+                              marginBottom: 6,
+                              color: 'var(--vscode-descriptionForeground, #888)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.05em',
+                            }}>Stijl</label>
+                            <select
+                              value={flyerActionStyle}
+                              onChange={(e) => setFlyerActionStyle(e.target.value)}
+                              style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                fontSize: 13,
+                                border: '1px solid var(--vscode-widget-border, #444)',
+                                borderRadius: 6,
+                                background: 'var(--vscode-input-background, #2a2a3e)',
+                                color: 'var(--vscode-foreground, #ccc)',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {actionStyleOptions.map((opt) => {
+                                const available = !flyerMemberId || selectedMemberStyles.includes(opt.key);
+                                return (
+                                  <option key={opt.key} value={opt.key} disabled={!available}>
+                                    {opt.label}{!available ? ' (niet beschikbaar)' : ''}
+                                  </option>
+                                );
+                              })}
+                            </select>
 
-                        {flyerMemberId && selectedMemberStyles.length === 0 && (
-                          <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 8 }}>
-                            ⚠️ Deze speler heeft nog geen bewerkte actiefoto's
-                          </div>
+                            {flyerMemberId && selectedMemberStyles.length === 0 && (
+                              <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 8 }}>
+                                ⚠️ Deze speler heeft nog geen bewerkte actiefoto's
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          /* Per-slot selectors for triple / hero_duo layouts */
+                          <>
+                            {(() => {
+                              const slotCount = flyerPhotoLayout === 'triple' ? 3 : 3; // hero_duo: 1 big + 2 small = 3
+                              const slotLabels = flyerPhotoLayout === 'triple'
+                                ? ['① Links', '② Midden', '③ Rechts']
+                                : ['① Groot (links)', '② Klein (rechtsboven)', '③ Klein (rechtsonder)'];
+
+                              return Array.from({ length: slotCount }).map((_, slotIdx) => {
+                                const slot = flyerPhotoSlots[slotIdx] || { member_id: null, style_variant: 'dribbling' };
+
+                                // Get styles available for this slot's selected member
+                                const slotMemberStyles: string[] = (() => {
+                                  if (!slot.member_id) return [];
+                                  const member = allMembers.find(m => m.id === slot.member_id);
+                                  if (!member) return [];
+                                  const tr = (member.metadata as any)?.teamreel_assets || {};
+                                  const actionImgs = tr?.images?.action_photo || {};
+                                  const styles = new Set<string>();
+                                  for (const key of Object.keys(actionImgs)) {
+                                    const parts = key.split('_');
+                                    if (parts.length >= 2) styles.add(parts.slice(1).join('_'));
+                                  }
+                                  return Array.from(styles);
+                                })();
+
+                                return (
+                                  <div key={slotIdx} style={{
+                                    padding: 10,
+                                    marginBottom: slotIdx < slotCount - 1 ? 8 : 0,
+                                    border: '1px solid var(--vscode-widget-border, #444)',
+                                    borderRadius: 8,
+                                    background: 'var(--vscode-editor-background, #1e1e2e)',
+                                  }}>
+                                    <div style={{
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      marginBottom: 8,
+                                      color: 'var(--vscode-foreground, #ccc)',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 6,
+                                    }}>
+                                      <span style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        width: 22,
+                                        height: 22,
+                                        borderRadius: '50%',
+                                        background: 'var(--vscode-focusBorder, #007fd4)',
+                                        color: '#fff',
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        flexShrink: 0,
+                                      }}>{slotIdx + 1}</span>
+                                      {slotLabels[slotIdx]}
+                                    </div>
+
+                                    <select
+                                      value={slot.member_id || ''}
+                                      onChange={(e) => {
+                                        const newSlots = [...flyerPhotoSlots];
+                                        newSlots[slotIdx] = {
+                                          ...newSlots[slotIdx],
+                                          member_id: e.target.value || null,
+                                          style_variant: 'dribbling',
+                                        };
+                                        setFlyerPhotoSlots(newSlots);
+                                      }}
+                                      style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        fontSize: 12,
+                                        border: '1px solid var(--vscode-widget-border, #444)',
+                                        borderRadius: 5,
+                                        background: 'var(--vscode-input-background, #2a2a3e)',
+                                        color: 'var(--vscode-foreground, #ccc)',
+                                        cursor: 'pointer',
+                                        marginBottom: 6,
+                                      }}
+                                    >
+                                      <option value="">-- Automatisch --</option>
+                                      {membersWithActionPhotos.map((member) => {
+                                        const user = member.user || member.member;
+                                        const name = user ? (
+                                          ('name' in user && user.name) ||
+                                          ('user_name' in user && user.user_name) ||
+                                          `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                                        ) : 'Unknown';
+                                        const shirtNr = (member.metadata as any)?.shirt_number;
+                                        return (
+                                          <option key={member.id} value={member.id}>
+                                            {shirtNr ? `#${shirtNr} ` : ''}{name}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
+
+                                    <select
+                                      value={slot.style_variant}
+                                      onChange={(e) => {
+                                        const newSlots = [...flyerPhotoSlots];
+                                        newSlots[slotIdx] = { ...newSlots[slotIdx], style_variant: e.target.value };
+                                        setFlyerPhotoSlots(newSlots);
+                                      }}
+                                      style={{
+                                        width: '100%',
+                                        padding: '6px 8px',
+                                        fontSize: 12,
+                                        border: '1px solid var(--vscode-widget-border, #444)',
+                                        borderRadius: 5,
+                                        background: 'var(--vscode-input-background, #2a2a3e)',
+                                        color: 'var(--vscode-foreground, #ccc)',
+                                        cursor: 'pointer',
+                                      }}
+                                    >
+                                      {actionStyleOptions.map((opt) => {
+                                        const available = !slot.member_id || slotMemberStyles.includes(opt.key);
+                                        return (
+                                          <option key={opt.key} value={opt.key} disabled={!available}>
+                                            {opt.label}{!available ? ' ✗' : ''}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </>
                         )}
 
                         {/* Photo layout selector */}

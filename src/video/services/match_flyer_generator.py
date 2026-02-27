@@ -250,22 +250,22 @@ def _render_header_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image
 
 
 def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image:
-    """Draw sponsor logo at the bottom of the flyer."""
+    """Draw sponsor logo at bottom-left corner of the flyer."""
     sponsor_img = _download_image(data.sponsor_url)
     if sponsor_img:
         sponsor_img = _clean_logo(sponsor_img)
-        sponsor_img.thumbnail((320, 100), Image.Resampling.LANCZOS)
-        cx = WIDTH // 2
-        # Semi-transparent pill background
-        pill_w = sponsor_img.width + 30
-        pill_h = sponsor_img.height + 16
-        pill_x = cx - pill_w // 2
-        pill_y = HEIGHT - 100 - pill_h // 2
+        sponsor_img.thumbnail((220, 70), Image.Resampling.LANCZOS)
+        # Semi-transparent pill background — bottom left
+        pill_w = sponsor_img.width + 24
+        pill_h = sponsor_img.height + 14
+        margin = 20
+        pill_x = margin
+        pill_y = HEIGHT - 90 - pill_h // 2
         pill = Image.new("RGBA", (pill_w, pill_h), (255, 255, 255, 180))
         canvas_rgba = canvas.convert("RGBA")
         canvas_rgba.paste(pill, (pill_x, pill_y), pill)
         canvas = canvas_rgba.convert("RGB")
-        sx = cx - sponsor_img.width // 2
+        sx = pill_x + (pill_w - sponsor_img.width) // 2
         sy = pill_y + (pill_h - sponsor_img.height) // 2
         canvas.paste(
             sponsor_img.convert("RGBA"),
@@ -1046,6 +1046,7 @@ def build_match_flyer(
     style_variant: str | None = None,
     background_url: str | None = None,
     photo_layout: str = "single",
+    photo_slots: list[dict] | None = None,
 ) -> str:
     """High-level entry point: gather data from DB, resolve brand, generate.
 
@@ -1056,6 +1057,7 @@ def build_match_flyer(
         style_variant: Optional style (dribbling, ball_at_feet, etc.)
         background_url: Optional background image URL
         photo_layout: Photo layout for action variant (single / triple / hero_duo)
+        photo_slots: Optional list of per-slot dicts [{member_id, style_variant}, ...]
 
     Returns:
         Presigned URL to the generated PNG.
@@ -1229,26 +1231,64 @@ def build_match_flyer(
     if variant in ("action", "bold"):  # bold maps to action
         ProjectMembership = apps.get_model("projects", "ProjectMembership")
 
-        if member_id:
-            # Specific member requested — look up their action photo(s)
+        def _resolve_member_photo(mid: str, style: str | None = None) -> str | None:
+            """Look up a single processed action photo for a membership."""
+            try:
+                membership = ProjectMembership.objects.get(id=mid)
+            except ProjectMembership.DoesNotExist:
+                logger.warning("build_match_flyer: member_id %s not found", mid)
+                return None
+            tr = (membership.metadata or {}).get("teamreel_assets", {})
+            action_imgs = tr.get("images", {}).get("action_photo", {})
+            # First pass: filter by style if given
+            for _key, val in action_imgs.items():
+                if style and style not in _key:
+                    continue
+                url = None
+                if isinstance(val, dict):
+                    url = val.get("processed")  # processed only
+                if url:
+                    if not url.startswith("http"):
+                        url = _get_presigned_url(url)
+                    if url:
+                        return url
+            # Second pass: any processed photo (fallback when style not found)
+            if style:
+                for _key, val in action_imgs.items():
+                    url = None
+                    if isinstance(val, dict):
+                        url = val.get("processed")
+                    if url:
+                        if not url.startswith("http"):
+                            url = _get_presigned_url(url)
+                        if url:
+                            return url
+            return None
+
+        if photo_slots:
+            # Per-slot selection: each slot has {member_id, style_variant}
+            for slot in photo_slots:
+                slot_mid = slot.get("member_id")
+                slot_style = slot.get("style_variant")
+                if slot_mid:
+                    url = _resolve_member_photo(slot_mid, slot_style)
+                    if url:
+                        action_photo_urls.append(url)
+
+        elif member_id:
+            # Single member selection — gather up to N photos
+            need = 3 if photo_layout in ("triple", "hero_duo") else 1
             try:
                 membership = ProjectMembership.objects.get(id=member_id)
                 tr = (membership.metadata or {}).get("teamreel_assets", {})
                 action_imgs = tr.get("images", {}).get("action_photo", {})
 
-                # Determine how many photos we need for the layout
-                need = 3 if photo_layout in ("triple", "hero_duo") else 1
-
-                # Find matching photo(s): try {kit}_{style} keys (e.g. home_dribbling)
                 for _key, val in action_imgs.items():
-                    # If style_variant given, filter to keys containing that style
                     if style_variant and style_variant not in _key:
                         continue
                     url = None
                     if isinstance(val, dict):
-                        url = val.get("processed") or val.get("raw")
-                    elif isinstance(val, str):
-                        url = val
+                        url = val.get("processed")  # processed only
                     if url:
                         if not url.startswith("http"):
                             url = _get_presigned_url(url)
@@ -1261,12 +1301,10 @@ def build_match_flyer(
                 if len(action_photo_urls) < need and style_variant:
                     for _key, val in action_imgs.items():
                         if style_variant in _key:
-                            continue  # already collected
+                            continue
                         url = None
                         if isinstance(val, dict):
-                            url = val.get("processed") or val.get("raw")
-                        elif isinstance(val, str):
-                            url = val
+                            url = val.get("processed")
                         if url:
                             if not url.startswith("http"):
                                 url = _get_presigned_url(url)
@@ -1277,17 +1315,15 @@ def build_match_flyer(
             except ProjectMembership.DoesNotExist:
                 logger.warning("build_match_flyer: member_id %s not found", member_id)
         else:
-            # Auto-scan: pick first available action photos from team members
+            # Auto-scan: pick first available processed action photos from team members
             memberships = ProjectMembership.objects.filter(project=project)
-            for m in memberships[:6]:  # Limit to 6 members to avoid overloading
+            for m in memberships[:6]:
                 tr = (m.metadata or {}).get("teamreel_assets", {})
                 action_imgs = tr.get("images", {}).get("action_photo", {})
                 for _key, val in action_imgs.items():
                     url = None
                     if isinstance(val, dict):
-                        url = val.get("processed") or val.get("raw")
-                    elif isinstance(val, str):
-                        url = val
+                        url = val.get("processed")  # processed only
                     if url:
                         if not url.startswith("http"):
                             url = _get_presigned_url(url)

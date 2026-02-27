@@ -1528,6 +1528,9 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         style_variant = request.data.get("style_variant")  # Optional: action photo style
         background_url = request.data.get("background_url")  # Optional: background image URL
         photo_layout = request.data.get("photo_layout", "single")  # single / triple / hero_duo
+        photo_slots = request.data.get(
+            "photo_slots"
+        )  # Optional: per-slot [{member_id, style_variant}]
 
         # Validate activity exists and user has access
         Activity = apps.get_model("activities", "Activity")
@@ -1552,6 +1555,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 style_variant=style_variant,
                 background_url=background_url,
                 photo_layout=photo_layout,
+                photo_slots=photo_slots,
             )
 
             return Response(
