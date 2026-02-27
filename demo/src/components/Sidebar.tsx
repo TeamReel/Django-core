@@ -1086,7 +1086,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             { label: competitionLabel, path: competitionPath, icon: Trophy, visibility: 'everyone' as const },
             { label: matchLabel, path: matchPath, icon: Timer, visibility: 'everyone' as const },
             { label: memberLabel, path: memberPath, icon: Users, visibility: 'everyone' as const },
-            ...(currentUserId ? [{ label: 'User', path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'everyone' as const }] : []),
+            ...(currentUserId ? [{ label: 'User', path: `/users/${encodeURIComponent(currentUserId)}`, icon: Users, visibility: 'superadmin' as const }] : []),
         ];
     }, [location.pathname, orgSlug, clubName, teamName, resolvedAppContext, user]);
 
