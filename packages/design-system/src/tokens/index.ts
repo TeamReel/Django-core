@@ -7,3 +7,11 @@ export { zIndexVars } from './zIndex.css';
 export { motionVars } from './motion.css';
 export { breakpoints, type Breakpoint } from './breakpoints.css';
 export { themeVars, type ThemeVars } from './theme.css';
+export {
+  fluidFontSize,
+  fluidLineHeight,
+  fluidTextSpacing,
+  fluidText,
+  fluidHeading,
+  enableFluidTypography,
+} from './fluidTypography.css';

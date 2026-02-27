@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeamReel - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+      color: #F8FAFC;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .container {
+      text-align: center;
+      max-width: 400px;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+      opacity: 0.8;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    p {
+      font-size: 16px;
+      color: #94A3B8;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .retry-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #3B82F6;
+      color: white;
+      font-size: 16px;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      min-height: 44px;
+      min-width: 44px;
+    }
+    .retry-btn:hover {
+      background: #2563EB;
+    }
+    .retry-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M1 1l22 22M9 9H6a2 2 0 00-2 2v4a2 2 0 002 2h3M15 9h3a2 2 0 012 2v4a2 2 0 01-2 2h-3M3 5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"/>
+    </svg>
+    <h1>You're Offline</h1>
+    <p>It looks like you've lost your internet connection. Check your network and try again.</p>
+    <button class="retry-btn" onclick="window.location.reload()">
+      Try Again
+    </button>
+  </div>
+</body>
+</html>
