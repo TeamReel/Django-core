@@ -1,126 +1,138 @@
+import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import { useAuth } from '@django-core/auth-ui';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import RecentsPage from './pages/RecentsPage';
-import FavoritesPage from './pages/FavoritesPage';
-import SearchPage from './pages/SearchPage';
-import ForbiddenPage from './pages/errors/ForbiddenPage';
-import NotFoundPage from './pages/errors/NotFoundPage';
 import LoadingState from './components/LoadingState';
-import FilesPage from './pages/files';
-import MediaLibraryPage from './pages/medialib';
 import {
   ProtectedRoute,
   AdminOnlyRoute,
   OrgAdminRoute,
 } from './components/PermissionGuards';
 
-import { OrgClubsPage } from './pages/identity/org-context/OrgClubsPage';
-import { OrgTeamsPage } from './pages/identity/org-context/OrgTeamsPage';
-import { OrgSeasonsPage } from './pages/identity/org-context/OrgSeasonsPage';
-import { OrgCompetitionsPage } from './pages/identity/org-context/OrgCompetitionsPage';
-import { OrgMatchesPage } from './pages/identity/org-context/OrgMatchesPage';
-import { OrgUsersPage } from './pages/identity/org-context/OrgUsersPage';
+// =============================================================================
+// Critical pages (eager load for first-paint performance)
+// =============================================================================
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import ForbiddenPage from './pages/errors/ForbiddenPage';
+import NotFoundPage from './pages/errors/NotFoundPage';
+
+// =============================================================================
+// Lazy-loaded pages (code-split for better bundle size)
+// =============================================================================
+
+// Core navigation pages
+const RecentsPage = lazy(() => import('./pages/RecentsPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage'));
+const FilesPage = lazy(() => import('./pages/files'));
+const MediaLibraryPage = lazy(() => import('./pages/medialib'));
+
+// Org context pages
+const OrgClubsPage = lazy(() => import('./pages/identity/org-context/OrgClubsPage').then(m => ({ default: m.OrgClubsPage })));
+const OrgTeamsPage = lazy(() => import('./pages/identity/org-context/OrgTeamsPage').then(m => ({ default: m.OrgTeamsPage })));
+const OrgSeasonsPage = lazy(() => import('./pages/identity/org-context/OrgSeasonsPage').then(m => ({ default: m.OrgSeasonsPage })));
+const OrgCompetitionsPage = lazy(() => import('./pages/identity/org-context/OrgCompetitionsPage').then(m => ({ default: m.OrgCompetitionsPage })));
+const OrgMatchesPage = lazy(() => import('./pages/identity/org-context/OrgMatchesPage').then(m => ({ default: m.OrgMatchesPage })));
+const OrgUsersPage = lazy(() => import('./pages/identity/org-context/OrgUsersPage').then(m => ({ default: m.OrgUsersPage })));
 
 // Identity pages
-import {
-  OrganisationsPage,
-
-  OrganisationCreatePage,
-  OrganisationEditPage,
-  OrganisationDetailPage,
-  MemberDetailPage,
-  ProjectsPage,
-  ProjectCreatePage,
-  ProjectEditPage,
-  ClubDetailPage,
-  TeamDetailPage,
-  SeasonDetailPage,
-  PermissionsPage,
-  UsersPage,
-  UserDetailPage,
-  ProfilePage,
-  DirectoryPage,
-} from './pages/identity';
+const OrganisationsPage = lazy(() => import('./pages/identity').then(m => ({ default: m.OrganisationsPage })));
+const OrganisationCreatePage = lazy(() => import('./pages/identity').then(m => ({ default: m.OrganisationCreatePage })));
+const OrganisationEditPage = lazy(() => import('./pages/identity').then(m => ({ default: m.OrganisationEditPage })));
+const OrganisationDetailPage = lazy(() => import('./pages/identity').then(m => ({ default: m.OrganisationDetailPage })));
+const MemberDetailPage = lazy(() => import('./pages/identity').then(m => ({ default: m.MemberDetailPage })));
+const ProjectsPage = lazy(() => import('./pages/identity').then(m => ({ default: m.ProjectsPage })));
+const ProjectCreatePage = lazy(() => import('./pages/identity').then(m => ({ default: m.ProjectCreatePage })));
+const ProjectEditPage = lazy(() => import('./pages/identity').then(m => ({ default: m.ProjectEditPage })));
+const ClubDetailPage = lazy(() => import('./pages/identity').then(m => ({ default: m.ClubDetailPage })));
+const TeamDetailPage = lazy(() => import('./pages/identity').then(m => ({ default: m.TeamDetailPage })));
+const SeasonDetailPage = lazy(() => import('./pages/identity').then(m => ({ default: m.SeasonDetailPage })));
+const PermissionsPage = lazy(() => import('./pages/identity').then(m => ({ default: m.PermissionsPage })));
+const UsersPage = lazy(() => import('./pages/identity').then(m => ({ default: m.UsersPage })));
+const UserDetailPage = lazy(() => import('./pages/identity').then(m => ({ default: m.UserDetailPage })));
+const ProfilePage = lazy(() => import('./pages/identity').then(m => ({ default: m.ProfilePage })));
+const DirectoryPage = lazy(() => import('./pages/identity').then(m => ({ default: m.DirectoryPage })));
 
 // Config pages
-import {
-  AuditLogPage,
-  OrganisationAuditPage,
-  FeatureFlagsPage,
-  CreditsPage,
-  PreferencesPage,
-  MembershipsPage,
-  BillingPage,
-} from './pages/config';
-import UsageEventsPage from './pages/config/UsageEventsPage';
-import ContentTemplatesPage from './pages/config/ContentTemplatesPage';
-import WorkflowTemplatesPage from './pages/config/WorkflowTemplatesPage';
-import ApprovalsPage from './pages/ApprovalsPage';
+const AuditLogPage = lazy(() => import('./pages/config').then(m => ({ default: m.AuditLogPage })));
+const OrganisationAuditPage = lazy(() => import('./pages/config').then(m => ({ default: m.OrganisationAuditPage })));
+const FeatureFlagsPage = lazy(() => import('./pages/config').then(m => ({ default: m.FeatureFlagsPage })));
+const CreditsPage = lazy(() => import('./pages/config').then(m => ({ default: m.CreditsPage })));
+const PreferencesPage = lazy(() => import('./pages/config').then(m => ({ default: m.PreferencesPage })));
+const MembershipsPage = lazy(() => import('./pages/config').then(m => ({ default: m.MembershipsPage })));
+const BillingPage = lazy(() => import('./pages/config').then(m => ({ default: m.BillingPage })));
+const UsageEventsPage = lazy(() => import('./pages/config/UsageEventsPage'));
+const ContentTemplatesPage = lazy(() => import('./pages/config/ContentTemplatesPage'));
+const WorkflowTemplatesPage = lazy(() => import('./pages/config/WorkflowTemplatesPage'));
+const ApprovalsPage = lazy(() => import('./pages/ApprovalsPage'));
 
 // Section Landing Pages
-import AppsPage from './pages/AppsPage';
-import ContentPage from './pages/ContentPage';
-import ContentLibraryPage from './pages/content/ContentLibraryPage';
-import SettingsLandingPage from './pages/SettingsLandingPage';
+const AppsPage = lazy(() => import('./pages/AppsPage'));
+const ContentPage = lazy(() => import('./pages/ContentPage'));
+const ContentLibraryPage = lazy(() => import('./pages/content/ContentLibraryPage'));
+const SettingsLandingPage = lazy(() => import('./pages/SettingsLandingPage'));
 
 // Platform pages
-import {
-  HealthCheckPage,
-  ConstitutionPage,
-  SecurityPage,
-  ObservabilityPage,
-  ApiDocsPage,
-  CachePerformancePage,
-} from './pages/platform';
-
-import WebSocketTestPage from './pages/platform/WebSocketTestPage';
+const HealthCheckPage = lazy(() => import('./pages/platform').then(m => ({ default: m.HealthCheckPage })));
+const ConstitutionPage = lazy(() => import('./pages/platform').then(m => ({ default: m.ConstitutionPage })));
+const SecurityPage = lazy(() => import('./pages/platform').then(m => ({ default: m.SecurityPage })));
+const ObservabilityPage = lazy(() => import('./pages/platform').then(m => ({ default: m.ObservabilityPage })));
+const ApiDocsPage = lazy(() => import('./pages/platform').then(m => ({ default: m.ApiDocsPage })));
+const CachePerformancePage = lazy(() => import('./pages/platform').then(m => ({ default: m.CachePerformancePage })));
+const WebSocketTestPage = lazy(() => import('./pages/platform/WebSocketTestPage'));
 
 // Integration Status
-import IntegrationStatusPage from './pages/IntegrationStatusPage';
+const IntegrationStatusPage = lazy(() => import('./pages/IntegrationStatusPage'));
 
 // Frontend pages
-import {
-  DesignSystemPage,
-  AuthFlowsPage,
-  ContextSwitcherPage,
-  ResourceDisplayPage,
-  TemplatesPage,
-  ThemePage,
-  IntegrationPatternsPage,
-} from './pages/frontend';
+const DesignSystemPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.DesignSystemPage })));
+const AuthFlowsPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.AuthFlowsPage })));
+const ContextSwitcherPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.ContextSwitcherPage })));
+const ResourceDisplayPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.ResourceDisplayPage })));
+const TemplatesPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.TemplatesPage })));
+const ThemePage = lazy(() => import('./pages/frontend').then(m => ({ default: m.ThemePage })));
+const IntegrationPatternsPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.IntegrationPatternsPage })));
 
 // Docs pages
-import {
-  DocsPage,
-  TasksPage,
-  DeploymentPage,
-} from './pages/docs';
-import NotificationRoutingLogsPage from './pages/docs/NotificationRoutingLogsPage';
-import NotificationsPage from './pages/NotificationsPage';
-import RoutingRulesPage from './pages/config/RoutingRulesPage';
-import MatchDetailPage from './pages/activities/MatchDetailPage';
-import ProjectHierarchyMatchRedirectPage from './pages/activities/ProjectHierarchyMatchRedirectPage';
-import ProjectHierarchySeasonRedirectPage from './pages/activities/ProjectHierarchySeasonRedirectPage';
-import ProjectHierarchyCompetitionRedirectPage from './pages/activities/ProjectHierarchyCompetitionRedirectPage';
-import LegacyMatchRedirectPage from './pages/activities/LegacyMatchRedirectPage';
-import AIStudioPage from './pages/aistudio/AIStudioPage';
+const DocsPage = lazy(() => import('./pages/docs').then(m => ({ default: m.DocsPage })));
+const TasksPage = lazy(() => import('./pages/docs').then(m => ({ default: m.TasksPage })));
+const DeploymentPage = lazy(() => import('./pages/docs').then(m => ({ default: m.DeploymentPage })));
+const NotificationRoutingLogsPage = lazy(() => import('./pages/docs/NotificationRoutingLogsPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const RoutingRulesPage = lazy(() => import('./pages/config/RoutingRulesPage'));
+
+// Activity / Match pages (large, definitely lazy-load)
+const MatchDetailPage = lazy(() => import('./pages/activities/MatchDetailPage'));
+const ProjectHierarchyMatchRedirectPage = lazy(() => import('./pages/activities/ProjectHierarchyMatchRedirectPage'));
+const ProjectHierarchySeasonRedirectPage = lazy(() => import('./pages/activities/ProjectHierarchySeasonRedirectPage'));
+const ProjectHierarchyCompetitionRedirectPage = lazy(() => import('./pages/activities/ProjectHierarchyCompetitionRedirectPage'));
+const LegacyMatchRedirectPage = lazy(() => import('./pages/activities/LegacyMatchRedirectPage'));
+const AIStudioPage = lazy(() => import('./pages/aistudio/AIStudioPage'));
 
 // Period (Season/Competition) pages
-import ProjectSeasonsPage from './pages/periods/ProjectSeasonsPage';
-import ProjectCompetitionDetailPage from './pages/periods/ProjectCompetitionDetailPage';
+const ProjectSeasonsPage = lazy(() => import('./pages/periods/ProjectSeasonsPage'));
+const ProjectCompetitionDetailPage = lazy(() => import('./pages/periods/ProjectCompetitionDetailPage'));
 
 // Work hierarchy pages
-import ClubsPage from './pages/work/ClubsPage';
-import TeamsPage from './pages/work/TeamsPage';
-import SeasonsPage from './pages/work/SeasonsPage';
-import CompetitionsPage from './pages/work/CompetitionsPage';
-import FederationsPage from './pages/work/FederationsPage';
-import MatchesPage from './pages/work/MatchesPage';
+const ClubsPage = lazy(() => import('./pages/work/ClubsPage'));
+const TeamsPage = lazy(() => import('./pages/work/TeamsPage'));
+const SeasonsPage = lazy(() => import('./pages/work/SeasonsPage'));
+const CompetitionsPage = lazy(() => import('./pages/work/CompetitionsPage'));
+const FederationsPage = lazy(() => import('./pages/work/FederationsPage'));
+const MatchesPage = lazy(() => import('./pages/work/MatchesPage'));
 
+// =============================================================================
+// Suspense wrapper for lazy-loaded components
+// =============================================================================
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<LoadingState message="Loading page..." />}>
+      {children}
+    </Suspense>
+  );
+}
 
 export default function App() {
   const { user } = useAuth();
@@ -396,6 +408,7 @@ export default function App() {
   };
 
   return (
+    <Suspense fallback={<LoadingState message="Loading..." />}>
     <Routes>
       {/* Redirect root based on auth state */}
       <Route
@@ -1578,5 +1591,6 @@ export default function App() {
       <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
+    </Suspense>
   );
 }
