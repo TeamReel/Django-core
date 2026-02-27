@@ -9,6 +9,7 @@ import { fetchAllPages } from '../../../utils/fetchAllPages';
 import UserDetailModal from '../UserDetailModal';
 import UserEditModal from '../UserEditModal';
 import AddMemberModal from '../AddMemberModal';
+import { MemberBatchActionModal } from '../MemberBatchActionModal';
 import {
     compactTableStyle,
     compactThStyle,
@@ -140,13 +141,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
     // Batch selection
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [batchUpdating, setBatchUpdating] = useState(false);
-    const [batchConfirm, setBatchConfirm] = useState<{
-        action: 'role' | 'assign_team' | 'delete';
-        role?: string;
-        teamId?: string;
-        teamName?: string;
-    } | null>(null);
+    const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
 
     const userRole = String((user as any)?.role || '').toLowerCase();
     const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
@@ -687,160 +682,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
         setSelectedIds(new Set());
     }, [users]);
 
-    // ── Batch action execution ────────────────────────────────────────
+    // ── Batch helpers ──────────────────────────────────────────────────
     const getSelectedUsers = () => sortedUsers.filter((u: any) => selectedIds.has(String(u.id)));
-
-    const executeBatchRoleChange = async (newRole: string) => {
-        setBatchUpdating(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const selected = getSelectedUsers();
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const u of selected) {
-            try {
-                if (teamLocked && preselectedTeamId) {
-                    const pmId = u?.project_membership_id;
-                    if (!pmId) { errorCount++; continue; }
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
-                        {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            body: JSON.stringify({ role: newRole }),
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok) successCount++; else errorCount++;
-                } else {
-                    const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
-                    const relevantPm = memberships.find((m: any) => {
-                        const projectId = String(m?.project_id ?? m?.project?.id ?? '');
-                        if (selectedClubId) return projectId === String(selectedClubId);
-                        const parentId = m?.project?.parent_id ?? m?.project?.parent_project_id;
-                        return !parentId;
-                    });
-                    if (relevantPm?.id) {
-                        const projectId = String(relevantPm.project_id ?? relevantPm.project?.id ?? '');
-                        const res = await fetch(
-                            `${apiBaseUrl}/api/v1/projects/${projectId}/members/${relevantPm.id}/`,
-                            {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                                body: JSON.stringify({ role: newRole }),
-                                credentials: 'include',
-                            }
-                        );
-                        if (res.ok) successCount++; else errorCount++;
-                    } else {
-                        errorCount++;
-                    }
-                }
-            } catch {
-                errorCount++;
-            }
-        }
-
-        setBatchUpdating(false);
-        setBatchConfirm(null);
-        setSelectedIds(new Set());
-        if (errorCount > 0) {
-            alert(`${successCount} gewijzigd, ${errorCount} mislukt.`);
-        }
-        setRefreshKey(k => k + 1);
-    };
-
-    const executeBatchAssignTeam = async (targetTeamId: string) => {
-        setBatchUpdating(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const selected = getSelectedUsers();
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const u of selected) {
-            try {
-                const userId = u?.id;
-                if (!userId) { errorCount++; continue; }
-                const res = await fetch(
-                    `${apiBaseUrl}/api/v1/projects/${targetTeamId}/members/`,
-                    {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                        body: JSON.stringify({ user_id: Number(userId), role: 'viewer' }),
-                        credentials: 'include',
-                    }
-                );
-                if (res.ok || res.status === 201) successCount++;
-                else if (res.status === 400) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                }
-            } catch {
-                errorCount++;
-            }
-        }
-
-        setBatchUpdating(false);
-        setBatchConfirm(null);
-        setSelectedIds(new Set());
-        if (errorCount > 0) {
-            alert(`${successCount} toegewezen, ${errorCount} mislukt.`);
-        }
-        setRefreshKey(k => k + 1);
-    };
-
-    const executeBatchDelete = async () => {
-        setBatchUpdating(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const selected = getSelectedUsers();
-        const orgSlug = getSelectedOrgSlug();
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const u of selected) {
-            try {
-                if (teamLocked && preselectedTeamId) {
-                    const pmId = u?.project_membership_id;
-                    if (!pmId) { errorCount++; continue; }
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${pmId}/`,
-                        {
-                            method: 'DELETE',
-                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok || res.status === 204) successCount++; else errorCount++;
-                } else {
-                    const membershipId = u?.membership?.id;
-                    if (!membershipId || !orgSlug) { errorCount++; continue; }
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
-                        {
-                            method: 'DELETE',
-                            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok || res.status === 204) successCount++; else errorCount++;
-                }
-            } catch {
-                errorCount++;
-            }
-        }
-
-        setBatchUpdating(false);
-        setBatchConfirm(null);
-        setSelectedIds(new Set());
-        if (errorCount > 0) {
-            alert(`${successCount} verwijderd, ${errorCount} mislukt.`);
-        }
-        setRefreshKey(k => k + 1);
-    };
 
     const clubsById = useMemo(() => {
         const map = new Map<string, ProjectOption>();
@@ -1304,63 +1147,25 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 <Alert variant="info">No users found.</Alert>
             )}
 
-            {/* ── Batch Confirmation Modal ─────────────────────────── */}
-            {batchConfirm && (
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 9999,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    backgroundColor: 'rgba(0,0,0,0.5)',
-                }} onClick={() => !batchUpdating && setBatchConfirm(null)}>
-                    <div style={{
-                        background: 'var(--app-surface, #1e1e2e)',
-                        border: '1px solid var(--app-border, #333)',
-                        borderRadius: 8, padding: 24, minWidth: 360, maxWidth: 480,
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                    }} onClick={e => e.stopPropagation()}>
-                        <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 600 }}>
-                            {batchConfirm.action === 'role' && 'Rol wijzigen'}
-                            {batchConfirm.action === 'assign_team' && 'Toewijzen aan team'}
-                            {batchConfirm.action === 'delete' && 'Members verwijderen'}
-                        </h3>
-                        <p style={{ margin: '0 0 16px', fontSize: 14, color: 'var(--app-muted-text, #aaa)' }}>
-                            {batchConfirm.action === 'role' && (
-                                <>Weet je zeker dat je de rol van <strong>{selectedIds.size}</strong> member(s) wilt wijzigen naar <strong>{batchConfirm.role === 'admin' ? (teamLocked ? 'Team Admin' : 'Club Admin') : (teamLocked ? 'Team Member' : 'Supporter')}</strong>?</>
-                            )}
-                            {batchConfirm.action === 'assign_team' && (
-                                <>Weet je zeker dat je <strong>{selectedIds.size}</strong> member(s) wilt toewijzen aan <strong>{batchConfirm.teamName || 'team'}</strong>?</>
-                            )}
-                            {batchConfirm.action === 'delete' && (
-                                <>Weet je zeker dat je <strong>{selectedIds.size}</strong> member(s) wilt verwijderen? Dit kan niet ongedaan gemaakt worden.</>
-                            )}
-                        </p>
-                        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                            <Button variant="secondary" size="sm" disabled={batchUpdating} onClick={() => setBatchConfirm(null)}>
-                                Annuleren
-                            </Button>
-                            <Button
-                                variant={batchConfirm.action === 'delete' ? 'danger' as any : 'primary'}
-                                size="sm"
-                                disabled={batchUpdating}
-                                onClick={() => {
-                                    if (batchConfirm.action === 'role' && batchConfirm.role) {
-                                        executeBatchRoleChange(batchConfirm.role);
-                                    } else if (batchConfirm.action === 'assign_team' && batchConfirm.teamId) {
-                                        executeBatchAssignTeam(batchConfirm.teamId);
-                                    } else if (batchConfirm.action === 'delete') {
-                                        executeBatchDelete();
-                                    }
-                                }}
-                            >
-                                {batchUpdating ? 'Bezig...' : 'Bevestigen'}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* ── Batch Action Modal ──────────────────────────────── */}
+            <MemberBatchActionModal
+                isOpen={isBatchModalOpen}
+                onClose={() => setIsBatchModalOpen(false)}
+                members={getSelectedUsers()}
+                contextLevel={teamLocked ? 'team' : clubLocked ? 'club' : 'organisation'}
+                clubProjectId={preselectedClubId}
+                teamProjectId={preselectedTeamId}
+                orgSlug={organisations.find(o => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId)?.slug || selectedOrgId}
+                teams={teams}
+                onComplete={() => {
+                    setSelectedIds(new Set());
+                    setRefreshKey(k => k + 1);
+                }}
+            />
 
             {!isLoading && !error && users.length > 0 && (
                 <Card>
-                    {/* ── Batch action toolbar ─────────────────────────── */}
+                    {/* ── Batch action bar ─────────────────────────── */}
                     {someSelected && (
                         <div style={{
                             display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center',
@@ -1371,60 +1176,19 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--app-text, #fff)' }}>
                                 {selectedIds.size} geselecteerd
                             </span>
-
-                            {/* ── Rol wijzigen ── */}
-                            <Button variant="primary" size="sm" disabled={batchUpdating}
-                                onClick={() => setBatchConfirm({ action: 'role', role: 'admin' })}>
-                                {teamLocked ? '→ Team Admin' : '→ Club Admin'}
+                            <Button variant="primary" size="sm" onClick={() => setIsBatchModalOpen(true)}>
+                                ⚡ Batch Actie ({selectedIds.size})
                             </Button>
-                            <Button variant="secondary" size="sm" disabled={batchUpdating}
-                                onClick={() => setBatchConfirm({ action: 'role', role: 'viewer' })}>
-                                {teamLocked ? '→ Team Member' : '→ Supporter'}
-                            </Button>
-
-                            {/* ── Toewijzen aan team (only on club page) ── */}
-                            {clubLocked && !teamLocked && teams.length > 0 && (
-                                <select
-                                    disabled={batchUpdating}
-                                    defaultValue=""
-                                    onChange={(e) => {
-                                        const tid = e.target.value;
-                                        if (!tid) return;
-                                        const t = teams.find(t => String(t.id) === tid);
-                                        setBatchConfirm({ action: 'assign_team', teamId: tid, teamName: t?.name || tid });
-                                        e.target.value = '';
-                                    }}
-                                    style={{
-                                        padding: '4px 8px', fontSize: 13,
-                                        border: '1px solid var(--app-border)',
-                                        borderRadius: 4,
-                                        backgroundColor: 'var(--app-surface)',
-                                        color: 'var(--app-text)',
-                                    }}
-                                >
-                                    <option value="">Toewijzen aan team…</option>
-                                    {teams
-                                        .filter(t => {
-                                            if (selectedClubId) {
-                                                const parent = t.parent_id || (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
-                                                return String(parent) === String(selectedClubId);
-                                            }
-                                            return true;
-                                        })
-                                        .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-                                        .map(t => (
-                                            <option key={t.id} value={t.id}>{t.name}</option>
-                                        ))
-                                    }
-                                </select>
-                            )}
-
-                            {/* ── Verwijderen ── */}
-                            <Button variant="secondary" size="sm" disabled={batchUpdating}
-                                onClick={() => setBatchConfirm({ action: 'delete' })}
-                                style={{ marginLeft: 'auto', color: '#ef4444' }}>
-                                Verwijderen
-                            </Button>
+                            <button
+                                onClick={() => setSelectedIds(new Set())}
+                                style={{
+                                    marginLeft: 'auto', background: 'none', border: 'none',
+                                    color: 'var(--app-muted-text, #888)', cursor: 'pointer', fontSize: 13,
+                                    textDecoration: 'underline',
+                                }}
+                            >
+                                Deselecteren
+                            </button>
                         </div>
                     )}
 
