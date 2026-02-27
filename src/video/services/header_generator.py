@@ -305,8 +305,10 @@ def render_header_pil(  # noqa: PLR0913
     white = (255, 255, 255, 255)
     brand_primary = _hex_to_rgba(background_color) if background_color else (210, 18, 46, 255)
 
-    # Create opaque white base
-    img = Image.new("RGBA", (width, height), white)
+    # Create base with light tint of brand color for logo panels
+    brand_rgb = brand_primary[:3]
+    light_tint = tuple(min(255, c + int((255 - c) * 0.82)) for c in brand_rgb) + (255,)
+    img = Image.new("RGBA", (width, height), light_tint)
     draw = ImageDraw.Draw(img)
 
     # Panel boundaries: left 25%, center 50%, right 25%
@@ -314,9 +316,9 @@ def render_header_pil(  # noqa: PLR0913
     x_right_start = int(width * 0.75)
 
     # Draw 3 panels
-    draw.rectangle([(0, 0), (x_left_end, height)], fill=white)
+    draw.rectangle([(0, 0), (x_left_end, height)], fill=light_tint)
     draw.rectangle([(x_left_end, 0), (x_right_start, height)], fill=brand_primary)
-    draw.rectangle([(x_right_start, 0), (width, height)], fill=white)
+    draw.rectangle([(x_right_start, 0), (width, height)], fill=light_tint)
 
     # Fonts (scaled relative to header height)
     scale = height / 300.0

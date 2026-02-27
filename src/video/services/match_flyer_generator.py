@@ -254,7 +254,7 @@ def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image:
     sponsor_img = _download_image(data.sponsor_url)
     if sponsor_img:
         sponsor_img = _clean_logo(sponsor_img)
-        sponsor_img.thumbnail((200, 60), Image.Resampling.LANCZOS)
+        sponsor_img.thumbnail((440, 140), Image.Resampling.LANCZOS)
         # Paste directly — no pill background, just the logo with alpha
         margin = 24
         sx = margin
@@ -722,8 +722,8 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     left_cx = WIDTH // 4  # center of left half
     right_cx = WIDTH * 3 // 4  # center of right half
 
-    club_font = _get_font(38, bold=True)
-    sub_font = _get_font(18, bold=False)
+    club_font = _get_font(52, bold=True)
+    sub_font = _get_font(24, bold=False)
 
     row_top = info_top + 25
 
