@@ -895,23 +895,30 @@ header [role="alert"] {
    DETAIL PAGE RESPONSIVE LAYOUT
    ============================================================================= */
 
-/* Page header actions - stack on mobile */
+/* Page header actions - hidden on mobile */
 @media (max-width: 639px) {
-  /* Stack header actions vertically on mobile */
-  [class*="PageHeader"] > div > div:last-child,
+  /* Hide the action buttons row on mobile — they clutter the small header.
+     Key actions are accessible via the MobileTabBar or 3-dot menus instead. */
   .page-header-actions {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    width: 100% !important;
+    display: none !important;
   }
 
-  /* Make action buttons full-width on mobile */
-  [class*="PageHeader"] button,
-  .page-header-actions button,
-  .page-header-actions a {
-    width: 100% !important;
-    justify-content: center !important;
+  /* Also hide via legacy generic selector */
+  [class*="PageHeader"] > div > div:last-child:not(:first-child) {
+    display: none !important;
+  }
+
+  /* PageHeader: compact padding on mobile */
+  [class*="PageHeader"],
+  div[style*="padding: '24px'"][style*="borderBottom"] {
+    padding: 16px !important;
+  }
+
+  /* PageHeader title: smaller on mobile */
+  [class*="PageHeader"] h1,
+  div[style*="fontSize: '28px'"] {
+    font-size: 20px !important;
+    margin-bottom: 4px !important;
   }
 
   /* Sticky action bar at bottom on mobile for important actions */

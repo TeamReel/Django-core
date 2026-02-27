@@ -110,7 +110,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
             </p>
           )}
         </div>
-        {actions && <div>{actions}</div>}
+        {actions && <div className="page-header-actions">{actions}</div>}
       </div>
     </div>
   );

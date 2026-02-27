@@ -8,7 +8,7 @@
  * Only visible on mobile (<640px)
  */
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Sparkles, ClipboardCheck, Library, Menu, Shirt } from 'lucide-react';
+import { Home, Sparkles, Swords, Library, Menu, Shirt } from 'lucide-react';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 
@@ -25,7 +25,7 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
   const navigate = useNavigate();
   const location = useLocation();
   const { isSystemAdmin } = useUserRole();
-  const { orgSlug, clubSlugOrId, teamSlugOrId } = useAppSelection();
+  const { orgSlug, clubSlugOrId, teamSlugOrId, matchId } = useAppSelection();
 
   // Build team path from active context
   const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
@@ -34,11 +34,18 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
       ? `/${orgSlug}/${clubSlugOrId}`
       : '/dashboard';
 
+  // Build match path from active context
+  const matchPath = matchId
+    ? `/matches/${matchId}`
+    : teamPath !== '/dashboard'
+      ? teamPath  // fallback to team if no match
+      : '/dashboard';
+
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
     { id: 'team', icon: Shirt, label: 'Team', path: teamPath },
+    { id: 'match', icon: Swords, label: 'Match', path: matchPath },
     { id: 'gallery', icon: Sparkles, label: 'Gallery', path: '/studio' },
-    { id: 'queue', icon: ClipboardCheck, label: 'Queue', path: '/approvals' },
     { id: 'more', icon: Menu, label: 'More', action: onToggleMenu },
   ];
 
@@ -54,16 +61,16 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
     if (tab.id === 'team') {
       // Active for any vanity hierarchy route (org/club/team/season/etc)
       const segs = currentPath.split('/').filter(Boolean);
-      const reserved = new Set(['dashboard', 'directory', 'content', 'studio', 'permissions', 'settings', 'health', 'docs', 'search', 'login', 'logout', 'organisations', 'users', 'credits', 'profile', 'notifications', 'preferences', 'approvals', 'medialib', 'billing', 'memberships', 'audit', 'flags', 'recents', 'favorites', 'content-templates', 'workflow-templates']);
+      const reserved = new Set(['dashboard', 'directory', 'content', 'studio', 'permissions', 'settings', 'health', 'docs', 'search', 'login', 'logout', 'organisations', 'users', 'credits', 'profile', 'notifications', 'preferences', 'approvals', 'medialib', 'billing', 'memberships', 'audit', 'flags', 'recents', 'favorites', 'content-templates', 'workflow-templates', 'matches']);
       return segs.length > 0 && !reserved.has(segs[0]);
+    }
+
+    if (tab.id === 'match') {
+      return currentPath.startsWith('/matches/');
     }
 
     if (tabBasePath === '/studio') {
       return currentPath.startsWith('/studio');
-    }
-
-    if (tabBasePath === '/approvals') {
-      return currentPath.startsWith('/approvals');
     }
 
     return currentPath.startsWith(tabBasePath);
