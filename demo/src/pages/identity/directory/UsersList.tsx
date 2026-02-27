@@ -504,11 +504,12 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                         )
                     );
                 } else if (selectedClubId) {
+                    // Club page: only show users with a DIRECT club project membership.
+                    // Users who only have a team membership (child project) are not
+                    // club members and should only appear on the team page.
                     results = results.filter((u: any) =>
                         u.project_memberships?.some((m: any) =>
-                            // Match either a direct club membership, or a team whose parent is the selected club.
-                            String(m.project_id ?? m.project?.id ?? '') === String(selectedClubId) ||
-                            String(m.project?.parent_id ?? m.project?.parent_project_id ?? '') === String(selectedClubId)
+                            String(m.project_id ?? m.project?.id ?? '') === String(selectedClubId)
                         )
                     );
                 }
@@ -592,7 +593,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
             if (selectedTeamId) return projectId === String(selectedTeamId);
 
             if (selectedClubId) {
-                // Club page: only show the club-level role (1 role), not team roles under it
+                // Club page: only consider the direct club membership for role display
                 return projectId === String(selectedClubId);
             }
 
