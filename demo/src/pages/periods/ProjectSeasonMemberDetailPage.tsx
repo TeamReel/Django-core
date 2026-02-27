@@ -26,6 +26,7 @@ import { AssetGenerationModal, type SavedAssetInfo } from '../../components/Asse
 import { useBrandProfile, getAssetUrl, resolvePresignedUrls, KIT_ROLES } from '../../hooks/useBrandProfile';
 import { useGenerationJobs } from '../../hooks/useGenerationJobs';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useUserRole } from '../../components/PermissionGuards';
 import { WorkflowPanel } from '../../components/Workflows';
 
 type Project = {
@@ -853,6 +854,7 @@ export default function ProjectSeasonMemberDetailPage() {
   const location = useLocation();
   const params = useParams();
   const { user } = useAuth();
+  const { isPlayer } = useUserRole();
   const { context } = useContextSwitcher();
 
   const apiBaseUrl = getApiBaseUrl();
@@ -1670,6 +1672,37 @@ export default function ProjectSeasonMemberDetailPage() {
     }
   };
 
+  // Players can only view their own member profile
+  const isOwnProfile = membership && user && String((membership as any)?.user?.id ?? '') === String((user as any)?.id ?? '');
+  if (isPlayer && !loading && membership && !isOwnProfile) {
+    return (
+      <AppShell>
+        <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
+          <h2 style={{ margin: '0 0 8px', color: 'var(--app-text)' }}>Geen toegang</h2>
+          <p style={{ color: 'var(--app-text-secondary)', margin: '0 0 24px' }}>
+            Je kunt alleen je eigen profiel bekijken.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: '1px solid var(--app-border)',
+              backgroundColor: 'var(--app-surface-2)',
+              color: 'var(--app-text)',
+              cursor: 'pointer',
+              fontSize: '14px',
+            }}
+          >
+            Ga terug
+          </button>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <div className="has-mobile-action-bar">
@@ -1725,6 +1758,7 @@ export default function ProjectSeasonMemberDetailPage() {
                 </button>
               );
             })()}
+            {!isPlayer && (
             <Button
               variant="secondary"
               onClick={() => {
@@ -1734,6 +1768,7 @@ export default function ProjectSeasonMemberDetailPage() {
             >
               Back to squad
             </Button>
+            )}
             <Button
               variant={userCanEditProject ? 'primary' : 'secondary'}
               disabled={!userCanEditProject || saving || loading}

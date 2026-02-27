@@ -89,7 +89,7 @@ const NAV_CONFIG: NavSection[] = [
 ];
 
 export default function Sidebar({ isOpen, toggle }: SidebarProps) {
-  const { isSystemAdmin, isOrgAdmin, isLandAdmin } = useUserRole();
+  const { isSystemAdmin, isOrgAdmin, isLandAdmin, isPlayer } = useUserRole();
     const { user } = useAuth();
     const { context, organisations } = useContextSwitcher();
   const location = useLocation();
@@ -568,17 +568,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                 title = 'Team';
                 items = [
-                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    ...(!isPlayer ? [{ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard }] : []),
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
-                    { label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays },
-                    { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
+                    ...(!isPlayer ? [{ label: 'Seasons', path: makeTabUrl(baseUrl, 'seasons'), icon: CalendarDays }] : []),
+                    ...(!isPlayer ? [{ label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy }] : []),
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                    { label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users },
-                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
-                    { label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart },
-                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
-                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
+                    ...(!isPlayer ? [{ label: 'Members', path: makeTabUrl(baseUrl, 'members'), icon: Users }] : []),
+                    ...(!isPlayer ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
+                    ...(!isPlayer ? [{ label: 'Balance', path: makeTabUrl(baseUrl, 'balance'), icon: LineChart }] : []),
+                    ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
+                    ...(!isPlayer ? [{ label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder }] : []),
+                    ...(!isPlayer ? [{ label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors }] : []),
                 ];
                 break;
             }
@@ -618,17 +618,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                 title = 'Season';
                 items = [
-                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    ...(!isPlayer ? [{ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard }] : []),
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                    { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
-                    { label: 'Team', path: makeTabUrl(baseUrl, 'team'), icon: Shirt },
-                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
-                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
-                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
-                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
+                    ...(!isPlayer ? [{ label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users }] : []),
+                    ...(!isPlayer ? [{ label: 'Team', path: makeTabUrl(baseUrl, 'team'), icon: Shirt }] : []),
+                    ...(!isPlayer ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
+                    ...(!isPlayer ? [{ label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles }] : []),
+                    ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
+                    ...(!isPlayer ? [{ label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder }] : []),
+                    ...(!isPlayer ? [{ label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck }] : []),
                 ];
                 break;
             }
@@ -683,17 +683,17 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                 title = 'Season';
                 items = [
-                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    ...(!isPlayer ? [{ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard }] : []),
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                    { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
-                    { label: 'Team', path: makeTabUrl(baseUrl, 'team'), icon: Shirt },
-                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
-                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
-                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
-                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
+                    ...(!isPlayer ? [{ label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users }] : []),
+                    ...(!isPlayer ? [{ label: 'Team', path: makeTabUrl(baseUrl, 'team'), icon: Shirt }] : []),
+                    ...(!isPlayer ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
+                    ...(!isPlayer ? [{ label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles }] : []),
+                    ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
+                    ...(!isPlayer ? [{ label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder }] : []),
+                    ...(!isPlayer ? [{ label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck }] : []),
                 ];
                 break;
             }
@@ -714,9 +714,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 title = 'Match';
                                 items = [
                                         { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
-                                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
+                                    ...(!isPlayer ? [{ label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles }] : []),
                                     { label: 'Lineup', path: makeTabUrl(baseUrl, 'lineup'), icon: Users },
-                                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
+                                    ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
                                 ];
                                 break;
                         }
@@ -729,19 +729,19 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                 title = 'Season';
                 items = [
-                    { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+                    ...(!isPlayer ? [{ label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard }] : []),
                     { label: 'Hierarchy', path: makeTabUrl(baseUrl, 'hierarchy'), icon: Globe },
                     { label: 'Competitions', path: makeTabUrl(baseUrl, 'competitions'), icon: Trophy },
                     { label: 'Matches', path: makeTabUrl(baseUrl, 'matches'), icon: Timer },
-                    { label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users },
-                    { label: 'Team', path: makeTabUrl(baseUrl, 'team'), icon: Shirt },
-                    { label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star },
-                    { label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles },
-                    { label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll },
-                    { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
-                    { label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors },
-                    { label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck },
-                    { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette },
+                    ...(!isPlayer ? [{ label: 'Squad', path: makeTabUrl(baseUrl, 'squad'), icon: Users }] : []),
+                    ...(!isPlayer ? [{ label: 'Team', path: makeTabUrl(baseUrl, 'team'), icon: Shirt }] : []),
+                    ...(!isPlayer ? [{ label: 'Media', path: makeTabUrl(baseUrl, 'media'), icon: Star }] : []),
+                    ...(!isPlayer ? [{ label: 'Content', path: makeTabUrl(baseUrl, 'content'), icon: Sparkles }] : []),
+                    ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
+                    ...(!isPlayer ? [{ label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder }] : []),
+                    ...(!isPlayer ? [{ label: 'Kits', path: makeTabUrl(baseUrl, 'kits'), icon: Scissors }] : []),
+                    ...(!isPlayer ? [{ label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck }] : []),
+                    ...(!isPlayer ? [{ label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Palette }] : []),
                 ];
                 break;
             }

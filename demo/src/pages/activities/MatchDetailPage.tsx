@@ -19,6 +19,7 @@ import ContentGenerationModal, { CONTENT_TYPES, FORMATION_LAYOUTS, type ContentT
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useUserRole } from '../../components/PermissionGuards';
 
 type Organisation = {
   id: string;
@@ -142,6 +143,7 @@ export default function HierarchyMatchDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { isPlayer } = useUserRole();
 
   const { orgId, projectId, seasonId, competitionId, matchId, clubId } = useParams<{
     orgId: string;
@@ -753,7 +755,9 @@ export default function HierarchyMatchDetailPage() {
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'lineup', 'transactions']);
+    const allowed = isPlayer
+      ? new Set(['overview', 'lineup'])
+      : new Set(['overview', 'content', 'lineup', 'transactions']);
     if (allowed.has(raw)) return raw;
     const legacyMap: Record<string, string> = {
       hierarchy: 'details',
@@ -761,7 +765,7 @@ export default function HierarchyMatchDetailPage() {
       date: 'details',
     };
     return legacyMap[raw] || 'overview';
-  }, [location.search]);
+  }, [location.search, isPlayer]);
 
   const navigateToTab = (tabId: string) => {
     const pathname = location.pathname;
@@ -2049,6 +2053,7 @@ export default function HierarchyMatchDetailPage() {
               >
                 View
               </button>
+              {!isPlayer && (
               <button
                 type="button"
                 onClick={() => setIsMatchEditModalOpen(true)}
@@ -2065,6 +2070,8 @@ export default function HierarchyMatchDetailPage() {
               >
                 Edit
               </button>
+              )}
+              {!isPlayer && (
               <button
                 type="button"
                 onClick={handleDeleteMatch}
@@ -2081,6 +2088,8 @@ export default function HierarchyMatchDetailPage() {
               >
                 Delete
               </button>
+              )}
+              {!isPlayer && (
               <button
                 type="button"
                 onClick={() => openContentModal()}
@@ -2097,6 +2106,8 @@ export default function HierarchyMatchDetailPage() {
               >
                 Generate Content (AI)
               </button>
+              )}
+              {!isPlayer && (
               <button
                 type="button"
                 onClick={() => setIsCreateTxnModalOpen(true)}
@@ -2113,6 +2124,7 @@ export default function HierarchyMatchDetailPage() {
               >
                 Create transaction
               </button>
+              )}
             </div>
           }
         />
@@ -2426,9 +2438,9 @@ export default function HierarchyMatchDetailPage() {
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            { id: 'content', label: 'Content' },
+            ...(!isPlayer ? [{ id: 'content', label: 'Content' }] : []),
             { id: 'lineup', label: 'Lineup' },
-            { id: 'transactions', label: 'Transactions' },
+            ...(!isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
           ]}
           activeTab={activeTab}
         />

@@ -14,6 +14,7 @@ import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useUserRole } from '../../components/PermissionGuards';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import { AssetsTab } from '../../components/AssetsTab';
@@ -174,6 +175,7 @@ export default function TeamOrganisationDetailPage() {
   const { orgId, clubId, projectId } = useParams<{ orgId: string; clubId: string; projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isPlayer } = useUserRole();
 
   const apiBaseUrl = getApiBaseUrl();
 
@@ -221,23 +223,25 @@ export default function TeamOrganisationDetailPage() {
 
   const activeTabFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
-    const tab = String(params.get('tab') || 'overview').trim().toLowerCase();
+    const tab = String(params.get('tab') || (isPlayer ? 'hierarchy' : 'overview')).trim().toLowerCase();
     const normalized = tab === 'people' || tab === 'users' ? 'members' : tab;
-    const allowed = new Set([
-      'overview',
-      'hierarchy',
-      'seasons',
-      'competitions',
-      'matches',
-      'members',
-      'media',
-      'balance',
-      'transactions',
-      'assets',
-      'kits',
-    ]);
-    return allowed.has(normalized) ? normalized : 'overview';
-  }, [location.search]);
+    const allowed = isPlayer
+      ? new Set(['hierarchy', 'matches'])
+      : new Set([
+          'overview',
+          'hierarchy',
+          'seasons',
+          'competitions',
+          'matches',
+          'members',
+          'media',
+          'balance',
+          'transactions',
+          'assets',
+          'kits',
+        ]);
+    return allowed.has(normalized) ? normalized : (isPlayer ? 'hierarchy' : 'overview');
+  }, [location.search, isPlayer]);
 
   const makeTabHref = (tabId: string): string => {
     const params = new URLSearchParams(location.search);
@@ -799,6 +803,7 @@ export default function TeamOrganisationDetailPage() {
           ]}
           actions={
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              {!isPlayer && (
               <select
                 value={(team as any)?.team_type || 'regular'}
                 onChange={async (e) => {
@@ -834,6 +839,7 @@ export default function TeamOrganisationDetailPage() {
                 <option value="regular">Regulier</option>
                 <option value="legends">Legends</option>
               </select>
+              )}
               {(() => {
                 const isActive = !!team && String(activeContext?.team?.id ?? '') === String(team.id ?? '');
                 return (
@@ -873,9 +879,12 @@ export default function TeamOrganisationDetailPage() {
               <Button variant="secondary" size="sm" onClick={() => setIsProjectDetailModalOpen(true)}>
                 View
               </Button>
+              {!isPlayer && (
               <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>
                 Edit
               </Button>
+              )}
+              {!isPlayer && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -902,6 +911,7 @@ export default function TeamOrganisationDetailPage() {
               >
                 Delete
               </Button>
+              )}
             </div>
           }
         />
@@ -909,17 +919,17 @@ export default function TeamOrganisationDetailPage() {
         {/* Mobile Tab Bar */}
         <MobileTabBar
           tabs={[
-            { id: 'overview', label: 'Overview' },
+            ...(!isPlayer ? [{ id: 'overview', label: 'Overview' }] : []),
             { id: 'hierarchy', label: 'Hierarchy' },
-            { id: 'seasons', label: 'Seasons' },
-            { id: 'competitions', label: 'Competitions' },
+            ...(!isPlayer ? [{ id: 'seasons', label: 'Seasons' }] : []),
+            ...(!isPlayer ? [{ id: 'competitions', label: 'Competitions' }] : []),
             { id: 'matches', label: 'Matches' },
-            { id: 'members', label: 'Squad' },
-            { id: 'media', label: 'Media' },
-            { id: 'balance', label: 'Balance' },
-            { id: 'transactions', label: 'Transactions' },
-            { id: 'assets', label: 'Assets' },
-            { id: 'kits', label: 'Kits' },
+            ...(!isPlayer ? [{ id: 'members', label: 'Squad' }] : []),
+            ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
+            ...(!isPlayer ? [{ id: 'balance', label: 'Balance' }] : []),
+            ...(!isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!isPlayer ? [{ id: 'assets', label: 'Assets' }] : []),
+            ...(!isPlayer ? [{ id: 'kits', label: 'Kits' }] : []),
           ]}
           activeTab={activeTabFromUrl}
         />

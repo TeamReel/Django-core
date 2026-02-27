@@ -29,6 +29,7 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useUserRole } from '../../components/PermissionGuards';
 import { WorkflowPanel } from '../../components/Workflows';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
@@ -138,6 +139,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
   const { user } = useAuth();
   const { context } = useContextSwitcher();
+  const { isPlayer } = useUserRole();
 
   const apiBaseUrl = getApiBaseUrl();
 
@@ -465,10 +467,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'workflow']);
-    return allowed.has(raw) ? raw : 'overview';
-  }, [location.search]);
+    const raw = String(params.get('tab') || (isPlayer ? 'hierarchy' : 'overview')).trim().toLowerCase();
+    const allowed = isPlayer
+      ? new Set(['hierarchy', 'competitions', 'matches'])
+      : new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'workflow']);
+    return allowed.has(raw) ? raw : (isPlayer ? 'hierarchy' : 'overview');
+  }, [location.search, isPlayer]);
 
   const navigateToTab = (tabId: string) => {
     const seasonKeyOrId = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
@@ -1772,7 +1776,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         <PageHeader
           title={season ? season.name : 'Season'}
           subtitle={(season as any)?.period_type === 'legends' ? 'Legends Seizoen' : undefined}
-          actions={
+          actions={isPlayer ? (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <Button variant="secondary" size="sm" onClick={() => navigate(seasonsBasePath)}>
+                Back
+              </Button>
+            </div>
+          ) : (
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
               {/* Period type (regular / legends) */}
               <select
@@ -1908,7 +1918,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 </Button>
               )}
             </div>
-          }
+          )}
         />
 
         <CreateTransactionModal
@@ -1932,17 +1942,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         {/* Mobile Tab Bar */}
         <MobileTabBar
           tabs={[
-            { id: 'overview', label: 'Overview' },
+            ...(!isPlayer ? [{ id: 'overview', label: 'Overview' }] : []),
             { id: 'hierarchy', label: 'Hierarchy' },
             { id: 'competitions', label: 'Competitions' },
             { id: 'matches', label: 'Matches' },
-            { id: 'squad', label: 'Squad' },
-            { id: 'team', label: 'Team' },
-            { id: 'media', label: 'Media' },
-            { id: 'content', label: 'Content' },
-            { id: 'transactions', label: 'Transactions' },
-            { id: 'assets', label: 'Assets' },
-            { id: 'workflow', label: 'Workflow' },
+            ...(!isPlayer ? [{ id: 'squad', label: 'Squad' }] : []),
+            ...(!isPlayer ? [{ id: 'team', label: 'Team' }] : []),
+            ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
+            ...(!isPlayer ? [{ id: 'content', label: 'Content' }] : []),
+            ...(!isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!isPlayer ? [{ id: 'assets', label: 'Assets' }] : []),
+            ...(!isPlayer ? [{ id: 'workflow', label: 'Workflow' }] : []),
           ]}
           activeTab={activeTab}
         />
