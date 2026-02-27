@@ -3076,7 +3076,7 @@ export default function ContentGenerationModal({
                   <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {([
                       { key: 'modern' as const, label: 'Modern', desc: 'Geometrisch design met clubkleuren en vormen', icon: '🎨' },
-                      { key: 'action' as const, label: 'Actie', desc: 'Met actiefoto\'s van spelers', icon: '⚡' },
+                      { key: 'action' as const, label: 'Actie', desc: 'Samengestelde flyer met actiefoto & clubkleuren', icon: '⚡' },
                       { key: 'stadium' as const, label: 'Stadium AI', desc: 'AI-gegenereerde stadion achtergrond', icon: '✨' },
                     ]).map((opt) => {
                       const isSelected = matchFlyerVariant === opt.key;

@@ -399,247 +399,248 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
     return canvas
 
 
-def _render_action(data: MatchFlyerData) -> Image.Image:
-    """Variant 2: Action — incorporates player action photos.
+def _render_brand_shade_band(
+    canvas: Image.Image,
+    y_start: int,
+    band_height: int,
+    primary_rgb: tuple[int, int, int],
+    secondary_rgb: tuple[int, int, int],
+    *,
+    direction: str = "down",
+) -> Image.Image:
+    """Render a horizontal gradient band using shades of the brand colours.
 
-    Design principles:
-    - Header bar at top with BOTH logos
-    - Player action photos as hero images (up to 3 players)
-    - Brand color shapes/overlays
-    - Match details over the action imagery
-    - No logos repeated in body
+    Creates a smooth multi-stop gradient from primary-dark → primary → secondary-tint.
+    ``direction`` can be ``"down"`` (dark-to-light, used below header) or
+    ``"up"`` (light-to-dark, used above info panel).
+    """
+    band = Image.new("RGB", (WIDTH, band_height))
+    draw = ImageDraw.Draw(band)
+
+    dark = tuple(max(0, c - 80) for c in primary_rgb)
+    mid = primary_rgb
+    light = tuple(min(255, (p + s) // 2) for p, s in zip(primary_rgb, secondary_rgb))
+
+    stops = [dark, mid, light] if direction == "down" else [light, mid, dark]
+
+    for y in range(band_height):
+        t = y / max(band_height - 1, 1)
+        if t < 0.5:
+            u = t * 2
+            r = int(stops[0][0] + (stops[1][0] - stops[0][0]) * u)
+            g = int(stops[0][1] + (stops[1][1] - stops[0][1]) * u)
+            b = int(stops[0][2] + (stops[1][2] - stops[0][2]) * u)
+        else:
+            u = (t - 0.5) * 2
+            r = int(stops[1][0] + (stops[2][0] - stops[1][0]) * u)
+            g = int(stops[1][1] + (stops[2][1] - stops[1][1]) * u)
+            b = int(stops[1][2] + (stops[2][2] - stops[1][2]) * u)
+        draw.rectangle([(0, y), (WIDTH, y + 1)], fill=(r, g, b))
+
+    canvas.paste(band, (0, y_start))
+    return canvas
+
+
+def _render_action(data: MatchFlyerData) -> Image.Image:
+    """Variant 2: Action — composed flyer with hero action photo & brand shades.
+
+    Layout (top → bottom):
+    1. Header bar (300 px) — logos + «MATCH DAY»
+    2. Brand-shade gradient band (40 px) — smooth transition from header
+    3. Hero action photo — single photo, center-cropped, fills body zone
+    4. Brand-shade gradient band (40 px) — smooth transition into info panel
+    5. Info panel (~350 px) — team names VS, date, venue, brand colour bg
+    6. Sponsor bar (bottom)
+
+    Brand colour *shades* (dark/mid/light) are derived from design tokens and
+    used for the gradient bands, info panel background, and subtle edge accents.
     """
     primary_rgb = _hex_to_rgb(data.brand_primary)
     secondary_rgb = _hex_to_rgb(data.brand_secondary)
-    dark_primary = tuple(max(0, c - 50) for c in primary_rgb)
+    dark_primary = tuple(max(0, c - 70) for c in primary_rgb)
+    darker_primary = tuple(max(0, c - 120) for c in primary_rgb)
 
-    # -- Background --
-    canvas = Image.new("RGB", (WIDTH, HEIGHT), dark_primary)
+    BAND_H = 40  # height of each gradient band
+    INFO_H = 360  # height of the info panel
+    SPONSOR_H = 120  # reserved for sponsor bar at bottom
+    PHOTO_TOP = HEADER_HEIGHT + BAND_H
+    PHOTO_BOTTOM = HEIGHT - BAND_H - INFO_H - SPONSOR_H
+    photo_zone_h = PHOTO_BOTTOM - PHOTO_TOP
 
-    # -- Load action photos (up to 3) --
-    action_photos: list[Image.Image] = []
+    # -- Canvas with dark brand background --
+    canvas = Image.new("RGB", (WIDTH, HEIGHT), darker_primary)
+
+    # -- Load hero action photo --
+    hero_img: Image.Image | None = None
     if data.action_photo_urls:
-        for url in data.action_photo_urls[:3]:
-            img = _download_image(url)
-            if img:
-                action_photos.append(img.convert("RGBA"))
+        for url in data.action_photo_urls:
+            hero_img = _download_image(url)
+            if hero_img:
+                break
 
-    if action_photos:
-        # Compose action photos into the body
-        photo_count = len(action_photos)
-        # Zone: from below header to about 70% height
-        photo_top = HEADER_HEIGHT + 20
-        photo_bottom = int(HEIGHT * 0.68)
-        photo_height = photo_bottom - photo_top
+    if hero_img:
+        hero_img = hero_img.convert("RGBA")
+        # Scale to cover the photo zone (center-crop)
+        scale = max(WIDTH / hero_img.width, photo_zone_h / hero_img.height)
+        new_w = int(hero_img.width * scale)
+        new_h = int(hero_img.height * scale)
+        hero_img = hero_img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+        crop_x = (new_w - WIDTH) // 2
+        crop_y = (new_h - photo_zone_h) // 2
+        hero_img = hero_img.crop((crop_x, crop_y, crop_x + WIDTH, crop_y + photo_zone_h))
+        canvas.paste(hero_img.convert("RGB"), (0, PHOTO_TOP))
 
-        if photo_count == 1:
-            # Single photo centered, large
-            photo = action_photos[0]
-            # Scale to fill width
-            scale = max(WIDTH / photo.width, photo_height / photo.height)
-            new_w = int(photo.width * scale)
-            new_h = int(photo.height * scale)
-            photo = photo.resize((new_w, new_h), Image.Resampling.LANCZOS)
-            # Center crop
-            crop_x = (new_w - WIDTH) // 2
-            crop_y = (new_h - photo_height) // 2
-            photo = photo.crop((crop_x, crop_y, crop_x + WIDTH, crop_y + photo_height))
-            canvas.paste(photo.convert("RGB"), (0, photo_top))
-
-        elif photo_count == 2:
-            # Two photos side by side with small gap
-            gap = 8
-            col_w = (WIDTH - gap) // 2
-            for i, photo in enumerate(action_photos[:2]):
-                scale = max(col_w / photo.width, photo_height / photo.height)
-                new_w = int(photo.width * scale)
-                new_h = int(photo.height * scale)
-                photo = photo.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                crop_x = (new_w - col_w) // 2
-                crop_y = (new_h - photo_height) // 2
-                photo = photo.crop((crop_x, crop_y, crop_x + col_w, crop_y + photo_height))
-                x_pos = i * (col_w + gap)
-                canvas.paste(photo.convert("RGB"), (x_pos, photo_top))
-
-        else:
-            # Three photos: one large left, two stacked right
-            gap = 8
-            left_w = int(WIDTH * 0.55)
-            right_w = WIDTH - left_w - gap
-            half_h = (photo_height - gap) // 2
-
-            # Left photo (large)
-            photo = action_photos[0]
-            scale = max(left_w / photo.width, photo_height / photo.height)
-            new_w = int(photo.width * scale)
-            new_h = int(photo.height * scale)
-            photo = photo.resize((new_w, new_h), Image.Resampling.LANCZOS)
-            crop_x = (new_w - left_w) // 2
-            crop_y = (new_h - photo_height) // 2
-            photo = photo.crop((crop_x, crop_y, crop_x + left_w, crop_y + photo_height))
-            canvas.paste(photo.convert("RGB"), (0, photo_top))
-
-            # Right top
-            for j, idx in enumerate([1, 2]):
-                if idx < len(action_photos):
-                    photo = action_photos[idx]
-                    scale = max(right_w / photo.width, half_h / photo.height)
-                    new_w = int(photo.width * scale)
-                    new_h = int(photo.height * scale)
-                    photo = photo.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                    crop_x = (new_w - right_w) // 2
-                    crop_y = (new_h - half_h) // 2
-                    photo = photo.crop((crop_x, crop_y, crop_x + right_w, crop_y + half_h))
-                    y_pos = photo_top + j * (half_h + gap)
-                    canvas.paste(photo.convert("RGB"), (left_w + gap, y_pos))
-
-        # Brand color gradient overlay on photos (bottom fade for text readability)
-        gradient = Image.new("RGBA", (WIDTH, photo_height), (0, 0, 0, 0))
-        gradient_draw = ImageDraw.Draw(gradient)
-        for y in range(photo_height):
-            progress = y / photo_height
-            # Light overlay at top, heavy at bottom
-            alpha = int(20 + progress * 180)
-            gradient_draw.rectangle(
-                [(0, y), (WIDTH, y + 1)],
-                fill=(*dark_primary, alpha),
-            )
+        # Subtle side accents: thin vertical brand-color bars
+        accent_w = 6
+        accent_overlay = Image.new("RGBA", (WIDTH, photo_zone_h), (0, 0, 0, 0))
+        accent_draw = ImageDraw.Draw(accent_overlay)
+        accent_draw.rectangle([(0, 0), (accent_w, photo_zone_h)], fill=(*primary_rgb, 140))
+        accent_draw.rectangle(
+            [(WIDTH - accent_w, 0), (WIDTH, photo_zone_h)], fill=(*primary_rgb, 140)
+        )
         canvas_rgba = canvas.convert("RGBA")
-        canvas_rgba.paste(gradient, (0, photo_top), gradient)
+        canvas_rgba.paste(accent_overlay, (0, PHOTO_TOP), accent_overlay)
         canvas = canvas_rgba.convert("RGB")
-
     else:
-        # No action photos: fallback to field background or solid color
+        # Fallback: field background or solid with diagonal brand stripes
         bg_img = _download_image(data.field_background_url)
         if bg_img:
-            bg_img = bg_img.convert("RGB").resize((WIDTH, HEIGHT), Image.Resampling.LANCZOS)
-            color_overlay = Image.new("RGB", (WIDTH, HEIGHT), dark_primary)
-            canvas = Image.blend(bg_img, color_overlay, alpha=0.65)
-        # Add diagonal brand stripe for visual interest
-        draw = ImageDraw.Draw(canvas)
-        stripe_points = [
-            (0, int(HEIGHT * 0.35)),
-            (WIDTH, int(HEIGHT * 0.20)),
-            (WIDTH, int(HEIGHT * 0.45)),
-            (0, int(HEIGHT * 0.60)),
-        ]
-        stripe_overlay = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
-        stripe_draw = ImageDraw.Draw(stripe_overlay)
-        stripe_draw.polygon(stripe_points, fill=(*primary_rgb, 70))
-        canvas_rgba = canvas.convert("RGBA")
-        canvas_rgba = Image.alpha_composite(canvas_rgba, stripe_overlay)
-        canvas = canvas_rgba.convert("RGB")
+            bg_img = bg_img.convert("RGB").resize((WIDTH, photo_zone_h), Image.Resampling.LANCZOS)
+            color_overlay = Image.new("RGB", (WIDTH, photo_zone_h), dark_primary)
+            bg_img = Image.blend(bg_img, color_overlay, alpha=0.55)
+            canvas.paste(bg_img, (0, PHOTO_TOP))
+        else:
+            # Diagonal brand stripes as placeholder for missing photo
+            stripe_overlay = Image.new("RGBA", (WIDTH, photo_zone_h), (0, 0, 0, 0))
+            stripe_draw = ImageDraw.Draw(stripe_overlay)
+            stripe_h = photo_zone_h
+            stripe_draw.polygon(
+                [
+                    (0, int(stripe_h * 0.2)),
+                    (WIDTH, 0),
+                    (WIDTH, int(stripe_h * 0.4)),
+                    (0, int(stripe_h * 0.6)),
+                ],
+                fill=(*primary_rgb, 60),
+            )
+            stripe_draw.polygon(
+                [
+                    (0, int(stripe_h * 0.7)),
+                    (WIDTH, int(stripe_h * 0.5)),
+                    (WIDTH, int(stripe_h * 0.9)),
+                    (0, stripe_h),
+                ],
+                fill=(*primary_rgb, 40),
+            )
+            canvas_rgba = canvas.convert("RGBA")
+            canvas_rgba.paste(stripe_overlay, (0, PHOTO_TOP), stripe_overlay)
+            canvas = canvas_rgba.convert("RGB")
 
-    draw = ImageDraw.Draw(canvas)
+        # "No photo" hint
+        draw_tmp = ImageDraw.Draw(canvas)
+        hint_font = _get_font(28, bold=False)
+        _draw_centered(
+            draw_tmp,
+            "Geen actiefoto beschikbaar",
+            WIDTH // 2,
+            PHOTO_TOP + photo_zone_h // 2,
+            hint_font,
+            fill=(255, 255, 255, 120),
+        )
 
-    # -- Header bar with logos --
+    # -- Header bar (logos + MATCH DAY) --
     canvas = _render_header_bar(canvas, data)
+
+    # -- Brand shade bands --
+    canvas = _render_brand_shade_band(
+        canvas,
+        HEADER_HEIGHT,
+        BAND_H,
+        primary_rgb,
+        secondary_rgb,
+        direction="down",
+    )
+    canvas = _render_brand_shade_band(
+        canvas,
+        PHOTO_BOTTOM,
+        BAND_H,
+        primary_rgb,
+        secondary_rgb,
+        direction="up",
+    )
+
+    # -- Info panel (brand primary background) --
+    info_top = PHOTO_BOTTOM + BAND_H
+    info_panel = Image.new("RGB", (WIDTH, INFO_H), dark_primary)
+    info_draw = ImageDraw.Draw(info_panel)
+
+    # Accent line at very top of panel
+    info_draw.rectangle([(0, 0), (WIDTH, 5)], fill=(*primary_rgb, 255))
+
+    # Subtle gradient stripe on the left edge
+    for y in range(INFO_H):
+        t = y / max(INFO_H - 1, 1)
+        fade = int(80 * (1 - t))
+        shade = tuple(min(255, c + fade) for c in primary_rgb)
+        info_draw.rectangle([(0, y), (8, y + 1)], fill=shade)
+
+    canvas.paste(info_panel, (0, info_top))
     draw = ImageDraw.Draw(canvas)
 
     cx = WIDTH // 2
-
-    # -- Bottom section: match info over solid/semi-transparent block --
-    info_block_top = int(HEIGHT * 0.66)
-    info_block_height = HEIGHT - info_block_top - 120  # leave room for sponsor
-
-    # Solid block with brand color
-    block = Image.new("RGBA", (WIDTH, info_block_height), (*dark_primary, 230))
-    # Add accent line at top of block
-    block_draw = ImageDraw.Draw(block)
-    block_draw.rectangle([(0, 0), (WIDTH, 5)], fill=(*primary_rgb, 255))
-
-    canvas_rgba = canvas.convert("RGBA")
-    canvas_rgba.paste(block, (0, info_block_top), block)
-    canvas = canvas_rgba.convert("RGB")
-    draw = ImageDraw.Draw(canvas)
-
-    # Team names
     home_name = data.own_team_name if data.is_home else data.opponent_name
     away_name = data.opponent_name if data.is_home else data.own_team_name
 
-    y_cursor = info_block_top + 40
+    y_cursor = info_top + 35
 
-    team_font = _get_font(56, bold=True)
-    _draw_centered(
-        draw,
-        home_name.upper(),
-        cx,
-        y_cursor,
-        team_font,
-        fill=(255, 255, 255, 255),
-    )
+    # Home team
+    team_font = _get_font(54, bold=True)
+    _draw_centered(draw, home_name.upper(), cx, y_cursor, team_font, fill=(255, 255, 255))
     y_cursor += 60
 
-    # VS
-    vs_font = _get_font(36, bold=True)
-    _draw_centered(
-        draw,
-        "VS",
-        cx,
-        y_cursor,
-        vs_font,
-        fill=(*secondary_rgb, 255),
-    )
-    y_cursor += 50
+    # VS badge
+    vs_font = _get_font(34, bold=True)
+    vs_badge = Image.new("RGBA", (90, 48), (*primary_rgb, 220))
+    vs_badge_draw = ImageDraw.Draw(vs_badge)
+    # rounded-ish pill
+    vs_badge_draw.rectangle([(0, 0), (90, 48)], fill=(*primary_rgb, 220))
+    canvas_rgba = canvas.convert("RGBA")
+    canvas_rgba.paste(vs_badge, (cx - 45, y_cursor - 16), vs_badge)
+    canvas = canvas_rgba.convert("RGB")
+    draw = ImageDraw.Draw(canvas)
+    _draw_centered(draw, "VS", cx, y_cursor + 4, vs_font, fill=(*secondary_rgb,))
+    y_cursor += 55
 
-    _draw_centered(
-        draw,
-        away_name.upper(),
-        cx,
-        y_cursor,
-        team_font,
-        fill=(255, 255, 255, 255),
-    )
-    y_cursor += 80
+    # Away team
+    _draw_centered(draw, away_name.upper(), cx, y_cursor, team_font, fill=(255, 255, 255))
+    y_cursor += 70
 
     # Accent line
-    line_w = 120
+    line_w = 140
     draw.rectangle(
-        [(cx - line_w // 2, y_cursor), (cx + line_w // 2, y_cursor + 3)],
-        fill=(*primary_rgb, 255),
+        [(cx - line_w // 2, y_cursor), (cx + line_w // 2, y_cursor + 3)], fill=(*primary_rgb,)
     )
-    y_cursor += 30
+    y_cursor += 25
 
-    # Date/time
+    # Date / time
     if data.match_date:
         date_str = data.match_date
         if data.kickoff_time:
             date_str += f"  •  {data.kickoff_time}"
-        date_font = _get_font(40, bold=True)
-        _draw_centered(
-            draw,
-            date_str,
-            cx,
-            y_cursor,
-            date_font,
-            fill=(255, 255, 255, 255),
-        )
-        y_cursor += 55
+        date_font = _get_font(38, bold=True)
+        _draw_centered(draw, date_str, cx, y_cursor, date_font, fill=(255, 255, 255))
+        y_cursor += 50
 
     # Venue
     if data.venue:
-        venue_font = _get_font(26, bold=False)
-        _draw_centered(
-            draw,
-            f"📍 {data.venue}",
-            cx,
-            y_cursor,
-            venue_font,
-            fill=(200, 200, 200, 255),
-        )
-        y_cursor += 45
+        venue_font = _get_font(24, bold=False)
+        _draw_centered(draw, f"📍 {data.venue}", cx, y_cursor, venue_font, fill=(200, 200, 200))
+        y_cursor += 40
 
     # Competition
     if data.competition_name:
-        comp_font = _get_font(22, bold=False)
-        _draw_centered(
-            draw,
-            data.competition_name,
-            cx,
-            y_cursor,
-            comp_font,
-            fill=(180, 180, 180, 255),
-        )
+        comp_font = _get_font(20, bold=False)
+        _draw_centered(draw, data.competition_name, cx, y_cursor, comp_font, fill=(170, 170, 170))
 
     # -- Sponsor at bottom --
     canvas = _draw_sponsor_bar(canvas, data)
@@ -840,7 +841,7 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
 
 VARIANT_RENDERERS = {
     "modern": (_render_modern, "Modern — geometrische vormen met teamkleuren"),
-    "action": (_render_action, "Actie — met actiefoto's van spelers"),
+    "action": (_render_action, "Actie — samengestelde flyer met actiefoto & clubkleuren"),
     "stadium": (_render_stadium_ai, "Stadium — AI-gegenereerde stadion sfeer"),
 }
 
