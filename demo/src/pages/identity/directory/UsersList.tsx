@@ -322,7 +322,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 // When on a team page (teamLocked), fetch directly from the project members endpoint
                 // This gives us the correct project membership IDs for deletion
                 if (teamLocked && preselectedTeamId) {
-                    const teamMembersUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/`;
+                    const teamMembersUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/?page_size=500`;
                     const res = await fetch(teamMembersUrl, { credentials: 'include' });
 
                     if (!res.ok) throw new Error('Failed to fetch team members');
@@ -331,7 +331,8 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                     // API response: { status, data: { data: [...] }, meta } or { results: [...] }
                     const rawList = data?.data?.data || data?.data?.results || data?.results || (Array.isArray(data?.data) ? data.data : []);
 
-                    let results = (Array.isArray(rawList) ? rawList : []).map((item: any) => {
+                    // Normalise all membership entries
+                    const allEntries = (Array.isArray(rawList) ? rawList : []).map((item: any) => {
                         const nestedUser = item?.user;
                         const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
 
@@ -340,8 +341,10 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                             email: u?.email,
                             first_name: u?.first_name,
                             last_name: u?.last_name,
+                            avatar_url: u?.avatar_url ?? null,
                             is_active: u?.is_active ?? item?.is_active ?? true,
                             role: item?.role ?? 'viewer',
+                            functional_roles: item?.functional_roles ?? [],
                             // Store the project membership ID for deletion
                             project_membership_id: String(item?.id ?? ''),
                             membership: {
@@ -352,9 +355,46 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                             },
                             source: item?.source,
                             joined_at: item?.joined_at,
-                            project_memberships: [],
+                            // Include team membership so role display works
+                            project_memberships: [{
+                                id: item?.id,
+                                role: item?.role ?? 'viewer',
+                                project_id: preselectedTeamId,
+                                project: { id: preselectedTeamId, parent_id: preselectedClubId || 'parent' },
+                            }],
+                            // Keep period info for dedup preference
+                            _period: item?.period ?? null,
+                            _metadata: item?.metadata ?? {},
+                            _created_at: item?.created_at ?? '',
                         };
                     });
+
+                    // Deduplicate by user id — keep the entry with a period
+                    // (active season membership) over the one without; if both
+                    // have or both lack a period, prefer the one with richer
+                    // metadata / more recent created_at.
+                    const byUserId = new Map<string, any>();
+                    for (const entry of allEntries) {
+                        const key = entry.id;
+                        if (!key) continue;
+                        const existing = byUserId.get(key);
+                        if (!existing) {
+                            byUserId.set(key, entry);
+                            continue;
+                        }
+                        // Scoring: prefer entry with period, then richer metadata, then newer
+                        const score = (e: any) => {
+                            let s = 0;
+                            if (e._period) s += 100;
+                            if (e._metadata && Object.keys(e._metadata).length > 0) s += 10;
+                            if (e.functional_roles?.length > 0) s += 5;
+                            return s;
+                        };
+                        if (score(entry) > score(existing)) {
+                            byUserId.set(key, entry);
+                        }
+                    }
+                    let results = Array.from(byUserId.values());
 
                     // Client side filtering for status
                     if (statusFilter === 'active') {
