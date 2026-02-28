@@ -100,14 +100,20 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
       return currentPath === '/' || currentPath === '/dashboard' || currentPath === '/recents' || currentPath === '/favorites';
     }
 
+    if (tab.id === 'match') {
+      // /matches/:slug OR /:org/:club/:project/:season/:competition/:match (6 segments)
+      if (currentPath.startsWith('/matches/')) return true;
+      const segs = currentPath.split('/').filter(Boolean);
+      if (segs.length >= 6) return true;
+      return false;
+    }
+
     if (tab.id === 'team') {
       const segs = currentPath.split('/').filter(Boolean);
       const reserved = new Set(['dashboard', 'directory', 'content', 'studio', 'permissions', 'settings', 'health', 'docs', 'search', 'login', 'logout', 'organisations', 'users', 'credits', 'profile', 'notifications', 'preferences', 'approvals', 'medialib', 'billing', 'memberships', 'audit', 'flags', 'recents', 'favorites', 'content-templates', 'workflow-templates', 'matches']);
+      // Exclude deep match paths (6+ segments = org/club/project/season/comp/match)
+      if (segs.length >= 6) return false;
       return segs.length > 0 && !reserved.has(segs[0]);
-    }
-
-    if (tab.id === 'match') {
-      return currentPath.startsWith('/matches/');
     }
 
     if (tab.id === 'content') {
