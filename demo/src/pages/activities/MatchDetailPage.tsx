@@ -1350,9 +1350,18 @@ export default function HierarchyMatchDetailPage() {
   const date = match.start_time ? new Date(match.start_time) : null;
   const status = String(match.metadata?.status || 'scheduled');
 
-  // Use club name (parent project) instead of team name (child project)
-  const homeTeamName = club?.name || match.project?.name || 'Home';
-  const awayTeamName = opponentClub?.name || match.opponent_project?.name || 'Opponent';
+  // Determine if this is a home or away game
+  const isHome = match.metadata?.teamreel?.match_context?.is_home
+    ?? match.metadata?.is_home
+    ?? (match.metadata?.teamreel?.match_context?.venue || match.metadata?.venue || 'Home') === 'Home';
+
+  // Use club name (parent project) for own team, opponent club for opponent
+  const ownTeamName = club?.name || match.project?.name || 'Eigen team';
+  const opponentName = opponentClub?.name || match.opponent_project?.name || 'Tegenstander';
+
+  // When playing away: opponent is home, own team is away
+  const homeTeamName = isHome ? ownTeamName : opponentName;
+  const awayTeamName = isHome ? opponentName : ownTeamName;
   const scoreDisplay = status === 'finished'
     ? `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`
     : 'vs';
@@ -2060,6 +2069,7 @@ export default function HierarchyMatchDetailPage() {
               project={project}
               opponentClub={opponentClub}
               competition={competition}
+              isHome={!!isHome}
               homeTeamName={homeTeamName}
               awayTeamName={awayTeamName}
               scoreDisplay={scoreDisplay}

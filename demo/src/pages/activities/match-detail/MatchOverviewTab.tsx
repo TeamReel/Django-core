@@ -21,6 +21,7 @@ interface MatchOverviewTabProps {
   project: Project | null;
   opponentClub: Project | null;
   competition: Period | null;
+  isHome: boolean;
   homeTeamName: string;
   awayTeamName: string;
   scoreDisplay: string;
@@ -39,7 +40,9 @@ export default function MatchOverviewTab({
   match,
   club,
   project,
+  opponentClub,
   competition,
+  isHome,
   homeTeamName,
   awayTeamName,
   scoreDisplay,
@@ -52,18 +55,22 @@ export default function MatchOverviewTab({
   getContentItemForSubtype,
   onContentAction,
 }: MatchOverviewTabProps) {
-  // Derive logo URLs
-  const homeLogoUrl = (() => {
+  // Derive logo URLs — own club and opponent, then assign to home/away based on isHome
+  const ownLogoUrl = (() => {
     const assets =
       (club as any)?.metadata?.teamreel_assets ||
       (project as any)?.metadata?.teamreel_assets;
     const url = assets?.logo?.url;
     return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
   })();
-  const awayLogoUrl = (() => {
-    const url = match.metadata?.opponent_logo_url;
+  const opponentLogoUrl = (() => {
+    const url =
+      match.metadata?.opponent_logo_url ||
+      (opponentClub as any)?.metadata?.teamreel_assets?.logo?.url;
     return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
   })();
+  const homeLogoUrl = isHome ? ownLogoUrl : opponentLogoUrl;
+  const awayLogoUrl = isHome ? opponentLogoUrl : ownLogoUrl;
 
   // Content stats
   const allMatchContentItems = [
