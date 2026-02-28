@@ -16,6 +16,7 @@ import {
   type WorkflowInstance,
   type TransitionHistoryEntry,
   classifyState,
+  executeTransition,
 } from '../hooks/useWorkflows';
 import { WorkflowStatusBadge } from '../components/Workflows/WorkflowStatusBadge';
 import { WorkflowActionButtons } from '../components/Workflows/WorkflowActionButtons';
@@ -671,6 +672,127 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
   );
 }
 
+// ─── Video Review Modal ───────────────────────────────────────────────────────
+
+interface VideoReviewModalProps {
+  job: VideoJob;
+  onClose: () => void;
+  onActionComplete: () => void;
+  pushToast: (msg: string, type: 'success' | 'error') => void;
+}
+
+function VideoReviewModal({ job, onClose, onActionComplete, pushToast }: VideoReviewModalProps) {
+  const [executing, setExecuting] = useState<string | null>(null);
+  const wf = job.workflow_instance;
+  const isReviewable = wf && wf.available_actions && wf.available_actions.length > 0;
+  const isApproved = wf?.current_state === 'approved';
+  const isRejected = wf?.current_state === 'rejected';
+
+  const handleAction = async (action: string) => {
+    if (!wf) return;
+    setExecuting(action);
+    try {
+      await executeTransition(wf.id, action);
+      pushToast(
+        action === 'approve' ? '✅ Video goedgekeurd' : action === 'reject' ? '✘ Video afgewezen' : `✅ ${action}`,
+        'success'
+      );
+      onActionComplete();
+    } catch (err: any) {
+      pushToast(err?.message || `Actie "${action}" mislukt`, 'error');
+    } finally {
+      setExecuting(null);
+    }
+  };
+
+  const typeDisplay = getJobTypeDisplay(job.job_type);
+  const statusDisplay = getJobStatusDisplay(job.status);
+
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div style={{ width: '100%', maxWidth: 720, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+
+        {/* Header */}
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <span style={{ fontSize: 22 }}>{typeDisplay.icon}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{typeDisplay.label}</div>
+            <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+              {job.id.slice(0, 8)} · {new Date(job.created_at).toLocaleString('nl-NL')}
+              {wf && <> · <span style={{ fontWeight: 600 }}>{wf.current_state}</span></>}
+            </div>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            {statusDisplay.icon} {statusDisplay.label}
+          </span>
+          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#6b7280' }}>&times;</button>
+        </div>
+
+        {/* Video Preview */}
+        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 260 }}>
+          {job.output_url ? (
+            <video
+              src={job.output_url}
+              controls
+              autoPlay
+              playsInline
+              style={{ width: '100%', maxHeight: 460, display: 'block' }}
+              poster={job.thumbnail_url || undefined}
+            />
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: '#64748b', padding: 32 }}>
+              <span style={{ fontSize: 36 }}>🎬</span>
+              <span style={{ fontSize: 13 }}>Video preview niet beschikbaar</span>
+              {job.status !== 'completed' && <span style={{ fontSize: 11 }}>Status: {statusDisplay.label}</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Footer with actions */}
+        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+          {/* Status info */}
+          {isApproved && <div style={{ flex: 1, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✔ Goedgekeurd</div>}
+          {isRejected && <div style={{ flex: 1, fontSize: 13, color: '#dc2626', fontWeight: 600 }}>✘ Afgewezen</div>}
+          {!isApproved && !isRejected && !isReviewable && (
+            <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>
+              {wf ? `Workflow: ${wf.current_state}` : 'Geen workflow gekoppeld'}
+            </div>
+          )}
+          {isReviewable && <div style={{ flex: 1 }} />}
+
+          {/* Action buttons */}
+          {isReviewable && wf!.available_actions.map(action => {
+            const isReject = action.toLowerCase() === 'reject';
+            const isApproveBtn = action.toLowerCase() === 'approve';
+            return (
+              <button
+                key={action}
+                onClick={() => handleAction(action)}
+                disabled={!!executing}
+                style={{
+                  padding: '9px 20px', borderRadius: 8, fontWeight: 600, fontSize: 13,
+                  cursor: executing ? 'default' : 'pointer',
+                  opacity: executing && executing !== action ? 0.5 : 1,
+                  ...(isReject
+                    ? { border: '1px solid #fca5a5', background: executing === action ? '#fee2e2' : '#fff5f5', color: '#dc2626' }
+                    : isApproveBtn
+                    ? { border: 'none', background: executing === action ? '#15803d' : '#16a34a', color: '#fff' }
+                    : { border: '1px solid var(--app-border, #e5e7eb)', background: 'var(--app-surface, #fff)', color: 'var(--app-text, #111)' }),
+                }}
+              >
+                {executing === action ? '...' : isReject ? '✘ Afwijzen' : isApproveBtn ? '✔ Goedkeuren' : action}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ApprovalsPage() {
@@ -684,6 +806,9 @@ export default function ApprovalsPage() {
 
   // Review modal
   const [modalJob, setModalJob] = useState<GenerationJob | null>(null);
+
+  // Video review modal
+  const [modalVideoJob, setModalVideoJob] = useState<VideoJob | null>(null);
 
   // Video follow-up modal (shown after fullbody_in_tenue approval)
   const [videoFollowUp, setVideoFollowUp] = useState<VideoFollowUpInfo | null>(null);
@@ -922,6 +1047,19 @@ export default function ApprovalsPage() {
         />
       )}
 
+      {/* Video review modal */}
+      {modalVideoJob && (
+        <VideoReviewModal
+          job={modalVideoJob}
+          onClose={() => setModalVideoJob(null)}
+          onActionComplete={() => {
+            setModalVideoJob(null);
+            refreshVideoJobs();
+          }}
+          pushToast={pushToast}
+        />
+      )}
+
       {/* Video follow-up modal (after fullbody approval) */}
       {videoFollowUp && (
         <VideoFollowUpModal
@@ -1114,14 +1252,21 @@ export default function ApprovalsPage() {
                 const typeDisplay = getJobTypeDisplay(vJob.job_type);
                 const isActive = vJob.status === 'queued' || vJob.status === 'processing';
 
+                const isClickable = vJob.status === 'completed';
+
                 return (
                   <div
                     key={`video-${vJob.id}`}
+                    onClick={() => isClickable && setModalVideoJob(vJob)}
                     style={{
                       padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
-                      border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : isActive ? '#93c5fd' : 'var(--app-border, #e5e7eb)'}`,
+                      border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : isActive ? '#93c5fd' : isClickable && vJob.workflow_instance?.current_state === 'ready_for_review' ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
                       display: 'flex', flexDirection: 'column', gap: 10,
+                      cursor: isClickable ? 'pointer' : 'default',
+                      transition: 'box-shadow 0.15s',
                     }}
+                    onMouseEnter={e => { if (isClickable) e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
+                    onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                   >
                     {/* Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1169,21 +1314,32 @@ export default function ApprovalsPage() {
                     {vJob.workflow_instance && (
                       <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', display: 'flex', alignItems: 'center', gap: 6 }}>
                         🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
+                        {vJob.workflow_instance.current_state === 'ready_for_review' && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#d97706', backgroundColor: '#d9770618', borderRadius: 99, padding: '2px 8px' }}>
+                            Te beoordelen
+                          </span>
+                        )}
+                        {vJob.workflow_instance.current_state === 'approved' && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#16a34a', backgroundColor: '#16a34a18', borderRadius: 99, padding: '2px 8px' }}>
+                            Goedgekeurd
+                          </span>
+                        )}
+                        {vJob.workflow_instance.current_state === 'rejected' && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#dc2626', backgroundColor: '#dc262618', borderRadius: 99, padding: '2px 8px' }}>
+                            Afgewezen
+                          </span>
+                        )}
                       </div>
                     )}
 
-                    {/* Workflow approval actions (for jobs ready for review) */}
-                    {vJob.workflow_instance && vJob.workflow_instance.available_actions && vJob.workflow_instance.available_actions.length > 0 && (
-                      <WorkflowActionButtons
-                        instanceId={vJob.workflow_instance.id}
-                        availableActions={vJob.workflow_instance.available_actions}
-                        onTransitionComplete={() => {
-                          refreshVideoJobs();
-                          pushToast('✅ Actie uitgevoerd', 'success');
-                        }}
-                        onError={(err) => pushToast(`❌ ${err}`, 'error')}
-                        size="sm"
-                      />
+                    {/* Clickable hint for completed jobs */}
+                    {isClickable && (
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                          {vJob.workflow_instance?.available_actions?.length ? 'Klik om te beoordelen' : 'Klik voor preview'}
+                        </span>
+                        <span style={{ color: '#d1d5db', fontSize: 16 }}>›</span>
+                      </div>
                     )}
 
                     {/* Cancel/Retry actions */}
