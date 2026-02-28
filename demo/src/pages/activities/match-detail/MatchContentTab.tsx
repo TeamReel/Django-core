@@ -250,15 +250,58 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
                 onClick={async (e) => {
                   e.stopPropagation();
                   try {
-                    const resp = await fetch(mediaUrl);
-                    const blob = await resp.blob();
-                    const ext = isVideo ? 'mp4' : 'jpg';
-                    const mimeType = isVideo ? 'video/mp4' : 'image/jpeg';
-                    const fileName = `${itemLabel.replace(/\s+/g, '_')}.${ext}`;
-                    const file = new File([blob], fileName, { type: mimeType });
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                      await navigator.share({ files: [file], title: itemLabel });
-                    } else {
+                    // Try fetching the file as a blob for native file sharing
+                    // S3 presigned URLs may block cross-origin fetch (CORS), so we
+                    // attempt multiple strategies before falling back to URL sharing.
+                    let shared = false;
+
+                    // Strategy 1: direct fetch (works when CORS is configured)
+                    try {
+                      const resp = await fetch(mediaUrl);
+                      if (resp.ok) {
+                        const blob = await resp.blob();
+                        const ext = isVideo ? 'mp4' : (mediaUrl.match(/\.(png|jpg|jpeg|webp)/i)?.[1] || 'jpg');
+                        const mimeType = isVideo ? 'video/mp4' : (blob.type || `image/${ext}`);
+                        const fileName = `${itemLabel.replace(/\s+/g, '_')}.${ext}`;
+                        const file = new File([blob], fileName, { type: mimeType });
+                        if (navigator.canShare?.({ files: [file] })) {
+                          await navigator.share({ files: [file], title: itemLabel });
+                          shared = true;
+                        }
+                      }
+                    } catch {
+                      /* CORS or network error — try next strategy */
+                    }
+
+                    // Strategy 2: for images, load via <img> → canvas → blob
+                    if (!shared && !isVideo) {
+                      try {
+                        const blob = await new Promise<Blob>((resolve, reject) => {
+                          const img = new Image();
+                          img.crossOrigin = 'anonymous';
+                          img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.naturalWidth;
+                            canvas.height = img.naturalHeight;
+                            canvas.getContext('2d')!.drawImage(img, 0, 0);
+                            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
+                          };
+                          img.onerror = () => reject(new Error('img load failed'));
+                          img.src = mediaUrl;
+                        });
+                        const fileName = `${itemLabel.replace(/\s+/g, '_')}.png`;
+                        const file = new File([blob], fileName, { type: 'image/png' });
+                        if (navigator.canShare?.({ files: [file] })) {
+                          await navigator.share({ files: [file], title: itemLabel });
+                          shared = true;
+                        }
+                      } catch {
+                        /* canvas tainted or img blocked — fall through */
+                      }
+                    }
+
+                    // Strategy 3: fallback to sharing the URL
+                    if (!shared) {
                       await navigator.share({ title: itemLabel, url: mediaUrl });
                     }
                   } catch {
