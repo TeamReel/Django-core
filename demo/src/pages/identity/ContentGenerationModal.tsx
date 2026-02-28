@@ -1143,7 +1143,8 @@ export default function ContentGenerationModal({
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData?.error || errData?.detail || `Failed to generate match flyer: ${response.status}`);
+        const errMsg = errData?.error?.message || errData?.error?.detail || (typeof errData?.error === 'string' ? errData.error : null) || errData?.detail || `Failed to generate match flyer: ${response.status}`;
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
@@ -3126,7 +3127,33 @@ export default function ContentGenerationModal({
                       return (
                         <button
                           key={opt.key}
-                          onClick={() => setMatchFlyerVariant(opt.key)}
+                          onClick={() => {
+                            setMatchFlyerVariant(opt.key);
+                            // Auto-select first member with action photo when switching to action variant
+                            if (opt.key === 'action' && !flyerMemberId) {
+                              const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
+                                .filter((p, idx, arr) => {
+                                  const uid = (p.user || p.member)?.id;
+                                  return uid ? arr.findIndex(x => (x.user || x.member)?.id === uid) === idx : arr.findIndex(x => x.id === p.id) === idx;
+                                });
+                              const firstWithPhoto = allMembers.find((member) => {
+                                const tr = (member.metadata as any)?.teamreel_assets || {};
+                                const actionImgs = tr?.images?.action_photo || {};
+                                return Object.keys(actionImgs).length > 0;
+                              });
+                              if (firstWithPhoto) {
+                                setFlyerMemberId(firstWithPhoto.id);
+                                // Auto-select first available style
+                                const tr = (firstWithPhoto.metadata as any)?.teamreel_assets || {};
+                                const actionImgs = tr?.images?.action_photo || {};
+                                const firstKey = Object.keys(actionImgs)[0] || '';
+                                const parts = firstKey.split('_');
+                                if (parts.length >= 2) {
+                                  setFlyerActionStyle(parts.slice(1).join('_'));
+                                }
+                              }
+                            }
+                          }}
                           style={{
                             position: 'relative',
                             display: 'flex',

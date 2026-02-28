@@ -943,7 +943,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           onClose={handleContentModalClose}
           onGenerated={handleContentGenerated}
           matchData={{
-            id: (selectedMatch as any).slug || String(selectedMatch.id),
+            id: String(selectedMatch.id),
             title: selectedMatch.title,
             project: (selectedMatch as any).project,
             opponent_project: (selectedMatch as any).opponent_project,
