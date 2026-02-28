@@ -4093,11 +4093,19 @@ export default function ContentGenerationModal({
                             point_to_sky: 'Wijs naar hemel',
                             slide: 'Knieën slide',
                           };
-                          const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
-                            .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
+                          const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])];
+                          // Dedup by user ID (same person may appear in multiple roles)
+                          const seenUserIds = new Set<string>();
+                          const uniqueMembers = allMembers.filter((p) => {
+                            const userId = (p.user || p.member)?.id;
+                            if (!userId || seenUserIds.has(userId)) return false;
+                            seenUserIds.add(userId);
+                            return true;
+                          });
 
-                          // Enrich with celebration info
-                          const enriched = allMembers.map((member) => {
+                          // Build one option per celebration type per member
+                          const options: { member: typeof uniqueMembers[0]; name: string; celebType: string; celebLabel: string; hasCelebration: boolean }[] = [];
+                          for (const member of uniqueMembers) {
                             const user = member.user || member.member;
                             const name = user ? (
                               ('name' in user && user.name) ||
@@ -4111,36 +4119,36 @@ export default function ContentGenerationModal({
                               const val = celebrationObj[k];
                               return val && (typeof val === 'string' || (typeof val === 'object' && Object.keys(val).length > 0));
                             });
-                            const hasCelebration = celebrationKeys.length > 0;
                             // Extract unique celebration types from composite keys (e.g. "home_arms_wide" → "arms_wide")
                             const celebTypes = [...new Set(celebrationKeys.map(k => {
                               const parts = k.split('_');
-                              // Remove kit prefix (first part) to get the celebration type
                               return parts.length > 1 ? parts.slice(1).join('_') : k;
                             }))];
-                            return { member, name, hasCelebration, celebTypes };
-                          });
+                            if (celebTypes.length > 0) {
+                              for (const ct of celebTypes) {
+                                options.push({ member, name, celebType: ct, celebLabel: CELEB_LABELS[ct] || ct, hasCelebration: true });
+                              }
+                            } else {
+                              options.push({ member, name, celebType: '', celebLabel: '', hasCelebration: false });
+                            }
+                          }
 
-                          // Sort: available players first
-                          enriched.sort((a, b) => {
+                          // Sort: available players first, then by name, then by type
+                          options.sort((a, b) => {
                             if (a.hasCelebration && !b.hasCelebration) return -1;
                             if (!a.hasCelebration && b.hasCelebration) return 1;
-                            return a.name.localeCompare(b.name);
+                            const nameComp = a.name.localeCompare(b.name);
+                            if (nameComp !== 0) return nameComp;
+                            return a.celebLabel.localeCompare(b.celebLabel);
                           });
 
-                          return enriched.map(({ member, name, hasCelebration, celebTypes }) => {
-                            // Show celebration types if player has multiple
-                            let suffix = '';
-                            if (hasCelebration && celebTypes.length > 1) {
-                              suffix = ` (${celebTypes.map(t => CELEB_LABELS[t] || t).join(', ')})`;
-                            } else if (hasCelebration && celebTypes.length === 1) {
-                              suffix = ' 🎉';
-                            } else {
-                              suffix = ' (geen celebration video)';
-                            }
+                          return options.map(({ member, name, hasCelebration, celebType, celebLabel }) => {
+                            const suffix = hasCelebration
+                              ? ` — ${celebLabel}`
+                              : ' (geen celebration video)';
                             return (
                               <option
-                                key={member.id}
+                                key={`${member.id}_${celebType}`}
                                 value={member.id}
                                 disabled={!hasCelebration}
                                 style={{

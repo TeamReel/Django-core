@@ -336,6 +336,9 @@ class VideoService:
             processor = LineupProcessor(job)
             processor.execute()
 
+            # Transition workflow to ready_for_review so it appears in approval queue
+            self._transition_workflow_on_completion(job)
+
             logger.info("Lineup job processed in background thread", extra={"job_id": job_id})
 
         except JobCancelledError:
@@ -401,6 +404,9 @@ class VideoService:
 
             processor = GoalCelebrationProcessor(job)
             processor.execute()
+
+            # Transition workflow to ready_for_review so it appears in approval queue
+            self._transition_workflow_on_completion(job)
 
             logger.info(
                 "Goal celebration job processed in background thread", extra={"job_id": job_id}
@@ -470,6 +476,9 @@ class VideoService:
             processor = MatchIntroProcessor(job)
             processor.execute()
 
+            # Transition workflow to ready_for_review so it appears in approval queue
+            self._transition_workflow_on_completion(job)
+
             logger.info("Match intro job processed in background thread", extra={"job_id": job_id})
 
         except JobCancelledError:
@@ -536,6 +545,9 @@ class VideoService:
 
             processor = ThenVsNowProcessor(job)
             processor.execute()
+
+            # Transition workflow to ready_for_review so it appears in approval queue
+            self._transition_workflow_on_completion(job)
 
             logger.info("Then vs Now job processed in background thread", extra={"job_id": job_id})
 
@@ -642,6 +654,40 @@ class VideoService:
 
         if input_file.file_size > VIDEO_MAX_FILE_SIZE:
             raise ValidationError({"input_file": "File exceeds max size limit"})
+
+    def _transition_workflow_on_completion(self, job: VideoJob) -> None:
+        """Transition workflow to ready_for_review state after job processing completes.
+
+        Best-effort: logs failures but does not raise so the job
+        keeps its COMPLETED status regardless.
+        """
+        if not job.workflow_instance:
+            return
+
+        try:
+            from src.workflows.services.engine import WorkflowEngine
+
+            engine = WorkflowEngine()
+            engine.execute_transition(
+                instance=job.workflow_instance,
+                action="processing_complete",
+                user=job.created_by,
+                comment=f"Video processing completed for job {job.id}",
+            )
+            logger.info(
+                "Workflow transitioned to ready_for_review on job completion",
+                extra={
+                    "job_id": str(job.id),
+                    "workflow_id": str(job.workflow_instance.id),
+                },
+            )
+        except Exception as exc:
+            logger.warning(
+                "Failed to transition workflow on job completion: %s",
+                exc,
+                extra={"job_id": str(job.id)},
+                exc_info=True,
+            )
 
         duration = input_file.metadata.get("duration_seconds") if input_file.metadata else None
         if duration and duration > VIDEO_MAX_DURATION:
