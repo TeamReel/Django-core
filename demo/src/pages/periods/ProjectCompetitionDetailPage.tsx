@@ -5,10 +5,8 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { canEditProject } from '../../utils/permissions';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchCreateModal from '../identity/MatchCreateModal';
@@ -28,55 +26,9 @@ import {
   compactTextTdStyle,
   compactThStyle,
 } from '../identity/detail/detailStyles';
-
-type Period = {
-  id: string;
-  name: string;
-  slug?: string;
-  start_date: string;
-  end_date: string;
-  parent_period?: { id: string; name: string } | null;
-  children_count?: number;
-  matches_count?: number;
-  children_matches_count?: number;
-  sport?: {
-    id: string;
-    name: string;
-    slug: string;
-    sport_icon: string;
-    is_variant: boolean;
-    category_name: string | null;
-  } | null;
-};
-
-type Project = {
-  id: string;
-  name: string;
-  slug?: string;
-};
-
-type Organisation = {
-  id: string;
-  name: string;
-  slug?: string;
-  user_role?: string;
-  sport?: {
-    id: string;
-    name: string;
-    slug: string;
-    sport_icon: string;
-  } | null;
-};
-
-const getCsrfToken = (): string => {
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] ||
-    ''
-  );
-};
+import { useSeasonContext } from '../../providers/SeasonProvider';
+import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
+import { getCsrfToken } from '../../types/season';
 
 const combineDateTime = (date: string, time: string): string | null => {
   if (!date || !time) return null;
@@ -893,37 +845,61 @@ function CompetitionLegacyMatchCreateModal({
 export const ProjectCompetitionDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orgId, projectId, seasonId, competitionId, clubId } = useParams<{
-    orgId: string;
-    projectId: string;
-    seasonId: string;
-    competitionId: string;
-    clubId?: string;
-  }>();
+  const { competitionId } = useParams<{ competitionId: string }>();
 
-  // TeamReel hierarchy under a season has multiple child types.
-  // In canonical team routes we use a single segment: /:org/:club/:team/:season/:childId
-  // - Competition childId is a slug (e.g. "eredivisie")
-  // - Member childId is a UUID membership id
-  // When the last segment is a UUID, treat it as a season-member detail page.
-  // IMPORTANT: do not do this for /organisations/... routes because competitionId may be UUID there.
-  const isOrgRoute = location.pathname.startsWith('/organisations/');
+  // ── Shared season-hierarchy data from SeasonProvider ──
+  const {
+    org: providerOrg,
+    project: providerProject,
+    club: providerClub,
+    season: providerSeason,
+    resolvedSeasonId: providerSeasonId,
+    competitions: providerCompetitions,
+    loading: providerLoading,
+    error: providerError,
+    isTeamRoute,
+    isOrgRoute,
+    orgSlugOrId,
+    clubSlugOrId,
+    projectSlugOrId,
+    effectiveSeasonId,
+    seasonsBasePath,
+    projectDetailPath,
+    seasonPathKey: providerSeasonPathKey,
+    isSuperAdmin,
+    userCanEditProject,
+    apiBaseUrl,
+  } = useSeasonContext();
+
+  // UUID competitionId → member detail page (SeasonProvider already wraps both)
   if (!isOrgRoute && looksLikeUuid(String(competitionId || '').trim())) {
     return <ProjectSeasonMemberDetailPage />;
   }
 
-  const apiBaseUrl = getApiBaseUrl();
+  const effectiveCompetitionId = String(competitionId || '').trim();
 
-  const [org, setOrg] = useState<Organisation | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
-  const [club, setClub] = useState<Project | null>(null);
-  const [season, setSeason] = useState<Period | null>(null);
+  // ── Local shadow state synced from provider (allows optimistic updates) ──
+  const [org, setOrg] = useState<Organisation | null>(providerOrg);
+  const [project, setProject] = useState<Project | null>(providerProject);
+  const [club, setClub] = useState<Project | null>(providerClub);
+  const [season, setSeason] = useState<Period | null>(providerSeason);
+  const [resolvedSeasonId, setResolvedSeasonId] = useState<string>(providerSeasonId);
+  const [loading, setLoading] = useState(providerLoading);
+  const [error, setError] = useState<string | null>(providerError);
+
+  useEffect(() => { setOrg(providerOrg); }, [providerOrg]);
+  useEffect(() => { setProject(providerProject); }, [providerProject]);
+  useEffect(() => { setClub(providerClub); }, [providerClub]);
+  useEffect(() => { setSeason(providerSeason); }, [providerSeason]);
+  useEffect(() => { setResolvedSeasonId(providerSeasonId); }, [providerSeasonId]);
+  useEffect(() => { if (!providerLoading) setLoading(false); }, [providerLoading]);
+  useEffect(() => { setError(providerError); }, [providerError]);
+
   const [competition, setCompetition] = useState<Period | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
   const [activeContext, setActiveContextState] = useState<any | null>(null);
-  const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
   const [resolvedCompetitionId, setResolvedCompetitionId] = useState<string>('');
-  const [competitionsForSwitcher, setCompetitionsForSwitcher] = useState<Period[]>([]);
+  const [competitionsForSwitcher, setCompetitionsForSwitcher] = useState<Period[]>(providerCompetitions);
   const [matches, setMatches] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
@@ -932,8 +908,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
   const [matchMediaLoading, setMatchMediaLoading] = useState(false);
   const [opponentClubNames, setOpponentClubNames] = useState<Record<string, string>>({});
   const [hierarchySearch, setHierarchySearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => { setCompetitionsForSwitcher(providerCompetitions); }, [providerCompetitions]);
 
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
   const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
@@ -972,26 +948,6 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return () => { cancelled = true; };
   }, []);
 
-  const orgSlugOrId = orgId || '';
-  const projectSlugOrId = projectId || '';
-  const effectiveSeasonId = seasonId || '';
-  const effectiveCompetitionId = competitionId || '';
-
-  const isTeamRoute = Boolean(clubId);
-  const clubSlugOrId = clubId || '';
-
-  // Permission checks (consistent with other identity pages)
-  const permissionContext = useMemo(() => ({ currentOrganisation: org as any, isSuperAdmin: false }), [org]);
-  const userCanEditProject = canEditProject(permissionContext);
-
-  const projectDetailPath = isTeamRoute
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
-
-  const seasonsBasePath = isTeamRoute
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
-
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
     const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
@@ -999,7 +955,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return allowed.has(raw) ? raw : 'overview';
   }, [location.search]);
 
-  const seasonKeyOrId = periodPathKey(season) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+  const seasonKeyOrId = providerSeasonPathKey || String(effectiveSeasonId || resolvedSeasonId || '').trim();
   const competitionKeyOrId = periodPathKey(competition) || String(effectiveCompetitionId || resolvedCompetitionId || '').trim();
 
   const competitionBasePath = useMemo(() => {
@@ -1020,110 +976,16 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
 
 
+  // ── Resolve competition from provider's competitions list + fetch detail ──
   useEffect(() => {
     const run = async () => {
-      if (!orgSlugOrId || !projectSlugOrId || !effectiveSeasonId || !effectiveCompetitionId) return;
+      if (!resolvedSeasonId || !effectiveCompetitionId) return;
       try {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
-          isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
-                credentials: 'include',
-              })
-            : Promise.resolve(null as any),
-        ]);
-
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-
-        const rawOrg: any = await orgRes.json();
-        const rawProject: any = await projectRes.json();
-
-        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
-
-        setOrg(orgJson);
-        setProject(projectJson);
-
-        // Prefer canonical team URLs with slug instead of numeric id.
-        if (isTeamRoute) {
-          const teamSlug = String((projectJson as any)?.slug || '').trim();
-          if (teamSlug && String(projectSlugOrId || '').trim() !== teamSlug) {
-            const qs = location.search || '';
-            navigate(
-              `/${encodeURIComponent(orgSlugOrId)}/${encodeURIComponent(clubSlugOrId)}/${encodeURIComponent(teamSlug)}/${encodeURIComponent(
-                effectiveSeasonId
-              )}/${encodeURIComponent(effectiveCompetitionId)}${qs}`,
-              { replace: true }
-            );
-          }
-        }
-
-        if (isTeamRoute && clubRes && (clubRes as any).ok) {
-          try {
-            const rawClub: any = await (clubRes as any).json();
-            setClub(rawClub?.data?.data || rawClub?.data || rawClub);
-          } catch {
-            // ignore
-          }
-        }
-
-        // Resolve season UUID from URL param (UUID or slugified name) using root periods only
-        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(
-          String(projectJson.id)
-        )}&parent_id=null&page_size=500`;
-        const rootPeriods = await fetchAllPages<Period>(
-          rootPeriodsUrl,
-          { credentials: 'include' },
-          { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` }
-        );
-
-        const isUuidSeason = looksLikeUuid(effectiveSeasonId);
-        const seasonFromList = isUuidSeason
-          ? rootPeriods.find((p) => String(p.id) === String(effectiveSeasonId))
-          : rootPeriods.find((p) => periodPathKey(p) === String(effectiveSeasonId));
-
-        const seasonUuid = String(seasonFromList?.id || (isUuidSeason ? effectiveSeasonId : '')).trim();
-        if (!seasonUuid) throw new Error('Season not found');
-        setResolvedSeasonId(seasonUuid);
-
-        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, {
-          credentials: 'include',
-        });
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const rawSeason: any = await seasonRes.json();
-        // API returns { status, data: {period} }. Period.data is metadata, not a nested period.
-        // Check if data.data looks like a period (has id) vs metadata (has type but no id)
-        const seasonCandidate = rawSeason?.data?.data;
-        const seasonJson: Period = (seasonCandidate && seasonCandidate.id) ? seasonCandidate : (rawSeason?.data || rawSeason);
-        setSeason(seasonJson);
-
-        const desiredSeasonKey = periodPathKey(seasonJson);
-        if (desiredSeasonKey && desiredSeasonKey !== String(effectiveSeasonId)) {
-          const suffix = location.search ? location.search : '';
-          navigate(
-            isTeamRoute
-              ? `${seasonsBasePath}/${desiredSeasonKey}/${effectiveCompetitionId}${suffix}`
-              : `${seasonsBasePath}/${desiredSeasonKey}/competitions/${effectiveCompetitionId}${suffix}`,
-            {
-            replace: true,
-            }
-          );
-          return;
-        }
-
-        // Resolve competition UUID from URL param against season children
-        const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonUuid)}&page_size=500`;
-        const competitionOptions = await fetchAllPages<Period>(
-          competitionsUrl,
-          { credentials: 'include' },
-          { ttlMs: 60_000, cacheKey: `periods:children:${seasonUuid}` }
-        );
-        setCompetitionsForSwitcher(competitionOptions);
+        // Use competitions already fetched by SeasonProvider
+        const competitionOptions = competitionsForSwitcher;
 
         const isUuidCompetition = looksLikeUuid(effectiveCompetitionId);
         const competitionFromList = isUuidCompetition
@@ -1140,19 +1002,16 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         });
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         const rawCompetition: any = await competitionRes.json();
-        // API returns { status, data: {period} }. Period.data is metadata, not a nested period.
-        // So we only unwrap ONE level from the API envelope, not two.
         const competitionJson: Period = rawCompetition?.data || rawCompetition;
         setCompetition(competitionJson);
 
         const desiredCompetitionKey = periodPathKey(competitionJson);
         if (desiredCompetitionKey && desiredCompetitionKey !== String(effectiveCompetitionId)) {
           const suffix = location.search ? location.search : '';
-          const seasonKey = periodPathKey(seasonJson) || String(effectiveSeasonId || seasonUuid);
           navigate(
             isTeamRoute
-              ? `${seasonsBasePath}/${seasonKey}/${desiredCompetitionKey}${suffix}`
-              : `${seasonsBasePath}/${seasonKey}/competitions/${desiredCompetitionKey}${suffix}`,
+              ? `${seasonsBasePath}/${seasonKeyOrId}/${desiredCompetitionKey}${suffix}`
+              : `${seasonsBasePath}/${seasonKeyOrId}/competitions/${desiredCompetitionKey}${suffix}`,
             {
             replace: true,
             }
@@ -1169,14 +1028,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     run();
   }, [
     apiBaseUrl,
+    competitionsForSwitcher,
     effectiveCompetitionId,
-    effectiveSeasonId,
+    resolvedSeasonId,
     isTeamRoute,
     location.search,
     navigate,
-    orgSlugOrId,
-    projectSlugOrId,
     seasonsBasePath,
+    seasonKeyOrId,
   ]);
 
   const tabs = [
@@ -2240,7 +2099,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                         const compId = String((match as any).period_id || match.period?.id || '').trim();
                                         const compKey = periodPathKey((match as any).period || null) || compId;
                                         const matchKey = (match as any).slug || match.id;
-                                        const seasonKeyOrId2 = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+                                        const seasonKeyOrId2 = seasonKeyOrId;
                                         const matchPath = isTeamRoute
                                           ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId2}/${compKey}/${String(matchKey)}`
                                           : `/matches/${String(matchKey)}`;

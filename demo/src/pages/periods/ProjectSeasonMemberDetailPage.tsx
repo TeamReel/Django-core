@@ -4,11 +4,7 @@ import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
-import { fetchAllPages } from '../../utils/fetchAllPages';
-import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { useAuth } from '@django-core/auth-ui';
-import { useContextSwitcher } from '@django-core/context-switcher';
-import { canEditProject } from '../../utils/permissions';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../../constants/mediaSlots';
 import {
@@ -20,55 +16,15 @@ import {
   getProcessingStateLabel,
   ASSET_PROCESSING_SPECS,
 } from '../../constants/assetProcessingSpecs';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { AssetsTab } from '../../components/AssetsTab';
 import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
-import { useBrandProfile, getAssetUrl, resolvePresignedUrls, KIT_ROLES } from '../../hooks/useBrandProfile';
+import { getAssetUrl, resolvePresignedUrls } from '../../hooks/useBrandProfile';
 import { useGenerationJobs } from '../../hooks/useGenerationJobs';
 import MobileTabBar from '../../components/MobileTabBar';
-import { useUserRole } from '../../components/PermissionGuards';
 import { WorkflowPanel } from '../../components/Workflows';
-
-type Project = {
-  id: string;
-  slug?: string;
-  name: string;
-  organisation?: any;
-};
-
-type Organisation = {
-  id: string;
-  slug?: string;
-  name: string;
-  user_role?: string;
-};
-
-type Period = {
-  id: string;
-  name: string;
-  type?: string;
-  period_type?: string;
-  parent_period?: any;
-  parent_period_id?: string | null;
-};
-
-function unwrap<T = any>(payload: any): T {
-  return (payload?.data as T) ?? (payload as T);
-}
-
-function isSeasonPeriod(p: any): boolean {
-  if (!p) return false;
-  const explicit = String(p.type || p.period_type || '').toLowerCase();
-  if (explicit === 'season') return true;
-  const hasParent = Boolean(p.parent_period || p.parent_period_id);
-  return !hasParent;
-}
-
-const getCsrfToken = (): string =>
-  document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('csrftoken='))
-    ?.split('=')[1] || '';
+import { useSeasonContext } from '../../providers/SeasonProvider';
+import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
+import { getCsrfToken, unwrapEnvelope as unwrap } from '../../types/season';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -854,34 +810,37 @@ export default function ProjectSeasonMemberDetailPage() {
   const location = useLocation();
   const params = useParams();
   const { user } = useAuth();
-  const { isPlayer } = useUserRole();
-  const { context } = useContextSwitcher();
 
-  const apiBaseUrl = getApiBaseUrl();
+  // ── Shared season-hierarchy data from SeasonProvider ──
+  const {
+    org: providerOrg,
+    project: providerProject,
+    club: providerClub,
+    season: providerSeason,
+    resolvedSeasonId: providerSeasonId,
+    loading: providerLoading,
+    error: providerError,
+    isTeamRoute,
+    isOrgRoute: isOrgRoutes,
+    orgSlugOrId,
+    clubSlugOrId,
+    projectSlugOrId,
+    effectiveSeasonId: seasonKeyOrId,
+    seasonsBasePath,
+    seasonPathKey: seasonKeyForLinksFromProvider,
+    clubBrand,
+    teamBrand,
+    batchBrandKits,
+    isSuperAdmin,
+    orgForPermissions,
+    permissionContext,
+    userCanEditProject,
+    isPlayer,
+    apiBaseUrl,
+  } = useSeasonContext();
 
-  const orgSlugOrId = String((params as any).orgId || '').trim();
-  const clubSlugOrId = String((params as any).clubId || '').trim();
-  const projectSlugOrId = String((params as any).projectId || '').trim();
-  const seasonKeyOrId = String((params as any).seasonId || '').trim();
+  // membershipId comes from the competitionId route param (UUID member id)
   const membershipId = String((params as any).competitionId || '').trim();
-
-  const isOrgRoutes = location.pathname.startsWith('/organisations/');
-  const isTeamRoute = Boolean(clubSlugOrId);
-
-  const seasonsBasePath = useMemo(() => {
-    if (isOrgRoutes) {
-      if (isTeamRoute) {
-        return `/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/teams/${projectSlugOrId}/seasons`;
-      }
-      return `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
-    }
-
-    if (isTeamRoute) {
-      return `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`;
-    }
-
-    return `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
-  }, [clubSlugOrId, isOrgRoutes, isTeamRoute, orgSlugOrId, projectSlugOrId]);
 
   const activeTab = useMemo(() => {
     const sp = new URLSearchParams(location.search);
@@ -897,15 +856,22 @@ export default function ProjectSeasonMemberDetailPage() {
     navigate(next ? `${location.pathname}?${next}` : location.pathname);
   };
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // ── Local shadow state synced from provider (allows optimistic updates) ──
+  const [loading, setLoading] = useState(providerLoading);
+  const [error, setError] = useState<string | null>(providerError);
+  const [org, setOrg] = useState<Organisation | null>(providerOrg);
+  const [project, setProject] = useState<Project | null>(providerProject);
+  const [club, setClub] = useState<Project | null>(providerClub);
+  const [season, setSeason] = useState<Period | null>(providerSeason);
+  const [resolvedSeasonId, setResolvedSeasonId] = useState<string>(providerSeasonId);
 
-  const [org, setOrg] = useState<Organisation | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
-  const [club, setClub] = useState<Project | null>(null);
-
-  const [season, setSeason] = useState<Period | null>(null);
-  const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
+  useEffect(() => { setOrg(providerOrg); }, [providerOrg]);
+  useEffect(() => { setProject(providerProject); }, [providerProject]);
+  useEffect(() => { setClub(providerClub); }, [providerClub]);
+  useEffect(() => { setSeason(providerSeason); }, [providerSeason]);
+  useEffect(() => { setResolvedSeasonId(providerSeasonId); }, [providerSeasonId]);
+  useEffect(() => { setLoading(providerLoading); }, [providerLoading]);
+  useEffect(() => { setError(providerError); }, [providerError]);
 
   const [membership, setMembership] = useState<any | null>(null);
 
@@ -938,45 +904,6 @@ export default function ProjectSeasonMemberDetailPage() {
       window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onChanged);
     };
   }, []);
-
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin =
-    Boolean((user as any)?.is_superuser) ||
-    Boolean((user as any)?.is_staff) ||
-    userRole === 'superadmin' ||
-    userRole === 'super admin';
-
-  const orgForPermissions = useMemo(() => {
-    const contextOrg = context?.organisation as any;
-    const orgIdMatches = (candidate: any) => {
-      if (!candidate) return false;
-      const cid = String(candidate.id || '').trim();
-      const cslug = String(candidate.slug || '').trim();
-      const oid = String((org as any)?.id || '').trim();
-      const oslug = String((org as any)?.slug || '').trim();
-      const route = String(orgSlugOrId || '').trim();
-      return (
-        (cid && oid && cid === oid) ||
-        (cslug && oslug && cslug === oslug) ||
-        (cid && route && cid === route) ||
-        (cslug && route && cslug === route)
-      );
-    };
-
-    if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
-    const projectOrg = (project as any)?.organisation;
-    if (projectOrg?.user_role) return projectOrg;
-    if ((org as any)?.user_role) return org;
-    if (orgIdMatches(contextOrg)) return contextOrg;
-    return projectOrg || org || contextOrg || null;
-  }, [context?.organisation, org, orgSlugOrId, project]);
-
-  const permissionContext = useMemo(
-    () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
-    [orgForPermissions, isSuperAdmin]
-  );
-
-  const userCanEditProject = canEditProject(permissionContext);
 
   const [form, setForm] = useState<MemberMediaForm>(() => createEmptyMediaForm());
   const [videoVariants, setVideoVariants] = useState<VideoVariantsMap>(() => createEmptyVideoVariants());
@@ -1287,40 +1214,22 @@ export default function ProjectSeasonMemberDetailPage() {
     pollInterval: 8000,
   });
 
-  // Fetch parent brand assets (from club) for tenue inheritance
-  const clubId = club?.id || project?.id;
-  const clubBrand = useBrandProfile({
-    projectId: clubId ? String(clubId) : undefined,
-    organisationId: String(org?.id || ''),
-    autoFetch: !!clubId,
-  });
-
-  // Fetch team-level brand assets (kits may differ from club)
-  const teamProjectId = isTeamRoute ? project?.id : null;
-  const teamBrand = useBrandProfile({
-    projectId: teamProjectId ? String(teamProjectId) : undefined,
-    organisationId: String(org?.id || ''),
-    autoFetch: !!teamProjectId,
-  });
-
-  // Get effective kits — team brand takes priority over club brand
+  // Brand profiles come from SeasonProvider (clubBrand, teamBrand, batchBrandKits)
+  // Get effective kits — built from provider's batchBrandKits
   const effectiveKits = useMemo(() => {
-    const kits: { id: string; label: string; icon: string; url: string | null }[] = [];
-    for (const role of KIT_ROLES) {
-      // Try team brand first, then club brand (combined first, then processed)
-      let asset = teamBrand.getAsset?.(`kit_${role.id}_combined`)
-        || teamBrand.getAsset?.(`kit_${role.id}`)
-        || clubBrand.getAsset?.(`kit_${role.id}_combined`)
-        || clubBrand.getAsset?.(`kit_${role.id}`);
-      kits.push({
-        id: role.id,
-        label: role.label,
-        icon: role.icon,
-        url: asset ? getAssetUrl(asset.url) : null,
-      });
-    }
-    return kits;
-  }, [teamBrand, clubBrand]);
+    const KIT_ROLE_META: { id: string; label: string; icon: string }[] = [
+      { id: 'home', label: 'Home', icon: '🏠' },
+      { id: 'away', label: 'Away', icon: '✈️' },
+      { id: 'third', label: 'Third', icon: '3️⃣' },
+      { id: 'keeper', label: 'Keeper', icon: '🧤' },
+    ];
+    return KIT_ROLE_META.map(role => ({
+      id: role.id,
+      label: role.label,
+      icon: role.icon,
+      url: batchBrandKits[role.id] ?? null,
+    }));
+  }, [batchBrandKits]);
 
   // Handler to open AI modal for a specific template
   const openAiModal = (templateId: string, defaultKitType?: string, playerInTenueUrl?: string | null, styleVariant?: string | null, referenceOverride?: string | null) => {
@@ -1453,96 +1362,20 @@ export default function ProjectSeasonMemberDetailPage() {
     setMembership(null);
   }, [membershipId]);
 
+  // ── Fetch member data (org/project/club/season come from SeasonProvider) ──
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
-      setLoading(true);
-      setError(null);
       try {
-        if (!orgSlugOrId || !projectSlugOrId || !seasonKeyOrId || !membershipId) {
-          throw new Error('Missing route parameters');
-        }
+        if (!project?.id || !membershipId) return;
         if (!UUID_RE.test(membershipId)) {
-          throw new Error('Member id must be a UUID');
-        }
-
-        const looksLikeIdentifier = (value: string) => {
-          const v = String(value || '').trim();
-          if (!v) return false;
-          if (/^\d+$/.test(v)) return true;
-          if (UUID_RE.test(v)) return true;
-          return false;
-        };
-
-        const teamScopedProjectUrl = (org: string, club: string, team: string) =>
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(club)}/teams/${encodeURIComponent(team)}/`;
-
-        const defaultProjectUrl = (team: string) =>
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(team)}/`;
-
-        const projectUrl =
-          isTeamRoute && clubSlugOrId && projectSlugOrId && !looksLikeIdentifier(projectSlugOrId)
-            ? teamScopedProjectUrl(orgSlugOrId, clubSlugOrId, projectSlugOrId)
-            : defaultProjectUrl(projectSlugOrId);
-
-        const [orgRes, projectRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, { credentials: 'include' }),
-          fetch(projectUrl, { credentials: 'include' }),
-        ]);
-
-        if (!orgRes.ok) throw new Error('Failed to load federation');
-        if (!projectRes.ok) throw new Error('Failed to load team');
-
-        const orgJson = unwrap<Organisation>(await orgRes.json());
-        const projectJson = unwrap<Project>(await projectRes.json());
-
-        if (cancelled) return;
-        setOrg(orgJson);
-        setProject(projectJson);
-
-        if (isTeamRoute) {
-          const clubRes = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-            { credentials: 'include' }
-          );
-          if (clubRes.ok) {
-            const clubJson = unwrap<Project>(await clubRes.json());
-            if (!cancelled) setClub(clubJson);
-          }
-        }
-
-        // Resolve season UUID from key-or-id
-        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?page_size=500&project_id=${encodeURIComponent(
-          projectJson.id
-        )}&parent_id=null`;
-        const allPeriods = await fetchAllPages<any>(
-          rootPeriodsUrl,
-          { credentials: 'include' },
-          { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` }
-        );
-
-        const seasonOptions = (Array.isArray(allPeriods) ? allPeriods : []).filter(isSeasonPeriod);
-        const isUuidParam = looksLikeUuid(seasonKeyOrId);
-        const seasonFromList = isUuidParam
-          ? seasonOptions.find((p: any) => String(p.id) === String(seasonKeyOrId))
-          : seasonOptions.find((p: any) => periodPathKey(p) === String(seasonKeyOrId));
-
-        const seasonUuid = String(seasonFromList?.id || (isUuidParam ? seasonKeyOrId : '')).trim();
-        if (!seasonUuid) throw new Error('Season not found');
-
-        if (!cancelled) setResolvedSeasonId(seasonUuid);
-
-        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, {
-          credentials: 'include',
-        });
-        if (seasonRes.ok) {
-          const seasonJson = unwrap<Period>(await seasonRes.json());
-          if (!cancelled) setSeason(seasonJson);
+          setError('Member id must be a UUID');
+          return;
         }
 
         const memberRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectJson.id)}/members/${encodeURIComponent(membershipId)}/`,
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membershipId)}/`,
           { credentials: 'include' }
         );
 
@@ -1555,8 +1388,6 @@ export default function ProjectSeasonMemberDetailPage() {
         if (!cancelled) setMembership(memberJson);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load member');
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     };
 
@@ -1564,9 +1395,9 @@ export default function ProjectSeasonMemberDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, clubSlugOrId, isTeamRoute, membershipId, orgSlugOrId, projectSlugOrId, seasonKeyOrId]);
+  }, [apiBaseUrl, project?.id, membershipId]);
 
-  const seasonKeyForLinks = periodPathKey(season as any) || String(seasonKeyOrId || resolvedSeasonId).trim();
+  const seasonKeyForLinks = seasonKeyForLinksFromProvider || resolvedSeasonId;
 
   const title = membership ? `Member: ${getUserDisplayName(membership)}` : 'Member';
 
@@ -4059,7 +3890,7 @@ export default function ProjectSeasonMemberDetailPage() {
         }}
         context="member"
         preSelectedTemplate={aiPreselectedTemplate}
-        projectId={isTeamRoute ? String(project?.id || '') : String(clubId || '')}
+        projectId={isTeamRoute ? String(project?.id || '') : String(club?.id || project?.id || '')}
         organisationId={String(org?.id || '')}
         membershipId={membershipId}
         requireApproval

@@ -104,7 +104,7 @@ const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const RoutingRulesPage = lazy(() => import('./pages/config/RoutingRulesPage'));
 
 // Activity / Match pages (large, definitely lazy-load)
-const MatchDetailPage = lazy(() => import('./pages/activities/MatchDetailPage'));
+const MatchDetailPage = lazy(() => import('./pages/activities/MatchDetailWrapper'));
 const ProjectHierarchyMatchRedirectPage = lazy(() => import('./pages/activities/ProjectHierarchyMatchRedirectPage'));
 const ProjectHierarchySeasonRedirectPage = lazy(() => import('./pages/activities/ProjectHierarchySeasonRedirectPage'));
 const ProjectHierarchyCompetitionRedirectPage = lazy(() => import('./pages/activities/ProjectHierarchyCompetitionRedirectPage'));
@@ -113,7 +113,7 @@ const AIStudioPage = lazy(() => import('./pages/aistudio/AIStudioPage'));
 
 // Period (Season/Competition) pages
 const ProjectSeasonsPage = lazy(() => import('./pages/periods/ProjectSeasonsPage'));
-const ProjectCompetitionDetailPage = lazy(() => import('./pages/periods/ProjectCompetitionDetailPage'));
+const ProjectCompetitionDetailPage = lazy(() => import('./pages/periods/CompetitionDetailWrapper'));
 
 // Work hierarchy pages
 const ClubsPage = lazy(() => import('./pages/work/ClubsPage'));

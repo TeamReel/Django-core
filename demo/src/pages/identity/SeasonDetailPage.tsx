@@ -1,6 +1,11 @@
 import React from 'react';
 import ProjectSeasonDetailPage from '../periods/ProjectSeasonDetailPage';
+import { SeasonProvider } from '../../providers/SeasonProvider';
 
 export default function SeasonDetailPage() {
-  return <ProjectSeasonDetailPage />;
+  return (
+    <SeasonProvider>
+      <ProjectSeasonDetailPage />
+    </SeasonProvider>
+  );
 }

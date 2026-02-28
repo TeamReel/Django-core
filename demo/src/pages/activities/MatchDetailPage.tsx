@@ -4,9 +4,8 @@ import { Alert, Badge, Button } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { MatchOverviewTab, MatchContentTab, MatchTransactionsTab, MatchLineupTab } from './match-detail';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchFlags } from '../../utils/featureFlagsApi';
-import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { periodPathKey } from '../../utils/periodPath';
 import { type MatchMediaItem } from '../../components/MediaAssetCard';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import { useAuth } from '@django-core/auth-ui';
@@ -16,16 +15,13 @@ import ContentGenerationModal, { FORMATION_LAYOUTS, type ContentTemplate } from 
 import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MobileTabBar from '../../components/MobileTabBar';
-import { useUserRole } from '../../components/PermissionGuards';
 import { useBrandProfile, getAssetUrl } from '../../hooks/useBrandProfile';
+import { useSeasonContext } from '../../providers/SeasonProvider';
+import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
+import { getCsrfToken } from '../../types/season';
 
-type Organisation = {
-  id: string;
-  name: string;
-  slug?: string;
-  sport?: { id: number; name: string; slug?: string; sport_icon?: string; parent_sport_id?: number | null } | null;
-};
-type Project = { id: string; name: string; slug?: string };
+// Types (Organisation, Project, Period) imported from ../../types/season
+// getCsrfToken imported from ../../types/season
 
 type Participation = {
   id: string;
@@ -102,18 +98,12 @@ type MatchDetail = {
   events?: ActivityEvent[];
 };
 
-type Period = {
-  id: string;
-  name: string;
-  parent_period?: { id: string; name: string } | null;
-  sport?: { id: number; name: string; slug?: string; sport_icon?: string; parent_sport_id?: number | null } | null;
-};
-
 const looksLikeIdentifier = (value: string) => {
   const v = String(value || '').trim();
   if (!v) return false;
   if (/^\d+$/.test(v)) return true;
-  if (looksLikeUuid(v)) return true;
+  // Use simple UUID regex since looksLikeUuid was removed from imports
+  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)) return true;
   return false;
 };
 
@@ -127,56 +117,54 @@ const getEnvelopeListResults = <T,>(raw: any): T[] => {
   return Array.isArray(results) ? (results as T[]) : [];
 };
 
-const getCsrfToken = (): string => {
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] ||
-    ''
-  );
-};
-
 export default function HierarchyMatchDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { isPlayer } = useUserRole();
 
-  const { orgId, projectId, seasonId, competitionId, matchId, clubId } = useParams<{
-    orgId: string;
-    projectId: string;
-    seasonId: string;
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Shared season-hierarchy context (org, project, club, season, brand, permissions) Ã¢â€â‚¬Ã¢â€â‚¬
+  const {
+    org,
+    project,
+    club,
+    season,
+    resolvedSeasonId,
+    competitions: providerCompetitions,
+    loading: providerLoading,
+    error: providerError,
+    isTeamRoute,
+    orgSlugOrId,
+    clubSlugOrId,
+    projectSlugOrId,
+    effectiveSeasonId,
+    seasonsBasePath,
+    clubBrand,
+    brandLogoUrl,
+    isPlayer,
+    apiBaseUrl,
+  } = useSeasonContext();
+
+  // Match-specific route params only
+  const { competitionId, matchId } = useParams<{
     competitionId: string;
     matchId: string;
-    clubId?: string;
   }>();
 
-  const apiBaseUrl = getApiBaseUrl();
-
-  const [org, setOrg] = useState<Organisation | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
-  const [club, setClub] = useState<Project | null>(null);
   const [opponentClub, setOpponentClub] = useState<Project | null>(null);
 
-  // Brand profiles for club logos
-  const ownClubBrand = useBrandProfile({
-    projectId: club?.id ? String(club.id) : undefined,
-    organisationId: org?.id ? String(org.id) : undefined,
-    autoFetch: !!club?.id,
-  });
+  // Own club brand (clubBrand) comes from SeasonProvider
+  // Opponent club brand is match-specific
   const opponentClubBrand = useBrandProfile({
     projectId: opponentClub?.id ? String(opponentClub.id) : undefined,
     organisationId: org?.id ? String(org.id) : undefined,
     autoFetch: !!opponentClub?.id,
   });
 
-  const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
   const [match, setMatch] = useState<MatchDetail | null>(null);
-  const [resolvedSeasonUuid, setResolvedSeasonUuid] = useState<string>('');
   const [resolvedCompetitionUuid, setResolvedCompetitionUuid] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  useEffect(() => { if (!providerLoading && providerError) { setLoading(false); setError(providerError); } }, [providerLoading, providerError]);
   const [error, setError] = useState<string | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
   const [activeContext, setActiveContextState] = useState<any | null>(null);
@@ -225,7 +213,7 @@ export default function HierarchyMatchDetailPage() {
   const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
   const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
 
-  // ── Saved media items for this match (media-architecture.md: MediaItem ↔ Activity) ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Saved media items for this match (media-architecture.md: MediaItem Ã¢â€ â€ Activity) Ã¢â€â‚¬Ã¢â€â‚¬
   const [matchMedia, setMatchMedia] = useState<MatchMediaItem[]>([]);
   const [matchMediaLoading, setMatchMediaLoading] = useState(false);
 
@@ -234,7 +222,7 @@ export default function HierarchyMatchDetailPage() {
     setMatchMediaLoading(true);
     try {
       const response = await fetch(
-        `${getApiBaseUrl()}/api/v1/media/items/?activity=${match.id}`,
+        `${apiBaseUrl}/api/v1/media/items/?activity=${match.id}`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       );
       if (response.ok) {
@@ -265,7 +253,7 @@ export default function HierarchyMatchDetailPage() {
     );
     for (const item of sorted) {
       const subtype = (item.extraction_metadata?.asset_type as string) || 'other';
-      // Normalize: "lineup_07df73a6" → "lineup", "goal_celebration_07df73a6" → "goal"
+      // Normalize: "lineup_07df73a6" Ã¢â€ â€™ "lineup", "goal_celebration_07df73a6" Ã¢â€ â€™ "goal"
       let normalizedSubtype = subtype.replace(/_[a-f0-9]{8}$/i, '');
       if (normalizedSubtype === 'goal_celebration') normalizedSubtype = 'goal';
       if (normalizedSubtype === 'match_flyer') normalizedSubtype = 'flyer';
@@ -297,7 +285,7 @@ export default function HierarchyMatchDetailPage() {
   const handleDeleteMediaItem = useCallback(async (item: MatchMediaItem) => {
     try {
       const response = await fetch(
-        `${getApiBaseUrl()}/api/v1/media/items/${item.id}/`,
+        `${apiBaseUrl}/api/v1/media/items/${item.id}/`,
         { method: 'DELETE', credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       );
       if (response.ok || response.status === 204) {
@@ -315,7 +303,7 @@ export default function HierarchyMatchDetailPage() {
     try {
       // Restore by calling the save endpoint with the old item's storage path
       const response = await fetch(
-        `${getApiBaseUrl()}/api/v1/generative/assets/save/`,
+        `${apiBaseUrl}/api/v1/generative/assets/save/`,
         {
           method: 'POST',
           credentials: 'include',
@@ -397,7 +385,7 @@ export default function HierarchyMatchDetailPage() {
     setContentItemsLoading(true);
     try {
       const response = await fetch(
-        `${getApiBaseUrl()}/api/v1/content-generation/items/?activity=${match.id}`,
+        `${apiBaseUrl}/api/v1/content-generation/items/?activity=${match.id}`,
         { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
       );
       if (response.ok) {
@@ -439,7 +427,7 @@ export default function HierarchyMatchDetailPage() {
     void refreshMatchMedia();
   };
 
-  // ── Toast notifications ──
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Toast notifications Ã¢â€â‚¬Ã¢â€â‚¬
   const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
   const pushToast = useCallback((message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     const id = String(Date.now());
@@ -451,7 +439,7 @@ export default function HierarchyMatchDetailPage() {
   }, []);
 
   const handleContentGenerated = useCallback((message?: string) => {
-    pushToast(message || '📋 Content wordt gegenereerd en komt in de approval queue.', 'success');
+    pushToast(message || 'Ã°Å¸â€œâ€¹ Content wordt gegenereerd en komt in de approval queue.', 'success');
     // Refresh match media so newly approved/saved content appears
     void refreshMatchMedia();
   }, [pushToast, refreshMatchMedia]);
@@ -500,7 +488,7 @@ export default function HierarchyMatchDetailPage() {
       params.append('is_active', 'true');
       params.append('page_size', '500');  // Ensure we get all templates, not just first 50
 
-      const response = await fetch(`${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`, {
+      const response = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -554,12 +542,12 @@ export default function HierarchyMatchDetailPage() {
           }
           // Template has no sport = universal, include it
           if (!t.sport) {
-            console.log('[Content] ✓ Template', t.name, '- universal (no sport)');
+            console.log('[Content] Ã¢Å“â€œ Template', t.name, '- universal (no sport)');
             return true;
           }
           // If no sport available, only include universal templates
           if (!sportId) {
-            console.log('[Content] ✗ Template', t.name, '- no sportId to match against');
+            console.log('[Content] Ã¢Å“â€” Template', t.name, '- no sportId to match against');
             return false;
           }
 
@@ -576,12 +564,12 @@ export default function HierarchyMatchDetailPage() {
 
           // Template sport matches directly (exact match)
           if (templateSport === sportId) {
-            console.log('  ✓ Exact match: t.sport === sportId');
+            console.log('  Ã¢Å“â€œ Exact match: t.sport === sportId');
             return true;
           }
           // Template sport_detail matches by ID
           if (templateDetailId === sportId) {
-            console.log('  ✓ Match: t.sport_detail.id === sportId');
+            console.log('  Ã¢Å“â€œ Match: t.sport_detail.id === sportId');
             return true;
           }
 
@@ -589,7 +577,7 @@ export default function HierarchyMatchDetailPage() {
           // Example: Template=Football 11v11 (variant), Sport=Football (category)
           // Check if template's sport parent matches our sport
           if (templateParentSportId === sportId) {
-            console.log('  ✓ Match: template variant parent matches our sport');
+            console.log('  Ã¢Å“â€œ Match: template variant parent matches our sport');
             return true;
           }
 
@@ -598,15 +586,15 @@ export default function HierarchyMatchDetailPage() {
           const orgParentId = orgSport?.parent_sport_id ? Number(orgSport.parent_sport_id) : undefined;
 
           if (competitionParentId && templateSport === competitionParentId) {
-            console.log('  ✓ Match: we have variant, template has category');
+            console.log('  Ã¢Å“â€œ Match: we have variant, template has category');
             return true;
           }
           if (!competitionSport && orgParentId && templateSport === orgParentId) {
-            console.log('  ✓ Match: org variant, template has category');
+            console.log('  Ã¢Å“â€œ Match: org variant, template has category');
             return true;
           }
 
-          console.log('  ✗ No match');
+          console.log('  Ã¢Å“â€” No match');
           return false;
         });
 
@@ -685,80 +673,21 @@ export default function HierarchyMatchDetailPage() {
   // Bench status: memberId -> 'wissel' | 'afwezig'
   const [lineupBenchStatus, setLineupBenchStatus] = useState<Record<string, string>>({});
 
-  const isTeamRoute = Boolean(clubId);
-  const orgSlugOrId = String(orgId || '').trim();
-  const projectSlugOrId = String(projectId || '').trim();
-  const clubSlugOrId = String(clubId || '').trim();
-  const seasonKeyOrId = String(seasonId || '').trim();
+  // Route params + path derivation Ã¢â‚¬â€ shared values from SeasonProvider
+  const seasonKeyOrId = effectiveSeasonId;
   const effectiveCompetitionId = String(competitionId || '').trim();
   const effectiveMatchId = String(matchId || '').trim();
 
-  // Canonicalize club segment: if it's an id, resolve slug and redirect.
-  const shouldResolveClubSlug = useMemo(
-    () => isTeamRoute && looksLikeIdentifier(clubSlugOrId),
-    [clubSlugOrId, isTeamRoute]
-  );
-  const [resolvedClubSlug, setResolvedClubSlug] = useState<string>('');
-  const [clubSlugResolved, setClubSlugResolved] = useState(false);
-
-  useEffect(() => {
-    const run = async () => {
-      try {
-        if (!shouldResolveClubSlug) return;
-        if (!orgSlugOrId || !clubSlugOrId) return;
-
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-          { credentials: 'include' }
-        );
-        if (res.ok) {
-          const project = getEnvelopeData<Project>(await res.json().catch(() => null));
-          const slug = String(project?.slug || '').trim();
-          if (slug) {
-            setResolvedClubSlug(slug);
-            return;
-          }
-        }
-
-        const res2 = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubSlugOrId)}/`, {
-          credentials: 'include',
-        });
-        if (res2.ok) {
-          const project = getEnvelopeData<Project>(await res2.json().catch(() => null));
-          const slug = String(project?.slug || '').trim();
-          if (slug) setResolvedClubSlug(slug);
-        }
-      } finally {
-        setClubSlugResolved(true);
-      }
-    };
-
-    run();
-  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, shouldResolveClubSlug]);
-
-  const pendingClubSlugResolve = shouldResolveClubSlug && !clubSlugResolved;
-  const clubSlugRedirectTarget =
-    shouldResolveClubSlug &&
-    resolvedClubSlug &&
-    resolvedClubSlug !== clubSlugOrId &&
-    orgSlugOrId &&
-    projectSlugOrId &&
-    seasonKeyOrId &&
-    effectiveCompetitionId &&
-    effectiveMatchId
-      ? `/${orgSlugOrId}/${resolvedClubSlug}/${projectSlugOrId}/${seasonKeyOrId}/${effectiveCompetitionId}/${effectiveMatchId}${location.search || ''}`
-      : null;
-
-  const seasonsBasePath = isTeamRoute
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
-    : `/${orgSlugOrId}/projects/${projectSlugOrId}`;
+  // Club slug resolution now handled by SeasonProvider
+  const pendingClubSlugResolve = false;
+  const clubSlugRedirectTarget: string | null = null;
 
   const competitionBasePath = useMemo(() => {
     const seasonKey = String(seasonKeyOrId || '').trim();
     const compKey = String(effectiveCompetitionId || '').trim();
     if (!seasonKey || !compKey) return '';
     return `${seasonsBasePath}/${seasonKey}/${compKey}`;
-  }, [effectiveCompetitionId, isTeamRoute, seasonKeyOrId, seasonsBasePath]);
+  }, [effectiveCompetitionId, seasonKeyOrId, seasonsBasePath]);
 
   const matchBasePath = useMemo(() => {
     if (!competitionBasePath || !effectiveMatchId) return '';
@@ -797,101 +726,44 @@ export default function HierarchyMatchDetailPage() {
 
 
 
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Fetch competition + match + opponent (org/project/club/season from SeasonProvider) Ã¢â€â‚¬Ã¢â€â‚¬
   useEffect(() => {
     const run = async () => {
-      if (!orgSlugOrId || !projectSlugOrId || !seasonKeyOrId || !effectiveCompetitionId || !effectiveMatchId) return;
+      // Wait for provider to load season + competitions before fetching match-specific data
+      if (!resolvedSeasonId || !effectiveCompetitionId || !effectiveMatchId) return;
       try {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, clubRes, matchRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, { credentials: 'include' }),
-          fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(projectSlugOrId)}/`,
-            { credentials: 'include' }
-          ),
-          isTeamRoute
-            ? fetch(
-                `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-                { credentials: 'include' }
-              )
-            : Promise.resolve(null as any),
-          fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(effectiveMatchId)}/`, { credentials: 'include' }),
-        ]);
-
-        if (orgRes.ok) setOrg(getEnvelopeData(await orgRes.json()));
-        let projectJson: Project | null = null;
-        if (projectRes.ok) {
-          projectJson = getEnvelopeData<Project>(await projectRes.json());
-          setProject(projectJson);
-        }
-        if (isTeamRoute && clubRes?.ok) setClub(getEnvelopeData(await clubRes.json()));
-
-        if (!projectJson?.id) throw new Error('Failed to load project');
-
-        // Resolve season UUID from URL param (UUID or slugified name) using root periods only
-        let seasonUuid = '';
-        if (looksLikeUuid(seasonKeyOrId)) {
-          seasonUuid = String(seasonKeyOrId).trim();
-        } else {
-          const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(
-            String(projectJson.id)
-          )}&parent_id=null&page_size=500`;
-          const rootRes = await fetch(rootPeriodsUrl, { credentials: 'include' });
-          if (rootRes.ok) {
-            const rootRaw: any = await rootRes.json().catch(() => null);
-            const rootPeriods = getEnvelopeListResults<Period>(rootRaw);
-            const resolved = rootPeriods.find((p: any) => periodPathKey(p) === String(seasonKeyOrId));
-            seasonUuid = String((resolved as any)?.id || '').trim();
-          }
-        }
-
-        // Resolve competition UUID from URL param (UUID or slugified name) against season children
+        // Resolve competition UUID from slug using provider's competitions list
         let competitionUuid = '';
-        if (looksLikeUuid(effectiveCompetitionId)) {
-          competitionUuid = String(effectiveCompetitionId).trim();
-        } else if (seasonUuid) {
-          const childrenUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(seasonUuid)}&page_size=500`;
-          const childrenRes = await fetch(childrenUrl, { credentials: 'include' });
-          if (childrenRes.ok) {
-            const childrenRaw: any = await childrenRes.json().catch(() => null);
-            const children = getEnvelopeListResults<Period>(childrenRaw);
-            const resolved = children.find((p: any) => periodPathKey(p) === String(effectiveCompetitionId));
-            competitionUuid = String((resolved as any)?.id || '').trim();
-          }
+        const isUuidComp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(effectiveCompetitionId);
+        if (isUuidComp) {
+          competitionUuid = effectiveCompetitionId;
+        } else {
+          const found = providerCompetitions.find((p: any) => periodPathKey(p) === effectiveCompetitionId);
+          competitionUuid = String(found?.id || '').trim();
         }
 
-        if (!seasonUuid) throw new Error('Season not found');
         if (!competitionUuid) throw new Error('Competition not found');
-
-        setResolvedSeasonUuid(seasonUuid);
         setResolvedCompetitionUuid(competitionUuid);
 
-        const [seasonRes, competitionRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' }),
+        // Fetch competition detail + match in parallel
+        const [competitionRes, matchRes] = await Promise.all([
           fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(competitionUuid)}/`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(effectiveMatchId)}/`, { credentials: 'include' }),
         ]);
-
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const seasonJson = getEnvelopeData<Period>(await seasonRes.json());
-        setSeason(seasonJson);
 
         if (!competitionRes.ok) throw new Error('Failed to load competition');
         const competitionJson = getEnvelopeData<Period>(await competitionRes.json());
         setCompetition(competitionJson);
 
         // Canonicalize URL to slugs when possible
-        const desiredSeasonKey = periodPathKey(seasonJson) || '';
         const desiredCompetitionKey = periodPathKey(competitionJson) || '';
-        if (
-          desiredSeasonKey &&
-          desiredCompetitionKey &&
-          (String(desiredSeasonKey) !== String(seasonKeyOrId) ||
-            String(desiredCompetitionKey) !== String(effectiveCompetitionId))
-        ) {
+        if (desiredCompetitionKey && String(desiredCompetitionKey) !== String(effectiveCompetitionId)) {
           const suffix = location.search ? location.search : '';
           navigate(
-            `${seasonsBasePath}/${desiredSeasonKey}/${desiredCompetitionKey}/${effectiveMatchId}${suffix}`,
+            `${seasonsBasePath}/${seasonKeyOrId}/${desiredCompetitionKey}/${effectiveMatchId}${suffix}`,
             { replace: true }
           );
           return;
@@ -916,10 +788,9 @@ export default function HierarchyMatchDetailPage() {
         const desiredMatchKey = String((matchJson as any)?.slug || '').trim();
         if (desiredMatchKey && desiredMatchKey !== String(effectiveMatchId)) {
           const suffix = location.search ? location.search : '';
-          const seasonKey = periodPathKey(seasonJson) || String(seasonKeyOrId);
           const compKey = periodPathKey(competitionJson) || String(effectiveCompetitionId);
           navigate(
-            `${seasonsBasePath}/${seasonKey}/${compKey}/${desiredMatchKey}${suffix}`,
+            `${seasonsBasePath}/${seasonKeyOrId}/${compKey}/${desiredMatchKey}${suffix}`,
             { replace: true }
           );
           return;
@@ -934,13 +805,13 @@ export default function HierarchyMatchDetailPage() {
     run();
   }, [
     apiBaseUrl,
-    orgSlugOrId,
-    projectSlugOrId,
-    clubSlugOrId,
-    isTeamRoute,
-    seasonKeyOrId,
+    resolvedSeasonId,
+    providerCompetitions,
     effectiveCompetitionId,
     effectiveMatchId,
+    seasonsBasePath,
+    seasonKeyOrId,
+    orgSlugOrId,
   ]);
 
   useEffect(() => {
@@ -982,8 +853,8 @@ export default function HierarchyMatchDetailPage() {
           };
         };
 
-        // 1) Project members (user ids) — used for persona grouping + fallback roster matching
-        const seasonUuid = String(resolvedSeasonUuid || '').trim();
+        // 1) Project members (user ids) Ã¢â‚¬â€ used for persona grouping + fallback roster matching
+        const seasonUuid = String(resolvedSeasonId || '').trim();
         const baseMembersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/`;
 
         const fetchMembers = async (withSeasonFilter: boolean) => {
@@ -1058,7 +929,7 @@ export default function HierarchyMatchDetailPage() {
           return an.localeCompare(bn);
         });
 
-        // 2) Organisation memberships (membership ids + user) — best-effort only.
+        // 2) Organisation memberships (membership ids + user) Ã¢â‚¬â€ best-effort only.
         // This is expensive for large orgs; only fetch it if we truly need it.
         // If project members already include organisation_membership_id, we can render rosters without it.
         let orgMembers: OrgMember[] = [];
@@ -1130,8 +1001,8 @@ export default function HierarchyMatchDetailPage() {
             if (existing) {
               squadMembers.push(existing);
             } else {
-              const label = String(p?.member?.user_name || '—').trim();
-              squadMembers.push(buildSyntheticMember(mid, label || '—'));
+              const label = String(p?.member?.user_name || 'Ã¢â‚¬â€').trim();
+              squadMembers.push(buildSyntheticMember(mid, label || 'Ã¢â‚¬â€'));
             }
           }
 
@@ -1187,7 +1058,7 @@ export default function HierarchyMatchDetailPage() {
     };
 
     run();
-  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonUuid]);
+  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonId]);
 
   // Fetch project members for formation lineup editor (same as ContentGenerationModal)
   useEffect(() => {
@@ -1344,7 +1215,7 @@ export default function HierarchyMatchDetailPage() {
     return (
       <div className="p-6">
         <PageContent>
-          <div className="text-center py-8 text-gray-500">Loading match…</div>
+          <div className="text-center py-8 text-gray-500">Loading matchÃ¢â‚¬Â¦</div>
         </PageContent>
       </div>
     );
@@ -1379,12 +1250,8 @@ export default function HierarchyMatchDetailPage() {
   const homeTeamName = isHome ? ownTeamName : opponentName;
   const awayTeamName = isHome ? opponentName : ownTeamName;
 
-  // Resolve logo URLs from brand profiles
-  const ownLogoUrl = ownClubBrand.getAsset?.('logo_upload')
-    ? getAssetUrl(ownClubBrand.getAsset('logo_upload')!.url)
-    : ownClubBrand.getAsset?.('logo')
-      ? getAssetUrl(ownClubBrand.getAsset('logo')!.url)
-      : null;
+  // Own club logo from SeasonProvider
+  const ownLogoUrl = brandLogoUrl;
   const opponentLogoUrl = opponentClubBrand.getAsset?.('logo_upload')
     ? getAssetUrl(opponentClubBrand.getAsset('logo_upload')!.url)
     : opponentClubBrand.getAsset?.('logo')
@@ -1639,7 +1506,7 @@ export default function HierarchyMatchDetailPage() {
                     }}
                     title="Set this match as your active context"
                   >
-                    {isActive ? '✓ Active Context' : 'Make active'}
+                    {isActive ? 'Ã¢Å“â€œ Active Context' : 'Make active'}
                   </button>
                 );
               })()}
@@ -1735,7 +1602,7 @@ export default function HierarchyMatchDetailPage() {
           }
         />
 
-        {/* Mobile action bar removed — buttons were too cluttered on mobile */}
+        {/* Mobile action bar removed Ã¢â‚¬â€ buttons were too cluttered on mobile */}
 
         <CreateTransactionModal
           isOpen={isCreateTxnModalOpen}
@@ -1747,7 +1614,7 @@ export default function HierarchyMatchDetailPage() {
           scope="match"
           organizationId={String(org?.id || '').trim()}
           defaultProjectId={match?.project?.id != null ? String(match.project.id) : project?.id != null ? String(project.id) : null}
-          seasonId={String(resolvedSeasonUuid || '').trim() || null}
+          seasonId={String(resolvedSeasonId || '').trim() || null}
           periodId={String(match?.period?.id || '').trim() || null}
           activityId={String(match?.id || '').trim() || null}
           currentUserId={Number((user as any)?.id)}
@@ -1777,7 +1644,7 @@ export default function HierarchyMatchDetailPage() {
             matchData={match}
             season={season}
             organisationSport={org?.sport}
-            organisationId={org?.id || orgId}
+            organisationId={org?.id || orgSlugOrId}
             template={selectedTemplate}
             contentTypeLabel={selectedContentTypeLabel}
             homeLogoUrl={homeLogoUrl}
@@ -1841,7 +1708,7 @@ export default function HierarchyMatchDetailPage() {
                     padding: '4px 8px',
                   }}
                 >
-                  ×
+                  Ãƒâ€”
                 </button>
               </div>
 
@@ -1875,7 +1742,7 @@ export default function HierarchyMatchDetailPage() {
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400">
-                    <div className="text-3xl mb-2">🖼️</div>
+                    <div className="text-3xl mb-2">Ã°Å¸â€“Â¼Ã¯Â¸Â</div>
                     <p>Preview not available</p>
                     <p className="text-sm">The generated file is being processed</p>
                   </div>
@@ -1919,7 +1786,7 @@ export default function HierarchyMatchDetailPage() {
                         fontWeight: 500,
                       }}
                     >
-                      ⬇️ Download
+                      Ã¢Â¬â€¡Ã¯Â¸Â Download
                     </a>
                   )}
                   <Button variant="secondary" onClick={closeContentPreview}>
@@ -1986,7 +1853,7 @@ export default function HierarchyMatchDetailPage() {
                     padding: '4px 8px',
                   }}
                 >
-                  ×
+                  Ãƒâ€”
                 </button>
               </div>
 
@@ -2021,7 +1888,7 @@ export default function HierarchyMatchDetailPage() {
                   gap: '8px',
                 }}
               >
-                {/* Share (Web Share API — mobile) */}
+                {/* Share (Web Share API Ã¢â‚¬â€ mobile) */}
                 {typeof navigator !== 'undefined' && 'share' in navigator && (
                   <Button
                     variant="secondary"
@@ -2032,7 +1899,7 @@ export default function HierarchyMatchDetailPage() {
                       }).catch(() => { /* user cancelled */ });
                     }}
                   >
-                    ⤴ Delen
+                    Ã¢Â¤Â´ Delen
                   </Button>
                 )}
                 {/* Download */}
@@ -2053,7 +1920,7 @@ export default function HierarchyMatchDetailPage() {
                     border: '1px solid var(--app-border)',
                   }}
                 >
-                  ↓ Download
+                  Ã¢â€ â€œ Download
                 </a>
                 {/* Open in new tab */}
                 <a
@@ -2073,7 +1940,7 @@ export default function HierarchyMatchDetailPage() {
                     fontWeight: 500,
                   }}
                 >
-                  ↗ Openen
+                  Ã¢â€ â€” Openen
                 </a>
                 <Button variant="secondary" onClick={() => setSavedAssetPreview(null)}>
                   Sluiten
@@ -2099,8 +1966,8 @@ export default function HierarchyMatchDetailPage() {
           {activeTab === 'overview' && (
             <MatchOverviewTab
               match={match}
-              org={org}
-              competition={competition}
+              org={org as any}
+              competition={competition as any}
               isHome={!!isHome}
               homeTeamName={homeTeamName}
               awayTeamName={awayTeamName}
@@ -2149,8 +2016,8 @@ export default function HierarchyMatchDetailPage() {
           {activeTab === 'content' && (
             <MatchContentTab
               match={match}
-              org={org}
-              competition={competition}
+              org={org as any}
+              competition={competition as any}
               templatesLoading={templatesLoading}
               matchMediaLoading={matchMediaLoading}
               availableTemplates={availableTemplates}
@@ -2166,7 +2033,7 @@ export default function HierarchyMatchDetailPage() {
 
           {activeTab === 'transactions' && (
             <MatchTransactionsTab
-              org={org}
+              org={org as any}
               match={match}
               project={project}
             />
@@ -2215,7 +2082,7 @@ export default function HierarchyMatchDetailPage() {
                 onClick={() => dismissToast(toast.id)}
                 style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, opacity: 0.7 }}
               >
-                ×
+                Ãƒâ€”
               </button>
             </div>
           ))}

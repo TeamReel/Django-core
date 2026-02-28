@@ -1,11 +1,10 @@
-﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MEDIA_SLOTS, MediaSlotId } from '../../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots, countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import {
   PageContent,
@@ -13,8 +12,6 @@ import {
 } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
-import { useContextSwitcher } from '@django-core/context-switcher';
-import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
@@ -23,18 +20,17 @@ import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
 import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
-import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import { periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 import MobileTabBar from '../../components/MobileTabBar';
-import { useUserRole } from '../../components/PermissionGuards';
 import { WorkflowPanel } from '../../components/Workflows';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal, type SavedAssetInfo } from '../../components/AssetGenerationModal';
-import { useBrandProfile, getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
+import { getAssetUrl } from '../../hooks/useBrandProfile';
 import {
   useVideoJobs,
   getJobStatusDisplay,
@@ -51,97 +47,72 @@ import {
   compactTextTdStyle,
   compactThStyle,
 } from '../identity/detail/detailStyles';
+import { useSeasonContext, isSeasonPeriod } from '../../providers/SeasonProvider';
+import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
+import { getCsrfToken } from '../../types/season';
 
-type Period = {
-  id: string;
-  name: string;
-  slug?: string;
-  start_date: string;
-  end_date: string;
-  period_type?: string;
-  parent_period?: { id: string; name: string } | null;
-  children_count?: number;
-  matches_count?: number;
-  children_matches_count?: number;
-  sport_id?: string | number | null;
-  sport?: {
-    id: string | number;
-    name: string;
-    sport_icon?: string | null;
-    category_name?: string | null;
-  } | null;
-};
-
-type ListResponse<T> = {
-  results: T[];
-  count: number;
-};
-
-type Project = {
-  id: string;
-  name: string;
-  slug?: string;
-};
-
-type Organisation = {
-  id: string;
-  name: string;
-  slug?: string;
-  user_role?: 'admin' | 'member';
-  sport?: {
-    id: string | number;
-    name: string;
-    slug: string;
-    sport_icon?: string;
-  } | null;
-};
-
-// MEDIA_SLOTS, memberHasMedia, countFilledMediaSlots imported from shared utils
-
-const getCsrfToken = (): string => {
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] ||
-    ''
-  );
-};
-
-const getPeriodType = (p: any): string => {
-  const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
-  return String(t || '').toLowerCase();
-};
-
-const getPeriodParentId = (p: any): string => {
-  const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
-  return parentId ? String(parentId) : '';
-};
-
-const isSeasonPeriod = (p: any): boolean => {
-  // TeamReel hierarchy: Season is a root Period (no parent_period).
-  // Do NOT infer by name; rely on parent/type.
-  const parentId = getPeriodParentId(p);
-  if (parentId) return false;
-
-  const type = getPeriodType(p);
-  if (type === 'season') return true;
-
-  // Guard against misconfigured root competitions.
-  if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
-
-  return true;
-};
+// Types (Period, Project, Organisation) imported from ../../types/season
+// Helpers (getCsrfToken, isSeasonPeriod) imported from providers / types/season
 
 export const ProjectSeasonDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orgId, projectId, seasonId, clubId } = useParams<{ orgId: string; projectId: string; seasonId: string; clubId?: string }>();
   const { user } = useAuth();
-  const { context } = useContextSwitcher();
-  const { isPlayer } = useUserRole();
 
-  const apiBaseUrl = getApiBaseUrl();
+  // ── Shared season-hierarchy context (org, project, club, season, permissions, brand) ──
+  const ctx = useSeasonContext();
+  const {
+    org,
+    project,
+    club,
+    season: providerSeason,
+    resolvedSeasonId,
+    competitions: providerCompetitions,
+    seasonsForSwitcher,
+    loading: providerLoading,
+    error: providerError,
+    competitionsLoading: providerCompetitionsLoading,
+    isTeamRoute,
+    orgSlugOrId,
+    clubSlugOrId,
+    projectSlugOrId,
+    effectiveSeasonId,
+    seasonsBasePath,
+    projectDetailPath,
+    seasonPathKey,
+    memberDetailHref,
+    clubBrand,
+    teamBrand,
+    batchBrandKits,
+    brandLogoUrl,
+    brandSponsorUrl,
+    isSuperAdmin,
+    orgForPermissions,
+    permissionContext,
+    userCanEditProject,
+    userCanDeleteProject,
+    isPlayer,
+    apiBaseUrl,
+    reloadSeason,
+  } = ctx;
+
+  // ── Local copies of provider data for optimistic updates ──
+  // The provider fetches the data; these locals allow in-place mutations (edit/delete)
+  // without forcing a full provider re-fetch.
+  const [competitions, setCompetitions] = useState<Period[]>([]);
+  useEffect(() => { setCompetitions(providerCompetitions); }, [providerCompetitions]);
+
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { setLoading(providerLoading); }, [providerLoading]);
+
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { setError(providerError); }, [providerError]);
+
+  const [competitionsLoading, setCompetitionsLoading] = useState(false);
+  useEffect(() => { setCompetitionsLoading(providerCompetitionsLoading); }, [providerCompetitionsLoading]);
+
+  const [season, setSeason] = useState<Period | null>(providerSeason);
+  useEffect(() => { setSeason(providerSeason); }, [providerSeason]);
 
   const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
     ...actionButtonStyle(tone),
@@ -158,15 +129,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     fontWeight: 500,
   };
 
-  const [org, setOrg] = useState<Organisation | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
-  const [club, setClub] = useState<Project | null>(null);
-  const [season, setSeason] = useState<Period | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
   const [activeContext, setActiveContextState] = useState<any | null>(null);
-  const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
-  const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
-  const [competitions, setCompetitions] = useState<Period[]>([]);
   const [matches, setMatches] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
@@ -210,11 +174,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const [isAddSquadMemberModalOpen, setIsAddSquadMemberModalOpen] = useState(false);
   const [hierarchySearch, setHierarchySearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [competitionsLoading, setCompetitionsLoading] = useState(false);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [opponentClubNames, setOpponentClubNames] = useState<Record<string, string>>({});
-  const [error, setError] = useState<string | null>(null);
 
   // Edit modal (match TeamDetail page patterns: edit in-place, no /edit route)
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
@@ -362,10 +323,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     }
   }, [org?.sport?.id, fetchAvailableTemplates]);
 
-  const orgSlugOrId = orgId || '';
-  const projectSlugOrId = projectId || '';
-  const effectiveSeasonId = seasonId || '';
-
   // Load active context on mount
   useEffect(() => {
     let cancelled = false;
@@ -380,9 +337,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     void loadActiveContext();
     return () => { cancelled = true; };
   }, []);
-
-  const isTeamRoute = Boolean(clubId);
-  const clubSlugOrId = clubId || '';
 
   const createModalOrganisations = useMemo(() => {
     if (!org) return [];
@@ -405,65 +359,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return [{ id: String((team as any).id), name: String((team as any).name || ''), slug: (team as any).slug, parent_id: clubIdValue || undefined } as any];
   }, [project, club]);
 
-  // Permission checks (match ProjectDetailPage logic)
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin =
-    Boolean((user as any)?.is_superuser) ||
-    Boolean((user as any)?.is_staff) ||
-    userRole === 'superadmin' ||
-    userRole === 'super admin';
-
-  const orgForPermissions = useMemo(() => {
-    const contextOrg = context?.organisation as any;
-    const orgIdMatches = (candidate: any) => {
-      if (!candidate) return false;
-      const cid = String(candidate.id || '').trim();
-      const cslug = String(candidate.slug || '').trim();
-      const oid = String((org as any)?.id || '').trim();
-      const oslug = String((org as any)?.slug || '').trim();
-      const route = String(orgSlugOrId || '').trim();
-      return (
-        (cid && oid && cid === oid) ||
-        (cslug && oslug && cslug === oslug) ||
-        (cid && route && cid === route) ||
-        (cslug && route && cslug === route)
-      );
-    };
-
-    if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
-    const projectOrg = (project as any)?.organisation;
-    if (projectOrg?.user_role) return projectOrg;
-    if ((org as any)?.user_role) return org;
-    if (orgIdMatches(contextOrg)) return contextOrg;
-    return projectOrg || org || contextOrg || null;
-  }, [context?.organisation, org, orgSlugOrId, project]);
-
-  const permissionContext = useMemo(
-    () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
-    [orgForPermissions, isSuperAdmin]
-  );
-
-  const userCanEditProject = canEditProject(permissionContext);
-  const userCanDeleteProject = canDeleteProject(permissionContext);
-
-  const projectDetailPath = isTeamRoute
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}`;
-
-  const seasonsBasePath = isTeamRoute
-    ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}`
-    : `/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/seasons`;
-
-  const seasonPathKey = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
-
-  const memberDetailHref = (membershipId: string): string => {
-    const mid = String(membershipId || '').trim();
-    if (!mid) return '';
-    // Member detail is only supported on vanity team routes.
-    if (!isTeamRoute) return '';
-    if (!seasonPathKey) return '';
-    return `${seasonsBasePath}/${seasonPathKey}/${encodeURIComponent(mid)}`;
-  };
+  // Permission checks, navigation helpers, and brand profiles now come from useSeasonContext
 
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -497,21 +393,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return String(mine?.id || '').trim();
   }, [currentUserId, members]);
 
-  // ── Brand profile for club-level assets (needed by guest avatar + batch modal) ──
-  const clubProjectId = isTeamRoute ? (club as any)?.id : project?.id;
-  const clubBrand = useBrandProfile({
-    projectId: clubProjectId ? String(clubProjectId) : undefined,
-    organisationId: String(org?.id || ''),
-    autoFetch: !!clubProjectId,
-  });
-
-  // ── Brand profile for team-level assets (kits may differ from club) ──
-  const teamProjectId = isTeamRoute ? (project as any)?.id : null;
-  const teamBrand = useBrandProfile({
-    projectId: teamProjectId ? String(teamProjectId) : undefined,
-    organisationId: String(org?.id || ''),
-    autoFetch: !!teamProjectId,
-  });
+  // Brand profiles (clubBrand, teamBrand) come from useSeasonContext
 
   // ── Video processing jobs for this project (content tab gallery) ──
   // Only show season-level content (then_vs_now), not match-level (lineup, match_intro, etc.)
@@ -692,104 +574,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return 0;
   }, [matches.length, season]);
 
-  useEffect(() => {
-    const run = async () => {
-      if (!orgSlugOrId || !projectSlugOrId || !effectiveSeasonId) return;
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [orgRes, projectRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
-          isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
-                credentials: 'include',
-              })
-            : Promise.resolve(null as any),
-        ]);
-
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-
-        const rawOrg: any = await orgRes.json();
-        const rawProject: any = await projectRes.json();
-
-        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
-
-        setOrg(orgJson);
-        setProject(projectJson);
-
-        if (isTeamRoute && clubRes && (clubRes as any).ok) {
-          try {
-            const rawClub: any = await (clubRes as any).json();
-            setClub(rawClub?.data || rawClub);
-          } catch {
-            // ignore
-          }
-        }
-
-        // Fetch only root periods for the season switcher (much smaller than all periods)
-        const rootPeriodsUrl = `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(
-          String(projectJson.id)
-        )}&parent_id=null&page_size=500`;
-        const rootPeriods = await fetchAllPages<Period>(
-          rootPeriodsUrl,
-          { credentials: 'include' },
-          { ttlMs: 60_000, cacheKey: `periods:root:${projectJson.id}` }
-        );
-
-        // Seasons switcher options: root seasons within the same team/project
-        const seasonOptions = rootPeriods.filter(isSeasonPeriod);
-        setSeasonsForSwitcher(seasonOptions);
-
-        // Resolve season UUID from URL param (UUID or slugified name)
-        const isUuidParam = looksLikeUuid(effectiveSeasonId);
-        const seasonFromList = isUuidParam
-          ? seasonOptions.find((p) => String(p.id) === String(effectiveSeasonId))
-          : seasonOptions.find((p) => periodPathKey(p) === String(effectiveSeasonId));
-
-        const seasonUuid = String(seasonFromList?.id || (isUuidParam ? effectiveSeasonId : '')).trim();
-        if (!seasonUuid) throw new Error('Season not found');
-        setResolvedSeasonId(seasonUuid);
-
-        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' });
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const rawSeason: any = await seasonRes.json();
-        const seasonJson: Period = rawSeason?.data || rawSeason;
-        setSeason(seasonJson);
-
-        const desiredKey = periodPathKey(seasonJson);
-        if (desiredKey && desiredKey !== String(effectiveSeasonId)) {
-          const suffix = location.search ? location.search : '';
-          navigate(`${seasonsBasePath}/${desiredKey}${suffix}`, { replace: true });
-        }
-
-        // Load competitions (direct children of this season) using server-side filtering
-        setCompetitionsLoading(true);
-        try {
-          const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(
-            seasonUuid
-          )}&page_size=500`;
-          const competitionResults = await fetchAllPages<Period>(
-            competitionsUrl,
-            { credentials: 'include' },
-            { ttlMs: 60_000, cacheKey: `periods:children:${seasonUuid}` }
-          );
-          setCompetitions(competitionResults);
-        } finally {
-          setCompetitionsLoading(false);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load season');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, isTeamRoute, clubSlugOrId]);
+  // Main org/project/club/season/competitions data now fetched by SeasonProvider
 
   // ── Load brand profile ID for Kits tab ──
   useEffect(() => {
@@ -813,25 +598,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [apiBaseUrl, project?.id]);
 
-  // Build brand assets object for batch modal
-  // On team routes: prefer team-level kits, fall back to club-level
-  const batchBrandAssets = useMemo(() => {
-    const kits: Record<string, string | null> = {};
-    for (const role of KIT_ROLES) {
-      // Prefer team-level kit (if on team route), then club-level kit
-      const teamAsset = isTeamRoute
-        ? (teamBrand.getAsset?.(`kit_${role.id}_combined`) || teamBrand.getAsset?.(`kit_${role.id}`))
-        : null;
-      const clubAsset = clubBrand.getAsset?.(`kit_${role.id}_combined`) || clubBrand.getAsset?.(`kit_${role.id}`);
-      const asset = teamAsset || clubAsset;
-      kits[role.id] = asset ? getAssetUrl(asset.url) : null;
-    }
-    return {
-      logo: clubBrand.getAsset?.('logo_upload') ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url) : null,
-      sponsor: clubBrand.getAsset?.('sponsor_logo_upload') ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url) : null,
-      kits,
-    };
-  }, [clubBrand, teamBrand, isTeamRoute]);
+  // Brand assets for batch modal — pre-computed by SeasonProvider
+  const batchBrandAssets = useMemo(() => ({
+    logo: brandLogoUrl,
+    sponsor: brandSponsorUrl,
+    kits: batchBrandKits,
+  }), [brandLogoUrl, brandSponsorUrl, batchBrandKits]);
 
   // Build BatchMember objects from squad members
   const batchMembers = useMemo((): BatchMember[] => {
@@ -3535,8 +3307,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {new Date(competition.start_date).toLocaleDateString()} "“{' '}
-                                {new Date(competition.end_date).toLocaleDateString()}
+                                {new Date(competition.start_date || '').toLocaleDateString()} "“{' '}
+                                {new Date(competition.end_date || '').toLocaleDateString()}
                               </td>
                               <td style={compactTdStyle}>
                                 <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
@@ -3796,7 +3568,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {/* Brand Assets - logos, kits, sponsors with inheritance from club */}
               <AssetsTab
                 level="season"
-                organisationId={String(org?.id || orgId || '')}
+                organisationId={String(org?.id || orgSlugOrId || '')}
                 projectId={String(project.id)}
                 parentProjectId={club?.id ? String(club.id) : undefined}
                 entityName={season.name}
