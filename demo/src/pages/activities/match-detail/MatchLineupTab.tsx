@@ -241,17 +241,17 @@ function FieldVisualization({
                 alignItems: 'center',
                 gap: 1,
                 zIndex: 10,
-                minWidth: 54,
+                minWidth: 44,
               }}
             >
               {/* Position label */}
               <div
                 style={{
-                  fontSize: 8,
+                  fontSize: 7,
                   fontWeight: 700,
-                  color: 'rgba(255,255,255,0.6)',
+                  color: 'rgba(255,255,255,0.5)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.03em',
+                  letterSpacing: '0.02em',
                   lineHeight: 1,
                 }}
               >
@@ -268,9 +268,9 @@ function FieldVisualization({
                   setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
                 }}
                 style={{
-                  width: 76,
-                  padding: '2px 3px',
-                  fontSize: 9,
+                  width: 62,
+                  padding: '1px 2px',
+                  fontSize: 8,
                   fontWeight: currentId ? 700 : 400,
                   background: currentId
                     ? 'rgba(22,163,74,0.6)'
@@ -279,16 +279,16 @@ function FieldVisualization({
                   border: currentId
                     ? '2px solid rgba(255,255,255,0.7)'
                     : '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: 6,
+                  borderRadius: 4,
                   outline: 'none',
                   cursor: 'pointer',
                   textAlign: 'center',
                   appearance: 'none',
                   WebkitAppearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 4px center',
-                  paddingRight: 16,
+                  backgroundPosition: 'right 3px center',
+                  paddingRight: 12,
                 }}
               >
                 <option
@@ -328,11 +328,11 @@ function FieldVisualization({
               {currentMember && (
                 <div
                   style={{
-                    fontSize: 8,
+                    fontSize: 7,
                     fontWeight: 600,
                     color: '#fff',
                     textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                    maxWidth: 72,
+                    maxWidth: 58,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',

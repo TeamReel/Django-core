@@ -16,7 +16,6 @@ import {
   type WorkflowInstance,
   type TransitionHistoryEntry,
   classifyState,
-  executeTransition,
 } from '../hooks/useWorkflows';
 import { WorkflowStatusBadge } from '../components/Workflows/WorkflowStatusBadge';
 import { WorkflowActionButtons } from '../components/Workflows/WorkflowActionButtons';
@@ -679,114 +678,105 @@ interface VideoReviewModalProps {
   onClose: () => void;
   onActionComplete: () => void;
   pushToast: (msg: string, type: 'success' | 'error') => void;
+  approveJob: (jobId: string) => Promise<any>;
+  rejectJob: (jobId: string) => Promise<any>;
 }
 
-function VideoReviewModal({ job, onClose, onActionComplete, pushToast }: VideoReviewModalProps) {
-  const [executing, setExecuting] = useState<string | null>(null);
+function VideoReviewModal({ job, onClose, onActionComplete, pushToast, approveJob, rejectJob }: VideoReviewModalProps) {
+  const [reviewing, setReviewing] = useState<'approve' | 'reject' | null>(null);
   const wf = job.workflow_instance;
-  const isReviewable = wf && wf.available_actions && wf.available_actions.length > 0;
-  const isApproved = wf?.current_state === 'approved';
-  const isRejected = wf?.current_state === 'rejected';
+  const metaStatus = (job as any).metadata?.approval_status;
+  const isApproved = wf?.current_state === 'approved' || metaStatus === 'approved';
+  const isRejected = wf?.current_state === 'rejected' || metaStatus === 'rejected';
+  const isCompleted = job.status === 'completed';
+  const isCanReview = isCompleted && !isApproved && !isRejected;
 
-  const handleAction = async (action: string) => {
-    if (!wf) return;
-    setExecuting(action);
+  const handleAction = async (action: 'approve' | 'reject') => {
+    setReviewing(action);
     try {
-      await executeTransition(wf.id, action);
+      if (action === 'approve') {
+        await approveJob(job.id);
+      } else {
+        await rejectJob(job.id);
+      }
       pushToast(
-        action === 'approve' ? '✅ Video goedgekeurd' : action === 'reject' ? '✘ Video afgewezen' : `✅ ${action}`,
+        action === 'approve' ? '✅ Video goedgekeurd' : '✘ Video afgewezen',
         'success'
       );
       onActionComplete();
     } catch (err: any) {
       pushToast(err?.message || `Actie "${action}" mislukt`, 'error');
     } finally {
-      setExecuting(null);
+      setReviewing(null);
     }
   };
 
   const typeDisplay = getJobTypeDisplay(job.job_type);
-  const statusDisplay = getJobStatusDisplay(job.status);
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 720, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+      <div style={{ width: '100%', maxWidth: 740, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
 
         {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <span style={{ fontSize: 22 }}>{typeDisplay.icon}</span>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{typeDisplay.label}</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{typeDisplay.icon} {typeDisplay.label}</div>
             <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
-              {job.id.slice(0, 8)} · {new Date(job.created_at).toLocaleString('nl-NL')}
-              {wf && <> · <span style={{ fontWeight: 600 }}>{wf.current_state}</span></>}
+              video · {new Date(job.created_at).toLocaleString('nl-NL')}
+              {job.preset_name && <> · Preset: {job.preset_name}</>}
             </div>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 99, color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            {statusDisplay.icon} {statusDisplay.label}
-          </span>
-          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#6b7280' }}>&times;</button>
+          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#6b7280' }}>&times;</button>
         </div>
 
         {/* Video Preview */}
-        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 260 }}>
+        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a' }}>
           {job.output_url ? (
             <video
               src={job.output_url}
               controls
               autoPlay
               playsInline
-              style={{ width: '100%', maxHeight: 460, display: 'block' }}
+              style={{ width: '100%', maxHeight: 450, display: 'block' }}
               poster={job.thumbnail_url || undefined}
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: '#64748b', padding: 32 }}>
-              <span style={{ fontSize: 36 }}>🎬</span>
-              <span style={{ fontSize: 13 }}>Video preview niet beschikbaar</span>
-              {job.status !== 'completed' && <span style={{ fontSize: 11 }}>Status: {statusDisplay.label}</span>}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 280, padding: 24, color: '#6b7280', fontSize: 13, textAlign: 'center', gap: 8 }}>
+              <div style={{ fontSize: 32 }}>🎬</div>
+              <div>Video preview niet beschikbaar</div>
             </div>
           )}
         </div>
 
-        {/* Footer with actions */}
+        {/* Footer */}
         <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
-          {/* Status info */}
-          {isApproved && <div style={{ flex: 1, fontSize: 13, color: '#16a34a', fontWeight: 600 }}>✔ Goedgekeurd</div>}
-          {isRejected && <div style={{ flex: 1, fontSize: 13, color: '#dc2626', fontWeight: 600 }}>✘ Afgewezen</div>}
-          {!isApproved && !isRejected && !isReviewable && (
-            <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>
-              {wf ? `Workflow: ${wf.current_state}` : 'Geen workflow gekoppeld'}
-            </div>
+          {isApproved && <div style={{ flex: 1, fontSize: 12, color: '#16a34a', fontWeight: 600 }}>✔ Goedgekeurd</div>}
+          {isRejected && <div style={{ flex: 1, fontSize: 12, color: '#dc2626', fontWeight: 600 }}>✘ Afgewezen</div>}
+          {isCanReview && <div style={{ flex: 1 }} />}
+          {!isCanReview && !isApproved && !isRejected && (
+            <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>Status: {job.status}</div>
           )}
-          {isReviewable && <div style={{ flex: 1 }} />}
-
-          {/* Action buttons */}
-          {isReviewable && wf!.available_actions.map(action => {
-            const isReject = action.toLowerCase() === 'reject';
-            const isApproveBtn = action.toLowerCase() === 'approve';
-            return (
+          {isCanReview && (
+            <>
               <button
-                key={action}
-                onClick={() => handleAction(action)}
-                disabled={!!executing}
-                style={{
-                  padding: '9px 20px', borderRadius: 8, fontWeight: 600, fontSize: 13,
-                  cursor: executing ? 'default' : 'pointer',
-                  opacity: executing && executing !== action ? 0.5 : 1,
-                  ...(isReject
-                    ? { border: '1px solid #fca5a5', background: executing === action ? '#fee2e2' : '#fff5f5', color: '#dc2626' }
-                    : isApproveBtn
-                    ? { border: 'none', background: executing === action ? '#15803d' : '#16a34a', color: '#fff' }
-                    : { border: '1px solid var(--app-border, #e5e7eb)', background: 'var(--app-surface, #fff)', color: 'var(--app-text, #111)' }),
-                }}
+                onClick={() => handleAction('reject')}
+                disabled={!!reviewing}
+                style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
-                {executing === action ? '...' : isReject ? '✘ Afwijzen' : isApproveBtn ? '✔ Goedkeuren' : action}
+                {reviewing === 'reject' ? '...' : '✘ Afwijzen'}
               </button>
-            );
-          })}
+              <button
+                onClick={() => handleAction('approve')}
+                disabled={!!reviewing}
+                style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: reviewing === 'approve' ? '#15803d' : '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
+              >
+                {reviewing === 'approve' ? '...' : '✔ Goedkeuren'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -876,6 +866,8 @@ export default function ApprovalsPage() {
     refresh: refreshVideoJobs,
     cancelJob: cancelVideoJob,
     retryJob: retryVideoJob,
+    approveJob: approveVideoJob,
+    rejectJob: rejectVideoJob,
   } = useVideoJobs({ projectId: null });
 
   const handleTransitionComplete = useCallback(
@@ -1057,6 +1049,8 @@ export default function ApprovalsPage() {
             refreshVideoJobs();
           }}
           pushToast={pushToast}
+          approveJob={approveVideoJob}
+          rejectJob={rejectVideoJob}
         />
       )}
 

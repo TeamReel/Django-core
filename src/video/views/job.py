@@ -196,6 +196,92 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
 
+    # ── Approval actions ────────────────────────────────────────────
+
+    @action(detail=True, methods=["post"])
+    def approve(self, request: Request, pk: str | None = None) -> Response:
+        """Approve a completed video job.
+
+        If the job has a linked workflow instance, execute the 'approve'
+        transition.  Either way, persist ``approval_status`` in job metadata
+        so the frontend can render the state without relying solely on the
+        workflow engine.
+        """
+        job = self.get_object()
+        if job.status != JobStatus.COMPLETED:
+            return Response(
+                {"error": "Only completed jobs can be approved."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Workflow transition (best-effort)
+        if job.workflow_instance:
+            try:
+                from src.workflows.services.engine import WorkflowEngine
+
+                engine = WorkflowEngine()
+                engine.execute_transition(
+                    instance=job.workflow_instance,
+                    action="approve",
+                    user=request.user,
+                    comment="Approved via video approval UI",
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Workflow approve transition failed – saving metadata anyway: %s",
+                    exc,
+                    extra={"job_id": str(job.id)},
+                )
+
+        # Persist in metadata so it works even without workflow
+        meta = job.metadata or {}
+        meta["approval_status"] = "approved"
+        meta["approved_by"] = request.user.id
+        meta["approved_at"] = timezone.now().isoformat()
+        job.metadata = meta
+        job.save(update_fields=["metadata", "updated_at"])
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        return Response(output.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request: Request, pk: str | None = None) -> Response:
+        """Reject a completed video job."""
+        job = self.get_object()
+        if job.status != JobStatus.COMPLETED:
+            return Response(
+                {"error": "Only completed jobs can be rejected."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if job.workflow_instance:
+            try:
+                from src.workflows.services.engine import WorkflowEngine
+
+                engine = WorkflowEngine()
+                engine.execute_transition(
+                    instance=job.workflow_instance,
+                    action="reject",
+                    user=request.user,
+                    comment="Rejected via video approval UI",
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Workflow reject transition failed – saving metadata anyway: %s",
+                    exc,
+                    extra={"job_id": str(job.id)},
+                )
+
+        meta = job.metadata or {}
+        meta["approval_status"] = "rejected"
+        meta["rejected_by"] = request.user.id
+        meta["rejected_at"] = timezone.now().isoformat()
+        job.metadata = meta
+        job.save(update_fields=["metadata", "updated_at"])
+
+        output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
+        return Response(output.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=["post"], url_path="process-sync")
     def process_sync(self, request: Request, pk: str | None = None) -> Response:
         """Process a queued job synchronously (bypasses Celery).

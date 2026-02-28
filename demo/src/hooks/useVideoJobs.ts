@@ -291,6 +291,26 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
     return result;
   }, [projectId, refresh]);
 
+  const approveJob = useCallback(async (jobId: string) => {
+    const result = await videoApiFetch<VideoJob>(
+      `/api/v1/video/jobs/${jobId}/approve/`,
+      projectId,
+      { method: 'POST' }
+    );
+    refresh();
+    return result;
+  }, [projectId, refresh]);
+
+  const rejectJob = useCallback(async (jobId: string) => {
+    const result = await videoApiFetch<VideoJob>(
+      `/api/v1/video/jobs/${jobId}/reject/`,
+      projectId,
+      { method: 'POST' }
+    );
+    refresh();
+    return result;
+  }, [projectId, refresh]);
+
   return {
     jobs,
     loading,
@@ -299,6 +319,8 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
     cancelJob,
     retryJob,
     createJob,
+    approveJob,
+    rejectJob,
   };
 }
 

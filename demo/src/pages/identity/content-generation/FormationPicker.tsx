@@ -29,8 +29,8 @@ export function FormationPicker({
       }}>{label}</label>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: 6,
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: 4,
       }}>
         {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
           const isSelected = selectedFormation === code;
@@ -43,7 +43,7 @@ export function FormationPicker({
                 border: isSelected
                   ? '2px solid var(--vscode-focusBorder, #007fd4)'
                   : '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 8,
+                borderRadius: 6,
                 overflow: 'hidden',
                 cursor: 'pointer',
                 padding: 0,
@@ -57,18 +57,18 @@ export function FormationPicker({
               <div style={{
                 position: 'relative',
                 width: '100%',
-                aspectRatio: '3/4',
+                aspectRatio: '3/3.5',
                 background: isSelected
                   ? 'linear-gradient(to bottom, #16a34a, #15803d)'
                   : 'linear-gradient(to bottom, #166534, #14532d)',
               }}>
                 {/* Field markings */}
-                <div style={{ position: 'absolute', left: 8, right: 8, top: '15%', height: 1, background: 'rgba(255,255,255,0.25)' }} />
-                <div style={{ position: 'absolute', left: 8, right: 8, top: '50%', height: 1, background: 'rgba(255,255,255,0.25)' }} />
+                <div style={{ position: 'absolute', left: 4, right: 4, top: '15%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
+                <div style={{ position: 'absolute', left: 4, right: 4, top: '50%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
                 <div style={{
                   position: 'absolute', left: '50%', top: '50%',
-                  width: 20, height: 20, transform: 'translate(-50%, -50%)',
-                  border: '1px solid rgba(255,255,255,0.25)', borderRadius: '50%',
+                  width: 14, height: 14, transform: 'translate(-50%, -50%)',
+                  border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%',
                 }} />
 
                 {/* Position dots */}
@@ -77,7 +77,7 @@ export function FormationPicker({
                     key={pos.slot}
                     style={{
                       position: 'absolute',
-                      width: 7, height: 7, borderRadius: '50%',
+                      width: 5, height: 5, borderRadius: '50%',
                       background: isSelected ? '#fff' : 'rgba(255,255,255,0.6)',
                       left: `${pos.x}%`, top: `${pos.y}%`,
                       transform: 'translate(-50%, -50%)',
@@ -89,20 +89,20 @@ export function FormationPicker({
                 {/* Selected check badge */}
                 {isSelected && (
                   <div style={{
-                    position: 'absolute', top: 3, right: 3,
-                    width: 16, height: 16, borderRadius: '50%',
+                    position: 'absolute', top: 2, right: 2,
+                    width: 12, height: 12, borderRadius: '50%',
                     background: '#10b981', display: 'flex',
                     alignItems: 'center', justifyContent: 'center',
-                    fontSize: 9, color: '#fff', fontWeight: 700,
+                    fontSize: 7, color: '#fff', fontWeight: 700,
                   }}>✓</div>
                 )}
               </div>
               {/* Formation code label */}
               <div style={{
-                padding: '3px 0',
+                padding: '2px 0',
                 textAlign: 'center',
                 fontWeight: 700,
-                fontSize: 11,
+                fontSize: 9,
                 color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
                 background: isSelected
                   ? 'var(--vscode-focusBorder, #007fd4)'
