@@ -25,7 +25,7 @@ class WorkflowInstance(models.Model):
 
     # Generic foreign key to any content object
     content_type: models.ForeignKey = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id: models.PositiveIntegerField = models.PositiveIntegerField()
+    object_id: models.CharField = models.CharField(max_length=36)
     content_object = GenericForeignKey("content_type", "object_id")
 
     current_state: models.CharField = models.CharField(max_length=100, db_index=True)

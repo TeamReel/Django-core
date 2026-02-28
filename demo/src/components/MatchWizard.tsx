@@ -285,10 +285,12 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
       };
 
       // PATCH the activity with updated metadata
+      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
       const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
         },
         credentials: 'include',
         body: JSON.stringify({
