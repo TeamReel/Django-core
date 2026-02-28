@@ -1,29 +1,25 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
-import { getAssetUrl } from '../../../hooks/useBrandProfile';
 import { CONTENT_TYPES } from '../../identity/ContentGenerationModal';
 import type { MatchMediaItem } from '../../../components/MediaAssetCard';
 import type {
   Organisation,
-  Project,
   MatchDetail,
   Period,
   Participation,
   ActivityEvent,
   ContentItem,
-  SavedAssetPreview,
 } from './types';
 
 interface MatchOverviewTabProps {
   match: MatchDetail;
   org: Organisation | null;
-  club: Project | null;
-  project: Project | null;
-  opponentClub: Project | null;
   competition: Period | null;
   isHome: boolean;
   homeTeamName: string;
   awayTeamName: string;
+  homeLogoUrl: string | null;
+  awayLogoUrl: string | null;
   scoreDisplay: string;
   status: string;
   date: Date | null;
@@ -38,13 +34,12 @@ interface MatchOverviewTabProps {
 
 export default function MatchOverviewTab({
   match,
-  club,
-  project,
-  opponentClub,
   competition,
   isHome,
   homeTeamName,
   awayTeamName,
+  homeLogoUrl,
+  awayLogoUrl,
   scoreDisplay,
   status,
   date,
@@ -55,22 +50,7 @@ export default function MatchOverviewTab({
   getContentItemForSubtype,
   onContentAction,
 }: MatchOverviewTabProps) {
-  // Derive logo URLs — own club and opponent, then assign to home/away based on isHome
-  const ownLogoUrl = (() => {
-    const assets =
-      (club as any)?.metadata?.teamreel_assets ||
-      (project as any)?.metadata?.teamreel_assets;
-    const url = assets?.logo?.url;
-    return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
-  })();
-  const opponentLogoUrl = (() => {
-    const url =
-      match.metadata?.opponent_logo_url ||
-      (opponentClub as any)?.metadata?.teamreel_assets?.logo?.url;
-    return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
-  })();
-  const homeLogoUrl = isHome ? ownLogoUrl : opponentLogoUrl;
-  const awayLogoUrl = isHome ? opponentLogoUrl : ownLogoUrl;
+  // Logo URLs are passed from parent (resolved via useBrandProfile)
 
   // Content stats
   const allMatchContentItems = [

@@ -17,6 +17,7 @@ import { actionButtonStyle } from '../identity/detail/detailStyles';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MobileTabBar from '../../components/MobileTabBar';
 import { useUserRole } from '../../components/PermissionGuards';
+import { useBrandProfile, getAssetUrl } from '../../hooks/useBrandProfile';
 
 type Organisation = {
   id: string;
@@ -157,6 +158,19 @@ export default function HierarchyMatchDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [club, setClub] = useState<Project | null>(null);
   const [opponentClub, setOpponentClub] = useState<Project | null>(null);
+
+  // Brand profiles for club logos
+  const ownClubBrand = useBrandProfile({
+    projectId: club?.id ? String(club.id) : undefined,
+    organisationId: org?.id ? String(org.id) : undefined,
+    autoFetch: !!club?.id,
+  });
+  const opponentClubBrand = useBrandProfile({
+    projectId: opponentClub?.id ? String(opponentClub.id) : undefined,
+    organisationId: org?.id ? String(org.id) : undefined,
+    autoFetch: !!opponentClub?.id,
+  });
+
   const [season, setSeason] = useState<Period | null>(null);
   const [competition, setCompetition] = useState<Period | null>(null);
   const [match, setMatch] = useState<MatchDetail | null>(null);
@@ -1362,6 +1376,21 @@ export default function HierarchyMatchDetailPage() {
   // When playing away: opponent is home, own team is away
   const homeTeamName = isHome ? ownTeamName : opponentName;
   const awayTeamName = isHome ? opponentName : ownTeamName;
+
+  // Resolve logo URLs from brand profiles
+  const ownLogoUrl = ownClubBrand.getAsset?.('logo_upload')
+    ? getAssetUrl(ownClubBrand.getAsset('logo_upload')!.url)
+    : ownClubBrand.getAsset?.('logo')
+      ? getAssetUrl(ownClubBrand.getAsset('logo')!.url)
+      : null;
+  const opponentLogoUrl = opponentClubBrand.getAsset?.('logo_upload')
+    ? getAssetUrl(opponentClubBrand.getAsset('logo_upload')!.url)
+    : opponentClubBrand.getAsset?.('logo')
+      ? getAssetUrl(opponentClubBrand.getAsset('logo')!.url)
+      : null;
+  const homeLogoUrl = isHome ? ownLogoUrl : opponentLogoUrl;
+  const awayLogoUrl = isHome ? opponentLogoUrl : ownLogoUrl;
+
   const scoreDisplay = status === 'finished'
     ? `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`
     : 'vs';
@@ -2065,13 +2094,12 @@ export default function HierarchyMatchDetailPage() {
             <MatchOverviewTab
               match={match}
               org={org}
-              club={club}
-              project={project}
-              opponentClub={opponentClub}
               competition={competition}
               isHome={!!isHome}
               homeTeamName={homeTeamName}
               awayTeamName={awayTeamName}
+              homeLogoUrl={homeLogoUrl}
+              awayLogoUrl={awayLogoUrl}
               scoreDisplay={scoreDisplay}
               status={status}
               date={date}
