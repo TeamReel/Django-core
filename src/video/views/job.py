@@ -1102,27 +1102,43 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                     "Frontend segments were provided but are ignored (allow_frontend_segments=false): job will use backend lineup builder"
                 )
 
-            service = VideoService()
-            job = service.create_job(
-                project=project,
-                user=request.user,
-                job_type=JobType.LINEUP,
-                config={
-                    # Defer segment building to the background thread.
-                    "activity_id": activity_id,
-                    "template_id": template_id,
-                    "output_resolution": output_resolution,
-                    "selected_member_ids": selected_member_ids,
-                    "formation": formation,
-                    "closeup_style": closeup_style,
-                    "animation_style": animation_style,
-                    "intro_style": intro_style,
-                    "background_url": background_url,
-                    "allow_frontend_segments": allow_frontend_segments,
-                    # Preserve for debugging; backend is strict by default.
-                    "frontend_segments": frontend_segments,
-                },
-            )
+            try:
+                service = VideoService()
+                job = service.create_job(
+                    project=project,
+                    user=request.user,
+                    job_type=JobType.LINEUP,
+                    config={
+                        # Defer segment building to the background thread.
+                        "activity_id": activity_id,
+                        "template_id": template_id,
+                        "output_resolution": output_resolution,
+                        "selected_member_ids": selected_member_ids,
+                        "formation": formation,
+                        "closeup_style": closeup_style,
+                        "animation_style": animation_style,
+                        "intro_style": intro_style,
+                        "background_url": background_url,
+                        "allow_frontend_segments": allow_frontend_segments,
+                        # Preserve for debugging; backend is strict by default.
+                        "frontend_segments": frontend_segments,
+                    },
+                )
+            except Exception as e:  # noqa: BLE001
+                import traceback
+
+                logger.error(
+                    "Failed to create lineup video job (fast path): %s\n%s",
+                    e,
+                    traceback.format_exc(),
+                )
+                return Response(
+                    {
+                        "error": "Failed to create lineup video job",
+                        "detail": str(e),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
             data = dict(output.data)

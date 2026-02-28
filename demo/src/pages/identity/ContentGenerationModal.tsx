@@ -1390,7 +1390,11 @@ export default function ContentGenerationModal({
 
         if (!response.ok) {
           const errData = await response.json().catch(() => ({}));
-          throw new Error(errData?.error || errData?.detail || `Failed to create video job: ${response.status}`);
+          const errMsg = typeof errData?.error === 'string'
+            ? errData.error
+            : errData?.error?.message || errData?.detail || `Failed to create video job: ${response.status}`;
+          console.error('❌ Lineup API error:', JSON.stringify(errData));
+          throw new Error(errMsg);
         }
 
         const jobData = await response.json();
@@ -2390,7 +2394,7 @@ export default function ContentGenerationModal({
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Animatie Stijl</label>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {[
                         { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
                         { value: 'appear', label: 'Direct', icon: '✨' },
@@ -2405,7 +2409,8 @@ export default function ContentGenerationModal({
                             onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
                             style={{
                               position: 'relative',
-                              flex: 1,
+                              flex: '1 1 calc(33% - 8px)',
+                              minWidth: 80,
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
