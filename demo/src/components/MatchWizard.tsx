@@ -38,20 +38,34 @@ interface MatchWizardProps {
 
 interface SquadMember {
   id: string;
+  user?: {
+    id?: string;
+    name?: string;
+    user_name?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+  member?: {
+    id?: string;
+    name?: string;
+    user_name?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
   user_name?: string;
   metadata?: {
     shirt_number?: string | number;
     position?: string;
+    functional_roles?: string[];
+    team_role?: string;
   };
   data?: {
     jersey_number?: string | number;
+    functional_role?: string;
   };
-}
-
-interface LineupPosition {
-  slot: number;
-  label: string;
-  memberId: string | null;
+  functional_roles?: string[];
 }
 
 const CONTENT_TYPES = {
@@ -90,16 +104,34 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<WizardStep>('match');
   const [selectedMatch, setSelectedMatch] = useState<Activity | null>(null);
-  const [lineup, setLineup] = useState<LineupPosition[]>(
-    POSITIONS.map(p => ({ slot: p.slot, label: p.label, memberId: null }))
-  );
-  const [squad, setSquad] = useState<SquadMember[]>([]);
+  const [lineupSlots, setLineupSlots] = useState<{ goalkeeper: string[]; player: string[] }>({
+    goalkeeper: [],
+    player: [],
+  });
+  const [lineupFormation, setLineupFormation] = useState<string>('4-3-3');
+  const [squadGroups, setSquadGroups] = useState<Record<string, SquadMember[]>>({
+    goalkeeper: [],
+    player: [],
+  });
   const [squadLoading, setSquadLoading] = useState(false);
   const [selectedContentPhase, setSelectedContentPhase] = useState<ContentPhase>('pre');
   const [editingPosition, setEditingPosition] = useState<number | null>(null);
   const [lineupSaving, setLineupSaving] = useState(false);
 
   const apiBaseUrl = getApiBaseUrl();
+
+  // Helper: get member name
+  const getSquadMemberName = (p: SquadMember): string => {
+    const user = p.user || p.member;
+    if (!user && p.user_name) return p.user_name;
+    if (!user) return 'Onbekend';
+    if (user.name) return user.name;
+    if (user.user_name) return user.user_name;
+    const full = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    if (full) return full;
+    if (user.email) return user.email;
+    return 'Onbekend';
+  };
 
   // Fetch upcoming matches
   const { activities, loading: matchesLoading } = useActivities({ limit: 10 });
@@ -122,7 +154,27 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     }
   }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch]);
 
-  // Fetch squad when match is selected
+  // Load existing lineup from match metadata when match changes
+  useEffect(() => {
+    if (!selectedMatch) return;
+    const metadata = (selectedMatch as any).metadata;
+    const saved = metadata?.lineup;
+    if (saved) {
+      if (saved.formation) {
+        setLineupFormation(saved.formation);
+      }
+      if (saved.goalkeeper || saved.player) {
+        setLineupSlots({
+          goalkeeper: saved.goalkeeper || [],
+          player: saved.player || [],
+        });
+      }
+    } else if (metadata?.formation) {
+      setLineupFormation(metadata.formation);
+    }
+  }, [selectedMatch]);
+
+  // Fetch squad when match is selected and entering lineup step
   useEffect(() => {
     if (selectedMatch && currentStep === 'lineup') {
       fetchSquad();
@@ -131,25 +183,72 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
   const fetchSquad = async () => {
     if (!selectedMatch) return;
+    const projectId = (selectedMatch as any).project?.id;
+    if (!projectId) return;
+
     setSquadLoading(true);
     try {
-      // Get project ID from match
-      const projectId = (selectedMatch as any).project?.id;
-      if (!projectId) return;
-
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${projectId}/squad/`,
-        { credentials: 'include' }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        // Combine all squad members
-        const members = [
-          ...(data.goalkeeper || []),
-          ...(data.player || []),
-        ];
-        setSquad(members);
+      // Same API as MatchDetailPage uses
+      const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectId))}/members/?page_size=100`;
+      const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+      if (!res.ok) {
+        setSquadLoading(false);
+        return;
       }
+
+      const raw = await res.json();
+      let members: SquadMember[] = [];
+
+      // Handle various response formats
+      if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
+      else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
+      else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
+      else if (Array.isArray(raw?.data)) members = raw.data;
+      else if (Array.isArray(raw)) members = raw;
+
+      // Paginate if needed
+      let nextUrl = raw?.meta?.pagination?.next;
+      while (nextUrl) {
+        const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
+        if (!nr.ok) break;
+        const nd = await nr.json();
+        let nm: SquadMember[] = [];
+        if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
+        else if (Array.isArray(nd?.data)) nm = nd.data;
+        else if (Array.isArray(nd)) nm = nd;
+        members = [...members, ...nm];
+        nextUrl = nd?.meta?.pagination?.next;
+      }
+
+      // Group by functional_roles (same logic as MatchDetailPage)
+      const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [] };
+      members.forEach((p) => {
+        let roles: string[] = [];
+        if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) {
+          roles = p.functional_roles;
+        } else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) {
+          roles = p.metadata.functional_roles;
+        } else if (p.data?.functional_role) {
+          roles = [p.data.functional_role];
+        } else if (p.metadata?.team_role) {
+          roles = [p.metadata.team_role];
+        } else {
+          roles = ['player']; // Default to player
+        }
+
+        roles.forEach(role => {
+          const nr = role.toLowerCase();
+          if (nr === 'goalkeeper' || nr === 'keeper' || nr === 'gk') {
+            groups.goalkeeper.push(p);
+          } else if (groups[nr]) {
+            groups[nr].push(p);
+          } else {
+            groups.player.push(p);
+          }
+        });
+      });
+
+      setSquadGroups(groups);
     } catch (err) {
       console.error('Failed to fetch squad:', err);
     } finally {
@@ -162,17 +261,33 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     setLineupSaving(true);
     try {
       const matchId = (selectedMatch as any).slug || selectedMatch.id;
-      const slots = {
-        goalkeeper: lineup.filter(p => p.slot === 1 && p.memberId).map(p => p.memberId),
-        player: lineup.filter(p => p.slot > 1 && p.memberId).map(p => p.memberId),
+      const existingMetadata = (selectedMatch as any).metadata || {};
+
+      const lineupData = {
+        formation: lineupFormation,
+        goalkeeper: lineupSlots.goalkeeper,
+        player: lineupSlots.player,
       };
 
-      await fetch(`${apiBaseUrl}/api/v1/activities/${matchId}/lineup/`, {
+      // PATCH the activity with updated metadata
+      const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         credentials: 'include',
-        body: JSON.stringify({ slots }),
+        body: JSON.stringify({
+          metadata: {
+            ...existingMetadata,
+            formation: lineupFormation,
+            lineup: lineupData,
+          },
+        }),
       });
+
+      if (!res.ok) {
+        console.error('Failed to save lineup');
+      }
     } catch (err) {
       console.error('Failed to save lineup:', err);
     } finally {
@@ -180,23 +295,28 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     }
   };
 
-  const handleSelectPosition = (slot: number, memberId: string | null) => {
-    setLineup(prev =>
-      prev.map(p => (p.slot === slot ? { ...p, memberId } : p))
-    );
+  const handleSelectPlayer = (positionIdx: number, isGoalkeeper: boolean, memberId: string | null) => {
+    if (isGoalkeeper) {
+      const newGk = [...lineupSlots.goalkeeper];
+      newGk[positionIdx] = memberId || '';
+      setLineupSlots({ ...lineupSlots, goalkeeper: newGk.filter(Boolean) as string[] });
+    } else {
+      const newPlayers = [...lineupSlots.player];
+      while (newPlayers.length <= positionIdx) newPlayers.push('');
+      newPlayers[positionIdx] = memberId || '';
+      setLineupSlots({ ...lineupSlots, player: newPlayers });
+    }
     setEditingPosition(null);
   };
 
   const handleContentSelect = (contentKey: string) => {
     if (!selectedMatch) return;
     const matchSlug = (selectedMatch as any).slug || selectedMatch.id;
-    // Navigate to match content tab with content type pre-selected
     navigate(`/matches/${matchSlug}?tab=content&generate=${contentKey}`);
     onClose();
   };
 
   const goToStep = (step: WizardStep) => {
-    // Save lineup when leaving lineup step
     if (currentStep === 'lineup' && step !== 'lineup') {
       saveLineup();
     }
@@ -204,15 +324,20 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   };
 
   const handleClose = () => {
-    // Reset state
     setCurrentStep('match');
     setSelectedMatch(null);
-    setLineup(POSITIONS.map(p => ({ slot: p.slot, label: p.label, memberId: null })));
+    setLineupSlots({ goalkeeper: [], player: [] });
+    setSquadGroups({ goalkeeper: [], player: [] });
     setEditingPosition(null);
     onClose();
   };
 
-  const filledPositions = lineup.filter(p => p.memberId).length;
+  // Calculate filled positions
+  const gkPool = squadGroups.goalkeeper || [];
+  const playerPool = squadGroups.player || [];
+  const allPlayers = [...gkPool, ...playerPool];
+
+  const filledPositions = lineupSlots.goalkeeper.filter(Boolean).length + lineupSlots.player.filter(Boolean).length;
   const totalPositions = POSITIONS.length;
 
   const getStepTitle = () => {
@@ -223,13 +348,17 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     }
   };
 
+  const getMemberById = (memberId: string): SquadMember | undefined => {
+    return allPlayers.find(m => m.id === memberId);
+  };
+
   const getMemberName = (memberId: string): string => {
-    const member = squad.find(m => m.id === memberId);
-    return member?.user_name || 'Onbekend';
+    const member = getMemberById(memberId);
+    return member ? getSquadMemberName(member) : 'Onbekend';
   };
 
   const getMemberJersey = (memberId: string): string | null => {
-    const member = squad.find(m => m.id === memberId);
+    const member = getMemberById(memberId);
     const jersey = member?.metadata?.shirt_number || member?.data?.jersey_number;
     return jersey ? String(jersey) : null;
   };
@@ -380,20 +509,32 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
                   Spelers laden...
                 </div>
+              ) : allPlayers.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
+                  Geen spelers gevonden in het team
+                </div>
               ) : (
                 /* Position list - mobile friendly */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {lineup.map((pos) => {
-                    const posConfig = POSITIONS.find(p => p.slot === pos.slot);
-                    const isEditing = editingPosition === pos.slot;
-                    const selectedMember = pos.memberId ? squad.find(m => m.id === pos.memberId) : null;
-                    const usedMemberIds = lineup.filter(p => p.memberId).map(p => p.memberId);
+                  {POSITIONS.map((posConfig) => {
+                    const isGoalkeeper = posConfig.slot === 1;
+                    const positionIdx = isGoalkeeper ? 0 : posConfig.slot - 2;
+                    const memberId = isGoalkeeper
+                      ? lineupSlots.goalkeeper[0] || null
+                      : lineupSlots.player[positionIdx] || null;
+                    const isEditing = editingPosition === posConfig.slot;
+
+                    // Build list of already used member IDs
+                    const usedMemberIds = [
+                      ...(lineupSlots.goalkeeper || []),
+                      ...(lineupSlots.player || []),
+                    ].filter(Boolean);
 
                     if (isEditing) {
                       // Show player selection
                       return (
                         <div
-                          key={pos.slot}
+                          key={posConfig.slot}
                           style={{
                             backgroundColor: 'var(--app-surface-2)',
                             borderRadius: '12px',
@@ -407,7 +548,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                             marginBottom: '12px',
                           }}>
                             <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>
-                              {posConfig?.fullLabel} ({pos.label})
+                              {posConfig.fullLabel} ({posConfig.label})
                             </span>
                             <button
                               onClick={() => setEditingPosition(null)}
@@ -432,7 +573,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                           }}>
                             {/* Option to clear */}
                             <button
-                              onClick={() => handleSelectPosition(pos.slot, null)}
+                              onClick={() => handleSelectPlayer(positionIdx, isGoalkeeper, null)}
                               style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -448,13 +589,13 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                             >
                               — Geen speler —
                             </button>
-                            {squad.map((member) => {
-                              const isUsed = usedMemberIds.includes(member.id) && member.id !== pos.memberId;
+                            {allPlayers.map((member) => {
+                              const isUsed = usedMemberIds.includes(member.id) && member.id !== memberId;
                               const jersey = member.metadata?.shirt_number || member.data?.jersey_number;
                               return (
                                 <button
                                   key={member.id}
-                                  onClick={() => !isUsed && handleSelectPosition(pos.slot, member.id)}
+                                  onClick={() => !isUsed && handleSelectPlayer(positionIdx, isGoalkeeper, member.id)}
                                   disabled={isUsed}
                                   style={{
                                     display: 'flex',
@@ -463,10 +604,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                                     padding: '12px',
                                     borderRadius: '8px',
                                     border: 'none',
-                                    backgroundColor: member.id === pos.memberId
+                                    backgroundColor: member.id === memberId
                                       ? 'var(--app-primary)'
                                       : 'var(--app-surface)',
-                                    color: member.id === pos.memberId
+                                    color: member.id === memberId
                                       ? 'white'
                                       : isUsed ? 'var(--app-text-muted)' : 'var(--app-text)',
                                     cursor: isUsed ? 'not-allowed' : 'pointer',
@@ -489,7 +630,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                                       {jersey}
                                     </span>
                                   )}
-                                  <span style={{ flex: 1 }}>{member.user_name}</span>
+                                  <span style={{ flex: 1 }}>{getSquadMemberName(member)}</span>
                                   {isUsed && <span style={{ fontSize: '11px' }}>✓ ingevuld</span>}
                                 </button>
                               );
@@ -502,8 +643,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                     // Normal position row
                     return (
                       <button
-                        key={pos.slot}
-                        onClick={() => setEditingPosition(pos.slot)}
+                        key={posConfig.slot}
+                        onClick={() => setEditingPosition(posConfig.slot)}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -511,7 +652,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                           padding: '12px 16px',
                           borderRadius: '10px',
                           border: '1px solid var(--app-border)',
-                          backgroundColor: pos.memberId ? 'var(--app-surface)' : 'var(--app-surface-2)',
+                          backgroundColor: memberId ? 'var(--app-surface)' : 'var(--app-surface-2)',
                           cursor: 'pointer',
                           textAlign: 'left',
                           width: '100%',
@@ -522,31 +663,31 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                           width: '36px',
                           height: '36px',
                           borderRadius: '8px',
-                          backgroundColor: pos.memberId ? 'var(--color-success)' : 'var(--app-border)',
+                          backgroundColor: memberId ? 'var(--color-success)' : 'var(--app-border)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           fontSize: '12px',
                           fontWeight: 700,
-                          color: pos.memberId ? 'white' : 'var(--app-text-muted)',
+                          color: memberId ? 'white' : 'var(--app-text-muted)',
                         }}>
-                          {pos.label}
+                          {posConfig.label}
                         </div>
                         {/* Player info */}
                         <div style={{ flex: 1 }}>
-                          {pos.memberId ? (
+                          {memberId ? (
                             <>
                               <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--app-text)' }}>
-                                {getMemberName(pos.memberId)}
+                                {getMemberName(memberId)}
                               </div>
                               <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>
-                                {getMemberJersey(pos.memberId) && `#${getMemberJersey(pos.memberId)} • `}
-                                {posConfig?.fullLabel}
+                                {getMemberJersey(memberId) && `#${getMemberJersey(memberId)} • `}
+                                {posConfig.fullLabel}
                               </div>
                             </>
                           ) : (
                             <div style={{ color: 'var(--app-text-muted)', fontSize: '14px' }}>
-                              Tik om {posConfig?.fullLabel} te kiezen
+                              Tik om {posConfig.fullLabel} te kiezen
                             </div>
                           )}
                         </div>
