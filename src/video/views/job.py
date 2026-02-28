@@ -261,6 +261,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             logger.info("No output_file on job – skipping MediaItem creation")
             return
 
+        # Map job_type → content tab asset_type that the frontend recognises
+        JOB_TYPE_TO_ASSET_TYPE = {
+            "lineup": "lineup",
+            "goal_celebration": "goal",
+            "match_intro": "match_intro",
+            "then_vs_now": "then_vs_now",
+            "compose": "compose",
+        }
+
         try:
             Activity = apps.get_model("activities", "Activity")
             MediaItem = apps.get_model("medialib", "MediaItem")
@@ -269,12 +278,14 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             activity = Activity.objects.select_related("project").get(id=activity_id)
             project = activity.project or job.project
 
+            asset_type = JOB_TYPE_TO_ASSET_TYPE.get(job.job_type, job.job_type)
+
             # Build descriptive metadata
             extraction_meta = {
                 "source": "video_job_approved",
                 "job_id": str(job.id),
                 "job_type": job.job_type,
-                "asset_type": f"{job.job_type}_video",
+                "asset_type": asset_type,
             }
             if project:
                 extraction_meta["project_id"] = project.id

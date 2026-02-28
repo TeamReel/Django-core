@@ -44,12 +44,32 @@ class MediaItemViewSet(viewsets.ModelViewSet):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        """Filter by projects user has access to"""
-        queryset = (
-            MediaItem.objects.filter(project__memberships__user=self.request.user)
-            .select_related("file", "project", "created_by")
-            .prefetch_related("tags")
-        )
+        """Filter by projects user has access to.
+
+        Access granted when the user:
+        - is staff/superuser, OR
+        - has a ProjectMembership for the item's project, OR
+        - has an Organisation Membership for the project's organisation.
+        """
+        user = self.request.user
+
+        if user.is_staff or user.is_superuser:
+            queryset = MediaItem.objects.all()
+        else:
+            from django.db.models import Q
+
+            queryset = MediaItem.objects.filter(
+                Q(
+                    project__memberships__user=user,
+                    project__memberships__deleted_at__isnull=True,
+                )
+                | Q(
+                    project__organisation__memberships__user=user,
+                    project__organisation__memberships__is_active=True,
+                )
+            ).distinct()
+
+        queryset = queryset.select_related("file", "project", "created_by").prefetch_related("tags")
 
         # Legacy manual filters removed in favor of MediaItemFilterSet
         # Target/Relation filtering
