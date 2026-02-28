@@ -663,6 +663,8 @@ export default function ContentGenerationModal({
       setVideoJobStatus(null);
       setVideoJobProgressRaw(0);
       setVideoJobMeta({});
+      setVideoOutputUrl(null);
+      setVideoThumbnailUrl(null);
 
       // Only reset selections on FRESH open (not when staying open or after error)
       if (freshOpen && !hasInitializedRef.current) {
@@ -813,6 +815,8 @@ export default function ContentGenerationModal({
   const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
   const [videoJobProgressRaw, setVideoJobProgressRaw] = useState<number>(0);
   const [videoJobMeta, setVideoJobMeta] = useState<Record<string, unknown>>({});
+  const [videoOutputUrl, setVideoOutputUrl] = useState<string | null>(null);
+  const [videoThumbnailUrl, setVideoThumbnailUrl] = useState<string | null>(null);
 
   // Abortable polling controller for lineup video jobs.
   // Prevents duplicate poll loops that keep running after closing the modal or navigating away.
@@ -831,6 +835,56 @@ export default function ContentGenerationModal({
     return () => abortActiveVideoJobPoll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // Poll video job status when in video_queued step
+  useEffect(() => {
+    if (step !== 'video_queued' || !videoJobId || !isOpen) return;
+
+    const controller = new AbortController();
+    activeVideoJobPollRef.current = controller;
+
+    let attempts = 0;
+    const maxAttempts = 120; // ~10 minutes at 5s intervals
+
+    const poll = async () => {
+      while (!controller.signal.aborted && attempts < maxAttempts) {
+        attempts++;
+        try {
+          const res = await fetch(
+            `${getApiBaseUrl()}/api/v1/video/jobs/${videoJobId}/`,
+            { credentials: 'include', signal: controller.signal }
+          );
+          if (!res.ok) break;
+          const data = await res.json();
+          const job = data?.data || data;
+
+          setVideoJobStatus(job.status);
+          setVideoJobProgressRaw(job.progress_percent || 0);
+
+          if (job.status === 'completed') {
+            const outUrl = job.output_url || job.output_file?.url;
+            if (outUrl) setVideoOutputUrl(outUrl);
+            if (job.thumbnail_url) setVideoThumbnailUrl(job.thumbnail_url);
+            console.log('✅ Video job completed:', videoJobId, outUrl);
+            break;
+          }
+          if (job.status === 'failed') {
+            console.error('❌ Video job failed:', job.error_message);
+            break;
+          }
+        } catch (err: any) {
+          if (err?.name === 'AbortError') return;
+          console.warn('Poll error:', err);
+        }
+        // Wait 5 seconds between polls
+        await new Promise(r => setTimeout(r, 5000));
+      }
+    };
+
+    poll();
+    return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, videoJobId, isOpen]);
 
   // Helper to get member's asset URL
   const getMemberAssetUrl = (memberId: string, assetType: string, memberRole?: string): string | null => {
@@ -1676,6 +1730,8 @@ export default function ContentGenerationModal({
     setVideoJobStatus(null);
     setVideoJobProgressRaw(0);
     setVideoJobMeta({});
+    setVideoOutputUrl(null);
+    setVideoThumbnailUrl(null);
 
     // Simulate initial progress
     let p = 0;
@@ -4211,32 +4267,96 @@ export default function ContentGenerationModal({
 
           {/* Video Queued — shown after video job is submitted */}
           {step === 'video_queued' && (
-            <div className="flex flex-col items-center justify-center h-full py-12">
+            <div className="flex flex-col items-center justify-center h-full py-8">
               <div className="w-full max-w-md text-center">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                  <span className="text-3xl">✅</span>
-                </div>
-                <h2 className="text-xl font-semibold text-gray-800 mb-2">In de wachtrij!</h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  Je {selectedType?.label || 'video'} wordt op de achtergrond gegenereerd.
-                  <br />
-                  Zodra het klaar is, verschijnt het in de <strong>Approvals</strong> pagina waar je het kunt goedkeuren.
-                </p>
-                <div className="flex flex-col items-center gap-3">
-                  <a
-                    href="/approvals"
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                  >
-                    📋 Ga naar Approvals
-                  </a>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onClose}
-                  >
-                    Sluiten
-                  </Button>
-                </div>
+
+                {/* ── Completed: show inline video preview ── */}
+                {videoOutputUrl ? (
+                  <>
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.15)' }}>
+                      <span className="text-2xl">✅</span>
+                    </div>
+                    <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--app-text)' }}>Video klaar!</h2>
+                    <div className="rounded-xl overflow-hidden mb-4" style={{ background: '#000' }}>
+                      <video
+                        src={videoOutputUrl}
+                        controls
+                        autoPlay
+                        playsInline
+                        style={{ width: '100%', maxHeight: 340, objectFit: 'contain' }}
+                        poster={videoThumbnailUrl || undefined}
+                      />
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <a
+                        href="/approvals"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                        style={{ color: '#60a5fa', background: 'rgba(59,130,246,0.12)' }}
+                      >
+                        📋 Ga naar Approvals
+                      </a>
+                      <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
+                    </div>
+                  </>
+                ) : videoJobStatus === 'failed' ? (
+                  /* ── Failed ── */
+                  <>
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
+                      <span className="text-2xl">❌</span>
+                    </div>
+                    <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--app-text)' }}>Generatie mislukt</h2>
+                    <p className="text-sm mb-4" style={{ color: 'var(--app-muted)' }}>
+                      Er is iets misgegaan bij het verwerken van je video. Probeer het opnieuw of neem contact op.
+                    </p>
+                    <div className="flex flex-col items-center gap-2">
+                      <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
+                    </div>
+                  </>
+                ) : (
+                  /* ── Queued / Processing: spinner + progress bar ── */
+                  <>
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.12)' }}>
+                      <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="rgba(59,130,246,0.25)" strokeWidth="3" />
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--app-text)' }}>
+                      {videoJobStatus === 'processing' ? 'Video wordt gemaakt…' : 'In de wachtrij…'}
+                    </h2>
+                    <p className="text-sm mb-4" style={{ color: 'var(--app-muted)' }}>
+                      {videoJobStatus === 'processing'
+                        ? 'Je video wordt nu gegenereerd. Dit kan even duren.'
+                        : `Je ${selectedType?.label || 'video'} wordt op de achtergrond gegenereerd.`}
+                    </p>
+
+                    {/* Progress bar */}
+                    <div className="w-full rounded-full h-2 mb-1" style={{ background: 'rgba(255,255,255,0.08)' }}>
+                      <div
+                        className="h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.max(videoJobProgressRaw, videoJobStatus === 'processing' ? 5 : 0)}%`,
+                          background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
+                        }}
+                      />
+                    </div>
+                    <p className="text-xs mb-5" style={{ color: 'var(--app-muted)' }}>
+                      {videoJobProgressRaw > 0 ? `${videoJobProgressRaw}%` : 'Wachten op verwerking…'}
+                    </p>
+
+                    <div className="flex flex-col items-center gap-2">
+                      <a
+                        href="/approvals"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+                        style={{ color: '#60a5fa', background: 'rgba(59,130,246,0.12)' }}
+                      >
+                        📋 Ga naar Approvals
+                      </a>
+                      <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
+                    </div>
+                  </>
+                )}
+
               </div>
             </div>
           )}
