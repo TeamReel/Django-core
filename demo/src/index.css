@@ -546,11 +546,13 @@ header [role="alert"] {
   /* Main content takes full width on mobile */
   .main-content {
     padding: 16px !important;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Reduce padding on mobile */
   main {
     padding: 12px !important;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 
