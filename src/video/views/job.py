@@ -211,7 +211,16 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         (match) so it appears in the match content tab.
         """
         job = self.get_object()
-        if job.status != JobStatus.COMPLETED:
+        # Allow approving COMPLETED jobs, and also FAILED jobs that have
+        # an output file (video was generated but post-processing errored).
+        if job.status == JobStatus.COMPLETED:
+            pass  # normal path
+        elif job.status == JobStatus.FAILED and job.output_file_id:
+            logger.info(
+                "Approving failed job with output file (likely post-processing error)",
+                extra={"job_id": str(job.id)},
+            )
+        else:
             return Response(
                 {"error": "Only completed jobs can be approved."},
                 status=status.HTTP_400_BAD_REQUEST,

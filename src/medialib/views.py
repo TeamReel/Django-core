@@ -59,10 +59,22 @@ class MediaItemViewSet(viewsets.ModelViewSet):
             from django.db.models import Q
 
             queryset = MediaItem.objects.filter(
+                # Direct project membership
                 Q(
                     project__memberships__user=user,
                     project__memberships__deleted_at__isnull=True,
                 )
+                # Parent project membership (club admin sees team media)
+                | Q(
+                    project__parent_project__memberships__user=user,
+                    project__parent_project__memberships__deleted_at__isnull=True,
+                )
+                # Child project membership (team member sees club-level media)
+                | Q(
+                    project__children__memberships__user=user,
+                    project__children__memberships__deleted_at__isnull=True,
+                )
+                # Organisation membership fallback
                 | Q(
                     project__organisation__memberships__user=user,
                     project__organisation__memberships__is_active=True,
