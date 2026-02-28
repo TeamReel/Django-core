@@ -239,9 +239,9 @@ function FieldVisualization({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 1,
+                gap: 0,
                 zIndex: 10,
-                minWidth: 44,
+                minWidth: 36,
               }}
             >
               {/* Position label */}
@@ -268,34 +268,36 @@ function FieldVisualization({
                   setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
                 }}
                 style={{
-                  width: 62,
-                  padding: '1px 2px',
-                  fontSize: 8,
+                  width: 48,
+                  height: 18,
+                  padding: '0 1px',
+                  fontSize: 7,
+                  lineHeight: '16px',
                   fontWeight: currentId ? 700 : 400,
                   background: currentId
                     ? 'rgba(22,163,74,0.6)'
                     : 'rgba(0,0,0,0.6)',
                   color: '#fff',
                   border: currentId
-                    ? '2px solid rgba(255,255,255,0.7)'
+                    ? '1.5px solid rgba(255,255,255,0.7)'
                     : '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: 4,
+                  borderRadius: 3,
                   outline: 'none',
                   cursor: 'pointer',
                   textAlign: 'center',
                   appearance: 'none',
                   WebkitAppearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E")`,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='4' viewBox='0 0 6 4'%3E%3Cpath d='M0 0l3 4 3-4z' fill='rgba(255,255,255,0.4)'/%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 3px center',
-                  paddingRight: 12,
+                  backgroundPosition: 'right 2px center',
+                  paddingRight: 9,
                 }}
               >
                 <option
                   value=""
                   style={{ background: '#1e1e1e', color: '#ccc' }}
                 >
-                  — Kies —
+                  —
                 </option>
                 {pool.map((p: any) => {
                   const name = getSquadMemberName(p);
@@ -328,11 +330,11 @@ function FieldVisualization({
               {currentMember && (
                 <div
                   style={{
-                    fontSize: 7,
+                    fontSize: 6,
                     fontWeight: 600,
                     color: '#fff',
                     textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                    maxWidth: 58,
+                    maxWidth: 46,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
