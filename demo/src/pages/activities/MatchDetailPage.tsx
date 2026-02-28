@@ -1778,6 +1778,8 @@ export default function HierarchyMatchDetailPage() {
             organisationId={org?.id || orgId}
             template={selectedTemplate}
             contentTypeLabel={selectedContentTypeLabel}
+            homeLogoUrl={homeLogoUrl}
+            awayLogoUrl={awayLogoUrl}
         />
 
         {/* Content Preview Modal */}

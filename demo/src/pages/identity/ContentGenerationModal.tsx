@@ -238,6 +238,10 @@ interface ContentGenerationModalProps {
   assetType?: string | null;
   /** Callback fired when content has been successfully submitted/queued */
   onGenerated?: (message?: string) => void;
+  /** Club logo URL for home team (score display) */
+  homeLogoUrl?: string | null;
+  /** Club logo URL for away team (score display) */
+  awayLogoUrl?: string | null;
 }
 
 // Map template asset_types to teamreel_assets media slot keys
@@ -453,6 +457,8 @@ export default function ContentGenerationModal({
   contentTypeLabel,
   assetType,
   onGenerated,
+  homeLogoUrl,
+  awayLogoUrl,
 }: ContentGenerationModalProps) {
   const [step, setStep] = useState<'type' | 'template' | 'members' | 'lineup_squad' | 'confirm' | 'generating' | 'video_queued' | 'success' | 'error'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
@@ -3958,53 +3964,85 @@ export default function ContentGenerationModal({
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>Nieuwe Stand</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, color: 'var(--vscode-foreground, #666)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'center' }}>
+                        {/* Home team */}
+                        <div style={{ textAlign: 'center', minWidth: 80 }}>
+                          {homeLogoUrl ? (
+                            <img src={homeLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
+                          ) : null}
+                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--vscode-foreground, #666)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
                             {matchData?.project?.name || 'Thuis'}
                           </div>
-                          <input
-                            type="number"
-                            min={0}
-                            max={99}
-                            value={goalScoreHome}
-                            onChange={(e) => setGoalScoreHome(Math.max(0, parseInt(e.target.value) || 0))}
-                            style={{
-                              width: 64,
-                              height: 56,
-                              fontSize: 28,
-                              fontWeight: 700,
-                              textAlign: 'center',
-                              border: '2px solid var(--vscode-widget-border, #ccc)',
-                              borderRadius: 8,
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setGoalScoreHome(Math.max(0, goalScoreHome - 1))}
+                              style={{
+                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderRight: 'none',
+                                borderRadius: '8px 0 0 8px', background: 'var(--vscode-input-background, #fff)',
+                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >−</button>
+                            <div style={{
+                              width: 48, height: 56, fontSize: 28, fontWeight: 700,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              borderTop: '2px solid var(--vscode-widget-border, #ccc)',
+                              borderBottom: '2px solid var(--vscode-widget-border, #ccc)',
                               background: 'var(--vscode-input-background, #fff)',
                               color: 'var(--vscode-foreground, #333)',
-                            }}
-                          />
+                            }}>{goalScoreHome}</div>
+                            <button
+                              type="button"
+                              onClick={() => setGoalScoreHome(Math.min(99, goalScoreHome + 1))}
+                              style={{
+                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderLeft: 'none',
+                                borderRadius: '0 8px 8px 0', background: 'var(--vscode-input-background, #fff)',
+                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >+</button>
+                          </div>
                         </div>
-                        <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--vscode-foreground, #666)' }}>-</span>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4, color: 'var(--vscode-foreground, #666)' }}>
+                        <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--vscode-foreground, #666)', marginTop: 20 }}>-</span>
+                        {/* Away team */}
+                        <div style={{ textAlign: 'center', minWidth: 80 }}>
+                          {awayLogoUrl ? (
+                            <img src={awayLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
+                          ) : null}
+                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--vscode-foreground, #666)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
                             {matchData?.opponent_project?.name || 'Uit'}
                           </div>
-                          <input
-                            type="number"
-                            min={0}
-                            max={99}
-                            value={goalScoreAway}
-                            onChange={(e) => setGoalScoreAway(Math.max(0, parseInt(e.target.value) || 0))}
-                            style={{
-                              width: 64,
-                              height: 56,
-                              fontSize: 28,
-                              fontWeight: 700,
-                              textAlign: 'center',
-                              border: '2px solid var(--vscode-widget-border, #ccc)',
-                              borderRadius: 8,
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setGoalScoreAway(Math.max(0, goalScoreAway - 1))}
+                              style={{
+                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderRight: 'none',
+                                borderRadius: '8px 0 0 8px', background: 'var(--vscode-input-background, #fff)',
+                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >−</button>
+                            <div style={{
+                              width: 48, height: 56, fontSize: 28, fontWeight: 700,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              borderTop: '2px solid var(--vscode-widget-border, #ccc)',
+                              borderBottom: '2px solid var(--vscode-widget-border, #ccc)',
                               background: 'var(--vscode-input-background, #fff)',
                               color: 'var(--vscode-foreground, #333)',
-                            }}
-                          />
+                            }}>{goalScoreAway}</div>
+                            <button
+                              type="button"
+                              onClick={() => setGoalScoreAway(Math.min(99, goalScoreAway + 1))}
+                              style={{
+                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderLeft: 'none',
+                                borderRadius: '0 8px 8px 0', background: 'var(--vscode-input-background, #fff)',
+                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}
+                            >+</button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -4035,21 +4073,58 @@ export default function ContentGenerationModal({
                         }}
                       >
                         <option value="">-- Selecteer speler --</option>
-                        {[...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
-                          .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx) // dedupe
-                          .map((member) => {
+                        {(() => {
+                          const CELEB_LABELS: Record<string, string> = {
+                            arms_wide: 'Armen wijd',
+                            fist_pump: 'Vuist omhoog',
+                            point_to_sky: 'Wijs naar hemel',
+                            slide: 'Knieën slide',
+                          };
+                          const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])]
+                            .filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
+
+                          // Enrich with celebration info
+                          const enriched = allMembers.map((member) => {
                             const user = member.user || member.member;
                             const name = user ? (
                               ('name' in user && user.name) ||
                               ('user_name' in user && user.user_name) ||
                               `${user.first_name || ''} ${user.last_name || ''}`.trim()
                             ) : 'Unknown';
-
-                            // Check if member has celebration video (required for goal celebration)
                             const tr = (member.metadata as any)?.teamreel_assets || {};
                             const videos = tr?.videos || {};
-                            const hasCelebration = videos?.celebration && Object.keys(videos.celebration).length > 0;
+                            const celebrationObj = videos?.celebration || {};
+                            const celebrationKeys = Object.keys(celebrationObj).filter(k => {
+                              const val = celebrationObj[k];
+                              return val && (typeof val === 'string' || (typeof val === 'object' && Object.keys(val).length > 0));
+                            });
+                            const hasCelebration = celebrationKeys.length > 0;
+                            // Extract unique celebration types from composite keys (e.g. "home_arms_wide" → "arms_wide")
+                            const celebTypes = [...new Set(celebrationKeys.map(k => {
+                              const parts = k.split('_');
+                              // Remove kit prefix (first part) to get the celebration type
+                              return parts.length > 1 ? parts.slice(1).join('_') : k;
+                            }))];
+                            return { member, name, hasCelebration, celebTypes };
+                          });
 
+                          // Sort: available players first
+                          enriched.sort((a, b) => {
+                            if (a.hasCelebration && !b.hasCelebration) return -1;
+                            if (!a.hasCelebration && b.hasCelebration) return 1;
+                            return a.name.localeCompare(b.name);
+                          });
+
+                          return enriched.map(({ member, name, hasCelebration, celebTypes }) => {
+                            // Show celebration types if player has multiple
+                            let suffix = '';
+                            if (hasCelebration && celebTypes.length > 1) {
+                              suffix = ` (${celebTypes.map(t => CELEB_LABELS[t] || t).join(', ')})`;
+                            } else if (hasCelebration && celebTypes.length === 1) {
+                              suffix = ' 🎉';
+                            } else {
+                              suffix = ' (geen celebration video)';
+                            }
                             return (
                               <option
                                 key={member.id}
@@ -4060,10 +4135,11 @@ export default function ContentGenerationModal({
                                   fontWeight: hasCelebration ? 500 : 400,
                                 }}
                               >
-                                {name}{hasCelebration ? ' 🎉' : ' (geen celebration video)'}
+                                {name}{suffix}
                               </option>
                             );
-                          })}
+                          });
+                        })()}
                       </select>
                       {!goalScorerId && (
                         <div style={{ fontSize: 11, color: '#e11d48', marginTop: 6 }}>
