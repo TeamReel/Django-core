@@ -292,15 +292,74 @@ export default function MatchContentTab({
                       </div>
                     </div>
 
-                    {/* Status + chevron */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    {/* Status + actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                       <StatusBadge
                         isGenerating={isGenerating}
                         isFailed={isFailed}
                         hasMedia={!!latestMedia}
                         workflowStatus={workflowStatus}
                       />
-                      {(latestMedia || canGenerate) && (
+                      {latestMedia && mediaUrl && (
+                        <div style={{ display: 'flex', gap: 2 }}>
+                          {/* Open in new tab */}
+                          <a
+                            href={mediaUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            title="Openen"
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              width: 32, height: 32, borderRadius: 6,
+                              background: 'var(--app-surface-secondary, #252526)',
+                              color: 'var(--app-text, #fff)', fontSize: 14,
+                              textDecoration: 'none', border: 'none', cursor: 'pointer',
+                            }}
+                          >
+                            ↗
+                          </a>
+                          {/* Download */}
+                          <a
+                            href={mediaUrl}
+                            download
+                            onClick={(e) => e.stopPropagation()}
+                            title="Downloaden"
+                            style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              width: 32, height: 32, borderRadius: 6,
+                              background: 'var(--app-surface-secondary, #252526)',
+                              color: 'var(--app-text, #fff)', fontSize: 14,
+                              textDecoration: 'none', border: 'none', cursor: 'pointer',
+                            }}
+                          >
+                            ↓
+                          </a>
+                          {/* Share (Web Share API if available) */}
+                          {typeof navigator !== 'undefined' && 'share' in navigator && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigator.share({
+                                  title: item.label,
+                                  url: mediaUrl,
+                                }).catch(() => { /* user cancelled */ });
+                              }}
+                              title="Delen"
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                width: 32, height: 32, borderRadius: 6,
+                                background: 'var(--app-surface-secondary, #252526)',
+                                color: 'var(--app-text, #fff)', fontSize: 14,
+                                border: 'none', cursor: 'pointer',
+                              }}
+                            >
+                              ⤴
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      {!latestMedia && (latestMedia || canGenerate) && (
                         <span style={{ color: 'var(--app-muted-text, #666)', fontSize: 16 }}>›</span>
                       )}
                     </div>

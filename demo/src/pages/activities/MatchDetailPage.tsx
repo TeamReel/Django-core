@@ -1966,15 +1966,51 @@ export default function HierarchyMatchDetailPage() {
               <div
                 style={{
                   display: 'flex',
+                  flexWrap: 'wrap',
                   justifyContent: 'flex-end',
                   alignItems: 'center',
-                  padding: '16px 20px',
+                  padding: '12px 16px',
                   borderTop: '1px solid var(--app-border)',
                   backgroundColor: 'var(--app-bg)',
                   borderRadius: '0 0 12px 12px',
                   gap: '8px',
                 }}
               >
+                {/* Share (Web Share API — mobile) */}
+                {typeof navigator !== 'undefined' && 'share' in navigator && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      navigator.share({
+                        title: savedAssetPreview.title,
+                        url: savedAssetPreview.url,
+                      }).catch(() => { /* user cancelled */ });
+                    }}
+                  >
+                    ⤴ Delen
+                  </Button>
+                )}
+                {/* Download */}
+                <a
+                  href={savedAssetPreview.url}
+                  download
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--app-surface-secondary)',
+                    color: 'var(--app-text)',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    border: '1px solid var(--app-border)',
+                  }}
+                >
+                  ↓ Download
+                </a>
+                {/* Open in new tab */}
                 <a
                   href={savedAssetPreview.url}
                   target="_blank"
@@ -1992,10 +2028,10 @@ export default function HierarchyMatchDetailPage() {
                     fontWeight: 500,
                   }}
                 >
-                  🔗 Open
+                  ↗ Openen
                 </a>
                 <Button variant="secondary" onClick={() => setSavedAssetPreview(null)}>
-                  Close
+                  Sluiten
                 </Button>
               </div>
             </div>
