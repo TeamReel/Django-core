@@ -56,6 +56,17 @@ function getSyntheticTemplate(subtype: string): ContentTemplate | undefined {
       template_type: 'during_match', template_subtype: 'goal',
       is_active: true, input_requirements: {},
     },
+    lineup_flyer: {
+      id: 0, name: 'Lineup Flyer', description: '', style_variant: '',
+      template_type: 'pre_match', template_subtype: 'lineup_flyer',
+      is_active: true,
+      input_requirements: {
+        members: {
+          goalkeeper: { count: 1, asset_types: ['in_tenue'] },
+          player: { count: 10, asset_types: ['in_tenue'] },
+        },
+      },
+    },
   };
   return synthetics[subtype];
 }
@@ -238,7 +249,7 @@ export default function MatchContentTab({
                 );
 
                 const hasTemplate = !!resolveTemplate(item.subtype);
-                const templateNotRequired = ['match_intro', 'goal', 'poster'].includes(item.subtype);
+                const templateNotRequired = ['match_intro', 'goal', 'poster', 'lineup_flyer'].includes(item.subtype);
                 const canGenerate = hasTemplate || templateNotRequired;
 
                 return (
