@@ -5,7 +5,8 @@ export const compactTableStyle: React.CSSProperties = {
   width: '100%',
   minWidth: '900px',
   borderCollapse: 'collapse',
-  fontSize: '13px' // Slightly smaller for compactness
+  fontSize: '13px', // Slightly smaller for compactness
+  marginBottom: '2px' // Prevent last-row bottom border from being clipped by overflow containers
 };
 
 export const compactThStyle: React.CSSProperties = {

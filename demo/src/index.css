@@ -556,6 +556,18 @@ header [role="alert"] {
   }
 }
 
+/* --- Table Scroll Containers --- */
+/* The .overflow-x-auto class is used across 20+ pages to wrap tables inside
+   Cards. This project does NOT use Tailwind, so the class needs an explicit
+   definition. overflow-x:auto enables horizontal scrolling when a table's
+   minWidth exceeds the Card width.  padding-bottom reserves a small gutter so
+   a horizontal scrollbar (overlay or classic) never obscures the last row. */
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+}
+
 /* --- Responsive Tables --- */
 @media (max-width: 639px) {
   /* Make ALL tables scroll horizontally on mobile */

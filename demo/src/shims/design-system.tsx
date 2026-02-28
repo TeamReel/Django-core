@@ -57,7 +57,15 @@ export const Table = ({ children, columns, rows, loading, style, responsive = tr
           width: '100%',
           maxWidth: '100%',
           overflowX: 'auto',
+          // Explicit overflowY prevents the CSS spec rule (overflow-x != visible
+          // → overflow-y auto) from creating a vertical scroll context.  Without
+          // this, tables using borderCollapse:'collapse' may produce a 1-2px
+          // sub-pixel height overflow that silently clips the last row.
+          overflowY: 'hidden',
           WebkitOverflowScrolling: 'touch',
+          // Reserve space so hidden-Y never clips content – absorbs sub-pixel
+          // overflows from collapsed borders and overlay scrollbar gutters.
+          paddingBottom: 4,
         }}
       >
         {tableEl}
