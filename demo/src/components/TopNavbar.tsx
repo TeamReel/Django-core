@@ -682,7 +682,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 background: 'transparent',
                 cursor: 'pointer',
                 color: 'var(--app-text)',
-                padding: '10px',
+                padding: '8px',
                 border: 'none',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -692,7 +692,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               }}
               aria-label="Toggle menu"
             >
-              <Menu size={28} strokeWidth={2.5} />
+              <AppIcon icon={Menu} size={24} strokeWidth={2} />
             </button>
           )}
 

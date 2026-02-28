@@ -5,15 +5,20 @@
  * Role-aware: hides admin-only items (Directory) for non-admin users and shows
  * contextual items (Team) instead.
  *
+ * Uses the active context API to reliably resolve Match and Content paths,
+ * even when the user is on a completely different page (e.g. dashboard).
+ *
  * Swipe-up gesture opens QuickCreateFAB.
  *
  * Only visible on mobile (<640px)
  */
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Sparkles, Swords, Library, Menu, Shirt, Clapperboard } from 'lucide-react';
 import { useSwipeGesture } from '@django-core/design-system';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
+import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 
 interface MobileBottomNavProps {
   /** Callback to open search/command palette */
@@ -28,13 +33,32 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
   const navigate = useNavigate();
   const location = useLocation();
   const { isSystemAdmin } = useUserRole();
-  const { orgSlug, clubSlugOrId, teamSlugOrId, matchId } = useAppSelection();
+  const { orgSlug, clubSlugOrId, teamSlugOrId, matchId: urlMatchId } = useAppSelection();
+
+  // ── Active context state (fetched from API) ───────────────────────────
+  const [activeMatchSlug, setActiveMatchSlug] = useState<string | null>(null);
+
+  const fetchContext = useCallback(async () => {
+    try {
+      const ctx = await getActiveContext();
+      setActiveMatchSlug(ctx?.match?.slug || ctx?.match?.id || null);
+    } catch {
+      setActiveMatchSlug(null);
+    }
+  }, []);
+
+  // Fetch on mount + listen for changes
+  useEffect(() => {
+    fetchContext();
+    const handler = () => fetchContext();
+    window.addEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, handler);
+    return () => window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, handler);
+  }, [fetchContext]);
 
   // Swipe-up opens QuickCreateFAB
   const swipeHandlers = useSwipeGesture({
     threshold: 40,
     onSwipeUp: () => {
-      // Dispatch event to open QuickCreateFAB
       window.dispatchEvent(new CustomEvent('teamreel:open-quick-create'));
     },
   });
@@ -46,17 +70,18 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
       ? `/${orgSlug}/${clubSlugOrId}`
       : '/dashboard';
 
-  // Build match path from active context
-  const matchPath = matchId
-    ? `/matches/${matchId}`
+  // Resolve match slug: prefer active context, then URL-parsed matchId
+  const resolvedMatchSlug = activeMatchSlug || urlMatchId;
+
+  // Match tab → active match page
+  const matchPath = resolvedMatchSlug
+    ? `/matches/${resolvedMatchSlug}`
     : teamPath !== '/dashboard'
-      ? teamPath  // fallback to team if no match
+      ? teamPath
       : '/dashboard';
 
-  // Content tab: active match content if available, else gallery
-  const contentPath = matchId
-    ? `/matches/${matchId}?tab=content`
-    : '/studio';
+  // Content tab → always gallery (/studio)
+  const contentPath = '/studio';
 
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
@@ -76,23 +101,17 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
     }
 
     if (tab.id === 'team') {
-      // Active for any vanity hierarchy route (org/club/team/season/etc)
       const segs = currentPath.split('/').filter(Boolean);
       const reserved = new Set(['dashboard', 'directory', 'content', 'studio', 'permissions', 'settings', 'health', 'docs', 'search', 'login', 'logout', 'organisations', 'users', 'credits', 'profile', 'notifications', 'preferences', 'approvals', 'medialib', 'billing', 'memberships', 'audit', 'flags', 'recents', 'favorites', 'content-templates', 'workflow-templates', 'matches']);
       return segs.length > 0 && !reserved.has(segs[0]);
     }
 
     if (tab.id === 'match') {
-      // Active when on match page without content tab
-      const searchParams = new URLSearchParams(location.search);
-      return currentPath.startsWith('/matches/') && searchParams.get('tab') !== 'content';
+      return currentPath.startsWith('/matches/');
     }
 
     if (tab.id === 'content') {
-      const searchParams = new URLSearchParams(location.search);
-      // Active on match content tab or studio/gallery
-      return (currentPath.startsWith('/matches/') && searchParams.get('tab') === 'content') ||
-             currentPath.startsWith('/studio');
+      return currentPath.startsWith('/studio');
     }
 
     return currentPath.startsWith(tabBasePath);
