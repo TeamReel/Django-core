@@ -1893,11 +1893,12 @@ export default function HierarchyMatchDetailPage() {
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 1000,
+              zIndex: 1100,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              padding: '16px 8px 80px',
             }}
             onClick={() => setSavedAssetPreview(null)}
           >
@@ -1907,7 +1908,7 @@ export default function HierarchyMatchDetailPage() {
                 borderRadius: '12px',
                 maxWidth: '900px',
                 width: '92%',
-                maxHeight: '90vh',
+                maxHeight: 'calc(90vh - 80px)',
                 overflow: 'auto',
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
               }}

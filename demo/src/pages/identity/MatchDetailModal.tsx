@@ -29,10 +29,12 @@ export default function MatchDetailModal({ opened, onClose, match }: MatchDetail
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000,
+        zIndex: 1100,
       }}
+      onClick={onClose}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--app-surface)',
           padding: '24px',

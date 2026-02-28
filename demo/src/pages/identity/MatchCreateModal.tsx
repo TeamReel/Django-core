@@ -1101,10 +1101,12 @@ export default function MatchCreateModal({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000,
+        zIndex: 1100,
       }}
+      onClick={() => { if (!isSaving) onClose(); }}
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--app-surface)',
           padding: '24px',
