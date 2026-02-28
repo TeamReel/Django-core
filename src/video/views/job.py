@@ -291,10 +291,13 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         }
 
         try:
-            from activities.models import Activity
-            from medialib.models import MediaItem, MediaItemState
+            Activity = apps.get_model("activities", "Activity")
+            MediaItem = apps.get_model("medialib", "MediaItem")
+            from src.medialib.models import MediaItemState
 
-            activity = Activity.objects.select_related("project").get(id=activity_id)
+            activity = Activity.objects.select_related(
+                "project", "project__parent_project", "project__organisation",
+            ).get(id=activity_id)
             project = activity.project or job.project
 
             if not project:
@@ -302,15 +305,46 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
             asset_type = JOB_TYPE_TO_ASSET_TYPE.get(job.job_type, job.job_type)
 
-            # Build descriptive metadata
-            extraction_meta = {
+            # ── Build rich extraction_metadata (same pattern as views_asset.py) ──
+            extraction_meta: dict[str, Any] = {
                 "source": "video_job_approved",
                 "job_id": str(job.id),
                 "job_type": job.job_type,
                 "asset_type": asset_type,
-                "project_id": project.id,
-                "project_name": project.name,
             }
+
+            # Project context (club/team)
+            if project:
+                extraction_meta["project_id"] = project.id
+                extraction_meta["project_name"] = project.name
+                if project.parent_project:
+                    extraction_meta["club_name"] = project.parent_project.name
+                    extraction_meta["team_name"] = project.name
+                else:
+                    extraction_meta["club_name"] = project.name
+
+            # Organisation context
+            org = getattr(project, "organisation", None)
+            if org:
+                extraction_meta["organisation_id"] = str(org.id)
+                extraction_meta["organisation_name"] = org.name
+
+            # Activity/match context
+            extraction_meta["activity_id"] = str(activity.id)
+            extraction_meta["activity_title"] = activity.title
+
+            # Sport type from project
+            if hasattr(project, "sport") and project.sport:
+                extraction_meta["sport_type"] = project.sport.name
+
+            # Goal-specific context from job config
+            config = job.config or {}
+            if config.get("score_home") is not None:
+                extraction_meta["score_home"] = config["score_home"]
+            if config.get("score_away") is not None:
+                extraction_meta["score_away"] = config["score_away"]
+            if config.get("scorer_member_id"):
+                extraction_meta["scorer_member_id"] = config["scorer_member_id"]
 
             file_asset = job.output_file
             mime_type = getattr(file_asset, "mime_type", "video/mp4") or "video/mp4"
@@ -323,7 +357,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 activity=activity,
                 project=project,
                 title=f"{job.job_type.replace('_', ' ').title()} Video",
-                description=f"Approved {job.job_type} video (job {str(job.id)[:8]})",
+                description=f"Approved {job.job_type} video for {activity.title}",
                 mime_type=mime_type,
                 file_size_bytes=file_size,
                 state=MediaItemState.PROCESSED,
