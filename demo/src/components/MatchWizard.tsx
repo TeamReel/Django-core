@@ -22,10 +22,12 @@ import {
   Video,
   FileText,
   Clock,
+  ArrowLeft,
 } from 'lucide-react';
 import { useActivities, Activity } from '../hooks/useActivities';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import { getApiBaseUrl } from '../utils/apiBase';
+import ContentGenerationModal, { type ContentTemplate } from '../pages/identity/ContentGenerationModal';
 
 type WizardStep = 'match' | 'lineup' | 'content';
 type ContentPhase = 'pre' | 'during' | 'post';
@@ -117,6 +119,11 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   const [selectedContentPhase, setSelectedContentPhase] = useState<ContentPhase>('pre');
   const [editingPosition, setEditingPosition] = useState<number | null>(null);
   const [lineupSaving, setLineupSaving] = useState(false);
+
+  // Content generation modal state
+  const [isContentModalOpen, setIsContentModalOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
+  const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState<string>('');
 
   const apiBaseUrl = getApiBaseUrl();
 
@@ -309,11 +316,24 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     setEditingPosition(null);
   };
 
-  const handleContentSelect = (contentKey: string) => {
+  const handleContentSelect = (contentKey: string, contentLabel: string) => {
     if (!selectedMatch) return;
-    const matchSlug = (selectedMatch as any).slug || selectedMatch.id;
-    navigate(`/matches/${matchSlug}?tab=content&generate=${contentKey}`);
-    onClose();
+    // Open content generation modal inline instead of navigating
+    setSelectedContentTypeLabel(contentLabel);
+    setSelectedTemplate(null); // Will be auto-selected by modal based on subtype
+    setIsContentModalOpen(true);
+  };
+
+  const handleContentModalClose = () => {
+    setIsContentModalOpen(false);
+    setSelectedTemplate(null);
+    setSelectedContentTypeLabel('');
+  };
+
+  const handleContentGenerated = (message?: string) => {
+    // Content was generated successfully
+    handleContentModalClose();
+    // Optionally show success message or close wizard
   };
 
   const goToStep = (step: WizardStep) => {
@@ -750,7 +770,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   return (
                     <button
                       key={content.key}
-                      onClick={() => handleContentSelect(content.key)}
+                      onClick={() => handleContentSelect(content.key, content.label)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -839,6 +859,36 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           )}
         </div>
       </div>
+
+      {/* Inline Content Generation Modal */}
+      {selectedMatch && isContentModalOpen && (
+        <ContentGenerationModal
+          isOpen={isContentModalOpen}
+          onClose={handleContentModalClose}
+          onGenerated={handleContentGenerated}
+          matchData={{
+            id: (selectedMatch as any).slug || String(selectedMatch.id),
+            title: selectedMatch.title,
+            project: (selectedMatch as any).project,
+            opponent_project: (selectedMatch as any).opponent_project,
+            participations: (selectedMatch as any).participations,
+            start_time: selectedMatch.start_time,
+            location: (selectedMatch as any).location,
+            metadata: {
+              formation: lineupFormation,
+              lineup: {
+                formation: lineupFormation,
+                goalkeeper: lineupSlots.goalkeeper,
+                player: lineupSlots.player,
+              },
+              ...(selectedMatch as any).metadata,
+            },
+          }}
+          organisationSport={(selectedMatch as any).project?.sport}
+          organisationId={(selectedMatch as any).project?.organisation_id || (selectedMatch as any).organisation?.id}
+          contentTypeLabel={selectedContentTypeLabel}
+        />
+      )}
     </BottomSheet>
   );
 }
