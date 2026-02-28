@@ -692,7 +692,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               }}
               aria-label="Toggle menu"
             >
-              <AppIcon icon={Menu} size={24} strokeWidth={2} />
+              <AppIcon icon={Menu} size={22} strokeWidth={2.5} />
             </button>
           )}
 
@@ -1287,7 +1287,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
         }
         @media (max-width: 1024px) {
           .mobile-menu-button {
-            display: block !important;
+            display: flex !important;
           }
           .desktop-nav {
             display: none !important;

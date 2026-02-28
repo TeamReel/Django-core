@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card, Badge } from '@django-core/design-system';
-import { Table } from '../../../shims/design-system';
+import { Badge } from '@django-core/design-system';
 import { getAssetUrl } from '../../../hooks/useBrandProfile';
 import { CONTENT_TYPES } from '../../identity/ContentGenerationModal';
 import type { MatchMediaItem } from '../../../components/MediaAssetCard';
@@ -49,7 +48,7 @@ export default function MatchOverviewTab({
   getLatestMediaForSubtype,
   getContentItemForSubtype,
 }: MatchOverviewTabProps) {
-  // Derive logo URLs from club/project metadata
+  // Derive logo URLs
   const homeLogoUrl = (() => {
     const assets =
       (club as any)?.metadata?.teamreel_assets ||
@@ -62,480 +61,298 @@ export default function MatchOverviewTab({
     return url ? (url.startsWith('http') ? url : getAssetUrl(url)) : null;
   })();
 
-  // Content completion matrix: gather all match-level content types
+  // Content stats
   const allMatchContentItems = [
     ...CONTENT_TYPES.pre_match.items,
     ...CONTENT_TYPES.during_match.items,
     ...CONTENT_TYPES.post_match.items,
   ];
+  const contentDone = allMatchContentItems.filter(
+    (i) => getLatestMediaForSubtype(i.subtype) != null
+  ).length;
+  const contentGenerating = allMatchContentItems.filter((i) => {
+    const ci = getContentItemForSubtype(i.subtype);
+    return ci != null && ['queued', 'generating'].includes(ci.status);
+  }).length;
+  const contentTotal = allMatchContentItems.length;
 
-  const renderEventIcon = (type: string) => {
-    switch (String(type || '').toLowerCase()) {
-      case 'goal':
-        return '⚽';
-      case 'card_yellow':
-        return '🟨';
-      case 'card_red':
-        return '🟥';
-      case 'substitution':
-        return 'cS';
-      case 'injury':
-        return '🚑';
-      default:
-        return '•';
-    }
-  };
+  // Lineup stats
+  const lineupCount = homeParticipations.length + awayParticipations.length;
+  const homeStarters = homeParticipations.filter(
+    (p) => String(p.role || '').toLowerCase() === 'starter'
+  ).length;
 
-  const renderLineup = (participations: Participation[] = []) => (
-    <Table>
-      <thead>
-        <tr>
-          <th className="w-12">#</th>
-          <th>Name</th>
-          <th className="w-16">Pos</th>
-        </tr>
-      </thead>
-      <tbody>
-        {participations.length === 0 ? (
-          <tr>
-            <td colSpan={3} className="text-gray-500 text-center py-4">
-              No lineup available
-            </td>
-          </tr>
-        ) : (
-          participations.map((p) => (
-            <tr
-              key={p.id}
-              className={
-                String(p.role || '').toLowerCase() !== 'starter'
-                  ? 'bg-gray-50'
-                  : ''
-              }
-            >
-              <td className="font-mono text-sm">
-                {p.data?.jersey_number || '-'}
-              </td>
-              <td>
-                <div className="font-medium">
-                  {p.member?.user_name || 'Unknown Player'}
-                  {p.data?.is_captain && (
-                    <span className="ml-2 text-yellow-500" title="Captain">
-                      ©
-                    </span>
-                  )}
-                </div>
-                {String(p.role || '').toLowerCase() !== 'starter' && p.role && (
-                  <div className="text-xs text-gray-500 capitalize">
-                    {p.role.replace('_', ' ')}
-                  </div>
-                )}
-              </td>
-              <td className="text-xs font-bold text-gray-400">
-                {p.data?.position}
-              </td>
-            </tr>
-          ))
-        )}
-      </tbody>
-    </Table>
-  );
+  // Render small team logo or fallback
+  const TeamLogo = ({ url, fallback, size = 40 }: { url: string | null; fallback: string; size?: number }) =>
+    url ? (
+      <img
+        src={url}
+        alt=""
+        style={{ width: size, height: size, objectFit: 'contain', borderRadius: 6 }}
+      />
+    ) : (
+      <div
+        style={{
+          width: size,
+          height: size,
+          borderRadius: 6,
+          background: 'var(--app-surface-secondary, #252526)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: size * 0.45,
+        }}
+      >
+        {fallback}
+      </div>
+    );
 
   return (
-    <>
-      <Card className="mb-6">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '24px 16px',
-          }}
-        >
-          {/* Home team */}
-          <div
-            style={{
-              flex: 1,
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            {homeLogoUrl ? (
-              <img
-                src={homeLogoUrl}
-                alt={homeTeamName}
-                style={{
-                  width: 64,
-                  height: 64,
-                  objectFit: 'contain',
-                  borderRadius: 8,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 8,
-                  background: 'var(--app-surface-secondary, #2a2a2a)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 28,
-                }}
-              >
-                🏠
-              </div>
-            )}
-            <h3 style={{ fontSize: '1.25rem', marginBottom: 0, fontWeight: 700 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* ── Scoreboard (compact) ──────────────────────────────────────── */}
+      <div
+        style={{
+          borderRadius: 12,
+          border: '1px solid var(--app-border, #333)',
+          background: 'var(--app-surface, #1e1e1e)',
+          padding: '16px 12px',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          {/* Home */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+            <TeamLogo url={homeLogoUrl} fallback="🏠" size={44} />
+            <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>
               {homeTeamName}
-            </h3>
+            </span>
           </div>
 
-          {/* Score */}
-          <div style={{ textAlign: 'center', minWidth: '140px' }}>
-            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', lineHeight: 1 }}>
-              {scoreDisplay}
-            </div>
-            <div
-              style={{
-                marginTop: '12px',
-                color: 'var(--app-text-secondary)',
-              }}
+          {/* Score block */}
+          <div style={{ textAlign: 'center', minWidth: 80 }}>
+            <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{scoreDisplay}</div>
+            <Badge
+              variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}
+              size="sm"
+              style={{ marginTop: 6 }}
             >
-              <Badge
-                variant={
-                  status === 'finished'
-                    ? 'success'
-                    : status === 'live'
-                      ? 'error'
-                      : 'default'
-                }
-              >
-                {status.toUpperCase()}
-              </Badge>
-            </div>
-            <div
-              style={{
-                marginTop: '8px',
-                fontSize: '0.85rem',
-                color: 'var(--app-text-secondary)',
-              }}
-            >
+              {status.toUpperCase()}
+            </Badge>
+            <div style={{ fontSize: 12, color: 'var(--app-muted-text, #888)', marginTop: 4 }}>
               {date
-                ? `${date.toLocaleDateString()} • ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                ? date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) +
+                  ' • ' +
+                  date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
                 : '—'}
             </div>
           </div>
 
-          {/* Away team */}
-          <div
-            style={{
-              flex: 1,
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            {awayLogoUrl ? (
-              <img
-                src={awayLogoUrl}
-                alt={awayTeamName}
-                style={{
-                  width: 64,
-                  height: 64,
-                  objectFit: 'contain',
-                  borderRadius: 8,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: 8,
-                  background: 'var(--app-surface-secondary, #2a2a2a)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 28,
-                }}
-              >
-                ⚽
-              </div>
-            )}
-            <h3 style={{ fontSize: '1.25rem', marginBottom: 0, fontWeight: 700 }}>
+          {/* Away */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+            <TeamLogo url={awayLogoUrl} fallback="⚽" size={44} />
+            <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>
               {awayTeamName}
-            </h3>
+            </span>
           </div>
         </div>
 
+        {/* Venue + competition */}
         <div
           style={{
             textAlign: 'center',
-            borderTop: '1px solid var(--app-border)',
-            padding: '10px 16px',
-            color: 'var(--app-text-secondary)',
-            fontSize: '0.9rem',
+            borderTop: '1px solid var(--app-border, #333)',
+            marginTop: 12,
+            paddingTop: 8,
+            fontSize: 12,
+            color: 'var(--app-muted-text, #888)',
           }}
         >
-          📍 {match.location || match.metadata?.venue || 'Unknown Venue'} • 🏆{' '}
-          {competition?.name || match.period?.name || 'Competition'}
+          📍 {match.location || match.metadata?.venue || 'Onbekend'} • 🏆{' '}
+          {competition?.name || match.period?.name || 'Competitie'}
         </div>
-      </Card>
+      </div>
 
-      {/* Content Generation Matrix */}
-      <Card title="📊 Content Status">
-        <div style={{ padding: '16px' }}>
-          <div className="overflow-x-auto">
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                fontSize: 13,
-              }}
-            >
-              <thead>
-                <tr>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '8px 10px',
-                      borderBottom: '1px solid var(--app-border, #333)',
-                      fontWeight: 600,
-                      color: 'var(--app-text-secondary, #999)',
-                      fontSize: 11,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    Fase
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'left',
-                      padding: '8px 10px',
-                      borderBottom: '1px solid var(--app-border, #333)',
-                      fontWeight: 600,
-                      color: 'var(--app-text-secondary, #999)',
-                      fontSize: 11,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                    }}
-                  >
-                    Content
-                  </th>
-                  <th
-                    style={{
-                      textAlign: 'center',
-                      padding: '8px 10px',
-                      borderBottom: '1px solid var(--app-border, #333)',
-                      fontWeight: 600,
-                      color: 'var(--app-text-secondary, #999)',
-                      fontSize: 11,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      width: 80,
-                    }}
-                  >
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {(
-                  ['pre_match', 'during_match', 'post_match'] as const
-                ).map((categoryKey) => {
-                  const category = CONTENT_TYPES[categoryKey];
-                  if (!category) return null;
-                  return category.items.map((item, idx) => {
-                    const latestMedia = getLatestMediaForSubtype(item.subtype);
-                    const existingItem = getContentItemForSubtype(item.subtype);
-                    const isGenerating =
-                      existingItem != null &&
-                      ['queued', 'generating'].includes(existingItem.status);
-                    const isFailed = existingItem?.status === 'failed';
-                    const hasMedia = latestMedia != null;
-
-                    let statusIcon = '⬜';
-                    let statusText = 'Niet gemaakt';
-                    let statusColor = 'var(--app-text-secondary, #999)';
-                    if (isGenerating) {
-                      statusIcon = '⏳';
-                      statusText = 'Bezig...';
-                      statusColor = '#f59e0b';
-                    } else if (isFailed) {
-                      statusIcon = '❌';
-                      statusText = 'Mislukt';
-                      statusColor = '#ef4444';
-                    } else if (hasMedia) {
-                      statusIcon = '✅';
-                      statusText = 'Gereed';
-                      statusColor = '#10b981';
-                    }
-
-                    return (
-                      <tr
-                        key={item.id}
-                        style={{
-                          borderBottom:
-                            idx === category.items.length - 1
-                              ? '2px solid var(--app-border, #333)'
-                              : '1px solid var(--app-border, #222)',
-                        }}
-                      >
-                        {idx === 0 && (
-                          <td
-                            rowSpan={category.items.length}
-                            style={{
-                              padding: '8px 10px',
-                              fontWeight: 600,
-                              fontSize: 12,
-                              color: 'var(--app-text-secondary, #aaa)',
-                              verticalAlign: 'top',
-                              borderRight:
-                                '1px solid var(--app-border, #333)',
-                            }}
-                          >
-                            {category.label}
-                          </td>
-                        )}
-                        <td style={{ padding: '8px 10px' }}>
-                          <span style={{ marginRight: 6 }}>{item.icon}</span>
-                          {item.label}
-                        </td>
-                        <td
-                          style={{
-                            padding: '8px 10px',
-                            textAlign: 'center',
-                          }}
-                        >
-                          <span
-                            title={statusText}
-                            style={{
-                              cursor: 'default',
-                              color: statusColor,
-                              fontWeight: 600,
-                              fontSize: 12,
-                            }}
-                          >
-                            {statusIcon} {statusText}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  });
-                })}
-              </tbody>
-            </table>
+      {/* ── Quick status cards ────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {/* Lineup status */}
+        <div
+          style={{
+            borderRadius: 10,
+            border: '1px solid var(--app-border, #333)',
+            background: 'var(--app-surface, #1e1e1e)',
+            padding: '12px',
+          }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--app-muted-text, #888)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+            Opstelling
           </div>
-
-          {/* Summary */}
-          <div
-            style={{
-              marginTop: 12,
-              display: 'flex',
-              gap: 16,
-              flexWrap: 'wrap',
-              fontSize: 12,
-              color: 'var(--app-text-secondary, #999)',
-            }}
-          >
-            {(() => {
-              const total = allMatchContentItems.length;
-              const done = allMatchContentItems.filter(
-                (item) => getLatestMediaForSubtype(item.subtype) != null
-              ).length;
-              const generating = allMatchContentItems.filter((item) => {
-                const ci = getContentItemForSubtype(item.subtype);
-                return (
-                  ci != null &&
-                  ['queued', 'generating'].includes(ci.status)
-                );
-              }).length;
-              return (
-                <>
-                  <span>
-                    ✅ {done}/{total} gereed
-                  </span>
-                  {generating > 0 && <span>⏳ {generating} bezig</span>}
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      </Card>
-
-      {/* Match Events & Lineups */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card title="Match Events">
-          {matchEvents.length === 0 ? (
-            <div className="text-gray-500 text-sm italic">
-              No events recorded.
+          {lineupCount > 0 ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 20 }}>✅</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#10b981' }}>Ingevuld</div>
+                <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)' }}>
+                  {homeStarters} spelers
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {matchEvents.map((evt) => {
-                const isHome =
-                  String(evt.team_project?.id || '') ===
-                  String(match.project?.id || '');
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 20 }}>⬜</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--app-muted-text, #888)' }}>Niet ingevuld</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Content status */}
+        <div
+          style={{
+            borderRadius: 10,
+            border: '1px solid var(--app-border, #333)',
+            background: 'var(--app-surface, #1e1e1e)',
+            padding: '12px',
+          }}
+        >
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--app-muted-text, #888)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+            Content
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 20 }}>{contentDone > 0 ? '🟢' : '⬜'}</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: contentDone > 0 ? '#10b981' : 'var(--app-muted-text, #888)' }}>
+                {contentDone}/{contentTotal}
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)' }}>
+                {contentGenerating > 0 ? `${contentGenerating} bezig` : contentDone > 0 ? 'gereed' : 'niet gemaakt'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content checklist (compact) ───────────────────────────────── */}
+      {(['pre_match', 'during_match', 'post_match'] as const).map((categoryKey) => {
+        const category = CONTENT_TYPES[categoryKey];
+        if (!category) return null;
+
+        return (
+          <div key={categoryKey}>
+            <div style={{
+              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.5px', color: 'var(--app-muted-text, #888)',
+              marginBottom: 6, paddingLeft: 2,
+            }}>
+              {category.label}
+            </div>
+            <div style={{
+              borderRadius: 10,
+              border: '1px solid var(--app-border, #333)',
+              overflow: 'hidden',
+              background: 'var(--app-surface, #1e1e1e)',
+            }}>
+              {category.items.map((item, idx) => {
+                const latestMedia = getLatestMediaForSubtype(item.subtype);
+                const existingItem = getContentItemForSubtype(item.subtype);
+                const isGenerating = existingItem != null && ['queued', 'generating'].includes(existingItem.status);
+                const isFailed = existingItem?.status === 'failed';
+                const hasMedia = latestMedia != null;
+
+                let statusIcon = '⬜';
+                let statusColor = 'var(--app-muted-text, #666)';
+                if (isGenerating) { statusIcon = '⏳'; statusColor = '#f59e0b'; }
+                else if (isFailed) { statusIcon = '❌'; statusColor = '#ef4444'; }
+                else if (hasMedia) { statusIcon = '✅'; statusColor = '#10b981'; }
+
                 return (
-                  <div key={evt.id} className="flex items-center text-sm">
-                    <div className="font-mono font-bold w-8 text-right mr-3 text-gray-400">
-                      {evt.minute}'
-                    </div>
-                    <div
-                      className={`flex-1 flex items-center ${isHome ? 'flex-row' : 'flex-row-reverse text-right'}`}
-                    >
-                      <span className="text-xl mx-2" title={evt.event_type}>
-                        {renderEventIcon(evt.event_type)}
-                      </span>
-                      <div>
-                        <div className="font-medium">
-                          {evt.member?.user_name || 'Unknown'}
-                        </div>
-                        {evt.related_member && (
-                          <div className="text-xs text-gray-500">
-                            ({evt.related_member.user_name})
-                          </div>
-                        )}
-                        {String(evt.event_type || '').toLowerCase() ===
-                          'substitution' &&
-                          evt.related_member && (
-                            <div className="text-xs text-green-600">
-                              IN: {evt.related_member.user_name}
-                            </div>
-                          )}
-                      </div>
-                    </div>
+                  <div
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 12px',
+                      borderBottom: idx < category.items.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
+                      fontSize: 13,
+                    }}
+                  >
+                    <span style={{ fontSize: 14 }}>{statusIcon}</span>
+                    <span style={{ fontSize: 15 }}>{item.icon}</span>
+                    <span style={{ flex: 1, fontWeight: 500, color: 'var(--app-text, #fff)' }}>
+                      {item.label}
+                    </span>
+                    <span style={{ fontSize: 11, color: statusColor, fontWeight: 600 }}>
+                      {isGenerating ? 'Bezig' : isFailed ? 'Mislukt' : hasMedia ? 'Gereed' : '—'}
+                    </span>
                   </div>
                 );
               })}
             </div>
-          )}
-        </Card>
-
-        <Card title="Lineups">
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">
-                {homeTeamName}
-              </div>
-              {renderLineup(homeParticipations)}
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">
-                {awayTeamName}
-              </div>
-              {renderLineup(awayParticipations)}
-            </div>
           </div>
-        </Card>
-      </div>
-    </>
+        );
+      })}
+
+      {/* ── Match Events (compact) ────────────────────────────────────── */}
+      {matchEvents.length > 0 && (
+        <div>
+          <div style={{
+            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+            letterSpacing: '0.5px', color: 'var(--app-muted-text, #888)',
+            marginBottom: 6, paddingLeft: 2,
+          }}>
+            Wedstrijdverloop
+          </div>
+          <div style={{
+            borderRadius: 10,
+            border: '1px solid var(--app-border, #333)',
+            overflow: 'hidden',
+            background: 'var(--app-surface, #1e1e1e)',
+          }}>
+            {matchEvents.map((evt, idx) => {
+              const isHome = String(evt.team_project?.id || '') === String(match.project?.id || '');
+              const icon = (() => {
+                switch (String(evt.event_type || '').toLowerCase()) {
+                  case 'goal': return '⚽';
+                  case 'card_yellow': return '🟨';
+                  case 'card_red': return '🟥';
+                  case 'substitution': return '🔄';
+                  case 'injury': return '🚑';
+                  default: return '•';
+                }
+              })();
+              return (
+                <div
+                  key={evt.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 12px',
+                    borderBottom: idx < matchEvents.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
+                    fontSize: 13,
+                  }}
+                >
+                  <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--app-muted-text, #666)', minWidth: 28, textAlign: 'right' }}>
+                    {evt.minute}'
+                  </span>
+                  <span>{icon}</span>
+                  <span style={{ flex: 1, fontWeight: 500 }}>
+                    {evt.member?.user_name || 'Onbekend'}
+                    {evt.related_member && (
+                      <span style={{ fontSize: 11, color: 'var(--app-muted-text, #888)', marginLeft: 4 }}>
+                        ({evt.related_member.user_name})
+                      </span>
+                    )}
+                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--app-muted-text, #666)' }}>
+                    {isHome ? homeTeamName : awayTeamName}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
