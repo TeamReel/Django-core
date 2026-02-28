@@ -2070,6 +2070,34 @@ export default function HierarchyMatchDetailPage() {
               matchEvents={matchEvents}
               getLatestMediaForSubtype={getLatestMediaForSubtype}
               getContentItemForSubtype={getContentItemForSubtype}
+              onContentAction={(subtype, label) => {
+                const latestMedia = getLatestMediaForSubtype(subtype);
+                if (latestMedia) {
+                  // Open preview
+                  const previewUrl = latestMedia.file_url || getAssetUrl(latestMedia.storage_path);
+                  if (previewUrl) {
+                    const isVid = Boolean(latestMedia.mime_type?.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(previewUrl));
+                    setSavedAssetPreview({ title: label, subtitle: 'Match media', url: previewUrl, isVideo: isVid });
+                  }
+                } else {
+                  // Open content generation modal
+                  const templates = availableTemplates[subtype] || [];
+                  let matched: ContentTemplate | undefined;
+                  if ((subtype === 'lineup' || subtype === 'lineup_flyer') && templates.length > 0) {
+                    const formation = match?.metadata?.formation;
+                    if (formation) {
+                      matched = templates.find(
+                        (t) => t.formation_detail?.code === formation ||
+                          t.name.toLowerCase().includes(formation.toLowerCase().replace(/-/g, ''))
+                      );
+                    }
+                    if (!matched) matched = templates[0];
+                  } else {
+                    matched = templates[0];
+                  }
+                  openContentModal(matched, label);
+                }
+              }}
             />
           )}
 

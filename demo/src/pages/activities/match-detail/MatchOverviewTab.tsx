@@ -11,6 +11,7 @@ import type {
   Participation,
   ActivityEvent,
   ContentItem,
+  SavedAssetPreview,
 } from './types';
 
 interface MatchOverviewTabProps {
@@ -30,6 +31,8 @@ interface MatchOverviewTabProps {
   matchEvents: ActivityEvent[];
   getLatestMediaForSubtype: (subtype: string) => MatchMediaItem | null;
   getContentItemForSubtype: (subtype: string) => ContentItem | null;
+  /** Called when user taps a content row to generate or preview */
+  onContentAction?: (subtype: string, label: string) => void;
 }
 
 export default function MatchOverviewTab({
@@ -47,6 +50,7 @@ export default function MatchOverviewTab({
   matchEvents,
   getLatestMediaForSubtype,
   getContentItemForSubtype,
+  onContentAction,
 }: MatchOverviewTabProps) {
   // Derive logo URLs
   const homeLogoUrl = (() => {
@@ -268,6 +272,7 @@ export default function MatchOverviewTab({
                 return (
                   <div
                     key={item.id}
+                    onClick={() => onContentAction?.(item.subtype, item.label)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -275,6 +280,7 @@ export default function MatchOverviewTab({
                       padding: '8px 12px',
                       borderBottom: idx < category.items.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
                       fontSize: 13,
+                      cursor: onContentAction ? 'pointer' : 'default',
                     }}
                   >
                     <span style={{ fontSize: 14 }}>{statusIcon}</span>
@@ -282,9 +288,15 @@ export default function MatchOverviewTab({
                     <span style={{ flex: 1, fontWeight: 500, color: 'var(--app-text, #fff)' }}>
                       {item.label}
                     </span>
-                    <span style={{ fontSize: 11, color: statusColor, fontWeight: 600 }}>
-                      {isGenerating ? 'Bezig' : isFailed ? 'Mislukt' : hasMedia ? 'Gereed' : '—'}
-                    </span>
+                    {hasMedia && !isGenerating ? (
+                      <span style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>Bekijk ↗</span>
+                    ) : isGenerating ? (
+                      <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>⏳ Bezig</span>
+                    ) : isFailed ? (
+                      <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>Opnieuw ↻</span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: 'var(--app-primary, #3b82f6)', fontWeight: 600 }}>Maak →</span>
+                    )}
                   </div>
                 );
               })}

@@ -254,8 +254,8 @@ def _render_header_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image
     return canvas
 
 
-def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image:
-    """Overlay sponsor logo at bottom-left of the flyer (no background)."""
+def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData, footer_h: int = 0) -> Image.Image:
+    """Overlay sponsor logo above the footer area of the flyer (no background)."""
     sponsor_img = _download_image(data.sponsor_url)
     if sponsor_img:
         sponsor_img = _clean_logo(sponsor_img)
@@ -263,7 +263,7 @@ def _draw_sponsor_bar(canvas: Image.Image, data: MatchFlyerData) -> Image.Image:
         # Paste directly — no pill background, just the logo with alpha
         margin = 24
         sx = margin
-        sy = HEIGHT - margin - sponsor_img.height
+        sy = HEIGHT - footer_h - margin - sponsor_img.height
         canvas_rgba = canvas.convert("RGBA")
         canvas_rgba.paste(
             sponsor_img.convert("RGBA"),
@@ -470,7 +470,7 @@ def _render_modern(data: MatchFlyerData) -> Image.Image:
         )
 
     # -- Sponsor at bottom --
-    canvas = _draw_sponsor_bar(canvas, data)
+    canvas = _draw_sponsor_bar(canvas, data, footer_h=0)
 
     return canvas
 
@@ -776,7 +776,7 @@ def _render_action(data: MatchFlyerData) -> Image.Image:
     )
 
     # -- Sponsor at bottom --
-    canvas = _draw_sponsor_bar(canvas, data)
+    canvas = _draw_sponsor_bar(canvas, data, footer_h=BAND_H + INFO_H)
 
     return canvas
 
@@ -970,7 +970,7 @@ def _render_stadium_ai(data: MatchFlyerData) -> Image.Image:
         )
 
     # -- Sponsor at bottom --
-    canvas = _draw_sponsor_bar(canvas, data)
+    canvas = _draw_sponsor_bar(canvas, data, footer_h=HEIGHT - int(HEIGHT * 0.68))
 
     return canvas
 
@@ -1153,7 +1153,7 @@ def _render_summary(data: MatchFlyerData) -> Image.Image:
         _draw_centered(draw, date_str, footer_cx, footer_y, date_font, fill=(180, 180, 180))
 
     # -- Sponsor --
-    canvas = _draw_sponsor_bar(canvas, data)
+    canvas = _draw_sponsor_bar(canvas, data, footer_h=BAND_H + FOOTER_H)
 
     return canvas
 
