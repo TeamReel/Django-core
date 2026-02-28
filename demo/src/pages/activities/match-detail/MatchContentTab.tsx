@@ -134,6 +134,178 @@ function StatusBadge({ isGenerating, isFailed, hasMedia, workflowStatus }: {
 
 // ── Main component ──────────────────────────────────────────────────────────
 
+/** Reusable content row for both single and multi-item subtypes */
+function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, isFailed, workflowStatus, canGenerate, showBorder, onPreview, onGenerate, itemLabel, updatedAt }: {
+  label: string;
+  icon?: string;
+  mediaUrl: string | null;
+  isVideo: boolean;
+  hasMedia: boolean;
+  isGenerating: boolean;
+  isFailed: boolean;
+  workflowStatus: string | null;
+  canGenerate: boolean;
+  showBorder: boolean;
+  onPreview: () => void;
+  onGenerate: () => void;
+  itemLabel: string;
+  updatedAt?: string | null;
+}) {
+  return (
+    <div
+      onClick={() => {
+        if (hasMedia && mediaUrl) {
+          onPreview();
+        } else if (canGenerate) {
+          onGenerate();
+        }
+      }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '10px 12px',
+        borderBottom: showBorder ? '1px solid var(--app-border, #333)' : 'none',
+        cursor: (hasMedia || canGenerate) ? 'pointer' : 'default',
+        transition: 'background 0.1s ease',
+      }}
+      onMouseEnter={(e) => {
+        if (hasMedia || canGenerate)
+          e.currentTarget.style.background = 'var(--app-surface-hover, #2a2a2a)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+      }}
+    >
+      {/* Thumbnail */}
+      <Thumbnail url={mediaUrl} isVideo={isVideo} icon={icon} />
+
+      {/* Text block */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: 'var(--app-text, #fff)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          {label}
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)', marginTop: 2 }}>
+          {hasMedia && updatedAt
+            ? new Date(updatedAt).toLocaleDateString('nl-NL', {
+                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+              })
+            : canGenerate ? 'Tik om te genereren' : 'Geen template'}
+        </div>
+      </div>
+
+      {/* Status + actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        <StatusBadge
+          isGenerating={isGenerating}
+          isFailed={isFailed}
+          hasMedia={hasMedia}
+          workflowStatus={workflowStatus}
+        />
+        {hasMedia && mediaUrl && (
+          <div style={{ display: 'flex', gap: 2 }}>
+            {/* Open in new tab */}
+            <a
+              href={mediaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              title="Openen"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, borderRadius: 6,
+                background: 'var(--app-surface-secondary, #252526)',
+                color: 'var(--app-text, #fff)', fontSize: 14,
+                textDecoration: 'none', border: 'none', cursor: 'pointer',
+              }}
+            >
+              ↗
+            </a>
+            {/* Download */}
+            <a
+              href={mediaUrl}
+              download
+              onClick={(e) => e.stopPropagation()}
+              title="Downloaden"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, borderRadius: 6,
+                background: 'var(--app-surface-secondary, #252526)',
+                color: 'var(--app-text, #fff)', fontSize: 14,
+                textDecoration: 'none', border: 'none', cursor: 'pointer',
+              }}
+            >
+              ↓
+            </a>
+            {/* Share actual file (Web Share API) */}
+            {typeof navigator !== 'undefined' && 'share' in navigator && (
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    const resp = await fetch(mediaUrl);
+                    const blob = await resp.blob();
+                    const ext = isVideo ? 'mp4' : 'jpg';
+                    const mimeType = isVideo ? 'video/mp4' : 'image/jpeg';
+                    const fileName = `${itemLabel.replace(/\s+/g, '_')}.${ext}`;
+                    const file = new File([blob], fileName, { type: mimeType });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                      await navigator.share({ files: [file], title: itemLabel });
+                    } else {
+                      await navigator.share({ title: itemLabel, url: mediaUrl });
+                    }
+                  } catch {
+                    /* user cancelled or share failed */
+                  }
+                }}
+                title="Delen"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32, borderRadius: 6,
+                  background: 'var(--app-surface-secondary, #252526)',
+                  color: 'var(--app-text, #fff)', fontSize: 14,
+                  border: 'none', cursor: 'pointer',
+                }}
+              >
+                ⤴
+              </button>
+            )}
+            {/* Replace / regenerate */}
+            {canGenerate && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onGenerate();
+                }}
+                title="Vervangen"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32, borderRadius: 6,
+                  background: 'var(--app-surface-secondary, #252526)',
+                  color: 'var(--app-text, #fff)', fontSize: 14,
+                  border: 'none', cursor: 'pointer',
+                }}
+              >
+                ⟳
+              </button>
+            )}
+          </div>
+        )}
+        {!hasMedia && canGenerate && (
+          <span style={{ color: 'var(--app-muted-text, #666)', fontSize: 16 }}>›</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MatchContentTab({
   match,
   org,
@@ -252,162 +424,91 @@ export default function MatchContentTab({
                 const templateNotRequired = ['match_intro', 'goal', 'poster', 'lineup_flyer'].includes(item.subtype);
                 const canGenerate = hasTemplate || templateNotRequired;
 
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => {
-                      if (latestMedia) {
-                        handlePreview(latestMedia, item.label);
-                      } else if (canGenerate) {
-                        handleGenerate(item.subtype, item.label);
-                      }
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: '10px 12px',
-                      borderBottom: idx < category.items.length - 1 ? '1px solid var(--app-border, #333)' : 'none',
-                      cursor: (latestMedia || canGenerate) ? 'pointer' : 'default',
-                      transition: 'background 0.1s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (latestMedia || canGenerate)
-                        e.currentTarget.style.background = 'var(--app-surface-hover, #2a2a2a)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                    }}
-                  >
-                    {/* Thumbnail */}
-                    <Thumbnail url={mediaUrl} isVideo={isVideo} icon={item.icon} />
+                // For goal celebrations, show each existing item as its own row + a "new" row
+                const isMultiSubtype = item.subtype === 'goal';
+                if (isMultiSubtype) {
+                  const allGoalMedia: MatchMediaItem[] = [];
+                  const latest = getLatestMediaForSubtype(item.subtype);
+                  if (latest) allGoalMedia.push(latest);
+                  const history = getMediaHistoryForSubtype(item.subtype);
+                  allGoalMedia.push(...history);
 
-                    {/* Text block */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: 'var(--app-text, #fff)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}>
-                        {item.label}
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)', marginTop: 2 }}>
-                        {latestMedia
-                          ? new Date(latestMedia.updated_at).toLocaleDateString('nl-NL', {
-                              day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                            })
-                          : canGenerate ? 'Tik om te genereren' : 'Geen template'}
-                      </div>
-                    </div>
+                  // Sort newest first
+                  allGoalMedia.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-                    {/* Status + actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <StatusBadge
-                        isGenerating={isGenerating}
-                        isFailed={isFailed}
-                        hasMedia={!!latestMedia}
-                        workflowStatus={workflowStatus}
+                  const rows: React.ReactNode[] = [];
+
+                  // Existing goal celebrations
+                  allGoalMedia.forEach((mi, goalIdx) => {
+                    const goalUrl = mi.file_url || getAssetUrl(mi.storage_path);
+                    const goalIsVideo = Boolean(
+                      mi.mime_type?.startsWith('video/') ||
+                      (goalUrl ? /\.(mp4|webm|mov)$/i.test(goalUrl) : false)
+                    );
+                    const goalLabel = `${item.label} #${allGoalMedia.length - goalIdx}`;
+                    rows.push(
+                      <ContentRow
+                        key={`goal-${mi.id}`}
+                        label={goalLabel}
+                        icon={item.icon}
+                        mediaUrl={goalUrl}
+                        isVideo={goalIsVideo}
+                        hasMedia={true}
+                        isGenerating={false}
+                        isFailed={false}
+                        workflowStatus={null}
+                        canGenerate={canGenerate}
+                        showBorder={true}
+                        onPreview={() => handlePreview(mi, goalLabel)}
+                        onGenerate={() => handleGenerate(item.subtype, item.label)}
+                        itemLabel={goalLabel}
+                        updatedAt={mi.updated_at}
                       />
-                      {latestMedia && mediaUrl && (
-                        <div style={{ display: 'flex', gap: 2 }}>
-                          {/* Open in new tab */}
-                          <a
-                            href={mediaUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            title="Openen"
-                            style={{
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              width: 32, height: 32, borderRadius: 6,
-                              background: 'var(--app-surface-secondary, #252526)',
-                              color: 'var(--app-text, #fff)', fontSize: 14,
-                              textDecoration: 'none', border: 'none', cursor: 'pointer',
-                            }}
-                          >
-                            ↗
-                          </a>
-                          {/* Download */}
-                          <a
-                            href={mediaUrl}
-                            download
-                            onClick={(e) => e.stopPropagation()}
-                            title="Downloaden"
-                            style={{
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              width: 32, height: 32, borderRadius: 6,
-                              background: 'var(--app-surface-secondary, #252526)',
-                              color: 'var(--app-text, #fff)', fontSize: 14,
-                              textDecoration: 'none', border: 'none', cursor: 'pointer',
-                            }}
-                          >
-                            ↓
-                          </a>
-                          {/* Share actual file (Web Share API) */}
-                          {typeof navigator !== 'undefined' && 'share' in navigator && (
-                            <button
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                try {
-                                  // Fetch the file as a blob and share as actual file
-                                  const resp = await fetch(mediaUrl);
-                                  const blob = await resp.blob();
-                                  const ext = isVideo ? 'mp4' : 'jpg';
-                                  const mimeType = isVideo ? 'video/mp4' : 'image/jpeg';
-                                  const fileName = `${item.label.replace(/\s+/g, '_')}.${ext}`;
-                                  const file = new File([blob], fileName, { type: mimeType });
+                    );
+                  });
 
-                                  if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                    await navigator.share({ files: [file], title: item.label });
-                                  } else {
-                                    // Fallback: share URL if file sharing not supported
-                                    await navigator.share({ title: item.label, url: mediaUrl });
-                                  }
-                                } catch {
-                                  /* user cancelled or share failed */
-                                }
-                              }}
-                              title="Delen"
-                              style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                width: 32, height: 32, borderRadius: 6,
-                                background: 'var(--app-surface-secondary, #252526)',
-                                color: 'var(--app-text, #fff)', fontSize: 14,
-                                border: 'none', cursor: 'pointer',
-                              }}
-                            >
-                              ⤴
-                            </button>
-                          )}
-                          {/* Replace / regenerate */}
-                          {canGenerate && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleGenerate(item.subtype, item.label);
-                              }}
-                              title="Vervangen"
-                              style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                width: 32, height: 32, borderRadius: 6,
-                                background: 'var(--app-surface-secondary, #252526)',
-                                color: 'var(--app-text, #fff)', fontSize: 14,
-                                border: 'none', cursor: 'pointer',
-                              }}
-                            >
-                              ⟳
-                            </button>
-                          )}
-                        </div>
-                      )}
-                      {!latestMedia && (latestMedia || canGenerate) && (
-                        <span style={{ color: 'var(--app-muted-text, #666)', fontSize: 16 }}>›</span>
-                      )}
-                    </div>
-                  </div>
+                  // Always show a "new goal celebration" row
+                  rows.push(
+                    <ContentRow
+                      key={`goal-new`}
+                      label={allGoalMedia.length > 0 ? '+ Nieuw doelpunt' : item.label}
+                      icon={allGoalMedia.length > 0 ? '➕' : item.icon}
+                      mediaUrl={null}
+                      isVideo={false}
+                      hasMedia={false}
+                      isGenerating={isGenerating}
+                      isFailed={isFailed}
+                      workflowStatus={workflowStatus}
+                      canGenerate={canGenerate}
+                      showBorder={idx < category.items.length - 1}
+                      onPreview={() => {}}
+                      onGenerate={() => handleGenerate(item.subtype, item.label)}
+                      itemLabel={item.label}
+                      updatedAt={null}
+                    />
+                  );
+
+                  return <React.Fragment key={item.id}>{rows}</React.Fragment>;
+                }
+
+                return (
+                  <ContentRow
+                    key={item.id}
+                    label={item.label}
+                    icon={item.icon}
+                    mediaUrl={mediaUrl}
+                    isVideo={isVideo}
+                    hasMedia={!!latestMedia}
+                    isGenerating={isGenerating}
+                    isFailed={isFailed}
+                    workflowStatus={workflowStatus}
+                    canGenerate={canGenerate}
+                    showBorder={idx < category.items.length - 1}
+                    onPreview={() => latestMedia && handlePreview(latestMedia, item.label)}
+                    onGenerate={() => handleGenerate(item.subtype, item.label)}
+                    itemLabel={item.label}
+                    updatedAt={latestMedia?.updated_at}
+                  />
                 );
               })}
             </div>

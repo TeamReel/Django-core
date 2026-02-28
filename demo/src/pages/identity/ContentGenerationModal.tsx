@@ -242,6 +242,10 @@ interface ContentGenerationModalProps {
   homeLogoUrl?: string | null;
   /** Club logo URL for away team (score display) */
   awayLogoUrl?: string | null;
+  /** Resolved home team name (club name, respects is_home) */
+  homeTeamName?: string | null;
+  /** Resolved away team name (club name, respects is_home) */
+  awayTeamName?: string | null;
 }
 
 // Map template asset_types to teamreel_assets media slot keys
@@ -459,7 +463,12 @@ export default function ContentGenerationModal({
   onGenerated,
   homeLogoUrl,
   awayLogoUrl,
+  homeTeamName: homeTeamNameProp,
+  awayTeamName: awayTeamNameProp,
 }: ContentGenerationModalProps) {
+  // Resolve team names: prefer explicit props (club names), fallback to project names
+  const homeTeamName = homeTeamNameProp || matchData?.project?.name || 'Thuis';
+  const awayTeamName = awayTeamNameProp || matchData?.opponent_project?.name || 'Uit';
   const [step, setStep] = useState<'type' | 'template' | 'members' | 'lineup_squad' | 'confirm' | 'generating' | 'video_queued' | 'success' | 'error'>('type');
   const [selectedType, setSelectedType] = useState<{ type: string; subtype: string; label: string } | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
@@ -865,6 +874,10 @@ export default function ContentGenerationModal({
         throw new Error(err?.error || err?.detail || `${action} failed`);
       }
       setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
+      // Notify parent so match media gets refreshed
+      if (isApprove) {
+        onGenerated?.('✅ Video goedgekeurd en opgeslagen.');
+      }
     } catch (err) {
       setVideoApprovalError(err instanceof Error ? err.message : `${action} failed`);
       setVideoApprovalStatus('idle');
@@ -3777,7 +3790,7 @@ export default function ContentGenerationModal({
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 4 }}>
-                            {matchData?.metadata?.is_home !== false ? (matchData?.project?.name || 'Thuis') : (matchData?.opponent_project?.name || 'Uit')}
+                            {homeTeamName}
                           </div>
                           <input
                             type="number"
@@ -3797,7 +3810,7 @@ export default function ContentGenerationModal({
                         <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--vscode-foreground, #ccc)' }}>-</span>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 4 }}>
-                            {matchData?.metadata?.is_home !== false ? (matchData?.opponent_project?.name || 'Uit') : (matchData?.project?.name || 'Thuis')}
+                            {awayTeamName}
                           </div>
                           <input
                             type="number"
@@ -3971,7 +3984,7 @@ export default function ContentGenerationModal({
                             <img src={homeLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
                           ) : null}
                           <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--vscode-foreground, #666)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
-                            {matchData?.project?.name || 'Thuis'}
+                            {homeTeamName}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
                             <button
@@ -4011,7 +4024,7 @@ export default function ContentGenerationModal({
                             <img src={awayLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
                           ) : null}
                           <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--vscode-foreground, #666)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
-                            {matchData?.opponent_project?.name || 'Uit'}
+                            {awayTeamName}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
                             <button

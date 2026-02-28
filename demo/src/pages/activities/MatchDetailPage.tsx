@@ -452,7 +452,9 @@ export default function HierarchyMatchDetailPage() {
 
   const handleContentGenerated = useCallback((message?: string) => {
     pushToast(message || '📋 Content wordt gegenereerd en komt in de approval queue.', 'success');
-  }, [pushToast]);
+    // Refresh match media so newly approved/saved content appears
+    void refreshMatchMedia();
+  }, [pushToast, refreshMatchMedia]);
 
   // Open content preview modal
   const openContentPreview = (item: ContentItem) => {
@@ -1780,6 +1782,8 @@ export default function HierarchyMatchDetailPage() {
             contentTypeLabel={selectedContentTypeLabel}
             homeLogoUrl={homeLogoUrl}
             awayLogoUrl={awayLogoUrl}
+            homeTeamName={homeTeamName}
+            awayTeamName={awayTeamName}
         />
 
         {/* Content Preview Modal */}
