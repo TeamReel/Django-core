@@ -1095,6 +1095,46 @@ header [role="alert"] {
 }
 
 /* =============================================================================
+   COMPACT MOBILE CONTENT TILES (MediaAssetCard / MediaAssetGrid)
+   ============================================================================= */
+
+@media (max-width: 639px) {
+  /* 3 columns on mobile, tighter gap */
+  .media-asset-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  /* Smaller preview area */
+  .media-asset-grid > div [style*="aspectRatio"] {
+    min-height: 60px !important;
+  }
+
+  /* Compact info area */
+  .media-asset-grid > div > div:last-child {
+    padding: 4px 6px !important;
+  }
+
+  /* Smaller label text */
+  .media-asset-grid > div > div:last-child > div:first-child {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+    margin-bottom: 2px !important;
+  }
+
+  /* Smaller action buttons */
+  .media-asset-grid > div > div:last-child button {
+    padding: 3px 4px !important;
+    font-size: 10px !important;
+  }
+
+  /* Hide inline scrollbar on pills */
+  .mobile-tab-bar--inline::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* =============================================================================
    GALLERY / CONTENT LIBRARY RESPONSIVE
    ============================================================================= */
 

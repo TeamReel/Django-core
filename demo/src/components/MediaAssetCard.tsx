@@ -498,6 +498,7 @@ export function MediaAssetCard({
 export function MediaAssetGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
+      className="media-asset-grid"
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',

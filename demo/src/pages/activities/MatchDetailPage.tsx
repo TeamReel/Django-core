@@ -1695,55 +1695,7 @@ export default function HierarchyMatchDetailPage() {
           }
         />
 
-        {/* Mobile action bar — key actions visible on small screens */}
-        {!isPlayer && (
-          <div className="mobile-action-bar show-mobile-only">
-            <button
-              type="button"
-              onClick={async () => {
-                const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
-                if (!match || isActive) return;
-                try {
-                  setActivatingContext(true);
-                  await setActiveContext('match', String(match.id));
-                  const context = await getActiveContext();
-                  setActiveContextState(context);
-                } finally {
-                  setActivatingContext(false);
-                }
-              }}
-              disabled={activatingContext || (!!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? ''))}
-              style={{
-                padding: '10px 16px',
-                borderRadius: 8,
-                border: '1px solid var(--app-border)',
-                background: (!!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '')) ? '#dcfce7' : 'var(--app-surface)',
-                color: (!!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '')) ? '#166534' : 'var(--app-text)',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              {(!!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '')) ? '✓ Active' : 'Make active'}
-            </button>
-            <button
-              type="button"
-              onClick={() => openContentModal()}
-              style={{
-                padding: '10px 16px',
-                borderRadius: 8,
-                border: 'none',
-                background: 'var(--app-primary, #3b82f6)',
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Generate Content (AI)
-            </button>
-          </div>
-        )}
+        {/* Mobile action bar removed — buttons were too cluttered on mobile */}
 
         <CreateTransactionModal
           isOpen={isCreateTxnModalOpen}
@@ -2052,6 +2004,7 @@ export default function HierarchyMatchDetailPage() {
 
         {/* Mobile Tab Bar */}
         <MobileTabBar
+          variant="inline"
           tabs={[
             { id: 'overview', label: 'Overview' },
             ...(!isPlayer ? [{ id: 'content', label: 'Content' }] : []),

@@ -1,8 +1,9 @@
 /**
- * MobileTabBar - Dropdown tab switcher for mobile detail pages
+ * MobileTabBar - Tab switcher for mobile detail pages
  *
- * Displays current tab with a dropdown to switch between tabs.
- * Much cleaner than horizontal scrolling tabs.
+ * Two variants:
+ * - 'dropdown' (default): Shows current tab with a dropdown to switch.
+ * - 'inline': Horizontal scrollable pill tabs — more compact and direct.
  *
  * Only visible on mobile (<640px)
  */
@@ -24,9 +25,11 @@ interface MobileTabBarProps {
   basePath?: string;
   /** Query parameter name to use (default: 'tab') */
   paramName?: string;
+  /** Variant: 'dropdown' (default) or 'inline' horizontal pills */
+  variant?: 'dropdown' | 'inline';
 }
 
-export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 'tab' }: MobileTabBarProps) {
+export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 'tab', variant = 'dropdown' }: MobileTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -66,6 +69,50 @@ export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 't
     setIsOpen(false);
   }, [location.pathname, location.search]);
 
+  // ── Inline pills variant ──────────────────────────────────────────────
+  if (variant === 'inline') {
+    return (
+      <div
+        className="mobile-tab-bar mobile-tab-bar--inline"
+        style={{
+          display: 'flex',
+          gap: '6px',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          marginBottom: '12px',
+          padding: '2px 0',
+        }}
+      >
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleTabClick(tab.id)}
+              style={{
+                flexShrink: 0,
+                padding: '7px 14px',
+                borderRadius: '20px',
+                border: isActive ? '1.5px solid var(--app-primary)' : '1px solid var(--app-border)',
+                background: isActive ? 'var(--app-primary)' : 'var(--app-surface)',
+                color: isActive ? '#fff' : 'var(--app-text)',
+                fontSize: '13px',
+                fontWeight: isActive ? 600 : 500,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ── Dropdown variant (default) ────────────────────────────────────────
   return (
     <div
       ref={dropdownRef}
