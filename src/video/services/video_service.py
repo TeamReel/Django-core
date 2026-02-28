@@ -655,6 +655,10 @@ class VideoService:
         if input_file.file_size > VIDEO_MAX_FILE_SIZE:
             raise ValidationError({"input_file": "File exceeds max size limit"})
 
+        duration = input_file.metadata.get("duration_seconds") if input_file.metadata else None
+        if duration and duration > VIDEO_MAX_DURATION:
+            raise ValidationError({"input_file": "File exceeds max duration limit"})
+
     def _transition_workflow_on_completion(self, job: VideoJob) -> None:
         """Transition workflow to ready_for_review state after job processing completes.
 
@@ -688,10 +692,6 @@ class VideoService:
                 extra={"job_id": str(job.id)},
                 exc_info=True,
             )
-
-        duration = input_file.metadata.get("duration_seconds") if input_file.metadata else None
-        if duration and duration > VIDEO_MAX_DURATION:
-            raise ValidationError({"input_file": "File exceeds max duration limit"})
 
     def _validate_job_config(
         self, job_type: str, preset: VideoPreset | None, config: dict | None = None
