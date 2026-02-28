@@ -119,13 +119,17 @@ class PeriodSerializer(serializers.ModelSerializer):
     def get_organisation(self, obj):
         """Return nested organisation representation"""
         if obj.organisation:
-            return {"id": str(obj.organisation.id), "name": obj.organisation.name}
+            return {
+                "id": str(obj.organisation.id),
+                "name": obj.organisation.name,
+                "slug": obj.organisation.slug,
+            }
         return None
 
     def get_project(self, obj):
         """Return nested project representation"""
         if obj.project:
-            return {"id": str(obj.project.id), "name": obj.project.name}
+            return {"id": str(obj.project.id), "name": obj.project.name, "slug": obj.project.slug}
         return None
 
     def get_parent_period(self, obj):

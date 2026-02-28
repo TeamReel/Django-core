@@ -1313,6 +1313,8 @@ export default function TeamOrganisationDetailPage() {
               preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
+              preselectedClubSlug={clubKeyForRoutes}
+              preselectedTeamSlug={teamKeyForRoutes}
             />
           )}
 
@@ -1321,6 +1323,8 @@ export default function TeamOrganisationDetailPage() {
               preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
+              preselectedClubSlug={clubKeyForRoutes}
+              preselectedTeamSlug={teamKeyForRoutes}
             />
           )}
 
@@ -1329,6 +1333,8 @@ export default function TeamOrganisationDetailPage() {
               preselectedOrgId={orgSlugForDirectoryLists}
               preselectedClubId={clubIdForDirectoryLists}
               preselectedTeamId={teamIdForDirectoryLists}
+              preselectedClubSlug={clubKeyForRoutes}
+              preselectedTeamSlug={teamKeyForRoutes}
             />
           )}
 

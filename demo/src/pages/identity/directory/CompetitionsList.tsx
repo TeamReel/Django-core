@@ -61,9 +61,13 @@ interface CompetitionsListProps {
   preselectedOrgId?: string;
   preselectedClubId?: string;
   preselectedTeamId?: string;
+  /** Slug override for club — used in URL construction (falls back to preselectedClubId). */
+  preselectedClubSlug?: string;
+  /** Slug override for team — used in URL construction (falls back to preselectedTeamId). */
+  preselectedTeamSlug?: string;
 }
 
-export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId }) => {
+export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId, preselectedClubSlug, preselectedTeamSlug }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -1153,9 +1157,9 @@ export const CompetitionsList: React.FC<CompetitionsListProps> = ({ preselectedO
                     const orgFromList = orgId ? organisations.find(o => String(o.id) === String(orgId)) : undefined;
                     const orgSlugResolved = orgFromList?.slug || (typeof org === 'object' ? (org as any)?.slug : undefined);
                     const orgSlugOrId = lockedOrgSlug || orgSlugResolved || orgId;
-                    const clubSlugOrId = (club as any)?.slug || clubId;
+                    const clubSlugOrId = (club as any)?.slug || preselectedClubSlug || clubId;
                     const teamSlugResolved = (teamObj as any)?.slug || teamSlug;
-                    const teamSlugOrId = teamSlugResolved || teamId;
+                    const teamSlugOrId = teamSlugResolved || preselectedTeamSlug || teamId;
                     // Use periodPathKey to generate slug from name (Period model has no slug field)
                     const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
                     const seasonSlugOrId = periodPathKey(seasonFromList || comp.parent_period) || seasonId;

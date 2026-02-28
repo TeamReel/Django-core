@@ -59,9 +59,13 @@ interface SeasonsListProps {
   preselectedOrgId?: string;
   preselectedClubId?: string;
   preselectedTeamId?: string;
+  /** Slug override for club — used in URL construction (falls back to preselectedClubId). */
+  preselectedClubSlug?: string;
+  /** Slug override for team — used in URL construction (falls back to preselectedTeamId). */
+  preselectedTeamSlug?: string;
 }
 
-export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId }) => {
+export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId, preselectedClubSlug, preselectedTeamSlug }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -843,8 +847,8 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
                       ? { name: seasonSport.name, sport_icon: seasonSport.sport_icon, category_name: seasonSport.category_name }
                       : null;
 
-                    const clubSlugOrId = (clubObj as any)?.slug || clubId || selectedClubId;
-                    const teamSlugOrId = (teamObj as any)?.slug || String(teamId || '').trim() || selectedTeamId;
+                    const clubSlugOrId = (clubObj as any)?.slug || preselectedClubSlug || clubId || selectedClubId;
+                    const teamSlugOrId = (teamObj as any)?.slug || preselectedTeamSlug || String(teamId || '').trim() || selectedTeamId;
                     const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
 
                     const teamDetailPath = (orgForRowRoutes && clubSlugOrId && teamSlugOrId)
