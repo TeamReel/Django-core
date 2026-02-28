@@ -335,15 +335,29 @@ export default function MatchContentTab({
                           >
                             ↓
                           </a>
-                          {/* Share (Web Share API if available) */}
+                          {/* Share actual file (Web Share API) */}
                           {typeof navigator !== 'undefined' && 'share' in navigator && (
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                navigator.share({
-                                  title: item.label,
-                                  url: mediaUrl,
-                                }).catch(() => { /* user cancelled */ });
+                                try {
+                                  // Fetch the file as a blob and share as actual file
+                                  const resp = await fetch(mediaUrl);
+                                  const blob = await resp.blob();
+                                  const ext = isVideo ? 'mp4' : 'jpg';
+                                  const mimeType = isVideo ? 'video/mp4' : 'image/jpeg';
+                                  const fileName = `${item.label.replace(/\s+/g, '_')}.${ext}`;
+                                  const file = new File([blob], fileName, { type: mimeType });
+
+                                  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                    await navigator.share({ files: [file], title: item.label });
+                                  } else {
+                                    // Fallback: share URL if file sharing not supported
+                                    await navigator.share({ title: item.label, url: mediaUrl });
+                                  }
+                                } catch {
+                                  /* user cancelled or share failed */
+                                }
                               }}
                               title="Delen"
                               style={{
@@ -355,6 +369,25 @@ export default function MatchContentTab({
                               }}
                             >
                               ⤴
+                            </button>
+                          )}
+                          {/* Replace / regenerate */}
+                          {canGenerate && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleGenerate(item.subtype, item.label);
+                              }}
+                              title="Vervangen"
+                              style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                width: 32, height: 32, borderRadius: 6,
+                                background: 'var(--app-surface-secondary, #252526)',
+                                color: 'var(--app-text, #fff)', fontSize: 14,
+                                border: 'none', cursor: 'pointer',
+                              }}
+                            >
+                              ⟳
                             </button>
                           )}
                         </div>
