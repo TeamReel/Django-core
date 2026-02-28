@@ -239,19 +239,20 @@ function FieldVisualization({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 2,
+                gap: 1,
                 zIndex: 10,
-                minWidth: 70,
+                minWidth: 54,
               }}
             >
               {/* Position label */}
               <div
                 style={{
-                  fontSize: 9,
+                  fontSize: 8,
                   fontWeight: 700,
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'rgba(255,255,255,0.6)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  letterSpacing: '0.03em',
+                  lineHeight: 1,
                 }}
               >
                 {pos.label}
@@ -267,9 +268,9 @@ function FieldVisualization({
                   setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
                 }}
                 style={{
-                  width: 96,
-                  padding: '3px 4px',
-                  fontSize: 10,
+                  width: 76,
+                  padding: '2px 3px',
+                  fontSize: 9,
                   fontWeight: currentId ? 700 : 400,
                   background: currentId
                     ? 'rgba(22,163,74,0.6)'
@@ -286,8 +287,8 @@ function FieldVisualization({
                   WebkitAppearance: 'none',
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 6px center',
-                  paddingRight: 20,
+                  backgroundPosition: 'right 4px center',
+                  paddingRight: 16,
                 }}
               >
                 <option
@@ -327,18 +328,18 @@ function FieldVisualization({
               {currentMember && (
                 <div
                   style={{
-                    fontSize: 9,
+                    fontSize: 8,
                     fontWeight: 600,
                     color: '#fff',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                    maxWidth: 90,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+                    maxWidth: 72,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     textAlign: 'center',
+                    lineHeight: 1,
                   }}
                 >
-                  {jerseyNumber ? `#${jerseyNumber} ` : ''}
                   {getSquadMemberName(currentMember)}
                 </div>
               )}

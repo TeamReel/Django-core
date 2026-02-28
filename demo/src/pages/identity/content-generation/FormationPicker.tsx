@@ -20,16 +20,16 @@ export function FormationPicker({
     <div>
       <label style={{
         display: 'block',
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 600,
-        marginBottom: 10,
+        marginBottom: 6,
         color: 'var(--vscode-foreground, #ccc)',
         textTransform: 'uppercase',
         letterSpacing: '0.05em',
       }}>{label}</label>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(68px, 1fr))',
+        gridTemplateColumns: 'repeat(3, 1fr)',
         gap: 6,
       }}>
         {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
