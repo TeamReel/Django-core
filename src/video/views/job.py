@@ -254,21 +254,32 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         job.save(update_fields=["metadata", "updated_at"])
 
         # ── Auto-save output as MediaItem for the linked activity ──
-        self._save_approved_video_to_activity(job, request.user)
+        save_result = self._save_approved_video_to_activity(job, request.user)
+
+        # Store save result in metadata so frontend can see issues
+        meta = job.metadata or {}
+        meta["media_item_saved"] = save_result
+        job.metadata = meta
+        job.save(update_fields=["metadata", "updated_at"])
 
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
 
-    def _save_approved_video_to_activity(self, job: VideoJob, user) -> None:
-        """Create a MediaItem linking the approved video to its activity/match."""
+    def _save_approved_video_to_activity(
+        self, job: VideoJob, user
+    ) -> dict[str, Any]:
+        """Create a MediaItem linking the approved video to its activity/match.
+
+        Returns a dict with success/error info for debugging.
+        """
         activity_id = (job.config or {}).get("activity_id")
         if not activity_id:
             logger.info("No activity_id in job config – skipping MediaItem creation")
-            return
+            return {"saved": False, "reason": "no_activity_id"}
 
         if not job.output_file_id:
             logger.info("No output_file on job – skipping MediaItem creation")
-            return
+            return {"saved": False, "reason": "no_output_file"}
 
         # Map job_type → content tab asset_type that the frontend recognises
         JOB_TYPE_TO_ASSET_TYPE = {
@@ -280,12 +291,14 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         }
 
         try:
-            Activity = apps.get_model("activities", "Activity")
-            MediaItem = apps.get_model("medialib", "MediaItem")
-            from src.medialib.models import MediaItemState
+            from activities.models import Activity
+            from medialib.models import MediaItem, MediaItemState
 
             activity = Activity.objects.select_related("project").get(id=activity_id)
             project = activity.project or job.project
+
+            if not project:
+                return {"saved": False, "reason": "no_project", "activity_id": str(activity_id)}
 
             asset_type = JOB_TYPE_TO_ASSET_TYPE.get(job.job_type, job.job_type)
 
@@ -295,14 +308,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 "job_id": str(job.id),
                 "job_type": job.job_type,
                 "asset_type": asset_type,
+                "project_id": project.id,
+                "project_name": project.name,
             }
-            if project:
-                extraction_meta["project_id"] = project.id
-                extraction_meta["project_name"] = project.name
 
             file_asset = job.output_file
             mime_type = getattr(file_asset, "mime_type", "video/mp4") or "video/mp4"
-            file_size = getattr(file_asset, "file_size", 0) or 0
+            file_size = getattr(file_asset, "file_size", None) or getattr(
+                file_asset, "file_size_bytes", None
+            ) or 0
 
             media_item = MediaItem.objects.create(
                 file=file_asset,
@@ -317,19 +331,27 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 extraction_metadata=extraction_meta,
             )
             logger.info(
-                "MediaItem created for approved video job: media=%s job=%s activity=%s",
+                "MediaItem created for approved video job: media=%s job=%s activity=%s project=%s",
                 media_item.id,
                 str(job.id),
                 activity_id,
+                project.id,
             )
+            return {
+                "saved": True,
+                "media_item_id": str(media_item.id),
+                "activity_id": str(activity_id),
+                "project_id": project.id,
+                "asset_type": asset_type,
+            }
         except Exception as exc:
-            # Non-fatal: approval is already saved in metadata
-            logger.warning(
+            logger.error(
                 "Failed to create MediaItem for approved video: %s",
                 exc,
                 extra={"job_id": str(job.id)},
                 exc_info=True,
             )
+            return {"saved": False, "error": str(exc)}
 
     @action(detail=True, methods=["post"])
     def reject(self, request: Request, pk: str | None = None) -> Response:
