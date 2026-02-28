@@ -76,11 +76,12 @@ export default function MatchOverviewTab({
   }).length;
   const contentTotal = allMatchContentItems.length;
 
-  // Lineup stats
-  const lineupCount = homeParticipations.length + awayParticipations.length;
-  const homeStarters = homeParticipations.filter(
-    (p) => String(p.role || '').toLowerCase() === 'starter'
-  ).length;
+  // Lineup stats — lineup is saved in match.metadata.lineup, NOT in participations
+  const savedLineup = match.metadata?.lineup;
+  const lineupGk = savedLineup?.goalkeeper?.filter(Boolean) || [];
+  const lineupPlayers = savedLineup?.player?.filter(Boolean) || [];
+  const lineupFilledCount = lineupGk.length + lineupPlayers.length;
+  const lineupFormation = savedLineup?.formation || match.metadata?.formation || '';
 
   // Render small team logo or fallback
   const TeamLogo = ({ url, fallback, size = 40 }: { url: string | null; fallback: string; size?: number }) =>
@@ -185,13 +186,13 @@ export default function MatchOverviewTab({
           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--app-muted-text, #888)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
             Opstelling
           </div>
-          {lineupCount > 0 ? (
+          {lineupFilledCount > 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 20 }}>✅</span>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#10b981' }}>Ingevuld</div>
                 <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)' }}>
-                  {homeStarters} spelers
+                  {lineupFilledCount} spelers{lineupFormation ? ` • ${lineupFormation}` : ''}
                 </div>
               </div>
             </div>

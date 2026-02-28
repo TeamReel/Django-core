@@ -241,13 +241,13 @@ function FieldVisualization({
                 alignItems: 'center',
                 gap: 2,
                 zIndex: 10,
-                minWidth: 100,
+                minWidth: 70,
               }}
             >
               {/* Position label */}
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   fontWeight: 700,
                   color: 'rgba(255,255,255,0.7)',
                   textTransform: 'uppercase',
@@ -267,9 +267,9 @@ function FieldVisualization({
                   setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
                 }}
                 style={{
-                  width: 120,
-                  padding: '4px 6px',
-                  fontSize: 11,
+                  width: 96,
+                  padding: '3px 4px',
+                  fontSize: 10,
                   fontWeight: currentId ? 700 : 400,
                   background: currentId
                     ? 'rgba(22,163,74,0.6)'
@@ -327,11 +327,11 @@ function FieldVisualization({
               {currentMember && (
                 <div
                   style={{
-                    fontSize: 10,
+                    fontSize: 9,
                     fontWeight: 600,
                     color: '#fff',
                     textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                    maxWidth: 110,
+                    maxWidth: 90,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',

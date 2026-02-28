@@ -29,8 +29,8 @@ export function FormationPicker({
       }}>{label}</label>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))',
-        gap: 8,
+        gridTemplateColumns: 'repeat(auto-fill, minmax(68px, 1fr))',
+        gap: 6,
       }}>
         {Object.entries(FORMATION_LAYOUTS).map(([code, layout]) => {
           const isSelected = selectedFormation === code;
@@ -99,10 +99,10 @@ export function FormationPicker({
               </div>
               {/* Formation code label */}
               <div style={{
-                padding: '5px 0',
+                padding: '3px 0',
                 textAlign: 'center',
                 fontWeight: 700,
-                fontSize: 12,
+                fontSize: 11,
                 color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
                 background: isSelected
                   ? 'var(--vscode-focusBorder, #007fd4)'
