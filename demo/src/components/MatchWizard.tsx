@@ -409,9 +409,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   };
 
   const handleContentGenerated = (message?: string) => {
-    // Content was generated successfully
-    handleContentModalClose();
-    // Optionally show success message or close wizard
+    // Content was generated successfully — keep modal open for video jobs
+    // so user can see progress and approve/reject inline.
+    // Only show a toast; don't close the modal.
   };
 
   const goToStep = (step: WizardStep) => {

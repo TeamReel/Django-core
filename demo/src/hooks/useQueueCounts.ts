@@ -73,9 +73,16 @@ export function useQueueCounts(pollInterval = 30000): QueueCounts {
       }
 
       // Count per tab
-      const review = aiJobs.filter(
+      const aiReview = aiJobs.filter(
         j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status),
       ).length;
+
+      // Video jobs ready for review: completed + workflow in ready_for_review state
+      const videoReview = videoJobs.filter(
+        (j: any) => j.status === 'completed' && j.workflow_instance?.current_state === 'ready_for_review',
+      ).length;
+
+      const review = aiReview + videoReview;
 
       const aiActive = aiJobs.filter(
         j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing',
@@ -85,7 +92,9 @@ export function useQueueCounts(pollInterval = 30000): QueueCounts {
       ).length;
 
       const aiApproved = aiJobs.filter(j => j.approval_status === 'approved').length;
-      const videoCompleted = videoJobs.filter(j => j.status === 'completed').length;
+      const videoCompleted = videoJobs.filter(
+        (j: any) => j.status === 'completed' && j.workflow_instance?.current_state !== 'ready_for_review',
+      ).length;
 
       const aiRejected = aiJobs.filter(j => j.approval_status === 'rejected').length;
       const videoFailed = videoJobs.filter(

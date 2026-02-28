@@ -665,6 +665,8 @@ export default function ContentGenerationModal({
       setVideoJobMeta({});
       setVideoOutputUrl(null);
       setVideoThumbnailUrl(null);
+      setVideoApprovalStatus('idle');
+      setVideoApprovalError(null);
 
       // Only reset selections on FRESH open (not when staying open or after error)
       if (freshOpen && !hasInitializedRef.current) {
@@ -818,6 +820,10 @@ export default function ContentGenerationModal({
   const [videoOutputUrl, setVideoOutputUrl] = useState<string | null>(null);
   const [videoThumbnailUrl, setVideoThumbnailUrl] = useState<string | null>(null);
 
+  // State for in-modal video approval
+  const [videoApprovalStatus, setVideoApprovalStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle');
+  const [videoApprovalError, setVideoApprovalError] = useState<string | null>(null);
+
   // Abortable polling controller for lineup video jobs.
   // Prevents duplicate poll loops that keep running after closing the modal or navigating away.
   const activeVideoJobPollRef = useRef<AbortController | null>(null);
@@ -835,6 +841,29 @@ export default function ContentGenerationModal({
     return () => abortActiveVideoJobPoll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // Approve / reject video directly from the modal
+  const handleVideoApproval = async (action: 'approve' | 'reject') => {
+    if (!videoJobId) return;
+    const isApprove = action === 'approve';
+    setVideoApprovalStatus(isApprove ? 'approving' : 'rejecting');
+    setVideoApprovalError(null);
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${videoJobId}/${action}/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-CSRFToken': getCsrfToken() },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || err?.detail || `${action} failed`);
+      }
+      setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
+    } catch (err) {
+      setVideoApprovalError(err instanceof Error ? err.message : `${action} failed`);
+      setVideoApprovalStatus('idle');
+    }
+  };
 
   // Poll video job status when in video_queued step
   useEffect(() => {
@@ -4273,10 +4302,12 @@ export default function ContentGenerationModal({
                 {/* ── Completed: show inline video preview ── */}
                 {videoOutputUrl ? (
                   <>
-                    <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.15)' }}>
-                      <span className="text-2xl">✅</span>
+                    <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: videoApprovalStatus === 'approved' ? 'rgba(34,197,94,0.15)' : videoApprovalStatus === 'rejected' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)' }}>
+                      <span className="text-2xl">{videoApprovalStatus === 'approved' ? '✅' : videoApprovalStatus === 'rejected' ? '🗑️' : '🎬'}</span>
                     </div>
-                    <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--app-text)' }}>Video klaar!</h2>
+                    <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--app-text)' }}>
+                      {videoApprovalStatus === 'approved' ? 'Video goedgekeurd!' : videoApprovalStatus === 'rejected' ? 'Video afgewezen' : 'Video klaar!'}
+                    </h2>
                     <div className="rounded-xl overflow-hidden mb-4" style={{ background: '#000' }}>
                       <video
                         src={videoOutputUrl}
@@ -4287,14 +4318,54 @@ export default function ContentGenerationModal({
                         poster={videoThumbnailUrl || undefined}
                       />
                     </div>
-                    <div className="flex flex-col items-center gap-2">
-                      <a
-                        href="/approvals"
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
-                        style={{ color: '#60a5fa', background: 'rgba(59,130,246,0.12)' }}
-                      >
-                        📋 Ga naar Approvals
-                      </a>
+
+                    {/* Approval error */}
+                    {videoApprovalError && (
+                      <p className="text-sm mb-3" style={{ color: '#f87171' }}>{videoApprovalError}</p>
+                    )}
+
+                    {/* Approve / Reject buttons (only when not yet decided) */}
+                    {videoApprovalStatus === 'idle' || videoApprovalStatus === 'approving' || videoApprovalStatus === 'rejecting' ? (
+                      <div className="flex items-center justify-center gap-3 mb-2">
+                        <button
+                          onClick={() => handleVideoApproval('approve')}
+                          disabled={videoApprovalStatus !== 'idle'}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all"
+                          style={{
+                            background: videoApprovalStatus === 'approving' ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.15)',
+                            color: '#22c55e',
+                            border: '1px solid rgba(34,197,94,0.3)',
+                            opacity: videoApprovalStatus !== 'idle' ? 0.6 : 1,
+                            cursor: videoApprovalStatus !== 'idle' ? 'wait' : 'pointer',
+                          }}
+                        >
+                          {videoApprovalStatus === 'approving' ? '⏳ Bezig...' : '✅ Goedkeuren'}
+                        </button>
+                        <button
+                          onClick={() => handleVideoApproval('reject')}
+                          disabled={videoApprovalStatus !== 'idle'}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-lg transition-all"
+                          style={{
+                            background: videoApprovalStatus === 'rejecting' ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.1)',
+                            color: '#f87171',
+                            border: '1px solid rgba(239,68,68,0.25)',
+                            opacity: videoApprovalStatus !== 'idle' ? 0.6 : 1,
+                            cursor: videoApprovalStatus !== 'idle' ? 'wait' : 'pointer',
+                          }}
+                        >
+                          {videoApprovalStatus === 'rejecting' ? '⏳ Bezig...' : '❌ Afwijzen'}
+                        </button>
+                      </div>
+                    ) : (
+                      /* After decision — show result + link to content */
+                      <div className="flex flex-col items-center gap-2 mb-2">
+                        <p className="text-sm font-medium" style={{ color: videoApprovalStatus === 'approved' ? '#22c55e' : '#f87171' }}>
+                          {videoApprovalStatus === 'approved' ? '✅ Opgeslagen in wedstrijd content' : '🗑️ Video is afgewezen'}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-center gap-2 mt-1">
                       <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
                     </div>
                   </>

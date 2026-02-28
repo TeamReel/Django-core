@@ -206,6 +206,9 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         transition.  Either way, persist ``approval_status`` in job metadata
         so the frontend can render the state without relying solely on the
         workflow engine.
+
+        Also saves the output video as a MediaItem linked to the activity
+        (match) so it appears in the match content tab.
         """
         job = self.get_object()
         if job.status != JobStatus.COMPLETED:
@@ -241,8 +244,72 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         job.metadata = meta
         job.save(update_fields=["metadata", "updated_at"])
 
+        # ── Auto-save output as MediaItem for the linked activity ──
+        self._save_approved_video_to_activity(job, request.user)
+
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
+
+    def _save_approved_video_to_activity(self, job: VideoJob, user) -> None:
+        """Create a MediaItem linking the approved video to its activity/match."""
+        activity_id = (job.config or {}).get("activity_id")
+        if not activity_id:
+            logger.info("No activity_id in job config – skipping MediaItem creation")
+            return
+
+        if not job.output_file_id:
+            logger.info("No output_file on job – skipping MediaItem creation")
+            return
+
+        try:
+            Activity = apps.get_model("activities", "Activity")
+            MediaItem = apps.get_model("medialib", "MediaItem")
+            from src.medialib.models import MediaItemState
+
+            activity = Activity.objects.select_related("project").get(id=activity_id)
+            project = activity.project or job.project
+
+            # Build descriptive metadata
+            extraction_meta = {
+                "source": "video_job_approved",
+                "job_id": str(job.id),
+                "job_type": job.job_type,
+                "asset_type": f"{job.job_type}_video",
+            }
+            if project:
+                extraction_meta["project_id"] = project.id
+                extraction_meta["project_name"] = project.name
+
+            file_asset = job.output_file
+            mime_type = getattr(file_asset, "mime_type", "video/mp4") or "video/mp4"
+            file_size = getattr(file_asset, "file_size", 0) or 0
+
+            media_item = MediaItem.objects.create(
+                file=file_asset,
+                activity=activity,
+                project=project,
+                title=f"{job.job_type.replace('_', ' ').title()} Video",
+                description=f"Approved {job.job_type} video (job {str(job.id)[:8]})",
+                mime_type=mime_type,
+                file_size_bytes=file_size,
+                state=MediaItemState.PROCESSED,
+                created_by=user if user and user.is_authenticated else None,
+                extraction_metadata=extraction_meta,
+            )
+            logger.info(
+                "MediaItem created for approved video job: media=%s job=%s activity=%s",
+                media_item.id,
+                str(job.id),
+                activity_id,
+            )
+        except Exception as exc:
+            # Non-fatal: approval is already saved in metadata
+            logger.warning(
+                "Failed to create MediaItem for approved video: %s",
+                exc,
+                extra={"job_id": str(job.id)},
+                exc_info=True,
+            )
 
     @action(detail=True, methods=["post"])
     def reject(self, request: Request, pk: str | None = None) -> Response:
