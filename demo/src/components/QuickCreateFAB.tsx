@@ -22,6 +22,13 @@ export default function QuickCreateFAB({ organisationId, projectId }: QuickCreat
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Listen for custom event to open the FAB (from SmartEmptyState)
+  useEffect(() => {
+    const handleOpenQuickCreate = () => setIsOpen(true);
+    window.addEventListener('teamreel:open-quick-create', handleOpenQuickCreate);
+    return () => window.removeEventListener('teamreel:open-quick-create', handleOpenQuickCreate);
+  }, []);
+
   // Fetch upcoming activities (matches)
   const { activities, loading } = useActivities({
     limit: 50,

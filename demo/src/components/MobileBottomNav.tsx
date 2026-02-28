@@ -5,10 +5,13 @@
  * Role-aware: hides admin-only items (Directory) for non-admin users and shows
  * contextual items (Team) instead.
  *
+ * Swipe-up gesture opens QuickCreateFAB.
+ *
  * Only visible on mobile (<640px)
  */
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Sparkles, Swords, Library, Menu, Shirt, Clapperboard } from 'lucide-react';
+import { useSwipeGesture } from '@django-core/design-system';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 
@@ -26,6 +29,15 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
   const location = useLocation();
   const { isSystemAdmin } = useUserRole();
   const { orgSlug, clubSlugOrId, teamSlugOrId, matchId } = useAppSelection();
+
+  // Swipe-up opens QuickCreateFAB
+  const swipeHandlers = useSwipeGesture({
+    threshold: 40,
+    onSwipeUp: () => {
+      // Dispatch event to open QuickCreateFAB
+      window.dispatchEvent(new CustomEvent('teamreel:open-quick-create'));
+    },
+  });
 
   // Build team path from active context
   const teamPath = orgSlug && clubSlugOrId && teamSlugOrId
@@ -89,6 +101,7 @@ export default function MobileBottomNav({ onOpenCreate, onToggleMenu }: MobileBo
   return (
     <nav
       className="mobile-bottom-nav"
+      {...swipeHandlers}
       style={{
         position: 'fixed',
         bottom: 0,

@@ -4,6 +4,7 @@ import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
 import QuickCreateFAB from '../components/QuickCreateFAB';
+import OnboardingWizard from '../components/OnboardingWizard';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -134,6 +135,7 @@ export default function MainLayout() {
         {/* Mobile Bottom Navigation */}
         {isMobile && (
           <>
+            <OnboardingWizard />
             <QuickCreateFAB />
             <MobileBottomNav
               onOpenSearch={() => openSearchRef.current?.()}
