@@ -235,19 +235,19 @@ function FieldVisualization({
                 position: 'absolute',
                 left: `${pos.x}%`,
                 top: `${pos.y}%`,
-                transform: 'translate(-50%, -50%)',
+                transform: 'translate(-50%, -50%) scale(0.55)',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 0,
                 zIndex: 10,
-                minWidth: 36,
+                width: 72,
               }}
             >
               {/* Position label */}
               <div
                 style={{
-                  fontSize: 7,
+                  fontSize: 11,
                   fontWeight: 700,
                   color: 'rgba(255,255,255,0.5)',
                   textTransform: 'uppercase',
@@ -268,11 +268,12 @@ function FieldVisualization({
                   setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
                 }}
                 style={{
-                  width: 48,
-                  height: 18,
-                  padding: '0 1px',
-                  fontSize: 7,
-                  lineHeight: '16px',
+                  width: 72,
+                  maxWidth: 72,
+                  height: 26,
+                  padding: '0 2px',
+                  fontSize: 11,
+                  lineHeight: '24px',
                   fontWeight: currentId ? 700 : 400,
                   background: currentId
                     ? 'rgba(22,163,74,0.6)'
@@ -281,16 +282,21 @@ function FieldVisualization({
                   border: currentId
                     ? '1.5px solid rgba(255,255,255,0.7)'
                     : '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: 3,
+                  borderRadius: 4,
                   outline: 'none',
                   cursor: 'pointer',
                   textAlign: 'center',
                   appearance: 'none',
                   WebkitAppearance: 'none',
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='4' viewBox='0 0 6 4'%3E%3Cpath d='M0 0l3 4 3-4z' fill='rgba(255,255,255,0.4)'/%3E%3C/svg%3E")`,
+                  MozAppearance: 'none' as any,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E")`,
                   backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 2px center',
-                  paddingRight: 9,
+                  backgroundPosition: 'right 3px center',
+                  paddingRight: 13,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  boxSizing: 'border-box',
                 }}
               >
                 <option
@@ -330,16 +336,17 @@ function FieldVisualization({
               {currentMember && (
                 <div
                   style={{
-                    fontSize: 6,
+                    fontSize: 10,
                     fontWeight: 600,
                     color: '#fff',
                     textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                    maxWidth: 46,
+                    maxWidth: 70,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     textAlign: 'center',
                     lineHeight: 1,
+                    marginTop: 1,
                   }}
                 >
                   {getSquadMemberName(currentMember)}
