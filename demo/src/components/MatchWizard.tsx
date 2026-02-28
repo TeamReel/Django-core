@@ -70,21 +70,25 @@ interface SquadMember {
   functional_roles?: string[];
 }
 
+// Keys map to real template subtype values from backend
 const CONTENT_TYPES = {
   pre: [
-    { key: 'flyer', label: 'Match Flyer', icon: Image, description: 'Aankondiging voor socials' },
-    { key: 'lineup', label: 'Opstelling', icon: Users, description: 'Visuele opstelling delen' },
-    { key: 'walkon', label: 'Walk-on Video', icon: Video, description: 'Spelers intro video' },
+    { key: 'flyer', subtype: 'flyer', label: 'Match Flyer', icon: Image, description: 'Aankondiging voor socials', templateType: 'pre_match' },
+    { key: 'lineup', subtype: 'lineup', label: 'Lineup Video', icon: Video, description: 'Visuele opstelling video', templateType: 'pre_match' },
+    { key: 'lineup_flyer', subtype: 'lineup_flyer', label: 'Lineup Flyer', icon: Users, description: 'Opstelling flyer', templateType: 'pre_match' },
+    { key: 'match_intro', subtype: 'match_intro', label: 'Match Intro', icon: Play, description: 'Match intro video', templateType: 'pre_match' },
+    { key: 'poster', subtype: 'poster', label: 'Elftalfoto', icon: Image, description: 'Teamfoto genereren', templateType: 'pre_match' },
+    { key: 'walkon', subtype: 'walkon', label: 'Walk-on Video', icon: Video, description: 'Spelers intro video', templateType: 'pre_match' },
+    { key: 'anthem', subtype: 'anthem', label: 'Anthem Video', icon: Play, description: 'Volkslied video', templateType: 'pre_match' },
   ],
   during: [
-    { key: 'goal', label: 'Goal Celebration', icon: Zap, description: 'Doelpunt vieren' },
-    { key: 'substitution', label: 'Wissel', icon: Users, description: 'Wisselmoment' },
-    { key: 'highlight', label: 'Highlight', icon: Play, description: 'Speelmoment vastleggen' },
+    { key: 'goal', subtype: 'goal', label: 'Goal Celebration', icon: Zap, description: 'Doelpunt vieren', templateType: 'during_match' },
+    { key: 'score_update', subtype: 'score_update', label: 'Score Update', icon: FileText, description: 'Tussenstand delen', templateType: 'during_match' },
   ],
   post: [
-    { key: 'end_score', label: 'Eindstand', icon: FileText, description: 'Uitslag delen' },
-    { key: 'highlights', label: 'Highlights', icon: Video, description: 'Samenvattingsvideo' },
-    { key: 'motm', label: 'Man of the Match', icon: Zap, description: 'Beste speler uitlichten' },
+    { key: 'end_score', subtype: 'end_score', label: 'Eindstand', icon: FileText, description: 'Uitslag delen', templateType: 'post_match' },
+    { key: 'match_summary', subtype: 'match_summary', label: 'Samenvatting', icon: FileText, description: 'Wedstrijd samenvatting', templateType: 'post_match' },
+    { key: 'highlights', subtype: 'highlights', label: 'Highlights', icon: Video, description: 'Samenvattingsvideo', templateType: 'post_match' },
   ],
 };
 
@@ -124,6 +128,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState<string>('');
+
+  // Template fetching (same as desktop)
+  const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
+  const [templatesLoading, setTemplatesLoading] = useState(false);
 
   const apiBaseUrl = getApiBaseUrl();
 
@@ -316,11 +324,79 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     setEditingPosition(null);
   };
 
-  const handleContentSelect = (contentKey: string, contentLabel: string) => {
+  // Fetch available templates when entering content step
+  useEffect(() => {
+    if (selectedMatch && currentStep === 'content') {
+      fetchTemplates();
+    }
+  }, [selectedMatch, currentStep]);
+
+  const fetchTemplates = async () => {
+    setTemplatesLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('is_active', 'true');
+      params.append('page_size', '500');
+
+      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
+      const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
+
+      // Group templates by subtype
+      const grouped: Record<string, ContentTemplate[]> = {};
+      allTemplates.forEach(t => {
+        const subtype = t.template_subtype || t.template_type;
+        if (!grouped[subtype]) grouped[subtype] = [];
+        grouped[subtype].push(t);
+      });
+      setAvailableTemplates(grouped);
+    } catch (err) {
+      console.error('Failed to fetch templates:', err);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
+  const handleContentSelect = (contentKey: string, contentLabel: string, subtype: string, templateType: string) => {
     if (!selectedMatch) return;
-    // Open content generation modal inline instead of navigating
+
+    // Find the matching template from fetched templates (same logic as desktop)
+    const templates = availableTemplates[subtype] || [];
+    let matchedTemplate: ContentTemplate | undefined;
+
+    // Special handling for lineup: match on formation
+    if ((subtype === 'lineup' || subtype === 'lineup_flyer') && templates.length > 0) {
+      const matchFormation = lineupFormation;
+      if (matchFormation) {
+        matchedTemplate = templates.find(t =>
+          t.formation_detail?.code === matchFormation ||
+          t.name.toLowerCase().includes(matchFormation.toLowerCase().replace(/-/g, ''))
+        );
+      }
+      if (!matchedTemplate) matchedTemplate = templates[0];
+    } else {
+      matchedTemplate = templates[0];
+    }
+
+    // For types without templates, create a synthetic one (same as desktop)
+    const templateNotRequired = ['match_intro', 'goal', 'poster'].includes(subtype);
+    if (!matchedTemplate && templateNotRequired) {
+      const syntheticTemplates: Record<string, ContentTemplate> = {
+        match_intro: { id: 0, name: 'Match Intro', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'match_intro', is_active: true, input_requirements: {} } as any,
+        goal: { id: 0, name: 'Goal Celebration', description: '', style_variant: '', template_type: 'during_match', template_subtype: 'goal', is_active: true, input_requirements: {} } as any,
+        poster: { id: 0, name: 'Elftalfoto', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'poster', is_active: true, input_requirements: { members: { goalkeeper: { count: 1, asset_types: ['in_tenue'] }, player: { count: 10, asset_types: ['in_tenue'] } } } } as any,
+      };
+      matchedTemplate = syntheticTemplates[subtype];
+    }
+
     setSelectedContentTypeLabel(contentLabel);
-    setSelectedTemplate(null); // Will be auto-selected by modal based on subtype
+    setSelectedTemplate(matchedTemplate || null);
     setIsContentModalOpen(true);
   };
 
@@ -770,7 +846,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   return (
                     <button
                       key={content.key}
-                      onClick={() => handleContentSelect(content.key, content.label)}
+                      onClick={() => handleContentSelect(content.key, content.label, content.subtype, content.templateType)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -886,6 +962,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           }}
           organisationSport={(selectedMatch as any).project?.sport}
           organisationId={(selectedMatch as any).project?.organisation_id || (selectedMatch as any).organisation?.id}
+          template={selectedTemplate}
           contentTypeLabel={selectedContentTypeLabel}
         />
       )}
