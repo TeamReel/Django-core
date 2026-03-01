@@ -1,4 +1,4 @@
-import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
+﻿import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
@@ -51,6 +51,21 @@ import { useSeasonContext, isSeasonPeriod } from '../../providers/SeasonProvider
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 import { getCsrfToken } from '../../types/season';
 import s from './ProjectSeasonDetailPage.module.css';
+import {
+  getUserId,
+  getUserLabel,
+  normalizeAccessRole,
+  getRbacLabel,
+  getAccessRoleOptions,
+  getFunctionalRolesFromMembership,
+  getMatchParticipantsCount,
+  sleep,
+  getRetryDelayMsFromResponse,
+  fetchWithThrottleRetry,
+} from './seasonDetailUtils';
+import VideoPreviewModal from './VideoPreviewModal';
+import EditMemberModal from './EditMemberModal';
+import ThenVsNowModal, { type ThenVsNowVideoType } from './ThenVsNowModal';
 
 // Types (Period, Project, Organisation) imported from ../../types/season
 // Helpers (getCsrfToken, isSeasonPeriod) imported from providers / types/season
@@ -60,7 +75,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const location = useLocation();
   const { user } = useAuth();
 
-  // ── Shared season-hierarchy context (org, project, club, season, permissions, brand) ──
+  // â”€â”€ Shared season-hierarchy context (org, project, club, season, permissions, brand) â”€â”€
   const ctx = useSeasonContext();
   const {
     org,
@@ -97,7 +112,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     reloadSeason,
   } = ctx;
 
-  // ── Local copies of provider data for optimistic updates ──
+  // â”€â”€ Local copies of provider data for optimistic updates â”€â”€
   // The provider fetches the data; these locals allow in-place mutations (edit/delete)
   // without forcing a full provider re-fetch.
   const [competitions, setCompetitions] = useState<Period[]>([]);
@@ -144,16 +159,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Then vs Now compilation modal state
   const [thenVsNowModalOpen, setThenVsNowModalOpen] = useState(false);
-  const [thenVsNowModalType, setThenVsNowModalType] = useState<'duo_portret' | 'duo_portret_cover' | 'duo_portret_overlay' | 'sidebyside_cover' | 'sidebyside_overlay' | 'transformation' | 'walking_composite'>('duo_portret_cover');
-  const [thenVsNowModalStep, setThenVsNowModalStep] = useState<'members' | 'generating' | 'submitted' | 'error'>('members');
-  const [thenVsNowModalSelected, setThenVsNowModalSelected] = useState<string[]>([]);
-  const [thenVsNowModalSearch, setThenVsNowModalSearch] = useState('');
-  const [thenVsNowModalJobId, setThenVsNowModalJobId] = useState<string | null>(null);
-  const [thenVsNowModalError, setThenVsNowModalError] = useState<string | null>(null);
-  const [thenVsNowBackgrounds, setThenVsNowBackgrounds] = useState<Array<{ id: string; url: string; label?: string; profile_name?: string }>>([]);
-  const [thenVsNowSelectedBgUrl, setThenVsNowSelectedBgUrl] = useState<string | null>(null);
-  // Per-member transformation variant key override: { memberId: "transformation_snap" }
-  const [thenVsNowVariantKeys, setThenVsNowVariantKeys] = useState<Record<string, string>>({});
+  const [thenVsNowModalType, setThenVsNowModalType] = useState<ThenVsNowVideoType>('duo_portret_cover');
 
   const [teamRoster, setTeamRoster] = useState<any[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
@@ -229,7 +235,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null);
   const [previewVideoLabel, setPreviewVideoLabel] = useState('');
 
-  // Stable video URL ref — prevents <video src> churn when polling returns new presigned URLs
+  // Stable video URL ref â€” prevents <video src> churn when polling returns new presigned URLs
   const stableVideoUrlsRef = useRef<Map<string, string>>(new Map());
 
   const seasonWalletOptions = useMemo<WalletOption[]>(() => {
@@ -255,7 +261,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     setSelectedContentTypeLabel('');
   };
 
-  // ── Toast notifications ──
+  // â”€â”€ Toast notifications â”€â”€
   const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
   const pushToast = useCallback((message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
     const id = String(Date.now());
@@ -267,7 +273,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
   }, []);
 
   const handleContentGenerated = useCallback((message?: string) => {
-    pushToast(message || '📋 Content wordt gegenereerd en komt in de approval queue.', 'success');
+    pushToast(message || 'ðŸ“‹ Content wordt gegenereerd en komt in de approval queue.', 'success');
   }, [pushToast]);
 
   // Fetch available templates for season content types
@@ -396,7 +402,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Brand profiles (clubBrand, teamBrand) come from useSeasonContext
 
-  // ── Video processing jobs for this project (content tab gallery) ──
+  // â”€â”€ Video processing jobs for this project (content tab gallery) â”€â”€
   // Only show season-level content (then_vs_now), not match-level (lineup, match_intro, etc.)
   const contentProjectId = String(project?.id || '');
   const {
@@ -413,14 +419,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     contentVideoJobs.filter(j => j.status === 'completed' && j.output_url),
   [contentVideoJobs]);
 
-  // ── Open guest player AI generation modal ──────────────────────────
+  // â”€â”€ Open guest player AI generation modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openGuestAiModal = useCallback((templateId: string, kitType?: string) => {
     setGuestAiPreselectedTemplate(templateId);
     setGuestAiSelectedKitType(kitType || 'home');
     setShowGuestAiModal(true);
   }, []);
 
-  // ── Crop guest player closeup from fullbody (no AI — deterministic crop) ──
+  // â”€â”€ Crop guest player closeup from fullbody (no AI â€” deterministic crop) â”€â”€
   const [croppingGuestCloseup, setCroppingGuestCloseup] = useState(false);
 
   const cropGuestCloseup = useCallback(async (kitType: string = 'home') => {
@@ -533,22 +539,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     }).length;
   };
 
-  const getMatchParticipantsCount = (match: any): number => {
-    const direct = Number(
-      (match as any)?.participants_count ??
-        (match as any)?.participations_count ??
-        (match as any)?.participantsCount ??
-        (match as any)?.participationsCount
-    );
-    if (Number.isFinite(direct) && direct >= 0) return direct;
-
-    const maybeParticipants = (match as any)?.participants;
-    if (Array.isArray(maybeParticipants)) return maybeParticipants.length;
-    const maybeParticipations = (match as any)?.participations;
-    if (Array.isArray(maybeParticipations)) return maybeParticipations.length;
-
-    return 0;
-  };
 
   const getCompetitionParticipantsCount = (competition: any): number => {
     const direct = Number(
@@ -577,7 +567,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   // Main org/project/club/season/competitions data now fetched by SeasonProvider
 
-  // ── Load brand profile ID for Kits tab ──
+  // â”€â”€ Load brand profile ID for Kits tab â”€â”€
   useEffect(() => {
     if (!project?.id) return;
     let cancelled = false;
@@ -599,7 +589,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [apiBaseUrl, project?.id]);
 
-  // Brand assets for batch modal — pre-computed by SeasonProvider
+  // Brand assets for batch modal â€” pre-computed by SeasonProvider
   const batchBrandAssets = useMemo(() => ({
     logo: brandLogoUrl,
     sponsor: brandSponsorUrl,
@@ -692,7 +682,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     };
   }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
 
-  // ── Guest player data from project metadata ──────────────────────────
+  // â”€â”€ Guest player data from project metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (activeTab !== 'media') return;
     const guestPlayerData = (project as any)?.metadata?.guest_player;
@@ -739,7 +729,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           { bypass: true, maxItems: 5000 }
         );
 
-        // Only merge org members on the squad tab — the team tab should only show
+        // Only merge org members on the squad tab â€” the team tab should only show
         // actual team members. Org-wide members are only relevant when assigning
         // new people to a season squad. This avoids loading 2500+ org members on
         // the team tab.
@@ -784,50 +774,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     };
   }, [activeTab, apiBaseUrl, org, project, teamRosterReloadToken]);
 
-  const getUserId = (m: any): string => {
-    const u = m?.user || m;
-    const id = u?.id ?? m?.user_id;
-    return String(id || '').trim();
-  };
-
-  const getUserLabel = (m: any): { name: string; email: string } => {
-    const u = m?.user || m;
-    const name =
-      u?.name ||
-      `${u?.first_name || ''} ${u?.last_name || ''}`.trim() ||
-      String(u?.email || '').trim() ||
-      '"”';
-    const email = String(u?.email || '').trim() || '"”';
-    return { name, email };
-  };
-
-  const normalizeAccessRole = (raw: any): 'viewer' | 'editor' | 'admin' => {
-    const role = String(raw || '').trim().toLowerCase();
-    if (role === 'admin') return 'admin';
-    if (role === 'editor') return 'editor';
-    if (role === 'viewer') return 'viewer';
-    if (['coach', 'trainer'].includes(role)) return 'editor';
-    if (['manager', 'owner'].includes(role)) return 'admin';
-    return 'viewer';
-  };
-
-  /** Map membership role + project level → RBAC display label */
-  const getRbacLabel = (membershipRole: string): string => {
-    const role = normalizeAccessRole(membershipRole);
-    if (role === 'admin') return isTeamRoute ? 'Team Admin' : 'Club Admin';
-    return isTeamRoute ? 'Team Member' : 'Supporter';
-  };
-
-  /** Access role options for the current project level */
-  const accessRoleOptions: Array<{ value: 'admin' | 'viewer'; label: string; description: string; icon: string }> = isTeamRoute
-    ? [
-        { value: 'admin', label: 'Team Admin', description: 'Volledige toegang: wedstrijden, content, lineups, profielen', icon: '🛡️' },
-        { value: 'viewer', label: 'Team Member', description: 'Beperkt: eigen content & profiel bewerken, rest alleen bekijken', icon: '👤' },
-      ]
-    : [
-        { value: 'admin', label: 'Club Admin', description: 'Volledige toegang: club, teams, wedstrijden, content', icon: '🏛️' },
-        { value: 'viewer', label: 'Supporter', description: 'Alleen-lezen: wedstrijden bekijken', icon: '👀' },
-      ];
+  const accessRoleOptions = getAccessRoleOptions(isTeamRoute);
 
   const getBestRoleForUser = (userId: string): 'viewer' | 'editor' | 'admin' => {
     const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
@@ -836,23 +783,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return normalizeAccessRole(base?.role ?? anyOne?.role ?? 'viewer');
   };
 
-  const getFunctionalRolesFromMembership = (m: any): string[] => {
-    // Try top-level functional_roles field first (from API)
-    const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
-    if (Array.isArray(direct) && direct.length > 0) {
-      return direct.map((r) => String(r || '').trim()).filter(Boolean);
-    }
-
-    // Then try metadata.functional_roles (where we save it)
-    const meta = (m as any)?.metadata || {};
-    if (Array.isArray(meta.functional_roles) && meta.functional_roles.length > 0) {
-      return meta.functional_roles.map((r: any) => String(r || '').trim()).filter(Boolean);
-    }
-
-    // Legacy single role fields
-    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
-    return legacy ? [legacy] : [];
-  };
 
   const getFunctionalRolesForUser = (userId: string): string[] => {
     const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
@@ -1074,170 +1004,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     return { duo_portret, duo_portret_cover, duo_portret_overlay, sidebyside_cover, sidebyside_overlay, transformation, walking_composite };
   }, [thenVsNowEligibleMembers]);
 
-  // Open the Then vs Now compilation modal
-  const openThenVsNowModal = (videoType: 'duo_portret' | 'duo_portret_cover' | 'duo_portret_overlay' | 'sidebyside_cover' | 'sidebyside_overlay' | 'transformation' | 'walking_composite') => {
-    const eligible = thenVsNowEligibleMembers.filter((m: any) =>
-      videoType === 'duo_portret' ? m.hasDuoPortret
-        : videoType === 'duo_portret_cover' ? m.hasDuoPortretCover
-        : videoType === 'duo_portret_overlay' ? m.hasDuoPortretOverlay
-        : videoType === 'sidebyside_cover' ? m.hasSidebysideCover
-        : videoType === 'sidebyside_overlay' ? m.hasSidebysideOverlay
-        : videoType === 'walking_composite' ? m.hasWalkingComposite
-        : m.hasTransformation
-    );
-    // Pre-select all eligible members
-    setThenVsNowModalSelected(eligible.map((m: any) => m.id));
+  const openThenVsNowModal = (videoType: ThenVsNowVideoType) => {
     setThenVsNowModalType(videoType);
-    setThenVsNowModalStep('members');
-    setThenVsNowModalSearch('');
-    setThenVsNowModalJobId(null);
-    setThenVsNowModalError(null);
-    setThenVsNowSelectedBgUrl(null);
-    setThenVsNowVariantKeys({});
     setThenVsNowModalOpen(true);
-
-    // Fetch available backgrounds (stadium_background + club_background assets)
-    (async () => {
-      try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/app-backgrounds/`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
-          const bgs = items
-            .filter((a: any) => a.url)
-            .map((a: any) => ({
-              id: a.id,
-              url: a.url,
-              label: a.label || '',
-              profile_name: a.project_name || a.profile_name || '',
-            }));
-          setThenVsNowBackgrounds(bgs);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch app backgrounds:', err);
-      }
-    })();
   };
 
-  // Close the Then vs Now compilation modal
-  const closeThenVsNowModal = () => {
-    setThenVsNowModalOpen(false);
-  };
+  const closeThenVsNowModal = () => setThenVsNowModalOpen(false);
 
-  // Submit the Then vs Now compilation
-  const submitThenVsNowCompilation = async () => {
-    setThenVsNowModalStep('generating');
-    setThenVsNowModalError(null);
-    try {
-      const projId = String((project as any)?.id || '').trim();
-      if (!projId) throw new Error('No project ID available');
 
-      // Parse compound type into video_type + composition_style
-      let videoType = thenVsNowModalType as string;
-      let compositionStyle: string | null = null;
-      if (videoType === 'duo_portret_cover') {
-        videoType = 'duo_portret';
-        compositionStyle = 'cover';
-      } else if (videoType === 'duo_portret_overlay') {
-        videoType = 'duo_portret';
-        compositionStyle = 'overlay';
-      } else if (videoType === 'sidebyside_cover') {
-        videoType = 'sidebyside';
-        compositionStyle = 'cover';
-      } else if (videoType === 'sidebyside_overlay') {
-        videoType = 'sidebyside';
-        compositionStyle = 'overlay';
-      }
 
-      const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/then-vs-now-compilation/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          project_id: projId,
-          video_type: videoType,
-          ...(compositionStyle ? { composition_style: compositionStyle } : {}),
-          period_id: resolvedSeasonId || effectiveSeasonId || null,
-          selected_member_ids: thenVsNowModalSelected,
-          ...(thenVsNowSelectedBgUrl ? { background_url: thenVsNowSelectedBgUrl } : {}),
-          ...(Object.keys(thenVsNowVariantKeys).length > 0 ? { member_variant_keys: thenVsNowVariantKeys } : {}),
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(err.error || err.detail || `Failed (${res.status})`);
-      }
-      const data = await res.json();
-      const jobId = data.data?.id || data.id;
-      setThenVsNowModalJobId(jobId);
-
-      // Show "submitted" confirmation, then auto-close after 2s
-      setThenVsNowModalStep('submitted');
-      setTimeout(() => {
-        closeThenVsNowModal();
-      }, 2500);
-    } catch (err: any) {
-      setThenVsNowModalError(err.message || 'Failed to start compilation');
-      setThenVsNowModalStep('error');
-    }
-  };
-
-  const sleep = (ms: number) => new Promise((resolve) => window.setTimeout(resolve, ms));
-
-  const getRetryDelayMsFromResponse = async (res: Response): Promise<number | null> => {
-    const header = res.headers.get('retry-after');
-    if (header) {
-      const seconds = Number(header);
-      if (Number.isFinite(seconds) && seconds > 0) return Math.max(500, Math.round(seconds * 1000));
-    }
-
-    try {
-      const rawText = await res.text();
-      // Example payload:
-      // {"status":"error","error":{"message":"Request was throttled. Expected available in 30 seconds."}}
-      const match = rawText.match(/Expected available in\s+(\d+)\s+seconds/i);
-      if (match?.[1]) {
-        const seconds = Number(match[1]);
-        if (Number.isFinite(seconds) && seconds > 0) return Math.max(500, Math.round(seconds * 1000));
-      }
-      // If response isn't JSON or doesn't match, fall through.
-    } catch {
-      // ignore
-    }
-
-    return null;
-  };
-
-  const fetchWithThrottleRetry = async (
-    input: RequestInfo | URL,
-    init: RequestInit,
-    opts?: { maxAttempts?: number; baseDelayMs?: number }
-  ): Promise<Response> => {
-    const maxAttempts = opts?.maxAttempts ?? 6;
-    const baseDelayMs = opts?.baseDelayMs ?? 500;
-
-    let attempt = 0;
-    // We intentionally run sequentially to reduce pressure on API.
-    // This helper adds retry + backoff when the server throttles (HTTP 429).
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      attempt += 1;
-      const res = await fetch(input, init);
-
-      if (res.status !== 429) return res;
-
-      if (attempt >= maxAttempts) return res;
-
-      const retryDelayMs = (await getRetryDelayMsFromResponse(res)) ?? baseDelayMs * attempt;
-      await sleep(Math.min(60_000, retryDelayMs));
-    }
-  };
 
   const assignUsersToSeasonSquad = async (userIds: string[]) => {
     const projectIdForMembers = String((project as any)?.id || '').trim();
@@ -1488,7 +1263,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
     };
   }, [activeTab, apiBaseUrl, project, resolvedSeasonId]);
 
-  // Fetch opponent club names from match metadata (opponent_club_id → project name)
+  // Fetch opponent club names from match metadata (opponent_club_id â†’ project name)
   useEffect(() => {
     if (!matches.length || !apiBaseUrl) return;
     const clubIds = [...new Set(
@@ -1621,7 +1396,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       fontWeight: isActive ? 600 : undefined,
                     }}
                   >
-                    {isActive ? 'âœ“ Active Context' : 'Make active'}
+                    {isActive ? 'Ã¢Å“â€œ Active Context' : 'Make active'}
                   </Button>
                 );
               })()}
@@ -1744,8 +1519,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card style={{ padding: '16px' }}>
                       <div className="text-sm font-medium text-gray-500">Dates</div>
                       <div className="text-sm font-semibold mt-1">
-                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '"”'} "“{' '}
-                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '"”'}
+                        {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '"â€'} "â€œ{' '}
+                        {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '"â€'}
                       </div>
                     </Card>
                     <Card style={{ padding: '16px' }}>
@@ -1773,7 +1548,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           </Button>
                         </div>
                         {competitionsLoading ? (
-                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitions…</div>
+                          <div className="text-sm text-gray-500 py-4 text-center">Loading competitionsâ€¦</div>
                         ) : competitions.length === 0 ? (
                           <div className="text-sm text-gray-500 py-4 text-center">No competitions in this season.</div>
                         ) : (
@@ -1810,7 +1585,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                           <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                                         </span>
                                       ) : (
-                                        <span style={{ color: 'var(--app-muted-text)' }}>"”</span>
+                                        <span style={{ color: 'var(--app-muted-text)' }}>"â€</span>
                                       )}
                                     </td>
                                     <td style={compactTdStyle}>
@@ -1976,7 +1751,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   {org?.sport && (
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-500">
-                        Templates for: <Badge variant="info" size="sm">âš½ {org.sport.name}</Badge>
+                        Templates for: <Badge variant="info" size="sm">Ã¢Å¡Â½ {org.sport.name}</Badge>
                       </div>
                       {templatesLoading && (
                         <div className="text-sm text-gray-400">Loading templates...</div>
@@ -2055,7 +1830,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </div>
                             )}
                             {!hasTemplate && (
-                              <div className={s.noTemplate}>"”</div>
+                              <div className={s.noTemplate}>"â€</div>
                             )}
                           </div>
                         );
@@ -2063,11 +1838,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     </div>
                   </Card>
 
-                  {/* Generated Content — completed video jobs */}
+                  {/* Generated Content â€” completed video jobs */}
                   <Card title={`Generated Content${completedVideoJobs.length ? ` (${completedVideoJobs.length})` : ''}`}>
                     {contentVideoLoading && completedVideoJobs.length === 0 && (
                       <div className="text-center py-8 text-gray-400">
-                        <div className="text-sm">Loading video jobs…</div>
+                        <div className="text-sm">Loading video jobsâ€¦</div>
                       </div>
                     )}
                     {!contentVideoLoading && completedVideoJobs.length === 0 && (
@@ -2085,17 +1860,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           const videoType = (job.config as any)?.video_type;
                           const compStyle = (job.config as any)?.composition_style;
                           const tileLabel = (() => {
-                            if (videoType === 'transformation') return { icon: '🔄', label: 'Transformation' };
-                            if (videoType === 'walking_composite') return { icon: '🚶', label: 'Walking Composite' };
+                            if (videoType === 'transformation') return { icon: 'ðŸ”„', label: 'Transformation' };
+                            if (videoType === 'walking_composite') return { icon: 'ðŸš¶', label: 'Walking Composite' };
                             if (videoType === 'duo_portret' || videoType === 'photo_composite') {
-                              if (compStyle === 'cover') return { icon: '👥', label: 'Duo Portret Cover' };
-                              if (compStyle === 'overlay') return { icon: '👥', label: 'Duo Portret Overlay' };
-                              return { icon: '👥', label: 'Duo Portret' };
+                              if (compStyle === 'cover') return { icon: 'ðŸ‘¥', label: 'Duo Portret Cover' };
+                              if (compStyle === 'overlay') return { icon: 'ðŸ‘¥', label: 'Duo Portret Overlay' };
+                              return { icon: 'ðŸ‘¥', label: 'Duo Portret' };
                             }
                             if (videoType === 'sidebyside') {
-                              if (compStyle === 'cover') return { icon: '⏪', label: 'Then vs Now Cover' };
-                              if (compStyle === 'overlay') return { icon: '⏪', label: 'Then vs Now Overlay' };
-                              return { icon: '⏪', label: 'Then & Now' };
+                              if (compStyle === 'cover') return { icon: 'âª', label: 'Then vs Now Cover' };
+                              if (compStyle === 'overlay') return { icon: 'âª', label: 'Then vs Now Overlay' };
+                              return { icon: 'âª', label: 'Then & Now' };
                             }
                             return typeDisplay;
                           })();
@@ -2141,7 +1916,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               onMouseEnter={(e) => { if (stableUrl) e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.15)'; }}
                               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                             >
-                              {/* Video thumbnail — use metadata preload + poster for first-frame preview */}
+                              {/* Video thumbnail â€” use metadata preload + poster for first-frame preview */}
                               {stableUrl && (
                                 <div className={s.videoThumbnail} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <video
@@ -2161,7 +1936,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {tileLabel.icon} {tileLabel.label}
                                   </span>
                                   <span className={s.statusPillComplete}>
-                                    ✅ Completed
+                                    âœ… Completed
                                   </span>
                                 </div>
                                 <div className={s.videoCardInfo}>
@@ -2177,7 +1952,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     onClick={(e) => e.stopPropagation()}
                                     className={s.downloadLink}
                                   >
-                                    ⬇ Download
+                                    â¬‡ Download
                                   </a>
                                 )}
                               </div>
@@ -2190,47 +1965,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                   {/* Video Preview Modal */}
                   {previewVideoUrl && (
-                    <div
-                      onClick={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
-                      className={s.modalBackdrop}
-                    >
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className={s.previewModalContainer}
-                        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
-                      >
-                        <div className={s.previewModalHeader}>
-                          <span className={s.previewTitle}>
-                            {previewVideoLabel || 'Video Preview'}
-                          </span>
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <a
-                              href={previewVideoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={s.downloadLink12}
-                            >
-                              ⬇ Download
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
-                              className={s.closeButton}
-                              style={{ lineHeight: 1, padding: '4px 8px' }}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                        <video
-                          src={previewVideoUrl}
-                          controls
-                          autoPlay
-                          playsInline
-                          className={s.videoPlayerFull}
-                        />
-                      </div>
-                    </div>
+                    <VideoPreviewModal
+                      videoUrl={previewVideoUrl}
+                      videoLabel={previewVideoLabel}
+                      onClose={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
+                    />
                   )}
                 </div>
               )}
@@ -2242,14 +1981,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <div>
                       <div className={s.hierarchyTitle}>Hierarchy</div>
                       <div className={s.mutedSubtitle}>
-                        Competitions â†’ Matches
+                        Competitions Ã¢â€ â€™ Matches
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
-                        placeholder="Search competitions/matches…"
+                        placeholder="Search competitions/matchesâ€¦"
                       />
                       {userCanEditProject && (
                         <>
@@ -2390,7 +2129,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                                 <div style={{ padding: '10px 12px' }}>
                                   {matchesLoading ? (
-                                    <div className="text-sm text-gray-500 py-2">Loading matches…</div>
+                                    <div className="text-sm text-gray-500 py-2">Loading matchesâ€¦</div>
                                   ) : visibleMatches.length === 0 ? (
                                     <div className="text-sm text-gray-500 py-2">No matches.</div>
                                   ) : (
@@ -2414,7 +2153,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                                 {matchDisplayTitle(match)}
                                               </button>
                                               <div className={s.matchDate}>
-                                                {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
+                                                {match.start_time ? new Date(match.start_time).toLocaleString() : '"â€'}
                                               </div>
                                             </div>
 
@@ -2487,7 +2226,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   </div>
 
                   <div style={{ padding: '16px' }}>
-                    {membersLoading && <Alert variant="info">Loading squad…</Alert>}
+                    {membersLoading && <Alert variant="info">Loading squadâ€¦</Alert>}
                     {membersError && <Alert variant="error">{membersError}</Alert>}
 
                     {userCanEditProject && (
@@ -2576,13 +2315,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     memberUser.name ||
                                     `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                     memberUser.email ||
-                                    '—';
+                                    'â€”';
 
-                                  const email = memberUser.email || '—';
+                                  const email = memberUser.email || 'â€”';
                                   const role = normalizeAccessRole(m.role || 'viewer');
-                                  const rbacLabel = getRbacLabel(m.role || 'viewer');
+                                  const rbacLabel = getRbacLabel(m.role || 'viewer', isTeamRoute);
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
-                                  const position = m.metadata?.position || '—';
+                                  const position = m.metadata?.position || 'â€”';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
                                   const membershipId = String(m.id || '').trim();
                                   const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
@@ -2629,11 +2368,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ))}
                                           </div>
                                         ) : (
-                                          '—'
+                                          'â€”'
                                         )}
                                       </td>
                                       <td style={compactTextTdStyle}>{position}</td>
-                                      <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
                                       <td style={compactTdStyle} className="text-right">
                                         <div style={compactActionsStyle}>
                                           <button
@@ -2699,12 +2438,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     memberUser.name ||
                                     `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                     memberUser.email ||
-                                    '—';
+                                    'â€”';
 
-                                  const email = memberUser.email || '—';
+                                  const email = memberUser.email || 'â€”';
                                   const role = normalizeAccessRole(m.role || 'viewer');
                                   const functionalRoles = getFunctionalRolesFromMembership(m);
-                                  const position = m.metadata?.position || '—';
+                                  const position = m.metadata?.position || 'â€”';
                                   const shirtNumber = m.metadata?.shirt_number ?? '';
                                   const href = memberDetailHref(String(m.id || '').trim());
 
@@ -2725,7 +2464,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
                                         <Badge variant={role === 'admin' ? 'warning' : 'default'}>
-                                          {getRbacLabel(m.role || 'viewer')}
+                                          {getRbacLabel(m.role || 'viewer', isTeamRoute)}
                                         </Badge>
                                       </td>
                                       <td style={compactTdStyle}>
@@ -2738,11 +2477,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ))}
                                           </div>
                                         ) : (
-                                          '—'
+                                          'â€”'
                                         )}
                                       </td>
                                       <td style={compactTextTdStyle}>{position}</td>
-                                      <td style={compactTdStyle}>{shirtNumber || '—'}</td>
+                                      <td style={compactTdStyle}>{shirtNumber || 'â€”'}</td>
                                     </tr>
                                   );
                                 })}
@@ -2773,7 +2512,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </div>
 
                       <div style={{ padding: '16px' }}>
-                        {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
+                        {teamRosterLoading && <Alert variant="info">Loading team rosterâ€¦</Alert>}
                         {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
                         {userCanEditProject && (
@@ -2862,7 +2601,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td style={compactTextTdStyle}>{name}</td>
                                       <td style={compactTextTdStyle}>{email}</td>
                                       <td style={compactTdStyle}>
-                                        <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(role)}</Badge>
+                                        <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(role, isTeamRoute)}</Badge>
                                       </td>
                                       <td style={compactTdStyle}>
                                         {functionalRoles.length ? (
@@ -2874,7 +2613,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                             ))}
                                           </div>
                                         ) : (
-                                          '—'
+                                          'â€”'
                                         )}
                                       </td>
                                       {userCanEditProject && (
@@ -2924,7 +2663,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           className={s.mediaHeaderBtn}
                           style={{ marginLeft: batchSelectedMemberIds.size > 0 ? undefined : 'auto' }}
                         >
-                          ⚙️ Actieve Jobs
+                          âš™ï¸ Actieve Jobs
                         </Button>
                         {batchSelectedMemberIds.size > 0 && (
                           <Button
@@ -2932,7 +2671,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             onClick={() => setIsBatchModalOpen(true)}
                             className={s.mediaHeaderBtn}
                           >
-                            🚀 Batch Genereer ({batchSelectedMemberIds.size})
+                            ðŸš€ Batch Genereer ({batchSelectedMemberIds.size})
                           </Button>
                         )}
                       </div>
@@ -2943,7 +2682,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
                     <div style={{ padding: '16px' }}>
                       {membersLoading ? (
-                        <Alert variant="info">Loading squad media status…</Alert>
+                        <Alert variant="info">Loading squad media statusâ€¦</Alert>
                       ) : members.length === 0 ? (
                         <Alert variant="info">No squad members to show media status for.</Alert>
                       ) : (
@@ -2990,13 +2729,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {/* Guest Player row — always shown at top of matrix */}
+                              {/* Guest Player row â€” always shown at top of matrix */}
                               <tr className={s.guestRow}>
                                 <td style={{ ...compactTdStyle, textAlign: 'center' }}>
                                   {/* No batch checkbox for guest */}
                                 </td>
                                 <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
-                                  <span className={s.guestLabel}>🏃 Gast Speler</span>
+                                  <span className={s.guestLabel}>ðŸƒ Gast Speler</span>
                                 </td>
                                 {MEDIA_SLOTS.map((slot) => {
                                   // Guest supports: kit (fullbody), closeup, intro, celebration
@@ -3017,10 +2756,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
                                         <span
                                           className={s.guestIndicator}
-                                          title={guestSlot.has ? `${guestSlot.label}: Beschikbaar — klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
+                                          title={guestSlot.has ? `${guestSlot.label}: Beschikbaar â€” klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
                                           onClick={handleClick}
                                         >
-                                          {guestSlot.has ? '✅' : '⬜'}
+                                          {guestSlot.has ? 'âœ…' : 'â¬œ'}
                                         </span>
                                       </td>
                                     );
@@ -3028,7 +2767,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   // Other slots: dash (not applicable for guest)
                                   return (
                                     <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
-                                      <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}>—</span>
+                                      <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}>â€”</span>
                                     </td>
                                   );
                                 })}
@@ -3054,7 +2793,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   memberUser.name ||
                                   `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
                                   memberUser.email ||
-                                  '"”';
+                                  '"â€';
                                 const membershipId = String(m.id || '').trim();
                                 const href = memberDetailHref(membershipId);
                                 const filledCount = countProcessedMediaSlots(m);
@@ -3093,12 +2832,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {MEDIA_SLOTS.map((slot) => {
                                       const procState = getMediaProcessingState(m, slot.id);
                                       // 3-state indicator: empty / raw / processing / processed
-                                      const indicator = procState === 'processed' ? '✅'
-                                        : procState === 'processing' ? '⏳'
-                                        : procState === 'raw' ? '🔶'
-                                        : '⬜';
+                                      const indicator = procState === 'processed' ? 'âœ…'
+                                        : procState === 'processing' ? 'â³'
+                                        : procState === 'raw' ? 'ðŸ”¶'
+                                        : 'â¬œ';
                                       const title = procState === 'processed' ? `${slot.label}: Lineup-ready`
-                                        : procState === 'processing' ? `${slot.label}: Bezig met bewerken…`
+                                        : procState === 'processing' ? `${slot.label}: Bezig met bewerkenâ€¦`
                                         : procState === 'raw' ? `${slot.label}: Ruw (nog niet bewerkt)`
                                         : `${slot.label}: Ontbreekt`;
                                       // Map matrix slot IDs to member detail page tab IDs
@@ -3152,19 +2891,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
                         <div className={s.legendRowDivided}>
                           <div className={s.legendItem}>
-                            <span>✅</span>
+                            <span>âœ…</span>
                             <span className={s.legendLabel}>Lineup-ready (bewerkt)</span>
                           </div>
                           <div className={s.legendItem}>
-                            <span>🔶</span>
+                            <span>ðŸ”¶</span>
                             <span className={s.legendLabel}>Ruw (niet bewerkt)</span>
                           </div>
                           <div className={s.legendItem}>
-                            <span>⏳</span>
+                            <span>â³</span>
                             <span className={s.legendLabel}>Bezig met bewerken</span>
                           </div>
                           <div className={s.legendItem}>
-                            <span>⬜</span>
+                            <span>â¬œ</span>
                             <span className={s.legendLabel}>Ontbreekt</span>
                           </div>
                         </div>
@@ -3193,7 +2932,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       ) : null}
                     </div>
                     {competitionsLoading ? (
-                      <Alert variant="info">Loading competitions…</Alert>
+                      <Alert variant="info">Loading competitionsâ€¦</Alert>
                     ) : competitions.length === 0 ? (
                       <Alert variant="info">No competitions found in this season.</Alert>
                     ) : (
@@ -3230,11 +2969,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                                   </span>
                                 ) : (
-                                  <span style={{ color: 'var(--app-muted-text)' }}>"”</span>
+                                  <span style={{ color: 'var(--app-muted-text)' }}>"â€</span>
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {new Date(competition.start_date || '').toLocaleDateString()} "“{' '}
+                                {new Date(competition.start_date || '').toLocaleDateString()} "â€œ{' '}
                                 {new Date(competition.end_date || '').toLocaleDateString()}
                               </td>
                               <td style={compactTdStyle}>
@@ -3335,7 +3074,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       ) : null}
                     </div>
                     {matchesLoading ? (
-                      <Alert variant="info">Loading matches…</Alert>
+                      <Alert variant="info">Loading matchesâ€¦</Alert>
                     ) : matches.length === 0 ? (
                       <Alert variant="info">No matches found in this season.</Alert>
                     ) : (
@@ -3385,11 +3124,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     {match.period?.name || 'Competition'}
                                   </Link>
                                 ) : (
-                                  match.period?.name || '"”'
+                                  match.period?.name || '"â€'
                                 )}
                               </td>
                               <td style={compactTextTdStyle}>
-                                {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
+                                {match.start_time ? new Date(match.start_time).toLocaleString() : '"â€'}
                               </td>
                               <td className="hide-mobile" style={compactTdStyle}>
                                 <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
@@ -3853,218 +3592,27 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
         {/* Edit Member Modal */}
         {isEditMemberModalOpen && selectedEditMember && (
-          <div
-            className={s.modalOverlay}
-            onClick={() => setIsEditMemberModalOpen(false)}
-          >
-            <div
-              className={s.editMemberModal}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 className={s.editMemberTitle}>
-                Edit Member Roles
-              </h2>
-
-              <div style={{ marginBottom: '24px' }}>
-                <div className={s.memberInfoRow}>
-                  <strong className={s.memberInfoLabel}>Name:</strong>{' '}
-                  {selectedEditMember.user?.name ||
-                    `${selectedEditMember.user?.first_name || ''} ${selectedEditMember.user?.last_name || ''}`.trim() ||
-                    selectedEditMember.user?.email ||
-                    '—'}
-                </div>
-                <div className={s.memberInfoRow}>
-                  <strong className={s.memberInfoLabel}>Email:</strong> {selectedEditMember.user?.email || '—'}
-                </div>
-              </div>
-
-              {/* Access Role Section */}
-              <div style={{ marginBottom: '24px' }}>
-                <label className={s.fieldLabel}>
-                  🔐 Access Role
-                </label>
-                <div className={s.radioGroup}>
-                  {accessRoleOptions.map((opt) => {
-                    const isSelected = editAccessRole === opt.value;
-                    return (
-                      <label
-                        key={opt.value}
-                        className={s.radioCard}
-                        style={{
-                          border: isSelected ? '2px solid #3b82f6' : '1px solid #475569',
-                          backgroundColor: isSelected ? '#1e3a5f' : '#334155',
-                        }}
-                      >
-                        <input
-                          type="radio"
-                          name="accessRole"
-                          value={opt.value}
-                          checked={isSelected}
-                          onChange={() => setEditAccessRole(opt.value)}
-                          className={s.radioInput}
-                        />
-                        <div>
-                          <div className={s.radioCardTitle}>
-                            {opt.icon} {opt.label}
-                          </div>
-                          <div className={s.radioCardDesc}>
-                            {opt.description}
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ marginBottom: '24px' }}>
-                <label className={s.fieldLabel}>
-                  Functional Roles
-                </label>
-                <div className={s.roleGrid}>
-                  {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map((role) => {
-                    const currentRoles = getFunctionalRolesFromMembership(selectedEditMember);
-                    const isChecked = currentRoles.includes(role);
-
-                    return (
-                      <label
-                        key={role}
-                        className={s.checkboxCard}
-                        style={{
-                          backgroundColor: isChecked ? '#1e40af' : '#334155',
-                          borderColor: isChecked ? '#3b82f6' : '#475569',
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            setSelectedEditMember((prev: any) => {
-                              if (!prev) return prev;
-                              const currentRoles = getFunctionalRolesFromMembership(prev);
-                              let newRoles: string[];
-
-                              if (checked) {
-                                newRoles = [...currentRoles, role];
-                              } else {
-                                newRoles = currentRoles.filter((r: string) => r !== role);
-                              }
-
-                              return {
-                                ...prev,
-                                functional_roles: newRoles,
-                              };
-                            });
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        />
-                        <span className={s.roleLabel}>{role}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className={s.modalActions}>
-                <button
-                  onClick={() => setIsEditMemberModalOpen(false)}
-                  className={s.btnCancel}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const membershipId = String(selectedEditMember.id || '').trim();
-                      if (!membershipId) {
-                        alert('No membership ID found');
-                        return;
-                      }
-
-                      // Check if membershipId is a valid UUID
-                      const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(membershipId);
-
-                      console.log('💾 Member data check:', {
-                        membershipId,
-                        isValidUuid,
-                        memberData: selectedEditMember,
-                        user: {
-                          id: (selectedEditMember as any)?.user?.id,
-                          email: (selectedEditMember as any)?.user?.email,
-                        },
-                      });
-
-                      if (!isValidUuid) {
-                        alert(`Cannot save: Invalid membership ID format (${membershipId}). This member may need to be re-added to the squad.`);
-                        return;
-                      }
-
-                      const functionalRoles = getFunctionalRolesFromMembership(selectedEditMember);
-                      const projectIdForApi = String((project as any)?.id || '').trim();
-
-                      if (!projectIdForApi) {
-                        alert('Project ID not found');
-                        return;
-                      }
-
-                      console.log('💾 Saving member roles:', {
-                        membershipId,
-                        projectId: projectIdForApi,
-                        functionalRoles,
-                        url: `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForApi)}/members/${encodeURIComponent(membershipId)}/`,
-                      });
-
-                      const res = await fetch(
-                        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForApi)}/members/${encodeURIComponent(membershipId)}/`,
-                        {
-                          method: 'PATCH',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': getCsrfToken(),
-                          },
-                          credentials: 'include',
-                          body: JSON.stringify({
-                            role: editAccessRole,
-                            metadata: {
-                              ...((selectedEditMember as any)?.metadata || {}),
-                              functional_roles: functionalRoles,
-                            },
-                          }),
-                        }
-                      );
-
-                      if (!res.ok) {
-                        const text = await res.text();
-                        console.error('❌ Save failed:', text);
-                        throw new Error(text || 'Failed to update member');
-                      }
-
-                      const responseData = await res.json();
-                      console.log('✅ Save response:', responseData);
-
-                      // Update local state
-                      setMembers((prev) =>
-                        prev.map((m: any) =>
-                          String(m.id || '').trim() === membershipId
-                            ? { ...m, role: editAccessRole, functional_roles: functionalRoles }
-                            : m
-                        )
-                      );
-
-                      setIsEditMemberModalOpen(false);
-                      setSelectedEditMember(null);
-                    } catch (err: any) {
-                      alert(err.message || 'Failed to update member');
-                    }
-                  }}
-                  className={s.btnSave}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
+          <EditMemberModal
+            member={selectedEditMember}
+            editAccessRole={editAccessRole}
+            accessRoleOptions={accessRoleOptions}
+            apiBaseUrl={apiBaseUrl}
+            projectId={String((project as any)?.id || '')}
+            onAccessRoleChange={setEditAccessRole}
+            onMemberChange={setSelectedEditMember}
+            onSaved={(membershipId, role, functionalRoles) => {
+              setMembers((prev) =>
+                prev.map((m: any) =>
+                  String(m.id || '').trim() === membershipId
+                    ? { ...m, role, functional_roles: functionalRoles }
+                    : m
+                )
+              );
+              setIsEditMemberModalOpen(false);
+              setSelectedEditMember(null);
+            }}
+            onClose={() => setIsEditMemberModalOpen(false)}
+          />
         )}
 
         {/* Content Generation Modal */}
@@ -4148,374 +3696,16 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           projectId={String(project?.id || '')}
         />
 
-        {/* Then vs Now compilation modal (member picker → submit → auto-close) */}
+        {/* Then vs Now compilation modal */}
         {thenVsNowModalOpen && (
-          <div
-            className={s.thenNowBackdrop}
-            onClick={() => { if (thenVsNowModalStep !== 'generating') closeThenVsNowModal(); }}
-          >
-            <div
-              className={s.thenNowModal}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal header */}
-              <div className={s.thenNowHeader}>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
-                    Compilatie — {
-                      thenVsNowModalType === 'duo_portret_cover' ? 'Duo Portret Cover'
-                        : thenVsNowModalType === 'duo_portret_overlay' ? 'Duo Portret Overlay'
-                        : thenVsNowModalType === 'duo_portret' ? 'Duo Portret'
-                        : thenVsNowModalType === 'sidebyside_cover' ? 'Then vs Now Cover'
-                        : thenVsNowModalType === 'sidebyside_overlay' ? 'Then vs Now Overlay'
-                        : thenVsNowModalType === 'walking_composite' ? 'Walking Composite'
-                        : 'Transformation'
-                    }
-                  </h3>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
-                    {thenVsNowModalStep === 'members' ? 'Selecteer spelers voor de compilatie video'
-                      : thenVsNowModalStep === 'generating' ? 'Job wordt aangemaakt...'
-                      : thenVsNowModalStep === 'submitted' ? 'Job is gestart!'
-                      : 'Er is een fout opgetreden'}
-                  </div>
-                </div>
-                {thenVsNowModalStep !== 'generating' && (
-                  <button
-                    onClick={closeThenVsNowModal}
-                    className={s.modalCloseBtn}
-                  >&times;</button>
-                )}
-              </div>
-
-              {/* Step: Member selection with ordering */}
-              {thenVsNowModalStep === 'members' && (() => {
-                const eligible = thenVsNowEligibleMembers.filter((m: any) =>
-                  thenVsNowModalType === 'duo_portret' ? m.hasDuoPortret
-                    : thenVsNowModalType === 'duo_portret_cover' ? m.hasDuoPortretCover
-                    : thenVsNowModalType === 'duo_portret_overlay' ? m.hasDuoPortretOverlay
-                    : thenVsNowModalType === 'sidebyside_cover' ? m.hasSidebysideCover
-                    : thenVsNowModalType === 'sidebyside_overlay' ? m.hasSidebysideOverlay
-                    : thenVsNowModalType === 'walking_composite' ? m.hasWalkingComposite
-                    : m.hasTransformation
-                );
-                const eligibleMap = new Map(eligible.map((m: any) => [m.id, m]));
-                const q = thenVsNowModalSearch.toLowerCase().trim();
-
-                // Selected members in order (with data)
-                const selectedOrdered = thenVsNowModalSelected
-                  .map((id: string) => eligibleMap.get(id))
-                  .filter(Boolean);
-
-                // Unselected members (for the "add" section)
-                const unselected = eligible.filter((m: any) => !thenVsNowModalSelected.includes(m.id));
-                const filteredUnselected = q ? unselected.filter((m: any) => m.name.toLowerCase().includes(q)) : unselected;
-
-                const moveUp = (idx: number) => {
-                  if (idx <= 0) return;
-                  const next = [...thenVsNowModalSelected];
-                  [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-                  setThenVsNowModalSelected(next);
-                };
-                const moveDown = (idx: number) => {
-                  if (idx >= thenVsNowModalSelected.length - 1) return;
-                  const next = [...thenVsNowModalSelected];
-                  [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-                  setThenVsNowModalSelected(next);
-                };
-                const removeItem = (id: string) => {
-                  setThenVsNowModalSelected(thenVsNowModalSelected.filter((x: string) => x !== id));
-                };
-                const addItem = (id: string) => {
-                  if (!thenVsNowModalSelected.includes(id)) {
-                    setThenVsNowModalSelected([...thenVsNowModalSelected, id]);
-                  }
-                };
-
-                return (
-                  <div style={{ padding: '16px 20px' }}>
-                    {/* Select all / deselect all */}
-                    <div className={s.selectAllRow}>
-                      <div className={s.selectionCounter}>
-                        {thenVsNowModalSelected.length} van {eligible.length} speler{eligible.length !== 1 ? 's' : ''} geselecteerd
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (thenVsNowModalSelected.length === eligible.length) {
-                            setThenVsNowModalSelected([]);
-                          } else {
-                            setThenVsNowModalSelected(eligible.map((m: any) => m.id));
-                          }
-                        }}
-                        className={s.selectAllBtn}
-                      >
-                        {thenVsNowModalSelected.length === eligible.length ? 'Deselecteer alles' : 'Selecteer alles'}
-                      </button>
-                    </div>
-
-                    {/* Selected members — ordered list with reorder controls */}
-                    {selectedOrdered.length > 0 && (
-                      <div style={{ marginBottom: '16px' }}>
-                        <div className={s.sectionLabel}>
-                          Volgorde in video
-                        </div>
-                        <div className={s.orderedList}>
-                          {selectedOrdered.map((m: any, idx: number) => (
-                            <div
-                              key={m.id}
-                              className={s.orderedMemberRow}
-                              style={{
-                                borderBottom: idx < selectedOrdered.length - 1 ? '1px solid var(--app-border)' : 'none',
-                              }}
-                            >
-                              {/* Order number */}
-                              <span className={s.orderNumber}>
-                                {idx + 1}
-                              </span>
-                              {/* Name + info */}
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div className={s.memberName}>{m.name}</div>
-                                <div className={s.memberMeta}>
-                                  {m.shirtNumber && <span>#{m.shirtNumber}</span>}
-                                  {m.position && <span>{m.position}</span>}
-                                </div>
-                                {/* Transformation variant picker (when member has multiple variants) */}
-                                {thenVsNowModalType === 'transformation' && m.transformationKeys && m.transformationKeys.length > 1 && (
-                                  <div className={s.variantRow}>
-                                    {m.transformationKeys.map((vk: string) => {
-                                      const label = vk.replace('transformation_', '').replace('transformation', 'default').replace(/_/g, ' ');
-                                      const isSelected = (thenVsNowVariantKeys[m.id] || '') === vk;
-                                      const isDefault = !thenVsNowVariantKeys[m.id] && vk === m.transformationKeys[0];
-                                      return (
-                                        <button
-                                          key={vk}
-                                          onClick={() => setThenVsNowVariantKeys(prev => ({ ...prev, [m.id]: vk }))}
-                                          className={s.variantPill}
-                                          style={{
-                                            border: (isSelected || isDefault) ? '1px solid var(--app-primary, #2563eb)' : '1px solid var(--app-border)',
-                                            backgroundColor: (isSelected || isDefault) ? 'var(--app-primary, #2563eb)' : 'transparent',
-                                            color: (isSelected || isDefault) ? '#fff' : 'var(--app-muted-text)',
-                                          }}
-                                        >{label}</button>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-                              </div>
-                              {/* Move up */}
-                              <button
-                                onClick={() => moveUp(idx)}
-                                disabled={idx === 0}
-                                title="Omhoog"
-                                className={s.arrowBtn}
-                                style={{ cursor: idx === 0 ? 'default' : 'pointer', opacity: idx === 0 ? 0.25 : 0.7 }}
-                              >{"\u25B2"}</button>
-                              {/* Move down */}
-                              <button
-                                onClick={() => moveDown(idx)}
-                                disabled={idx === selectedOrdered.length - 1}
-                                title="Omlaag"
-                                className={s.arrowBtn}
-                                style={{ cursor: idx === selectedOrdered.length - 1 ? 'default' : 'pointer', opacity: idx === selectedOrdered.length - 1 ? 0.25 : 0.7 }}
-                              >{"\u25BC"}</button>
-                              {/* Remove */}
-                              <button
-                                onClick={() => removeItem(m.id)}
-                                title="Verwijderen"
-                                className={s.removeBtn}
-                              >{"\u2715"}</button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Unselected members — add to list */}
-                    {unselected.length > 0 && (
-                      <div>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
-                          <div className={s.unselectedHeader}>
-                            Beschikbare spelers
-                          </div>
-                          <input
-                            type="text"
-                            placeholder="Zoek..."
-                            value={thenVsNowModalSearch}
-                            onChange={(e) => setThenVsNowModalSearch(e.target.value)}
-                            style={{ flex: 1, padding: '4px 8px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '12px', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
-                          />
-                        </div>
-                        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '160px', overflowY: 'auto' }}>
-                          {filteredUnselected.length === 0 ? (
-                            <div className={s.emptyState}>
-                              Geen spelers gevonden
-                            </div>
-                          ) : filteredUnselected.map((m: any) => (
-                            <div
-                              key={m.id}
-                              onClick={() => addItem(m.id)}
-                              className={s.clickableRow}
-                              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2, #2a2a3e)'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                            >
-                              <span className={s.addIcon}>+</span>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div className={s.memberName}>{m.name}</div>
-                                <div className={s.memberMeta}>
-                                  {m.shirtNumber && <span>#{m.shirtNumber}</span>}
-                                  {m.position && <span>{m.position}</span>}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {/* Background / Location selector — hidden for cover mode (no background needed) */}
-                    {thenVsNowBackgrounds.length > 0 && thenVsNowModalType !== 'duo_portret_cover' && thenVsNowModalType !== 'sidebyside_cover' && (
-                      <div style={{ marginTop: '16px' }}>
-                        <div className={s.sectionLabel}>
-                          Achtergrond / Locatie
-                        </div>
-                        <div className={s.bgSelectorGrid}>
-                          {/* Default option */}
-                          <button
-                            onClick={() => setThenVsNowSelectedBgUrl(null)}
-                            style={{
-                              position: 'relative',
-                              border: !thenVsNowSelectedBgUrl
-                                ? '2px solid var(--app-primary, #2563eb)'
-                                : '1px solid var(--app-border, #333)',
-                              borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', padding: 0,
-                              background: !thenVsNowSelectedBgUrl ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
-                            }}
-                          >
-                            <div className={s.bgPreviewDefault}>
-                              <span style={{ fontSize: '20px' }}>{"\u26BD"}</span>
-                            </div>
-                            <div className={s.bgOptionLabel} style={{ color: !thenVsNowSelectedBgUrl ? '#fff' : 'var(--app-muted-text)', background: !thenVsNowSelectedBgUrl ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)' }}>
-                              Standaard
-                            </div>
-                            {!thenVsNowSelectedBgUrl && (
-                              <div className={s.checkBadge}>{"\u2713"}</div>
-                            )}
-                          </button>
-                          {/* App-level backgrounds */}
-                          {thenVsNowBackgrounds.map((bg) => {
-                            const isSelected = thenVsNowSelectedBgUrl === bg.url;
-                            return (
-                              <button
-                                key={bg.id}
-                                onClick={() => setThenVsNowSelectedBgUrl(bg.url)}
-                                style={{
-                                  position: 'relative',
-                                  border: isSelected
-                                    ? '2px solid var(--app-primary, #2563eb)'
-                                    : '1px solid var(--app-border, #333)',
-                                  borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', padding: 0,
-                                  background: isSelected ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
-                                }}
-                              >
-                                <div style={{ width: '100%', aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
-                                <div className={s.bgOptionLabel} style={{
-                                  color: isSelected ? '#fff' : 'var(--app-muted-text)',
-                                  background: isSelected ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)',
-                                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                }}>
-                                  {bg.label || bg.profile_name || 'Locatie'}
-                                </div>
-                                {isSelected && (
-                                  <div className={s.checkBadge}>{"\u2713"}</div>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-
-              {/* Step: Generating (brief loading while POST in progress) */}
-              {thenVsNowModalStep === 'generating' && (
-                <div className={s.statusStep}>
-                  <div className={s.statusEmoji}>{"\u23F3"}</div>
-                  <div className={s.statusTitle}>
-                    Job wordt aangemaakt...
-                  </div>
-                </div>
-              )}
-
-              {/* Step: Submitted — confirmation, auto-closes */}
-              {thenVsNowModalStep === 'submitted' && (
-                <div className={s.statusStep}>
-                  <div className={s.statusEmoji}>{"\u2705"}</div>
-                  <div className={s.statusTitle}>
-                    Job gestart!
-                  </div>
-                  <div className={s.statusDesc}>
-                    {thenVsNowModalSelected.length} speler{thenVsNowModalSelected.length !== 1 ? 's' : ''} • Video wordt op de achtergrond verwerkt
-                  </div>
-                  <div className={s.statusDesc}>
-                    Bekijk de voortgang bij <strong>Workflow</strong> of in de <strong>Video Jobs</strong> queue.
-                  </div>
-                </div>
-              )}
-
-              {/* Step: Error */}
-              {thenVsNowModalStep === 'error' && (
-                <div className={s.statusStep}>
-                  <div className={s.statusEmoji}>{"\u274C"}</div>
-                  <div className={s.statusTitleError}>
-                    Generatie mislukt
-                  </div>
-                  <div className={s.statusDesc}>
-                    {thenVsNowModalError || 'Unknown error'}
-                  </div>
-                </div>
-              )}
-
-              {/* Modal footer */}
-              <div className={s.thenNowFooter}>
-                {thenVsNowModalStep === 'members' && (
-                  <>
-                    <button
-                      onClick={closeThenVsNowModal}
-                      className={s.modalBtnSecondary}
-                    >Annuleren</button>
-                    <button
-                      onClick={submitThenVsNowCompilation}
-                      disabled={thenVsNowModalSelected.length === 0}
-                      className={s.modalBtnPrimary}
-                      style={{
-                        cursor: thenVsNowModalSelected.length > 0 ? 'pointer' : 'not-allowed',
-                        background: thenVsNowModalSelected.length > 0 ? '#6366f1' : '#6b7280',
-                        opacity: thenVsNowModalSelected.length > 0 ? 1 : 0.5,
-                      }}
-                    >{"\uD83C\uDFAC"} Genereer Video ({thenVsNowModalSelected.length})</button>
-                  </>
-                )}
-                {thenVsNowModalStep === 'submitted' && (
-                  <button
-                    onClick={closeThenVsNowModal}
-                    className={s.modalBtnSecondary}
-                  >Sluiten</button>
-                )}
-                {thenVsNowModalStep === 'error' && (
-                  <>
-                    <button
-                      onClick={() => setThenVsNowModalStep('members')}
-                      className={s.modalBtnSecondary}
-                    >{"\u2190"} Terug</button>
-                    <button
-                      onClick={closeThenVsNowModal}
-                      className={s.modalBtnSecondary}
-                    >Sluiten</button>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
+          <ThenVsNowModal
+            videoType={thenVsNowModalType}
+            eligibleMembers={thenVsNowEligibleMembers}
+            apiBaseUrl={apiBaseUrl}
+            projectId={String(project?.id || '')}
+            seasonId={resolvedSeasonId || effectiveSeasonId || ''}
+            onClose={closeThenVsNowModal}
+          />
         )}
       </div>
 
@@ -4535,7 +3725,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 onClick={() => dismissToast(toast.id)}
                 className={s.toastDismiss}
               >
-                ×
+                Ã—
               </button>
             </div>
           ))}
