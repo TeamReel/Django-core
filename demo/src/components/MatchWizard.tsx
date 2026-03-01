@@ -467,7 +467,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
       onClose={handleClose}
       title={getStepTitle()}
     >
-      <div style={{ minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ maxHeight: '60vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         {/* Progress Steps */}
         <div style={{
           display: 'flex',

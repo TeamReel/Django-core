@@ -135,9 +135,7 @@ export default function MainLayout() {
         {isMobile && (
           <>
             <OnboardingWizard />
-            <MobileBottomNav
-              onOpenSearch={() => openSearchRef.current?.()}
-            />
+            <MobileBottomNav />
           </>
         )}
       </div>
