@@ -1222,7 +1222,7 @@ export const PreferencesPage: React.FC = () => {
 
       <PageContent>
           {success && (
-            <div style={{ marginBottom: '24px' }}>
+            <div className="mb-24">
                 <Alert variant="success" data-testid="prefs-success-alert">
                 Preferences saved successfully
                 </Alert>
@@ -1234,7 +1234,7 @@ export const PreferencesPage: React.FC = () => {
               <>
                 <Card>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
-                    <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                    <div className="flex-row gap-16">
                       <div
                         style={{
                           width: 56,
@@ -1283,13 +1283,13 @@ export const PreferencesPage: React.FC = () => {
 
                       <div>
                         <h3 className="text-lg font-semibold mb-1">Profile</h3>
-                        <div className="text-sm" style={{ fontWeight: 700 }}>
+                        <div className="text-sm fw-700">
                           {String((user as any)?.name || `${(user as any)?.first_name || ''} ${(user as any)?.last_name || ''}` || '').trim() || '—'}
                         </div>
                         <div className="text-sm text-gray-600">
                           {String((user as any)?.email || (user as any)?.username || '—')}
                         </div>
-                        <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                        <div className="flex-row flex-wrap gap-8 mt-8">
                           <Badge variant={Boolean((user as any)?.two_factor_enabled) ? 'success' : 'default'}>
                             2FA: {Boolean((user as any)?.two_factor_enabled) ? 'On' : 'Off'}
                           </Badge>
@@ -1414,11 +1414,11 @@ export const PreferencesPage: React.FC = () => {
                   }
                 >
                   {profileError && (
-                    <div style={{ marginBottom: 12 }}>
+                    <div className="mb-12">
                       <Alert variant="error">{profileError}</Alert>
                     </div>
                   )}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                     <Input
                       label="First name"
                       value={profileFirstName}
@@ -1434,7 +1434,7 @@ export const PreferencesPage: React.FC = () => {
                       disabled={profileSaving}
                     />
                   </div>
-                  <div style={{ marginTop: 12 }}>
+                  <div className="mt-12">
                     <Input
                       label="Email"
                       value={profileEmail}
@@ -1443,7 +1443,7 @@ export const PreferencesPage: React.FC = () => {
                       disabled={profileSaving}
                     />
                   </div>
-                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div className="flex-row gap-8 mt-12">
                     <input
                       id="twoFactorEnabled"
                       type="checkbox"
@@ -1455,7 +1455,7 @@ export const PreferencesPage: React.FC = () => {
                       Enable 2FA (flag)
                     </label>
                   </div>
-                  <div style={{ marginTop: 12 }}>
+                  <div className="mt-12">
                     <Input
                       label="Current password (required)"
                       value={profileCurrentPassword}
@@ -1539,16 +1539,16 @@ export const PreferencesPage: React.FC = () => {
                   }
                 >
                   {passwordSuccess && (
-                    <div style={{ marginBottom: 12 }}>
+                    <div className="mb-12">
                       <Alert variant="success">Password updated.</Alert>
                     </div>
                   )}
                   {passwordError && (
-                    <div style={{ marginBottom: 12 }}>
+                    <div className="mb-12">
                       <Alert variant="error">{passwordError}</Alert>
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div className="flex-col gap-12">
                     <Input
                       label="Current password"
                       value={passwordCurrent}
@@ -1647,11 +1647,11 @@ export const PreferencesPage: React.FC = () => {
                   }
                 >
                   {avatarError && (
-                    <div style={{ marginBottom: 12 }}>
+                    <div className="mb-12">
                       <Alert variant="error">{avatarError}</Alert>
                     </div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div className="flex-col gap-8">
                     <input
                       type="file"
                       accept="image/*"
@@ -1665,10 +1665,10 @@ export const PreferencesPage: React.FC = () => {
                 </Modal>
 
                 <Card>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                  <div className="flex-between mb-12">
                     <h3 className="text-lg font-semibold mb-0">Active context</h3>
                   </div>
-                  <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+                  <div className="text-sm text-gray-600 mb-12">
                     Your current Federation → Club → Team → Season → Competition → Match → Member selection used for sidebar defaults.
                   </div>
 
@@ -1688,11 +1688,11 @@ export const PreferencesPage: React.FC = () => {
                       : '';
 
                     return (
-                      <div style={{ marginBottom: 12 }}>
-                        <div className="text-sm" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                      <div className="mb-12">
+                        <div className="text-sm flex-row flex-wrap gap-8">
                           <Badge variant="default">Member: {memberName || membershipId.slice(0, 8) + '…'}</Badge>
                           {canLink && (
-                            <a href={href} className="text-blue-600 hover:underline" style={{ fontSize: 13, textDecoration: 'none' }}>
+                            <a href={href} className="text-blue-600 hover:underline fs-13" style={{ textDecoration: 'none' }}>
                               Open member profile
                             </a>
                           )}
@@ -1703,7 +1703,7 @@ export const PreferencesPage: React.FC = () => {
 
                   {activeContextError && <Alert variant="error" style={{ marginBottom: 12 }}>{activeContextError}</Alert>}
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
+                  <div className="flex-col gap-16 max-w-600">
                     {loadingOrgs && (
                       <Alert variant="info">Loading federations...</Alert>
                     )}
@@ -1918,7 +1918,7 @@ export const PreferencesPage: React.FC = () => {
                     </div>
 
                     {savingContext && (
-                      <div className="text-xs text-gray-500" style={{ marginTop: 4 }}>
+                      <div className="text-xs text-gray-500 mt-4">
                         Saving…
                       </div>
                     )}
@@ -1931,11 +1931,11 @@ export const PreferencesPage: React.FC = () => {
               <>
                 <Card>
                     <h3 className="text-lg font-semibold mb-4">Appearance</h3>
-                    <div style={{ maxWidth: '800px' }}>
+                    <div className="max-w-800">
                       <label className="block text-sm font-medium mb-3">
                         Theme
                       </label>
-                      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }} role="group" aria-label="Theme selection">
+                      <div className="flex-row gap-12 mb-24" role="group" aria-label="Theme selection">
                         {['light', 'dark', 'auto'].map((t) => {
                           const isActive = preferences?.theme === t;
                           return (
@@ -1951,7 +1951,7 @@ export const PreferencesPage: React.FC = () => {
                       </div>
 
                       {/* Preview Cards */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                      <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
                         <div
                           style={{
                             padding: '24px',
@@ -2002,7 +2002,7 @@ export const PreferencesPage: React.FC = () => {
                 {/* Localisation Section */}
                 <Card style={{ marginTop: '24px' }}>
                   <h3 className="text-lg font-semibold mb-4">Localisation</h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                  <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
                     <div>
                       <label className="block text-sm font-medium mb-2">
                         Language
@@ -2062,7 +2062,7 @@ export const PreferencesPage: React.FC = () => {
                     <p className="text-sm text-gray-600 mb-4">
                       These are the actual values used by the system, resolved from your user settings, organization defaults, or system fallbacks.
                     </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="grid gap-16" style={{ gridTemplateColumns: '1fr 1fr' }}>
                       <div>
                         <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
                           Language
@@ -2121,12 +2121,12 @@ export const PreferencesPage: React.FC = () => {
               <>
                 <Card>
                   <h3 className="text-lg font-semibold mb-2">My Audit</h3>
-                  <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+                  <div className="text-sm text-gray-600 mb-12">
                     Your most recent audit events.
                   </div>
 
                   {myAuditError && (
-                    <div style={{ marginBottom: 12 }}>
+                    <div className="mb-12">
                       <Alert variant="error">{myAuditError}</Alert>
                     </div>
                   )}
@@ -2189,7 +2189,7 @@ export const PreferencesPage: React.FC = () => {
                 {/* Notifications Section */}
                 <Card>
                   <h3 className="text-lg font-semibold mb-4">Notifications</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="flex-col gap-16">
                     <label className="flex items-start cursor-pointer">
                       <div className="flex items-center h-5">
                         <input
@@ -2259,13 +2259,13 @@ export const PreferencesPage: React.FC = () => {
                   )}
 
                   {!channelPrefsLoading && channelPrefs.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div className="flex-col gap-24">
                       {channelPrefs.map((group) => (
                         <div key={group.event_type} className="border-t border-gray-200 pt-4 first:border-t-0 first:pt-0">
                           <h4 className="text-sm font-semibold mb-3 text-gray-900">
                             {formatEventType(group.event_type)}
                           </h4>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                          <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                             <label className="flex items-center cursor-pointer">
                               <input
                                 type="checkbox"

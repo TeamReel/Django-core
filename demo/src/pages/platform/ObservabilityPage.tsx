@@ -156,16 +156,11 @@ export const ObservabilityPage: React.FC = () => {
             ]}
           />
           <PageContent>
-            <Card style={{
-              marginBottom: '16px',
-              padding: '24px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)'
-            }}>
+            <Card className="mb-16 p-24 bg-surface border">
               <Alert variant="error" data-testid="observability-error">
                 Observability data unavailable (backend error): {error}
               </Alert>
-              <div style={{ marginTop: '16px' }}>
+              <div className="mt-16">
                 <Button onClick={handleManualRefresh}>
                   Retry
                 </Button>
@@ -195,13 +190,8 @@ export const ObservabilityPage: React.FC = () => {
       <PageContent>
         {/* Loading state - only show on initial load */}
         {loading && !backendMetrics && (
-          <Card style={{
-            padding: '48px 24px',
-            textAlign: 'center',
-            backgroundColor: 'var(--app-surface)',
-            border: '1px solid var(--app-border)'
-          }}>
-            <div style={{ color: 'var(--app-muted-text)', fontSize: '16px' }}>
+          <Card className="text-center bg-surface border" style={{ padding: '48px 24px' }}>
+            <div className="text-muted fs-16">
               Loading observability metrics...
             </div>
           </Card>
@@ -209,12 +199,8 @@ export const ObservabilityPage: React.FC = () => {
 
         {/* Empty state - backend available but no metrics configured */}
         {isEmptyState && (
-          <Card style={{
-            padding: '24px',
-            backgroundColor: 'var(--app-surface)',
-            border: '1px solid var(--app-border)'
-          }}>
-            <div style={{ marginBottom: '16px' }}>
+          <Card className="p-24 bg-surface border">
+            <div className="mb-16">
               <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--app-text)', margin: '0 0 8px 0' }}>
                 Status
               </h3>
@@ -231,16 +217,11 @@ export const ObservabilityPage: React.FC = () => {
         {/* Data available - show metrics */}
         {hasData && backendMetrics && (
           <>
-            <Card data-testid="observability-header" style={{
-              marginBottom: '24px',
-              padding: '24px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Card data-testid="observability-header" className="mb-24 p-24 bg-surface border">
+              <div className="flex-between">
                 <div>
-                  <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '4px', color: 'var(--app-text)' }}>Metrics</h3>
-                  <p style={{ fontSize: '14px', color: 'var(--app-muted-text)', margin: 0 }}>
+                  <h3 className="fs-18 fw-600 mb-4 text-primary">Metrics</h3>
+                  <p className="fs-14 text-muted m-0">
                     Last updated: <span style={{ fontFamily: 'monospace', color: 'var(--app-text)' }}>
                       {backendMetrics.timestamp ? new Date(backendMetrics.timestamp).toLocaleTimeString() : 'N/A'}
                     </span>
@@ -263,13 +244,8 @@ export const ObservabilityPage: React.FC = () => {
             </Card>
             {/* Charts Section */}
             {metricsHistory.length > 0 && (
-              <Card style={{
-                marginBottom: '24px',
-                padding: '24px',
-                backgroundColor: 'var(--app-surface)',
-                border: '1px solid var(--app-border)'
-              }} data-testid="observability-charts">
-                <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Metrics Visualization</h3>
+              <Card className="mb-24 p-24 bg-surface border" data-testid="observability-charts">
+                <h3 className="fs-18 fw-600 mb-16 text-primary">Metrics Visualization</h3>
                 <ObservabilityCharts
                   metricsHistory={metricsHistory}
                   currentMetrics={currentMetrics}
@@ -277,50 +253,40 @@ export const ObservabilityPage: React.FC = () => {
               </Card>
             )}
 
-            <Card data-testid="latency-metrics" style={{
-              marginBottom: '24px',
-              padding: '24px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)'
-            }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Response Latency</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>p99 Latency</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545', marginTop: '8px' }}>
+            <Card data-testid="latency-metrics" className="mb-24 p-24 bg-surface border">
+              <h3 className="fs-18 fw-600 mb-16 text-primary">Response Latency</h3>
+              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">p99 Latency</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: '#dc3545' }}>
                     {backendMetrics.response_time_p99 != null ? backendMetrics.response_time_p99.toFixed(0) : 'N/A'}
-                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
+                    <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>p95 Latency</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#fd7e14', marginTop: '8px' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">p95 Latency</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: '#fd7e14' }}>
                     {backendMetrics.response_time_p95 != null ? backendMetrics.response_time_p95.toFixed(0) : 'N/A'}
-                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
+                    <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Median Latency</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745', marginTop: '8px' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">Median Latency</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: '#28a745' }}>
                     {backendMetrics.response_time_median != null ? backendMetrics.response_time_median.toFixed(0) : 'N/A'}
-                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
+                    <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
               </div>
             </Card>
 
-            <Card data-testid="error-metrics" style={{
-              marginBottom: '24px',
-              padding: '24px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)'
-            }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Error Rates</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>4xx Error Rate</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffc107' }}>
+            <Card data-testid="error-metrics" className="mb-24 p-24 bg-surface border">
+              <h3 className="fs-18 fw-600 mb-16 text-primary">Error Rates</h3>
+              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">4xx Error Rate</div>
+                  <div className="flex-row gap-8 mt-8">
+                    <div className="fs-24 fw-700" style={{ color: '#ffc107' }}>
                       {backendMetrics.error_rate_4xx != null ? backendMetrics.error_rate_4xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_4xx != null && backendMetrics.error_rate_4xx > 5 && (
@@ -328,10 +294,10 @@ export const ObservabilityPage: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>5xx Error Rate</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc3545' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">5xx Error Rate</div>
+                  <div className="flex-row gap-8 mt-8">
+                    <div className="fs-24 fw-700" style={{ color: '#dc3545' }}>
                       {backendMetrics.error_rate_5xx != null ? backendMetrics.error_rate_5xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_5xx != null && backendMetrics.error_rate_5xx > 1 && (
@@ -342,30 +308,25 @@ export const ObservabilityPage: React.FC = () => {
               </div>
             </Card>
 
-            <Card data-testid="resource-metrics" style={{
-              marginBottom: '24px',
-              padding: '24px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)'
-            }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Resources</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Active Connections</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007bff', marginTop: '8px' }}>
+            <Card data-testid="resource-metrics" className="mb-24 p-24 bg-surface border">
+              <h3 className="fs-18 fw-600 mb-16 text-primary">Resources</h3>
+              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">Active Connections</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: '#007bff' }}>
                     {backendMetrics.active_connections != null ? backendMetrics.active_connections : 'N/A'}
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Database Latency</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#28a745', marginTop: '8px' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">Database Latency</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: '#28a745' }}>
                     {backendMetrics.database_latency != null ? backendMetrics.database_latency.toFixed(1) : 'N/A'}
-                    <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--app-muted-text)' }}>ms</span>
+                    <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface-2)' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Cache Hit Ratio</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#6f42c1', marginTop: '8px' }}>
+                <div className="p-16 border rounded-8 bg-surface-2">
+                  <div className="fs-14 text-muted">Cache Hit Ratio</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: '#6f42c1' }}>
                     {backendMetrics.cache_hit_ratio != null ? (backendMetrics.cache_hit_ratio * 100).toFixed(1) : 'N/A'}%
                   </div>
                 </div>

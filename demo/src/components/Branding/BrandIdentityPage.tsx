@@ -171,16 +171,15 @@ function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
   if (colors.length === 0) return null;
 
   return (
-    <Card style={{ padding: '24px' }}>
+    <Card className="p-24">
       <Stack direction="column" gap="4">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Palette size={20} style={{ color: 'var(--app-primary)' }} />
+        <div className="flex-row gap-8">
           <Text weight="bold" size="md">Color Palette</Text>
           <Badge variant="default">{colors.length} colors</Badge>
         </div>
 
         {/* Large color swatches */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+        <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
           {colors.map((token) => (
             <div
               key={token.id}
@@ -213,7 +212,7 @@ function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
                 </Text>
               </div>
               {/* Info below */}
-              <div style={{ padding: '12px', backgroundColor: 'var(--app-surface)' }}>
+              <div className="p-12 bg-surface">
                 <Text weight="medium" size="sm">{formatTokenKey(token.key)}</Text>
                 <div style={{ marginTop: '6px' }}>
                   <CopyableValue value={token.value} label={token.key} />
@@ -229,8 +228,8 @@ function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
         </div>
 
         {/* Color preview bar */}
-        <div style={{ marginTop: '8px' }}>
-          <Text size="xs" weight="bold" color="secondary" style={{ marginBottom: '8px', textTransform: 'uppercase' }}>
+        <div className="mt-8">
+          <Text size="xs" weight="bold" color="secondary" className="mb-8" style={{ textTransform: 'uppercase' }}>
             Combined Preview
           </Text>
           <div style={{ display: 'flex', height: '48px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--app-border)' }}>
@@ -256,15 +255,14 @@ function TypographySection({ fonts }: { fonts: DesignToken[] }) {
   if (fonts.length === 0) return null;
 
   return (
-    <Card style={{ padding: '24px' }}>
+    <Card className="p-24">
       <Stack direction="column" gap="4">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Type size={20} style={{ color: 'var(--app-primary)' }} />
+        <div className="flex-row gap-8">
           <Text weight="bold" size="md">Typography</Text>
           <Badge variant="default">{fonts.length} fonts</Badge>
         </div>
 
-        <div style={{ display: 'grid', gap: '16px' }}>
+        <div className="grid gap-16">
           {fonts.map((token) => (
             <div
               key={token.id}
@@ -275,7 +273,7 @@ function TypographySection({ fonts }: { fonts: DesignToken[] }) {
                 border: '1px solid var(--app-border)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div className="flex-between mb-12">
                 <Text size="sm" color="secondary">{formatTokenKey(token.key)}</Text>
                 <CopyableValue value={token.value} label={token.key} />
               </div>
@@ -309,21 +307,20 @@ function OtherTokensSection({ tokens }: { tokens: Map<string, DesignToken[]> }) 
   if (filteredTokens.length === 0) return null;
 
   return (
-    <Card style={{ padding: '24px' }}>
+    <Card className="p-24">
       <Stack direction="column" gap="4">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Settings size={20} style={{ color: 'var(--app-primary)' }} />
+        <div className="flex-row gap-8">
           <Text weight="bold" size="md">Design Tokens</Text>
         </div>
 
-        <div style={{ display: 'grid', gap: '20px' }}>
+        <div className="grid gap-20">
           {filteredTokens.map(([type, typeTokens]) => {
             const Icon = TOKEN_TYPE_ICONS[type] || TOKEN_TYPE_ICONS.default;
             const label = TOKEN_TYPE_LABELS[type] || type.charAt(0).toUpperCase() + type.slice(1);
 
             return (
               <div key={type}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <div className="flex-row gap-8 mb-12">
                   <Icon size={16} style={{ opacity: 0.6 }} />
                   <Text weight="bold" size="sm" style={{ textTransform: 'uppercase' }}>
                     {label}
@@ -362,11 +359,10 @@ function OtherTokensSection({ tokens }: { tokens: Map<string, DesignToken[]> }) 
 // Brand assets gallery
 function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
   return (
-    <Card style={{ padding: '24px' }}>
+    <Card className="p-24">
       <Stack direction="column" gap="4">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Image size={20} style={{ color: 'var(--app-primary)' }} />
+        <div className="flex-between">
+          <div className="flex-row gap-8">
             <Text weight="bold" size="md">Brand Assets</Text>
             <Badge variant="default">{assets.length} assets</Badge>
           </div>
@@ -379,22 +375,21 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
 
         {assets.length === 0 ? (
           <div
+            className="text-center rounded-12"
             style={{
               padding: '48px',
-              textAlign: 'center',
               backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-              borderRadius: '12px',
               border: '2px dashed var(--app-border)',
             }}
           >
             <Image size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
             <Text color="secondary" size="sm">No brand assets uploaded yet</Text>
-            <Text color="secondary" size="xs" style={{ marginTop: '8px' }}>
+            <Text color="secondary" size="xs" className="mt-8">
               Upload logos, icons, banners and other visual assets
             </Text>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+          <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
             {assets.map((asset) => (
               <div
                 key={asset.id}
@@ -441,12 +436,12 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
                   )}
                 </div>
                 {/* Asset info */}
-                <div style={{ padding: '12px' }}>
+                <div className="p-12">
                   <Text size="sm" weight="medium">
                     {ASSET_TYPE_LABELS[asset.asset_type] || asset.asset_type.replace(/_/g, ' ')}
                   </Text>
                   {asset.alt_text && (
-                    <Text size="xs" color="secondary" style={{ marginTop: '4px' }}>
+                    <Text size="xs" color="secondary" className="mt-4">
                       {asset.alt_text}
                     </Text>
                   )}
@@ -469,9 +464,9 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
   const logoUrl = logoAsset?.url ? resolveAssetUrl(logoAsset.url) : null;
 
   return (
-    <Card style={{ padding: '24px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+    <Card className="p-24">
+      <div className="flex-between" style={{ alignItems: 'flex-start' }}>
+        <div className="flex-row gap-16" style={{ alignItems: 'flex-start' }}>
           {/* Logo or fallback icon */}
           {logoUrl ? (
             <div
@@ -519,7 +514,7 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
             </div>
           )}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="flex-row gap-8">
               <Text weight="bold" size="lg">{profile.name}</Text>
               <Badge variant={profile.is_active ? 'success' : 'default'}>
                 {profile.is_active ? (
@@ -529,7 +524,7 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
                 )}
               </Badge>
             </div>
-            <Text color="secondary" size="sm" style={{ marginTop: '4px' }}>
+            <Text color="secondary" size="sm" className="mt-4">
               Brand identity for {entityName}
             </Text>
             <Text color="secondary" size="xs" style={{ marginTop: '8px' }}>
@@ -546,7 +541,7 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
 
         {/* Edit button - enabled based on permissions */}
         {profile.can_edit && (
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className="flex-row gap-8">
             {onGenerateTokens && (
               <Button
                 variant="outline"
@@ -571,19 +566,14 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
 
       {/* Stats */}
       <div
-        style={{
-          display: 'flex',
-          gap: '32px',
-          marginTop: '24px',
-          paddingTop: '24px',
-          borderTop: '1px solid var(--app-border)',
-        }}
+        className="flex-row gap-32 mt-24 border-top"
+        style={{ paddingTop: '24px' }}
       >
         <div>
           <Text size="xs" color="secondary" weight="bold" style={{ textTransform: 'uppercase' }}>
             Design Tokens
           </Text>
-          <Text weight="bold" size="xl" style={{ marginTop: '4px' }}>
+          <Text weight="bold" size="xl" className="mt-4">
             {profile.token_count || profile.tokens?.length || 0}
           </Text>
         </div>
@@ -591,7 +581,7 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
           <Text size="xs" color="secondary" weight="bold" style={{ textTransform: 'uppercase' }}>
             Brand Assets
           </Text>
-          <Text weight="bold" size="xl" style={{ marginTop: '4px' }}>
+          <Text weight="bold" size="xl" className="mt-4">
             {profile.asset_count || profile.assets?.length || 0}
           </Text>
         </div>
@@ -599,7 +589,7 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
           <Text size="xs" color="secondary" weight="bold" style={{ textTransform: 'uppercase' }}>
             Created
           </Text>
-          <Text weight="bold" size="sm" style={{ marginTop: '8px' }}>
+          <Text weight="bold" size="sm" className="mt-8">
             {new Date(profile.created_at).toLocaleDateString('nl-NL', {
               year: 'numeric',
               month: 'short',
@@ -619,7 +609,7 @@ function EmptyState({ entityName, entityType, onCreateProfile }: {
   onCreateProfile?: () => void;
 }) {
   return (
-    <Card style={{ padding: '48px', textAlign: 'center' }}>
+    <Card className="text-center" style={{ padding: '48px' }}>
       <div
         style={{
           width: '80px',
@@ -635,7 +625,7 @@ function EmptyState({ entityName, entityType, onCreateProfile }: {
         <Palette size={36} style={{ opacity: 0.4 }} />
       </div>
       <Text weight="bold" size="lg">No Brand Profile</Text>
-      <Text color="secondary" style={{ marginTop: '8px', maxWidth: '400px', margin: '8px auto 0' }}>
+      <Text color="secondary" className="mt-8 mx-auto" style={{ maxWidth: '400px' }}>
         {entityName} doesn't have a brand identity configured yet.
         {entityType === 'organisation'
           ? ' Create a brand profile to define colors, typography, and visual assets.'
@@ -822,9 +812,9 @@ export default function BrandIdentityPage({
   // Loading state
   if (loading) {
     return (
-      <div style={{ padding: '48px', textAlign: 'center' }}>
+      <div className="text-center" style={{ padding: '48px' }}>
         <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} />
-        <Text color="secondary" style={{ marginTop: '16px' }}>Loading brand identity...</Text>
+        <Text color="secondary" className="mt-16">Loading brand identity...</Text>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
@@ -833,7 +823,7 @@ export default function BrandIdentityPage({
   // Error state
   if (error) {
     return (
-      <Card style={{ padding: '24px' }}>
+      <Card className="p-24">
         <Alert variant="error">
           <AlertCircle size={16} />
           {error}

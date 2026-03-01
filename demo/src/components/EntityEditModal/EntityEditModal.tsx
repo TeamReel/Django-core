@@ -135,14 +135,11 @@ function TokenEditor({
 
   return (
     <div
+      className="grid gap-8 p-8 rounded-6"
       style={{
-        display: 'grid',
         gridTemplateColumns: '1fr 120px 1fr auto',
-        gap: '8px',
         alignItems: 'center',
-        padding: '8px',
         backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-        borderRadius: '6px',
       }}
     >
       <input
@@ -287,8 +284,8 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
   };
 
   return (
-    <div style={{ display: 'grid', gap: '16px' }}>
-      <label style={{ display: 'grid', gap: '6px' }}>
+    <div className="grid gap-16">
+      <label className="grid gap-6">
         <Text size="sm" weight="bold">{label.singular} Name</Text>
         <input
           type="text"
@@ -308,7 +305,7 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
       </label>
 
       {entityType === 'organisation' && (
-        <label style={{ display: 'grid', gap: '6px' }}>
+        <label className="grid gap-6">
           <Text size="sm" weight="bold">Slug</Text>
           <input
             type="text"
@@ -329,7 +326,7 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
         </label>
       )}
 
-      <label style={{ display: 'grid', gap: '6px' }}>
+      <label className="grid gap-6">
         <Text size="sm" weight="bold">Description</Text>
         <textarea
           value={formData.description || ''}
@@ -351,7 +348,7 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
 
       {/* Logo Upload - only for clubs and teams */}
       {(entityType === 'club' || entityType === 'team') && (
-        <div style={{ display: 'grid', gap: '6px' }}>
+        <div className="grid gap-6">
           <Text size="sm" weight="bold">Logo</Text>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
             <div
@@ -427,7 +424,7 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
 
       {/* Default Location - only for clubs and teams */}
       {(entityType === 'club' || entityType === 'team') && (
-        <label style={{ display: 'grid', gap: '6px' }}>
+        <label className="grid gap-6">
           <Text size="sm" weight="bold">Default Match Location</Text>
           <input
             type="text"
@@ -522,7 +519,7 @@ function BrandTab({
 
   if (!brandProfile) {
     return (
-      <div style={{ padding: '32px', textAlign: 'center' }}>
+      <div className="p-32 text-center">
         <Palette size={48} style={{ opacity: 0.3, marginBottom: '16px' }} />
         <Text weight="bold">No Brand Profile</Text>
         <Text color="secondary" size="sm" style={{ marginTop: '8px' }}>
@@ -537,13 +534,9 @@ function BrandTab({
   }
 
   return (
-    <div style={{ display: 'grid', gap: '16px' }}>
+    <div className="grid gap-16">
       <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
+        className="flex-between"
       >
         <div>
           <Text weight="bold">{brandProfile.name}</Text>
@@ -579,11 +572,9 @@ function BrandTab({
 
       {tokens.length === 0 && newTokens.length === 0 && (
         <div
+          className="p-24 text-center rounded-8"
           style={{
-            padding: '24px',
-            textAlign: 'center',
             border: '1px dashed var(--app-border)',
-            borderRadius: '8px',
           }}
         >
           <Text color="secondary">No design tokens yet</Text>
@@ -595,11 +586,11 @@ function BrandTab({
 
       {/* Assets preview */}
       {brandProfile.assets && brandProfile.assets.length > 0 && (
-        <div style={{ marginTop: '16px' }}>
+        <div className="mt-16">
           <Text size="sm" weight="bold" style={{ marginBottom: '8px' }}>
             Brand Assets ({brandProfile.assets.length})
           </Text>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="flex-row gap-8 flex-wrap">
             {brandProfile.assets.map((asset) => (
               <Badge key={asset.id} variant="default">
                 {asset.asset_type}
@@ -953,38 +944,26 @@ export default function EntityEditModal({
       aria-modal="true"
     >
       <div
+        className="bg-surface rounded-12 max-w-800 flex-col"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          borderRadius: '12px',
-          maxWidth: '800px',
           width: '95%',
           maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--app-border)',
-          }}
+          className="flex-between border-bottom"
+          style={{ padding: '16px 20px' }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex-row gap-12">
             <div
+              className="flex-center rounded-8"
               style={{
                 width: '40px',
                 height: '40px',
-                borderRadius: '8px',
                 background: 'var(--app-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 color: 'white',
               }}
             >
@@ -1001,13 +980,8 @@ export default function EntityEditModal({
           </div>
           <button
             onClick={() => !saving && onClose()}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '8px',
-              color: 'var(--app-text-secondary)',
-            }}
+            className="bg-transparent border-none cursor-pointer p-8"
+            style={{ color: 'var(--app-text-secondary)' }}
             aria-label="Close"
           >
             <X size={20} />
@@ -1024,10 +998,8 @@ export default function EntityEditModal({
         >
           {/* Sidebar Tabs (Vertical) */}
           <div
+            className="flex-col gap-4"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '4px',
               padding: '16px 12px',
               borderRight: '1px solid var(--app-border)',
               background: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
@@ -1064,16 +1036,10 @@ export default function EntityEditModal({
           </div>
 
           {/* Content */}
-          <div
-            style={{
-              flex: 1,
-              overflow: 'auto',
-              padding: '20px',
-            }}
-          >
+          <div className="flex-1 overflow-auto p-20">
             {/* Loading */}
             {loading && (
-              <div style={{ padding: '32px', textAlign: 'center' }}>
+              <div className="p-32 text-center">
                 <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} />
                 <Text color="secondary" style={{ marginTop: '12px' }}>
                   Loading...
@@ -1083,13 +1049,13 @@ export default function EntityEditModal({
 
             {/* Alerts */}
             {error && (
-              <Alert variant="error" style={{ marginBottom: '16px' }}>
+              <Alert variant="error" className="mb-16">
                 <AlertCircle size={16} />
                 {error}
               </Alert>
             )}
             {success && (
-              <Alert variant="success" style={{ marginBottom: '16px' }}>
+              <Alert variant="success" className="mb-16">
                 <CheckCircle size={16} />
                 {success}
               </Alert>
@@ -1125,12 +1091,9 @@ export default function EntityEditModal({
 
         {/* Footer */}
         <div
+          className="flex-between border-top"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
             padding: '16px 20px',
-            borderTop: '1px solid var(--app-border)',
             background: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
           }}
         >
@@ -1141,7 +1104,7 @@ export default function EntityEditModal({
               </Text>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className="flex-row gap-8">
             <Button variant="ghost" onClick={onClose} disabled={saving}>
               Cancel
             </Button>

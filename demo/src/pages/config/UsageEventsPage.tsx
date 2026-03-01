@@ -380,7 +380,7 @@ export const UsageEventsPage: React.FC = () => {
           )
         ]}
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex-row gap-12">
             {/* Demo Helper: Show current mode */}
             <div style={{
               fontSize: '11px',
@@ -446,7 +446,7 @@ export const UsageEventsPage: React.FC = () => {
 
       <PageContent>
         {/* Filters */}
-        <Card className="mb-4" style={{ minWidth: 0 }}>
+        <Card className="mb-4 min-w-0">
           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', flexWrap: 'wrap' }}>
             <div style={{ minWidth: '200px', flex: '0 0 200px' }}>
               <label className="block text-sm font-medium mb-1">Event Type</label>
@@ -598,7 +598,7 @@ export const UsageEventsPage: React.FC = () => {
           )}
 
           <Card className="mb-4">
-            <div style={{ padding: '24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div className="p-24 flex-row gap-16">
               <Button
                 onClick={handleGenerateTestEvent}
                 disabled={generating || !currentOrganisation}
@@ -606,8 +606,7 @@ export const UsageEventsPage: React.FC = () => {
               >
                 {generating ? 'Generating...' : '🧪 Generate Test Usage Event'}
               </Button>
-              <span style={{ fontSize: '0.875rem', color: 'var(--app-muted-text)' }}>
-                Demo action: Creates a random usage event in the current context
+              <span className="fs-14 text-muted">
               </span>
             </div>
           </Card>
@@ -643,29 +642,24 @@ export const UsageEventsPage: React.FC = () => {
                 <tbody>
                   {events.map((event) => (
                     <tr key={event.id}>
-                      <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                      <td className="fs-sm whitespace-nowrap">
                         {formatTimestamp(event.timestamp)}
                       </td>
                       <td>
-                        <code style={{ fontSize: '0.85rem' }}>{event.event_type}</code>
+                        <code className="fs-sm">{event.event_type}</code>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td className="fs-sm">
                         {event.user_email || event.user || '-'}
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td className="fs-sm">
                         {event.organization_name || event.organization || '-'}
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td className="fs-sm">
                         {event.project_name || event.project || '-'}
                       </td>
                       <td style={{ fontSize: '0.75rem', maxWidth: '200px' }}>
                         {event.metadata && Object.keys(event.metadata).length > 0 ? (
-                          <code style={{
-                            display: 'block',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}>
+                          <code className="block truncate">
                             {JSON.stringify(event.metadata)}
                           </code>
                         ) : (
@@ -675,13 +669,9 @@ export const UsageEventsPage: React.FC = () => {
                       <td>
                         <button
                           onClick={() => setSelectedEvent(event)}
+                          className="px-8 py-4 fs-12 border-none cursor-pointer bg-transparent"
                           style={{
-                            padding: '4px 8px',
-                            fontSize: '12px',
                             color: '#007bff',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
                             textDecoration: 'underline',
                           }}
                         >
@@ -697,7 +687,7 @@ export const UsageEventsPage: React.FC = () => {
 
           {/* Pagination */}
           {!loading && events.length > 0 && (
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+            <div className="flex-center gap-12" style={{ marginTop: '20px' }}>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -709,7 +699,7 @@ export const UsageEventsPage: React.FC = () => {
               >
                 Previous
               </Button>
-              <span style={{ fontSize: '0.875rem', color: 'var(--app-muted-text)' }}>
+              <span className="fs-14 text-muted">
                 Page {page} of {Math.ceil(total / limit)} ({total} total events)
               </span>
               <Button
@@ -744,30 +734,17 @@ export const UsageEventsPage: React.FC = () => {
             onClick={() => setSelectedEvent(null)}
           >
             <div
-              style={{
-                backgroundColor: 'var(--app-surface)',
-                borderRadius: '8px',
-                maxWidth: '800px',
-                width: '90%',
-                maxHeight: '80vh',
-                overflow: 'auto',
-                padding: '24px',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              }}
+              className="bg-surface rounded-8 max-w-800 overflow-auto p-24" style={{ width: '90%', maxHeight: '80vh', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: 'var(--app-text)' }}>
+              <div className="flex-between" style={{ marginBottom: '20px' }}>
+                <h2 className="m-0 fs-18 fw-600 text-primary">
                   Usage Event Details
                 </h2>
                 <button
                   onClick={() => setSelectedEvent(null)}
+                  className="fs-24 border-none bg-transparent cursor-pointer text-primary"
                   style={{
-                    fontSize: '24px',
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer',
-                    color: 'var(--app-text)',
                     padding: '0 8px',
                   }}
                   aria-label="Close"
@@ -776,27 +753,27 @@ export const UsageEventsPage: React.FC = () => {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Event ID</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '14px', color: 'var(--app-text)' }}>{selectedEvent.id}</div>
+                  <div className="fs-12 text-muted mb-4">Event ID</div>
+                  <div className="fs-14 text-primary" style={{ fontFamily: 'monospace' }}>{selectedEvent.id}</div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Timestamp (ISO)</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '14px', color: 'var(--app-text)' }}>
+                  <div className="fs-12 text-muted mb-4">Timestamp (ISO)</div>
+                  <div className="fs-14 text-primary" style={{ fontFamily: 'monospace' }}>
                     {new Date(selectedEvent.timestamp).toISOString()}
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Event Type</div>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text)' }}>{selectedEvent.event_type}</div>
+                  <div className="fs-12 text-muted mb-4">Event Type</div>
+                  <div className="fs-14 text-primary">{selectedEvent.event_type}</div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>User</div>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text)' }}>
+                  <div className="fs-12 text-muted mb-4">User</div>
+                  <div className="fs-14 text-primary">
                     {selectedEvent.user_full_name || selectedEvent.user_email || selectedEvent.user || 'System'}
                     {selectedEvent.user_email && ` (${selectedEvent.user_email})`}
                   </div>
@@ -804,8 +781,8 @@ export const UsageEventsPage: React.FC = () => {
 
                 {selectedEvent.organization_name && (
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Organization</div>
-                    <div style={{ fontSize: '14px', color: 'var(--app-text)' }}>
+                    <div className="fs-12 text-muted mb-4">Organization</div>
+                    <div className="fs-14 text-primary">
                       {selectedEvent.organization_name}
                     </div>
                   </div>
@@ -813,8 +790,8 @@ export const UsageEventsPage: React.FC = () => {
 
                 {selectedEvent.project_name && (
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Project</div>
-                    <div style={{ fontSize: '14px', color: 'var(--app-text)' }}>
+                    <div className="fs-12 text-muted mb-4">Project</div>
+                    <div className="fs-14 text-primary">
                       {selectedEvent.project_name}
                     </div>
                   </div>
@@ -822,17 +799,10 @@ export const UsageEventsPage: React.FC = () => {
 
                 {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Metadata</div>
-                    <pre style={{
+                    <div className="fs-12 text-muted mb-4">Metadata</div>
+                    <pre className="fs-12 bg-surface-2 p-12 rounded-4 overflow-auto text-primary border" style={{
                       fontFamily: 'monospace',
-                      fontSize: '12px',
-                      backgroundColor: 'var(--app-surface-2)',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      overflow: 'auto',
                       maxHeight: '300px',
-                      color: 'var(--app-text)',
-                      border: '1px solid var(--app-border)',
                     }}>
                       {JSON.stringify(selectedEvent.metadata, null, 2)}
                     </pre>

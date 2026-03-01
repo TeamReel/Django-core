@@ -45,28 +45,19 @@ export function MembersStep({
   appBackgrounds,
 }: MembersStepProps) {
   return (
-    <div style={{ gap: '24px', display: 'flex', flexDirection: 'column' }}>
+    <div className="flex-col gap-24">
 
       {/* Lineup Options — Formation & Player Style */}
       {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
-        <div style={{
-          border: '1px solid var(--app-border, #e5e7eb)',
-          borderRadius: 12,
-          overflow: 'hidden',
-          background: 'var(--app-surface, white)',
-        }}>
+        <div className="border rounded-12 overflow-hidden bg-surface">
           {/* Section header */}
-          <div style={{
-            padding: '14px 20px',
-            borderBottom: '1px solid var(--app-border, #e5e7eb)',
-            background: 'var(--app-surface-2, #f3f4f6)',
-          }}>
-            <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--app-text, #111)' }}>
+          <div className="border-bottom bg-surface-2" style={{ padding: '14px 20px' }}>
+            <h4 className="fw-700 m-0 text-primary" style={{ fontSize: 15 }}>
               Lineup opties
             </h4>
           </div>
 
-          <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div className="p-16 flex-col gap-16">
 
             {/* Formation selector */}
             <FormationPicker
@@ -78,11 +69,8 @@ export function MembersStep({
             {/* Closeup style selector — not for poster */}
             {!(selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
-                <label style={{
-                  display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 10,
-                  color: 'var(--app-text-muted, #6b7280)', textTransform: 'uppercase', letterSpacing: '0.05em',
-                }}>Weergave Stijl</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Weergave Stijl</label>
+                <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
                   {[
                     { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: 'P' },
                     { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: 'B' },
@@ -109,8 +97,8 @@ export function MembersStep({
                           color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                         }}>{opt.icon}</div>
                         <div>
-                          <div style={{ fontWeight: 600, fontSize: 13 }}>{opt.label}</div>
-                          <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginTop: 1 }}>{opt.desc}</div>
+                        <div className="fw-600 fs-13">{opt.label}</div>
+                        <div className="fs-11 text-muted" style={{ marginTop: 1 }}>{opt.desc}</div>
                         </div>
                         {isSelected && (
                           <div style={{
@@ -130,10 +118,7 @@ export function MembersStep({
             {/* Animation style selector — only for video */}
             {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
-                <label style={{
-                  display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 10,
-                  color: 'var(--app-text-muted, #6b7280)', textTransform: 'uppercase', letterSpacing: '0.05em',
-                }}>Animatie Stijl</label>
+                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Animatie Stijl</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {[
                     { value: 'slide_up', label: 'Omhoog' },
@@ -157,7 +142,7 @@ export function MembersStep({
                           color: 'var(--app-text, #111)', cursor: 'pointer', transition: 'all 0.15s ease',
                         }}
                       >
-                        <span style={{ fontSize: 13, fontWeight: 600 }}>{opt.label}</span>
+                        <span className="fs-13 fw-600">{opt.label}</span>
                         {isSelected && (
                           <div style={{
                             position: 'absolute', top: 4, right: 4,
@@ -176,10 +161,7 @@ export function MembersStep({
             {/* Intro style selector — per line vs per player — only for video */}
             {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
-                <label style={{
-                  display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 10,
-                  color: 'var(--app-text-muted, #6b7280)', textTransform: 'uppercase', letterSpacing: '0.05em',
-                }}>Introductie Stijl</label>
+                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Introductie Stijl</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
                     { value: 'per_line', label: 'Per linie', icon: 'L', desc: 'Hele linie tegelijk' },
@@ -207,7 +189,7 @@ export function MembersStep({
                           fontSize: 14, fontWeight: 700,
                           color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                         }}>{opt.icon}</div>
-                        <span style={{ fontSize: 12, fontWeight: 600 }}>{opt.label}</span>
+                        <span className="fs-12 fw-600">{opt.label}</span>
                         <span style={{ fontSize: 10, color: 'var(--app-text-muted, #6b7280)' }}>{opt.desc}</span>
                         {isSelected && (
                           <div style={{
@@ -227,11 +209,8 @@ export function MembersStep({
             {/* Background / Location selector */}
             {appBackgrounds.length > 0 && (
               <div>
-                <label style={{
-                  display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 10,
-                  color: 'var(--app-text-muted, #6b7280)', textTransform: 'uppercase', letterSpacing: '0.05em',
-                }}>Achtergrond / Locatie</label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
+                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Achtergrond / Locatie</label>
+                <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
                   {/* Default option */}
                   <button
                     onClick={() => setSelectedBackgroundUrl(null)}
@@ -244,7 +223,7 @@ export function MembersStep({
                     }}
                   >
                     <div style={{ width: '100%', aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>Auto</span>
+                      <span className="fs-14 fw-700 text-inverse">Auto</span>
                     </div>
                     <div style={{
                       padding: '4px 0', textAlign: 'center', fontWeight: 600, fontSize: 10,
@@ -320,12 +299,12 @@ export function MembersStep({
         const assetTypes = req.asset_types || [];
 
         return (
-          <div key={role} style={{ border: '1px solid var(--app-border, #e5e5e5)', borderRadius: '8px', padding: '16px', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <div style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: '1px solid var(--app-border, #e5e5e5)' }}>
-              <span style={{ fontWeight: 600, fontSize: '16px', color: 'var(--app-text, #1C355E)' }}>{renderRoleLabel(role)}</span>
+          <div key={role} className="border rounded-8 p-16" style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+            <div className="mb-12 border-bottom" style={{ paddingBottom: '12px' }}>
+              <span className="fw-600 fs-16 text-primary">{renderRoleLabel(role)}</span>
             </div>
 
-            <div style={{ gap: '8px', display: 'flex', flexDirection: 'column' }}>
+            <div className="flex-col gap-8">
               {Array.from({ length: req.count }).map((_, idx) => {
                 const currentSelection = selected[idx];
                 const currentMember = available.find(p => p.id === currentSelection);
@@ -350,8 +329,8 @@ export function MembersStep({
                 const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                 return (
-                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '100px 1fr', gap: '12px', alignItems: 'center' }}>
-                    <label style={{ fontSize: '14px', color: 'var(--app-text-secondary, #4b5563)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={positionLabel}>
+                  <div key={idx} className="grid gap-12" style={{ gridTemplateColumns: '100px 1fr', alignItems: 'center' }}>
+                    <label className="fs-14 text-secondary fw-500 truncate" title={positionLabel}>
                       {positionLabel}
                     </label>
                     <select
@@ -365,7 +344,7 @@ export function MembersStep({
                         }
                         setSelectedMembers({ ...selectedMembers, [role]: newSelected.filter(Boolean) });
                       }}
-                      style={{ width: '100%', paddingLeft: '12px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', border: '1px solid var(--app-border, #e5e5e5)', borderRadius: '6px', background: 'var(--app-surface, #ffffff)', fontSize: '14px' }}
+                      className="w-full px-12 py-8 border rounded-6 bg-surface fs-14"
                     >
                       <option value="">
                         {available.length === 0
@@ -424,13 +403,13 @@ export function MembersStep({
 
               {/* Eligible vs total summary */}
               {assetTypes.length > 0 && (
-                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--app-border, #e5e5e5)', fontSize: '12px', color: 'var(--app-text-muted, #6b7280)' }}>
+                <div className="mt-12 border-top fs-12 text-muted" style={{ paddingTop: '12px' }}>
                   {(() => {
                     const eligible = available.filter(p => memberHasRequiredAssets(p, assetTypes, role)).length;
                     const total = available.length;
                     if (eligible === 0 && total > 0) {
                       return (
-                        <span style={{ color: 'var(--app-error, #E63946)' }}>
+                        <span className="text-error">
                           Geen {role}s hebben de benodigde assets. Genereer eerst assets voor leden.
                         </span>
                       );

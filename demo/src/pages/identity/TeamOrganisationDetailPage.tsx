@@ -802,7 +802,7 @@ export default function TeamOrganisationDetailPage() {
             },
           ]}
           actions={
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="flex-row gap-8 flex-wrap">
               {!isPlayer && (
               <select
                 value={(team as any)?.team_type || 'regular'}
@@ -941,11 +941,11 @@ export default function TeamOrganisationDetailPage() {
               {overviewMembersError && <Alert variant="error">{overviewMembersError}</Alert>}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card style={{ padding: 16 }}>
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <Card className="p-16">
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Seasons{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         ({hierarchyLoading ? '…' : hierarchySeasons.length})
                       </span>
                     </div>
@@ -969,14 +969,14 @@ export default function TeamOrganisationDetailPage() {
                           <button
                             key={String((s as any)?.id)}
                             type="button"
-                            className="app-unstyled-button hover:underline"
+                            className="app-unstyled-button hover:underline text-left fw-600"
                             onClick={() => navigate(seasonPath)}
-                            style={{ textAlign: 'left', fontWeight: 600, color: '#60a5fa' }}
+                            style={{ color: '#60a5fa' }}
                           >
                             {String((s as any)?.name || 'Season')}
                           </button>
                         ) : (
-                          <div key={String((s as any)?.id)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                          <div key={String((s as any)?.id)} className="text-sm text-gray-900 fw-600">
                             {String((s as any)?.name || 'Season')}
                           </div>
                         );
@@ -985,11 +985,11 @@ export default function TeamOrganisationDetailPage() {
                   )}
                 </Card>
 
-                <Card style={{ padding: 16 }}>
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <Card className="p-16">
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Competitions{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         (
                         {hierarchyLoading
                           ? '…'
@@ -1027,14 +1027,14 @@ export default function TeamOrganisationDetailPage() {
                               <button
                                 key={String((comp as any)?.id)}
                                 type="button"
-                                className="app-unstyled-button hover:underline"
+                                className="app-unstyled-button hover:underline text-left fw-600"
                                 onClick={() => navigate(compPath)}
-                                style={{ textAlign: 'left', fontWeight: 600, color: '#60a5fa' }}
+                                style={{ color: '#60a5fa' }}
                               >
                                 {label}
                               </button>
                             ) : (
-                              <div key={String((comp as any)?.id)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                              <div key={String((comp as any)?.id)} className="text-sm text-gray-900 fw-600">
                                 {label}
                               </div>
                             );
@@ -1044,11 +1044,11 @@ export default function TeamOrganisationDetailPage() {
                     })()}
                 </Card>
 
-                <Card style={{ padding: 16 }}>
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <Card className="p-16">
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Members{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         ({overviewMembersLoading ? '…' : overviewMembersCount ?? '—'})
                       </span>
                     </div>
@@ -1072,9 +1072,9 @@ export default function TeamOrganisationDetailPage() {
                           <button
                             key={String(m.id)}
                             type="button"
-                            className="app-unstyled-button hover:underline"
+                            className="app-unstyled-button hover:underline text-left fw-600"
                             onClick={() => navigate(`/users/${encodeURIComponent(String(m.id))}`)}
-                            style={{ textAlign: 'left', fontWeight: 600, color: '#60a5fa' }}
+                            style={{ color: '#60a5fa' }}
                           >
                             {label}
                           </button>
@@ -1084,11 +1084,11 @@ export default function TeamOrganisationDetailPage() {
                   )}
                 </Card>
 
-                <Card style={{ padding: 16 }}>
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <Card className="p-16">
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Matches{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         (
                         {hierarchyLoading
                           ? '…'
@@ -1132,10 +1132,10 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'hierarchy' && teamIdForDirectoryLists && (
             <Card>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div className="flex-between gap-12">
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Seasons → competitions</div>
+                  <div className="fs-16 fw-700">Hierarchy</div>
+                  <div className="text-muted fs-13">Seasons → competitions</div>
                 </div>
                 <Input
                   value={hierarchySearch}
@@ -1145,21 +1145,21 @@ export default function TeamOrganisationDetailPage() {
               </div>
 
               {hierarchyError && (
-                <div style={{ marginTop: 12 }}>
+                <div className="mt-12">
                   <Alert variant="error">{hierarchyError}</Alert>
                 </div>
               )}
 
               {hierarchyLoading && hierarchySeasons.length === 0 ? (
-                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                <div className="text-sm text-gray-500 py-2 mt-12">
                   Loading hierarchy...
                 </div>
               ) : hierarchySeasons.length === 0 ? (
-                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                <div className="text-sm text-gray-500 py-2 mt-12">
                   No seasons found.
                 </div>
               ) : (
-                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="mt-12 flex-col gap-10">
                   {(() => {
                     const pillStyle: React.CSSProperties = {
                       display: 'inline-flex',
@@ -1215,42 +1215,35 @@ export default function TeamOrganisationDetailPage() {
                     return (
                       <div
                         key={String(season.id)}
+                        className="border bg-surface overflow-hidden"
                         style={{
-                          border: '1px solid var(--app-border)',
                           borderRadius: 10,
-                          background: 'var(--app-surface)',
-                          overflow: 'hidden',
                         }}
                       >
                         <div
+                          className="flex-between border-bottom bg-surface-2 gap-12"
                           style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
                             padding: '10px 12px',
-                            borderBottom: '1px solid var(--app-border)',
-                            background: 'var(--app-surface-2)',
-                            gap: 12,
                           }}
                         >
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                          <div className="flex-col gap-2 min-w-0">
                             {seasonPath ? (
                               <button
                                 type="button"
-                                className="app-unstyled-button hover:underline"
+                                className="app-unstyled-button hover:underline text-left fw-800 fs-14"
                                 onClick={() => navigate(seasonPath)}
-                                style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
+                                style={{ color: '#60a5fa' }}
                               >
                                 {String((season as any)?.name || 'Season')}
                               </button>
                             ) : (
-                              <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>
+                              <div className="fw-800 fs-14 text-primary">
                                 {String((season as any)?.name || 'Season')}
                               </div>
                             )}
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                             <span style={pillStyle}>Competitions: {competitionsAll.length}</span>
                             <span style={pillStyle}>Matches: {seasonMatches}</span>
                           </div>
@@ -1260,7 +1253,7 @@ export default function TeamOrganisationDetailPage() {
                           {competitions.length === 0 ? (
                             <div className="text-sm text-gray-500 py-2">No competitions.</div>
                           ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div className="flex-col gap-8">
                               {competitions.map((c) => {
                               const competitionKey = String((c as any)?.slug || (c as any)?.id || '').trim();
                               const competitionPath =
@@ -1273,22 +1266,22 @@ export default function TeamOrganisationDetailPage() {
 
                               return (
                                 <div key={String((c as any)?.id)} style={competitionRowStyle}>
-                                  <div style={{ minWidth: 0 }}>
+                                  <div className="min-w-0">
                                     {competitionPath ? (
                                       <button
                                         type="button"
-                                        className="app-unstyled-button hover:underline"
+                                        className="app-unstyled-button hover:underline text-left fw-700 fs-13"
                                         onClick={() => navigate(competitionPath)}
-                                        style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
+                                        style={{ color: '#60a5fa' }}
                                       >
                                         {String((c as any)?.name || 'Competition')}
                                       </button>
                                     ) : (
-                                      <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{String((c as any)?.name || 'Competition')}</div>
+                                      <div className="fw-700 fs-13 text-primary">{String((c as any)?.name || 'Competition')}</div>
                                     )}
                                   </div>
 
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                  <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                                     <span style={pillStyle}>Matches: {competitionMatches}</span>
                                   </div>
                                 </div>
@@ -1364,12 +1357,12 @@ export default function TeamOrganisationDetailPage() {
 
               <Card>
                 <div style={{ padding: '16px 16px 0 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-                    <span style={{ fontSize: 24 }}>👥</span>
-                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Member Media Matrix</h3>
+                  <div className="flex-row gap-12 mb-4">
+                    <span className="fs-24">👥</span>
+                    <h3 className="m-0 fs-16 fw-600">Member Media Matrix</h3>
                   </div>
                 </div>
-                <div style={{ padding: 16 }}>
+                <div className="p-16">
                   <MediaMatrixLoader
                     apiBaseUrl={apiBaseUrl}
                     teamId={team.slug || String(team.id)}

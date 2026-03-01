@@ -222,7 +222,7 @@ export const SecurityPage: React.FC = () => {
         />
         <PageContent>
           <Card>
-            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--app-text-muted)' }}>
+            <div className="text-center text-muted" style={{ padding: '32px 0' }}>
               Loading security data...
             </div>
           </Card>
@@ -269,7 +269,8 @@ export const SecurityPage: React.FC = () => {
               <select
                 value={currentOrgSlug}
                 onChange={handleOrgChange}
-                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                className="p-8 rounded-4"
+                style={{ border: '1px solid #ccc' }}
               >
                 <option value="">All Organisations</option>
                 {organisations.map(org => (
@@ -281,23 +282,23 @@ export const SecurityPage: React.FC = () => {
       />
       <PageContent>
         <Card data-testid="security-summary" style={{ marginBottom: '16px' }}>
-          <div style={{ padding: '24px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-              <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface)' }}>
-                <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Total Events</div>
-                <div style={{ fontSize: '30px', fontWeight: 'bold', color: 'var(--app-text)' }}>{security?.total_events || 0}</div>
+          <div className="p-24">
+            <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <div className="p-16 border rounded-8 bg-surface">
+                <div className="fs-14 text-muted">Total Events</div>
+                <div className="fw-700 text-primary" style={{ fontSize: '30px' }}>{security?.total_events || 0}</div>
               </div>
-              <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface)' }}>
-                <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Resolved</div>
-                <div style={{ fontSize: '30px', fontWeight: 'bold', color: 'var(--app-success)' }}>{security?.resolved_events || 0}</div>
+              <div className="p-16 border rounded-8 bg-surface">
+                <div className="fs-14 text-muted">Resolved</div>
+                <div className="fw-700 text-success" style={{ fontSize: '30px' }}>{security?.resolved_events || 0}</div>
               </div>
-              <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface)' }}>
-                <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Unresolved</div>
-                <div style={{ fontSize: '30px', fontWeight: 'bold', color: 'var(--app-warning)' }}>{unresolvedEvents}</div>
+              <div className="p-16 border rounded-8 bg-surface">
+                <div className="fs-14 text-muted">Unresolved</div>
+                <div className="fw-700 text-warning" style={{ fontSize: '30px' }}>{unresolvedEvents}</div>
               </div>
-              <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px', backgroundColor: 'var(--app-surface)' }}>
-                <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Critical</div>
-                <div style={{ fontSize: '30px', fontWeight: 'bold', color: 'var(--app-error)' }}>{criticalEvents}</div>
+              <div className="p-16 border rounded-8 bg-surface">
+                <div className="fs-14 text-muted">Critical</div>
+                <div className="fw-700 text-error" style={{ fontSize: '30px' }}>{criticalEvents}</div>
               </div>
             </div>
           </div>
@@ -305,29 +306,29 @@ export const SecurityPage: React.FC = () => {
 
         {security?.asvs_scorecard && (
           <Card data-testid="asvs-scorecard" style={{ marginBottom: '16px' }}>
-            <div style={{ padding: '24px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', marginTop: 0 }}>ASVS Scorecard</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Level 1 (Completeness)</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--app-primary)', marginTop: '8px' }}>
+            <div className="p-24">
+              <h3 className="fs-18 fw-600 m-0 mb-16">ASVS Scorecard</h3>
+              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+                <div className="p-16 border rounded-8">
+                  <div className="fs-14 text-muted">Level 1 (Completeness)</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-primary)' }}>
                     {security.asvs_scorecard.level1}%
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Level 2 (Security Controls)</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--app-success)', marginTop: '8px' }}>
+                <div className="p-16 border rounded-8">
+                  <div className="fs-14 text-muted">Level 2 (Security Controls)</div>
+                  <div className="fs-24 fw-700 mt-8 text-success">
                     {security.asvs_scorecard.level2}%
                   </div>
                 </div>
-                <div style={{ padding: '16px', border: '1px solid var(--app-border)', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>Level 3 (Advanced)</div>
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--app-primary)', marginTop: '8px' }}>
+                <div className="p-16 border rounded-8">
+                  <div className="fs-14 text-muted">Level 3 (Advanced)</div>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-primary)' }}>
                     {security.asvs_scorecard.level3}%
                   </div>
                 </div>
               </div>
-              <div style={{ marginTop: '16px', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '6px', fontSize: '13px', color: 'var(--app-link)' }}>
+              <div className="mt-16 p-12 bg-surface-2 rounded-6 fs-13 text-link">
                 <strong>What is this?</strong> The Application Security Verification Standard (ASVS) measures your security posture.
                 To improve your score, resolve the <strong>Open</strong> security violations listed below.
               </div>
@@ -337,15 +338,15 @@ export const SecurityPage: React.FC = () => {
 
         {security && (
           <Card data-testid="security-events">
-            <div style={{ padding: '24px' }}>
+            <div className="p-24">
               <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: '600', margin: '0 0 16px 0' }}>Recent Security Events</h3>
+                <h3 className="fs-18 fw-600 m-0 mb-16">Recent Security Events</h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px', border: '1px solid var(--app-border)' }}>
+                <div className="flex-col gap-12 p-16 bg-surface-2 rounded-8 border">
                   {/* Status Row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--app-text-muted)', minWidth: '60px' }}>Status:</span>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div className="flex-row gap-12">
+                    <span className="fs-13 fw-600 text-muted" style={{ minWidth: '60px' }}>Status:</span>
+                    <div className="flex-row flex-wrap gap-8">
                       {['all', 'open', 'resolved'].map(status => (
                         <FilterButton
                           key={status}
@@ -363,9 +364,9 @@ export const SecurityPage: React.FC = () => {
                   </div>
 
                   {/* Severity Row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--app-text-muted)', minWidth: '60px' }}>Severity:</span>
-                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div className="flex-row gap-12">
+                    <span className="fs-13 fw-600 text-muted" style={{ minWidth: '60px' }}>Severity:</span>
+                    <div className="flex-row flex-wrap gap-8">
                       {['all', 'critical', 'high', 'medium', 'low'].map(sev => (
                         <FilterButton
                           key={sev}
@@ -383,21 +384,21 @@ export const SecurityPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="flex-col gap-12">
                 {security.events.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-muted-text)', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
+                  <div className="text-center p-32 text-muted bg-surface-2 rounded-8">
                     No events found matching your filters.
                   </div>
                 ) : (
                   security.events.slice(0, 10).map(event => (
                   <div
                     key={event.id}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px', border: '1px solid var(--app-border)', borderRadius: '4px' }}
+                    className="flex-between p-12 border rounded-4"
                     data-testid={`event-${event.id}`}
                   >
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: '500' }}>{event.event_type}</span>
+                    <div className="flex-1">
+                      <div className="flex-row gap-8 mb-4">
+                        <span className="fw-500">{event.event_type}</span>
                         <Badge variant={getSeverityColor(event.severity)}>
                           {event.severity.toUpperCase()}
                         </Badge>
@@ -407,8 +408,8 @@ export const SecurityPage: React.FC = () => {
                           <Badge variant="error">Open</Badge>
                         )}
                       </div>
-                      <p style={{ fontSize: '14px', color: 'var(--app-text-muted)', margin: 0 }}>{event.description}</p>
-                      <p style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '4px', marginBottom: 0 }}>
+                      <p className="fs-14 text-muted m-0">{event.description}</p>
+                      <p className="fs-12 text-muted mt-4" style={{ marginBottom: 0 }}>
                         {new Date(event.timestamp).toLocaleString()}
                       </p>
                     </div>

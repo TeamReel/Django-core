@@ -317,8 +317,8 @@ function ClubKitsTab({
 
   if (loading) {
     return (
-      <Card style={{ padding: 24 }}>
-        <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
+      <Card className="p-24">
+        <div className="text-center text-muted">
           Loading kits...
         </div>
       </Card>
@@ -327,7 +327,7 @@ function ClubKitsTab({
 
   if (!brandProfileId) {
     return (
-      <Card style={{ padding: 24 }}>
+      <Card className="p-24">
         <Alert variant="warning">
           No brand profile found for this club. Create a brand profile on the Identity tab first to manage kits.
         </Alert>
@@ -337,19 +337,19 @@ function ClubKitsTab({
 
   return (
     <div className="space-y-6">
-      <Card style={{ padding: 24 }}>
-        <h3 style={{ marginTop: 0, marginBottom: 8 }}>Club Kits / Tenues</h3>
-        <p style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 24 }}>
+      <Card className="p-24">
+        <h3 className="m-0 mb-8">Club Kits / Tenues</h3>
+        <p className="text-muted fs-13 mb-24">
           Manage your club's kit designs for different roles and occasions.
         </p>
 
         {error && (
-          <Alert variant="error" style={{ marginBottom: 16 }}>
+          <Alert variant="error" className="mb-16">
             {error}
           </Alert>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        <div className="grid gap-20" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
           {KIT_TYPES.map((kitType) => {
             const kit = getKitForType(kitType.id);
             const imageUrl = getKitImageUrl(kit);
@@ -364,8 +364,8 @@ function ClubKitsTab({
                   backgroundColor: 'var(--app-surface)',
                 }}
               >
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>{kitType.label}</div>
-                <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginBottom: 16 }}>
+                <div className="fw-600 mb-4">{kitType.label}</div>
+                <div className="fs-12 text-muted mb-16">
                   {kitType.description}
                 </div>
 
@@ -383,32 +383,33 @@ function ClubKitsTab({
                   }}
                 >
                   {uploadingType === kitType.id ? (
-                    <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
-                      <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
-                      <div style={{ fontSize: 12 }}>Uploading...</div>
+                    <div className="text-center text-muted">
+                      <div className="mb-8" style={{ fontSize: 24 }}>⏳</div>
+                      <div className="fs-12">Uploading...</div>
                     </div>
                   ) : imageUrl ? (
                     <img
                       src={imageUrl}
                       alt={kitType.label}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      className="w-full h-full"
+                      style={{ objectFit: 'contain' }}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
                     />
                   ) : (
-                    <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
-                      <div style={{ fontSize: 48, opacity: 0.3, marginBottom: 8 }}>👕</div>
-                      <div style={{ fontSize: 12 }}>No image uploaded</div>
+                    <div className="text-center text-muted">
+                      <div className="mb-8" style={{ fontSize: 48, opacity: 0.3 }}>👕</div>
+                      <div className="fs-12">No image uploaded</div>
                     </div>
                   )}
                 </div>
 
-                <div style={{ display: 'flex', gap: 8 }}>
+                <div className="flex-row gap-8">
                   <Button
                     size="sm"
                     variant="outline"
-                    style={{ flex: 1 }}
+                    className="flex-1"
                     disabled={uploadingType === kitType.id}
                     onClick={() => triggerUpload(kitType.id)}
                   >
@@ -430,7 +431,7 @@ function ClubKitsTab({
                 </div>
 
                 {kit && (
-                  <div style={{ marginTop: 8, fontSize: 11, color: 'var(--app-muted-text)' }}>
+                  <div className="mt-8 fs-11 text-muted">
                     <strong>File:</strong> {kit.file_details?.name || 'Unknown'}
                   </div>
                 )}
@@ -444,18 +445,18 @@ function ClubKitsTab({
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          style={{ display: 'none' }}
+          className="hidden"
           onChange={handleFileSelect}
         />
       </Card>
 
-      <Card style={{ padding: 24 }}>
-        <h4 style={{ marginTop: 0, marginBottom: 8 }}>How to add kits</h4>
-        <p style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 12 }}>
+      <Card className="p-24">
+        <h4 className="m-0 mb-8">How to add kits</h4>
+        <p className="text-muted fs-13 mb-12">
           Kit images should be high-quality photos or renders showing the complete kit design.
           Recommended image size: 600x800 pixels (3:4 aspect ratio).
         </p>
-        <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--app-muted-text)', fontSize: 13 }}>
+        <ul className="m-0 text-muted fs-13" style={{ paddingLeft: 20 }}>
           <li>Use PNG or JPEG format for best quality</li>
           <li>Include front view of the full kit (shirt, shorts, socks)</li>
           <li>Keep background transparent or neutral for cleaner display</li>
@@ -1423,7 +1424,7 @@ export default function ClubOrganisationDetailPage() {
             },
           ]}
           actions={
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+            <div className="flex-row flex-wrap gap-8">
               {(() => {
                 const isActive = club && activeContext?.club && (
                   String(activeContext.club.id) === String(club.id) ||
@@ -1526,11 +1527,11 @@ export default function ClubOrganisationDetailPage() {
               {overviewError && <Alert variant="error">{overviewError}</Alert>}
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card style={{ padding: 16 }}>
+                <Card className="p-16">
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
                     <div className="text-sm font-semibold text-gray-900">
                       Teams{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         ({overviewLoading ? '…' : overviewCounts ? overviewCounts.teams : '—'})
                       </span>
                     </div>
@@ -1574,11 +1575,11 @@ export default function ClubOrganisationDetailPage() {
                   )}
                 </Card>
 
-                <Card style={{ padding: 16 }}>
+                <Card className="p-16">
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
                     <div className="text-sm font-semibold text-gray-900">
                       Seasons{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         ({overviewLoading ? '…' : overviewCounts ? overviewCounts.seasons : '—'})
                       </span>
                     </div>
@@ -1601,11 +1602,11 @@ export default function ClubOrganisationDetailPage() {
                   )}
                 </Card>
 
-                <Card style={{ padding: 16 }}>
+                <Card className="p-16">
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
                     <div className="text-sm font-semibold text-gray-900">
                       Members{' '}
-                      <span className="text-gray-500" style={{ fontWeight: 600 }}>
+                      <span className="text-gray-500 fw-600">
                         ({overviewLoading ? '…' : overviewCounts ? overviewCounts.members : '—'})
                       </span>
                     </div>
@@ -1640,10 +1641,10 @@ export default function ClubOrganisationDetailPage() {
                   )}
                 </Card>
 
-                <Card style={{ padding: 16 }}>
+                <Card className="p-16">
                   <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
                     <div className="text-sm font-semibold text-gray-900">
-                      Matches <span className="text-gray-500" style={{ fontWeight: 600 }}>(—)</span>
+                      Matches <span className="text-gray-500 fw-600">(—)</span>
                     </div>
                     <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('matches'))}>
                       View all
@@ -1677,10 +1678,10 @@ export default function ClubOrganisationDetailPage() {
 
           {activeTabFromUrl === 'hierarchy' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
             <Card>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div className="flex-between" style={{ gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>Teams → seasons</div>
+                  <div className="fs-16 fw-700">Hierarchy</div>
+                  <div className="text-muted fs-13">Teams → seasons</div>
                 </div>
                 <Input
                   value={hierarchySearch}
@@ -1690,25 +1691,25 @@ export default function ClubOrganisationDetailPage() {
               </div>
 
               {hierarchyError && (
-                <div style={{ marginTop: 12 }}>
+                  <div className="mt-12">
                   <Alert variant="error">{hierarchyError}</Alert>
                 </div>
               )}
 
               {hierarchyLoading && hierarchyTeams.length === 0 ? (
-                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                <div className="text-sm text-gray-500 py-2 mt-12">
                   Loading hierarchy...
                 </div>
               ) : hierarchyTeams.length === 0 ? (
-                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                <div className="text-sm text-gray-500 py-2 mt-12">
                   No teams found.
                 </div>
               ) : visibleHierarchyTeams.length === 0 ? (
-                <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+                <div className="text-sm text-gray-500 py-2 mt-12">
                   No teams found.
                 </div>
               ) : (
-                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="mt-12 flex-col gap-10">
                   {(() => {
                     const pillStyle: React.CSSProperties = {
                       display: 'inline-flex',
@@ -1755,11 +1756,11 @@ export default function ClubOrganisationDetailPage() {
                               gap: 12,
                             }}
                           >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                              <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>{club?.name || 'Club'}</div>
+                            <div className="flex-col gap-2 min-w-0">
+                              <div className="fw-800 fs-14 text-primary">{club?.name || 'Club'}</div>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                            <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                               <span style={pillStyle}>Teams: {hierarchyTotals.teamsCount}</span>
                               <span style={pillStyle}>Members: {hierarchyTotals.membersCount}</span>
                               <span style={pillStyle}>Seasons: {hierarchyTotals.seasonsCount}</span>
@@ -1807,22 +1808,22 @@ export default function ClubOrganisationDetailPage() {
                                   gap: 12,
                                 }}
                               >
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                                <div className="flex-col gap-2 min-w-0">
                                   {teamPath ? (
                                     <button
                                       type="button"
-                                      className="app-unstyled-button hover:underline"
+                                      className="app-unstyled-button hover:underline text-left fw-800 fs-14"
                                       onClick={() => navigate(teamPath)}
-                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
+                                      style={{ color: '#60a5fa' }}
                                     >
                                       {team.name}
                                     </button>
                                   ) : (
-                                    <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>{team.name}</div>
+                                    <div className="fw-800 fs-14 text-primary">{team.name}</div>
                                   )}
                                 </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                                   <span style={pillStyle}>Members: {membersCount}</span>
                                   <span style={pillStyle}>Seasons: {seasonsAll.length}</span>
                                   <span style={pillStyle}>Competitions: {competitionsCount}</span>
@@ -1844,7 +1845,7 @@ export default function ClubOrganisationDetailPage() {
                                 {seasons.length === 0 ? (
                                   <div className="text-sm text-gray-500 py-2">No seasons.</div>
                                 ) : (
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                  <div className="flex-col gap-8">
                                     {seasons.map((s) => {
                                       const seasonKey = String((s as any)?.slug || (s as any)?.id || '').trim();
                                       const seasonPath =
@@ -1858,24 +1859,24 @@ export default function ClubOrganisationDetailPage() {
 
                                       return (
                                         <div key={String((s as any)?.id)} style={seasonRowStyle}>
-                                          <div style={{ minWidth: 0 }}>
+                                          <div className="min-w-0">
                                             {seasonPath ? (
                                               <button
                                                 type="button"
-                                                className="app-unstyled-button hover:underline"
+                                                className="app-unstyled-button hover:underline text-left fw-700 fs-13"
                                                 onClick={() => navigate(seasonPath)}
-                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
+                                                style={{ color: '#60a5fa' }}
                                               >
                                                 {String((s as any)?.name || 'Season')}
                                               </button>
                                             ) : (
-                                              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>
+                                              <div className="fw-700 fs-13 text-primary">
                                                 {String((s as any)?.name || 'Season')}
                                               </div>
                                             )}
                                           </div>
 
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                          <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                                             <span style={pillStyle}>Competitions: {seasonCompetitions}</span>
                                             <span style={pillStyle}>Matches: {seasonMatches}</span>
                                           </div>

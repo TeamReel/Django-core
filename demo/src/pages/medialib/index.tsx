@@ -282,94 +282,54 @@ function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: () => voi
       role="dialog"
       aria-modal="true"
       onClick={onClose}
+      className="flex-center p-24"
       style={{
         position: 'fixed',
         inset: 0,
         backgroundColor: 'rgba(0,0,0,0.6)',
         zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 24,
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="flex-col bg-surface border rounded-12 overflow-hidden"
         style={{
           width: 'min(1000px, 100%)',
           maxHeight: '85vh',
-          backgroundColor: 'var(--app-surface)',
-          border: '1px solid var(--app-border)',
-          borderRadius: 12,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
         }}
       >
-        <div style={{
-          padding: 12,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          borderBottom: '1px solid var(--app-border)',
-        }}>
-          <div style={{ minWidth: 0 }}>
-            <Text weight="bold" size="sm" style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}>
+        <div className="p-12 flex-between gap-12 border-bottom">
+          <div className="min-w-0">
+            <Text weight="bold" size="sm" className="truncate">
               {item.title}
             </Text>
             {item.subtitle && (
-              <Text size="xs" color="secondary" style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}>
+              <Text size="xs" color="secondary" className="truncate">
                 {item.subtitle}
               </Text>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="flex-row gap-8">
             {item.linkHref && (
               <Link
                 to={item.linkHref}
-                style={{
-                  fontSize: 12,
-                  color: 'var(--color-primary, #2563eb)',
-                  textDecoration: 'none',
-                }}
+                className="fs-12 text-link"
+                style={{ textDecoration: 'none' }}
               >
                 Open asset pagina
               </Link>
             )}
             <button
               onClick={onClose}
-              style={{
-                border: '1px solid var(--app-border)',
-                background: 'transparent',
-                borderRadius: 8,
-                padding: '6px 10px',
-                cursor: 'pointer',
-                color: 'var(--app-text)',
-                fontSize: 12,
-              }}
+              className="border bg-transparent rounded-8 cursor-pointer fs-12 text-primary"
+              style={{ padding: '6px 10px' }}
             >
               Sluiten
             </button>
           </div>
         </div>
 
-        <div style={{
-          flex: 1,
-          backgroundColor: 'var(--app-bg)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 12,
-        }}>
+        <div className="flex-1 bg-primary flex-center p-12">
           {item.url ? (
             item.isVideo ? (
               <video
@@ -407,12 +367,11 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
   const linkHref = buildBrandAssetPageHref(asset, orgSlugOrId);
 
   return (
-    <Card style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Card className="p-0 overflow-hidden flex-col">
       {/* Thumbnail */}
-      <div style={{
-        height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <div className="flex-center overflow-hidden relative" style={{
+        height: 180,
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
-        overflow: 'hidden', position: 'relative',
         cursor: asset.url ? 'pointer' : 'default',
       }}
       onClick={() => {
@@ -468,19 +427,19 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
       </div>
 
       {/* Info */}
-      <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+      <div className="p-12 flex-col gap-6 flex-1">
         {/* Title: friendly name */}
-        <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Text weight="bold" size="sm" className="truncate">
           {friendlyAssetLabel(asset)}
         </Text>
 
         {/* Profile / Entity name */}
-        <Text size="xs" color="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Text size="xs" color="secondary" className="truncate">
           {asset.project_name || asset.profile_name || asset.organisation_name || '—'}
         </Text>
 
         {/* Badges row */}
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="flex-row flex-wrap gap-4">
           <Badge size="sm" variant="default">{CONTENT_TYPE_LABELS[contentType] || contentType}</Badge>
           {tags.map((t) => (
             <Badge
@@ -503,12 +462,8 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
           <Link
             to={linkHref}
             onClick={(e) => e.stopPropagation()}
-            style={{
-              fontSize: 12,
-              color: 'var(--color-primary, #2563eb)',
-              textDecoration: 'none',
-              marginTop: 2,
-            }}
+            className="fs-12 text-link"
+            style={{ textDecoration: 'none', marginTop: 2 }}
           >
             Open asset pagina
           </Link>
@@ -532,18 +487,18 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
 
 function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: string) => void }) {
   return (
-    <Card style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div style={{
-        height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    <Card className="p-0 overflow-hidden flex-col">
+      <div className="flex-center" style={{
+        height: 120,
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
       }}>
         <span style={{ fontSize: 40 }}>{getFileIcon(file.mime_type)}</span>
       </div>
-      <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-        <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div className="p-12 flex-col gap-6 flex-1">
+        <Text weight="bold" size="sm" className="truncate">
           {file.original_name || 'Naamloos bestand'}
         </Text>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="flex-row flex-wrap gap-4">
           <Badge size="sm" variant="default">{file.mime_type.split('/')[1]?.toUpperCase() || file.mime_type}</Badge>
           {file.is_public && <Badge size="sm" variant="primary">Publiek</Badge>}
         </div>
@@ -553,10 +508,11 @@ function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: stri
         </Text>
         <button
           onClick={() => onDownload(file.id)}
+          className="mt-4 fs-11 rounded-6 bg-transparent cursor-pointer"
           style={{
-            marginTop: 4, alignSelf: 'flex-start', fontSize: 11, padding: '4px 10px',
-            borderRadius: 6, border: '1px solid var(--app-border)', backgroundColor: 'transparent',
-            cursor: 'pointer', color: 'var(--app-text)',
+            alignSelf: 'flex-start', padding: '4px 10px',
+            border: '1px solid var(--app-border)',
+            color: 'var(--app-text)',
           }}
         >
           ⬇ Download
@@ -598,12 +554,11 @@ function MemberMediaCard({ item, orgSlugOrId, onPreview }: { item: {
   const friendlyType = assetTypeLabels[item.asset_type] || item.asset_type.replace('member_', '').replace(/_/g, ' ');
 
   return (
-    <Card style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+    <Card className="p-0 overflow-hidden flex-col">
       {/* Thumbnail */}
-      <div style={{
-        height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <div className="flex-center overflow-hidden relative" style={{
+        height: 180,
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
-        overflow: 'hidden', position: 'relative',
         cursor: item.url ? 'pointer' : 'default',
       }}
       onClick={() => {
@@ -656,14 +611,14 @@ function MemberMediaCard({ item, orgSlugOrId, onPreview }: { item: {
       </div>
 
       {/* Info */}
-      <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-        <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div className="p-12 flex-col gap-6 flex-1">
+        <Text weight="bold" size="sm" className="truncate">
           {item.member_name || item.name || 'Member Media'}
         </Text>
-        <Text size="xs" color="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Text size="xs" color="secondary" className="truncate">
           {item.project_name || '—'}
         </Text>
-        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <div className="flex-row flex-wrap gap-4">
           <Badge size="sm" variant="default">{friendlyType}</Badge>
           {tags.map((t) => (
             <Badge
@@ -681,12 +636,8 @@ function MemberMediaCard({ item, orgSlugOrId, onPreview }: { item: {
           <Link
             to={linkHref}
             onClick={(e) => e.stopPropagation()}
-            style={{
-              fontSize: 12,
-              color: 'var(--color-primary, #2563eb)',
-              textDecoration: 'none',
-              marginTop: 2,
-            }}
+            className="fs-12 text-link"
+            style={{ textDecoration: 'none', marginTop: 2 }}
           >
             Open asset pagina
           </Link>
@@ -1523,16 +1474,16 @@ const MediaLibraryPage: React.FC = () => {
 
   if (!orgId) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)', padding: 24 }}>
+      <div className="p-24 bg-primary" style={{ minHeight: '100vh' }}>
         <Alert variant="info">Selecteer een organisatie om de media library te bekijken.</Alert>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
+    <div className="bg-primary" style={{ minHeight: '100vh' }}>
       {/* Header */}
-      <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+      <div className="p-24 border-bottom bg-surface">
         <Stack direction="column" gap="1">
           <Text size="xl" weight="bold">Media Library</Text>
           <Text size="md" color="secondary">
@@ -1542,18 +1493,15 @@ const MediaLibraryPage: React.FC = () => {
       </div>
 
       {/* Toolbar: directory-style filters */}
-      <div style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
+      <div className="py-16 px-24 flex-row gap-12 flex-wrap border-bottom">
         {/* Search */}
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Zoeken..."
-          style={{
-            flex: 1, minWidth: 180, padding: '8px 12px', borderRadius: 6,
-            border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)',
-            fontSize: 13,
-          }}
+          className="flex-1 py-8 px-12 rounded-6 border bg-surface fs-13"
+          style={{ minWidth: 180 }}
         />
 
         {/* Organisation filter (only for superadmin) */}
@@ -1565,10 +1513,8 @@ const MediaLibraryPage: React.FC = () => {
               setSelectedClubId('');
               setSelectedTeamId('');
             }}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
-            }}
+            className="py-8 px-12 rounded-6 border bg-surface fs-13"
+            style={{ minWidth: 160 }}
           >
             <option value="">Federation: All</option>
             {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
@@ -1585,10 +1531,8 @@ const MediaLibraryPage: React.FC = () => {
               setSelectedClubId(e.target.value);
               setSelectedTeamId('');
             }}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
-            }}
+            className="py-8 px-12 rounded-6 border bg-surface fs-13"
+            style={{ minWidth: 160 }}
           >
             <option value="">Club: All</option>
             {[...clubs].sort((a, b) => a.name.localeCompare(b.name)).map((club) => (
@@ -1602,10 +1546,8 @@ const MediaLibraryPage: React.FC = () => {
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
-            style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160,
-            }}
+            className="py-8 px-12 rounded-6 border bg-surface fs-13"
+            style={{ minWidth: 160 }}
           >
             <option value="">Team: All</option>
             {[...filteredTeams].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
@@ -1619,19 +1561,19 @@ const MediaLibraryPage: React.FC = () => {
           variant="secondary"
           size="md"
           onClick={clearFilters}
-          style={{ marginLeft: 'auto' }}
+          className="ml-auto"
         >
           Clear
         </Button>
       </div>
 
       {/* Content area */}
-      <div style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+      <div className="p-24 mx-auto" style={{ maxWidth: 1400 }}>
         <Stack direction="column" gap="4">
 
           {/* Sub-tabs (content type chips) */}
           {activeLevel !== 'files' && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div className="flex-row flex-wrap gap-6">
               {SUB_TABS[activeLevel].map(({ key, label }) => {
                 const count = subTabCounts[key] || 0;
                 // Always show all sub-tabs so users see the available filters
@@ -1651,7 +1593,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* Kit type filter (shown when viewing tenue at club/team level or fullbody/closeup at member level) */}
           {((subFilter === 'kit' && (activeLevel === 'club' || activeLevel === 'team')) ||
             ((subFilter === 'member_fullbody' || subFilter === 'member_closeup') && activeLevel === 'member')) && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+            <div className="flex-row flex-wrap gap-6 mt-8">
               {KIT_TYPES.map(({ key, label }) => (
                 <FilterChip
                   key={key}
@@ -1665,7 +1607,7 @@ const MediaLibraryPage: React.FC = () => {
 
           {/* File type sub-filter chips (for files tab) */}
           {activeLevel === 'files' && (
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div className="flex-row flex-wrap gap-6">
               {SUB_TABS.files.map(({ key, label }) => {
                 const count = fileTypeCounts[key as keyof typeof fileTypeCounts] || 0;
                 // Always show all sub-tabs
@@ -1687,7 +1629,7 @@ const MediaLibraryPage: React.FC = () => {
 
           {/* Loading */}
           {loading && (
-            <div style={{ textAlign: 'center', padding: 48 }}>
+            <div className="text-center" style={{ padding: 48 }}>
               <Text color="secondary">Assets laden...</Text>
             </div>
           )}
@@ -1695,10 +1637,8 @@ const MediaLibraryPage: React.FC = () => {
           {/* Brand Assets Grid (org, club, team - not member or files) */}
           {activeLevel !== 'files' && activeLevel !== 'member' && !loading && (
             filteredBrandAssets.length > 0 ? (
-              <div style={{
-                display: 'grid',
+              <div className="grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: 16,
               }}>
                 {filteredBrandAssets.map((asset) => (
                   <AssetCard
@@ -1719,10 +1659,8 @@ const MediaLibraryPage: React.FC = () => {
           {/* Member Media Grid */}
           {activeLevel === 'member' && !loading && (
             filteredMemberMedia.length > 0 ? (
-              <div style={{
-                display: 'grid',
+              <div className="grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: 16,
               }}>
                 {filteredMemberMedia.map((item) => (
                   <MemberMediaCard
@@ -1743,10 +1681,8 @@ const MediaLibraryPage: React.FC = () => {
           {/* File Assets Grid */}
           {activeLevel === 'files' && !loading && (
             filteredFiles.length > 0 ? (
-              <div style={{
-                display: 'grid',
+              <div className="grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: 16,
               }}>
                 {filteredFiles.map((file) => (
                   <FileCard key={file.id} file={file} onDownload={handleDownload} />
@@ -1760,7 +1696,7 @@ const MediaLibraryPage: React.FC = () => {
           )}
 
           {/* Summary */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+          <div className="flex-between py-8">
             <Text size="xs" color="secondary">
               {activeLevel === 'files'
                 ? `${filteredFiles.length} van ${files.length} bestanden`
@@ -1818,10 +1754,10 @@ function FilterChip({ active, onClick, label, count }: {
 
 function EmptyState({ icon, message, sub }: { icon: string; message: string; sub: string }) {
   return (
-    <Card style={{ textAlign: 'center', padding: 48 }}>
-      <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.4 }}>{icon}</div>
+    <Card className="text-center" style={{ padding: 48 }}>
+      <div className="mb-8" style={{ fontSize: 32, opacity: 0.4 }}>{icon}</div>
       <Text color="secondary">{message}</Text>
-      <Text size="sm" color="secondary" style={{ marginTop: 4 }}>{sub}</Text>
+      <Text size="sm" color="secondary" className="mt-4">{sub}</Text>
     </Card>
   );
 }

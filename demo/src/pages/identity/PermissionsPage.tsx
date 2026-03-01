@@ -582,26 +582,24 @@ export const PermissionsPage: React.FC = () => {
         {/* Tab Content: Role Hierarchy */}
         {activeTab === 'hierarchy' && (
           <>
-            <Card className="mb-6" style={{ padding: '20px' }}>
+            <Card className="mb-6 p-20">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Role Hierarchy</h3>
+                  <h3 className="m-0 fs-18 fw-700">Role Hierarchy</h3>
                   <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
                     Higher roles generally include all permissions of the roles below.
                   </p>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="flex-row gap-8 flex-wrap">
                   <Badge variant="info">{expectedPermissionKeys.length} permissions</Badge>
                   {currentRoleKey ? <Badge variant="success">Current: {roleDescriptions[currentRoleKey]?.title ?? currentRoleKey}</Badge> : null}
                 </div>
               </div>
 
               <div
+                className="grid gap-12 mt-16"
                 style={{
-                  display: 'grid',
-                  gap: '12px',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-                  marginTop: '16px',
                 }}
               >
                 {Object.entries(roleDescriptions)
@@ -644,8 +642,8 @@ export const PermissionsPage: React.FC = () => {
                             </div>
 
                             <div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <div style={{ fontSize: '16px', fontWeight: 800 }}>{roleInfo.title}</div>
+                              <div className="flex-row gap-8 flex-wrap">
+                                <div className="fs-16 fw-800">{roleInfo.title}</div>
                                 {isCurrent ? <Badge variant="success">You</Badge> : null}
                                 {grantedCount != null ? <Badge variant="default">{grantedCount}/{total}</Badge> : null}
                               </div>
@@ -659,7 +657,7 @@ export const PermissionsPage: React.FC = () => {
                         </div>
 
                         {roleHighlights[roleKey]?.length ? (
-                          <div style={{ marginTop: '10px', display: 'grid', gap: '6px' }}>
+                          <div className="grid gap-6" style={{ marginTop: '10px' }}>
                             {roleHighlights[roleKey].map((line) => (
                               <div key={line} style={{ display: 'flex', gap: '8px', color: 'var(--app-muted-text)', fontSize: '0.85rem' }}>
                                 <span aria-hidden="true">•</span>
@@ -674,8 +672,8 @@ export const PermissionsPage: React.FC = () => {
               </div>
             </Card>
 
-            <Card style={{ padding: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Hierarchy Ladder</h3>
+            <Card className="p-20">
+              <h3 className="m-0 fs-18 fw-700">Hierarchy Ladder</h3>
               <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
                 Scopes flow from org → club → team, with increasing restrictions.
               </p>
@@ -702,12 +700,12 @@ export const PermissionsPage: React.FC = () => {
                         </div>
 
                         <div style={{ paddingBottom: isLast ? 0 : '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <div style={{ fontWeight: 800 }}>{roleInfo.title}</div>
+                          <div className="flex-row gap-8 flex-wrap">
+                            <div className="fw-800">{roleInfo.title}</div>
                             <span style={{ fontSize: '0.8rem', color: 'var(--app-muted-text)' }}>({roleInfo.scope})</span>
                             {isCurrent ? <Badge variant="success">You</Badge> : null}
                           </div>
-                          <div style={{ marginTop: '4px', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>{roleInfo.description}</div>
+                          <div className="mt-4 text-muted" style={{ fontSize: '0.9rem' }}>{roleInfo.description}</div>
                         </div>
                       </div>
                     );
@@ -835,7 +833,7 @@ export const PermissionsPage: React.FC = () => {
                               backgroundColor: 'var(--app-table-row-bg)',
                             }}
                           >
-                            <div style={{ fontWeight: 600 }}>{label}</div>
+                            <div className="fw-600">{label}</div>
                             {desc ? (
                               <div style={{ fontSize: '0.78rem', opacity: 0.75, marginTop: 2 }}>{desc}</div>
                             ) : null}

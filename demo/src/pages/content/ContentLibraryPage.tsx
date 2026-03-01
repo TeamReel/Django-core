@@ -233,16 +233,15 @@ function ContentCard({
 
   return (
     <Card
-      className="gallery-card"
-      style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+      className="gallery-card p-0 overflow-hidden flex-col cursor-pointer"
       onClick={() => onPreview?.(item)}
     >
-      <div className="gallery-card-inner" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div className="gallery-card-inner flex-col flex-1">
       {/* Thumbnail */}
-      <div className="gallery-card-thumb" style={{
-        height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      <div className="gallery-card-thumb flex-center overflow-hidden relative" style={{
+        height: 180,
         backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
-        overflow: 'hidden', position: 'relative', flexShrink: 0,
+        flexShrink: 0,
       }}>
         {url ? (
           isVideo ? (
@@ -296,26 +295,26 @@ function ContentCard({
       </div>
 
       {/* Info */}
-      <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-        <Text weight="bold" size="sm" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <div className="p-12 flex-col gap-6 flex-1">
+        <Text weight="bold" size="sm" className="truncate">
           {item.title || getAssetTypeLabel(normalizedType)}
         </Text>
 
         {/* Context: Club / Team / Activity */}
         {(clubName || teamName || projectName || activityTitle) && (
-          <div className="gallery-card-verbose" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="gallery-card-verbose flex-row flex-wrap gap-4">
             {clubName && (
-              <span style={{ fontSize: 11, color: 'var(--app-text-secondary)', display: 'flex', alignItems: 'center', gap: 2 }}>
+              <span className="flex-row gap-2 fs-11 text-secondary">
                 🏟️ {clubName}
               </span>
             )}
             {teamName && (
-              <span style={{ fontSize: 11, color: 'var(--app-text-secondary)', display: 'flex', alignItems: 'center', gap: 2 }}>
+              <span className="flex-row gap-2 fs-11 text-secondary">
                 👕 {teamName}
               </span>
             )}
             {!clubName && !teamName && projectName && (
-              <span style={{ fontSize: 11, color: 'var(--app-text-secondary)' }}>
+              <span className="fs-11 text-secondary">
                 {projectName}
               </span>
             )}
@@ -324,7 +323,7 @@ function ContentCard({
 
         {/* Activity / Match title */}
         {activityTitle && (
-          <Text size="xs" color="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <Text size="xs" color="secondary" className="truncate">
             {activityTitle}
           </Text>
         )}
@@ -343,7 +342,7 @@ function ContentCard({
               </span>
             )}
             {scoreHome !== undefined && scoreAway !== undefined && (
-              <span style={{ fontWeight: 700, color: 'var(--app-text-primary)' }}>
+              <span className="fw-700 text-primary">
                 {scoreHome} - {scoreAway}
               </span>
             )}
@@ -352,7 +351,7 @@ function ContentCard({
 
         {/* Tags */}
         {tags.length > 0 && (
-          <div className="gallery-card-verbose" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          <div className="gallery-card-verbose flex-row flex-wrap gap-4">
             {tags.slice(0, 3).map((tag, i) => (
               <span key={i} style={{
                 fontSize: 10, padding: '1px 6px', borderRadius: 6,
@@ -371,7 +370,7 @@ function ContentCard({
         )}
 
         {/* Metadata row */}
-        <div className="gallery-card-verbose" style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 'auto' }}>
+        <div className="gallery-card-verbose flex-row flex-wrap gap-4" style={{ marginTop: 'auto' }}>
           <Badge size="sm" variant="default">
             {item.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}
           </Badge>
@@ -390,7 +389,7 @@ function ContentCard({
         </Text>
 
         {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 4, marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--app-border)' }}>
+        <div className="mt-8 gap-4 border-top" style={{ display: 'flex', paddingTop: 8 }}>
           <button
             onClick={(e) => { e.stopPropagation(); onDownload?.(item); }}
             title="Download"
@@ -468,11 +467,11 @@ function FilterChip({ active, onClick, label, count }: {
 
 function EmptyState({ icon, message, sub, action }: { icon: string; message: string; sub: string; action?: React.ReactNode }) {
   return (
-    <Card style={{ textAlign: 'center', padding: 48 }}>
-      <div style={{ fontSize: 32, marginBottom: 8, opacity: 0.4 }}>{icon}</div>
+    <Card className="text-center" style={{ padding: 48 }}>
+      <div className="mb-8" style={{ fontSize: 32, opacity: 0.4 }}>{icon}</div>
       <Text color="secondary">{message}</Text>
-      <Text size="sm" color="secondary" style={{ marginTop: 4 }}>{sub}</Text>
-      {action && <div style={{ marginTop: 16 }}>{action}</div>}
+      <Text size="sm" color="secondary" className="mt-4">{sub}</Text>
+      {action && <div className="mt-16">{action}</div>}
     </Card>
   );
 }
@@ -501,7 +500,7 @@ function GalleryCreateContentButton() {
 
   if (!matchId) {
     return (
-      <span className="hide-mobile" style={{ fontSize: 12, color: 'var(--app-muted-text)', whiteSpace: 'nowrap' }}>
+      <span className="hide-mobile fs-12 text-muted whitespace-nowrap">
         Set a match active to create content
       </span>
     );
@@ -538,25 +537,23 @@ function GalleryCreateContentButton() {
             maxHeight: 'calc(100vh - 64px)', overflowY: 'auto',
             padding: '24px 20px',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--app-text)' }}>
+            <div className="flex-between mb-16">
+              <h3 className="m-0 fs-18 fw-700 text-primary">
                 Content aanmaken
               </h3>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                style={{
-                  background: 'none', border: 'none', fontSize: 20, cursor: 'pointer',
-                  color: 'var(--app-muted-text)', padding: 4, lineHeight: 1,
-                }}
+                className="bg-transparent border-none fs-20 cursor-pointer text-muted p-4"
+                style={{ lineHeight: 1 }}
               >
                 &times;
               </button>
             </div>
-            <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--app-muted-text)' }}>
+            <p className="m-0 mb-16 fs-13 text-muted">
               Kies het type content dat je wilt genereren voor de actieve wedstrijd.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div className="flex-col gap-8">
               {GALLERY_QUICK_TYPES.map((ct) => (
                 <button
                   key={ct.key}
@@ -575,8 +572,8 @@ function GalleryCreateContentButton() {
                 >
                   <span style={{ fontSize: 28, lineHeight: 1 }}>{ct.icon}</span>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--app-text)' }}>{ct.label}</div>
-                    <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginTop: 2 }}>{ct.desc}</div>
+                    <div className="fs-14 fw-600 text-primary">{ct.label}</div>
+                    <div className="fs-12 text-muted" style={{ marginTop: 2 }}>{ct.desc}</div>
                   </div>
                 </button>
               ))}
@@ -1059,8 +1056,8 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
     <div style={{ minHeight: embedded ? 'auto' : '100vh', backgroundColor: 'var(--app-bg)' }}>
       {/* Header - only show when not embedded */}
       {!embedded && (
-        <div style={{ padding: 24, borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div className="p-24 border-bottom bg-surface">
+          <div className="flex-between gap-12">
             <Stack direction="column" gap="1">
               <Text size="xl" weight="bold">Gallery</Text>
               <Text size="md" color="secondary">
@@ -1092,7 +1089,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       )}
 
       {/* Toolbar: directory-style filters — wrapped in MobileFilterSheet for mobile */}
-      <div className="gallery-toolbar" style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', borderBottom: '1px solid var(--app-border)' }}>
+      <div className="gallery-toolbar flex-row gap-12 flex-wrap border-bottom" style={{ padding: '16px 24px' }}>
         {/* Search — always visible */}
         <input
           type="text"
@@ -1118,7 +1115,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           }
         >
           {/* Sort dropdown */}
-          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Sortering</label>
+          <label className="fs-12 fw-600 text-muted">Sortering</label>
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
@@ -1136,7 +1133,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Organisation filter (only for superadmin) */}
           {isSuperAdmin && organisations.length > 1 && (
             <>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Federatie</label>
+              <label className="fs-12 fw-600 text-muted">Federatie</label>
               <select
                 value={selectedOrgId}
                 onChange={(e) => {
@@ -1162,7 +1159,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Club filter */}
           {clubs.length > 0 && (
             <>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Club</label>
+              <label className="fs-12 fw-600 text-muted">Club</label>
               <select
                 value={selectedClubId}
                 onChange={(e) => {
@@ -1187,7 +1184,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Team filter */}
           {filteredTeams.length > 0 && (
             <>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Team</label>
+              <label className="fs-12 fw-600 text-muted">Team</label>
               <select
                 value={selectedTeamId}
                 onChange={(e) => {
@@ -1211,7 +1208,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Season filter */}
           {seasons.length > 0 && (
             <>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Seizoen</label>
+              <label className="fs-12 fw-600 text-muted">Seizoen</label>
               <select
                 value={selectedSeasonId}
                 onChange={(e) => {
@@ -1234,7 +1231,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Match filter (only show on match tab) */}
           {activeLevel === 'match' && matches.length > 0 && (
             <>
-              <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-muted-text)' }}>Wedstrijd</label>
+              <label className="fs-12 fw-600 text-muted">Wedstrijd</label>
               <select
                 value={selectedMatchId}
                 onChange={(e) => setSelectedMatchId(e.target.value)}
@@ -1267,12 +1264,12 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       </div>
 
       {/* Content area */}
-      <div className="gallery-content" style={{ padding: 24, maxWidth: 1400, margin: '0 auto' }}>
+      <div className="gallery-content p-24 mx-auto" style={{ maxWidth: 1400 }}>
         <Stack direction="column" gap="4">
 
           {/* Subtype filter chips (show when category has subtypes) */}
           {categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === categoryFilter)?.subtypes.length! > 0 && (
-            <div className="gallery-chips" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div className="gallery-chips flex-row flex-wrap gap-6">
               <FilterChip
                 active={subtypeFilter === 'all'}
                 onClick={() => setSubtypeFilter('all')}
@@ -1297,7 +1294,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
 
           {/* When 'all' category is selected, show all content type filters */}
           {categoryFilter === 'all' && (
-            <div className="gallery-chips" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <div className="gallery-chips flex-row flex-wrap gap-6">
               {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => {
                 const count = subtypeCounts[key] || 0;
                 return (
@@ -1318,7 +1315,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
 
           {/* Loading */}
           {loading && (
-            <div style={{ textAlign: 'center', padding: 48 }}>
+            <div className="text-center" style={{ padding: 48 }}>
               <Text color="secondary">Content laden...</Text>
             </div>
           )}
@@ -1326,10 +1323,8 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           {/* Content Grid */}
           {!loading && (
             filteredContent.length > 0 ? (
-              <div className="gallery-grid" style={{
-                display: 'grid',
+              <div className="gallery-grid grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: 16,
               }}>
                 {filteredContent.map((item) => (
                   <ContentCard
@@ -1365,7 +1360,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                       variant="primary"
                       size="md"
                       onClick={() => navigate('/matches')}
-                      style={{ marginTop: 4 }}
+                      className="mt-4"
                     >
                       Ga naar Wedstrijden
                     </Button>
@@ -1376,7 +1371,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           )}
 
           {/* Summary */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+          <div className="flex-between py-8">
             <Text size="xs" color="secondary">
               {filteredContent.length} van {contentItems.length} items
             </Text>
@@ -1396,14 +1391,11 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           onClick={closePreview}
         >
           <div
-            style={{
-              backgroundColor: 'var(--app-surface)', borderRadius: 12,
-              maxWidth: '90vw', maxHeight: '90vh', overflow: 'auto',
-              padding: 16,
-            }}
+            className="bg-surface rounded-12 overflow-auto p-16"
+            style={{ maxWidth: '90vw', maxHeight: '90vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div className="flex-between mb-16">
               <Text weight="bold" size="lg">{previewItem.title || 'Preview'}</Text>
               <Button variant="secondary" size="sm" onClick={closePreview}>Sluiten</Button>
             </div>
@@ -1431,7 +1423,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                 )
               );
             })()}
-            <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <div className="mt-16 gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="primary"
                 size="sm"

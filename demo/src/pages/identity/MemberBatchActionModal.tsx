@@ -451,8 +451,8 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
             <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
                 {/* ── Header ── */}
                 <div style={headerStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+                    <div className="flex-row gap-12">
+                        <h2 className="m-0 fs-18 fw-600">
                             {step === 'configure' && '⚡ Batch Actie'}
                             {step === 'running' && '⏳ Bezig...'}
                             {step === 'done' && '✅ Voltooid'}
@@ -462,10 +462,8 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                     {step !== 'running' && (
                         <button
                             onClick={onClose}
-                            style={{
-                                background: 'none', border: 'none', color: 'var(--app-text-muted, #888)',
-                                fontSize: '20px', cursor: 'pointer', padding: '4px', lineHeight: 1,
-                            }}
+                            className="border-none bg-transparent cursor-pointer fs-20"
+                            style={{ color: 'var(--app-text-muted, #888)', padding: '4px', lineHeight: 1 }}
                             title="Sluiten"
                         >
                             ✕
@@ -480,7 +478,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                             {/* Selected members preview */}
                             <div style={sectionStyle}>
                                 <div style={sectionTitleStyle}>Geselecteerde members</div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                <div className="flex-row flex-wrap gap-6">
                                     {members.slice(0, 12).map((m) => (
                                         <span key={m.id} style={memberChipStyle}>
                                             {getMemberName(m)}
@@ -510,11 +508,11 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                                 onChange={() => setSelectedAction(action.key)}
                                                 style={{ marginTop: '2px', accentColor: '#3b82f6' }}
                                             />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: 500, fontSize: '14px' }}>
+                                            <div className="flex-1">
+                                                <div className="fw-500 fs-14">
                                                     {action.icon} {action.label}
                                                 </div>
-                                                <div style={{ fontSize: '12px', color: 'var(--app-muted-text, #888)', marginTop: '2px' }}>
+                                                <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>
                                                     {action.description}
                                                 </div>
                                             </div>
@@ -540,9 +538,9 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                                     onChange={() => setSelectedRole(opt.value)}
                                                     style={{ marginTop: '2px', accentColor: '#3b82f6' }}
                                                 />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                                                <div className="flex-1">
+                                                    <div className="flex-row gap-8">
+                                                        <span className="fw-500 fs-14">
                                                             {opt.badge} {opt.label}
                                                         </span>
                                                         <Badge variant="default" style={{
@@ -553,7 +551,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                                             {opt.value}
                                                         </Badge>
                                                     </div>
-                                                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text, #888)', marginTop: '4px' }}>
+                                                    <div className="fs-12 text-muted mt-4">
                                                         {opt.description}
                                                     </div>
                                                 </div>
@@ -577,7 +575,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                         ))}
                                     </select>
                                     {selectedTeamId && (
-                                        <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--app-muted-text, #888)' }}>
+                                        <div className="mt-8 fs-12 text-muted">
                                             Members worden toegevoegd als <strong>Team Member</strong> (viewer rol).
                                         </div>
                                     )}
@@ -587,12 +585,12 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                             {selectedAction === 'delete' && (
                                 <div style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)' }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                                        <span style={{ fontSize: '20px' }}>⚠️</span>
+                                        <span className="fs-20">⚠️</span>
                                         <div>
-                                            <div style={{ fontWeight: 600, fontSize: '14px', color: '#ef4444' }}>
+                                            <div className="fw-600 fs-14" style={{ color: '#ef4444' }}>
                                                 Let op: deze actie kan niet ongedaan worden
                                             </div>
-                                            <div style={{ fontSize: '13px', color: 'var(--app-muted-text, #888)', marginTop: '4px' }}>
+                                            <div className="fs-13 text-muted mt-4">
                                                 {isTeamContext
                                                     ? `${members.length} member(s) worden verwijderd uit het team. Ze behouden hun organisatie membership.`
                                                     : `${members.length} member(s) worden verwijderd uit de organisatie.`
@@ -606,9 +604,9 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                             {/* Summary card */}
                             {canProceed && (
                                 <div style={{ ...cardStyle, marginTop: '16px', borderColor: '#3b82f644' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
-                                        <span style={{ color: '#3b82f6', fontWeight: 600 }}>Samenvatting:</span>
-                                        <span style={{ color: 'var(--app-text, #e0e0e0)' }}>{getSummaryText()}</span>
+                                    <div className="flex-row gap-8 fs-13">
+                                        <span className="fw-600" style={{ color: '#3b82f6' }}>Samenvatting:</span>
+                                        <span className="text-primary">{getSummaryText()}</span>
                                     </div>
                                 </div>
                             )}
@@ -617,8 +615,8 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
 
                     {step === 'running' && (
                         <div>
-                            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                                <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                            <div className="text-center mb-16">
+                                <div className="fs-14 fw-500">
                                     {progress.current} / {progress.total} verwerkt
                                 </div>
                                 <div style={progressBarBg}>
@@ -631,7 +629,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                     }} />
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', fontSize: '13px' }}>
+                            <div className="flex-center gap-16 fs-13">
                                 <span style={{ color: '#10b981' }}>✓ {progress.success} geslaagd</span>
                                 {progress.failed > 0 && (
                                     <span style={{ color: '#ef4444' }}>✗ {progress.failed} mislukt</span>
@@ -642,14 +640,14 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
 
                     {step === 'done' && (
                         <div>
-                            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                                <div style={{ fontSize: '40px', marginBottom: '8px' }}>
+                            <div className="text-center mb-16">
+                                <div className="mb-8" style={{ fontSize: '40px' }}>
                                     {progress.failed === 0 ? '✅' : '⚠️'}
                                 </div>
-                                <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>
+                                <div className="fs-16 fw-600 mb-4">
                                     {progress.failed === 0 ? 'Alle acties voltooid!' : 'Voltooid met fouten'}
                                 </div>
-                                <div style={{ fontSize: '13px', color: 'var(--app-muted-text, #888)' }}>
+                                <div className="fs-13 text-muted">
                                     {progress.success} geslaagd{progress.failed > 0 ? `, ${progress.failed} mislukt` : ''}
                                 </div>
                             </div>
@@ -659,7 +657,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                                     <div style={{ fontSize: '13px', fontWeight: 600, color: '#ef4444', marginBottom: '6px' }}>
                                         Fouten:
                                     </div>
-                                    <ul style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: 'var(--app-muted-text, #888)' }}>
+                                    <ul className="m-0 fs-12 text-muted" style={{ paddingLeft: '18px' }}>
                                         {errors.slice(0, 10).map((err, i) => (
                                             <li key={i}>{err}</li>
                                         ))}
@@ -690,12 +688,12 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                         </>
                     )}
                     {step === 'running' && (
-                        <div style={{ width: '100%', textAlign: 'center', fontSize: '13px', color: 'var(--app-muted-text, #888)' }}>
+                        <div className="w-full text-center fs-13 text-muted">
                             Even geduld... sluit dit venster niet.
                         </div>
                     )}
                     {step === 'done' && (
-                        <Button variant="primary" onClick={onClose} style={{ marginLeft: 'auto' }}>
+                        <Button variant="primary" onClick={onClose} className="ml-auto">
                             Sluiten
                         </Button>
                     )}

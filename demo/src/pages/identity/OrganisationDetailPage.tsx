@@ -1557,7 +1557,7 @@ export const OrganisationDetailPage: React.FC = () => {
         title={org.name}
         subtitle="Federation overview"
         actions={
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="flex-row flex-wrap gap-8">
             {(() => {
               const isActive =
                 String(activeContext?.organisation?.id ?? '') === String((org as any)?.id ?? '') ||
@@ -1640,9 +1640,9 @@ export const OrganisationDetailPage: React.FC = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Clubs <span className="text-gray-500" style={{ fontWeight: 600 }}>({org.clubs_count || clubsCount || 0})</span>
+                    Clubs <span className="text-gray-500 fw-600">({org.clubs_count || clubsCount || 0})</span>
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('clubs'))}>
                     View all
@@ -1658,13 +1658,12 @@ export const OrganisationDetailPage: React.FC = () => {
                       <button
                         key={String(c?.id)}
                         type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline"
+                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                         onClick={() =>
                           navigate(
                             `/organisations/${encodeURIComponent(String(currentOrgSlug || id || ''))}/projects/${encodeURIComponent(String(c?.slug || c?.id || ''))}`
                           )
                         }
-                        style={{ textAlign: 'left', fontWeight: 600 }}
                       >
                         {String(c?.name || 'Club')}
                       </button>
@@ -1674,9 +1673,9 @@ export const OrganisationDetailPage: React.FC = () => {
               </Card>
 
               <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Teams <span className="text-gray-500" style={{ fontWeight: 600 }}>({org.teams_count || teamsCount || 0})</span>
+                    Teams <span className="text-gray-500 fw-600">({org.teams_count || teamsCount || 0})</span>
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('teams'))}>
                     View all
@@ -1692,13 +1691,12 @@ export const OrganisationDetailPage: React.FC = () => {
                       <button
                         key={String(t?.id)}
                         type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline"
+                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                         onClick={() =>
                           navigate(
                             `/organisations/${encodeURIComponent(String(currentOrgSlug || id || ''))}/projects/${encodeURIComponent(String(t?.slug || t?.id || ''))}`
                           )
                         }
-                        style={{ textAlign: 'left', fontWeight: 600 }}
                       >
                         {String(t?.name || 'Team')}
                       </button>
@@ -1708,9 +1706,9 @@ export const OrganisationDetailPage: React.FC = () => {
               </Card>
 
               <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Members <span className="text-gray-500" style={{ fontWeight: 600 }}>({org.member_count || members.length || 0})</span>
+                    Members <span className="text-gray-500 fw-600">({org.member_count || members.length || 0})</span>
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('users'))}>
                     View all
@@ -1733,9 +1731,8 @@ export const OrganisationDetailPage: React.FC = () => {
                         <button
                           key={String(userId || label)}
                           type="button"
-                          className="app-unstyled-button text-blue-600 hover:underline"
+                          className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                           onClick={() => (userId ? navigate(`/users/${encodeURIComponent(userId)}`) : void 0)}
-                          style={{ textAlign: 'left', fontWeight: 600 }}
                           disabled={!userId}
                         >
                           {label}
@@ -1747,9 +1744,9 @@ export const OrganisationDetailPage: React.FC = () => {
               </Card>
 
               <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Matches <span className="text-gray-500" style={{ fontWeight: 600 }}>({matchesCount ?? '—'})</span>
+                    Matches <span className="text-gray-500 fw-600">({matchesCount ?? '—'})</span>
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('matches'))}>
                     View all
@@ -1765,9 +1762,8 @@ export const OrganisationDetailPage: React.FC = () => {
                       <button
                         key={String(m?.id)}
                         type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline"
+                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                         onClick={() => navigate(getBestMatchDetailPath(m))}
-                        style={{ textAlign: 'left', fontWeight: 600 }}
                       >
                         {String(m?.title || m?.name || 'Match')}
                       </button>
@@ -1795,7 +1791,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-500">Sport</div>
-                  <div className="text-base text-gray-900 mt-1" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="text-base text-gray-900 mt-1 flex-row gap-8">
                     {org?.sport ? (
                       <>
                         <span>{org.sport.sport_icon}</span>
@@ -1821,10 +1817,10 @@ export const OrganisationDetailPage: React.FC = () => {
 
         {activeTab === 'hierarchy' && (
           <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+            <div className="flex-between gap-12">
               <div>
-                <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
-                <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                <div className="fs-16 fw-700">Hierarchy</div>
+                <div className="text-muted fs-13">
                   Clubs → teams
                 </div>
               </div>
@@ -1836,15 +1832,15 @@ export const OrganisationDetailPage: React.FC = () => {
             </div>
 
             {teamsLoading && hierarchyGroups.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+              <div className="text-sm text-gray-500 py-2 mt-12">
                 Loading hierarchy...
               </div>
             ) : hierarchyGroups.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+              <div className="text-sm text-gray-500 py-2 mt-12">
                 No clubs/teams found.
               </div>
             ) : (
-              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="flex-col mt-12 gap-10">
                 {hierarchyGroups.map((club) => {
                   const orgKey = String(orgSlugOrId || currentOrgSlug || id || '').trim();
                   const clubPath = orgKey && club.clubSlugOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(club.clubSlugOrId)}` : '';
@@ -1998,7 +1994,7 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'operations' && (
           <Card>
             {isSuperAdmin ? (
-              <div style={{ padding: 12, color: 'var(--app-muted-text)' }}>
+              <div className="p-12 text-muted">
                 Operations tooling is not wired yet for this demo.
               </div>
             ) : (
@@ -2422,8 +2418,8 @@ export const OrganisationDetailPage: React.FC = () => {
               border: '1px solid var(--app-border)',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-              <h2 style={{ margin: 0 }}>Edit Member</h2>
+            <div className="flex-between gap-12">
+              <h2 className="m-0">Edit Member</h2>
               <Button
                 variant="secondary"
                 size="sm"
@@ -2437,7 +2433,7 @@ export const OrganisationDetailPage: React.FC = () => {
               </Button>
             </div>
 
-            <div style={{ marginTop: '12px', fontSize: '14px', color: 'var(--app-text-muted)' }}>
+            <div className="mt-12 fs-14 text-muted">
               {String(editingMember?.user?.email || editingMember?.email || '')}
             </div>
 

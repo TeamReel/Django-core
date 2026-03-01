@@ -39,13 +39,13 @@ export function SuccessStep({
 }: SuccessStepProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', paddingTop: '32px', paddingBottom: '32px', textAlign: 'center', overflowY: 'auto' }}>
-      <div style={{ fontSize: '36px', marginBottom: '8px' }}>✓</div>
-      <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '4px' }}>
+      <div className="mb-8" style={{ fontSize: '36px' }}>✓</div>
+      <h3 className="fs-20 fw-700 mb-4">
         {generatedVariants.length > 1
           ? (savedVariantIndices.size === generatedVariants.length ? 'Alles opgeslagen!' : 'Content klaar!')
           : 'Content klaar!'}
       </h3>
-      <p style={{ color: 'var(--app-text-secondary, #4b5563)', marginBottom: '16px', maxWidth: '384px', fontSize: '14px' }}>
+      <p className="fs-14 mb-16" style={{ color: 'var(--app-text-secondary, #4b5563)', maxWidth: '384px' }}>
         {generatedVariants.length > 1
           ? `${generatedVariants.length} varianten gegenereerd. Sla ze individueel op, of allemaal tegelijk.`
           : `Je ${selectedType?.label || 'content'} is gegenereerd.`
@@ -54,8 +54,8 @@ export function SuccessStep({
 
       {/* Multiple variants grid — converted Tailwind className to inline styles */}
       {generatedVariants.length > 1 ? (
-        <div style={{ width: '100%', maxWidth: '672px', marginBottom: '16px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+        <div className="w-full mb-16" style={{ maxWidth: '672px' }}>
+          <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
             {generatedVariants.map((variant, index) => {
               const isSelected = selectedVariantIndex === index;
               const isSaved = savedVariantIndices.has(index);
@@ -196,7 +196,7 @@ export function SuccessStep({
 
                   {/* Action buttons (shown after save) */}
                   {saveSuccess ? (
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="flex-row gap-8">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleGenerateInternal(); }}
                         style={{ flex: 1, padding: '6px 12px', borderRadius: '6px', border: '1px solid #3b82f6', background: 'transparent', color: '#3b82f6', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}
@@ -215,7 +215,7 @@ export function SuccessStep({
                       </button>
                     </div>
                   ) : (
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="flex-row gap-8">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -310,16 +310,16 @@ export function SuccessStep({
 
       {/* Save success message */}
       {saveSuccess && (
-        <div style={{ padding: '12px', background: '#dcfce7', color: '#166534', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0', maxWidth: '448px', marginBottom: '16px' }}>
+        <div className="p-12 rounded-8 fs-14 mb-16" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', maxWidth: '448px' }}>
           <strong>Opgeslagen!</strong> De variant is opgeslagen als brand asset.
         </div>
       )}
 
       {/* Selected variant info */}
       {generatedVariants[selectedVariantIndex]?.storage_info && (
-        <details style={{ padding: '12px', background: 'var(--app-surface-2, #f9fafb)', borderRadius: '8px', fontSize: '14px', border: '1px solid var(--app-border, #e5e5e5)', maxWidth: '448px', marginBottom: '16px', textAlign: 'left' }}>
-          <summary style={{ cursor: 'pointer', fontWeight: 500 }}>Opslag info (Variant {selectedVariantIndex + 1})</summary>
-          <div style={{ marginTop: '8px', fontSize: '12px', gap: '4px', display: 'flex', flexDirection: 'column' }}>
+        <details className="p-12 rounded-8 fs-14 mb-16 text-left" style={{ background: 'var(--app-surface-2, #f9fafb)', border: '1px solid var(--app-border, #e5e5e5)', maxWidth: '448px' }}>
+          <summary className="cursor-pointer fw-500">Opslag info (Variant {selectedVariantIndex + 1})</summary>
+          <div className="flex-col mt-8 fs-12 gap-4">
             <div><strong>Backend:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_backend}</div>
             <div><strong>Pad:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_path}</div>
             <div><strong>Grootte:</strong> {((generatedVariants[selectedVariantIndex].storage_info?.file_size_bytes || 0) / 1024).toFixed(1)} KB</div>

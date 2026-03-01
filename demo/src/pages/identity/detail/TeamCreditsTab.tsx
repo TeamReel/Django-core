@@ -216,7 +216,7 @@ export default function TeamCreditsTab(props: {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+      <div className="mb-16" style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button
           variant="secondary"
           size="sm"
@@ -233,22 +233,22 @@ export default function TeamCreditsTab(props: {
       {view === 'balance' && (
         <>
           {balanceError && (
-            <Alert variant="info" style={{ marginBottom: '16px' }}>
+            <Alert variant="info" className="mb-16">
               {balanceError}
             </Alert>
           )}
 
           {userBalanceError && (
-            <Alert variant="info" style={{ marginBottom: '16px' }}>
+            <Alert variant="info" className="mb-16">
               {userBalanceError}
             </Alert>
           )}
 
           {balanceLoading || userBalanceLoading ? (
-            <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading balance…</div>
+            <div className="p-16 text-center opacity-70">Loading balance…</div>
           ) : (
             <>
-              <div style={{ marginBottom: '12px' }}>
+              <div className="mb-12">
                 <GovernanceSummaryCard
                   organisationId={organisationId}
                   projectId={projectId}
@@ -257,15 +257,14 @@ export default function TeamCreditsTab(props: {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+              <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
                 <Card
+                  className="p-24 text-center"
                   style={{
-                    padding: '24px',
-                    textAlign: 'center',
                     background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
+                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
                     Your Credits Balance
                   </div>
                   <div
@@ -281,18 +280,17 @@ export default function TeamCreditsTab(props: {
                   >
                     {formatCredits(userBalance?.current_balance)}
                   </div>
-                  <div style={{ fontSize: '16px', opacity: 0.7, marginBottom: '8px' }}>credits</div>
-                  <div style={{ fontSize: '12px', opacity: 0.55 }}>Charged to your account</div>
+                  <div className="fs-16 opacity-70 mb-8">credits</div>
+                  <div className="fs-12" style={{ opacity: 0.55 }}>Charged to your account</div>
                 </Card>
 
                 <Card
+                  className="p-24 text-center"
                   style={{
-                    padding: '24px',
-                    textAlign: 'center',
                     background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6 }}>
+                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
                     {(walletLabel || 'Team')} Credits Balance
                   </div>
                   <div
@@ -305,8 +303,8 @@ export default function TeamCreditsTab(props: {
                   >
                     {formatCredits(balance?.current_balance)}
                   </div>
-                  <div style={{ fontSize: '16px', opacity: 0.7, marginBottom: '8px' }}>credits</div>
-                  <div style={{ fontSize: '12px', opacity: 0.55 }}>
+                  <div className="fs-16 opacity-70 mb-8">credits</div>
+                  <div className="fs-12" style={{ opacity: 0.55 }}>
                     {projectName || balance?.project_name || 'Team'}
                     {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
                   </div>
@@ -314,16 +312,16 @@ export default function TeamCreditsTab(props: {
               </div>
 
               {/* Transaction Timeline + Recent Activity (same idea as /credits balance tab) */}
-              <div style={{ marginTop: '16px' }}>
-                <Card style={{ padding: '24px', marginBottom: '12px' }}>
+              <div className="mt-16">
+                <Card className="p-24 mb-12">
                   <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>📊 Transaction Timeline</h3>
                   {transactionsLoading ? (
-                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>Loading transactions…</div>
+                    <div className="text-center p-20 opacity-60">Loading transactions…</div>
                   ) : transactions.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>No transactions recorded yet.</div>
+                    <div className="text-center p-20 opacity-60">No transactions recorded yet.</div>
                   ) : (
                     <>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div className="flex-col gap-8">
                         {transactions.slice(0, 10).map((txn) => {
                           const amount = Number(txn.amount);
                           const maxAmount = Math.max(
@@ -335,7 +333,7 @@ export default function TeamCreditsTab(props: {
                           const isPositive = Number.isFinite(amount) && amount > 0;
 
                           return (
-                            <div key={txn.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div key={txn.id} className="flex-row gap-12">
                               <div style={{ minWidth: '120px', fontSize: '12px', opacity: 0.7, textAlign: 'right' }}>
                                 {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </div>
@@ -388,7 +386,7 @@ export default function TeamCreditsTab(props: {
                       </div>
 
                       {transactions.length > 10 && (
-                        <div style={{ marginTop: '16px', textAlign: 'center', fontSize: '12px', opacity: 0.6 }}>
+                        <div className="mt-16 text-center fs-12 opacity-60">
                           Showing 10 of {transactions.length} transactions
                         </div>
                       )}
@@ -396,49 +394,39 @@ export default function TeamCreditsTab(props: {
                   )}
                 </Card>
 
-                <Card style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <Card className="p-24">
+                  <div className="flex-between" style={{ marginBottom: '20px' }}>
                     <h3 style={{ margin: 0, fontSize: '18px' }}>📋 Recent Activity</h3>
                   </div>
 
                   {transactionsLoading ? (
-                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>Loading transactions…</div>
+                    <div className="text-center p-20 opacity-60">Loading transactions…</div>
                   ) : recentTransactions.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>No recent activity.</div>
+                    <div className="text-center p-20 opacity-60">No recent activity.</div>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div className="flex-col gap-8">
                       {recentTransactions.map((txn) => {
                         const amount = Number(txn.amount);
                         const isPositive = Number.isFinite(amount) && amount > 0;
                         return (
                           <div
                             key={txn.id}
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              padding: '16px',
-                              borderRadius: '8px',
-                              backgroundColor: 'var(--app-surface-2)',
-                              border: '1px solid var(--app-border)',
-                              transition: 'all 0.2s ease',
-                            }}
+                            className="flex-between p-16 rounded-8 bg-surface-2 border"
+                            style={{ transition: 'all 0.2s ease' }}
                           >
-                            <div style={{ flex: 1, minWidth: 0 }}>
+                            <div className="flex-1-min">
                               <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '6px' }}>
                                 {txn.notes || sourceTypeLabel(txn.source_type)}
                               </div>
-                              <div style={{ fontSize: '13px', opacity: 0.6 }}>
+                              <div className="fs-13 opacity-60">
                                 {new Date(txn.timestamp).toLocaleDateString()} • {new Date(txn.timestamp).toLocaleTimeString()}
                               </div>
                             </div>
                             <div
+                              className="fs-20 fw-700 text-right"
                               style={{
-                                fontSize: '20px',
-                                fontWeight: 'bold',
                                 color: isPositive ? 'var(--app-success)' : 'var(--app-error)',
                                 minWidth: '100px',
-                                textAlign: 'right',
                               }}
                             >
                               {isPositive ? '+' : ''}
@@ -459,12 +447,12 @@ export default function TeamCreditsTab(props: {
       {view === 'transactions' && (
         <>
           {transactionsError && (
-            <Alert variant="info" style={{ marginBottom: '16px' }}>
+            <Alert variant="info" className="mb-16">
               {transactionsError}
             </Alert>
           )}
 
-          <div style={{ marginBottom: '12px' }}>
+          <div className="mb-12">
             <GovernanceSummaryCard
               organisationId={organisationId}
               projectId={projectId}
@@ -474,33 +462,31 @@ export default function TeamCreditsTab(props: {
           </div>
 
           {transactionsLoading ? (
-            <div style={{ padding: '16px', textAlign: 'center', opacity: 0.7 }}>Loading transactions…</div>
+            <div className="p-16 text-center opacity-70">Loading transactions…</div>
           ) : transactions.length === 0 ? (
             <Alert variant="info">No transactions found for this team.</Alert>
           ) : (
             <>
               <div
+                className="grid gap-12 mb-16"
                 style={{
-                  display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '12px',
-                  marginBottom: '16px',
                 }}
               >
-                <Card style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '12px', textTransform: 'uppercase', opacity: 0.6 }}>➕ Total Added</div>
-                  <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--app-success)' }}>
+                <Card className="p-16 text-center">
+                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase' }}>➕ Total Added</div>
+                  <div className="fw-800 text-success" style={{ fontSize: '26px' }}>
                     +{formatCredits(totals.added)}
                   </div>
                 </Card>
-                <Card style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '12px', textTransform: 'uppercase', opacity: 0.6 }}>➖ Total Used</div>
-                  <div style={{ fontSize: '26px', fontWeight: 800, color: 'var(--app-error)' }}>
+                <Card className="p-16 text-center">
+                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase' }}>➖ Total Used</div>
+                  <div className="fw-800 text-error" style={{ fontSize: '26px' }}>
                     {formatCredits(totals.used)}
                   </div>
                 </Card>
-                <Card style={{ padding: '16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '12px', textTransform: 'uppercase', opacity: 0.6 }}>📊 Net</div>
+                <Card className="p-16 text-center">
+                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase' }}>📊 Net</div>
                   <div
                     style={{
                       fontSize: '26px',
@@ -511,16 +497,16 @@ export default function TeamCreditsTab(props: {
                     {totals.net >= 0 ? '+' : ''}
                     {formatCredits(totals.net)}
                   </div>
-                  <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '4px' }}>
+                  <div className="fs-11 opacity-50 mt-4">
                     {totals.count} transactions loaded
                   </div>
                 </Card>
               </div>
 
-              <Card style={{ padding: '0', overflow: 'hidden' }}>
-                <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--app-border)' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700 }}>Team Transactions</div>
-                  <div style={{ fontSize: '12px', opacity: 0.6 }}>
+              <Card className="p-0 overflow-hidden">
+                <div className="border-bottom" style={{ padding: '14px 16px' }}>
+                  <div className="fs-14 fw-700">Team Transactions</div>
+                  <div className="fs-12 opacity-60">
                     Showing {transactions.length} most recent entries
                   </div>
                 </div>

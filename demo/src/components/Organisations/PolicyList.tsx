@@ -155,34 +155,29 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
   }
 
   if (loading) {
-    return <div style={{ padding: '20px', color: 'var(--app-text-muted)' }}>Loading policies...</div>;
+    return <div className="p-20 text-muted">Loading policies...</div>;
   }
 
   // Fallback if no real policies found (for demo visualization if DB is strictly seeded)
   // or simply show empty state.
 
   return (
-    <div style={{ display: 'grid', gap: '24px', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+    <div className="grid gap-24" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
 
       {/* Financial Governance */}
       <Card>
-        <div style={{ padding: '16px' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '18px', color: 'var(--app-text)' }}>Financial Controls</h3>
+        <div className="p-16">
+          <h3 className="fs-18 text-primary" style={{ margin: '0 0 16px' }}>Financial Controls</h3>
 
           {!balancePolicy ? (
-             <div style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>
+             <div className="text-muted" style={{ fontStyle: 'italic' }}>
                No explicit balance policy found. The backend will fall back to a safe default.
              </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{
-                padding: '12px',
-                border: '1px solid var(--app-border)',
-                borderRadius: '6px',
-                backgroundColor: 'var(--app-surface-2)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>Balance Policy</span>
+            <div className="flex-col gap-12">
+              <div className="p-12 border rounded-6 bg-surface-2">
+                <div className="flex-between mb-8">
+                  <span className="fw-600 text-primary">Balance Policy</span>
                   <Badge
                     variant={balancePolicy.enforcement_mode === 'block' ? 'warning' : balancePolicy.enforcement_mode === 'warn' ? 'info' : 'success'}
                     size="sm"
@@ -190,15 +185,15 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                     {balancePolicy.enforcement_mode.toUpperCase()}
                   </Badge>
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                <div className="fs-13 text-muted">
                   Mode: <strong>{balancePolicy.allow_negative ? 'Postpaid (can go negative)' : 'Prepaid (no negative balance)'}</strong>
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+                <div className="fs-13 text-muted mt-4">
                   Warn threshold: <strong>{balancePolicy.warn_threshold ?? '—'}</strong>
                 </div>
 
                 {canManageOrgSettings && (
-                  <div style={{ marginTop: '12px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <div className="mt-12 flex-row gap-12 flex-wrap">
                     <Button size="sm" variant="secondary" onClick={() => setIsEditingBalance(v => !v)}>
                       {isEditingBalance ? 'Cancel' : 'Edit policy'}
                     </Button>
@@ -206,19 +201,19 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                 )}
 
                 {balanceSaveError && (
-                  <div style={{ marginTop: '12px' }}>
+                  <div className="mt-12">
                     <Alert variant="error">{balanceSaveError}</Alert>
                   </div>
                 )}
                 {balanceSaveSuccess && (
-                  <div style={{ marginTop: '12px' }}>
+                  <div className="mt-12">
                     <Alert variant="success">{balanceSaveSuccess}</Alert>
                   </div>
                 )}
 
                 {canManageOrgSettings && isEditingBalance && balanceDraft && (
-                  <div style={{ marginTop: '12px', display: 'grid', gap: '10px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--app-text)' }}>
+                  <div className="mt-12 grid gap-10">
+                    <label className="flex-row gap-8 fs-13 text-primary">
                       <input
                         type="checkbox"
                         checked={balanceDraft.allow_negative}
@@ -227,18 +222,12 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                       Allow negative balance (postpaid)
                     </label>
 
-                    <label style={{ display: 'grid', gap: '6px', fontSize: '13px', color: 'var(--app-text)' }}>
+                    <label className="grid gap-6 fs-13 text-primary">
                       Enforcement mode
                       <select
                         value={balanceDraft.enforcement_mode}
                         onChange={(e) => setBalanceDraft({ ...balanceDraft, enforcement_mode: e.target.value as any })}
-                        style={{
-                          padding: '8px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--app-border)',
-                          background: 'var(--app-surface)',
-                          color: 'var(--app-text)'
-                        }}
+                        className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
                       >
                         <option value="block">BLOCK</option>
                         <option value="warn">WARN</option>
@@ -246,23 +235,17 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                       </select>
                     </label>
 
-                    <label style={{ display: 'grid', gap: '6px', fontSize: '13px', color: 'var(--app-text)' }}>
+                    <label className="grid gap-6 fs-13 text-primary">
                       Warn threshold (optional)
                       <input
                         value={balanceDraft.warn_threshold}
                         onChange={(e) => setBalanceDraft({ ...balanceDraft, warn_threshold: e.target.value })}
                         placeholder="e.g. 10"
-                        style={{
-                          padding: '8px 10px',
-                          borderRadius: '6px',
-                          border: '1px solid var(--app-border)',
-                          background: 'var(--app-surface)',
-                          color: 'var(--app-text)'
-                        }}
+                        className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
                       />
                     </label>
 
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div className="flex-row gap-12 flex-wrap">
                       <Button size="sm" onClick={saveBalancePolicy} disabled={balanceSaving}>
                         {balanceSaving ? 'Saving…' : 'Save'}
                       </Button>
@@ -277,57 +260,52 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
 
       {/* Compliance / Notifications Mock */}
       <Card>
-        <div style={{ padding: '16px' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '18px', color: 'var(--app-text)' }}>Compliance & Notifications</h3>
+        <div className="p-16">
+          <h3 className="fs-18 text-primary" style={{ margin: '0 0 16px' }}>Compliance & Notifications</h3>
 
           {!notificationPolicy ? (
-            <div style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>
+            <div className="text-muted" style={{ fontStyle: 'italic' }}>
               No explicit notification policy found. Defaults apply.
-              <div style={{ marginTop: '12px' }}>
-                <a href="/preferences?tab=notifications" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
+              <div className="mt-12">
+                <a href="/preferences?tab=notifications" className="text-link" style={{ textDecoration: 'none' }}>
                   Manage notification preferences
                 </a>
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="flex-col gap-12">
               <div
-                style={{
-                  padding: '12px',
-                  border: '1px solid var(--app-border)',
-                  borderRadius: '6px',
-                  backgroundColor: 'var(--app-surface-2)',
-                }}
+                className="p-12 border rounded-6 bg-surface-2"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>Organisation Notification Policy</span>
+                <div className="flex-between mb-8">
+                  <span className="fw-600 text-primary">Organisation Notification Policy</span>
                   <Badge variant={notificationPolicy.quiet_hours_enabled ? 'info' : 'success'} size="sm">
                     {notificationPolicy.quiet_hours_enabled ? 'QUIET HOURS' : 'ACTIVE'}
                   </Badge>
                 </div>
-                <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                <div className="fs-13 text-muted">
                   Quiet hours: <strong>{notificationPolicy.quiet_hours_enabled ? 'Enabled' : 'Disabled'}</strong>
                 </div>
                 {notificationPolicy.quiet_hours_enabled && (
-                  <div style={{ fontSize: '13px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+                  <div className="fs-13 text-muted mt-4">
                     Window: <strong>{notificationPolicy.quiet_hours_start}–{notificationPolicy.quiet_hours_end}</strong> ({notificationPolicy.quiet_hours_timezone})
                   </div>
                 )}
-                <div style={{ fontSize: '13px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+                <div className="fs-13 text-muted mt-4">
                   Quiet-hours rate limit: <strong>{notificationPolicy.quiet_hours_rate_limit} / min</strong>
                 </div>
               </div>
 
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '13px', lineHeight: 1.5 }}>
+              <div className="text-muted fs-13" style={{ lineHeight: 1.5 }}>
                 Routing rules decide who gets notified; per-user preferences only exist when a user deviates from defaults.
-                <div style={{ marginTop: '12px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <a href="/preferences?tab=notifications" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
+                <div className="mt-12 flex-row gap-12 flex-wrap">
+                  <a href="/preferences?tab=notifications" className="text-link" style={{ textDecoration: 'none' }}>
                     Manage notification preferences
                   </a>
-                  <a href="/routing-rules" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
+                  <a href="/routing-rules" className="text-link" style={{ textDecoration: 'none' }}>
                     Manage routing rules
                   </a>
-                  <a href="/routing-logs" style={{ color: 'var(--app-link)', textDecoration: 'none' }}>
+                  <a href="/routing-logs" className="text-link" style={{ textDecoration: 'none' }}>
                     View routing logs
                   </a>
                 </div>

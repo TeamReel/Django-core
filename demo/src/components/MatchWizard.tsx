@@ -504,17 +504,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
       onClose={handleClose}
       // Hide BottomSheet's own title — we render our own header
     >
-      <div style={{ maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="flex-col" style={{ maxHeight: '65vh' }}>
 
         {/* ── Consistent header: back + title + close ──────────────── */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '4px 16px 12px',
-          borderBottom: '1px solid var(--app-border)',
-          flexShrink: 0,
-        }}>
+        <div className="flex-row gap-12 border-bottom" style={{ padding: '4px 16px 12px', flexShrink: 0 }}>
           {currentStep !== 'match' ? (
             <button
               onClick={handleBack}
@@ -531,10 +524,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           ) : (
             <div style={{ width: '40px' }} />
           )}
-          <span style={{
-            flex: 1, textAlign: 'center',
-            fontWeight: 600, fontSize: '16px', color: 'var(--app-text)',
-          }}>
+          <span className="flex-1 text-center fw-600 fs-16 text-primary">
             {getStepTitle()}
           </span>
           <button
@@ -552,17 +542,17 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         </div>
 
         {/* ── Step content (scrollable) ────────────────────────────── */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+        <div className="flex-1 overflow-y-auto p-16">
 
           {/* ── Step 1: Match selection ─────────────────────────────── */}
           {currentStep === 'match' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="flex-col gap-10">
               {matchesLoading ? (
-                <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
+                <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>
                   Laden...
                 </div>
               ) : upcomingMatches.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
+                <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>
                   Geen komende wedstrijden gevonden
                 </div>
               ) : (
@@ -594,11 +584,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       }}>
                         {date.getDate()}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{
-                          fontWeight: 600, fontSize: '15px', color: 'var(--app-text)',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
+                      <div className="flex-1-min">
+                        <div className="fw-600 text-primary truncate" style={{ fontSize: '15px' }}>
                           {match.title}
                         </div>
                         <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
@@ -616,7 +603,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
           {/* ── Step 2: Content type selection ─────────────────────── */}
           {currentStep === 'content' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div className="flex-col gap-16">
               {/* Phase tabs: Voor / Tijdens / Na */}
               <div style={{
                 display: 'flex', gap: '4px', padding: '3px',
@@ -647,7 +634,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               </div>
 
               {/* Content type cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div className="flex-col gap-8">
                 {CONTENT_TYPES[selectedContentPhase].map((content) => {
                   const Icon = content.icon;
                   const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(content.subtype);
@@ -664,8 +651,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       }}>
                         <Icon size={22} style={{ color: 'var(--app-primary)' }} />
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--app-text)' }}>
+                      <div className="flex-1-min">
+                        <div className="fw-600 text-primary" style={{ fontSize: '15px' }}>
                           {content.label}
                         </div>
                         <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
@@ -683,12 +670,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
           {/* ── Step 3: Lineup (only for lineup-dependent content) ── */}
           {currentStep === 'lineup' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="flex-col gap-8">
               {/* Progress indicator */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                marginBottom: '8px',
-              }}>
+              <div className="flex-between mb-8">
                 <span style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>
                   {filledPositions} / {totalPositions} posities
                 </span>
@@ -706,15 +690,15 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               </div>
 
               {squadLoading ? (
-                <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
+                <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>
                   Spelers laden...
                 </div>
               ) : allPlayers.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
+                <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>
                   Geen spelers gevonden in het team
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div className="flex-col gap-6">
                   {POSITIONS.map((posConfig) => {
                     const isGoalkeeper = posConfig.slot === 1;
                     const positionIdx = isGoalkeeper ? 0 : posConfig.slot - 2;
@@ -732,33 +716,24 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       return (
                         <div
                           key={posConfig.slot}
-                          style={{
-                            backgroundColor: 'var(--app-surface-2)',
-                            borderRadius: '12px', padding: '12px',
-                          }}
+                          className="bg-surface-2 rounded-12 p-12"
                         >
-                          <div style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            marginBottom: '10px',
-                          }}>
-                            <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>
+                          <div className="flex-between" style={{ marginBottom: '10px' }}>
+                            <span className="fw-600 text-primary">
                               {posConfig.fullLabel} ({posConfig.label})
                             </span>
                             <button
                               onClick={() => setEditingPosition(null)}
+                              className="fs-12 rounded-6 bg-transparent border cursor-pointer"
                               style={{
-                                padding: '4px 12px', fontSize: '12px', borderRadius: '6px',
-                                backgroundColor: 'transparent', border: '1px solid var(--app-border)',
-                                color: 'var(--app-text-muted)', cursor: 'pointer',
+                                padding: '4px 12px',
+                                color: 'var(--app-text-muted)',
                               }}
                             >
                               Annuleren
                             </button>
                           </div>
-                          <div style={{
-                            display: 'flex', flexDirection: 'column', gap: '4px',
-                            maxHeight: '180px', overflowY: 'auto',
-                          }}>
+                          <div className="flex-col gap-4 overflow-y-auto" style={{ maxHeight: '180px' }}>
                             <button
                               onClick={() => handleSelectPlayer(positionIdx, isGoalkeeper, null)}
                               style={{
@@ -795,8 +770,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                                       {jersey}
                                     </span>
                                   )}
-                                  <span style={{ flex: 1 }}>{getSquadMemberName(member)}</span>
-                                  {isUsed && <span style={{ fontSize: '11px', opacity: 0.7 }}>ingevuld</span>}
+                                  <span className="flex-1">{getSquadMemberName(member)}</span>
+                                  {isUsed && <span className="fs-11 opacity-70">ingevuld</span>}
                                 </button>
                               );
                             })}
@@ -823,10 +798,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         }}>
                           {posConfig.label}
                         </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="flex-1-min">
                           {memberId ? (
                             <>
-                              <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--app-text)' }}>
+                              <div className="fw-600 fs-14 text-primary">
                                 {getMemberName(memberId)}
                               </div>
                               <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>

@@ -594,7 +594,7 @@ export default function UsersPage() {
         }
         breadcrumbs={breadcrumbs}
         actions={
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="flex-row gap-10 flex-wrap">
                 {orgIdParam && (
                     <Button variant="secondary" onClick={() => navigate(`/organisations/${orgIdParam}`)}>
                         Back to Organisation
@@ -604,21 +604,21 @@ export default function UsersPage() {
                 {/* Filters for everyone (SuperAdmin OR Regular Users in Global View) */}
                 {(!orgIdParam || isSuperAdmin) && (
                     <>
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
+                    <label className="fs-14 fw-500">Status:</label>
                     <select
                         value={statusFilter}
                         onChange={(e) => {
                             setStatusFilter(e.target.value);
                             resetPageToFirst();
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        className="p-8 rounded-4" style={{ border: '1px solid #ccc' }}
                     >
                         <option value="all">All</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Role:</label>
+                    <label className="fs-14 fw-500">Role:</label>
                     <select
                         value={roleFilter}
                         onChange={(e) => {
@@ -626,7 +626,7 @@ export default function UsersPage() {
                             setRoleFilter(e.target.value);
                             resetPageToFirst();
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        className="p-8 rounded-4" style={{ border: '1px solid #ccc' }}
                     >
                         <option value="">All Roles</option>
                         {availableRoles.map(role => (
@@ -634,7 +634,7 @@ export default function UsersPage() {
                         ))}
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Organisation:</label>
+                    <label className="fs-14 fw-500">Organisation:</label>
                     <select
                         value={selectedOrgId}
                         onChange={(e) => {
@@ -645,7 +645,7 @@ export default function UsersPage() {
                             setSelectedTeamKey('');
                             resetPageToFirst();
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        className="p-8 rounded-4" style={{ border: '1px solid #ccc' }}
                     >
                         <option value="">All Organisations</option>
                         {(isSuperAdmin ? organisations : myOrganisations).map(org => (
@@ -653,7 +653,7 @@ export default function UsersPage() {
                         ))}
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Club:</label>
+                    <label className="fs-14 fw-500">Club:</label>
                     <select
                         value={selectedClubId}
                         onChange={(e) => {
@@ -668,7 +668,7 @@ export default function UsersPage() {
                             setSelectedTeamKey('');
                             resetPageToFirst();
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', maxWidth: '150px' }}
+                        className="p-8 rounded-4" style={{ border: '1px solid #ccc', maxWidth: '150px' }}
                     >
                         <option value="">All Clubs</option>
                         {clubs
@@ -685,7 +685,7 @@ export default function UsersPage() {
                             ))}
                     </select>
 
-                    <label style={{ fontSize: '14px', fontWeight: 500 }}>Team:</label>
+                    <label className="fs-14 fw-500">Team:</label>
                     <select
                         value={selectedTeamId}
                         onChange={(e) => {
@@ -698,7 +698,7 @@ export default function UsersPage() {
                             setSelectedTeamKey(teamKey);
                             resetPageToFirst();
                         }}
-                        style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', maxWidth: '150px' }}
+                        className="p-8 rounded-4" style={{ border: '1px solid #ccc', maxWidth: '150px' }}
                     >
                         <option value="">All Teams</option>
                         {teams
@@ -789,7 +789,7 @@ export default function UsersPage() {
       />
 
       {error && (
-        <div style={{ padding: '12px', backgroundColor: 'rgba(220, 53, 69, 0.1)', color: '#dc3545', border: '1px solid rgba(220, 53, 69, 0.3)', borderRadius: '4px', marginBottom: '24px' }}>
+        <div className="p-12 rounded-4 mb-24" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)', color: '#dc3545', border: '1px solid rgba(220, 53, 69, 0.3)' }}>
           {error}
         </div>
       )}
@@ -809,13 +809,13 @@ export default function UsersPage() {
                 <th style={{ minWidth: '150px' }}>Organisations</th>
                 <th style={{ minWidth: '150px' }}>Club</th>
                 <th style={{ minWidth: '150px' }}>Team</th>
-                <th style={{ textAlign: 'right', minWidth: '150px' }}>Actions</th>
+                <th className="text-right" style={{ minWidth: '150px' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: '24px', textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                  <td colSpan={8} className="p-24 text-center text-muted">
                     No users found.
                   </td>
                 </tr>
@@ -864,7 +864,7 @@ export default function UsersPage() {
                     <tr key={item.id || user.id}>
                       <td>
                         <div
-                            style={{ fontWeight: 500, color: '#0066cc', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}
+                            className="fw-500 fs-sm cursor-pointer" style={{ color: '#0066cc', textDecoration: 'underline' }}
                             onClick={() => {
                                 navigate(`/users/${user.id}`);
                             }}
@@ -872,7 +872,7 @@ export default function UsersPage() {
                             {user.first_name} {user.last_name}
                         </div>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>{user.email}</td>
+                      <td className="fs-sm">{user.email}</td>
                       <td>
                         <Badge variant="default">
                           {displayRole}
@@ -884,51 +884,30 @@ export default function UsersPage() {
                         </Badge>
                       </td>
                       <td>
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          <div className="flex-row gap-4 flex-wrap">
                               {userOrgs.length > 0 ? userOrgs.map((org: any) => (
-                                  <span key={org.id} style={{
-                                      padding: '2px 6px',
-                                      border: '1px solid var(--app-border)',
-                                      borderRadius: '4px',
-                                      fontSize: '11px',
-                                      backgroundColor: 'var(--app-surface-2)',
-                                      color: 'var(--app-text)'
-                                  }}>
+                                  <span key={org.id} className="border rounded-4 fs-11 bg-surface-2 text-primary" style={{ padding: '2px 6px' }}>
                                       {org.name}
                                   </span>
-                              )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
+                              )) : <span className="text-muted fs-12">-</span>}
                           </div>
                       </td>
                       <td>
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          <div className="flex-row gap-4 flex-wrap">
                               {allParentClubs.length > 0 ? allParentClubs.map((club: any, idx: number) => (
-                                  <span key={club.id || idx} style={{
-                                      padding: '2px 6px',
-                                      border: '1px solid var(--app-border)',
-                                      borderRadius: '4px',
-                                      fontSize: '11px',
-                                      backgroundColor: 'var(--app-surface-2)',
-                                      color: 'var(--app-text)'
-                                  }}>
+                                  <span key={club.id || idx} className="border rounded-4 fs-11 bg-surface-2 text-primary" style={{ padding: '2px 6px' }}>
                                       {club.name}
                                   </span>
-                              )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
+                              )) : <span className="text-muted fs-12">-</span>}
                           </div>
                       </td>
                       <td>
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          <div className="flex-row gap-4 flex-wrap">
                               {childProjects.length > 0 ? childProjects.map((project: any) => (
-                                  <span key={project.id} style={{
-                                      padding: '2px 6px',
-                                      border: '1px solid var(--app-border)',
-                                      borderRadius: '4px',
-                                      fontSize: '11px',
-                                      backgroundColor: 'var(--app-surface-2)',
-                                      color: 'var(--app-text)'
-                                  }}>
+                                  <span key={project.id} className="border rounded-4 fs-11 bg-surface-2 text-primary" style={{ padding: '2px 6px' }}>
                                       {project.name}
                                   </span>
-                              )) : <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>-</span>}
+                              )) : <span className="text-muted fs-12">-</span>}
                           </div>
                       </td>
                       <td>
@@ -940,15 +919,8 @@ export default function UsersPage() {
                                         setDetailUser(user);
                                         setIsDetailModalOpen(true);
                                     }}
-                                    style={{
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #6c757d',
-                                        backgroundColor: 'var(--app-surface)',
-                                        color: '#6c757d',
-                                        cursor: 'pointer',
-                                        fontSize: '12px'
-                                    }}
+                                    className="rounded-4 bg-surface cursor-pointer fs-12"
+                                    style={{ padding: '4px 8px', border: '1px solid #6c757d', color: '#6c757d' }}
                                 >
                                     View
                                 </button>
@@ -962,15 +934,8 @@ export default function UsersPage() {
                                         handleEditClick(item);
                                     }
                                 }}
-                                style={{
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    border: '1px solid var(--app-warning)',
-                                    backgroundColor: 'var(--app-surface)',
-                                    color: 'var(--app-warning)',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                }}
+                                className="rounded-4 bg-surface cursor-pointer fs-12"
+                                style={{ padding: '4px 8px', border: '1px solid var(--app-warning)', color: 'var(--app-warning)' }}
                             >
                                 Edit
                             </button>
@@ -1005,15 +970,8 @@ export default function UsersPage() {
                                         alert('Error deleting user');
                                     }
                                 }}
-                                style={{
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    border: '1px solid #dc3545',
-                                    backgroundColor: 'var(--app-surface)',
-                                    color: '#dc3545',
-                                    cursor: 'pointer',
-                                    fontSize: '12px'
-                                }}
+                                className="rounded-4 bg-surface cursor-pointer fs-12"
+                                style={{ padding: '4px 8px', border: '1px solid #dc3545', color: '#dc3545' }}
                             >
                                 Delete
                             </button>
@@ -1026,16 +984,8 @@ export default function UsersPage() {
                                                                     setLinkUser(user);
                                                                     setIsLinkModalOpen(true);
                                                                 }}
-                                                                style={{
-                                                                    padding: '6px 12px',
-                                                                    borderRadius: '4px',
-                                                                    border: '1px solid #007bff',
-                                                                    backgroundColor: 'var(--app-surface)',
-                                                                    color: '#007bff',
-                                                                    cursor: 'pointer',
-                                                                    fontSize: '12px',
-                                                                    fontWeight: 500,
-                                                                }}
+                                                                className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
+                                                                style={{ padding: '6px 12px', border: '1px solid #007bff', color: '#007bff' }}
                                                             >
                                                                 Link
                                                             </button>
@@ -1106,15 +1056,8 @@ export default function UsersPage() {
                                                     alert('Error removing member');
                                                 }
                                             }}
-                                            style={{
-                                                padding: '4px 8px',
-                                                borderRadius: '4px',
-                                                border: '1px solid #dc3545',
-                                                backgroundColor: 'var(--app-surface)',
-                                                color: '#dc3545',
-                                                cursor: 'pointer',
-                                                fontSize: '12px'
-                                            }}
+                                            className="rounded-4 bg-surface cursor-pointer fs-12"
+                                            style={{ padding: '4px 8px', border: '1px solid #dc3545', color: '#dc3545' }}
                                         >
                                             Unassign
                                         </button>
@@ -1134,16 +1077,8 @@ export default function UsersPage() {
                                                 setAssignUser(user);
                                                 setIsAssignModalOpen(true);
                                             }}
-                                            style={{
-                                                padding: '6px 12px',
-                                                borderRadius: '4px',
-                                                border: '1px solid #1e7e34',
-                                                backgroundColor: 'var(--app-surface)',
-                                                color: '#28a745',
-                                                cursor: 'pointer',
-                                                fontSize: '12px',
-                                                fontWeight: 500
-                                            }}
+                                            className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
+                                            style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: '#28a745' }}
                                         >
                                             Assign
                                         </button>
@@ -1156,16 +1091,8 @@ export default function UsersPage() {
                                                 setAssignUser(user);
                                                 setIsAssignModalOpen(true);
                                             }}
-                                            style={{
-                                                padding: '6px 12px',
-                                                borderRadius: '4px',
-                                                border: '1px solid #1e7e34',
-                                                backgroundColor: 'var(--app-surface)',
-                                                color: '#28a745',
-                                                cursor: 'pointer',
-                                                fontSize: '12px',
-                                                fontWeight: 500
-                                            }}
+                                            className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
+                                            style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: '#28a745' }}
                                         >
                                             Assign
                                         </button>
@@ -1187,7 +1114,7 @@ export default function UsersPage() {
 
         {/* Pagination */}
         {!isLoading && total > limit && (
-          <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+          <div className="mt-20 flex-center gap-12">
             <Button
               variant="secondary"
               onClick={() => handlePageChange(currentPage - 1)}

@@ -100,27 +100,22 @@ export default function MatchOverviewTab({
     );
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="flex-col gap-12">
       {/* ── Scoreboard (compact) ──────────────────────────────────────── */}
       <div
-        style={{
-          borderRadius: 12,
-          border: '1px solid var(--app-border, #333)',
-          background: 'var(--app-surface, #1e1e1e)',
-          padding: '16px 12px',
-        }}
+        className="rounded-12 border bg-surface px-12 py-16"
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+        <div className="flex-center gap-12">
           {/* Home */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+          <div className="flex-col gap-4 flex-1" style={{ alignItems: 'center' }}>
             <TeamLogo url={homeLogoUrl} fallback="🏠" size={44} />
-            <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>
+            <span className="fs-13 fw-700 text-center" style={{ lineHeight: 1.2 }}>
               {homeTeamName}
             </span>
           </div>
 
           {/* Score block */}
-          <div style={{ textAlign: 'center', minWidth: 80 }}>
+          <div className="text-center" style={{ minWidth: 80 }}>
             <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{scoreDisplay}</div>
             <Badge
               variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}
@@ -129,7 +124,7 @@ export default function MatchOverviewTab({
             >
               {status.toUpperCase()}
             </Badge>
-            <div style={{ fontSize: 12, color: 'var(--app-muted-text, #888)', marginTop: 4 }}>
+            <div className="fs-12 text-muted mt-4">
               {date
                 ? date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) +
                   ' • ' +
@@ -139,9 +134,9 @@ export default function MatchOverviewTab({
           </div>
 
           {/* Away */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
+          <div className="flex-col gap-4 flex-1" style={{ alignItems: 'center' }}>
             <TeamLogo url={awayLogoUrl} fallback="⚽" size={44} />
-            <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', lineHeight: 1.2 }}>
+            <span className="fs-13 fw-700 text-center" style={{ lineHeight: 1.2 }}>
               {awayTeamName}
             </span>
           </div>
@@ -149,13 +144,9 @@ export default function MatchOverviewTab({
 
         {/* Venue + competition */}
         <div
+          className="text-center border-top mt-12 fs-12 text-muted"
           style={{
-            textAlign: 'center',
-            borderTop: '1px solid var(--app-border, #333)',
-            marginTop: 12,
             paddingTop: 8,
-            fontSize: 12,
-            color: 'var(--app-muted-text, #888)',
           }}
         >
           📍 {match.location || match.metadata?.venue || 'Onbekend'} • 🏆{' '}
@@ -164,34 +155,32 @@ export default function MatchOverviewTab({
       </div>
 
       {/* ── Quick status cards ────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+      <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
         {/* Lineup status */}
         <div
+          className="border bg-surface p-12"
           style={{
             borderRadius: 10,
-            border: '1px solid var(--app-border, #333)',
-            background: 'var(--app-surface, #1e1e1e)',
-            padding: '12px',
           }}
         >
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--app-muted-text, #888)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+          <div className="fs-11 fw-600 text-muted" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
             Opstelling
           </div>
           {lineupFilledCount > 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 20 }}>✅</span>
+            <div className="flex-row gap-6">
+              <span className="fs-20">✅</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#10b981' }}>Ingevuld</div>
-                <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)' }}>
+                <div className="fs-14 fw-700" style={{ color: '#10b981' }}>Ingevuld</div>
+                <div className="fs-11 text-muted">
                   {lineupFilledCount} spelers{lineupFormation ? ` • ${lineupFormation}` : ''}
                 </div>
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 20 }}>⬜</span>
+            <div className="flex-row gap-6">
+              <span className="fs-20">⬜</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--app-muted-text, #888)' }}>Niet ingevuld</div>
+                <div className="fs-14 fw-700 text-muted">Niet ingevuld</div>
               </div>
             </div>
           )}
@@ -199,23 +188,21 @@ export default function MatchOverviewTab({
 
         {/* Content status */}
         <div
+          className="border bg-surface p-12"
           style={{
             borderRadius: 10,
-            border: '1px solid var(--app-border, #333)',
-            background: 'var(--app-surface, #1e1e1e)',
-            padding: '12px',
           }}
         >
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--app-muted-text, #888)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+          <div className="fs-11 fw-600 text-muted" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
             Content
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 20 }}>{contentDone > 0 ? '🟢' : '⬜'}</span>
+          <div className="flex-row gap-6">
+            <span className="fs-20">{contentDone > 0 ? '🟢' : '⬜'}</span>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: contentDone > 0 ? '#10b981' : 'var(--app-muted-text, #888)' }}>
+              <div className="fs-14 fw-700" style={{ color: contentDone > 0 ? '#10b981' : 'var(--app-muted-text, #888)' }}>
                 {contentDone}/{contentTotal}
               </div>
-              <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)' }}>
+              <div className="fs-11 text-muted">
                 {contentGenerating > 0 ? `${contentGenerating} bezig` : contentDone > 0 ? 'gereed' : 'niet gemaakt'}
               </div>
             </div>
@@ -230,18 +217,15 @@ export default function MatchOverviewTab({
 
         return (
           <div key={categoryKey}>
-            <div style={{
-              fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-              letterSpacing: '0.5px', color: 'var(--app-muted-text, #888)',
+            <div className="fs-11 fw-700 text-muted" style={{
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
               marginBottom: 6, paddingLeft: 2,
             }}>
               {category.label}
             </div>
-            <div style={{
+            <div className="border overflow-hidden bg-surface" style={{
               borderRadius: 10,
-              border: '1px solid var(--app-border, #333)',
-              overflow: 'hidden',
-              background: 'var(--app-surface, #1e1e1e)',
             }}>
               {category.items.map((item, idx) => {
                 const latestMedia = getLatestMediaForSubtype(item.subtype);
@@ -260,29 +244,25 @@ export default function MatchOverviewTab({
                   <div
                     key={item.id}
                     onClick={() => onContentAction?.(item.subtype, item.label)}
+                    className="flex-row gap-8 px-12 py-8 fs-13"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '8px 12px',
                       borderBottom: idx < category.items.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
-                      fontSize: 13,
                       cursor: onContentAction ? 'pointer' : 'default',
                     }}
                   >
-                    <span style={{ fontSize: 14 }}>{statusIcon}</span>
+                    <span className="fs-14">{statusIcon}</span>
                     <span style={{ fontSize: 15 }}>{item.icon}</span>
-                    <span style={{ flex: 1, fontWeight: 500, color: 'var(--app-text, #fff)' }}>
+                    <span className="flex-1 fw-500 text-primary">
                       {item.label}
                     </span>
                     {hasMedia && !isGenerating ? (
-                      <span style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>Bekijk ↗</span>
+                      <span className="fs-11 fw-600" style={{ color: '#10b981' }}>Bekijk ↗</span>
                     ) : isGenerating ? (
-                      <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>⏳ Bezig</span>
+                      <span className="fs-11 fw-600" style={{ color: '#f59e0b' }}>⏳ Bezig</span>
                     ) : isFailed ? (
-                      <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>Opnieuw ↻</span>
+                      <span className="fs-11 fw-600" style={{ color: '#ef4444' }}>Opnieuw ↻</span>
                     ) : (
-                      <span style={{ fontSize: 11, color: 'var(--app-primary, #3b82f6)', fontWeight: 600 }}>Maak →</span>
+                      <span className="fs-11 fw-600" style={{ color: 'var(--app-primary, #3b82f6)' }}>Maak →</span>
                     )}
                   </div>
                 );
@@ -295,18 +275,15 @@ export default function MatchOverviewTab({
       {/* ── Match Events (compact) ────────────────────────────────────── */}
       {matchEvents.length > 0 && (
         <div>
-          <div style={{
-            fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
-            letterSpacing: '0.5px', color: 'var(--app-muted-text, #888)',
+          <div className="fs-11 fw-700 text-muted" style={{
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
             marginBottom: 6, paddingLeft: 2,
           }}>
             Wedstrijdverloop
           </div>
-          <div style={{
+          <div className="border overflow-hidden bg-surface" style={{
             borderRadius: 10,
-            border: '1px solid var(--app-border, #333)',
-            overflow: 'hidden',
-            background: 'var(--app-surface, #1e1e1e)',
           }}>
             {matchEvents.map((evt, idx) => {
               const isHome = String(evt.team_project?.id || '') === String(match.project?.id || '');
@@ -323,23 +300,20 @@ export default function MatchOverviewTab({
               return (
                 <div
                   key={evt.id}
+                  className="flex-row gap-8 fs-13"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
                     padding: '6px 12px',
                     borderBottom: idx < matchEvents.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
-                    fontSize: 13,
                   }}
                 >
-                  <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--app-muted-text, #666)', minWidth: 28, textAlign: 'right' }}>
+                  <span className="fs-12 fw-700 text-muted text-right" style={{ fontFamily: 'monospace', minWidth: 28 }}>
                     {evt.minute}'
                   </span>
                   <span>{icon}</span>
-                  <span style={{ flex: 1, fontWeight: 500 }}>
+                  <span className="flex-1 fw-500">
                     {evt.member?.user_name || 'Onbekend'}
                     {evt.related_member && (
-                      <span style={{ fontSize: 11, color: 'var(--app-muted-text, #888)', marginLeft: 4 }}>
+                      <span className="fs-11 text-muted ml-4">
                         ({evt.related_member.user_name})
                       </span>
                     )}
