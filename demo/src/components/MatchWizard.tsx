@@ -1,10 +1,13 @@
 /**
- * MatchWizard - Step-by-step mobile wizard for match preparation
+ * MatchWizard - Step-by-step mobile wizard for match content creation
  *
- * 3-step flow:
+ * Flow:
  * 1. Select/confirm match (active match pre-selected)
- * 2. Set lineup (mobile-friendly position-by-position)
- * 3. Create content (pre-match / during-match options)
+ * 2. Choose content type (pre / during / post)
+ * 3. Set lineup (only for lineup-dependent content types)
+ * 4. → Generate via ContentGenerationModal
+ *
+ * Consistent modal design: back arrow + title + close X in header.
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +25,7 @@ import {
   Video,
   FileText,
   Clock,
+  X,
   ArrowLeft,
 } from 'lucide-react';
 import { useActivities, Activity } from '../hooks/useActivities';
@@ -29,7 +33,7 @@ import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import { getApiBaseUrl } from '../utils/apiBase';
 import ContentGenerationModal, { type ContentTemplate } from '../pages/identity/ContentGenerationModal';
 
-type WizardStep = 'match' | 'lineup' | 'content';
+type WizardStep = 'match' | 'content' | 'lineup';
 type ContentPhase = 'pre' | 'during' | 'post';
 
 interface MatchWizardProps {
@@ -69,6 +73,11 @@ interface SquadMember {
   };
   functional_roles?: string[];
 }
+
+// Content types that require a lineup to be set first
+const LINEUP_REQUIRED_SUBTYPES = new Set([
+  'lineup', 'lineup_flyer', 'walkon', 'poster', 'match_intro',
+]);
 
 // Keys map to real template subtype values from backend
 const CONTENT_TYPES = {
@@ -124,12 +133,17 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   const [editingPosition, setEditingPosition] = useState<number | null>(null);
   const [lineupSaving, setLineupSaving] = useState(false);
 
+  // Track which content type was selected (for lineup → generate flow)
+  const [pendingContent, setPendingContent] = useState<{
+    key: string; label: string; subtype: string; templateType: string;
+  } | null>(null);
+
   // Content generation modal state
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState<string>('');
 
-  // Template fetching (same as desktop)
+  // Template fetching
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
@@ -189,10 +203,17 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     }
   }, [selectedMatch]);
 
-  // Fetch squad when match is selected and entering lineup step
+  // Fetch squad when entering lineup step
   useEffect(() => {
     if (selectedMatch && currentStep === 'lineup') {
       fetchSquad();
+    }
+  }, [selectedMatch, currentStep]);
+
+  // Fetch templates when entering content step
+  useEffect(() => {
+    if (selectedMatch && currentStep === 'content') {
+      fetchTemplates();
     }
   }, [selectedMatch, currentStep]);
 
@@ -203,25 +224,19 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
     setSquadLoading(true);
     try {
-      // Same API as MatchDetailPage uses
       const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectId))}/members/?page_size=100`;
       const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-      if (!res.ok) {
-        setSquadLoading(false);
-        return;
-      }
+      if (!res.ok) { setSquadLoading(false); return; }
 
       const raw = await res.json();
       let members: SquadMember[] = [];
 
-      // Handle various response formats
       if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
       else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
       else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
       else if (Array.isArray(raw?.data)) members = raw.data;
       else if (Array.isArray(raw)) members = raw;
 
-      // Paginate if needed
       let nextUrl = raw?.meta?.pagination?.next;
       while (nextUrl) {
         const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
@@ -235,7 +250,6 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         nextUrl = nd?.meta?.pagination?.next;
       }
 
-      // Group by functional_roles (same logic as MatchDetailPage)
       const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [] };
       members.forEach((p) => {
         let roles: string[] = [];
@@ -248,7 +262,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         } else if (p.metadata?.team_role) {
           roles = [p.metadata.team_role];
         } else {
-          roles = ['player']; // Default to player
+          roles = ['player'];
         }
 
         roles.forEach(role => {
@@ -271,6 +285,37 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     }
   };
 
+  const fetchTemplates = async () => {
+    setTemplatesLoading(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('is_active', 'true');
+      params.append('page_size', '500');
+
+      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
+      const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
+
+      const grouped: Record<string, ContentTemplate[]> = {};
+      allTemplates.forEach(t => {
+        const subtype = t.template_subtype || t.template_type;
+        if (!grouped[subtype]) grouped[subtype] = [];
+        grouped[subtype].push(t);
+      });
+      setAvailableTemplates(grouped);
+    } catch (err) {
+      console.error('Failed to fetch templates:', err);
+    } finally {
+      setTemplatesLoading(false);
+    }
+  };
+
   const saveLineup = async () => {
     if (!selectedMatch) return;
     setLineupSaving(true);
@@ -284,7 +329,6 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         player: lineupSlots.player,
       };
 
-      // PATCH the activity with updated metadata
       const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
       const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {
         method: 'PATCH',
@@ -326,53 +370,26 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     setEditingPosition(null);
   };
 
-  // Fetch available templates when entering content step
-  useEffect(() => {
-    if (selectedMatch && currentStep === 'content') {
-      fetchTemplates();
-    }
-  }, [selectedMatch, currentStep]);
-
-  const fetchTemplates = async () => {
-    setTemplatesLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append('is_active', 'true');
-      params.append('page_size', '500');
-
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!res.ok) return;
-
-      const data = await res.json();
-      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-      const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
-
-      // Group templates by subtype
-      const grouped: Record<string, ContentTemplate[]> = {};
-      allTemplates.forEach(t => {
-        const subtype = t.template_subtype || t.template_type;
-        if (!grouped[subtype]) grouped[subtype] = [];
-        grouped[subtype].push(t);
-      });
-      setAvailableTemplates(grouped);
-    } catch (err) {
-      console.error('Failed to fetch templates:', err);
-    } finally {
-      setTemplatesLoading(false);
-    }
-  };
-
+  // ── Content type selection → route to lineup or generate ────────────
   const handleContentSelect = (contentKey: string, contentLabel: string, subtype: string, templateType: string) => {
     if (!selectedMatch) return;
 
-    // Find the matching template from fetched templates (same logic as desktop)
+    const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(subtype);
+    if (needsLineup) {
+      // Save the pending content and go to lineup step
+      setPendingContent({ key: contentKey, label: contentLabel, subtype, templateType });
+      setCurrentStep('lineup');
+      return;
+    }
+
+    // No lineup needed — go directly to generate
+    openContentGeneration(contentKey, contentLabel, subtype, templateType);
+  };
+
+  const openContentGeneration = (contentKey: string, contentLabel: string, subtype: string, templateType: string) => {
     const templates = availableTemplates[subtype] || [];
     let matchedTemplate: ContentTemplate | undefined;
 
-    // Special handling for lineup: match on formation
     if ((subtype === 'lineup' || subtype === 'lineup_flyer') && templates.length > 0) {
       const matchFormation = lineupFormation;
       if (matchFormation) {
@@ -386,7 +403,6 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
       matchedTemplate = templates[0];
     }
 
-    // For types without templates, create a synthetic one (same as desktop)
     const templateNotRequired = ['match_intro', 'goal', 'poster'].includes(subtype);
     if (!matchedTemplate && templateNotRequired) {
       const syntheticTemplates: Record<string, ContentTemplate> = {
@@ -402,23 +418,33 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     setIsContentModalOpen(true);
   };
 
+  // After lineup is confirmed, generate the pending content
+  const handleLineupConfirm = () => {
+    saveLineup();
+    if (pendingContent) {
+      openContentGeneration(pendingContent.key, pendingContent.label, pendingContent.subtype, pendingContent.templateType);
+    }
+  };
+
   const handleContentModalClose = () => {
     setIsContentModalOpen(false);
     setSelectedTemplate(null);
     setSelectedContentTypeLabel('');
   };
 
-  const handleContentGenerated = (message?: string) => {
-    // Content was generated successfully — keep modal open for video jobs
-    // so user can see progress and approve/reject inline.
-    // Only show a toast; don't close the modal.
+  const handleContentGenerated = (_message?: string) => {
+    // Content was generated — keep modal open for video jobs
   };
 
-  const goToStep = (step: WizardStep) => {
-    if (currentStep === 'lineup' && step !== 'lineup') {
-      saveLineup();
+  const handleBack = () => {
+    if (currentStep === 'lineup') {
+      setPendingContent(null);
+      setCurrentStep('content');
+    } else if (currentStep === 'content') {
+      setCurrentStep('match');
+    } else {
+      handleClose();
     }
-    setCurrentStep(step);
   };
 
   const handleClose = () => {
@@ -427,10 +453,11 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     setLineupSlots({ goalkeeper: [], player: [] });
     setSquadGroups({ goalkeeper: [], player: [] });
     setEditingPosition(null);
+    setPendingContent(null);
     onClose();
   };
 
-  // Calculate filled positions
+  // Pool for lineup
   const gkPool = squadGroups.goalkeeper || [];
   const playerPool = squadGroups.player || [];
   const allPlayers = [...gkPool, ...playerPool];
@@ -438,11 +465,11 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   const filledPositions = lineupSlots.goalkeeper.filter(Boolean).length + lineupSlots.player.filter(Boolean).length;
   const totalPositions = POSITIONS.length;
 
-  const getStepTitle = () => {
+  const getStepTitle = (): string => {
     switch (currentStep) {
-      case 'match': return 'Selecteer Wedstrijd';
-      case 'lineup': return 'Opstelling';
-      case 'content': return 'Content Maken';
+      case 'match': return 'Selecteer wedstrijd';
+      case 'content': return 'Kies content';
+      case 'lineup': return pendingContent ? `Opstelling — ${pendingContent.label}` : 'Opstelling';
     }
   };
 
@@ -461,54 +488,80 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     return jersey ? String(jersey) : null;
   };
 
+  // ── Shared button style ─────────────────────────────────────────────
+  const cardStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '14px 16px',
+    borderRadius: '12px',
+    border: '1px solid var(--app-border)',
+    backgroundColor: 'var(--app-surface)',
+    cursor: 'pointer',
+    textAlign: 'left',
+    width: '100%',
+    transition: 'transform 0.1s ease',
+  };
+
   return (
     <BottomSheet
       isOpen={isOpen}
       onClose={handleClose}
-      title={getStepTitle()}
+      // Hide BottomSheet's own title — we render our own header
     >
-      <div style={{ maxHeight: '60vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        {/* Progress Steps */}
+      <div style={{ maxHeight: '65vh', display: 'flex', flexDirection: 'column' }}>
+
+        {/* ── Consistent header: back + title + close ──────────────── */}
         <div style={{
           display: 'flex',
-          justifyContent: 'center',
-          gap: '8px',
-          padding: '16px',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '4px 16px 12px',
           borderBottom: '1px solid var(--app-border)',
+          flexShrink: 0,
         }}>
-          {(['match', 'lineup', 'content'] as WizardStep[]).map((step, idx) => (
-            <div
-              key={step}
-              onClick={() => step === 'match' || selectedMatch ? goToStep(step) : undefined}
+          {currentStep !== 'match' ? (
+            <button
+              onClick={handleBack}
+              aria-label="Terug"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                backgroundColor: currentStep === step
-                  ? 'var(--app-primary)'
-                  : 'var(--app-surface-2)',
-                color: currentStep === step ? 'white' : 'var(--app-text-muted)',
-                fontSize: '13px',
-                fontWeight: currentStep === step ? 600 : 400,
-                cursor: step === 'match' || selectedMatch ? 'pointer' : 'default',
-                opacity: step !== 'match' && !selectedMatch ? 0.5 : 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '36px', height: '36px', borderRadius: '50%',
+                backgroundColor: 'var(--app-surface-2)', border: 'none', cursor: 'pointer',
+                color: 'var(--app-text)',
               }}
             >
-              {step === 'match' && <Calendar size={14} />}
-              {step === 'lineup' && <Shirt size={14} />}
-              {step === 'content' && <Zap size={14} />}
-              <span>{idx + 1}</span>
-            </div>
-          ))}
+              <ArrowLeft size={20} />
+            </button>
+          ) : (
+            <div style={{ width: '36px' }} />
+          )}
+          <span style={{
+            flex: 1, textAlign: 'center',
+            fontWeight: 600, fontSize: '16px', color: 'var(--app-text)',
+          }}>
+            {getStepTitle()}
+          </span>
+          <button
+            onClick={handleClose}
+            aria-label="Sluiten"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '36px', height: '36px', borderRadius: '50%',
+              backgroundColor: 'var(--app-surface-2)', border: 'none', cursor: 'pointer',
+              color: 'var(--app-text)',
+            }}
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        {/* Step Content */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '16px' }}>
-          {/* Step 1: Match Selection */}
+        {/* ── Step content (scrollable) ────────────────────────────── */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+
+          {/* ── Step 1: Match selection ─────────────────────────────── */}
           {currentStep === 'match' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {matchesLoading ? (
                 <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-text-muted)' }}>
                   Laden...
@@ -527,46 +580,38 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   return (
                     <button
                       key={match.id}
-                      onClick={() => setSelectedMatch(match)}
+                      onClick={() => {
+                        setSelectedMatch(match);
+                        setCurrentStep('content');
+                      }}
                       style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        padding: '16px',
-                        borderRadius: '12px',
-                        border: isSelected ? '2px solid var(--app-primary)' : '1px solid var(--app-border)',
-                        backgroundColor: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.1))' : 'var(--app-surface)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        width: '100%',
+                        ...cardStyle,
+                        border: isSelected ? '2px solid var(--app-primary)' : cardStyle.border,
+                        backgroundColor: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : cardStyle.backgroundColor,
                       }}
                     >
                       <div style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '50%',
+                        width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
                         backgroundColor: urgency === 'urgent' ? 'var(--color-error)' :
                                         urgency === 'soon' ? 'var(--color-warning)' : 'var(--app-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '12px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontWeight: 700, fontSize: '14px',
                       }}>
                         {date.getDate()}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--app-text)' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontWeight: 600, fontSize: '15px', color: 'var(--app-text)',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
                           {match.title}
                         </div>
                         <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
-                          {relativeTime} • {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+                          {relativeTime} &middot; {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
-                      {isSelected && (
-                        <Check size={24} style={{ color: 'var(--app-primary)' }} />
-                      )}
+                      {isSelected && <Check size={22} style={{ color: 'var(--app-primary)', flexShrink: 0 }} />}
+                      {!isSelected && <ChevronRight size={20} style={{ color: 'var(--app-text-muted)', flexShrink: 0 }} />}
                     </button>
                   );
                 })
@@ -574,25 +619,87 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             </div>
           )}
 
-          {/* Step 2: Lineup */}
+          {/* ── Step 2: Content type selection ─────────────────────── */}
+          {currentStep === 'content' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Phase tabs: Voor / Tijdens / Na */}
+              <div style={{
+                display: 'flex', gap: '4px', padding: '3px',
+                backgroundColor: 'var(--app-surface-2)', borderRadius: '10px',
+              }}>
+                {[
+                  { key: 'pre', label: 'Voor', icon: Clock },
+                  { key: 'during', label: 'Tijdens', icon: Play },
+                  { key: 'post', label: 'Na', icon: Check },
+                ].map(({ key, label, icon: Icon }) => (
+                  <button
+                    key={key}
+                    onClick={() => setSelectedContentPhase(key as ContentPhase)}
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: '6px', padding: '10px 8px', borderRadius: '8px', border: 'none',
+                      backgroundColor: selectedContentPhase === key ? 'var(--app-primary)' : 'transparent',
+                      color: selectedContentPhase === key ? 'white' : 'var(--app-text-muted)',
+                      fontWeight: selectedContentPhase === key ? 600 : 400,
+                      fontSize: '13px', cursor: 'pointer',
+                      transition: 'background-color 0.15s ease, color 0.15s ease',
+                    }}
+                  >
+                    <Icon size={14} />
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Content type cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {CONTENT_TYPES[selectedContentPhase].map((content) => {
+                  const Icon = content.icon;
+                  const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(content.subtype);
+                  return (
+                    <button
+                      key={content.key}
+                      onClick={() => handleContentSelect(content.key, content.label, content.subtype, content.templateType)}
+                      style={cardStyle}
+                    >
+                      <div style={{
+                        width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
+                        backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.08))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Icon size={22} style={{ color: 'var(--app-primary)' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--app-text)' }}>
+                          {content.label}
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                          {content.description}
+                          {needsLineup && ' (opstelling nodig)'}
+                        </div>
+                      </div>
+                      <ChevronRight size={20} style={{ color: 'var(--app-text-muted)', flexShrink: 0 }} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 3: Lineup (only for lineup-dependent content) ── */}
           {currentStep === 'lineup' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {/* Progress indicator */}
               <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 marginBottom: '8px',
               }}>
                 <span style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>
-                  {filledPositions} / {totalPositions} posities ingevuld
+                  {filledPositions} / {totalPositions} posities
                 </span>
                 <div style={{
-                  width: '100px',
-                  height: '4px',
-                  backgroundColor: 'var(--app-border)',
-                  borderRadius: '2px',
-                  overflow: 'hidden',
+                  width: '100px', height: '4px',
+                  backgroundColor: 'var(--app-border)', borderRadius: '2px', overflow: 'hidden',
                 }}>
                   <div style={{
                     width: `${(filledPositions / totalPositions) * 100}%`,
@@ -612,8 +719,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   Geen spelers gevonden in het team
                 </div>
               ) : (
-                /* Position list - mobile friendly */
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {POSITIONS.map((posConfig) => {
                     const isGoalkeeper = posConfig.slot === 1;
                     const positionIdx = isGoalkeeper ? 0 : posConfig.slot - 2;
@@ -622,28 +728,23 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       : lineupSlots.player[positionIdx] || null;
                     const isEditing = editingPosition === posConfig.slot;
 
-                    // Build list of already used member IDs
                     const usedMemberIds = [
                       ...(lineupSlots.goalkeeper || []),
                       ...(lineupSlots.player || []),
                     ].filter(Boolean);
 
                     if (isEditing) {
-                      // Show player selection
                       return (
                         <div
                           key={posConfig.slot}
                           style={{
                             backgroundColor: 'var(--app-surface-2)',
-                            borderRadius: '12px',
-                            padding: '12px',
+                            borderRadius: '12px', padding: '12px',
                           }}
                         >
                           <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            marginBottom: '12px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            marginBottom: '10px',
                           }}>
                             <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>
                               {posConfig.fullLabel} ({posConfig.label})
@@ -651,38 +752,23 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                             <button
                               onClick={() => setEditingPosition(null)}
                               style={{
-                                padding: '4px 8px',
-                                fontSize: '12px',
-                                backgroundColor: 'transparent',
-                                border: 'none',
-                                color: 'var(--app-text-muted)',
-                                cursor: 'pointer',
+                                padding: '4px 12px', fontSize: '12px', borderRadius: '6px',
+                                backgroundColor: 'transparent', border: '1px solid var(--app-border)',
+                                color: 'var(--app-text-muted)', cursor: 'pointer',
                               }}
                             >
                               Annuleren
                             </button>
                           </div>
                           <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '4px',
-                            maxHeight: '200px',
-                            overflow: 'auto',
+                            display: 'flex', flexDirection: 'column', gap: '4px',
+                            maxHeight: '180px', overflowY: 'auto',
                           }}>
-                            {/* Option to clear */}
                             <button
                               onClick={() => handleSelectPlayer(positionIdx, isGoalkeeper, null)}
                               style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                padding: '12px',
-                                borderRadius: '8px',
-                                border: 'none',
-                                backgroundColor: 'var(--app-surface)',
-                                color: 'var(--app-text-muted)',
-                                cursor: 'pointer',
-                                textAlign: 'left',
+                                ...cardStyle, padding: '10px 12px',
+                                color: 'var(--app-text-muted)', fontSize: '14px',
                               }}
                             >
                               — Geen speler —
@@ -696,40 +782,26 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                                   onClick={() => !isUsed && handleSelectPlayer(positionIdx, isGoalkeeper, member.id)}
                                   disabled={isUsed}
                                   style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    padding: '12px',
-                                    borderRadius: '8px',
-                                    border: 'none',
-                                    backgroundColor: member.id === memberId
-                                      ? 'var(--app-primary)'
-                                      : 'var(--app-surface)',
-                                    color: member.id === memberId
-                                      ? 'white'
-                                      : isUsed ? 'var(--app-text-muted)' : 'var(--app-text)',
+                                    ...cardStyle,
+                                    padding: '10px 12px',
+                                    backgroundColor: member.id === memberId ? 'var(--app-primary)' : cardStyle.backgroundColor,
+                                    color: member.id === memberId ? 'white' : isUsed ? 'var(--app-text-muted)' : 'var(--app-text)',
                                     cursor: isUsed ? 'not-allowed' : 'pointer',
                                     opacity: isUsed ? 0.5 : 1,
-                                    textAlign: 'left',
                                   }}
                                 >
                                   {jersey && (
                                     <span style={{
-                                      width: '28px',
-                                      height: '28px',
-                                      borderRadius: '50%',
-                                      backgroundColor: 'var(--app-border)',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      fontSize: '12px',
-                                      fontWeight: 600,
+                                      width: '26px', height: '26px', borderRadius: '50%',
+                                      backgroundColor: member.id === memberId ? 'rgba(255,255,255,0.3)' : 'var(--app-surface-2)',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      fontSize: '11px', fontWeight: 600, flexShrink: 0,
                                     }}>
                                       {jersey}
                                     </span>
                                   )}
                                   <span style={{ flex: 1 }}>{getSquadMemberName(member)}</span>
-                                  {isUsed && <span style={{ fontSize: '11px' }}>✓ ingevuld</span>}
+                                  {isUsed && <span style={{ fontSize: '11px', opacity: 0.7 }}>ingevuld</span>}
                                 </button>
                               );
                             })}
@@ -738,58 +810,42 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       );
                     }
 
-                    // Normal position row
                     return (
                       <button
                         key={posConfig.slot}
                         onClick={() => setEditingPosition(posConfig.slot)}
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 16px',
-                          borderRadius: '10px',
-                          border: '1px solid var(--app-border)',
+                          ...cardStyle,
                           backgroundColor: memberId ? 'var(--app-surface)' : 'var(--app-surface-2)',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          width: '100%',
                         }}
                       >
-                        {/* Position badge */}
                         <div style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '8px',
+                          width: '34px', height: '34px', borderRadius: '8px', flexShrink: 0,
                           backgroundColor: memberId ? 'var(--color-success)' : 'var(--app-border)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '12px',
-                          fontWeight: 700,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '11px', fontWeight: 700,
                           color: memberId ? 'white' : 'var(--app-text-muted)',
                         }}>
                           {posConfig.label}
                         </div>
-                        {/* Player info */}
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           {memberId ? (
                             <>
                               <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--app-text)' }}>
                                 {getMemberName(memberId)}
                               </div>
                               <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>
-                                {getMemberJersey(memberId) && `#${getMemberJersey(memberId)} • `}
+                                {getMemberJersey(memberId) && `#${getMemberJersey(memberId)} \u00b7 `}
                                 {posConfig.fullLabel}
                               </div>
                             </>
                           ) : (
                             <div style={{ color: 'var(--app-text-muted)', fontSize: '14px' }}>
-                              Tik om {posConfig.fullLabel} te kiezen
+                              {posConfig.fullLabel}
                             </div>
                           )}
                         </div>
-                        <ChevronRight size={20} style={{ color: 'var(--app-text-muted)' }} />
+                        <ChevronRight size={18} style={{ color: 'var(--app-text-muted)', flexShrink: 0 }} />
                       </button>
                     );
                   })}
@@ -797,145 +853,51 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               )}
             </div>
           )}
-
-          {/* Step 3: Content */}
-          {currentStep === 'content' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Phase tabs */}
-              <div style={{
-                display: 'flex',
-                gap: '8px',
-                padding: '4px',
-                backgroundColor: 'var(--app-surface-2)',
-                borderRadius: '10px',
-              }}>
-                {[
-                  { key: 'pre', label: 'Voor', icon: Clock },
-                  { key: 'during', label: 'Tijdens', icon: Play },
-                  { key: 'post', label: 'Na', icon: Check },
-                ].map(({ key, label, icon: Icon }) => (
-                  <button
-                    key={key}
-                    onClick={() => setSelectedContentPhase(key as ContentPhase)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: selectedContentPhase === key
-                        ? 'var(--app-primary)'
-                        : 'transparent',
-                      color: selectedContentPhase === key ? 'white' : 'var(--app-text-muted)',
-                      fontWeight: selectedContentPhase === key ? 600 : 400,
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Icon size={14} />
-                    {label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Content type cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {CONTENT_TYPES[selectedContentPhase].map((content) => {
-                  const Icon = content.icon;
-                  return (
-                    <button
-                      key={content.key}
-                      onClick={() => handleContentSelect(content.key, content.label, content.subtype, content.templateType)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
-                        padding: '16px',
-                        borderRadius: '12px',
-                        border: '1px solid var(--app-border)',
-                        backgroundColor: 'var(--app-surface)',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        width: '100%',
-                        transition: 'transform 0.15s, border-color 0.15s',
-                      }}
-                      onTouchStart={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)';
-                      }}
-                      onTouchEnd={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                      }}
-                    >
-                      <div style={{
-                        width: '48px',
-                        height: '48px',
-                        borderRadius: '12px',
-                        backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.1))',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <Icon size={24} style={{ color: 'var(--app-primary)' }} />
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '15px', color: 'var(--app-text)' }}>
-                          {content.label}
-                        </div>
-                        <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
-                          {content.description}
-                        </div>
-                      </div>
-                      <Zap size={20} style={{ color: 'var(--app-primary)' }} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Bottom navigation */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          padding: '16px',
-          borderTop: '1px solid var(--app-border)',
-          paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-        }}>
-          {currentStep !== 'match' && (
-            <Button
-              variant="secondary"
-              onClick={() => goToStep(currentStep === 'content' ? 'lineup' : 'match')}
-              style={{ flex: 1 }}
+        {/* ── Bottom action bar ─────────────────────────────────────── */}
+        {currentStep === 'match' && selectedMatch && (
+          <div style={{
+            padding: '12px 16px',
+            paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+            borderTop: '1px solid var(--app-border)', flexShrink: 0,
+          }}>
+            <button
+              onClick={() => setCurrentStep('content')}
+              style={{
+                width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                backgroundColor: 'var(--app-primary)', color: 'white',
+                fontWeight: 600, fontSize: '15px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              }}
             >
-              <ChevronLeft size={18} />
-              Terug
-            </Button>
-          )}
-          {currentStep !== 'content' && (
-            <Button
-              variant="primary"
-              onClick={() => goToStep(currentStep === 'match' ? 'lineup' : 'content')}
-              disabled={!selectedMatch}
-              style={{ flex: currentStep === 'match' ? 1 : 2 }}
-            >
-              {currentStep === 'match' ? 'Opstelling' : 'Content'}
+              Verder
               <ChevronRight size={18} />
-            </Button>
-          )}
-          {currentStep === 'content' && (
-            <Button
-              variant="secondary"
-              onClick={handleClose}
-              style={{ flex: 1 }}
+            </button>
+          </div>
+        )}
+        {currentStep === 'lineup' && (
+          <div style={{
+            padding: '12px 16px',
+            paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+            borderTop: '1px solid var(--app-border)', flexShrink: 0,
+          }}>
+            <button
+              onClick={handleLineupConfirm}
+              disabled={lineupSaving}
+              style={{
+                width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                backgroundColor: 'var(--app-primary)', color: 'white',
+                fontWeight: 600, fontSize: '15px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                opacity: lineupSaving ? 0.7 : 1,
+              }}
             >
-              Sluiten
-            </Button>
-          )}
-        </div>
+              <Zap size={18} />
+              {lineupSaving ? 'Opslaan...' : 'Genereer content'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Inline Content Generation Modal */}
