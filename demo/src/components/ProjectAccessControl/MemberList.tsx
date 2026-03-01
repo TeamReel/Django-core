@@ -88,11 +88,11 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
   }
 
   return (
-    <div className="member-list-container" style={{ padding: '16px' }}>
+    <div className="member-list-container p-16">
       <h3>Project Members</h3>
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+      <table className="w-full" style={{ borderCollapse: 'collapse', marginTop: '10px' }}>
         <thead>
-          <tr style={{ borderBottom: '1px solid #eee', textAlign: 'left' }}>
+          <tr className="border-bottom text-left">
             <th style={{ padding: '8px 6px' }}>User</th>
             <th style={{ padding: '8px 6px' }}>Role</th>
             <th className="hide-mobile" style={{ padding: '8px 6px' }}>Joined</th>
@@ -101,42 +101,33 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
         </thead>
         <tbody>
           {members.map((member) => (
-            <tr key={member.id} style={{ borderBottom: '1px solid #eee' }}>
+            <tr key={member.id} className="border-bottom">
               <td style={{ padding: '8px 6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>
+                <div className="flex-row gap-8">
+                  <div className="flex-center rounded-full fs-12" style={{ width: '28px', height: '28px', backgroundColor: '#ddd', flexShrink: 0 }}>
                     {member.user.name.charAt(0)}
                   </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{member.user.name}</div>
-                    <div className="hide-mobile" style={{ fontSize: '11px', color: '#666' }}>{member.user.email}</div>
+                  <div className="min-w-0">
+                    <div className="fw-700 fs-13 truncate">{member.user.name}</div>
+                    <div className="hide-mobile fs-11 text-muted">{member.user.email}</div>
                   </div>
                 </div>
               </td>
               <td style={{ padding: '8px 6px' }}>
-                <span style={{
+                <span className="fs-11 rounded-12" style={{
                   padding: '2px 6px',
-                  borderRadius: '12px',
                   backgroundColor: member.role === 'admin' ? '#e3f2fd' : '#f5f5f5',
-                  color: member.role === 'admin' ? '#1976d2' : '#333',
-                  fontSize: '11px'
+                  color: member.role === 'admin' ? '#1976d2' : '#333'
                 }}>
                   {member.role}
                 </span>
               </td>
-              <td className="hide-mobile" style={{ padding: '8px 6px', fontSize: '12px' }}>{member.joined_at}</td>
+              <td className="hide-mobile fs-12" style={{ padding: '8px 6px' }}>{member.joined_at}</td>
               <td style={{ padding: '8px 6px' }}>
                 <button
                   onClick={() => handleRemoveClick(member)}
-                  style={{
-                    padding: '4px 8px',
-                    backgroundColor: '#ffebee',
-                    color: '#c62828',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '12px'
-                  }}
+                  className="py-4 px-8 border-none rounded-4 cursor-pointer fs-12"
+                  style={{ backgroundColor: '#ffebee', color: '#c62828' }}
                 >
                   Remove
                 </button>
@@ -147,22 +138,17 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
       </table>
 
       {isRemoveModalOpen && memberToRemove && (
-        <div style={{
+        <div className="flex-center" style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           zIndex: 1000
         }}>
-          <div style={{
+          <div className="p-24 rounded-8" style={{
             backgroundColor: 'white',
-            padding: '24px',
-            borderRadius: '8px',
             width: '400px',
             maxWidth: '90%'
           }}>
@@ -172,27 +158,24 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
               They will lose all access immediately.
             </p>
             {memberToRemove.role === 'admin' && (
-              <div style={{
+              <div className="p-10 rounded-4 mb-16" style={{
                 backgroundColor: '#fff3e0',
-                padding: '10px',
-                borderRadius: '4px',
-                marginBottom: '16px',
                 fontSize: '0.9em',
                 color: '#e65100'
               }}>
                 Warning: Removing an admin. Ensure there is at least one other admin remaining.
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+            <div className="flex-row gap-10 mt-20" style={{ justifyContent: 'flex-end' }}>
               <button
                 onClick={cancelRemove}
-                style={{ padding: '8px 16px', border: '1px solid #ddd', borderRadius: '4px', background: 'white', cursor: 'pointer' }}
+                className="py-8 px-16 rounded-4 cursor-pointer border" style={{ background: 'white' }}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmRemove}
-                style={{ padding: '8px 16px', border: 'none', borderRadius: '4px', background: '#d32f2f', color: 'white', cursor: 'pointer' }}
+                className="py-8 px-16 border-none rounded-4 cursor-pointer" style={{ background: '#d32f2f', color: 'white' }}
               >
                 Remove Member
               </button>

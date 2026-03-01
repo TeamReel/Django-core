@@ -181,66 +181,53 @@ export default function SettingsPage() {
         >
           {/* Profile Section */}
           <Settings.Section sectionId="profile">
-            <div style={{ maxWidth: '600px' }}>
-              <h2 style={{ marginTop: 0, marginBottom: '8px' }}>Profile Settings</h2>
-              <p style={{ color: '#666', marginBottom: '32px' }}>
+            <div className="max-w-600">
+              <h2 className="mb-8" style={{ marginTop: 0 }}>Profile Settings</h2>
+              <p className="text-muted mb-32">
                 Manage your personal information and public profile
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="flex-col gap-20">
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <label className="block mb-8 fw-600">
                     Full Name
                   </label>
                   <input
                     type="text"
                     value={profile.fullName}
                     onChange={(e) => handleProfileChange('fullName', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
+                    className="w-full border rounded-4 fs-14"
+                    style={{ padding: '10px 12px' }}
                   />
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <label className="block mb-8 fw-600">
                     Email Address
                   </label>
                   <input
                     type="email"
                     value={profile.email}
                     onChange={(e) => handleProfileChange('email', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
+                    className="w-full border rounded-4 fs-14"
+                    style={{ padding: '10px 12px' }}
                   />
-                  <small style={{ color: '#666', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                  <small className="text-muted fs-12 mt-4 block">
                     Your email is used for notifications and account recovery
                   </small>
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <label className="block mb-8 fw-600">
                     Bio
                   </label>
                   <textarea
                     value={profile.bio}
                     onChange={(e) => handleProfileChange('bio', e.target.value)}
                     rows={4}
+                    className="w-full border rounded-4 fs-14"
                     style={{
-                      width: '100%',
                       padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px',
                       fontFamily: 'inherit',
                       resize: 'vertical'
                     }}
@@ -251,6 +238,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={profileSaveStatus === 'saving'}
+                    className="border-none rounded-4 fs-14 fw-600"
                     style={{
                       padding: '10px 20px',
                       backgroundColor:
@@ -259,11 +247,7 @@ export default function SettingsPage() {
                         profileSaveStatus === 'saving' ? '#6c757d' :
                         '#007bff',
                       color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '14px',
                       cursor: profileSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
-                      fontWeight: 600,
                       transition: 'background-color 0.2s'
                     }}
                   >
@@ -279,73 +263,52 @@ export default function SettingsPage() {
 
           {/* Security Section */}
           <Settings.Section sectionId="security">
-            <div style={{ maxWidth: '600px' }}>
-              <h2 style={{ marginTop: 0, marginBottom: '8px' }}>Security Settings</h2>
-              <p style={{ color: '#666', marginBottom: '32px' }}>
+            <div className="max-w-600">
+              <h2 className="mb-8" style={{ marginTop: 0 }}>Security Settings</h2>
+              <p className="text-muted mb-32">
                 Manage your password, two-factor authentication, and security preferences
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <div style={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  backgroundColor: '#f8f9fa'
-                }}>
-                  <h3 style={{ marginTop: 0, marginBottom: '8px', fontSize: '16px' }}>Password</h3>
-                  <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>
+              <div className="flex-col gap-24">
+                <div className="border rounded-8 p-20" style={{ backgroundColor: '#f8f9fa' }}>
+                  <h3 className="mb-8 fs-16" style={{ marginTop: 0 }}>Password</h3>
+                  <p className="text-muted fs-14 mb-16">
                     Last changed 3 months ago
                   </p>
                   <button
                     onClick={handleChangePassword}
+                    className="py-8 px-16 border rounded-4 fs-14 cursor-pointer fw-600"
                     style={{
-                      padding: '8px 16px',
                       backgroundColor: 'white',
-                      color: '#333',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      fontWeight: 600
+                      color: '#333'
                     }}
                   >
                     Change Password
                   </button>
                 </div>
 
-                <div style={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  backgroundColor: '#f8f9fa'
-                }}>
-                  <h3 style={{ marginTop: 0, marginBottom: '8px', fontSize: '16px' }}>Two-Factor Authentication</h3>
-                  <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>
+                <div className="border rounded-8 p-20" style={{ backgroundColor: '#f8f9fa' }}>
+                  <h3 className="mb-8 fs-16" style={{ marginTop: 0 }}>Two-Factor Authentication</h3>
+                  <p className="text-muted fs-14 mb-16">
                     Add an extra layer of security to your account
                   </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '4px 12px',
-                      borderRadius: '16px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      backgroundColor: '#dc354520',
-                      color: '#dc3545'
-                    }}>
+                  <div className="flex-row gap-12">
+                    <span
+                      className="inline-block py-4 px-12 fs-12 fw-600"
+                      style={{
+                        borderRadius: '16px',
+                        backgroundColor: '#dc354520',
+                        color: '#dc3545'
+                      }}
+                    >
                       Not Enabled
                     </span>
                     <button
                       onClick={handleEnable2FA}
+                      className="py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600"
                       style={{
-                        padding: '8px 16px',
                         backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        fontWeight: 600
+                        color: 'white'
                       }}
                     >
                       Enable 2FA
@@ -353,30 +316,25 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div style={{
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  padding: '20px',
-                  backgroundColor: '#f8f9fa'
-                }}>
-                  <h3 style={{ marginTop: 0, marginBottom: '8px', fontSize: '16px' }}>Active Sessions</h3>
-                  <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>
+                <div className="border rounded-8 p-20" style={{ backgroundColor: '#f8f9fa' }}>
+                  <h3 className="mb-8 fs-16" style={{ marginTop: 0 }}>Active Sessions</h3>
+                  <p className="text-muted fs-14 mb-16">
                     Manage devices where you're currently logged in
                   </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div className="flex-col gap-12">
+                    <div className="flex-between">
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '14px' }}>Windows PC</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>Last active: Just now</div>
+                        <div className="fw-600 fs-14">Windows PC</div>
+                        <div className="fs-12 text-muted">Last active: Just now</div>
                       </div>
-                      <span style={{
-                        padding: '4px 12px',
-                        borderRadius: '16px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        backgroundColor: '#28a74520',
-                        color: '#28a745'
-                      }}>
+                      <span
+                        className="py-4 px-12 fs-12 fw-600"
+                        style={{
+                          borderRadius: '16px',
+                          backgroundColor: '#28a74520',
+                          color: '#28a745'
+                        }}
+                      >
                         Current
                       </span>
                     </div>
@@ -388,13 +346,13 @@ export default function SettingsPage() {
 
           {/* Notifications Section */}
           <Settings.Section sectionId="notifications">
-            <div style={{ maxWidth: '600px' }}>
-              <h2 style={{ marginTop: 0, marginBottom: '8px' }}>Notification Preferences</h2>
-              <p style={{ color: '#666', marginBottom: '32px' }}>
+            <div className="max-w-600">
+              <h2 className="mb-8" style={{ marginTop: 0 }}>Notification Preferences</h2>
+              <p className="text-muted mb-32">
                 Choose what notifications you want to receive
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
                 {[
                   { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive important updates via email' },
                   { key: 'projectUpdates', label: 'Project Updates', description: 'Get notified about project changes' },
@@ -403,12 +361,10 @@ export default function SettingsPage() {
                 ].map((item) => (
                   <div
                     key={item.key}
+                    className="p-16 border rounded-8"
                     style={{
                       display: 'flex',
                       alignItems: 'flex-start',
-                      padding: '16px',
-                      border: '1px solid #ddd',
-                      borderRadius: '8px',
                       backgroundColor: '#f8f9fa'
                     }}
                   >
@@ -416,11 +372,12 @@ export default function SettingsPage() {
                       type="checkbox"
                       checked={notifications[item.key as keyof typeof notifications]}
                       onChange={(e) => handleNotificationChange(item.key, e.target.checked)}
-                      style={{ marginTop: '4px', marginRight: '12px' }}
+                      className="mt-4"
+                      style={{ marginRight: '12px' }}
                     />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, marginBottom: '4px' }}>{item.label}</div>
-                      <div style={{ fontSize: '14px', color: '#666' }}>{item.description}</div>
+                    <div className="flex-1">
+                      <div className="fw-600 mb-4">{item.label}</div>
+                      <div className="fs-14 text-muted">{item.description}</div>
                     </div>
                   </div>
                 ))}
@@ -430,6 +387,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSaveNotifications}
                   disabled={notificationsSaveStatus === 'saving'}
+                  className="border-none rounded-4 fs-14 fw-600"
                   style={{
                     padding: '10px 20px',
                     backgroundColor:
@@ -438,11 +396,7 @@ export default function SettingsPage() {
                       notificationsSaveStatus === 'saving' ? '#6c757d' :
                       '#007bff',
                     color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '14px',
                     cursor: notificationsSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
-                    fontWeight: 600,
                     transition: 'background-color 0.2s'
                   }}
                 >
@@ -457,27 +411,22 @@ export default function SettingsPage() {
 
           {/* Preferences Section */}
           <Settings.Section sectionId="preferences">
-            <div style={{ maxWidth: '600px' }}>
-              <h2 style={{ marginTop: 0, marginBottom: '8px' }}>Application Preferences</h2>
-              <p style={{ color: '#666', marginBottom: '32px' }}>
+            <div className="max-w-600">
+              <h2 className="mb-8" style={{ marginTop: 0 }}>Application Preferences</h2>
+              <p className="text-muted mb-32">
                 Customize your application experience
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="flex-col gap-20">
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <label className="block mb-8 fw-600">
                     Theme
                   </label>
                   <select
                     value={preferences.theme}
                     onChange={(e) => handlePreferenceChange('theme', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
+                    className="w-full border rounded-4 fs-14"
+                    style={{ padding: '10px 12px' }}
                   >
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
@@ -486,19 +435,14 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <label className="block mb-8 fw-600">
                     Language
                   </label>
                   <select
                     value={preferences.language}
                     onChange={(e) => handlePreferenceChange('language', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
+                    className="w-full border rounded-4 fs-14"
+                    style={{ padding: '10px 12px' }}
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
@@ -510,19 +454,14 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600 }}>
+                  <label className="block mb-8 fw-600">
                     Timezone
                   </label>
                   <select
                     value={preferences.timezone}
                     onChange={(e) => handlePreferenceChange('timezone', e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      fontSize: '14px'
-                    }}
+                    className="w-full border rounded-4 fs-14"
+                    style={{ padding: '10px 12px' }}
                   >
                     <option value="utc">UTC</option>
                     <option value="est">Eastern Time (ET)</option>
@@ -535,6 +474,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSavePreferences}
                     disabled={saveStatus === 'saving'}
+                    className="border-none rounded-4 fs-14 fw-600"
                     style={{
                       padding: '10px 20px',
                       backgroundColor:
@@ -543,11 +483,7 @@ export default function SettingsPage() {
                         saveStatus === 'saving' ? '#6c757d' :
                         '#007bff',
                       color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      fontSize: '14px',
                       cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer',
-                      fontWeight: 600,
                       transition: 'background-color 0.2s'
                     }}
                   >

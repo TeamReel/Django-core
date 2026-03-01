@@ -533,7 +533,7 @@ export const ProjectsPage: React.FC = () => {
         title={displayOrgName ? `${displayOrgName} - Projects` : 'All Projects'}
         breadcrumbs={breadcrumbItems}
         actions={
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex-row gap-10 flex-wrap">
             {currentOrgSlug && (
               <Button
                 variant="secondary"
@@ -686,15 +686,15 @@ export const ProjectsPage: React.FC = () => {
               <Table>
             <thead>
               <tr>
-                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('name')} className="cursor-pointer">
                   Project Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                 </th>
                 {!currentOrgSlug && <th>Organisation</th>}
                 <th>Description</th>
-                <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('member_count')} className="cursor-pointer">
                   Team Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('created_at')} style={{ cursor: 'pointer' }}>
+                <th onClick={() => handleSort('created_at')} className="cursor-pointer">
                   Created {sort === 'created_at' && (order === 'asc' ? '↑' : '↓')}
                 </th>
                 <th>Status</th>
@@ -722,8 +722,7 @@ export const ProjectsPage: React.FC = () => {
                     <td>
                       <a
                         href={`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`}
-                        className="text-blue-600 hover:underline"
-                        style={{ fontSize: '0.85rem' }}
+                        className="text-blue-600 hover:underline fs-sm"
                         data-testid={`project-name-${project.id}`}
                         onClick={(e) => {
                           e.preventDefault();
@@ -734,11 +733,11 @@ export const ProjectsPage: React.FC = () => {
                       </a>
                     </td>
                     {!currentOrgSlug && (
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td className="fs-sm">
                         {(project as any).organisation?.name || '-'}
                       </td>
                     )}
-                    <td style={{ fontSize: '0.85rem' }} data-testid={`project-desc-${project.id}`}>
+                    <td className="fs-sm" data-testid={`project-desc-${project.id}`}>
                       {project.description || '-'}
                     </td>
                     <td>
@@ -746,7 +745,7 @@ export const ProjectsPage: React.FC = () => {
                         {project.member_count || 0}
                       </Badge>
                     </td>
-                    <td style={{ fontSize: '0.85rem' }} data-testid={`project-created-${project.id}`}>
+                    <td className="fs-sm" data-testid={`project-created-${project.id}`}>
                       {new Date(project.created_at || '').toLocaleDateString()}
                     </td>
                     <td>
@@ -758,21 +757,17 @@ export const ProjectsPage: React.FC = () => {
                       </Badge>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className="flex-row gap-8">
                         <button
                           onClick={() => {
                             setDetailProject(project);
                             setIsDetailModalOpen(true);
                           }}
+                          className="py-4 px-12 rounded-4 cursor-pointer fs-12 fw-500"
                           style={{
-                              padding: '6px 12px',
-                              borderRadius: '4px',
                               border: '1px solid var(--app-border)',
                               backgroundColor: 'var(--app-surface-2)',
                               color: 'var(--app-text)',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                              fontWeight: 500
                           }}
                         >
                           View
@@ -783,14 +778,11 @@ export const ProjectsPage: React.FC = () => {
                               setSelectedProject(project);
                               setIsEditModalOpen(true);
                             }}
+                            className="p-4 px-8 rounded-4 cursor-pointer fs-12"
                             style={{
-                                padding: '4px 8px',
-                                borderRadius: '4px',
                                 border: '1px solid var(--app-warning)',
                                 backgroundColor: 'var(--app-surface)',
                                 color: 'var(--app-warning)',
-                                cursor: 'pointer',
-                                fontSize: '12px'
                             }}
                           >
                             Edit
@@ -799,14 +791,11 @@ export const ProjectsPage: React.FC = () => {
                         {canDelete && (
                           <button
                             onClick={() => handleDelete(project.id)}
+                            className="p-4 px-8 rounded-4 cursor-pointer fs-12"
                             style={{
-                                padding: '4px 8px',
-                                borderRadius: '4px',
                                 border: '1px solid #dc3545',
                                 backgroundColor: 'var(--app-surface)',
                                 color: '#dc3545',
-                                cursor: 'pointer',
-                                fontSize: '12px'
                             }}
                           >
                             Delete
@@ -867,11 +856,11 @@ export const ProjectsPage: React.FC = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--app-text)' }}>Select Organisation</h2>
-            <p style={{ color: 'var(--app-muted-text)', marginBottom: '24px' }}>
+            <h2 className="mb-16" style={{ marginTop: 0, color: 'var(--app-text)' }}>Select Organisation</h2>
+            <p className="text-muted mb-24">
               Choose an organisation to create the project in:
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="flex-col gap-8">
               {organisations.map((org) => (
                 <button
                   key={org.id}
@@ -898,16 +887,16 @@ export const ProjectsPage: React.FC = () => {
                     e.currentTarget.style.borderColor = 'var(--app-border)';
                   }}
                 >
-                  <div style={{ fontWeight: 500 }}>{org.name}</div>
+                  <div className="fw-500">{org.name}</div>
                   {org.description && (
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                    <div className="fs-12 mt-4" style={{ color: '#666' }}>
                       {org.description}
                     </div>
                   )}
                 </button>
               ))}
             </div>
-            <div style={{ marginTop: '16px', textAlign: 'right' }}>
+            <div className="mt-16 text-right">
               <Button
                 variant="outline"
                 size="md"

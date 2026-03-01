@@ -62,7 +62,7 @@ const approvalColors: Record<string, { bg: string; fg: string }> = {
 function Pill({ text, colors }: { text: string; colors: Record<string, { bg: string; fg: string }> }) {
   const c = colors[text] ?? { bg: '#f3f4f6', fg: '#374151' };
   return (
-    <span style={{ padding: '2px 8px', borderRadius: 9999, fontSize: 11, fontWeight: 600, background: c.bg, color: c.fg, whiteSpace: 'nowrap' }}>
+    <span className="rounded-full fs-11 fw-600 whitespace-nowrap" style={{ padding: '2px 8px', background: c.bg, color: c.fg }}>
       {text.replace(/_/g, ' ')}
     </span>
   );
@@ -159,12 +159,12 @@ export const ContentList: React.FC = () => {
   const totalCost = useMemo(() => filtered.reduce((s, j) => s + (j.estimated_cost_eur ?? 0), 0), [filtered]);
 
   if (loading) return <LoadingState message="Loading content…" />;
-  if (error) return <div style={{ padding: 20, color: '#991b1b' }}>Error: {error}</div>;
+  if (error) return <div className="p-20" style={{ color: '#991b1b' }}>Error: {error}</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* ── Filter bar ────────────────────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+    <div className="flex-col gap-12">
+      {/* ── Filter bar ──────────────────────────────────────────────────────────── */}
+      <div className="flex-row gap-8 flex-wrap">
         <input type="text" placeholder="Search label, member, model…" value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)} style={{ ...selectStyle, minWidth: 180 }} />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
@@ -197,14 +197,14 @@ export const ContentList: React.FC = () => {
           <button onClick={() => { setStatusFilter(''); setTypeFilter(''); setProviderFilter(''); setApprovalFilter(''); setClubFilter(''); setSearchQuery(''); }}
             style={actionButtonStyle('neutral')}>Clear</button>
         )}
-        <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9ca3af' }}>
+        <span className="ml-auto fs-12" style={{ color: '#9ca3af' }}>
           {filtered.length} / {jobs.length} items · Est. {fmtCost(totalCost)}
         </span>
       </div>
 
       {/* ── Table ─────────────────────────────────────────────────────── */}
       <Card>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="overflow-x-auto">
           <table style={compactTableStyle}>
             <thead>
               <tr>
@@ -228,37 +228,37 @@ export const ContentList: React.FC = () => {
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={16} style={{ ...compactTdStyle, textAlign: 'center', color: '#9ca3af', padding: 24 }}>No content items found</td></tr>
+                <tr><td colSpan={16} className="text-center" style={{ ...compactTdStyle, color: '#9ca3af', padding: 24 }}>No content items found</td></tr>
               )}
               {filtered.map((job) => (
                 <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                   <td style={compactTdStyle}>
                     <span style={{ fontSize: 15, marginRight: 3 }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
-                    <span style={{ fontSize: 11, color: '#6b7280' }}>{job.output_asset_type || job.output_type}</span>
+                    <span className="fs-11" style={{ color: '#6b7280' }}>{job.output_asset_type || job.output_type}</span>
                   </td>
                   <td style={compactTextTdStyle}>{job.label || '—'}</td>
                   <td style={compactTextTdStyle}>{job.membership_name || '—'}</td>
                   <td style={compactTextTdStyle}>{job.club_name || '—'}</td>
                   <td style={compactTextTdStyle}>{job.project_name || '—'}</td>
-                  <td style={{ ...compactTdStyle, fontWeight: 600 }}>{job.provider || '—'}</td>
+                  <td className="fw-600" style={compactTdStyle}>{job.provider || '—'}</td>
                   <td style={compactTextTdStyle}>{job.model || '—'}</td>
                   <td style={compactTdStyle}><Pill text={job.status} colors={statusColors} /></td>
                   <td style={compactTdStyle}>
-                    {job.approval_status ? <Pill text={job.approval_status} colors={approvalColors} /> : <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>}
+                    {job.approval_status ? <Pill text={job.approval_status} colors={approvalColors} /> : <span className="fs-11" style={{ color: '#d1d5db' }}>—</span>}
                   </td>
                   <td style={compactTdStyle}>
-                    <span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{fmtDate(job.created_at)}</span>{' '}
+                    <span className="fs-12 whitespace-nowrap">{fmtDate(job.created_at)}</span>{' '}
                     <span style={{ fontSize: 10, color: '#9ca3af' }}>{fmtTime(job.created_at)}</span>
                   </td>
-                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.duration_seconds)}</td>
-                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.content_duration_seconds)}</td>
-                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: 11 }}>{fmtTokens(job.estimated_input_tokens, job.estimated_output_tokens)}</td>
-                  <td style={{ ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtCost(job.estimated_cost_eur)}</td>
-                  <td style={{ ...compactTdStyle, textAlign: 'right' }}>{job.variant_count ?? 0}</td>
+                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.duration_seconds)}</td>
+                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.content_duration_seconds)}</td>
+                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums', fontSize: 11 }}>{fmtTokens(job.estimated_input_tokens, job.estimated_output_tokens)}</td>
+                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums' }}>{fmtCost(job.estimated_cost_eur)}</td>
+                  <td className="text-right" style={compactTdStyle}>{job.variant_count ?? 0}</td>
                   <td style={compactTdStyle}>
                     {job.output_url
                       ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" style={{ ...actionButtonStyle('primary'), textDecoration: 'none', fontSize: 11 }}>View</a>
-                      : <span style={{ fontSize: 11, color: '#d1d5db' }}>—</span>}
+                      : <span className="fs-11" style={{ color: '#d1d5db' }}>—</span>}
                   </td>
                 </tr>
               ))}

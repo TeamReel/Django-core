@@ -52,98 +52,51 @@ export default function DashboardPage() {
     : { organisationId: context.organisation?.id?.toString() };
 
   return (
-      <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
+      <div className="bg-primary" style={{ minHeight: '100%' }}>
         {lowBalanceAlert && (
-          <div style={{
-            marginBottom: '24px',
-            padding: '16px',
-            backgroundColor: 'var(--app-surface-2)',
-            border: '1px solid #ffc107',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            flexWrap: 'wrap',
-            color: 'var(--app-text)'
-          }}>
-            <span style={{ fontSize: '24px' }}>⚠️</span>
-            <div style={{ flex: 1 }}>
+          <div className="flex-row flex-wrap gap-12 mb-24 p-16 bg-surface-2 text-primary rounded-4" style={{ border: '1px solid #ffc107' }}>
+            <span className="fs-24">⚠️</span>
+            <div className="flex-1">
               <strong>Low Credits Warning</strong>
-              <p style={{ margin: '4px 0 0 0', fontSize: '14px' }}>
+              <p className="fs-14" style={{ margin: '4px 0 0 0' }}>
                 Your credit balance is low ({balance} remaining). The threshold is {threshold}. Consider upgrading or top up.
               </p>
             </div>
-            <button style={{
-              padding: '8px 16px',
-              backgroundColor: '#ffc107',
-              color: '#000',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: 'pointer',
-              fontWeight: 500
-            }}>
+            <button className="fs-14 fw-500 rounded-4 border-none cursor-pointer" style={{ padding: '8px 16px', backgroundColor: '#ffc107', color: '#000' }}>
               Upgrade Plan
             </button>
           </div>
         )}
 
-        <h1 style={{ marginBottom: '24px', color: 'var(--app-text)' }}>Welcome back!</h1>
+        <h1 className="mb-24 text-primary">Welcome back!</h1>
 
-        <div style={{
-          marginBottom: '24px',
-          padding: '16px',
-          backgroundColor: 'var(--app-surface)',
-          borderRadius: '8px',
-          border: '1px solid var(--app-border)',
-          color: 'var(--app-text)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div className="mb-24 p-16 bg-surface rounded-8 border text-primary">
+          <div className="flex-between gap-12">
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px' }}>Recents</h3>
-              <div style={{ fontSize: '12px', opacity: 0.7, marginTop: 4 }}>Jump back to recently visited items.</div>
+              <h3 className="m-0 fs-16">Recents</h3>
+              <div className="fs-12 mt-4 opacity-70">Jump back to recently visited items.</div>
             </div>
             <Link
               to="/recents"
-              style={{
-                padding: '8px 12px',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                border: '1px solid var(--app-border)',
-                textDecoration: 'none',
-                borderRadius: '6px',
-                fontWeight: 600,
-                fontSize: '13px'
-              }}
+              className="fw-600 fs-13 bg-surface-2 text-primary border rounded-6"
+              style={{ padding: '8px 12px', textDecoration: 'none' }}
             >
               View all
             </Link>
           </div>
 
           {recents.length === 0 ? (
-            <div style={{ marginTop: 12, opacity: 0.7, fontSize: 13 }}>
+            <div className="mt-12 opacity-70 fs-13">
               No recents yet.
             </div>
           ) : (
-            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div className="mt-12 flex-row flex-wrap gap-8">
               {recents.slice(0, 6).map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  style={{
-                    padding: '8px 10px',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                    border: '1px solid var(--app-border)',
-                    textDecoration: 'none',
-                    borderRadius: '999px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    maxWidth: 260,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                  }}
+                  className="fw-600 fs-13 bg-surface-2 text-primary border rounded-full truncate"
+                  style={{ padding: '8px 10px', textDecoration: 'none', maxWidth: 260 }}
                   title={item.label}
                 >
                   {item.label}
@@ -154,45 +107,39 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Feed and Welcome row */}
-        <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '24px', marginBottom: '32px' }}>
+        <div className="dashboard-grid grid gap-24 mb-32" style={{ gridTemplateColumns: '1fr' }}>
           {/* Main Welcome Card */}
           <div className="dashboard-main">
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'var(--app-surface)',
-              borderRadius: '8px',
-              border: '1px solid var(--app-border)',
-              color: 'var(--app-text)'
-            }}>
-              <h2 style={{ fontSize: '20px', marginTop: 0 }}>
+            <div className="p-24 bg-surface rounded-8 border text-primary">
+              <h2 className="fs-20" style={{ marginTop: 0 }}>
                 {context.organisation ? context.organisation.name : 'Select an Organisation'}
               </h2>
               {context.organisation ? (
                 <div>
-                   <p style={{ opacity: 0.8, fontSize: '14px' }}>
+                   <p className="opacity-80 fs-14">
                      Viewing <strong>{context.organisation.name}</strong>.
                    </p>
 
                    {/* Stats Row - 2x2 on mobile */}
-                   <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginTop: '16px' }}>
-                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Clubs</div>
+                   <div className="stats-grid grid gap-12 mt-16" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                      <div className="text-center p-12 bg-surface-2 rounded-8">
+                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
+                          <div className="fs-12 opacity-70">Clubs</div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).teams_count || 0}</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Teams</div>
+                      <div className="text-center p-12 bg-surface-2 rounded-8">
+                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).teams_count || 0}</div>
+                          <div className="fs-12 opacity-70">Teams</div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).matches_count || 0}</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Matches</div>
+                      <div className="text-center p-12 bg-surface-2 rounded-8">
+                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).matches_count || 0}</div>
+                          <div className="fs-12 opacity-70">Matches</div>
                       </div>
-                      <div style={{ textAlign: 'center', padding: '12px', backgroundColor: 'var(--app-surface-2)', borderRadius: '8px' }}>
-                          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{(context.organisation as any).member_count || 0}</div>
-                          <div style={{ fontSize: '12px', opacity: 0.7 }}>Members</div>
+                      <div className="text-center p-12 bg-surface-2 rounded-8">
+                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).member_count || 0}</div>
+                          <div className="fs-12 opacity-70">Members</div>
                       </div>
                    </div>
-                   <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+                   <div className="flex-row flex-wrap gap-8 mt-16">
                      <Link
                        to={`/organisations/${context.organisation.slug}/projects`}
                        style={{
@@ -233,74 +180,60 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div style={{ marginTop: '24px' }}>
+            <div className="mt-24">
               <UpcomingMatchesWidget />
 
               {/* Create Content — quick access to content generation */}
               {!isPlayer && (
-                <div style={{
-                  marginTop: '16px', marginBottom: '16px', padding: '16px',
-                  backgroundColor: 'var(--app-surface)', borderRadius: '8px',
-                  border: '1px solid var(--app-border)', color: 'var(--app-text)',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                    <h3 style={{ margin: 0, fontSize: '16px' }}>Create Content</h3>
+                <div className="mt-16 mb-16 p-16 bg-surface rounded-8 border text-primary">
+                  <div className="flex-between mb-12">
+                    <h3 className="m-0 fs-16">Create Content</h3>
                     {matchId && (
                       <Link
                         to={`/matches/${matchId}?tab=content`}
-                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-primary, #3b82f6)', textDecoration: 'none' }}
+                        className="fs-12 fw-600 text-link"
+                        style={{ textDecoration: 'none' }}
                       >
                         View all &rarr;
                       </Link>
                     )}
                   </div>
                   {matchId ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 8 }}>
+                    <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
                       {QUICK_CREATE_TYPES.map((ct) => (
                         <button
                           key={ct.key}
                           onClick={() => navigate(`/matches/${matchId}?tab=content`)}
-                          style={{
-                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                            padding: '12px 8px', borderRadius: 8,
-                            border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)',
-                            cursor: 'pointer', fontSize: 12, fontWeight: 500, color: 'var(--app-text)',
-                            minHeight: 64,
-                          }}
+                          className="flex-col flex-center gap-4 fs-12 fw-500 text-primary bg-surface-2 border rounded-8 cursor-pointer"
+                          style={{ padding: '12px 8px', minHeight: 64 }}
                         >
-                          <span style={{ fontSize: 22 }}>{ct.icon}</span>
-                          <span style={{ textAlign: 'center', lineHeight: 1.2 }}>{ct.label}</span>
+                          <span className="fs-24">{ct.icon}</span>
+                          <span className="text-center" style={{ lineHeight: 1.2 }}>{ct.label}</span>
                         </button>
                       ))}
                     </div>
                   ) : (
-                    <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>
+                    <p className="m-0 fs-13 opacity-70">
                       Set a match as active to generate content. Go to a match and tap "Make active".
                     </p>
                   )}
                 </div>
               )}
 
-              <h3 style={{ color: 'var(--app-text)', fontSize: '16px' }}>Your Profile</h3>
-              <div style={{
-                padding: '12px',
-                backgroundColor: 'var(--app-surface-2)',
-                borderRadius: '8px',
-                border: '1px solid var(--app-border)',
-                color: 'var(--app-text)'
-              }}>
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+              <h3 className="text-primary fs-16">Your Profile</h3>
+              <div className="p-12 bg-surface-2 rounded-8 border text-primary">
+                <div className="flex-row flex-wrap gap-16">
                    <div>
-                     <div style={{ fontSize: '11px', opacity: 0.6, textTransform: 'uppercase' }}>Name</div>
-                     <div style={{ fontWeight: 500, fontSize: '14px' }}>{user?.first_name || 'Not set'}</div>
+                     <div className="fs-11 opacity-60" style={{ textTransform: 'uppercase' }}>Name</div>
+                     <div className="fw-500 fs-14">{user?.first_name || 'Not set'}</div>
                    </div>
                    <div>
-                     <div style={{ fontSize: '11px', opacity: 0.6, textTransform: 'uppercase' }}>Email</div>
-                     <div style={{ fontWeight: 500, fontSize: '14px' }}>{user?.email}</div>
+                     <div className="fs-11 opacity-60" style={{ textTransform: 'uppercase' }}>Email</div>
+                     <div className="fw-500 fs-14">{user?.email}</div>
                    </div>
                    <div className="hide-mobile">
-                     <div style={{ fontSize: '11px', opacity: 0.6, textTransform: 'uppercase' }}>Role</div>
-                     <div style={{ fontWeight: 500, fontSize: '14px' }}>{(user as any)?.role || 'Member'}</div>
+                     <div className="fs-11 opacity-60" style={{ textTransform: 'uppercase' }}>Role</div>
+                     <div className="fw-500 fs-14">{(user as any)?.role || 'Member'}</div>
                    </div>
                 </div>
               </div>
@@ -308,7 +241,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Activity Sidebar */}
-          <div className="dashboard-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="dashboard-sidebar flex-col gap-16">
              <ActivityFeed
                 title="Upcoming Activities"
                 limit={5}

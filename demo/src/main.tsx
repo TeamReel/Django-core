@@ -14,6 +14,7 @@ import App from './App';
 import '@django-core/design-system/tokens.css';
 import '@django-core/theme-system/dist/style.css';
 import './index.css';
+import './styles/utility.css';
 
 // Initialize theme storage
 const themeStorage = new LocalStorageAdapter('django_core_theme');

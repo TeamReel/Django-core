@@ -131,7 +131,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
 
   return (
     <div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <div className="flex-row gap-12 mb-16 flex-wrap">
         <MobileFilterSheet activeFilterCount={activeFilterCount}>
         {isSuperAdmin && !orgLocked && (
           <select
@@ -268,8 +268,8 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
         </select>
         </MobileFilterSheet>
 
-        <div className="hide-mobile" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+        <div className="hide-mobile flex-row gap-8">
+          <span className="fs-12 text-muted">
             Showing {matchesMaxItems ?? 'all'}
           </span>
           <Button
@@ -290,7 +290,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
           </Button>
         </div>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+        <div className="ml-auto flex-row gap-8">
           <Button variant="secondary" size="md" onClick={clearAll}>
             Clear
           </Button>
@@ -440,19 +440,19 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                             </td>
                         <td className="hide-mobile" style={compactTdStyle}>
                           {(m as any).period?.sport?.category_name ? (
-                            <span style={{ fontSize: '11px' }}>{(m as any).period.sport.category_name}</span>
+                            <span className="fs-11">{(m as any).period.sport.category_name}</span>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td className="hide-mobile" style={compactTdStyle}>
                           {(m as any).period?.sport ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="flex-row gap-4">
                               <span>{(m as any).period.sport.sport_icon}</span>
-                              <span style={{ fontSize: '11px' }}>{(m as any).period.sport.name}</span>
+                              <span className="fs-11">{(m as any).period.sport.name}</span>
                             </span>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td style={compactTextTdStyle}>

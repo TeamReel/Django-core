@@ -194,9 +194,9 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <AppShell>
-        <div style={{ padding: '24px 16px', maxWidth: 1100, margin: '0 auto' }}>
-          <div className="text-lg font-semibold" style={{ color: 'var(--app-text)' }}>Notifications</div>
-          <div className="text-sm" style={{ color: 'var(--app-muted-text)' }}>Loading notifications…</div>
+        <div className="py-24 px-16 mx-auto" style={{ maxWidth: 1100 }}>
+          <div className="text-lg font-semibold text-primary">Notifications</div>
+          <div className="text-sm text-muted">Loading notifications…</div>
         </div>
       </AppShell>
     );
@@ -204,25 +204,23 @@ export default function NotificationsPage() {
 
   return (
     <AppShell>
-      <div style={{ padding: '24px 16px', maxWidth: 1100, margin: '0 auto' }}>
+      <div className="py-24 px-16 mx-auto" style={{ maxWidth: 1100 }}>
         <div
+          className="gap-12 flex-wrap mb-16"
           style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
-            gap: 12,
-            flexWrap: 'wrap',
-            marginBottom: 16,
           }}
         >
           <div>
-            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--app-text)' }}>Notifications</h1>
-            <div style={{ color: 'var(--app-muted-text)', marginTop: 4 }}>
+            <h1 className="m-0 fs-24 fw-800 text-primary">Notifications</h1>
+            <div className="text-muted mt-4">
               View all your system notifications and updates
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="flex-row gap-8 flex-wrap">
             <Button
               variant="primary"
               size="sm"
@@ -250,8 +248,8 @@ export default function NotificationsPage() {
         >
         <div style={{ maxWidth: 900 }}>
           <Card>
-            <div style={{ fontWeight: 800, marginBottom: 4 }}>Notification settings moved</div>
-            <div style={{ fontSize: 13, color: 'var(--app-muted-text)', marginBottom: 10 }}>
+            <div className="fw-800 mb-4">Notification settings moved</div>
+            <div className="fs-13 text-muted" style={{ marginBottom: 10 }}>
               Manage your notification channels and preferences in Preferences.
             </div>
             <Button
@@ -264,20 +262,20 @@ export default function NotificationsPage() {
           </Card>
 
           {!!error && (
-            <div style={{ marginTop: 12 }}>
+            <div className="mt-12">
               <Alert variant="error">{error}</Alert>
             </div>
           )}
 
-          <div style={{ marginTop: 12 }}>
+          <div className="mt-12">
             {notificationsList.length === 0 ? (
               <Card>
-                <div style={{ padding: '12px 0', textAlign: 'center', color: 'var(--app-muted-text)' }}>
+                <div className="py-12 text-center text-muted">
                   No notifications yet
                 </div>
               </Card>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="flex-col gap-12">
                 {notificationsList.map((notification) => {
                 const isUnread = (notification as any)?.is_read === undefined
                   ? !notification.read_at
@@ -336,77 +334,71 @@ export default function NotificationsPage() {
                     threshold={80}
                     leftReveal={
                       <div
+                        className="flex-row gap-8 h-full py-16 px-24"
                         style={{
                           background: 'var(--app-success, #22c55e)',
                           color: 'white',
-                          padding: '16px 24px',
-                          display: 'flex',
-                          alignItems: 'center',
                           justifyContent: 'flex-end',
-                          gap: 8,
-                          height: '100%',
                           minWidth: 120,
                         }}
                       >
-                        <span style={{ fontSize: 18 }}>✓</span>
-                        <span style={{ fontWeight: 600 }}>Gelezen</span>
+                        <span className="fs-18">✓</span>
+                        <span className="fw-600">Gelezen</span>
                       </div>
                     }
                   >
                   <div
                     onClick={() => isUnread && markAsRead(notification.id)}
+                    className="rounded-8"
                     style={{
                       cursor: isUnread ? 'pointer' : 'default',
                       borderLeft: `4px solid ${borderColor}`,
-                      borderRadius: 8,
                     }}
                   >
                     <Card>
                       <div
+                        className="p-0 rounded-8"
                         style={{
-                          padding: 0,
                           background: isUnread ? 'var(--app-surface-2)' : 'var(--app-surface)',
-                          borderRadius: 8,
                         }}
                       >
                         <div
+                          className="gap-12"
                           style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'flex-start',
-                            gap: 12,
                             marginBottom: 6,
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ fontSize: 16, fontWeight: isUnread ? 800 : 600, color: 'var(--app-text)' }}>
+                          <div className="flex-row gap-8">
+                            <div className="fs-16 text-primary" style={{ fontWeight: isUnread ? 800 : 600 }}>
                               {title}
                             </div>
                             {isUnread && (
                               <span
+                                className="inline-block rounded-full"
                                 style={{
-                                  display: 'inline-block',
                                   width: 8,
                                   height: 8,
                                   backgroundColor: 'var(--app-primary)',
-                                  borderRadius: '50%',
                                 }}
                               />
                             )}
                           </div>
-                          <div style={{ fontSize: 12, color: 'var(--app-muted-text)', whiteSpace: 'nowrap' }}>
+                          <div className="fs-12 text-muted whitespace-nowrap">
                             {createdLabel || '—'}
                           </div>
                         </div>
 
                         {body ? (
-                          <div style={{ color: 'var(--app-muted-text)', fontSize: 14, lineHeight: 1.4 }}>
+                          <div className="text-muted fs-14" style={{ lineHeight: 1.4 }}>
                             {body}
                           </div>
                         ) : null}
 
                         {isUnread && (
-                          <div style={{ marginTop: 8, fontSize: 12, color: 'var(--app-primary)', fontStyle: 'italic' }}>
+                          <div className="mt-8 fs-12" style={{ color: 'var(--app-primary)', fontStyle: 'italic' }}>
                             Swipe of klik om als gelezen te markeren
                           </div>
                         )}

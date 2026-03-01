@@ -69,19 +69,12 @@ const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ 
   return (
     <div
       onClick={onClick}
+      className="flex-row gap-12 py-12 px-8 border-bottom rounded-8"
       style={{
-        display: 'flex',
-        gap: '12px',
-        padding: '12px 0',
-        borderBottom: '1px solid var(--app-border)',
         opacity: isPast ? 0.6 : 1,
-        alignItems: 'center',
         cursor: onClick ? 'pointer' : 'default',
         transition: 'background-color 0.15s ease',
         margin: '0 -8px',
-        paddingLeft: '8px',
-        paddingRight: '8px',
-        borderRadius: '8px',
       }}
       onMouseEnter={e => {
         if (onClick) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--app-surface-2)';
@@ -91,68 +84,46 @@ const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ 
       }}
     >
       {/* Date Box */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
+      <div className="flex-center flex-col p-4 bg-surface-2 rounded-8 border fs-12" style={{
         minWidth: '50px',
         height: '50px',
-        padding: '4px',
-        backgroundColor: 'var(--app-surface-2)',
-        borderRadius: '8px',
-        border: '1px solid var(--app-border)',
-        fontSize: '12px'
       }}>
-        <span style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-text)', lineHeight: 1 }}>{startDate.getDate()}</span>
-        <span style={{ textTransform: 'uppercase', fontSize: '10px', fontWeight: 600, opacity: 0.8, color: 'var(--app-text)' }}>
+        <span className="fw-700 fs-16 text-primary" style={{ lineHeight: 1 }}>{startDate.getDate()}</span>
+        <span className="fw-600 opacity-80 text-primary" style={{ textTransform: 'uppercase', fontSize: '10px' }}>
           {startDate.toLocaleDateString('en-US', { month: 'short' })}
         </span>
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+      <div className="flex-1 min-w-0">
+        <div className="flex-row gap-8 mb-4">
           <Badge variant={getTypeColor(activity.activity_type) || 'default'} size="sm">
             {activity.activity_type}
           </Badge>
           {cleanPeriodName && (
-            <span style={{
+            <span className="text-muted fw-600 truncate" style={{
               fontSize: '10px',
-              color: 'var(--app-text-muted)',
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis'
             }}>
               {cleanPeriodName}
             </span>
           )}
         </div>
 
-        <div style={{
-          fontWeight: 600,
-          fontSize: '14px',
-          color: 'var(--app-text)',
-          marginBottom: '2px',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis'
-        }}>
+        <div className="fw-600 fs-14 text-primary truncate" style={{ marginBottom: '2px' }}>
           {displayTitle}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '11px', color: 'var(--app-text-muted)' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: urgencyColor }}>
+        <div className="flex-row gap-12 fs-11 text-muted">
+          <span className="flex-row gap-4 fw-600" style={{ color: urgencyColor }}>
             {relativeTime}
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span className="flex-row gap-4">
             <span>🕒</span> {timeStr}
           </span>
           {activity.location && (
-             <span style={{ display: 'flex', alignItems: 'center', gap: '4px', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+             <span className="flex-row gap-4 overflow-hidden" style={{ maxWidth: '150px', textOverflow: 'ellipsis' }}>
                <span>📍</span> {activity.location}
              </span>
           )}
@@ -201,8 +172,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   if (loading) {
     return (
       <Card>
-        <div style={{ padding: '16px' }}>
-          <h3 style={{ margin: '0 0 16px', fontSize: '18px' }}>{title}</h3>
+        <div className="p-16">
+          <h3 className="m-0 mb-16 fs-18">{title}</h3>
           <SkeletonList count={4} variant="row" gap={8} />
         </div>
       </Card>
@@ -216,23 +187,19 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
   return (
     <Card>
-      <div style={{ padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-          <h3 style={{ margin: 0, fontSize: '18px' }}>{title}</h3>
+      <div className="p-16">
+        <div className="flex-between mb-16 flex-wrap gap-12">
+          <h3 className="m-0 fs-18">{title}</h3>
 
           {/* Filter Buttons */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className="flex-row gap-8">
             <button
               onClick={() => setFilter('all')}
+              className="fs-12 fw-600 border rounded-4 cursor-pointer"
               style={{
                 padding: '6px 12px',
-                fontSize: '12px',
-                fontWeight: 600,
-                border: '1px solid var(--app-border)',
-                borderRadius: '4px',
                 backgroundColor: filter === 'all' ? 'var(--app-primary)' : 'var(--app-surface-2)',
                 color: filter === 'all' ? 'white' : 'var(--app-text)',
-                cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
             >
@@ -240,15 +207,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
             </button>
             <button
               onClick={() => setFilter('league')}
+              className="fs-12 fw-600 border rounded-4 cursor-pointer"
               style={{
                 padding: '6px 12px',
-                fontSize: '12px',
-                fontWeight: 600,
-                border: '1px solid var(--app-border)',
-                borderRadius: '4px',
                 backgroundColor: filter === 'league' ? '#3b82f6' : 'var(--app-surface-2)',
                 color: filter === 'league' ? 'white' : 'var(--app-text)',
-                cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
             >
@@ -256,15 +219,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
             </button>
             <button
               onClick={() => setFilter('cup')}
+              className="fs-12 fw-600 border rounded-4 cursor-pointer"
               style={{
                 padding: '6px 12px',
-                fontSize: '12px',
-                fontWeight: 600,
-                border: '1px solid var(--app-border)',
-                borderRadius: '4px',
                 backgroundColor: filter === 'cup' ? '#f59e0b' : 'var(--app-surface-2)',
                 color: filter === 'cup' ? 'white' : 'var(--app-text)',
-                cursor: 'pointer',
                 transition: 'all 0.2s'
               }}
             >
@@ -275,7 +234,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
         <div>
           {activities.length === 0 ? (
-            <div style={{ opacity: 0.5, fontStyle: 'italic', padding: '24px 0' }}>
+            <div className="opacity-50 py-24" style={{ fontStyle: 'italic' }}>
               No activities found for this filter.
             </div>
           ) : (

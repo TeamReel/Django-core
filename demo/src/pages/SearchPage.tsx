@@ -105,23 +105,23 @@ export default function SearchPage() {
 
   return (
     <AppShell>
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', flexWrap: 'wrap', gap: '12px' }}>
-            <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-text-primary)' }}>
+      <div className="page-container">
+        <div className="mb-24">
+          <div className="flex-between mb-8 flex-wrap gap-12">
+            <h1 className="fw-700" style={{ fontSize: '28px', color: 'var(--color-text-primary)' }}>
               Search Results
             </h1>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="flex-row gap-8">
               {/* Mobile Filter Button */}
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsFilterSheetOpen(true)}
-                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                className="flex-row gap-6"
               >
                 🔍 Filters
                 {isFiltered && (
-                  <span style={{ background: 'var(--color-primary)', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span className="flex-center fs-11 rounded-full" style={{ background: 'var(--color-primary)', color: 'white', width: '18px', height: '18px' }}>
                     {types.length}
                   </span>
                 )}
@@ -130,18 +130,11 @@ export default function SearchPage() {
               {query && !isFiltered && (
                 <button
                 onClick={handleHierarchyToggle}
+                className="flex-row gap-8 py-8 px-16 fs-14 fw-500 rounded-8 cursor-pointer"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 16px',
-                  fontSize: '14px',
-                  fontWeight: '500',
                   background: showHierarchy ? 'var(--color-primary, #3b82f6)' : 'var(--color-bg-surface)',
                   color: showHierarchy ? '#fff' : 'var(--color-text-primary)',
                   border: showHierarchy ? 'none' : '1px solid var(--color-border)',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
               >
@@ -150,7 +143,7 @@ export default function SearchPage() {
             )}
             </div>
           </div>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '16px' }}>
+          <p className="fs-16" style={{ color: 'var(--color-text-secondary)' }}>
             {query ? (
               <>
                 Showing results for <strong>"{query}"</strong>
@@ -160,14 +153,11 @@ export default function SearchPage() {
                     in <strong>{getCategoryLabel(types[0])}</strong>
                     <button
                       onClick={handleClearFilter}
+                      className="fs-14 rounded-4 cursor-pointer py-4 px-12"
                       style={{
                         marginLeft: '12px',
-                        padding: '4px 12px',
-                        fontSize: '14px',
                         background: 'none',
                         border: '1px solid var(--color-border)',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
                         color: 'var(--color-text-secondary)',
                       }}
                     >
@@ -183,85 +173,84 @@ export default function SearchPage() {
         </div>
 
         {isSearching && (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
-            <div className="spinner" style={{ marginBottom: '16px' }}></div>
+          <div className="text-center" style={{ padding: '40px', color: 'var(--color-text-secondary)' }}>
+            <div className="spinner mb-16"></div>
             Searching...
           </div>
         )}
 
         {error && (
-          <div style={{ padding: '16px', background: 'var(--color-error-bg)', color: 'var(--color-error-text)', borderRadius: '8px', marginBottom: '24px' }}>
+          <div className="p-16 rounded-8 mb-24" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error-text)' }}>
             {error}
           </div>
         )}
 
         {!isSearching && !error && totalResults === 0 && query && (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)', borderRadius: '8px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
-            <h3 style={{ fontSize: '20px', marginBottom: '8px', color: 'var(--color-text-primary)' }}>No results found</h3>
+          <div className="text-center rounded-8" style={{ padding: '40px', color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}>
+            <div className="mb-16" style={{ fontSize: '48px' }}>🔍</div>
+            <h3 className="fs-20 mb-8" style={{ color: 'var(--color-text-primary)' }}>No results found</h3>
             <p>We couldn't find anything matching "{query}". Try different keywords or check for typos.</p>
           </div>
         )}
 
         {/* Hierarchy Tree View (when enabled) */}
         {!isSearching && !error && groupedResults?.hierarchy && showHierarchy && (
-          <div style={{ marginBottom: '32px' }}>
+          <div className="mb-32">
             <HierarchyTreeView hierarchy={groupedResults.hierarchy} />
           </div>
         )}
 
         {!isSearching && !error && groupedResults && !isFiltered && (
-          <div style={{ display: 'grid', gap: '32px' }}>
+          <div className="grid gap-32">
             {(Object.entries(groupedResults) as [string, SearchResult[]][])
               .filter(([category]) => category !== 'hierarchy')
               .map(([category, results]) => {
               if (!results || results.length === 0) return null;
               return (
                 <div key={category}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <h2 style={{ fontSize: '20px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-primary)' }}>
+                  <div className="flex-between mb-16">
+                    <h2 className="fs-20 fw-600 flex-row gap-8" style={{ color: 'var(--color-text-primary)' }}>
                       <span>{getCategoryIcon(category)}</span>
                       {getCategoryLabel(category)}
-                      <span style={{ fontSize: '14px', fontWeight: 'normal', color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)', padding: '2px 8px', borderRadius: '12px' }}>
+                      <span className="fs-14 fw-400 rounded-12" style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)', padding: '2px 8px' }}>
                         {results.length}
                       </span>
                     </h2>
                     {results.length >= 5 && (
                       <button
                         onClick={() => handleCategoryClick(category)}
-                        style={{ color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500' }}
+                        className="fw-500 cursor-pointer border-none"
+                        style={{ color: 'var(--color-primary)', background: 'none' }}
                       >
                         View All
                       </button>
                     )}
                   </div>
-                  <div style={{ display: 'grid', gap: '12px' }}>
+                  <div className="grid gap-12">
                     {results.map((result) => (
                       <Link
                         key={result.id}
                         to={result.url}
                         style={{
-                          display: 'block',
-                          padding: '16px',
                           background: 'var(--color-bg-surface)',
                           border: '1px solid var(--color-border)',
-                          borderRadius: '8px',
                           textDecoration: 'none',
                           transition: 'transform 0.1s, box-shadow 0.1s',
                         }}
-                        className="search-result-card"
+                        className="search-result-card block p-16 rounded-8"
                       >
-                        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px', color: 'var(--color-text-primary)' }}>
+                        <h3 className="fs-16 fw-600 mb-4" style={{ color: 'var(--color-text-primary)' }}>
                           {result.title}
                         </h3>
                         {result.description && (
-                          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.5' }}>
+                          <p className="fs-14 mb-8" style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
                             {result.description}
                           </p>
                         )}
                         {result.highlight && (
                           <div
-                            style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}
+                            className="fs-13"
+                            style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}
                             dangerouslySetInnerHTML={{ __html: result.highlight }}
                           />
                         )}
@@ -276,32 +265,30 @@ export default function SearchPage() {
 
         {!isSearching && !error && paginatedResults && isFiltered && (
           <div>
-            <div style={{ display: 'grid', gap: '12px', marginBottom: '24px' }}>
+            <div className="grid gap-12 mb-24">
               {paginatedResults.results.map((result) => (
                 <Link
                   key={result.id}
                   to={result.url}
                   style={{
-                    display: 'block',
-                    padding: '16px',
                     background: 'var(--color-bg-surface)',
                     border: '1px solid var(--color-border)',
-                    borderRadius: '8px',
                     textDecoration: 'none',
                   }}
-                  className="search-result-card"
+                  className="search-result-card block p-16 rounded-8"
                 >
-                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px', color: 'var(--color-text-primary)' }}>
+                  <h3 className="fs-16 fw-600 mb-4" style={{ color: 'var(--color-text-primary)' }}>
                     {result.title}
                   </h3>
                   {result.description && (
-                    <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '8px', lineHeight: '1.5' }}>
+                    <p className="fs-14 mb-8" style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
                       {result.description}
                     </p>
                   )}
                   {result.highlight && (
                     <div
-                      style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}
+                      className="fs-13"
+                      style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}
                       dangerouslySetInnerHTML={{ __html: result.highlight }}
                     />
                   )}
@@ -310,32 +297,30 @@ export default function SearchPage() {
             </div>
 
             {/* Pagination Controls */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '32px' }}>
+            <div className="gap-12 mt-32" style={{ display: 'flex', justifyContent: 'center' }}>
               <button
                 disabled={!paginatedResults.previous}
                 onClick={() => handlePageChange(page - 1)}
+                className="py-8 px-16 rounded-4"
                 style={{
-                  padding: '8px 16px',
                   background: 'var(--color-bg-surface)',
                   border: '1px solid var(--color-border)',
-                  borderRadius: '4px',
                   cursor: paginatedResults.previous ? 'pointer' : 'not-allowed',
                   opacity: paginatedResults.previous ? 1 : 0.5,
                 }}
               >
                 Previous
               </button>
-              <span style={{ display: 'flex', alignItems: 'center', color: 'var(--color-text-secondary)' }}>
+              <span className="flex-row" style={{ color: 'var(--color-text-secondary)' }}>
                 Page {page}
               </span>
               <button
                 disabled={!paginatedResults.next}
                 onClick={() => handlePageChange(page + 1)}
+                className="py-8 px-16 rounded-4"
                 style={{
-                  padding: '8px 16px',
                   background: 'var(--color-bg-surface)',
                   border: '1px solid var(--color-border)',
-                  borderRadius: '4px',
                   cursor: paginatedResults.next ? 'pointer' : 'not-allowed',
                   opacity: paginatedResults.next ? 1 : 0.5,
                 }}
@@ -353,24 +338,17 @@ export default function SearchPage() {
         onClose={() => setIsFilterSheetOpen(false)}
         title="Filter op categorie"
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="flex-col gap-8">
           {/* Clear Filter Option */}
           <button
             onClick={handleClearFilter}
+            className="flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '16px',
               background: !isFiltered ? 'var(--color-primary-bg, rgba(59, 130, 246, 0.1))' : 'transparent',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              textAlign: 'left',
               minHeight: '44px',
             }}
           >
-            <span style={{ fontSize: '20px' }}>🔍</span>
+            <span className="fs-20">🔍</span>
             <span style={{ fontWeight: !isFiltered ? '600' : '400', color: 'var(--color-text-primary)' }}>
               Alle categorieën
             </span>
@@ -381,25 +359,18 @@ export default function SearchPage() {
             <button
               key={category}
               onClick={() => handleCategoryClick(category)}
+              className="flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '16px',
                 background: types.includes(category) ? 'var(--color-primary-bg, rgba(59, 130, 246, 0.1))' : 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                textAlign: 'left',
                 minHeight: '44px',
               }}
             >
-              <span style={{ fontSize: '20px' }}>{getCategoryIcon(category)}</span>
+              <span className="fs-20">{getCategoryIcon(category)}</span>
               <span style={{ fontWeight: types.includes(category) ? '600' : '400', color: 'var(--color-text-primary)' }}>
                 {getCategoryLabel(category)}
               </span>
               {types.includes(category) && (
-                <span style={{ marginLeft: 'auto', color: 'var(--color-primary)' }}>✓</span>
+                <span className="ml-auto" style={{ color: 'var(--color-primary)' }}>✓</span>
               )}
             </button>
           ))}

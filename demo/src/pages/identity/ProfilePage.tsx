@@ -147,7 +147,7 @@ export const ProfilePage: React.FC = () => {
         />
         <PageContent>
           <Card>
-            <div style={{ textAlign: 'center', padding: '32px', color: 'var(--app-muted-text)' }}>
+            <div className="text-center p-32 text-muted">
               Loading profile...
             </div>
           </Card>
@@ -186,16 +186,8 @@ export const ProfilePage: React.FC = () => {
         actions={
           <button
             onClick={() => navigate('/users')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 500
-            }}
+            className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
+            style={{ padding: '6px 12px' }}
           >
             Back to Users
           </button>
@@ -204,21 +196,21 @@ export const ProfilePage: React.FC = () => {
 
       <PageContent>
         {saveSuccess && (
-          <Alert variant="success" style={{ marginBottom: '16px' }}>
+          <Alert variant="success" className="mb-16">
             Profile updated successfully!
           </Alert>
         )}
 
         {error && (
-          <Alert variant="error" style={{ marginBottom: '16px' }}>
+          <Alert variant="error" className="mb-16">
             {error}
           </Alert>
         )}
 
         {/* Profile Information Card */}
         <Card data-testid="profile-info-card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, margin: 0, color: 'var(--app-text)' }}>
+          <div className="flex-between mb-16">
+            <h3 className="fs-16 fw-600 m-0 text-primary">
               Profile Information
             </h3>
             {!isEditing ? (
@@ -230,7 +222,7 @@ export const ProfilePage: React.FC = () => {
                 Edit Profile
               </Button>
             ) : (
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex-row gap-8">
                 <Button
                   variant="primary"
                   size="sm"
@@ -256,7 +248,7 @@ export const ProfilePage: React.FC = () => {
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="flex-col gap-12">
             {isEditing ? (
               <>
                 <div>
@@ -281,18 +273,18 @@ export const ProfilePage: React.FC = () => {
             ) : (
               <>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                  <label className="label-muted mb-4">
                     First Name
                   </label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>
+                  <div className="fw-500 text-primary">
                     {user?.first_name || '—'}
                   </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                  <label className="label-muted mb-4">
                     Last Name
                   </label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>
+                  <div className="fw-500 text-primary">
                     {user?.last_name || '—'}
                   </div>
                 </div>
@@ -300,23 +292,23 @@ export const ProfilePage: React.FC = () => {
             )}
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+              <label className="label-muted mb-4">
                 Full Name
               </label>
-              <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-name">
+              <div className="fw-500 text-primary" data-testid="profile-name">
                 {user.name || user.email}
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+              <label className="label-muted mb-4">
                 Email
               </label>
-              <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-email">
+              <div className="fw-500 text-primary" data-testid="profile-email">
                 {user.email}
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+              <label className="label-muted mb-4">
                 System Role
               </label>
               <div data-testid="profile-role-badge">
@@ -326,7 +318,7 @@ export const ProfilePage: React.FC = () => {
               </div>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+              <label className="label-muted mb-4">
                 Status
               </label>
               <div data-testid="profile-status-badge">
@@ -339,35 +331,35 @@ export const ProfilePage: React.FC = () => {
         </Card>
 
         {/* Account Information Card */}
-        <Card style={{ marginTop: '16px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>
+        <Card className="mt-16">
+          <h3 className="fs-16 fw-600 mb-16 text-primary">
             Account Information
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="flex-col gap-12">
             <div>
-              <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+              <label className="label-muted mb-4">
                 User ID
               </label>
-              <div style={{ fontWeight: 500, color: 'var(--app-text)', fontFamily: 'monospace', fontSize: '14px' }} data-testid="profile-user-id">
+              <div className="fw-500 text-primary fs-14" style={{ fontFamily: 'monospace' }} data-testid="profile-user-id">
                 {user.id}
               </div>
             </div>
             {user.created_at && (
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                <label className="label-muted mb-4">
                   Member Since
                 </label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-created-at">
+                <div className="fw-500 text-primary" data-testid="profile-created-at">
                   {new Date(user.created_at).toLocaleDateString()}
                 </div>
               </div>
             )}
             {user.last_login && (
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>
+                <label className="label-muted mb-4">
                   Last Login
                 </label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }} data-testid="profile-last-login">
+                <div className="fw-500 text-primary" data-testid="profile-last-login">
                   {new Date(user.last_login).toLocaleString()}
                 </div>
               </div>

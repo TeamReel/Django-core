@@ -125,10 +125,10 @@ export const MemberList: React.FC<MemberListProps> = ({
 
   return (
     <div>
-       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+       <div className="flex-between mb-16">
          <div>
-            <h3 style={{ margin: 0 }}>Team Roster</h3>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#666' }}>
+            <h3 className="m-0">Team Roster</h3>
+            <p className="fs-13 text-muted" style={{ margin: '4px 0 0' }}>
                Players and Staff for the selected season.
             </p>
          </div>
@@ -137,12 +137,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                 <select
                    value={selectedPeriod}
                    onChange={(e) => setSelectedPeriod(e.target.value)}
-                   style={{
-                       width: '100%',
-                       padding: '8px',
-                       borderRadius: '4px',
-                       border: '1px solid #ccc'
-                   }}
+                   className="w-full p-8 rounded-4 border"
                 >
                     {periods.map(p => (
                         <option key={p.id} value={p.id}>{p.name}</option>
@@ -153,7 +148,7 @@ export const MemberList: React.FC<MemberListProps> = ({
        </div>
 
        {isLoading ? (
-           <div style={{ padding: '20px', textAlign: 'center' }}>Loading roster...</div>
+           <div className="p-20 text-center">Loading roster...</div>
        ) : (
            <Table>
               <thead>
@@ -182,14 +177,14 @@ export const MemberList: React.FC<MemberListProps> = ({
 
                   return (
                     <tr key={user.id}>
-                      <td style={{ fontWeight: 'bold', color: '#555' }}>
+                      <td className="fw-700" style={{ color: '#555' }}>
                          {shirtNumber}
                       </td>
                       <td>
-                        <div style={{ fontWeight: 500 }}>
+                        <div className="fw-500">
                             {user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
                         </div>
-                        <div style={{ fontSize: '11px', color: '#888' }}>{user.email}</div>
+                        <div className="fs-11 text-muted">{user.email}</div>
                       </td>
                       <td>
                          <Badge variant="default" size="sm">{position}</Badge>
@@ -201,7 +196,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                       </td>
                       <td>
                         {functionalRoles.length ? (
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          <div className="flex-row gap-6 flex-wrap">
                             {functionalRoles.map((r) => (
                               <Badge key={r} variant="default" size="sm">
                                 {r}
@@ -209,10 +204,10 @@ export const MemberList: React.FC<MemberListProps> = ({
                             ))}
                           </div>
                         ) : (
-                          <span style={{ color: '#888' }}>—</span>
+                          <span className="text-muted">—</span>
                         )}
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td className="fs-sm">
                         {item.joined_at
                           ? new Date(item.joined_at).toLocaleDateString()
                           : '-'}
@@ -222,7 +217,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                 })}
                 {members.length === 0 && (
                     <tr>
-                        <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
+                        <td colSpan={6} className="text-center p-20 text-muted">
                             No members found for this season.
                         </td>
                     </tr>

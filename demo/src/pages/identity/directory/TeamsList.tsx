@@ -386,7 +386,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div className="flex-row gap-12 mb-16 flex-wrap">
         {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
@@ -395,11 +395,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
               if (!clubLocked) setSelectedClubId('');
               setSelectedTeamId('');
             }}
+            className="p-8 px-12 rounded-4 fs-14"
             style={{
-              padding: '8px 12px',
               border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
               backgroundColor: 'var(--app-surface)',
             }}
           >
@@ -420,11 +418,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
                 setSelectedTeamId('');
               }}
               disabled={clubLocked}
+              className="p-8 px-12 rounded-4 fs-14"
               style={{
-                padding: '8px 12px',
                 border: '1px solid var(--app-border)',
-                borderRadius: '4px',
-                fontSize: '14px',
                 backgroundColor: 'var(--app-surface)',
               }}
             >
@@ -446,11 +442,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
+          className="p-8 px-12 rounded-4 fs-14"
           style={{
-            padding: '8px 12px',
             border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
             backgroundColor: 'var(--app-surface)',
           }}
         >
@@ -461,11 +455,9 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
         <select
           value={sportFilter}
           onChange={(e) => setSportFilter(e.target.value)}
+          className="p-8 px-12 rounded-4 fs-14"
           style={{
-            padding: '8px 12px',
             border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
             backgroundColor: 'var(--app-surface)',
           }}
         >
@@ -476,7 +468,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
             </option>
           ))}
         </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+        <div className="ml-auto flex-row gap-8">
           <Button
             variant="secondary"
             size="md"
@@ -623,12 +615,12 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
 
                         <td style={compactTdStyle}>
                           {orgSport ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="flex-row gap-4">
                               <span>{orgSport.sport_icon}</span>
-                              <span style={{ fontSize: '12px' }}>{orgSport.name}</span>
+                              <span className="fs-12">{orgSport.name}</span>
                             </span>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
 
