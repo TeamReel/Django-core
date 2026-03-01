@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { periodPathKey } from '../../../utils/periodPath';
-import { useSports } from '../../../hooks/useSports';
-import { useAuth } from '@django-core/auth-ui';
-import { useContextSwitcher } from '@django-core/context-switcher';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
-import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
@@ -22,6 +17,19 @@ import {
     compactActionsStyle,
     actionButtonStyle
 } from '../../../utils/directoryStyles';
+import {
+    chunkArray,
+    getCsrfToken,
+    sortKey,
+    getFederationName,
+    getTeamId,
+    getTeamName,
+    getClubName,
+    matchesSportFilter,
+} from '../../../utils/directoryHelpers';
+import type { DirectoryListProps } from '../../../utils/directoryHelpers';
+import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
+import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
 
 type Period = {
   id: string;
@@ -45,75 +53,29 @@ type Period = {
   data?: Record<string, any>;
 };
 
-const chunkArray = <T,>(items: T[], chunkSize: number): T[][] => {
-  if (!Array.isArray(items) || items.length === 0) return [];
-  const size = Math.max(1, Math.floor(chunkSize));
-  const chunks: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size));
-  }
-  return chunks;
-};
-
-interface SeasonsListProps {
-  preselectedOrgId?: string;
-  preselectedClubId?: string;
-  preselectedTeamId?: string;
-  /** Slug override for club — used in URL construction (falls back to preselectedClubId). */
-  preselectedClubSlug?: string;
-  /** Slug override for team — used in URL construction (falls back to preselectedTeamId). */
-  preselectedTeamSlug?: string;
-}
-
-export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, preselectedClubId, preselectedTeamId, preselectedClubSlug, preselectedTeamSlug }) => {
+export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
+  const { preselectedClubSlug, preselectedTeamSlug } = props;
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user } = useAuth();
-  const { context, organisations: myOrganisations } = useContextSwitcher();
-  const { categories } = useSports();
+  const filters = useDirectoryFilters(props);
+  const {
+    isSuperAdmin,
+    orgLocked, clubLocked, teamLocked,
+    organisations, clubs, teams,
+    selectedOrgId, selectedClubId, selectedTeamId,
+    statusFilter, sportFilter,
+    isLoading, error, setError,
+    refreshKey, triggerRefresh,
+    orgKeyForRoutes,
+    getSelectedOrgIdForApi,
+  } = filters;
 
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
-
-  const orgLocked = Boolean(preselectedOrgId);
-  const clubLocked = Boolean(preselectedClubId);
-  const teamLocked = Boolean(preselectedTeamId);
-
-  const isUuid = (value: unknown) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || ''));
-
-  const getSelectedOrgIdForApi = () => {
-    const selectedOrg = selectedOrgId
-      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-      : null;
-    const resolved = selectedOrg ? String((selectedOrg as any).id ?? '') : '';
-    if (resolved && isUuid(resolved)) return resolved;
-    if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
-    return '';
-  };
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
-
-  const [selectedOrgId, setSelectedOrgId] = useState<string>('');
-  const [selectedClubId, setSelectedClubId] = useState<string>(preselectedClubId || '');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>(preselectedTeamId || '');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sportFilter, setSportFilter] = useState<string>('all');
-
+  // Domain-specific state
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-
   const [detailSeason, setDetailSeason] = useState<Period | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editSeason, setEditSeason] = useState<Period | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const isLikelySeasonRoot = (p: any): boolean => {
@@ -129,143 +91,6 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
     return true;
   };
-
-  // Initialize org filter
-  useEffect(() => {
-    if (preselectedOrgId) {
-      setSelectedOrgId(preselectedOrgId);
-    } else if (!isSuperAdmin && context.organisation?.id) {
-      setSelectedOrgId(String(context.organisation.id));
-    }
-  }, [preselectedOrgId, context.organisation?.id, isSuperAdmin]);
-
-  useEffect(() => {
-    if (preselectedClubId) {
-      setSelectedClubId(preselectedClubId);
-    }
-  }, [preselectedClubId]);
-
-  useEffect(() => {
-    if (preselectedTeamId) {
-      setSelectedTeamId(preselectedTeamId);
-    }
-  }, [preselectedTeamId]);
-
-  // Sync params from URL to state
-  useEffect(() => {
-    if (preselectedOrgId) {
-      const clubId = searchParams.get('club_id');
-      const teamId = searchParams.get('team_id');
-      if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-      if (!teamLocked && !clubLocked && teamId) setSelectedTeamId(String(teamId));
-      return;
-    }
-
-    const orgId = searchParams.get('org_id');
-    const clubId = searchParams.get('club_id');
-    const teamId = searchParams.get('team_id');
-
-    if (orgId && isSuperAdmin) setSelectedOrgId(String(orgId));
-    if (!clubLocked && clubId) setSelectedClubId(String(clubId));
-    if (!teamLocked && !clubLocked && teamId) setSelectedTeamId(String(teamId));
-  }, [isSuperAdmin, searchParams, clubLocked, preselectedOrgId]);
-
-  useEffect(() => {
-    // Always fetch organisations from API to get sport data (context-switcher doesn't include it)
-    const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
-      try {
-        // If not superAdmin, filter to only org IDs the user has access to
-        const myOrgIds = myOrganisations.map(o => String(o.id));
-        const baseUrl = `${apiBaseUrl}/api/v1/organisations/?page_size=100`;
-        const url = isSuperAdmin ? baseUrl : baseUrl;  // API returns only accessible orgs anyway
-
-        const orgs = await fetchAllPages<any>(
-          url,
-          { credentials: 'include' },
-          { ttlMs: 120_000, bypass: refreshKey > 0 },
-        );
-
-        // For non-superadmin, filter to only their orgs (API should already do this, but be safe)
-        const filteredOrgs = isSuperAdmin
-          ? orgs
-          : (orgs || []).filter((o: any) => myOrgIds.includes(String(o.id)));
-
-        setOrganisations((filteredOrgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug, sport: o.sport, sport_variants_count: o.sport_variants_count })));
-      } catch {
-        // Fallback to context data if API fails
-        setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug, sport: (o as any).sport, sport_variants_count: (o as any).sport_variants_count })));
-      }
-    };
-
-    load();
-  }, [isSuperAdmin, myOrganisations, refreshKey]);
-
-  // Fetch filter options
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      setError(null);
-      const apiBaseUrl = getApiBaseUrl();
-
-      // Resolve org slug for API call
-      const selectedOrg = selectedOrgId
-        ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-        : null;
-
-      // If user selected an org but we can't find it yet, wait
-      if (selectedOrgId && !selectedOrg) {
-        setClubs([]);
-        setTeams([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const orgSlugForApi = selectedOrg?.slug || '';
-
-      try {
-        if (orgSlugForApi) {
-          // Org-scoped fetch
-          const [allClubs, allTeams] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-          ]);
-          setClubs(allClubs);
-          setTeams(allTeams);
-        } else {
-          // Global fetch only when no org is selected (superadmin view)
-          const [allClubs, allTeams] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-          ]);
-          setClubs(allClubs);
-          setTeams(allTeams);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load teams');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    load();
-  }, [refreshKey, selectedOrgId, organisations]);
 
   // Fetch seasons
   useEffect(() => {
@@ -445,26 +270,6 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
   }, [selectedTeamId, selectedClubId, selectedOrgId, teams, refreshKey]);
 
 
-  const selectedOrg = selectedOrgId
-    ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-    : null;
-  const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || selectedOrgId;
-  const orgKeyForRoutes = String(
-    orgSlugOrId ||
-      (context as any)?.organisation?.slug ||
-      (context as any)?.organisation?.id ||
-      ''
-  ).trim();
-
-  const selectedTeam = selectedTeamId ? teams.find((t) => String(t.id) === String(selectedTeamId)) : null;
-  const teamSlugOrId = (selectedTeam as any)?.slug || (selectedTeam as any)?.id || selectedTeamId;
-
-  const getCsrfToken = () =>
-    document.cookie
-      .split('; ')
-      .find(row => row.startsWith('csrftoken='))
-      ?.split('=')[1];
-
   const savePeriodEdits = async (periodId: string, payload: any) => {
     const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
@@ -522,7 +327,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     }
 
     invalidateFetchAllPagesCache();
-    setRefreshKey((k) => k + 1);
+    triggerRefresh();
   };
 
   const handleDelete = async (orgId: string, seasonId: string | undefined, seasonName: string) => {
@@ -570,62 +375,20 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
     }
 
     if (sportFilter !== 'all') {
-      // Filter by organisation's sport
-      list = list.filter((season) => {
-        const nestedOrg = (season as any)?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
-        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
-
-        const orgId =
-          (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
-          (season as any)?.organisation_id;
-        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        return String((org as any)?.sport?.id || '') === String(sportFilter);
-      });
+      list = list.filter((season) => matchesSportFilter(season, sportFilter, organisations));
     }
 
     return list;
   }, [seasons, statusFilter, sportFilter, organisations]);
 
   const sortedSeasons = useMemo(() => {
-    const sortKey = (value: unknown) => {
-      const s = String(value ?? '').trim();
-      return s ? s.toLocaleLowerCase() : '\uffff';
-    };
-
-    const getFederationName = (season: any) => {
-      const org = season?.organisation;
-      if (typeof org === 'object' && org?.name) return org.name;
-      const orgId = typeof org === 'string' ? org : org?.id;
-      const fromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-      return fromList?.name || '';
-    };
-
-    const getTeamId = (season: any) => {
-      const project = season?.project;
-      return String(typeof project === 'object' ? project?.id : project || '');
-    };
-
-    const getTeamName = (season: any) => {
-      const project = season?.project;
-      return typeof project === 'object' ? project?.name : '';
-    };
-
-    const getClubName = (season: any) => {
-      const teamId = getTeamId(season);
-      const teamObj = teams.find((t) => String(t.id) === String(teamId));
-      const clubId = teamObj?.parent_id || (teamObj as any)?.parent_project_id;
-      const clubObj = clubs.find((c) => String(c.id) === String(clubId));
-      return clubObj?.name || '';
-    };
-
     const list = [...filteredSeasons];
     list.sort((a: any, b: any) => {
-      const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
+      const byFederation = sortKey(getFederationName(a, organisations)).localeCompare(sortKey(getFederationName(b, organisations)));
       if (byFederation !== 0) return byFederation;
-      const byClub = sortKey(getClubName(a)).localeCompare(sortKey(getClubName(b)));
+      const byClub = sortKey(getClubName(a, clubs, teams)).localeCompare(sortKey(getClubName(b, clubs, teams)));
       if (byClub !== 0) return byClub;
-      const byTeam = sortKey(getTeamName(a)).localeCompare(sortKey(getTeamName(b)));
+      const byTeam = sortKey(getTeamName(a, teams)).localeCompare(sortKey(getTeamName(b, teams)));
       if (byTeam !== 0) return byTeam;
       return sortKey(a?.name).localeCompare(sortKey(b?.name));
     });
@@ -634,152 +397,11 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
-        {isSuperAdmin && !orgLocked && (
-          <select
-            value={selectedOrgId}
-            onChange={(e) => {
-              setSelectedOrgId(e.target.value);
-              if (!clubLocked) setSelectedClubId('');
-              setSelectedTeamId('');
-            }}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
-          >
-            <option value="">Federation: All</option>
-            {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
-              </option>
-            ))}
-          </select>
-        )}
-        {!clubLocked && (
-          <select
-            value={selectedClubId}
-            onChange={(e) => {
-              if (clubLocked) return;
-              setSelectedClubId(e.target.value);
-              if (!teamLocked) setSelectedTeamId('');
-            }}
-            disabled={clubLocked}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
-          >
-            {!clubLocked && <option value="">Club: All</option>}
-            {clubs
-              .filter((c) => {
-                if (!selectedOrgId) return true;
-                const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
-                return String(cOrg) === String(selectedOrgId);
-              })
-              .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-              .map((c) => (
-                <option key={c.id} value={String(c.id)}>
-                  {c.name}
-                </option>
-              ))}
-          </select>
-        )}
-        {!teamLocked && (
-          <select
-            value={selectedTeamId}
-            onChange={(e) => {
-              if (teamLocked) return;
-              setSelectedTeamId(e.target.value);
-            }}
-            disabled={teamLocked}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
-          >
-            {!teamLocked && <option value="">Team: All</option>}
-            {teams
-              .filter((t) => {
-                if (!selectedClubId) return true;
-                const tParent = t.parent_id || t.parent;
-                return String(tParent) === String(selectedClubId);
-              })
-              .sort((a, b) => String(a.name).localeCompare(String(b.name)))
-              .map((t) => (
-                <option key={t.id} value={String(t.id)}>
-                  {t.name}
-                </option>
-              ))}
-          </select>
-        )}
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
-        >
-          <option value="all">Status: All</option>
-          <option value="active">Status: Active</option>
-          <option value="inactive">Status: Inactive</option>
-        </select>
-        <select
-          value={sportFilter}
-          onChange={(e) => setSportFilter(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
-        >
-          <option value="all">Sport: All</option>
-          {categories.map((sport) => (
-            <option key={sport.id} value={sport.id}>
-              {sport.sport_icon} {sport.name}
-            </option>
-          ))}
-        </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => {
-              if (!clubLocked) setSelectedClubId('');
-              if (!teamLocked) setSelectedTeamId('');
-              setStatusFilter('all');
-              setSportFilter('all');
-              if (isSuperAdmin) setSelectedOrgId('');
-            }}
-          >
-            Clear
-          </Button>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => {
-              setIsCreateModalOpen(true);
-            }}
-          >
-            Create Season
-          </Button>
-        </div>
-      </div>
+      <DirectoryFilterBar
+        filters={filters}
+        createButtonLabel="Create Season"
+        onCreateClick={() => setIsCreateModalOpen(true)}
+      />
 
       {isLoading && <LoadingState message="Loading options..." />}
       {error && <Alert variant="error">{error}</Alert>}
@@ -1071,7 +693,7 @@ export const SeasonsList: React.FC<SeasonsListProps> = ({ preselectedOrgId, pres
         onSave={async (payload) => {
           if (!editSeason) return;
           await savePeriodEdits(editSeason.id, payload);
-          setRefreshKey((k) => k + 1);
+          triggerRefresh();
         }}
       />
     </div>
