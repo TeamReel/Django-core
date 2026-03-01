@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, Badge } from '@django-core/design-system';
 import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
-import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
+import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { periodPathKey } from '../../../utils/periodPath';
 import MatchDetailModal from '../MatchDetailModal';
@@ -17,35 +17,14 @@ import {
 } from '../../../utils/directoryStyles';
 import MobileFilterSheet from '../../../components/MobileFilterSheet';
 import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
+import { useMatchesData } from '../../../hooks/useMatchesData';
 import {
-  chunkArray,
   getCsrfToken,
-  sortKey,
   getTeamParentId,
-  getFederationName,
-  getTeamName,
-  getClubName,
   filterSelectStyle,
   resolveRowContext,
 } from '../../../utils/directoryHelpers';
-import type { DirectoryListProps, SeasonOption, RowContextConfig } from '../../../utils/directoryHelpers';
-
-type Activity = {
-  id: string;
-  title: string;
-  activity_type: string;
-  start_time?: string;
-  end_time?: string;
-  project?: { id: string; name: string } | null;
-  period?: {
-    id: string;
-    name: string;
-    parent_period?: { id: string; name: string; slug?: string; };
-    slug?: string;
-  } | null;
-  organisation?: { id: string; name: string; slug: string } | null;
-  data?: Record<string, any>;
-};
+import type { DirectoryListProps, SeasonOption, RowContextConfig, Activity } from '../../../utils/directoryHelpers';
 
 export const MatchesList: React.FC<DirectoryListProps> = (props) => {
   const { preselectedClubSlug, preselectedTeamSlug } = props;
@@ -75,20 +54,13 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
     variantFilter,
     selectedSeasonName,
     seasonOptions,
-    selectedSeasonIds,
     selectedCompetitionId,
     competitions,
     seasons,
-    setSeasons,
-    setCompetitions,
     isLoading,
     error,
-    setError,
-    refreshKey,
     triggerRefresh,
     lockedOrgSlug,
-    getSelectedOrgSlugForApi,
-    getSelectedOrgIdForApi,
     setSelectedOrgId,
     setSelectedClubId,
     setSelectedTeamId,
@@ -103,14 +75,12 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
     getVariantsForCategory,
   } = filters;
 
-  // ─── Match-specific state ────────────────────────────────────────
-
-  const [matches, setMatches] = useState<Activity[]>([]);
-  const [matchesLoading, setMatchesLoading] = useState(false);
-
-  // Loading *all* matches for large federations can be expensive.
-  // Default to a sane limit; allow the user to load more or all.
-  const [matchesMaxItems, setMatchesMaxItems] = useState<number | null>(500);
+  const {
+    matches, setMatches,
+    matchesLoading,
+    matchesMaxItems, setMatchesMaxItems,
+    sortedMatches,
+  } = useMatchesData(filters);
 
   // Modal state
   const [detailMatch, setDetailMatch] = useState<Activity | null>(null);
@@ -131,397 +101,6 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
     next.delete('create');
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
-
-  const loadMatchesSeqRef = useRef(0);
-
-  // When the federation changes, reset match list + limit to avoid showing stale data.
-  useEffect(() => {
-    setMatches([]);
-    setMatchesMaxItems(500);
-  }, [selectedOrgId]);
-
-  // ─── Domain-specific: filteredMatches ────────────────────────────
-
-  const filteredMatches = useMemo(() => {
-    let list = matches;
-
-    // Client-side club/team filtering (safety net for race conditions)
-    if (selectedTeamId) {
-      list = list.filter((m) => String((m as any)?.project?.id) === String(selectedTeamId));
-    } else if (selectedClubId && teams.length > 0) {
-      const clubTeamIds = new Set(
-        teams
-          .filter((t) => getTeamParentId(t) === String(selectedClubId))
-          .map((t) => String(t.id))
-      );
-      if (clubTeamIds.size > 0) {
-        list = list.filter((m) => clubTeamIds.has(String((m as any)?.project?.id)));
-      }
-    }
-
-    // Status filter (active = upcoming, inactive = past)
-    if (statusFilter !== 'all') {
-      const now = new Date();
-      const isUpcoming = (m: Activity) => {
-        if (!m.start_time) return false;
-        const dt = new Date(m.start_time);
-        return dt.getTime() >= now.getTime();
-      };
-      if (statusFilter === 'active') {
-        list = list.filter(isUpcoming);
-      } else {
-        list = list.filter((m) => !isUpcoming(m));
-      }
-    }
-
-    // Sport category filter — match period's sport first, then org fallback
-    if (sportFilter !== 'all') {
-      list = list.filter((match) => {
-        // Try to get sport from match's period first (competition-level sport)
-        const periodSportId = (match as any)?.period?.sport?.id;
-        const periodSportCategoryId = (match as any)?.period?.sport?.parent_sport_id || periodSportId;
-        if (periodSportCategoryId && String(periodSportCategoryId) === String(sportFilter)) return true;
-
-        // Fallback: get sport from organisation (organisation-level category)
-        const nestedOrg = (match as any)?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
-        if (nestedSportId && String(nestedSportId) === String(sportFilter)) return true;
-
-        // Last fallback: look up organisation in loaded list
-        const orgId =
-          (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
-          (match as any)?.organisation_id;
-        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        const orgSportId = (org as any)?.sport?.id;
-        return orgSportId && String(orgSportId) === String(sportFilter);
-      });
-    }
-
-    // Sport variant filter
-    if (variantFilter !== 'all') {
-      list = list.filter((match) => (match as any).period?.sport?.id === variantFilter);
-    }
-
-    return list;
-  }, [matches, statusFilter, sportFilter, variantFilter, organisations, selectedTeamId, selectedClubId, teams]);
-
-  // ─── Domain-specific: sortedMatches ──────────────────────────────
-
-  const sortedMatches = useMemo(() => {
-    const getCompetitionName = (m: Activity) => String((m as any)?.period?.name || '');
-    const getMatchName = (m: Activity) => String((m as any)?.title || '');
-
-    const list = [...filteredMatches];
-    list.sort((a, b) => {
-      const byFederation = sortKey(getFederationName(a, organisations)).localeCompare(
-        sortKey(getFederationName(b, organisations)),
-      );
-      if (byFederation !== 0) return byFederation;
-      const byClub = sortKey(getClubName(a, clubs, teams)).localeCompare(
-        sortKey(getClubName(b, clubs, teams)),
-      );
-      if (byClub !== 0) return byClub;
-      const byTeam = sortKey(getTeamName(a, teams)).localeCompare(
-        sortKey(getTeamName(b, teams)),
-      );
-      if (byTeam !== 0) return byTeam;
-      const bySeason = sortKey((a as any)?.period?.parent_period?.name || '').localeCompare(
-        sortKey((b as any)?.period?.parent_period?.name || ''),
-      );
-      if (bySeason !== 0) return bySeason;
-      const byCompetition = sortKey(getCompetitionName(a)).localeCompare(sortKey(getCompetitionName(b)));
-      if (byCompetition !== 0) return byCompetition;
-      return sortKey(getMatchName(a)).localeCompare(sortKey(getMatchName(b)));
-    });
-    return list;
-  }, [filteredMatches, organisations, clubs, teams]);
-
-  // ─── Fetch Seasons ───────────────────────────────────────────────
-
-  useEffect(() => {
-    const loadSeasons = async () => {
-      const apiBaseUrl = getApiBaseUrl();
-      try {
-        const baseParams = new URLSearchParams();
-        baseParams.set('page_size', '500');
-        baseParams.set('parent_id', 'null'); // Top-level periods = Seasons
-        baseParams.set('type', 'season');
-
-        if (selectedTeamId) {
-          baseParams.set('project_id', selectedTeamId);
-        } else if (selectedClubId && teams.length > 0) {
-          const clubTeams = teams.filter((t) => getTeamParentId(t) === String(selectedClubId));
-          if (clubTeams.length > 0) {
-            const teamIds = clubTeams.map((t) => String(t.id));
-            const chunks = chunkArray(teamIds, 25);
-            const results = (
-              await Promise.all(
-                chunks.map(async (ids) => {
-                  const params = new URLSearchParams(baseParams);
-                  params.set('project_id__in', ids.join(','));
-                  return await fetchAllPages<any>(
-                    `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
-                    { credentials: 'include' },
-                    { ttlMs: 120_000, bypass: refreshKey > 0 },
-                  );
-                }),
-              )
-            ).flat();
-
-            const roots = (Array.isArray(results) ? results : []).filter(
-              (p: any) => p?.parent_period_id == null && !p?.parent_period,
-            );
-            setSeasons(roots);
-            return;
-          } else {
-            setSeasons([]);
-            return;
-          }
-        } else if (selectedOrgId) {
-          // Periods are often team-scoped (project_id set) and may not have organisation_id
-          // populated. Prefer scoping by all teams in the selected org.
-          if (teams.length > 0) {
-            const teamIds = teams.map((t) => String(t.id)).filter(Boolean);
-            const chunks = chunkArray(teamIds, 25);
-            const results = (
-              await Promise.all(
-                chunks.map(async (ids) => {
-                  const params = new URLSearchParams(baseParams);
-                  params.set('project_id__in', ids.join(','));
-                  return await fetchAllPages<any>(
-                    `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
-                    { credentials: 'include' },
-                    { ttlMs: 120_000, bypass: refreshKey > 0 },
-                  );
-                }),
-              )
-            ).flat();
-
-            const roots = (Array.isArray(results) ? results : []).filter(
-              (p: any) => p?.parent_period_id == null && !p?.parent_period,
-            );
-            setSeasons([...new Map(roots.map((p: any) => [String(p.id), p])).values()]);
-            return;
-          }
-
-          // Fallback if teams not loaded
-          baseParams.set('organisation_id', selectedOrgId);
-        }
-
-        const results = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/periods/?${baseParams.toString()}`,
-          { credentials: 'include' },
-          { ttlMs: 120_000, bypass: refreshKey > 0 },
-        );
-
-        const roots = (Array.isArray(results) ? results : []).filter(
-          (p: any) => p?.parent_period_id == null && !p?.parent_period
-        );
-        setSeasons(roots);
-      } catch {
-        setSeasons([]);
-      }
-    };
-    loadSeasons();
-  }, [selectedTeamId, selectedClubId, selectedOrgId, teams, refreshKey]);
-
-  // ─── Fetch Competitions ──────────────────────────────────────────
-
-  useEffect(() => {
-     if (!selectedSeasonName) {
-         setCompetitions([]);
-         return;
-     }
-     const loadCompetitions = async () => {
-         const apiBaseUrl = getApiBaseUrl();
-         try {
-             const seasonIds = selectedSeasonIds;
-             if (seasonIds.length === 0) {
-               setCompetitions([]);
-               return;
-             }
-
-              const teamIdsForOrg =
-                selectedOrgId && !selectedClubId && !selectedTeamId
-                  ? teams.map((t) => String(t.id)).filter(Boolean)
-                  : null;
-
-              const fetchWithTeamChunks = async (baseParams: URLSearchParams, teamIds: string[]) => {
-                const chunks = chunkArray(teamIds, 25);
-                const results = (
-                  await Promise.all(
-                    chunks.map(async (ids) => {
-                      const params = new URLSearchParams(baseParams);
-                      params.set('project_id__in', ids.join(','));
-                      return await fetchAllPages<any>(
-                        `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
-                        { credentials: 'include' },
-                        { ttlMs: 120_000, bypass: refreshKey > 0 },
-                      );
-                    }),
-                  )
-                ).flat();
-                return [...new Map(results.map((c: any) => [String(c.id), c])).values()];
-              };
-
-             const requests = seasonIds.map(async (seasonId) => {
-               const params = new URLSearchParams();
-                 params.set('page_size', '300');
-               params.set('parent_id', seasonId);
-                 params.set('type', 'competition');
-               if (selectedTeamId) {
-                 params.set('project_id', String(selectedTeamId));
-               } else if (selectedClubId && teams.length > 0) {
-                 const clubTeams = teams.filter((t) => getTeamParentId(t) === String(selectedClubId));
-                 if (clubTeams.length > 0) {
-                   params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
-                 }
-              } else if (teamIdsForOrg && teamIdsForOrg.length > 0) {
-                // Prefer team-scoped filtering over organisation_id.
-                return await fetchWithTeamChunks(params, teamIdsForOrg);
-              } else if (selectedOrgId) {
-                const orgIdForApi = getSelectedOrgIdForApi();
-                if (orgIdForApi) params.set('organisation_id', orgIdForApi);
-               }
-
-                  return await fetchAllPages<any>(
-                  `${apiBaseUrl}/api/v1/periods/?${params.toString()}`,
-                  { credentials: 'include' },
-                    { ttlMs: 120_000, bypass: refreshKey > 0 },
-                );
-             });
-
-             const all = (await Promise.all(requests)).flat();
-             const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
-             setCompetitions(unique as any);
-         } catch {
-             setCompetitions([]);
-         }
-     };
-     loadCompetitions();
-  }, [selectedSeasonName, selectedSeasonIds, selectedOrgId, selectedClubId, selectedTeamId, teams]);
-
-  // ─── Fetch Matches ───────────────────────────────────────────────
-
-  useEffect(() => {
-    const loadMatches = async () => {
-      const seq = (loadMatchesSeqRef.current += 1);
-      setMatchesLoading(true);
-      const apiBaseUrl = getApiBaseUrl();
-
-      try {
-        // On org-locked pages, do not run an initial unscoped query before selectedOrgId is set.
-        if (orgLocked && !selectedOrgId) {
-          setMatches([]);
-          return;
-        }
-
-        const orgIdForApi = getSelectedOrgIdForApi();
-
-        // If a federation is selected but we can't resolve its UUID yet (e.g. org list
-        // still loading), don't run an unscoped query.
-        if (selectedOrgId && !orgIdForApi) {
-          setMatches([]);
-          return;
-        }
-
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('activity_type', 'match');
-        params.set('ordering', '-start_time');
-
-        if (selectedTeamId) {
-          params.set('project_id', String(selectedTeamId));
-        } else if (selectedClubId && teams.length > 0) {
-          const clubTeams = teams.filter((t) => getTeamParentId(t) === String(selectedClubId));
-          if (clubTeams.length === 0) {
-            setMatches([]);
-            return;
-          }
-          params.set('project_id__in', clubTeams.map((t) => String(t.id)).join(','));
-        }
-
-        // Federation scoping: ActivityViewSet filters organisation_id indirectly via project.
-        if (orgIdForApi) params.set('organisation_id', orgIdForApi);
-
-        // Filter by Season or Competition
-        if (selectedCompetitionId) {
-          params.set('period_id', selectedCompetitionId);
-        } else if (selectedSeasonIds.length === 1) {
-          // Matches live under competition periods; include descendants to capture all comps in this season.
-          params.set('period_id', selectedSeasonIds[0]);
-          params.set('include_descendants', 'true');
-        }
-
-        const all = await fetchAllPages<Activity>(
-          `${apiBaseUrl}/api/v1/activities/?${params.toString()}`,
-          { credentials: 'include' },
-          {
-            ttlMs: 20_000,
-            bypass: refreshKey > 0,
-            cacheKey: `matches:${params.toString()}:max:${matchesMaxItems ?? 'all'}`,
-            maxItems: matchesMaxItems ?? undefined,
-          },
-        );
-
-        // Avoid stale late-arriving requests overwriting the newest selection.
-        if (seq !== loadMatchesSeqRef.current) return;
-
-        // Strict org guard based on serializer-provided organisation.
-        // This protects against any accidental unscoped fetches / caching races.
-        const guardedByOrg = orgIdForApi
-          ? all.filter((m) => String((m as any)?.organisation?.id || '') === String(orgIdForApi))
-          : all;
-
-        // Final safety guard: when org-locked, only show matches for teams that belong
-        // to the locked org (prevents UI leaks if any upstream filter/mapping fails).
-        const guarded = (() => {
-          if (!orgLocked) return guardedByOrg;
-          if (teams.length === 0) return [];
-
-          const allowedTeamIds = new Set(
-            selectedTeamId
-              ? [String(selectedTeamId)]
-              : selectedClubId
-                ? teams
-                    .filter((t) => getTeamParentId(t) === String(selectedClubId))
-                    .map((t) => String((t as any).id))
-                : teams.map((t) => String((t as any).id)),
-          );
-
-          return guardedByOrg.filter((m) => allowedTeamIds.has(String((m as any)?.project?.id || '')));
-        })();
-
-        // If season selection maps to multiple season ids (duplicate season names across teams),
-        // apply the season filter client-side to keep dropdown unique by name.
-        if (selectedSeasonIds.length > 1 && selectedSeasonName) {
-          const filtered = guarded.filter((m) => {
-            const seasonName = (m as any)?.period?.parent_period?.name;
-            return String(seasonName || '').trim() === selectedSeasonName;
-          });
-          setMatches(filtered);
-        } else {
-          setMatches(guarded);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load matches');
-      } finally {
-        if (seq === loadMatchesSeqRef.current) setMatchesLoading(false);
-      }
-    };
-
-    loadMatches();
-  }, [
-    selectedTeamId,
-    selectedClubId,
-    selectedOrgId,
-    selectedSeasonName,
-    selectedSeasonIds,
-    selectedCompetitionId,
-    teams,
-    refreshKey,
-    matchesMaxItems,
-  ]);
 
   // ─── Render ──────────────────────────────────────────────────────
 

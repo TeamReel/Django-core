@@ -230,6 +230,51 @@ export const filterSelectStyle: React.CSSProperties = {
 };
 
 // ────────────────────────────────────────────
+// Shared domain types
+// ────────────────────────────────────────────
+
+/** A period (season or competition) as returned by the API. */
+export type Period = {
+  id: string;
+  name: string;
+  slug?: string;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+  project?: { id: string; name: string } | null;
+  project_id?: string | null;
+  organisation?: { id: string; name: string } | null;
+  organisation_id?: string | null;
+  parent_period?: { id: string; name: string; slug?: string } | null;
+  parent_period_id?: string | null;
+  children_count?: number;
+  activities_count?: number;
+  matches_count?: number;
+  children_matches_count?: number;
+  matches_total_count?: number;
+  members_count?: number;
+  data?: Record<string, any>;
+};
+
+/** A match activity as returned by the API. */
+export type Activity = {
+  id: string;
+  title: string;
+  activity_type: string;
+  start_time?: string;
+  end_time?: string;
+  project?: { id: string; name: string } | null;
+  period?: {
+    id: string;
+    name: string;
+    parent_period?: { id: string; name: string; slug?: string };
+    slug?: string;
+  } | null;
+  organisation?: { id: string; name: string; slug: string } | null;
+  data?: Record<string, any>;
+};
+
+// ────────────────────────────────────────────
 // Row context resolution (shared across all directory tables)
 // ────────────────────────────────────────────
 
