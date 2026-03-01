@@ -16,30 +16,22 @@ export default function RecentsPage() {
   };
 
   return (
-    <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+    <div className="bg-primary" style={{ minHeight: '100%' }}>
+      <div className="flex-between gap-12 mb-16">
         <div>
-          <h1 style={{ margin: 0, color: 'var(--app-text)' }}>Recents</h1>
-          <div style={{ fontSize: 13, color: 'var(--app-muted-text)', marginTop: 4 }}>
+          <h1 className="m-0 text-primary">Recents</h1>
+          <div className="fs-13 text-muted mt-4">
             Recently visited items across the app.
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="flex-row gap-8">
           <Link
             to="/favorites"
+            className="inline-flex gap-8 rounded-8 border bg-surface text-primary fs-13 fw-600"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
               padding: '8px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--app-border)',
-              background: 'var(--app-surface)',
-              color: 'var(--app-text)',
               textDecoration: 'none',
-              fontSize: 13,
-              fontWeight: 600,
             }}
           >
             <AppIcon icon={Star} size={16} /> Favorites
@@ -48,18 +40,9 @@ export default function RecentsPage() {
           <button
             type="button"
             onClick={() => clearRecents()}
+            className="inline-flex gap-8 rounded-8 border bg-surface text-primary cursor-pointer fs-13 fw-600"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
               padding: '8px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--app-border)',
-              background: 'var(--app-surface)',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
             }}
             title="Clear recents"
           >
@@ -69,15 +52,10 @@ export default function RecentsPage() {
       </div>
 
       <div
-        style={{
-          background: 'var(--app-surface)',
-          border: '1px solid var(--app-border)',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}
+        className="bg-surface border rounded-12 overflow-hidden"
       >
         {recents.length === 0 ? (
-          <div style={{ padding: 16, color: 'var(--app-muted-text)' }}>
+          <div className="p-16 text-muted">
             No recent items yet.
           </div>
         ) : (
@@ -86,49 +64,33 @@ export default function RecentsPage() {
             return (
               <div
                 key={item.path}
+                className="flex-between gap-12 border-top"
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12,
                   padding: '12px 14px',
-                  borderTop: '1px solid var(--app-border)',
                 }}
               >
                 <Link
                   to={item.path}
+                  className="flex-row gap-10 text-primary min-w-0"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    color: 'var(--app-text)',
                     textDecoration: 'none',
-                    minWidth: 0,
                   }}
                 >
                   <AppIcon icon={Clock} size={16} />
-                  <span style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span className="fw-600 fs-14 truncate">
                     {item.label}
                   </span>
-                  <span style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{item.kind}</span>
+                  <span className="fs-12 text-muted">{item.kind}</span>
                 </Link>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div className="flex-row gap-6">
                   <button
                     type="button"
                     onClick={() => onToggleFavorite(item)}
+                    className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600"
                     style={{
-                      border: '1px solid var(--app-border)',
-                      background: 'var(--app-surface-2)',
-                      borderRadius: 8,
                       padding: '6px 8px',
-                      cursor: 'pointer',
                       color: isFav ? '#f59e0b' : 'var(--app-text)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: 600,
                     }}
                     title={isFav ? 'Unfavorite' : 'Add to favorites'}
                   >
@@ -139,18 +101,9 @@ export default function RecentsPage() {
                   <button
                     type="button"
                     onClick={() => removeRecent(item.path)}
+                    className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600 text-primary"
                     style={{
-                      border: '1px solid var(--app-border)',
-                      background: 'var(--app-surface-2)',
-                      borderRadius: 8,
                       padding: '6px 8px',
-                      cursor: 'pointer',
-                      color: 'var(--app-text)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: 12,
-                      fontWeight: 600,
                     }}
                     title="Remove"
                   >

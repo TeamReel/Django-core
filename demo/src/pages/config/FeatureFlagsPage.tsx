@@ -423,17 +423,13 @@ export const FeatureFlagsPage: React.FC = () => {
           { label: 'Global Defaults' }
         ]}
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex-row gap-12">
             {/* Admin badge */}
-            <div style={{
-              fontSize: '11px',
+            <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
               padding: '4px 10px',
-              borderRadius: '6px',
               backgroundColor: '#3b82f6',
               color: 'white',
-              fontWeight: 600,
               letterSpacing: '0.5px',
-              cursor: 'default',
             }}>
               👑 SUPERADMIN
             </div>
@@ -458,23 +454,11 @@ export const FeatureFlagsPage: React.FC = () => {
         </Alert>
 
         {/* Filters */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '12px',
-          marginBottom: '16px',
-          alignItems: 'center',
-        }}>
+        <div className="flex-row flex-wrap gap-12 mb-16">
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
+            className="py-8 px-12 border rounded-4 fs-14 bg-surface"
           >
             <option value="all">Type: All</option>
             {uniqueTypes.map((type) => (
@@ -484,13 +468,7 @@ export const FeatureFlagsPage: React.FC = () => {
           <select
             value={filterSubtype}
             onChange={(e) => setFilterSubtype(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
+            className="py-8 px-12 border rounded-4 fs-14 bg-surface"
           >
             <option value="all">Subtype: All</option>
             {uniqueSubtypes.map((subtype) => (
@@ -500,23 +478,17 @@ export const FeatureFlagsPage: React.FC = () => {
           <select
             value={filterStyle}
             onChange={(e) => setFilterStyle(e.target.value)}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
+            className="py-8 px-12 border rounded-4 fs-14 bg-surface"
           >
             <option value="all">Style: All</option>
             {uniqueStyles.map((style) => (
               <option key={style} value={style}>{style}</option>
             ))}
           </select>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div className="ml-auto flex-row gap-8">
             {someSelected && (
               <>
-                <span style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                <span className="fs-13 text-muted">
                   {selectedIds.size} selected
                 </span>
                 <Button
@@ -591,7 +563,7 @@ export const FeatureFlagsPage: React.FC = () => {
                         type="checkbox"
                         checked={allSelected}
                         onChange={handleSelectAll}
-                        style={{ cursor: 'pointer' }}
+                        className="cursor-pointer"
                       />
                     </th>
                     <th style={{ ...compactThStyle, width: '12%' }}>Type</th>
@@ -619,7 +591,7 @@ export const FeatureFlagsPage: React.FC = () => {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => handleSelectOne(flag.id)}
-                            style={{ cursor: 'pointer' }}
+                            className="cursor-pointer"
                           />
                         </td>
                         <td style={compactTdStyle}>{type || '—'}</td>
@@ -629,7 +601,7 @@ export const FeatureFlagsPage: React.FC = () => {
                           {flag.description || '—'}
                         </td>
                         <td style={compactTdStyle}>
-                          <Badge variant={displayEnabled ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                          <Badge variant={displayEnabled ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                             {displayEnabled ? 'On' : 'Off'}
                           </Badge>
                         </td>

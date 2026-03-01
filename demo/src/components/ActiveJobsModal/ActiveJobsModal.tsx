@@ -254,20 +254,16 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div style={headerStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '20px' }}>⚙️</span>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>Actieve Jobs</h2>
+          <div className="flex-row gap-12">
+            <span className="fs-20">⚙️</span>
+            <h2 className="m-0 fs-18 fw-600">Actieve Jobs</h2>
             <Badge variant="info">{jobs.length} actief</Badge>
           </div>
           <button
             onClick={onClose}
+            className="bg-transparent border-none cursor-pointer fs-20 p-4"
             style={{
-              background: 'transparent',
-              border: 'none',
               color: 'var(--app-muted-text, #888)',
-              cursor: 'pointer',
-              fontSize: '20px',
-              padding: '4px',
             }}
           >
             ✕
@@ -277,20 +273,18 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
         {/* Body */}
         <div style={bodyStyle}>
           {loading && jobs.length === 0 && (
-            <div style={{ textAlign: 'center', color: 'var(--app-muted-text, #888)', padding: '40px' }}>
+            <div className="text-center" style={{ color: 'var(--app-muted-text, #888)', padding: '40px' }}>
               Laden...
             </div>
           )}
 
           {error && (
             <div
+              className="py-12 px-16 rounded-8 mb-16"
               style={{
-                padding: '12px 16px',
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
-                borderRadius: '8px',
                 color: '#ef4444',
-                marginBottom: '16px',
               }}
             >
               {error}
@@ -299,13 +293,13 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
 
           {!loading && jobs.length === 0 && !error && (
             <div
+              className="text-center"
               style={{
-                textAlign: 'center',
                 color: 'var(--app-muted-text, #888)',
                 padding: '40px',
               }}
             >
-              <div style={{ fontSize: '32px', marginBottom: '12px' }}>✅</div>
+              <div className="mb-12" style={{ fontSize: '32px' }}>✅</div>
               Geen actieve verwerkingsjobs
             </div>
           )}
@@ -319,11 +313,11 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
             return (
               <div key={jobKey} style={jobRowStyle}>
                 {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>
+                <div className="flex-1-min">
+                  <div className="fs-14 fw-500 mb-4">
                     {job.member_name}
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text, #888)' }}>
+                  <div className="fs-12" style={{ color: 'var(--app-muted-text, #888)' }}>
                     {getAssetLabel(job.asset_type)} • {job.kit_type}
                     {job.variant_id && ` • ${job.variant_id.replace(/_/g, ' ')}`}
                     {startTime && ` • ${startTime}`}
@@ -331,20 +325,20 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
                 </div>
 
                 {/* Progress */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '150px' }}>
+                <div className="flex-row gap-10" style={{ minWidth: '150px' }}>
                   {progress !== null ? (
                     <>
                       <div style={progressBarContainerStyle}>
                         <div
+                          className="h-full"
                           style={{
-                            height: '100%',
                             width: `${progress}%`,
                             background: isCancelling ? '#f59e0b' : '#3b82f6',
                             transition: 'width 0.3s ease',
                           }}
                         />
                       </div>
-                      <span style={{ fontSize: '12px', color: 'var(--app-muted-text, #888)', minWidth: '40px' }}>
+                      <span className="fs-12" style={{ color: 'var(--app-muted-text, #888)', minWidth: '40px' }}>
                         {progress}%
                       </span>
                     </>
@@ -374,13 +368,10 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
           {/* Info notice */}
           {jobs.length > 0 && (
             <div
+              className="mt-16 py-12 px-16 rounded-8 fs-13"
               style={{
-                marginTop: '16px',
-                padding: '12px 16px',
                 background: 'rgba(59, 130, 246, 0.1)',
                 border: '1px solid rgba(59, 130, 246, 0.3)',
-                borderRadius: '8px',
-                fontSize: '13px',
                 color: '#60a5fa',
               }}
             >

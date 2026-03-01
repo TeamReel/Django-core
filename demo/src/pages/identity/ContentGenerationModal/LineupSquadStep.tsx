@@ -44,7 +44,7 @@ export function LineupSquadStep({
   const playerSelected = selectedMembers.player || [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex-col gap-16">
       {/* Field */}
       <div style={{
         position: 'relative', width: '100%', aspectRatio: '3 / 4',
@@ -178,10 +178,8 @@ export function LineupSquadStep({
       </div>
 
       {/* Summary bar */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '8px 12px', background: 'var(--app-surface-2, #f3f4f6)',
-        borderRadius: 8, fontSize: 12, color: 'var(--app-text, #111)',
+      <div className="flex-between py-8 px-12 bg-surface-2 rounded-8 fs-12" style={{
+        color: 'var(--app-text, #111)',
       }}>
         <span>Formatie: <strong>{lineupFormation}</strong></span>
         <span>

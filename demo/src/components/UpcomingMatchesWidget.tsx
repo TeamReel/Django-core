@@ -57,15 +57,8 @@ export const UpcomingMatchesWidget: React.FC = () => {
   // Loading skeleton
   if (loading) {
     return (
-      <div style={{ marginBottom: '24px' }}>
-        <h3 style={{
-          color: 'var(--app-text)',
-          fontSize: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '16px'
-        }}>
+      <div className="mb-24">
+        <h3 className="text-primary fs-18 flex-row gap-8 mb-16">
           <Calendar size={20} style={{ color: 'var(--color-primary)' }} />
           Wedstrijden
         </h3>
@@ -77,15 +70,8 @@ export const UpcomingMatchesWidget: React.FC = () => {
   // Smart empty state
   if (!matches.length) {
     return (
-      <div style={{ marginBottom: '24px' }}>
-        <h3 style={{
-          color: 'var(--app-text)',
-          fontSize: '18px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '16px'
-        }}>
+      <div className="mb-24">
+        <h3 className="text-primary fs-18 flex-row gap-8 mb-16">
           <Calendar size={20} style={{ color: 'var(--color-primary)' }} />
           Wedstrijden
         </h3>
@@ -99,15 +85,8 @@ export const UpcomingMatchesWidget: React.FC = () => {
   }
 
   return (
-    <div style={{ marginBottom: '24px' }}>
-      <h3 style={{
-        color: 'var(--app-text)',
-        fontSize: '18px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        marginBottom: '16px'
-      }}>
+    <div className="mb-24">
+      <h3 className="text-primary fs-18 flex-row gap-8 mb-16">
         <Calendar size={20} style={{ color: 'var(--color-primary)' }} />
         Wedstrijden
       </h3>
@@ -130,17 +109,8 @@ export const UpcomingMatchesWidget: React.FC = () => {
             <div
                key={match.id}
                onClick={() => navigate(`/matches/${match.slug || match.id}`)}
+               className="p-16 bg-surface rounded-12 border mb-12 flex-between text-primary cursor-pointer"
                style={{
-                   padding: '16px',
-                   backgroundColor: 'var(--app-surface)',
-                   borderRadius: '12px',
-                   border: '1px solid var(--app-border)',
-                   marginBottom: '12px',
-                   display: 'flex',
-                   justifyContent: 'space-between',
-                   alignItems: 'center',
-                   color: 'var(--app-text)',
-                   cursor: 'pointer',
                    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                }}
                onMouseEnter={e => {
@@ -152,35 +122,28 @@ export const UpcomingMatchesWidget: React.FC = () => {
                  (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
                }}
             >
-               <div style={{ flex: 1 }}>
+               <div className="flex-1">
                   {/* Relative time badge */}
-                  <div style={{
-                    fontSize: '12px',
-                    fontWeight: 600,
+                  <div className="fs-12 fw-600 mb-4" style={{
                     color: urgencyColors[urgency],
-                    marginBottom: '4px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em'
                   }}>
                      {relativeTime}
                   </div>
                   {/* Opponent */}
-                  <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>
+                  <div className="fs-16 fw-600 mb-4">
                      vs {opponent}
                   </div>
                   {/* Venue & Team */}
-                  <div style={{
-                    fontSize: '13px',
+                  <div className="fs-13 flex-row gap-8" style={{
                     color: 'var(--app-muted-text)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
                   }}>
                     {match.metadata.venue && (
                       <>
                         <MapPin size={12} />
                         {match.metadata.venue}
-                        <span style={{ opacity: 0.5 }}>•</span>
+                        <span className="opacity-50">•</span>
                       </>
                     )}
                     {match.project.name}
@@ -188,7 +151,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
                </div>
 
                {/* Quick generate button */}
-               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+               <div className="flex-row gap-8">
                  <Button
                    size="sm"
                    variant="primary"
@@ -196,12 +159,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
                      e.stopPropagation();
                      navigate(`/matches/${match.slug || match.id}?tab=content`);
                    }}
-                   style={{
-                     display: 'flex',
-                     alignItems: 'center',
-                     gap: '4px',
-                     padding: '8px 12px'
-                   }}
+                   className="flex-row gap-4 py-8 px-12"
                  >
                    <Zap size={14} />
                    <span style={{ display: 'none', '@media (min-width: 640px)': { display: 'inline' } } as any}>

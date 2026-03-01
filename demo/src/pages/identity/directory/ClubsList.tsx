@@ -275,7 +275,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div className="flex-row gap-12 mb-16 flex-wrap">
         {isSuperAdmin && !orgLocked && (
           <select
             value={selectedOrgId}
@@ -283,13 +283,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
               setSelectedOrgId(e.target.value);
               setSelectedClubId('');
             }}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-surface)',
-            }}
+            className="py-8 px-12 border rounded-4 fs-14 bg-surface"
           >
             <option value="">Federation: All</option>
             {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
@@ -302,13 +296,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -317,13 +305,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
         <select
           value={sportFilter}
           onChange={(e) => setSportFilter(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Sport: All</option>
           {categories.map((sport) => (
@@ -341,7 +323,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
             setSelectedClubId('');
             if (isSuperAdmin) setSelectedOrgId('');
           }}
-          style={{ marginLeft: 'auto' }}
+          className="ml-auto"
         >
           Clear
         </Button>
@@ -452,12 +434,12 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                       </td>
                       <td style={compactTdStyle}>
                         {orgSport ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span className="flex-row gap-4">
                             <span>{orgSport.sport_icon}</span>
-                            <span style={{ fontSize: '12px' }}>{orgSport.name}</span>
+                            <span className="fs-12">{orgSport.name}</span>
                           </span>
                         ) : (
-                          <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                          <span className="text-muted">—</span>
                         )}
                       </td>
                       <td style={compactTdStyle}>

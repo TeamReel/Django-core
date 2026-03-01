@@ -22,19 +22,19 @@ export function TemplateStep({
   onSelectTemplate,
 }: TemplateStepProps) {
   return (
-    <div style={{ gap: '16px', display: 'flex', flexDirection: 'column' }}>
+    <div className="flex-col gap-16">
       {loading && (
-        <div style={{ textAlign: 'center', paddingTop: '40px', paddingBottom: '40px', color: 'var(--app-text-muted, #6b7280)' }}>
-          <div style={{ display: 'inline-block', width: '32px', height: '32px', borderWidth: '4px', borderStyle: 'solid', borderColor: 'var(--app-primary, #3B8EA5)', borderTopColor: 'transparent', borderRadius: '9999px', marginBottom: '16px' }}></div>
+        <div className="text-center" style={{ paddingTop: '40px', paddingBottom: '40px', color: 'var(--app-text-muted, #6b7280)' }}>
+          <div className="inline-block rounded-full mb-16" style={{ width: '32px', height: '32px', borderWidth: '4px', borderStyle: 'solid', borderColor: 'var(--app-primary, #3B8EA5)', borderTopColor: 'transparent' }}></div>
           <div>Templates laden...</div>
         </div>
       )}
 
       {error && (
-        <div style={{ gap: '16px', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ textAlign: 'center', paddingTop: '24px', paddingBottom: '24px', paddingLeft: '16px', paddingRight: '16px', background: '#fefce8', border: '1px solid var(--app-border, #e5e5e5)', borderColor: '#fde68a', borderRadius: '8px' }}>
-            <div style={{ color: '#d97706', marginBottom: '8px' }}>Kan templates niet laden</div>
-            <div style={{ fontSize: '14px', color: 'var(--app-text-secondary, #4b5563)', marginBottom: '16px' }}>
+        <div className="flex-col gap-16">
+          <div className="text-center py-24 px-16 rounded-8" style={{ background: '#fefce8', border: '1px solid var(--app-border, #e5e5e5)', borderColor: '#fde68a' }}>
+            <div className="mb-8" style={{ color: '#d97706' }}>Kan templates niet laden</div>
+            <div className="fs-14 mb-16" style={{ color: 'var(--app-text-secondary, #4b5563)' }}>
               Controleer of de backend server draait.
             </div>
             <Button variant="secondary" size="sm" onClick={() => selectedType && fetchTemplates(selectedType.type, selectedType.subtype)}>
@@ -45,20 +45,20 @@ export function TemplateStep({
       )}
 
       {!loading && !error && templates.length === 0 && (
-        <div style={{ textAlign: 'center', paddingTop: '40px', paddingBottom: '40px' }}>
-          <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--app-surface-2, #f3f4f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700, color: 'var(--app-text-muted, #6b7280)', margin: '0 auto 16px' }}>?</div>
-          <div style={{ color: 'var(--app-text-secondary, #4b5563)', marginBottom: '8px' }}>Geen templates gevonden voor "{selectedType?.label}"</div>
-          <div style={{ fontSize: '14px', color: 'var(--app-text-muted, #9ca3af)', marginBottom: '16px' }}>
+        <div className="text-center" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
+          <div className="rounded-12 flex-center fs-20 fw-700" style={{ width: 48, height: 48, background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text-muted, #6b7280)', margin: '0 auto 16px' }}>?</div>
+          <div className="mb-8" style={{ color: 'var(--app-text-secondary, #4b5563)' }}>Geen templates gevonden voor "{selectedType?.label}"</div>
+          <div className="fs-14 mb-16" style={{ color: 'var(--app-text-muted, #9ca3af)' }}>
             {organisationSport ? `Zoeken naar ${organisationSport.name} templates` : 'Geen sportfilter actief'}
           </div>
-          <a href="/content-templates" style={{ color: 'var(--app-link, #3B8EA5)', fontSize: '14px' }}>
+          <a href="/content-templates" className="fs-14" style={{ color: 'var(--app-link, #3B8EA5)' }}>
             Ga naar Content Templates
           </a>
         </div>
       )}
 
       {!loading && !error && templates.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '16px' }}>
+        <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(1, 1fr)' }}>
           {templates.map(template => {
             const memberReqs = template.input_requirements?.members;
             const reqSummary: string[] = [];
@@ -75,16 +75,17 @@ export function TemplateStep({
               <div
                 key={template.id}
                 onClick={() => onSelectTemplate(template)}
-                style={{ border: '1px solid var(--app-border, #e5e5e5)', borderRadius: '8px', padding: '16px', cursor: 'pointer', transition: 'all 150ms ease', display: 'flex', flexDirection: 'column', gap: '8px' }}
+                className="rounded-8 p-16 cursor-pointer flex-col gap-8"
+                style={{ border: '1px solid var(--app-border, #e5e5e5)', transition: 'all 150ms ease' }}
               >
-                <div style={{ background: 'linear-gradient(to bottom right, var(--app-surface-2, #f3f4f6), var(--app-border, #e5e5e5))', aspectRatio: '16 / 9', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted, #9ca3af)', fontSize: '14px' }}>
+                <div className="rounded-6 flex-center fs-14" style={{ background: 'linear-gradient(to bottom right, var(--app-surface-2, #f3f4f6), var(--app-border, #e5e5e5))', aspectRatio: '16 / 9', color: 'var(--app-text-muted, #9ca3af)' }}>
                   {template.style_variant || 'Voorbeeld'}
                 </div>
-                <div style={{ fontWeight: 600 }}>{template.name}</div>
+                <div className="fw-600">{template.name}</div>
                 {template.description && (
-                  <div style={{ fontSize: '12px', color: 'var(--app-text-muted, #6b7280)', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{template.description}</div>
+                  <div className="fs-12 overflow-hidden" style={{ color: 'var(--app-text-muted, #6b7280)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{template.description}</div>
                 )}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                <div className="flex-row flex-wrap gap-4">
                   {template.sport_detail && (
                     <Badge variant="info" size="sm">{template.sport_detail.name}</Badge>
                   )}
@@ -95,7 +96,7 @@ export function TemplateStep({
                     <Badge variant="success" size="sm">{template.style_variant}</Badge>
                   )}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '8px', borderTop: '1px solid var(--app-border, #e5e5e5)', fontSize: '12px', color: 'var(--app-text-muted, #6b7280)' }}>
+                <div className="flex-between fs-12" style={{ marginTop: 'auto', paddingTop: '8px', borderTop: '1px solid var(--app-border, #e5e5e5)', color: 'var(--app-text-muted, #6b7280)' }}>
                   <span>{template.credits_required ?? 1} credit{(template.credits_required ?? 1) !== 1 ? 's' : ''}</span>
                   {reqSummary.length > 0 && (
                     <span>{reqSummary.join(', ')}</span>

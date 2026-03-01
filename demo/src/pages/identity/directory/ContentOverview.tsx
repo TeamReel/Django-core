@@ -120,14 +120,14 @@ export const ContentOverview: React.FC = () => {
   }, [jobs]);
 
   if (loading) return <LoadingState message="Loading content overview…" />;
-  if (error) return <div style={{ padding: 20, color: '#991b1b' }}>Error: {error}</div>;
+  if (error) return <div className="p-20" style={{ color: '#991b1b' }}>Error: {error}</div>;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex-col gap-16">
 
-      {/* ── Summary table ─────────────────────────────────────────────── */}
+      {/* ── Summary table ─────────────────────────────────────────────────────── */}
       <Card>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="overflow-x-auto">
           <table style={compactTableStyle}>
             <thead>
               <tr>
@@ -144,16 +144,16 @@ export const ContentOverview: React.FC = () => {
               <tr><td style={compactTdStyle}>Est. Input Tokens</td><td style={rightTd}>{summary.totalInputTokens > 0 ? summary.totalInputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
               <tr><td style={compactTdStyle}>Est. Output Tokens</td><td style={rightTd}>{summary.totalOutputTokens > 0 ? summary.totalOutputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
               <tr><td style={compactTdStyle}>Pending Review</td><td style={rightTd}>{summary.pendingReview}</td></tr>
-              <tr><td style={{ ...compactTdStyle, fontWeight: 600 }}>Est. Total Cost</td><td style={{ ...rightTd, fontWeight: 600 }}>{fmtCost(summary.totalCost)}</td></tr>
+              <tr><td className="fw-600" style={{ ...compactTdStyle }}>Est. Total Cost</td><td className="fw-600" style={{ ...rightTd }}>{fmtCost(summary.totalCost)}</td></tr>
             </tbody>
           </table>
         </div>
       </Card>
 
       {/* ── Status / Approval side-by-side ────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+      <div className="gap-16 flex-wrap" style={{ display: 'flex' }}>
         <Card style={{ flex: '1 1 300px' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div className="overflow-x-auto">
             <table style={compactTableStyle}>
               <thead><tr><th style={compactThStyle}>Job Status</th><th style={rightTh}>Count</th></tr></thead>
               <tbody>
@@ -165,7 +165,7 @@ export const ContentOverview: React.FC = () => {
           </div>
         </Card>
         <Card style={{ flex: '1 1 300px' }}>
-          <div style={{ overflowX: 'auto' }}>
+          <div className="overflow-x-auto">
             <table style={compactTableStyle}>
               <thead><tr><th style={compactThStyle}>Approval Status</th><th style={rightTh}>Count</th></tr></thead>
               <tbody>
@@ -180,7 +180,7 @@ export const ContentOverview: React.FC = () => {
 
       {/* ── Providers & Models ────────────────────────────────────────── */}
       <Card>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="overflow-x-auto">
           <table style={compactTableStyle}>
             <thead>
               <tr>
@@ -197,26 +197,26 @@ export const ContentOverview: React.FC = () => {
             <tbody>
               {byProvider.map(([prov, d]) => (
                 <tr key={prov}>
-                  <td style={{ ...compactTdStyle, fontWeight: 600 }}>{prov}</td>
+                  <td className="fw-600" style={{ ...compactTdStyle }}>{prov}</td>
                   <td style={compactTdStyle}>{[...d.models].join(', ') || '—'}</td>
                   <td style={rightTd}>{d.count}</td>
                   <td style={rightTd}>{d.images}</td>
                   <td style={rightTd}>{d.videos}</td>
                   <td style={rightTd}>{d.durN > 0 ? fmtDur(d.totalDur / d.durN) : '—'}</td>
-                  <td style={{ ...rightTd, fontSize: 11 }}>{d.inTok > 0 || d.outTok > 0 ? `${(d.inTok / 1000).toFixed(1)}k / ${(d.outTok / 1000).toFixed(1)}k` : '—'}</td>
+                  <td className="fs-11" style={{ ...rightTd }}>{d.inTok > 0 || d.outTok > 0 ? `${(d.inTok / 1000).toFixed(1)}k / ${(d.outTok / 1000).toFixed(1)}k` : '—'}</td>
                   <td style={rightTd}>{fmtCost(d.cost)}</td>
                 </tr>
               ))}
               {/* Totals row */}
               {byProvider.length > 1 && (
-                <tr style={{ borderTop: '2px solid #e5e7eb', fontWeight: 600 }}>
+                <tr className="fw-600" style={{ borderTop: '2px solid #e5e7eb' }}>
                   <td style={compactTdStyle}>Total</td>
                   <td style={compactTdStyle}></td>
                   <td style={rightTd}>{summary.total}</td>
                   <td style={rightTd}>{summary.images}</td>
                   <td style={rightTd}>{summary.videos}</td>
                   <td style={rightTd}>{fmtDur(summary.avgGenTime)}</td>
-                  <td style={{ ...rightTd, fontSize: 11 }}>{summary.totalInputTokens > 0 || summary.totalOutputTokens > 0 ? `${(summary.totalInputTokens / 1000).toFixed(1)}k / ${(summary.totalOutputTokens / 1000).toFixed(1)}k` : '—'}</td>
+                  <td className="fs-11" style={{ ...rightTd }}>{summary.totalInputTokens > 0 || summary.totalOutputTokens > 0 ? `${(summary.totalInputTokens / 1000).toFixed(1)}k / ${(summary.totalOutputTokens / 1000).toFixed(1)}k` : '—'}</td>
                   <td style={rightTd}>{fmtCost(summary.totalCost)}</td>
                 </tr>
               )}
@@ -228,7 +228,7 @@ export const ContentOverview: React.FC = () => {
       {/* ── Per Club / Team ───────────────────────────────────────────── */}
       {byClub.length > 1 && (
         <Card>
-          <div style={{ overflowX: 'auto' }}>
+          <div className="overflow-x-auto">
             <table style={compactTableStyle}>
               <thead>
                 <tr>
@@ -242,7 +242,7 @@ export const ContentOverview: React.FC = () => {
               <tbody>
                 {byClub.map(([club, d]) => (
                   <tr key={club}>
-                    <td style={{ ...compactTdStyle, fontWeight: 500 }}>{club}</td>
+                    <td className="fw-500" style={{ ...compactTdStyle }}>{club}</td>
                     <td style={rightTd}>{d.count}</td>
                     <td style={rightTd}>{d.images}</td>
                     <td style={rightTd}>{d.videos}</td>

@@ -60,21 +60,21 @@ export default function IdentitySettingsCard({
   const hasLogo = !!current.logoUrl;
 
   return (
-    <Card style={{ padding: 16 }}>
-      <div className="flex items-start justify-between" style={{ gap: 12 }}>
-        <div style={{ minWidth: 0 }}>
+    <Card className="p-16">
+      <div className="flex items-start justify-between gap-12">
+        <div className="min-w-0">
           <div className="text-lg font-semibold" style={{ lineHeight: 1.2 }}>
             {title}
           </div>
           {description ? (
-            <div className="text-sm" style={{ color: 'var(--app-muted-text)', marginTop: 4 }}>
+            <div className="text-sm text-muted mt-4">
               {description}
             </div>
           ) : null}
         </div>
 
         {canEdit && (
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <div className="gap-8 flex-wrap" style={{ display: 'flex' }}>
             {isEditing ? (
               <>
                 <Button
@@ -102,23 +102,24 @@ export default function IdentitySettingsCard({
       </div>
 
       {error && (
-        <div style={{ marginTop: 12 }}>
+        <div className="mt-12">
           <Alert variant="error">{error}</Alert>
         </div>
       )}
 
-      <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
-        <div className="text-sm" style={{ fontWeight: 600 }}>
+      <div className="mt-12 grid" style={{ gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+        <div className="text-sm fw-600">
           Logo
         </div>
         {isEditing ? (
           <Input value={logoUrl} onChange={(e) => setLogoUrl((e.target as any).value)} placeholder="https://…" />
         ) : hasLogo ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <div className="flex-row gap-10 min-w-0">
             <img
               src={current.logoUrl}
               alt="logo"
-              style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--app-border)' }}
+              className="rounded-6 border"
+              style={{ width: 28, height: 28, objectFit: 'cover' }}
               onError={(e) => {
                 try {
                   (e.currentTarget as any).style.display = 'none';
@@ -131,19 +132,18 @@ export default function IdentitySettingsCard({
               href={current.logoUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 hover:underline"
-              style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              className="text-blue-600 hover:underline truncate"
             >
               {current.logoUrl}
             </a>
           </div>
         ) : (
-          <div className="text-sm" style={{ color: 'var(--app-muted-text)' }}>
+          <div className="text-sm text-muted">
             —
           </div>
         )}
 
-        <div className="text-sm" style={{ fontWeight: 600 }}>
+        <div className="text-sm fw-600">
           Default match location
         </div>
         {isEditing ? (
@@ -153,11 +153,11 @@ export default function IdentitySettingsCard({
             placeholder="e.g. Sportpark X, City"
           />
         ) : current.defaultLocation ? (
-          <div className="text-sm" style={{ color: 'var(--app-text)' }}>
+          <div className="text-sm text-primary">
             {current.defaultLocation}
           </div>
         ) : (
-          <div className="text-sm" style={{ color: 'var(--app-muted-text)' }}>
+          <div className="text-sm text-muted">
             —
           </div>
         )}

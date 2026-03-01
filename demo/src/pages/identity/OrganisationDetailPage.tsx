@@ -1576,14 +1576,13 @@ export const OrganisationDetailPage: React.FC = () => {
                     }
                   }}
                   disabled={activatingContext || isActive}
+                  className="rounded-4 fs-12"
                   style={{
                     padding: '6px 12px',
-                    borderRadius: '4px',
                     border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
                     backgroundColor: isActive ? '#dcfce7' : 'var(--app-surface-2)',
                     color: isActive ? '#166534' : 'var(--app-text)',
                     cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
-                    fontSize: '12px',
                     fontWeight: isActive ? 600 : 500,
                     opacity: (activatingContext || isActive) ? 0.8 : 1,
                   }}
@@ -1639,7 +1638,7 @@ export const OrganisationDetailPage: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card style={{ padding: 16 }}>
+              <Card className="p-16">
                 <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
                     Clubs <span className="text-gray-500 fw-600">({org.clubs_count || clubsCount || 0})</span>
@@ -1672,7 +1671,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card style={{ padding: 16 }}>
+              <Card className="p-16">
                 <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
                     Teams <span className="text-gray-500 fw-600">({org.teams_count || teamsCount || 0})</span>
@@ -1705,7 +1704,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card style={{ padding: 16 }}>
+              <Card className="p-16">
                 <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
                     Members <span className="text-gray-500 fw-600">({org.member_count || members.length || 0})</span>
@@ -1743,7 +1742,7 @@ export const OrganisationDetailPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card style={{ padding: 16 }}>
+              <Card className="p-16">
                 <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
                     Matches <span className="text-gray-500 fw-600">({matchesCount ?? '—'})</span>
@@ -1861,40 +1860,35 @@ export const OrganisationDetailPage: React.FC = () => {
                   return (
                     <div
                       key={club.clubId || club.clubSlugOrId}
+                      className="border overflow-hidden"
                       style={{
-                        border: '1px solid var(--app-border)',
                         borderRadius: 10,
                         background: 'var(--app-surface)',
-                        overflow: 'hidden',
                       }}
                     >
                       <div
+                        className="flex-between border-bottom gap-12"
                         style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
                           padding: '10px 12px',
-                          borderBottom: '1px solid var(--app-border)',
                           background: 'var(--app-surface-2)',
-                          gap: 12,
                         }}
                       >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                        <div className="flex-col gap-2 min-w-0">
                           {clubPath ? (
                             <button
                               type="button"
-                              className="app-unstyled-button hover:underline"
+                              className="app-unstyled-button hover:underline text-left fw-800 fs-14"
                               onClick={() => navigate(clubPath)}
-                              style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
+                              style={{ color: '#60a5fa' }}
                             >
                               {club.clubName}
                             </button>
                           ) : (
-                            <div style={{ fontWeight: 800, fontSize: 14, color: 'var(--app-text)' }}>{club.clubName}</div>
+                            <div className="fw-800 fs-14 text-primary">{club.clubName}</div>
                           )}
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                           <span style={pillStyle}>Teams: {club.teamCount}</span>
                           <span style={pillStyle}>Members: {club.memberCount}</span>
                           <span style={pillStyle}>Seasons: {club.seasonsCount ?? 0}</span>
@@ -1912,7 +1906,7 @@ export const OrganisationDetailPage: React.FC = () => {
                         {club.teams.length === 0 ? (
                           <div className="text-sm text-gray-500 py-2">No teams.</div>
                         ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div className="flex-col gap-8">
                             {club.teams.map((t) => {
                               const teamPath = orgKey && club.clubSlugOrId && t.teamSlugOrId
                                 ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(club.clubSlugOrId)}/${encodeURIComponent(t.teamSlugOrId)}`
@@ -1920,33 +1914,28 @@ export const OrganisationDetailPage: React.FC = () => {
                               return (
                                 <div
                                   key={t.teamId || t.teamSlugOrId}
+                                  className="flex-between gap-12 border rounded-8"
                                   style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    gap: 12,
                                     padding: '8px 10px',
-                                    border: '1px solid var(--app-border)',
-                                    borderRadius: 8,
                                     background: 'var(--app-surface)',
                                   }}
                                 >
-                                  <div style={{ minWidth: 0 }}>
+                                  <div className="min-w-0">
                                     {teamPath ? (
                                       <button
                                         type="button"
-                                        className="app-unstyled-button hover:underline"
+                                        className="app-unstyled-button hover:underline text-left fw-700 fs-13"
                                         onClick={() => navigate(teamPath)}
-                                        style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
+                                        style={{ color: '#60a5fa' }}
                                       >
                                         {t.teamName}
                                       </button>
                                     ) : (
-                                      <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--app-text)' }}>{t.teamName}</div>
+                                      <div className="fw-700 fs-13 text-primary">{t.teamName}</div>
                                     )}
                                   </div>
 
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                  <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                                     <span style={pillStyle}>Members: {t.memberCount}</span>
                                     <span style={pillStyle}>Seasons: {t.seasonsCount ?? 0}</span>
                                     <span style={pillStyle}>Competitions: {t.competitionsCount ?? 0}</span>
@@ -2393,6 +2382,7 @@ export const OrganisationDetailPage: React.FC = () => {
 
       {isEditMemberRoleModalOpen && editingMember ? (
         <div
+          className="flex-center"
           style={{
             position: 'fixed',
             top: 0,
@@ -2400,22 +2390,15 @@ export const OrganisationDetailPage: React.FC = () => {
             right: 0,
             bottom: 0,
             backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             zIndex: 1100,
           }}
         >
           <div
+            className="bg-surface p-24 rounded-8 text-primary border"
             style={{
-              backgroundColor: 'var(--app-surface)',
-              padding: '24px',
-              borderRadius: '8px',
               width: '520px',
               maxWidth: '95%',
               boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              color: 'var(--app-text)',
-              border: '1px solid var(--app-border)',
             }}
           >
             <div className="flex-between gap-12">
@@ -2438,24 +2421,20 @@ export const OrganisationDetailPage: React.FC = () => {
             </div>
 
             {editMemberRoleError ? (
-              <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fee', color: '#c00' }}>
+              <div className="mt-12 rounded-6" style={{ padding: '10px 12px', backgroundColor: '#fee', color: '#c00' }}>
                 {editMemberRoleError}
               </div>
             ) : null}
 
-            <div style={{ marginTop: '16px' }}>
-              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600 }}>Role</label>
+            <div className="mt-16">
+              <label className="block fw-600" style={{ marginBottom: '6px' }}>Role</label>
               <select
                 value={editingMemberRole}
                 onChange={(e) => setEditingMemberRole(e.target.value as any)}
                 disabled={editMemberRoleSaving}
+                className="w-full rounded-6 border bg-surface-2 text-primary"
                 style={{
-                  width: '100%',
                   padding: '8px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
                 }}
               >
                 <option value="member">Member</option>
@@ -2463,7 +2442,7 @@ export const OrganisationDetailPage: React.FC = () => {
               </select>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '18px' }}>
+            <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '18px' }}>
               <Button
                 variant="secondary"
                 onClick={() => {

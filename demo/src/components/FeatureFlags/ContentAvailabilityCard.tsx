@@ -337,24 +337,11 @@ export default function ContentAvailabilityCard({
       )}
 
       {/* Filters */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '12px',
-        marginBottom: '16px',
-        alignItems: 'center',
-        padding: '0 16px',
-      }}>
+      <div className="flex-row flex-wrap gap-12 mb-16 px-16">
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Type: All</option>
           {uniqueTypes.map((type) => (
@@ -364,13 +351,7 @@ export default function ContentAvailabilityCard({
         <select
           value={filterSubtype}
           onChange={(e) => setFilterSubtype(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Subtype: All</option>
           {uniqueSubtypes.map((subtype) => (
@@ -380,23 +361,17 @@ export default function ContentAvailabilityCard({
         <select
           value={filterStyle}
           onChange={(e) => setFilterStyle(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Style: All</option>
           {uniqueStyles.map((style) => (
             <option key={style} value={style}>{style}</option>
           ))}
         </select>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="ml-auto flex-row gap-8">
           {someSelected && (
             <>
-              <span style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+              <span className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
                 {selectedIds.size} selected
               </span>
               <Button
@@ -444,7 +419,7 @@ export default function ContentAvailabilityCard({
                     type="checkbox"
                     checked={allSelected}
                     onChange={handleSelectAll}
-                    style={{ cursor: 'pointer' }}
+                    className="cursor-pointer"
                   />
                 </th>
                 <th style={{ ...compactThStyle, width: '15%' }}>Type</th>
@@ -477,22 +452,22 @@ export default function ContentAvailabilityCard({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectOne(row.id)}
-                        style={{ cursor: 'pointer' }}
+                        className="cursor-pointer"
                       />
                     </td>
                     <td style={compactTdStyle}>{row.type}</td>
                     <td style={compactTdStyle}>{row.subtype}</td>
                     <td style={compactTdStyle}>{row.style}</td>
                     <td style={compactTdStyle}>
-                      <Badge variant={row.globalValue ? 'success' : row.globalValue === false ? 'default' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                      <Badge variant={row.globalValue ? 'success' : row.globalValue === false ? 'default' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                         {row.globalValue === null ? 'On' : row.globalValue ? 'On' : 'Off'}
                       </Badge>
                     </td>
                     <td style={compactTdStyle}>
                       {orgDisplay === null ? (
-                        <span style={{ color: 'var(--app-text-muted)', fontSize: '11px', fontStyle: 'italic' }}>Inherit</span>
+                        <span className="fs-11" style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>Inherit</span>
                       ) : (
-                        <Badge variant={orgDisplay ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                        <Badge variant={orgDisplay ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                           {orgDisplay ? 'On' : 'Off'}
                         </Badge>
                       )}
@@ -500,21 +475,21 @@ export default function ContentAvailabilityCard({
                     {scopeType === 'PROJECT' && (
                       <td style={compactTdStyle}>
                         {projectDisplay === null || projectDisplay === undefined ? (
-                          <span style={{ color: 'var(--app-text-muted)', fontSize: '11px', fontStyle: 'italic' }}>Inherit</span>
+                          <span className="fs-11" style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>Inherit</span>
                         ) : (
-                          <Badge variant={projectDisplay ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                          <Badge variant={projectDisplay ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                             {projectDisplay ? 'On' : 'Off'}
                           </Badge>
                         )}
                       </td>
                     )}
                     <td style={compactTdStyle}>
-                      <Badge variant={row.effectiveValue ? 'success' : 'default'} style={{ fontSize: '11px', padding: '2px 6px' }}>
+                      <Badge variant={row.effectiveValue ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                         {row.effectiveValue ? 'On' : 'Off'}
                       </Badge>
                     </td>
                     <td style={compactTdStyle}>
-                      <div style={{ display: 'flex', gap: '4px' }}>
+                      <div className="flex-row gap-4">
                         <button
                           style={actionButtonStyle(row.effectiveValue ? 'neutral' : 'primary')}
                           disabled={isUpdating || (row.disableEnable && !row.effectiveValue)}

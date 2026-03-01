@@ -69,44 +69,36 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
+        <div className="flex-col" style={{
           minHeight: '100vh',
           backgroundColor: '#f8f9fa'
         }}>
-          <div style={{
-            maxWidth: '800px',
-            margin: '0 auto',
+          <div className="max-w-800 mx-auto" style={{
             padding: '60px 20px'
           }}>
-            <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-              <div style={{ fontSize: '72px', marginBottom: '24px' }}>⚠️</div>
+            <div className="text-center" style={{ marginBottom: '40px' }}>
+              <div className="mb-24" style={{ fontSize: '72px' }}>⚠️</div>
 
-              <h1 style={{ fontSize: '48px', marginBottom: '16px', color: '#dc3545' }}>
+              <h1 className="mb-16" style={{ fontSize: '48px', color: '#dc3545' }}>
                 500
               </h1>
 
-              <h2 style={{ fontSize: '24px', marginBottom: '24px', color: '#333' }}>
+              <h2 className="fs-24 mb-24" style={{ color: '#333' }}>
                 Something went wrong
               </h2>
 
-              <p style={{ fontSize: '16px', color: '#666', marginBottom: '32px' }}>
+              <p className="fs-16 mb-32" style={{ color: '#666' }}>
                 We're sorry, but something unexpected happened.
                 The error has been logged and we'll look into it.
               </p>
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <div className="flex-center gap-12">
                 <button
                   onClick={this.handleReset}
+                  className="py-12 px-24 border-none rounded-4 fs-16 cursor-pointer"
                   style={{
-                    padding: '12px 24px',
                     backgroundColor: '#007bff',
                     color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '16px',
-                    cursor: 'pointer'
                   }}
                 >
                   Try Again
@@ -114,14 +106,11 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
                 <Link
                   to="/dashboard"
+                  className="inline-block py-12 px-24 rounded-4 fs-16"
                   style={{
-                    display: 'inline-block',
-                    padding: '12px 24px',
                     backgroundColor: '#6c757d',
                     color: 'white',
                     textDecoration: 'none',
-                    borderRadius: '4px',
-                    fontSize: '16px'
                   }}
                 >
                   Go to Dashboard
@@ -131,28 +120,20 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 
             {/* Show error details in development */}
             {import.meta.env.DEV && this.state.error && (
-              <div style={{
+              <div className="p-20 rounded-8 text-left" style={{
                 marginTop: '48px',
-                padding: '20px',
                 backgroundColor: '#f8f9fa',
-                borderRadius: '8px',
-                textAlign: 'left'
               }}>
-                <h3 style={{ marginTop: 0, fontSize: '18px', color: '#dc3545' }}>
+                <h3 className="fs-18" style={{ marginTop: 0, color: '#dc3545' }}>
                   Error Details (Development Only)
                 </h3>
 
-                <div style={{
-                  marginTop: '16px',
-                  padding: '16px',
+                <div className="mt-16 p-16 rounded-4 fs-14 overflow-x-auto" style={{
                   backgroundColor: '#fff',
                   border: '1px solid #dee2e6',
-                  borderRadius: '4px',
                   fontFamily: 'monospace',
-                  fontSize: '14px',
-                  overflowX: 'auto'
                 }}>
-                  <div style={{ marginBottom: '12px' }}>
+                  <div className="mb-12">
                     <strong>Error:</strong>
                     <pre style={{
                       margin: '8px 0 0 0',
@@ -166,11 +147,10 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                   {this.state.errorInfo && (
                     <div>
                       <strong>Component Stack:</strong>
-                      <pre style={{
+                      <pre className="fs-12" style={{
                         margin: '8px 0 0 0',
                         whiteSpace: 'pre-wrap',
                         color: '#666',
-                        fontSize: '12px'
                       }}>
                         {this.state.errorInfo.componentStack}
                       </pre>
@@ -180,15 +160,12 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               </div>
             )}
 
-            <div style={{
+            <div className="p-20 rounded-8 text-left" style={{
               marginTop: '48px',
-              padding: '20px',
               backgroundColor: '#fff3cd',
               border: '1px solid #ffc107',
-              borderRadius: '8px',
-              textAlign: 'left'
             }}>
-              <h3 style={{ marginTop: 0, fontSize: '18px' }}>What to do:</h3>
+              <h3 className="fs-18" style={{ marginTop: 0 }}>What to do:</h3>
               <ul style={{ color: '#666', lineHeight: '1.8' }}>
                 <li>Click "Try Again" to reload the page</li>
                 <li>Return to the dashboard and try a different action</li>

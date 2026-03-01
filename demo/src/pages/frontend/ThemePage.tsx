@@ -8,21 +8,21 @@ export function ThemePage() {
 
   return (
     <AppShell>
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)', transition: 'background-color 0.2s' }} data-testid="theme-page">
-      <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700, color: 'var(--app-text)' }}>Theme System</h1>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--app-muted-text)' }}>F07 Light/Dark Theme Toggle & Persistence</p>
+    <div className="bg-primary" style={{ minHeight: '100vh', transition: 'background-color 0.2s' }} data-testid="theme-page">
+      <div className="p-24 border-bottom bg-surface">
+        <h1 className="fw-700 text-primary" style={{ margin: '0 0 8px 0', fontSize: '28px' }}>Theme System</h1>
+        <p className="m-0 fs-14 text-muted">F07 Light/Dark Theme Toggle & Persistence</p>
       </div>
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="page-container">
+        <Card className="p-24 mb-24 bg-surface border">
+          <div className="flex-between">
             <div>
-              <h3 style={{ margin: 0, color: 'var(--app-text)' }}>Current Theme: {mode}</h3>
-              <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+              <h3 className="m-0 text-primary">Current Theme: {mode}</h3>
+              <p className="fs-14 text-muted" style={{ margin: '4px 0 0 0' }}>
                 Resolved: {resolvedMode} | Brand: {brand}
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="gap-12" style={{ display: 'flex' }}>
               <Button variant="secondary" onClick={toggleMode}>
                 {isDarkMode ? '🌙 Switch to Light' : '☀️ Switch to Dark'}
               </Button>
@@ -33,9 +33,9 @@ export function ThemePage() {
           </div>
         </Card>
 
-        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-          <h3 style={{ margin: '0 0 16px 0', color: 'var(--app-text)' }}>Brand Variants</h3>
-          <div style={{ display: 'flex', gap: '12px' }}>
+        <Card className="p-24 mb-24 bg-surface border">
+          <h3 className="text-primary" style={{ margin: '0 0 16px 0' }}>Brand Variants</h3>
+          <div className="gap-12" style={{ display: 'flex' }}>
             {['default', 'nature', 'ocean', 'royal'].map((b) => (
               <Button
                 key={b}
@@ -48,26 +48,26 @@ export function ThemePage() {
           </div>
         </Card>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
           <Card
+            className="p-24"
             style={{
-              padding: '24px',
               backgroundColor: '#ffffff',
               border: !isDarkMode ? '2px solid var(--app-link)' : '1px solid var(--app-border)',
             }}
           >
             <h4 style={{ margin: '0 0 12px 0', color: '#1f2937' }}>Light Theme Preview</h4>
-            <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
-              <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>Text: #1F2937</p>
+            <div className="p-12 rounded-4 mb-12" style={{ backgroundColor: '#f9fafb' }}>
+              <p className="m-0 fs-12" style={{ color: '#1f2937' }}>Background: #FFFFFF</p>
+              <p className="fs-12" style={{ margin: '4px 0 0 0', color: '#6b7280' }}>Text: #1F2937</p>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="gap-8" style={{ display: 'flex' }}>
               <Badge variant="success">{!isDarkMode ? '✓ Active' : 'Inactive'}</Badge>
             </div>
           </Card>
           <Card
+            className="p-24"
             style={{
-              padding: '24px',
               backgroundColor: '#1a1a1a',
               color: '#e5e5e5',
               border: isDarkMode ? '2px solid var(--app-link)' : '1px solid var(--app-border)',
@@ -75,17 +75,15 @@ export function ThemePage() {
           >
             <h4 style={{ margin: '0 0 12px 0', color: '#e5e5e5' }}>Dark Theme Preview</h4>
             <div
+              className="p-12 rounded-4 mb-12"
               style={{
-                padding: '12px',
                 backgroundColor: '#0f0f0f',
-                borderRadius: '4px',
-                marginBottom: '12px',
               }}
             >
-              <p style={{ margin: 0, fontSize: '12px', color: '#e5e5e5' }}>Background: #1A1A1A</p>
-              <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>Text: #E5E5E5</p>
+              <p className="m-0 fs-12" style={{ color: '#e5e5e5' }}>Background: #1A1A1A</p>
+              <p className="fs-12" style={{ margin: '4px 0 0 0', color: '#9ca3af' }}>Text: #E5E5E5</p>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="gap-8" style={{ display: 'flex' }}>
               <Badge variant="success">{isDarkMode ? '✓ Active' : 'Inactive'}</Badge>
             </div>
           </Card>

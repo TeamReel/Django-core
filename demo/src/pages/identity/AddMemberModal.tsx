@@ -368,35 +368,28 @@ export default function AddMemberModal({
     <div style={overlayStyle} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={panelStyle}>
         {/* ── Header ── */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-          <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700 }}>
+        <div className="flex-between mb-4">
+          <h2 className="m-0 fs-20 fw-700">
             Add Member to {levelLabel}
           </h2>
           <button
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: 'var(--app-muted-text, #888)',
-              padding: '4px 8px',
-              lineHeight: 1,
-            }}
+            className="bg-transparent border-none fs-24 cursor-pointer text-muted py-4 px-8"
+            style={{ lineHeight: 1 }}
             aria-label="Close"
           >
             ✕
           </button>
         </div>
 
-        <p style={{ margin: '0 0 16px', fontSize: '13px', color: 'var(--app-muted-text, #888)' }}>
+        <p className="fs-13 text-muted" style={{ margin: '0 0 16px' }}>
           {contextLevel === 'team' && 'Member will also be added to the parent club and federation.'}
           {contextLevel === 'club' && 'Member will also be added to the parent federation.'}
           {contextLevel === 'organisation' && 'Member will be added to this federation.'}
         </p>
 
         {/* ── Tabs ── */}
-        <div style={{ display: 'flex', gap: '4px', borderBottom: '2px solid var(--app-border, #e0e0e0)', marginBottom: '20px' }}>
+        <div className="flex-row gap-4" style={{ borderBottom: '2px solid var(--app-border, #e0e0e0)', marginBottom: '20px' }}>
           <button style={tabStyle(tab === 'existing')} onClick={() => { setTab('existing'); setError(null); setSuccessMsg(null); }}>
             Existing User
           </button>
@@ -411,10 +404,10 @@ export default function AddMemberModal({
 
         {/* ═══════════════════════ TAB: Existing User ═══════════════════════ */}
         {tab === 'existing' && (
-          <div style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+          <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
             {/* Role selector */}
-            <div style={{ ...fieldWrapStyle, display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div style={{ flex: 1 }}>
+            <div className="mb-16 flex-row gap-16">
+              <div className="flex-1">
                 <label style={labelStyle}>Search Users</label>
                 <Input
                   value={searchQuery}
@@ -446,19 +439,19 @@ export default function AddMemberModal({
 
             {/* Search results */}
             {isSearching && (
-              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--app-muted-text, #888)', fontSize: '14px' }}>
+              <div className="p-16 text-center text-muted fs-14">
                 Searching...
               </div>
             )}
 
             {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
-              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--app-muted-text, #888)', fontSize: '14px' }}>
+              <div className="p-16 text-center text-muted fs-14">
                 No users found for "{searchQuery}"
               </div>
             )}
 
             {!isSearching && searchResults.length > 0 && (
-              <div style={{ maxHeight: '340px', overflowY: 'auto' }}>
+              <div className="overflow-y-auto" style={{ maxHeight: '340px' }}>
                 {searchResults.map((u) => (
                   <div
                     key={u.id}
@@ -471,10 +464,10 @@ export default function AddMemberModal({
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: '14px' }}>
+                      <div className="fw-600 fs-14">
                         {u.first_name} {u.last_name}
                       </div>
-                      <div style={{ fontSize: '13px', color: 'var(--app-muted-text, #888)' }}>
+                      <div className="fs-13 text-muted">
                         {u.email}
                       </div>
                     </div>
@@ -492,7 +485,7 @@ export default function AddMemberModal({
             )}
 
             {searchQuery.length < 2 && !isSearching && (
-              <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--app-muted-text, #888)', fontSize: '14px' }}>
+              <div className="text-center text-muted fs-14" style={{ padding: '32px 16px' }}>
                 Type at least 2 characters to search for users
               </div>
             )}
@@ -501,9 +494,9 @@ export default function AddMemberModal({
 
         {/* ═══════════════════════ TAB: New User ═══════════════════════════ */}
         {tab === 'new' && (
-          <form onSubmit={createNewUser} style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ flex: 1 }}>
+          <form onSubmit={createNewUser} className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+            <div className="flex-row gap-12 mb-16">
+              <div className="flex-1">
                 <label style={labelStyle}>First Name</label>
                 <Input
                   value={newUser.first_name}
@@ -511,7 +504,7 @@ export default function AddMemberModal({
                   placeholder="John"
                 />
               </div>
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <label style={labelStyle}>Last Name</label>
                 <Input
                   value={newUser.last_name}
@@ -566,7 +559,7 @@ export default function AddMemberModal({
               </select>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--app-border, #e0e0e0)' }}>
+            <div className="gap-8 border-top" style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '8px' }}>
               <Button variant="secondary" onClick={onClose} type="button">
                 Cancel
               </Button>
@@ -579,7 +572,7 @@ export default function AddMemberModal({
 
         {/* ── Footer for existing tab ── */}
         {tab === 'existing' && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px', borderTop: '1px solid var(--app-border, #e0e0e0)', marginTop: '8px' }}>
+          <div className="border-top mt-8" style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px' }}>
             <Button variant="secondary" onClick={onClose}>
               Close
             </Button>

@@ -147,27 +147,13 @@ function TokenEditor({
         value={token.key}
         onChange={(e) => onUpdate({ key: e.target.value })}
         placeholder="Token key (e.g., primary_color)"
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid var(--app-border)',
-          background: 'var(--app-surface)',
-          color: 'var(--app-text)',
-          fontSize: '13px',
-        }}
+        className="p-8 rounded-4 border bg-surface text-primary fs-13"
       />
 
       <select
         value={token.type}
         onChange={(e) => onUpdate({ type: e.target.value })}
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid var(--app-border)',
-          background: 'var(--app-surface)',
-          color: 'var(--app-text)',
-          fontSize: '13px',
-        }}
+        className="p-8 rounded-4 border bg-surface text-primary fs-13"
       >
         {TOKEN_TYPES.map((t) => (
           <option key={t.value} value={t.value}>
@@ -176,19 +162,16 @@ function TokenEditor({
         ))}
       </select>
 
-      <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+      <div className="flex-row gap-4">
         {isColor && (
           <input
             type="color"
             value={token.value.startsWith('#') ? token.value : '#000000'}
             onChange={(e) => onUpdate({ value: e.target.value })}
+            className="p-0 border rounded-4 cursor-pointer"
             style={{
               width: '32px',
               height: '32px',
-              padding: 0,
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              cursor: 'pointer',
             }}
           />
         )}
@@ -197,14 +180,8 @@ function TokenEditor({
           value={token.value}
           onChange={(e) => onUpdate({ value: e.target.value })}
           placeholder="Value"
+          className="flex-1 p-8 rounded-4 border bg-surface text-primary fs-13"
           style={{
-            flex: 1,
-            padding: '8px',
-            borderRadius: '4px',
-            border: '1px solid var(--app-border)',
-            background: 'var(--app-surface)',
-            color: 'var(--app-text)',
-            fontSize: '13px',
             fontFamily: 'monospace',
           }}
         />
@@ -212,13 +189,10 @@ function TokenEditor({
 
       <button
         onClick={onDelete}
+        className="p-8 border-none cursor-pointer rounded-4"
         style={{
-          padding: '8px',
           background: 'none',
-          border: 'none',
-          cursor: 'pointer',
           color: 'var(--app-error, #dc2626)',
-          borderRadius: '4px',
         }}
         title="Delete token"
       >
@@ -292,13 +266,10 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
           value={formData.name || ''}
           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
           disabled={disabled}
+          className="rounded-6 border text-primary fs-14"
           style={{
             padding: '10px 12px',
-            borderRadius: '6px',
-            border: '1px solid var(--app-border)',
             background: disabled ? 'var(--app-surface-alt)' : 'var(--app-surface)',
-            color: 'var(--app-text)',
-            fontSize: '14px',
             opacity: disabled ? 0.7 : 1,
           }}
         />
@@ -312,13 +283,10 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
             value={formData.slug || ''}
             onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
             disabled={disabled}
+            className="rounded-6 border text-primary fs-14"
             style={{
               padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--app-border)',
               background: disabled ? 'var(--app-surface-alt)' : 'var(--app-surface)',
-              color: 'var(--app-text)',
-              fontSize: '14px',
               fontFamily: 'monospace',
               opacity: disabled ? 0.7 : 1,
             }}
@@ -333,13 +301,10 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
           onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
           disabled={disabled}
           rows={3}
+          className="rounded-6 border text-primary fs-14"
           style={{
             padding: '10px 12px',
-            borderRadius: '6px',
-            border: '1px solid var(--app-border)',
             background: disabled ? 'var(--app-surface-alt)' : 'var(--app-surface)',
-            color: 'var(--app-text)',
-            fontSize: '14px',
             resize: 'vertical',
             opacity: disabled ? 0.7 : 1,
           }}
@@ -350,18 +315,14 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
       {(entityType === 'club' || entityType === 'team') && (
         <div className="grid gap-6">
           <Text size="sm" weight="bold">Logo</Text>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+          <div className="gap-16" style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div
+              className="flex-center rounded-8 overflow-hidden"
               style={{
                 width: 80,
                 height: 80,
-                borderRadius: 8,
                 border: '2px dashed var(--app-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 backgroundColor: 'var(--app-surface-alt)',
-                overflow: 'hidden',
                 flexShrink: 0,
               }}
             >
@@ -371,16 +332,17 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
                 <img
                   src={logoUrl}
                   alt="Logo preview"
-                  style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 4 }}
+                  className="w-full h-full p-4"
+                  style={{ objectFit: 'contain' }}
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <span style={{ fontSize: 28, color: 'var(--app-muted-text)', fontWeight: 700 }}>
+                <span className="text-muted fw-700" style={{ fontSize: 28 }}>
                   {String(formData.name || '?').charAt(0).toUpperCase()}
                 </span>
               )}
             </div>
-            <div style={{ flex: 1 }}>
+            <div className="flex-1">
               <Button
                 variant="outline"
                 size="sm"
@@ -393,24 +355,20 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                style={{ display: 'none' }}
+                className="hidden"
                 onChange={handleFileSelect}
               />
-              <Text size="sm" color="secondary" style={{ marginTop: 4 }}>
+              <Text size="sm" color="secondary" className="mt-4">
                 PNG or JPG, recommended 200x200px
               </Text>
               {logoUrl && (
                 <button
                   type="button"
                   onClick={() => updateIdentity('logo_url', '')}
+                  className="mt-4 fs-11 border-none cursor-pointer bg-transparent"
                   style={{
-                    marginTop: 4,
                     padding: '2px 6px',
-                    fontSize: 11,
                     color: 'var(--app-error, #dc2626)',
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
                     textDecoration: 'underline',
                   }}
                 >
@@ -432,13 +390,10 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
             onChange={(e) => updateIdentity('default_location', e.target.value)}
             disabled={disabled}
             placeholder="e.g., Johan Cruijff ArenA, Amsterdam"
+            className="rounded-6 border text-primary fs-14"
             style={{
               padding: '10px 12px',
-              borderRadius: '6px',
-              border: '1px solid var(--app-border)',
               background: disabled ? 'var(--app-surface-alt)' : 'var(--app-surface)',
-              color: 'var(--app-text)',
-              fontSize: '14px',
               opacity: disabled ? 0.7 : 1,
             }}
           />
@@ -449,10 +404,8 @@ function GeneralTab({ entityType, formData, setFormData, disabled, orgId, onLogo
       )}
 
       <label
+        className="flex-row gap-12"
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
           cursor: disabled ? 'not-allowed' : 'pointer',
           opacity: disabled ? 0.7 : 1,
         }}
@@ -520,12 +473,12 @@ function BrandTab({
   if (!brandProfile) {
     return (
       <div className="p-32 text-center">
-        <Palette size={48} style={{ opacity: 0.3, marginBottom: '16px' }} />
+        <Palette size={48} className="mb-16" style={{ opacity: 0.3 }} />
         <Text weight="bold">No Brand Profile</Text>
-        <Text color="secondary" size="sm" style={{ marginTop: '8px' }}>
+        <Text color="secondary" size="sm" className="mt-8">
           This entity doesn't have a brand profile configured yet.
         </Text>
-        <Button variant="primary" style={{ marginTop: '16px' }} disabled>
+        <Button variant="primary" className="mt-16" disabled>
           <Plus size={14} />
           Create Brand Profile (Coming Soon)
         </Button>
@@ -587,7 +540,7 @@ function BrandTab({
       {/* Assets preview */}
       {brandProfile.assets && brandProfile.assets.length > 0 && (
         <div className="mt-16">
-          <Text size="sm" weight="bold" style={{ marginBottom: '8px' }}>
+          <Text size="sm" weight="bold" className="mb-8">
             Brand Assets ({brandProfile.assets.length})
           </Text>
           <div className="flex-row gap-8 flex-wrap">
@@ -927,6 +880,7 @@ export default function EntityEditModal({
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -934,9 +888,6 @@ export default function EntityEditModal({
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
       onClick={() => !saving && onClose()}
@@ -990,10 +941,9 @@ export default function EntityEditModal({
 
         {/* Main Content Area with Sidebar */}
         <div
+          className="flex-1 overflow-hidden"
           style={{
             display: 'flex',
-            flex: 1,
-            overflow: 'hidden',
           }}
         >
           {/* Sidebar Tabs (Vertical) */}
@@ -1012,20 +962,12 @@ export default function EntityEditModal({
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as typeof activeTab)}
+                  className="flex-row gap-8 border-none rounded-6 cursor-pointer fs-13 text-left w-full"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
                     padding: '10px 12px',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '13px',
                     fontWeight: activeTab === tab.key ? 600 : 400,
                     backgroundColor: activeTab === tab.key ? 'var(--app-primary, #3b82f6)' : 'transparent',
                     color: activeTab === tab.key ? 'white' : 'var(--app-text-secondary)',
-                    textAlign: 'left',
-                    width: '100%',
                   }}
                 >
                   <Icon size={16} />
@@ -1040,8 +982,8 @@ export default function EntityEditModal({
             {/* Loading */}
             {loading && (
               <div className="p-32 text-center">
-                <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} />
-                <Text color="secondary" style={{ marginTop: '12px' }}>
+                <Loader2 size={32} className="opacity-50" style={{ animation: 'spin 1s linear infinite' }} />
+                <Text color="secondary" className="mt-12">
                   Loading...
                 </Text>
               </div>

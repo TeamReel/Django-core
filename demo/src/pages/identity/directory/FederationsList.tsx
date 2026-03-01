@@ -147,17 +147,11 @@ export const FederationsList: React.FC = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div className="flex-row gap-12 mb-16 flex-wrap">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -166,13 +160,7 @@ export const FederationsList: React.FC = () => {
         <select
           value={sportFilter}
           onChange={(e) => setSportFilter(e.target.value)}
-          style={{
-            padding: '8px 12px',
-            border: '1px solid var(--app-border)',
-            borderRadius: '4px',
-            fontSize: '14px',
-            backgroundColor: 'var(--app-surface)',
-          }}
+          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Sport: All</option>
           {categories.map((sport) => (
@@ -185,7 +173,7 @@ export const FederationsList: React.FC = () => {
           variant="secondary"
           size="md"
           onClick={() => { setStatusFilter('all'); setSportFilter('all'); }}
-          style={{ marginLeft: 'auto' }}
+          className="ml-auto"
         >
           Clear
         </Button>
@@ -233,18 +221,18 @@ export const FederationsList: React.FC = () => {
               <Table style={compactTableStyle}>
                 <thead>
                   <tr>
-                    <th onClick={() => handleSort('name')} style={{ ...compactThStyle, cursor: 'pointer', width: '18%' }}>
+                    <th onClick={() => handleSort('name')} className="cursor-pointer" style={{ ...compactThStyle, width: '18%' }}>
                       Federation {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
                     <th style={{ ...compactThStyle, width: '6%' }}>Variant</th>
-                    <th onClick={() => handleSort('project_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '6%' }}>
+                    <th onClick={() => handleSort('project_count')} className="cursor-pointer" style={{ ...compactThStyle, width: '6%' }}>
                       Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th style={{ ...compactThStyle, width: '6%' }}>Season</th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
                     <th style={{ ...compactThStyle, width: '6%' }}>Match</th>
-                    <th onClick={() => handleSort('member_count')} style={{ ...compactThStyle, cursor: 'pointer', width: '6%' }}>
+                    <th onClick={() => handleSort('member_count')} className="cursor-pointer" style={{ ...compactThStyle, width: '6%' }}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
                     <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
@@ -265,9 +253,9 @@ export const FederationsList: React.FC = () => {
                       <tr key={org.id}>
                         <td style={compactTextTdStyle}>
                           <span
+                            className="cursor-pointer"
                             style={{
                               color: '#2563eb',
-                              cursor: 'pointer',
                               textDecoration: 'underline',
                             }}
                             onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
@@ -277,12 +265,12 @@ export const FederationsList: React.FC = () => {
                         </td>
                         <td style={compactTdStyle}>
                           {org.sport ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="flex-row gap-4">
                               <span>{org.sport.sport_icon}</span>
-                              <span style={{ fontSize: '12px' }}>{org.sport.name}</span>
+                              <span className="fs-12">{org.sport.name}</span>
                             </span>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td style={compactTdStyle}>

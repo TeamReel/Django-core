@@ -337,13 +337,15 @@ function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: () => voi
                 controls
                 autoPlay
                 playsInline
-                style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain' }}
+                className="w-full"
+                style={{ maxHeight: '70vh', objectFit: 'contain' }}
               />
             ) : (
               <img
                 src={item.url}
                 alt={item.title}
-                style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain' }}
+                className="w-full"
+                style={{ maxHeight: '70vh', objectFit: 'contain' }}
               />
             )
           ) : (
@@ -398,7 +400,8 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
             <img
               src={asset.url}
               alt={asset.alt_text || friendlyAssetLabel(asset)}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: 8 }}
+              className="p-8"
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
@@ -408,17 +411,17 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
           </span>
         )}
         {/* Level badge overlay */}
-        <span style={{
-          position: 'absolute', top: 8, left: 8,
-          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+        <span className="absolute fw-700" style={{
+          top: 8, left: 8,
+          fontSize: 10, padding: '2px 8px', borderRadius: 10,
           backgroundColor: levelColor(level), color: '#fff',
         }}>
           {levelLabel(level)}
         </span>
         {isVideo && (
-          <span style={{
-            position: 'absolute', top: 8, right: 8,
-            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+          <span className="absolute fw-700" style={{
+            top: 8, right: 8,
+            fontSize: 10, padding: '2px 8px', borderRadius: 10,
             backgroundColor: '#dc2626', color: '#fff',
           }}>
             🎬 Video
@@ -452,7 +455,7 @@ function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSl
             </Badge>
           ))}
           {asset.file_details?.content_type && (
-            <Badge size="sm" variant="default" style={{ opacity: 0.7 }}>
+            <Badge size="sm" variant="default" className="opacity-70">
               {asset.file_details.content_type.split('/')[1]?.toUpperCase() || asset.file_details.content_type}
             </Badge>
           )}
@@ -584,7 +587,8 @@ function MemberMediaCard({ item, orgSlugOrId, onPreview }: { item: {
             <img
               src={item.url}
               alt={item.name}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: 8 }}
+              className="p-8"
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
@@ -592,17 +596,17 @@ function MemberMediaCard({ item, orgSlugOrId, onPreview }: { item: {
           <span style={{ fontSize: 40, opacity: 0.3 }}>👤</span>
         )}
         {/* Member badge */}
-        <span style={{
-          position: 'absolute', top: 8, left: 8,
-          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+        <span className="absolute fw-700" style={{
+          top: 8, left: 8,
+          fontSize: 10, padding: '2px 8px', borderRadius: 10,
           backgroundColor: '#059669', color: '#fff',
         }}>
           Member
         </span>
         {isVideo && (
-          <span style={{
-            position: 'absolute', top: 8, right: 8,
-            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+          <span className="absolute fw-700" style={{
+            top: 8, right: 8,
+            fontSize: 10, padding: '2px 8px', borderRadius: 10,
             backgroundColor: '#dc2626', color: '#fff',
           }}>
             🎬 Video
@@ -1729,19 +1733,20 @@ function FilterChip({ active, onClick, label, count }: {
   return (
     <button
       onClick={onClick}
+      className="inline-flex gap-4 fs-12 cursor-pointer"
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: 4,
-        padding: '5px 12px', borderRadius: 16, fontSize: 12, fontWeight: active ? 600 : 400,
+        alignItems: 'center',
+        padding: '5px 12px', borderRadius: 16, fontWeight: active ? 600 : 400,
         border: `1px solid ${active ? 'var(--color-primary, #2563eb)' : 'var(--app-border)'}`,
         backgroundColor: active ? 'var(--color-primary-light, #dbeafe)' : 'transparent',
         color: active ? 'var(--color-primary, #2563eb)' : 'var(--app-text-secondary)',
-        cursor: 'pointer', transition: 'all 0.15s',
+        transition: 'all 0.15s',
       }}
     >
       {label}
       {count !== undefined && (
-        <span style={{
-          fontSize: 10, fontWeight: 700, padding: '0 5px', borderRadius: 8,
+        <span className="fw-700 rounded-8" style={{
+          fontSize: 10, padding: '0 5px',
           backgroundColor: active ? 'var(--color-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
           color: active ? '#fff' : 'var(--app-text-secondary)',
         }}>

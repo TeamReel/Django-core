@@ -80,18 +80,16 @@ export default function MatchOverviewTab({
       <img
         src={url}
         alt=""
-        style={{ width: size, height: size, objectFit: 'contain', borderRadius: 6 }}
+        className="rounded-6"
+        style={{ width: size, height: size, objectFit: 'contain' }}
       />
     ) : (
       <div
+        className="flex-center rounded-6"
         style={{
           width: size,
           height: size,
-          borderRadius: 6,
           background: 'var(--app-surface-secondary, #252526)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           fontSize: size * 0.45,
         }}
       >
@@ -116,7 +114,7 @@ export default function MatchOverviewTab({
 
           {/* Score block */}
           <div className="text-center" style={{ minWidth: 80 }}>
-            <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1 }}>{scoreDisplay}</div>
+            <div className="fw-800" style={{ fontSize: 28, lineHeight: 1 }}>{scoreDisplay}</div>
             <Badge
               variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}
               size="sm"

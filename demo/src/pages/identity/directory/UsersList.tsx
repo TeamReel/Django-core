@@ -1013,7 +1013,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
 
     return (
         <div>
-             <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+             <div className="flex-row gap-12 mb-16 flex-wrap">
                 {isSuperAdmin && !orgLocked && (
                     <select
                         value={selectedOrgId}
@@ -1029,13 +1029,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                 setSearchParams({});
                             }
                         }}
-                        style={{
-                            padding: '8px 12px',
-                            border: '1px solid var(--app-border)',
-                            borderRadius: '4px',
-                            fontSize: '14px',
-                            backgroundColor: 'var(--app-surface)',
-                        }}
+                        className="py-8 px-12 border rounded-4 fs-14 bg-surface"
                     >
                         <option value="">Federation: All</option>
                         {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map(o => (
@@ -1053,13 +1047,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                             if (!teamLocked) setSelectedTeamId('');
                         }}
                         disabled={clubLocked}
-                        style={{
-                            padding: '8px 12px',
-                            border: '1px solid var(--app-border)',
-                            borderRadius: '4px',
-                            fontSize: '14px',
-                            backgroundColor: 'var(--app-surface)',
-                        }}
+                        className="py-8 px-12 border rounded-4 fs-14 bg-surface"
                     >
                         {!clubLocked && <option value="">Club: All</option>}
                         {clubs
@@ -1078,13 +1066,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                             setSelectedTeamId(e.target.value);
                         }}
                         disabled={teamLocked}
-                        style={{
-                            padding: '8px 12px',
-                            border: '1px solid var(--app-border)',
-                            borderRadius: '4px',
-                            fontSize: '14px',
-                            backgroundColor: 'var(--app-surface)',
-                        }}
+                        className="py-8 px-12 border rounded-4 fs-14 bg-surface"
                     >
                         {!teamLocked && <option value="">Team: All</option>}
                         {teams
@@ -1105,13 +1087,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    style={{
-                        padding: '8px 12px',
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        backgroundColor: 'var(--app-surface)',
-                    }}
+                    className="py-8 px-12 border rounded-4 fs-14 bg-surface"
                 >
                     <option value="all">Status: All</option>
                     <option value="active">Status: Active</option>
@@ -1121,13 +1097,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    style={{
-                        padding: '8px 12px',
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '4px',
-                        fontSize: '14px',
-                        backgroundColor: 'var(--app-surface)',
-                    }}
+                    className="py-8 px-12 border rounded-4 fs-14 bg-surface"
                 >
                     <option value="">Role: All</option>
                     {availableRoles.map((r) => (
@@ -1137,7 +1107,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                     ))}
                 </select>
 
-                 <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                 <div className="ml-auto flex-row gap-12">
                      <Button
                          variant="secondary"
                          size="md"
@@ -1206,23 +1176,22 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                 <Card>
                     {/* ── Batch action bar ─────────────────────────── */}
                     {someSelected && (
-                        <div style={{
-                            display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center',
-                            padding: '8px 12px', marginBottom: 4,
+                        <div className="flex-row flex-wrap gap-8 py-8 px-12 mb-4 rounded-6" style={{
                             background: 'var(--app-surface-alt, rgba(59,130,246,0.08))',
-                            borderRadius: 6, border: '1px solid var(--app-border, #333)',
+                            border: '1px solid var(--app-border, #333)',
                         }}>
-                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--app-text, #fff)' }}>
+                            <span className="fs-13 fw-500" style={{ color: 'var(--app-text, #fff)' }}>
                                 {selectedIds.size} geselecteerd
                             </span>
                             <Button variant="primary" size="sm" onClick={() => setIsBatchModalOpen(true)}>
                                 ⚡ Batch Actie ({selectedIds.size})
                             </Button>
                             <button
+                                className="ml-auto border-none cursor-pointer fs-13"
                                 onClick={() => setSelectedIds(new Set())}
                                 style={{
-                                    marginLeft: 'auto', background: 'none', border: 'none',
-                                    color: 'var(--app-muted-text, #888)', cursor: 'pointer', fontSize: 13,
+                                    background: 'none',
+                                    color: 'var(--app-muted-text, #888)',
                                     textDecoration: 'underline',
                                 }}
                             >
@@ -1231,7 +1200,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                         </div>
                     )}
 
-                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
+                    <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}>
                         <Table style={compactTableStyle}>
                             <thead>
                                 <tr>
@@ -1240,7 +1209,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                             type="checkbox"
                                             checked={allSelected}
                                             onChange={handleSelectAll}
-                                            style={{ cursor: 'pointer', accentColor: '#3b82f6' }}
+                                            className="cursor-pointer" style={{ accentColor: '#3b82f6' }}
                                             title={allSelected ? 'Deselecteer alles' : 'Selecteer alles'}
                                         />
                                     </th>
@@ -1311,7 +1280,7 @@ export const UsersList: React.FC<UsersListProps> = ({ preselectedOrgId, preselec
                                                 type="checkbox"
                                                 checked={selectedIds.has(String(u.id))}
                                                 onChange={() => handleSelectOne(String(u.id))}
-                                                style={{ cursor: 'pointer', accentColor: '#3b82f6' }}
+                                                className="cursor-pointer" style={{ accentColor: '#3b82f6' }}
                                             />
                                         </td>
                                         {!orgLocked && (

@@ -512,11 +512,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             <button
               onClick={handleBack}
               aria-label="Terug"
+              className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20"
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: '40px', height: '40px', borderRadius: '10px',
-                backgroundColor: 'var(--app-surface-2)', border: '1px solid var(--app-border)',
-                cursor: 'pointer', color: 'var(--app-text)', fontSize: '20px', lineHeight: 1,
+                lineHeight: 1,
               }}
             >
               ←
@@ -530,11 +529,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           <button
             onClick={handleClose}
             aria-label="Sluiten"
+            className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20"
             style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
               width: '40px', height: '40px', borderRadius: '10px',
-              backgroundColor: 'var(--app-surface-2)', border: '1px solid var(--app-border)',
-              cursor: 'pointer', color: 'var(--app-text)', fontSize: '20px', lineHeight: 1,
+              lineHeight: 1,
             }}
           >
             ×
@@ -575,12 +573,11 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         backgroundColor: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : cardStyle.backgroundColor,
                       }}
                     >
-                      <div style={{
-                        width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
+                      <div className="rounded-12 flex-center fw-700 fs-14" style={{
+                        width: '44px', height: '44px', flexShrink: 0,
                         backgroundColor: urgency === 'urgent' ? 'var(--color-error)' :
                                         urgency === 'soon' ? 'var(--color-warning)' : 'var(--app-primary)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white', fontWeight: 700, fontSize: '14px',
+                        color: 'white',
                       }}>
                         {date.getDate()}
                       </div>
@@ -588,7 +585,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         <div className="fw-600 text-primary truncate" style={{ fontSize: '15px' }}>
                           {match.title}
                         </div>
-                        <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                        <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
                           {relativeTime} &middot; {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -605,9 +602,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {currentStep === 'content' && (
             <div className="flex-col gap-16">
               {/* Phase tabs: Voor / Tijdens / Na */}
-              <div style={{
-                display: 'flex', gap: '4px', padding: '3px',
-                backgroundColor: 'var(--app-surface-2)', borderRadius: '10px',
+              <div className="gap-4 bg-surface-2" style={{
+                display: 'flex', padding: '3px',
+                borderRadius: '10px',
               }}>
                 {[
                   { key: 'pre', label: 'Voor', icon: Clock },
@@ -617,13 +614,12 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   <button
                     key={key}
                     onClick={() => setSelectedContentPhase(key as ContentPhase)}
+                    className="flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer"
                     style={{
-                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      gap: '6px', padding: '10px 8px', borderRadius: '8px', border: 'none',
+                      padding: '10px 8px',
                       backgroundColor: selectedContentPhase === key ? 'var(--app-primary)' : 'transparent',
                       color: selectedContentPhase === key ? 'white' : 'var(--app-text-muted)',
                       fontWeight: selectedContentPhase === key ? 600 : 400,
-                      fontSize: '13px', cursor: 'pointer',
                       transition: 'background-color 0.15s ease, color 0.15s ease',
                     }}
                   >
@@ -644,10 +640,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       onClick={() => handleContentSelect(content.key, content.label, content.subtype, content.templateType)}
                       style={cardStyle}
                     >
-                      <div style={{
-                        width: '44px', height: '44px', borderRadius: '12px', flexShrink: 0,
+                      <div className="flex-center rounded-12" style={{
+                        width: '44px', height: '44px', flexShrink: 0,
                         backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.08))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         <Icon size={22} style={{ color: 'var(--app-primary)' }} />
                       </div>
@@ -655,7 +650,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         <div className="fw-600 text-primary" style={{ fontSize: '15px' }}>
                           {content.label}
                         </div>
-                        <div style={{ fontSize: '13px', color: 'var(--app-text-muted)' }}>
+                        <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
                           {content.description}
                           {needsLineup && ' (opstelling nodig)'}
                         </div>
@@ -673,16 +668,15 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             <div className="flex-col gap-8">
               {/* Progress indicator */}
               <div className="flex-between mb-8">
-                <span style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>
+                <span className="fs-14" style={{ color: 'var(--app-text-muted)' }}>
                   {filledPositions} / {totalPositions} posities
                 </span>
-                <div style={{
+                <div className="overflow-hidden" style={{
                   width: '100px', height: '4px',
-                  backgroundColor: 'var(--app-border)', borderRadius: '2px', overflow: 'hidden',
+                  backgroundColor: 'var(--app-border)', borderRadius: '2px',
                 }}>
-                  <div style={{
+                  <div className="h-full" style={{
                     width: `${(filledPositions / totalPositions) * 100}%`,
-                    height: '100%',
                     backgroundColor: filledPositions === totalPositions ? 'var(--color-success)' : 'var(--app-primary)',
                     transition: 'width 0.2s ease',
                   }} />
@@ -736,9 +730,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                           <div className="flex-col gap-4 overflow-y-auto" style={{ maxHeight: '180px' }}>
                             <button
                               onClick={() => handleSelectPlayer(positionIdx, isGoalkeeper, null)}
+                              className="fs-14"
                               style={{
                                 ...cardStyle, padding: '10px 12px',
-                                color: 'var(--app-text-muted)', fontSize: '14px',
+                                color: 'var(--app-text-muted)',
                               }}
                             >
                               — Geen speler —
@@ -761,11 +756,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                                   }}
                                 >
                                   {jersey && (
-                                    <span style={{
-                                      width: '26px', height: '26px', borderRadius: '50%',
+                                    <span className="rounded-full flex-center fs-11 fw-600" style={{
+                                      width: '26px', height: '26px',
                                       backgroundColor: member.id === memberId ? 'rgba(255,255,255,0.3)' : 'var(--app-surface-2)',
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      fontSize: '11px', fontWeight: 600, flexShrink: 0,
+                                      flexShrink: 0,
                                     }}>
                                       {jersey}
                                     </span>
@@ -789,11 +783,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                           backgroundColor: memberId ? 'var(--app-surface)' : 'var(--app-surface-2)',
                         }}
                       >
-                        <div style={{
-                          width: '34px', height: '34px', borderRadius: '8px', flexShrink: 0,
+                        <div className="rounded-8 flex-center fs-11 fw-700" style={{
+                          width: '34px', height: '34px', flexShrink: 0,
                           backgroundColor: memberId ? 'var(--color-success)' : 'var(--app-border)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '11px', fontWeight: 700,
                           color: memberId ? 'white' : 'var(--app-text-muted)',
                         }}>
                           {posConfig.label}
@@ -804,13 +796,13 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                               <div className="fw-600 fs-14 text-primary">
                                 {getMemberName(memberId)}
                               </div>
-                              <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>
+                              <div className="fs-12" style={{ color: 'var(--app-text-muted)' }}>
                                 {getMemberJersey(memberId) && `#${getMemberJersey(memberId)} \u00b7 `}
                                 {posConfig.fullLabel}
                               </div>
                             </>
                           ) : (
-                            <div style={{ color: 'var(--app-text-muted)', fontSize: '14px' }}>
+                            <div className="fs-14" style={{ color: 'var(--app-text-muted)' }}>
                               {posConfig.fullLabel}
                             </div>
                           )}
@@ -827,18 +819,18 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
         {/* ── Bottom action bar ─────────────────────────────────────── */}
         {currentStep === 'match' && selectedMatch && (
-          <div style={{
+          <div className="border-top" style={{
             padding: '12px 16px',
             paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-            borderTop: '1px solid var(--app-border)', flexShrink: 0,
+            flexShrink: 0,
           }}>
             <button
               onClick={() => setCurrentStep('content')}
+              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8"
               style={{
-                width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                padding: '14px',
                 backgroundColor: 'var(--app-primary)', color: 'white',
-                fontWeight: 600, fontSize: '15px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '15px',
               }}
             >
               Verder
@@ -847,19 +839,19 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           </div>
         )}
         {currentStep === 'lineup' && (
-          <div style={{
+          <div className="border-top" style={{
             padding: '12px 16px',
             paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-            borderTop: '1px solid var(--app-border)', flexShrink: 0,
+            flexShrink: 0,
           }}>
             <button
               onClick={handleLineupConfirm}
               disabled={lineupSaving}
+              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8"
               style={{
-                width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
+                padding: '14px',
                 backgroundColor: 'var(--app-primary)', color: 'white',
-                fontWeight: 600, fontSize: '15px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                fontSize: '15px',
                 opacity: lineupSaving ? 0.7 : 1,
               }}
             >

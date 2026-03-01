@@ -89,6 +89,7 @@ export default function CreateTransactionModal(props: {
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -96,9 +97,6 @@ export default function CreateTransactionModal(props: {
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
       onClick={() => {
@@ -108,93 +106,77 @@ export default function CreateTransactionModal(props: {
       role="dialog"
     >
       <div
+        className="bg-surface rounded-8 p-20"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          borderRadius: '8px',
           maxWidth: '560px',
           width: '92%',
-          padding: '20px',
           boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <div style={{ fontSize: '16px', fontWeight: 800 }}>{title || 'Create transaction'}</div>
+        <div className="flex-between gap-12">
+          <div className="stat-value">{title || 'Create transaction'}</div>
           <button
             type="button"
             onClick={() => {
               if (!submitting) onClose();
             }}
-            style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: 'var(--app-text)' }}
+            className="border-none cursor-pointer text-primary"
+            style={{ background: 'none', fontSize: '22px' }}
             aria-label="Close"
           >
             ×
           </button>
         </div>
 
-        <div style={{ marginTop: '12px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+        <div className="mt-12 text-muted fs-13">
           This will create a demo usage transaction. Defaults follow TeamReel demo logic; you can override description and wallet.
         </div>
 
         {error ? (
-          <Alert variant="info" style={{ marginTop: '12px' }}>
+          <Alert variant="info" className="mt-12">
             {error}
           </Alert>
         ) : null}
 
-        <div style={{ marginTop: '14px', display: 'grid', gap: '12px' }}>
-          <label style={{ display: 'grid', gap: '6px' }}>
-            <div style={{ fontSize: '12px', opacity: 0.8 }}>Description (notes)</div>
+        <div className="grid gap-12" style={{ marginTop: '14px' }}>
+          <label className="grid gap-6">
+            <div className="fs-12 opacity-80">Description (notes)</div>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
+              className="w-full p-10 rounded-6 border text-primary fs-13"
               style={{
-                width: '100%',
-                padding: '10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
                 background: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                fontSize: '13px',
                 resize: 'vertical',
               }}
               placeholder={defaultNotesForScope(scope)}
             />
           </label>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <label style={{ display: 'grid', gap: '6px' }}>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Amount</div>
+          <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <label className="grid gap-6">
+              <div className="fs-12 opacity-80">Amount</div>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                className="w-full p-10 rounded-6 border text-primary fs-13"
                 style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border)',
                   background: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  fontSize: '13px',
                 }}
                 placeholder="-1.00"
               />
             </label>
 
-            <label style={{ display: 'grid', gap: '6px' }}>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Charge wallet</div>
+            <label className="grid gap-6">
+              <div className="fs-12 opacity-80">Charge wallet</div>
               <select
                 value={String(walletIdx)}
                 onChange={(e) => setWalletIdx(Number(e.target.value))}
+                className="w-full p-10 rounded-6 border text-primary fs-13"
                 style={{
-                  width: '100%',
-                  padding: '10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border)',
                   background: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  fontSize: '13px',
                 }}
               >
                 {resolvedWalletOptions.map((o, idx) => (
@@ -207,7 +189,7 @@ export default function CreateTransactionModal(props: {
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+        <div className="gap-8 mt-16" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button variant="secondary" size="sm" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>

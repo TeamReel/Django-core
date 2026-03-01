@@ -520,6 +520,7 @@ export default function SeasonSquadAddMemberModal({
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -527,36 +528,26 @@ export default function SeasonSquadAddMemberModal({
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
     >
       <div
+        className="p-24 rounded-8 border bg-surface text-primary"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
           width: '720px',
           maxWidth: '95%',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>Add User to Squad</h2>
+        <div className="flex-between gap-12">
+          <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>Add User to Squad</h2>
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
+            className="rounded-4 border bg-surface-2 text-primary"
             style={{
               padding: '6px 10px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
               cursor: saving ? 'not-allowed' : 'pointer',
               height: 'fit-content',
             }}
@@ -566,8 +557,8 @@ export default function SeasonSquadAddMemberModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '10px 16px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-org">
+          <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: '10px 16px' }}>
+            <label className="fw-600" htmlFor="squad-add-org">
               Federation
             </label>
             <select
@@ -575,13 +566,8 @@ export default function SeasonSquadAddMemberModal({
               value={selectedOrganisationId}
               onChange={(e) => applyOrganisationSelection(e.target.value)}
               disabled={saving || loadingOrganisations}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             >
               <option value="">Select federation…</option>
               {sortedOrganisations.map((o) => (
@@ -591,7 +577,7 @@ export default function SeasonSquadAddMemberModal({
               ))}
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-club">
+            <label className="fw-600" htmlFor="squad-add-club">
               Club
             </label>
             <select
@@ -599,13 +585,8 @@ export default function SeasonSquadAddMemberModal({
               value={selectedClubId}
               onChange={(e) => applyClubSelection(e.target.value)}
               disabled={saving || loadingClubs}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             >
               <option value="">Select club…</option>
               {filteredClubs.map((c) => (
@@ -615,7 +596,7 @@ export default function SeasonSquadAddMemberModal({
               ))}
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-team">
+            <label className="fw-600" htmlFor="squad-add-team">
               Team
             </label>
             <select
@@ -623,13 +604,8 @@ export default function SeasonSquadAddMemberModal({
               value={selectedTeamId}
               onChange={(e) => applyTeamSelection(e.target.value)}
               disabled={saving || loadingTeams}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             >
               <option value="">Select team…</option>
               {filteredTeams.map((t) => (
@@ -639,7 +615,7 @@ export default function SeasonSquadAddMemberModal({
               ))}
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-search">
+            <label className="fw-600" htmlFor="squad-add-search">
               Search user
             </label>
             <input
@@ -648,16 +624,11 @@ export default function SeasonSquadAddMemberModal({
               onChange={(e) => setUserSearch(e.target.value)}
               disabled={saving || (!selectedOrganisationId && !selectedClubId && !selectedTeamId)}
               placeholder="Filter users (optional)…"
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-user">
+            <label className="fw-600" htmlFor="squad-add-user">
               User
             </label>
             <select
@@ -665,13 +636,8 @@ export default function SeasonSquadAddMemberModal({
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               disabled={saving || loadingUsers || (!selectedOrganisationId && !selectedClubId && !selectedTeamId)}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             >
               <option value="">
                 {loadingUsers
@@ -700,7 +666,7 @@ export default function SeasonSquadAddMemberModal({
               })}
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-position">
+            <label className="fw-600" htmlFor="squad-add-position">
               Position (optional)
             </label>
             <input
@@ -709,16 +675,11 @@ export default function SeasonSquadAddMemberModal({
               onChange={(e) => setPosition(e.target.value)}
               disabled={saving}
               placeholder="e.g. Keeper"
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="squad-add-shirt">
+            <label className="fw-600" htmlFor="squad-add-shirt">
               Shirt # (optional)
             </label>
             <input
@@ -727,20 +688,15 @@ export default function SeasonSquadAddMemberModal({
               onChange={(e) => setShirtNumber(e.target.value)}
               disabled={saving}
               placeholder="10"
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
           </div>
 
-          {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className="mt-12" style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
 
           {!canSubmit && !saving && (
-            <div style={{ marginTop: '10px', fontSize: '13px', color: 'var(--app-text-muted, #6b7280)' }}>
+            <div className="fs-13" style={{ marginTop: '10px', color: 'var(--app-text-muted, #6b7280)' }}>
               {missingTeam && missingUser
                 ? 'Select a team and a user to enable “Add to squad”.'
                 : missingTeam
@@ -751,18 +707,16 @@ export default function SeasonSquadAddMemberModal({
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+          <div className="mt-16 gap-10" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="submit"
               disabled={!canSubmit}
+              className="py-8 px-12 rounded-6 fw-600"
               style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
                 border: '1px solid #1e5aa5',
                 backgroundColor: '#2563eb',
                 color: '#fff',
                 cursor: !canSubmit ? 'not-allowed' : 'pointer',
-                fontWeight: 600,
                 opacity: !canSubmit ? 0.7 : 1,
               }}
             >

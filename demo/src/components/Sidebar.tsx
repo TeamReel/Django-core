@@ -1113,7 +1113,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
 
   return (
-    <div style={{ display: 'flex', height: '100%', zIndex: 90, flexShrink: 0 }}>
+    <div className="h-full" style={{ display: 'flex', zIndex: 90, flexShrink: 0 }}>
 
 
       {/* --- PANEL A: PRIMARY SIDEBAR (Narrow Only but Expandable) --- */}
@@ -1121,23 +1121,20 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
           Use a simpler visual for Panel B: Light/Gray background. */}
 
       <aside
-        className="sidebar-panel-a"
+        className="sidebar-panel-a flex-col relative"
         style={{
             zIndex: 20, // Higher than Panel B
             width: isOpen ? 240 : 72,
             backgroundColor: 'var(--sidebar-a-bg)',
             color: 'var(--sidebar-a-text)',
-            display: 'flex',
-            flexDirection: 'column',
             transition: 'width 0.2s ease-in-out',
             flexShrink: 0,
             borderRight: '1px solid var(--sidebar-a-border)',
-            position: 'relative',
             paddingTop: 57, // Account for fixed TopNavbar height
         }}
       >
         {/* Global Navigation (Panel A) */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, padding: '0 12px', overflowY: 'auto' }}>
+        <div className="flex-1 flex-col gap-4 px-12 overflow-y-auto">
 
             {panelASections.map((section, sectionIndex) => {
                 const path = location.pathname;
@@ -1192,7 +1189,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
                     {/* Section Label (Only if open) - clickable to landing page */}
                     {isOpen && section.title && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <div className="flex-between gap-8">
                           <Link
                             to={
                               section.id === 'overview' ? '/dashboard' :
@@ -1224,18 +1221,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 onClick={toggle}
                                 title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
                                 aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-                                className="sidebar-collapse-button"
+                                className="sidebar-collapse-button rounded-6 border-none cursor-pointer flex-center"
                                 style={{
                                     width: 28,
                                     height: 28,
-                                    borderRadius: '6px',
                                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                    border: 'none',
-                                    cursor: 'pointer',
                                     color: 'var(--sidebar-a-text)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
                                     transition: 'all 0.15s ease',
                                     flexShrink: 0,
                                     marginRight: '12px',
@@ -1333,26 +1324,22 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                             <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center' }}>
                                 <AppIcon icon={item.icon} size={18} />
                             </span>
-                            {isOpen && <span style={{ marginLeft: 12, fontSize: 14, fontWeight: 500 }}>{item.label}</span>}
+                            {isOpen && <span className="fs-14 fw-500" style={{ marginLeft: 12 }}>{item.label}</span>}
                             {isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
-                              <span style={{
-                                marginLeft: 'auto',
+                              <span className="ml-auto fw-700 text-center" style={{
                                 backgroundColor: queueCounts.review > 0 ? '#dc3545' : '#f59e0b',
                                 color: '#fff',
                                 borderRadius: 10,
                                 padding: '1px 6px',
                                 fontSize: 10,
-                                fontWeight: 700,
                                 minWidth: 18,
-                                textAlign: 'center',
                                 lineHeight: '16px',
                               }}>
                                 {queueCounts.review > 0 ? queueCounts.review : queueCounts.active}
                               </span>
                             )}
                             {!isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
-                              <span style={{
-                                position: 'absolute',
+                              <span className="absolute fw-700 text-center" style={{
                                 top: 4,
                                 right: 4,
                                 backgroundColor: queueCounts.review > 0 ? '#dc3545' : '#f59e0b',
@@ -1360,9 +1347,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                 borderRadius: 10,
                                 padding: '1px 5px',
                                 fontSize: 9,
-                                fontWeight: 700,
                                 minWidth: 14,
-                                textAlign: 'center',
                                 lineHeight: '14px',
                               }}>
                                 {queueCounts.review > 0 ? queueCounts.review : queueCounts.active}
@@ -1381,21 +1366,13 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
               onClick={toggle}
               title="Expand Sidebar"
               aria-label="Expand Sidebar"
-              className="sidebar-expand-button"
+              className="sidebar-expand-button absolute rounded-6 bg-transparent border-none cursor-pointer flex-center"
               style={{
-                  position: 'absolute',
                   top: 65,
                   right: -14,
                   width: 32,
                   height: 32,
-                  borderRadius: '6px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
                   color: 'var(--sidebar-a-text)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   transition: 'all 0.15s ease',
                   zIndex: 25,
               }}
@@ -1414,25 +1391,19 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
       {/* --- PANEL B: SECONDARY CONTEXT SIDEBAR --- */}
       {panelBConfig && (
         <aside
-            className="sidebar-panel-b"
+            className="sidebar-panel-b flex-col"
             style={{
                 width: 220, // Fixed width for panel B
                 backgroundColor: 'var(--sidebar-b-bg)',
                 borderRight: '1px solid var(--sidebar-b-border)',
-                display: 'flex',
-                flexDirection: 'column',
                 flexShrink: 0,
                 zIndex: 10,
                 paddingTop: 57, // Account for fixed TopNavbar height
             }}
         >
             {/* Header - compact */}
-            <div style={{
-                display: 'flex',
-                alignItems: 'center',
+            <div className="flex-row fw-600 fs-11" style={{
                 padding: '12px 16px 8px',
-                fontWeight: 600,
-                fontSize: 11,
                 color: 'var(--sidebar-b-muted-text)',
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em'
@@ -1452,13 +1423,9 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                     // Tab list layout (stacked vertically in Panel B)
                     return (
                         <div
+                            className="flex-col gap-6 py-16 px-12 border-bottom"
                             style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 6,
-                                padding: '16px 12px',
                                 marginBottom: 0,
-                                borderBottom: '1px solid var(--app-border)',
                             }}
                         >
                             {panelBConfig.items.map(item => {
@@ -1535,7 +1502,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                 } else {
                     // Regular sidebar item list (for section links like federation overview/clubs/teams)
                     return (
-                        <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <div className="flex-col gap-2 py-16 px-12">
                             {panelBConfig.items.map(item => {
                                 const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');
                                 const itemSearch = itemQuery ? `?${itemQuery}` : '';

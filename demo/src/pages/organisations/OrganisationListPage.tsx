@@ -57,18 +57,15 @@ export default function OrganisationListPage() {
     <>
       <div>
         <h1>Organisations</h1>
-        <p style={{ color: '#666', marginBottom: '24px' }}>Select an organisation to view its projects and resources.</p>
+        <p className="mb-24" style={{ color: '#666' }}>Select an organisation to view its projects and resources.</p>
 
         {isLoading && <p>Loading organisations...</p>}
 
         {error && (
-          <div style={{
-            padding: '12px',
+          <div className="p-12 rounded-4 mb-16" style={{
             backgroundColor: '#fee',
             border: '1px solid #fcc',
-            borderRadius: '4px',
-            color: '#c00',
-            marginBottom: '16px'
+            color: '#c00'
           }}>
             {error}
           </div>
@@ -81,87 +78,73 @@ export default function OrganisationListPage() {
           />
         )}
 
-        <div style={{
-          display: 'grid',
-          gap: '20px',
+        <div className="grid gap-20" style={{
           gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
         }}>
           {organisations.map(org => (
             <div
               key={org.id}
+              className="border rounded-8 p-20 bg-surface"
               style={{
-                border: '1px solid var(--app-border)',
-                borderRadius: '8px',
-                padding: '20px',
-                backgroundColor: 'var(--app-surface)',
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}
             >
-              <h3 style={{ marginTop: 0, color: 'var(--app-text)' }}>{org.name}</h3>
+              <h3 className="text-primary" style={{ marginTop: 0 }}>{org.name}</h3>
               {org.description && (
-                <p style={{ color: 'var(--app-muted-text)', fontSize: '14px' }}>{org.description}</p>
+                <p className="text-muted fs-14">{org.description}</p>
               )}
 
               {/* Data Overview Stats */}
-              <div style={{
-                display: 'grid',
+              <div className="grid gap-12 p-12 rounded-6 fs-13" style={{
                 gridTemplateColumns: '1fr 1fr 1fr',
-                gap: '12px',
                 margin: '16px 0',
-                padding: '12px',
-                backgroundColor: 'var(--app-bg-subtle, rgba(0,0,0,0.03))',
-                borderRadius: '6px',
-                fontSize: '13px'
+                backgroundColor: 'var(--app-bg-subtle, rgba(0,0,0,0.03))'
               }}>
                  <div title="Root Projects (Clubs)">
-                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Clubs</div>
-                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.clubs_count ?? '-'}</div>
+                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Clubs</div>
+                   <div className="fs-18 fw-600 text-primary">{org.clubs_count ?? '-'}</div>
                  </div>
                  <div title="Sub Projects (Teams)">
-                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Teams</div>
-                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.teams_count ?? '-'}</div>
+                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Teams</div>
+                   <div className="fs-18 fw-600 text-primary">{org.teams_count ?? '-'}</div>
                  </div>
                  <div title="Active Player Memberships">
-                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Players</div>
-                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.total_players_count ?? '-'}</div>
+                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Players</div>
+                   <div className="fs-18 fw-600 text-primary">{org.total_players_count ?? '-'}</div>
                  </div>
                  <div title="Total Matches">
-                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Matches</div>
-                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.matches_count ?? '-'}</div>
+                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Matches</div>
+                   <div className="fs-18 fw-600 text-primary">{org.matches_count ?? '-'}</div>
                  </div>
                  <div title="Seasons">
-                   <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Seasons</div>
-                   <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.seasons_count ?? '-'}</div>
+                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Seasons</div>
+                   <div className="fs-18 fw-600 text-primary">{org.seasons_count ?? '-'}</div>
                  </div>
                  <div title="Org Admins">
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admins</div>
-                    <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--app-text)' }}>{org.member_count ?? '-'}</div>
+                    <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admins</div>
+                    <div className="fs-18 fw-600 text-primary">{org.member_count ?? '-'}</div>
                  </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+              <div className="gap-8 mt-16" style={{ display: 'flex' }}>
                 <Link
                   to={`/organisations/${org.slug}`}
+                  className="py-8 px-16 rounded-4 fs-14"
                   style={{
-                    padding: '8px 16px',
                     backgroundColor: '#007bff',
                     color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '4px',
-                    fontSize: '14px'
+                    textDecoration: 'none'
                   }}
                 >
                   View Details
                 </Link>
                 <Link
                   to={`/organisations/${org.slug}/projects`}
+                  className="py-8 px-16 rounded-4 fs-14"
                   style={{
-                    padding: '8px 16px',
                     backgroundColor: '#6c757d',
                     color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '4px',
-                    fontSize: '14px'
+                    textDecoration: 'none'
                   }}
                 >
                   View Projects

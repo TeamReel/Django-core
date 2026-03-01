@@ -223,17 +223,13 @@ export const NotificationRoutingLogsPage: React.FC = () => {
             )
           ]}
           actions={
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="flex-row gap-12">
               {/* Demo Helper: Show current mode */}
-              <div style={{
-                fontSize: '11px',
+              <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
                 padding: '4px 10px',
-                borderRadius: '6px',
                 backgroundColor: isSuperAdmin ? '#3b82f6' : '#a855f7',
                 color: 'white',
-                fontWeight: 600,
                 letterSpacing: '0.5px',
-                cursor: 'default',
               }}>
                 {isSuperAdmin ? '👑 ADMIN' : '👤 ORG'}
               </div>
@@ -241,21 +237,15 @@ export const NotificationRoutingLogsPage: React.FC = () => {
               {/* Scope Selector - Only for Superadmin */}
               {isSuperAdmin && (
                 <>
-                  <div style={{
+                  <div className="opacity-50" style={{
                     height: '24px',
                     width: '1px',
                     backgroundColor: 'var(--app-border)',
-                    opacity: 0.5,
                   }} />
-                  <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--app-surface)', padding: '3px', borderRadius: '6px', border: '1px solid var(--app-border)' }}>
+                  <div className="gap-4 bg-surface rounded-6 border" style={{ display: 'flex', padding: '3px' }}>
                     <button
+                      className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
                       style={{
-                        padding: '4px 12px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        borderRadius: '4px',
-                        border: 'none',
-                        cursor: 'pointer',
                         transition: 'all 0.2s',
                         backgroundColor: editMode === 'global' ? '#3b82f6' : 'transparent',
                         color: editMode === 'global' ? 'white' : 'var(--app-text)',
@@ -265,13 +255,8 @@ export const NotificationRoutingLogsPage: React.FC = () => {
                       Global View
                     </button>
                     <button
+                      className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
                       style={{
-                        padding: '4px 12px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        borderRadius: '4px',
-                        border: 'none',
-                        cursor: 'pointer',
                         transition: 'all 0.2s',
                         backgroundColor: editMode === 'org' ? '#a855f7' : 'transparent',
                         color: editMode === 'org' ? 'white' : 'var(--app-text)',
@@ -338,38 +323,38 @@ export const NotificationRoutingLogsPage: React.FC = () => {
 
           {!loading && !error && logs.length > 0 && (
             <Card>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid var(--app-border)' }}>
-                      <th style={{ padding: '12px' }}>Timestamp</th>
-                      <th style={{ padding: '12px' }}>Notification Type</th>
-                      <th style={{ padding: '12px' }}>Organisation</th>
-                      <th style={{ padding: '12px' }}>Project</th>
-                      <th style={{ padding: '12px' }}>Decision</th>
-                      <th style={{ padding: '12px' }}>Recipients</th>
-                      <th style={{ padding: '12px' }}>Channels</th>
+                    <tr className="border-bottom">
+                      <th className="p-12">Timestamp</th>
+                      <th className="p-12">Notification Type</th>
+                      <th className="p-12">Organisation</th>
+                      <th className="p-12">Project</th>
+                      <th className="p-12">Decision</th>
+                      <th className="p-12">Recipients</th>
+                      <th className="p-12">Channels</th>
                     </tr>
                   </thead>
                   <tbody>
                     {logs.map((log) => (
-                      <tr key={log.id} style={{ borderBottom: '1px solid var(--app-border)' }}>
-                        <td style={{ fontSize: '0.85rem', padding: '12px' }}>{formatTimestamp(log.timestamp)}</td>
-                        <td style={{ padding: '12px' }}>
-                          <code style={{ fontSize: '0.85rem' }}>{log.notification_type}</code>
+                      <tr key={log.id} className="border-bottom">
+                        <td className="fs-sm p-12">{formatTimestamp(log.timestamp)}</td>
+                        <td className="p-12">
+                          <code className="fs-sm">{log.notification_type}</code>
                         </td>
-                        <td style={{ padding: '12px' }}>{log.organisation || '-'}</td>
-                        <td style={{ padding: '12px' }}>{log.project || '-'}</td>
-                        <td style={{ padding: '12px' }}>
+                        <td className="p-12">{log.organisation || '-'}</td>
+                        <td className="p-12">{log.project || '-'}</td>
+                        <td className="p-12">
                           <Badge variant={getDecisionBadgeVariant(log.decision)}>
                             {log.decision}
                           </Badge>
                         </td>
-                        <td style={{ padding: '12px' }}>
+                        <td className="p-12">
                           <Badge variant="info">{log.recipient_count}</Badge>
                         </td>
-                        <td style={{ padding: '12px' }}>
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                        <td className="p-12">
+                          <div className="gap-4 flex-wrap" style={{ display: 'flex' }}>
                             {log.delivery_channels.map((channel) => (
                               <Badge key={channel} variant="default">
                                 {channel}

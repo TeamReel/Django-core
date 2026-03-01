@@ -52,20 +52,20 @@ export default function RegisterPage() {
   const lastNameError = error?.fieldErrors?.last_name?.[0] || '';
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+    <div className="p-20" style={{ maxWidth: '400px', margin: '100px auto' }}>
       <h1>Create Account</h1>
       <p>Sign up for a new Django Core-App account</p>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '30px' }}>
+      <form onSubmit={handleSubmit} className="flex-col" style={{ gap: '15px', marginTop: '30px' }}>
         {displayError && (
-          <div style={{ padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc', borderRadius: '4px', color: '#c00' }}>
+          <div className="p-10 rounded-4" style={{ backgroundColor: '#fee', border: '1px solid #fcc', color: '#c00' }}>
             {displayError}
           </div>
         )}
 
         {/* Debug: Show full error object */}
         {error && (
-          <div style={{ padding: '10px', backgroundColor: '#f0f0f0', border: '1px solid #ddd', borderRadius: '4px', fontSize: '12px' }}>
+          <div className="p-10 rounded-4 fs-12" style={{ backgroundColor: '#f0f0f0', border: '1px solid #ddd' }}>
             <details>
               <summary>Debug Error Info</summary>
               <pre>{JSON.stringify(error, null, 2)}</pre>
@@ -73,9 +73,9 @@ export default function RegisterPage() {
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <div style={{ flex: 1 }}>
-            <label htmlFor="firstName" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+        <div className="flex-row gap-10">
+          <div className="flex-1">
+            <label htmlFor="firstName" className="block fw-500" style={{ marginBottom: '5px' }}>
               First Name
             </label>
             <input
@@ -84,12 +84,13 @@ export default function RegisterPage() {
               placeholder="First name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              style={{ width: '100%', padding: '10px', border: firstNameError ? '1px solid #f00' : '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+              className="w-full p-10 rounded-4 fs-16"
+              style={{ border: firstNameError ? '1px solid #f00' : '1px solid #ccc' }}
             />
-            {firstNameError && <div style={{ color: '#f00', fontSize: '12px' }}>{firstNameError}</div>}
+            {firstNameError && <div className="fs-12" style={{ color: '#f00' }}>{firstNameError}</div>}
           </div>
-          <div style={{ flex: 1 }}>
-            <label htmlFor="lastName" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+          <div className="flex-1">
+            <label htmlFor="lastName" className="block fw-500" style={{ marginBottom: '5px' }}>
               Last Name
             </label>
             <input
@@ -98,14 +99,15 @@ export default function RegisterPage() {
               placeholder="Last name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              style={{ width: '100%', padding: '10px', border: lastNameError ? '1px solid #f00' : '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+              className="w-full p-10 rounded-4 fs-16"
+              style={{ border: lastNameError ? '1px solid #f00' : '1px solid #ccc' }}
             />
-            {lastNameError && <div style={{ color: '#f00', fontSize: '12px' }}>{lastNameError}</div>}
+            {lastNameError && <div className="fs-12" style={{ color: '#f00' }}>{lastNameError}</div>}
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+          <label htmlFor="email" className="block fw-500" style={{ marginBottom: '5px' }}>
             Email Address
           </label>
           <input
@@ -116,13 +118,14 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            style={{ width: '100%', padding: '10px', border: emailError ? '1px solid #f00' : '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+            className="w-full p-10 rounded-4 fs-16"
+            style={{ border: emailError ? '1px solid #f00' : '1px solid #ccc' }}
           />
-          {emailError && <div style={{ color: '#f00', fontSize: '12px' }}>{emailError}</div>}
+          {emailError && <div className="fs-12" style={{ color: '#f00' }}>{emailError}</div>}
         </div>
 
         <div>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+          <label htmlFor="password" className="block fw-500" style={{ marginBottom: '5px' }}>
             Password
           </label>
           <input
@@ -133,13 +136,14 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
-            style={{ width: '100%', padding: '10px', border: passwordError ? '1px solid #f00' : '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+            className="w-full p-10 rounded-4 fs-16"
+            style={{ border: passwordError ? '1px solid #f00' : '1px solid #ccc' }}
           />
-          {passwordError && <div style={{ color: '#f00', fontSize: '12px' }}>{passwordError}</div>}
+          {passwordError && <div className="fs-12" style={{ color: '#f00' }}>{passwordError}</div>}
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+          <label htmlFor="confirmPassword" className="block fw-500" style={{ marginBottom: '5px' }}>
             Confirm Password
           </label>
           <input
@@ -150,21 +154,18 @@ export default function RegisterPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
-            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+            className="w-full p-10 rounded-4 fs-16"
+            style={{ border: '1px solid #ccc' }}
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
+          className="p-12 border-none rounded-4 fs-16 fw-500"
           style={{
-            padding: '12px',
             backgroundColor: isLoading ? '#ccc' : '#28a745',
             color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '16px',
-            fontWeight: '500',
             cursor: isLoading ? 'not-allowed' : 'pointer'
           }}
         >
@@ -172,7 +173,7 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p style={{ marginTop: '20px', fontSize: '14px', color: '#666', textAlign: 'center' }}>
+      <p className="fs-14 text-center" style={{ marginTop: '20px', color: '#666' }}>
         Already have an account? <Link to="/login" style={{ color: '#007bff', textDecoration: 'none' }}>Sign in here</Link>
       </p>
     </div>

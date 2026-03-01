@@ -128,16 +128,16 @@ export default function GovernanceSummaryCard(props: {
 
   return (
     <Card>
-      <div style={{ padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+      <div className="p-16">
+        <div className="gap-12 flex-wrap" style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--app-text)' }}>{title || 'Governance'}</div>
-            <div style={{ fontSize: 12, color: 'var(--app-text-muted)', marginTop: 4 }}>
+            <div className="fs-14 fw-800 text-primary">{title || 'Governance'}</div>
+            <div className="fs-12" style={{ color: 'var(--app-text-muted)', marginTop: 4 }}>
               {description || 'Policies that apply to credits, transactions, and notifications.'}
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex-row gap-8 flex-wrap">
             {!!governanceHref && (
               <Button variant="secondary" size="sm" onClick={() => navigate(governanceHref)}>
                 Org governance
@@ -155,37 +155,30 @@ export default function GovernanceSummaryCard(props: {
         </div>
 
         {error && (
-          <Alert variant="info" style={{ marginTop: 12 }}>
+          <Alert variant="info" className="mt-12">
             {error}
           </Alert>
         )}
 
-        <div style={{ marginTop: 12 }}>
+        <div className="mt-12">
           {loading ? (
-            <div style={{ fontSize: 13, color: 'var(--app-text-muted)' }}>Loading balance policy…</div>
+            <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>Loading balance policy…</div>
           ) : !policy ? (
-            <div style={{ fontSize: 13, color: 'var(--app-text-muted)' }}>
+            <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
               No explicit balance policy found for this organisation. The backend may fall back to a safe default.
             </div>
           ) : (
-            <div
-              style={{
-                padding: '12px',
-                border: '1px solid var(--app-border)',
-                borderRadius: 8,
-                background: 'var(--app-surface-2)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--app-text)' }}>
+            <div className="p-12 border rounded-8 bg-surface-2">
+              <div className="flex-between gap-12">
+                <div className="fs-13 fw-800 text-primary">
                   Balance policy
                   {source ? (
-                    <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--app-text-muted)', fontWeight: 700 }}>
+                    <span className="ml-8 fs-12 fw-700" style={{ color: 'var(--app-text-muted)' }}>
                       ({source === 'project' ? 'Project override' : source === 'organization' ? 'Organisation default' : 'Platform default'})
                     </span>
                   ) : null}
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
                   {source === 'project' && (
                     <Badge variant="default" size="sm">
                       OVERRIDE
@@ -200,15 +193,15 @@ export default function GovernanceSummaryCard(props: {
                 </div>
               </div>
 
-              <div style={{ fontSize: 12, color: 'var(--app-text-muted)', marginTop: 6 }}>
+              <div className="fs-12" style={{ color: 'var(--app-text-muted)', marginTop: 6 }}>
                 Mode:{' '}
-                <strong style={{ color: 'var(--app-text)' }}>
+                <strong className="text-primary">
                   {policy.allow_negative ? 'Postpaid (can go negative)' : 'Prepaid (no negative balance)'}
                 </strong>
               </div>
-              <div style={{ fontSize: 12, color: 'var(--app-text-muted)', marginTop: 4 }}>
+              <div className="fs-12 mt-4" style={{ color: 'var(--app-text-muted)' }}>
                 Warn threshold:{' '}
-                <strong style={{ color: 'var(--app-text)' }}>{policy.warn_threshold ?? '—'}</strong>
+                <strong className="text-primary">{policy.warn_threshold ?? '—'}</strong>
               </div>
             </div>
           )}

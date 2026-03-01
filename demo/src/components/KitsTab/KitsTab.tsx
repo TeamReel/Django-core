@@ -212,15 +212,15 @@ export function KitsTab({
 
   if (loading) {
     return (
-      <Card style={{ padding: 24 }}>
-        <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>Loading kits...</div>
+      <Card className="p-24">
+        <div className="text-center text-muted">Loading kits...</div>
       </Card>
     );
   }
 
   if (!brandProfileId) {
     return (
-      <Card style={{ padding: 24 }}>
+      <Card className="p-24">
         <Alert variant="warning">
           No brand profile found. Create a brand profile on the Identity tab first to manage kits.
         </Alert>
@@ -230,19 +230,19 @@ export function KitsTab({
 
   return (
     <div className="space-y-6">
-      <Card style={{ padding: 24 }}>
-        <h3 style={{ marginTop: 0, marginBottom: 8 }}>Kits / Tenues</h3>
-        <p style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 24 }}>
+      <Card className="p-24">
+        <h3 className="mb-8" style={{ marginTop: 0 }}>Kits / Tenues</h3>
+        <p className="text-muted fs-13 mb-24">
           Manage kit designs for different roles and occasions.
         </p>
 
         {error && (
-          <Alert variant="error" style={{ marginBottom: 16 }}>
+          <Alert variant="error" className="mb-16">
             {error}
           </Alert>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+        <div className="grid gap-20" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
           {KIT_TYPES.map((kitType) => {
             const kit = getKitForType(kitType.id);
             const imageUrl = getKitImageUrl(kit);
@@ -250,57 +250,47 @@ export function KitsTab({
             return (
               <div
                 key={kitType.id}
-                style={{
-                  border: '1px solid var(--app-border)',
-                  borderRadius: 12,
-                  padding: 16,
-                  backgroundColor: 'var(--app-surface)',
-                }}
+                className="border rounded-12 p-16 bg-surface"
               >
-                <div style={{ fontWeight: 600, marginBottom: 4 }}>{kitType.label}</div>
-                <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginBottom: 16 }}>
+                <div className="fw-600 mb-4">{kitType.label}</div>
+                <div className="fs-12 text-muted mb-16">
                   {kitType.description}
                 </div>
 
                 <div
+                  className="w-full flex-center rounded-8 overflow-hidden mb-12"
                   style={{
-                    width: '100%',
                     aspectRatio: '3/4',
                     backgroundColor: 'var(--app-surface-secondary)',
-                    borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    marginBottom: 12,
                   }}
                 >
                   {uploadingType === kitType.id ? (
-                    <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
-                      <div style={{ fontSize: 24, marginBottom: 8 }}>⏳</div>
-                      <div style={{ fontSize: 12 }}>Uploading...</div>
+                    <div className="text-center text-muted">
+                      <div className="fs-24 mb-8">⏳</div>
+                      <div className="fs-12">Uploading...</div>
                     </div>
                   ) : imageUrl ? (
                     <img
                       src={imageUrl}
                       alt={kitType.label}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                      className="w-full h-full"
+                      style={{ objectFit: 'contain' }}
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                   ) : (
-                    <div style={{ textAlign: 'center', color: 'var(--app-muted-text)' }}>
-                      <div style={{ fontSize: 48, opacity: 0.3, marginBottom: 8 }}>👕</div>
-                      <div style={{ fontSize: 12 }}>No image uploaded</div>
+                    <div className="text-center text-muted">
+                      <div className="mb-8" style={{ fontSize: 48, opacity: 0.3 }}>👕</div>
+                      <div className="fs-12">No image uploaded</div>
                     </div>
                   )}
                 </div>
 
                 {!readOnly && (
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="flex-row gap-8">
                     <Button
                       size="sm"
                       variant="outline"
-                      style={{ flex: 1 }}
+                      className="flex-1"
                       disabled={uploadingType === kitType.id}
                       onClick={() => triggerUpload(kitType.id)}
                     >
@@ -319,7 +309,7 @@ export function KitsTab({
                 )}
 
                 {readOnly && kit && imageUrl && (
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className="flex-row gap-8">
                     <Button
                       size="sm"
                       variant="outline"
@@ -331,7 +321,7 @@ export function KitsTab({
                 )}
 
                 {kit && (
-                  <div style={{ marginTop: 8, fontSize: 11, color: 'var(--app-muted-text)' }}>
+                  <div className="mt-8 fs-11 text-muted">
                     <strong>File:</strong> {kit.file_details?.name || 'Unknown'}
                   </div>
                 )}
@@ -345,20 +335,20 @@ export function KitsTab({
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            style={{ display: 'none' }}
+            className="hidden"
             onChange={handleFileSelect}
           />
         )}
       </Card>
 
       {!readOnly && (
-        <Card style={{ padding: 24 }}>
-          <h4 style={{ marginTop: 0, marginBottom: 8 }}>How to add kits</h4>
-          <p style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 12 }}>
+        <Card className="p-24">
+          <h4 className="mb-8" style={{ marginTop: 0 }}>How to add kits</h4>
+          <p className="text-muted fs-13 mb-12">
             Kit images should be high-quality photos or renders showing the complete kit design.
             Recommended image size: 600x800 pixels (3:4 aspect ratio).
           </p>
-          <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--app-muted-text)', fontSize: 13 }}>
+          <ul className="m-0 fs-13 text-muted" style={{ paddingLeft: 20 }}>
             <li>Use PNG or JPEG format for best quality</li>
             <li>Include front view of the full kit (shirt, shorts, socks)</li>
             <li>Keep background transparent or neutral for cleaner display</li>

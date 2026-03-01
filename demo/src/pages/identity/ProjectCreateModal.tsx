@@ -133,8 +133,8 @@ export default function ProjectCreateModal({
           border: '1px solid var(--app-border)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '16px', color: 'var(--app-text)' }}>{title}</h2>
+        <div className="gap-12" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <h2 className="mb-16" style={{ marginTop: 0, color: 'var(--app-text)' }}>{title}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -154,14 +154,13 @@ export default function ProjectCreateModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex-col gap-16">
             {hasOrgSelect && (
               <div>
                 <label
+                  className="block fw-500"
                   style={{
-                    display: 'block',
                     marginBottom: '6px',
-                    fontWeight: 500,
                     color: 'var(--app-text)',
                   }}
                   htmlFor="project-create-org"
@@ -177,10 +176,8 @@ export default function ProjectCreateModal({
                   }}
                   disabled={saving}
                   required={requireOrganisation}
+                  className="w-full p-8 rounded-4"
                   style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: '4px',
                     border: '1px solid var(--app-border)',
                     backgroundColor: 'var(--app-input-bg)',
                     color: 'var(--app-text)',
@@ -199,10 +196,9 @@ export default function ProjectCreateModal({
             {hasClubSelect && (
               <div>
                 <label
+                  className="block fw-500"
                   style={{
-                    display: 'block',
                     marginBottom: '6px',
-                    fontWeight: 500,
                     color: 'var(--app-text)',
                   }}
                   htmlFor="project-create-club"
@@ -222,10 +218,8 @@ export default function ProjectCreateModal({
                   }}
                   disabled={saving}
                   required={requireClub}
+                  className="w-full p-8 rounded-4"
                   style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: '4px',
                     border: '1px solid var(--app-border)',
                     backgroundColor: 'var(--app-input-bg)',
                     color: 'var(--app-text)',
@@ -243,10 +237,9 @@ export default function ProjectCreateModal({
 
             <div>
               <label
+                className="block fw-500"
                 style={{
-                  display: 'block',
                   marginBottom: '6px',
-                  fontWeight: 500,
                   color: 'var(--app-text)',
                 }}
                 htmlFor="project-create-name"
@@ -258,10 +251,8 @@ export default function ProjectCreateModal({
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="w-full p-8 rounded-4"
                 style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
                   border: '1px solid var(--app-border)',
                   backgroundColor: 'var(--app-input-bg)',
                   color: 'var(--app-text)',
@@ -273,10 +264,9 @@ export default function ProjectCreateModal({
 
             <div>
               <label
+                className="block fw-500"
                 style={{
-                  display: 'block',
                   marginBottom: '6px',
-                  fontWeight: 500,
                   color: 'var(--app-text)',
                 }}
                 htmlFor="project-create-description"
@@ -287,10 +277,8 @@ export default function ProjectCreateModal({
                 id="project-create-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                className="w-full p-8 rounded-4"
                 style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
                   border: '1px solid var(--app-border)',
                   backgroundColor: 'var(--app-input-bg)',
                   color: 'var(--app-text)',
@@ -301,14 +289,14 @@ export default function ProjectCreateModal({
             </div>
 
             {error && (
-              <div style={{ color: 'var(--app-danger, #d32f2f)', fontSize: '13px' }}>{error}</div>
+              <div className="fs-13" style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>
             )}
           </div>
 
           <div
+            className="gap-12"
             style={{
               display: 'flex',
-              gap: '12px',
               marginTop: '20px',
               justifyContent: 'flex-end',
             }}

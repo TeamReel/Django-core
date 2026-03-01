@@ -233,9 +233,8 @@ function FieldVisualization({
             >
               {/* Position label */}
               <div
+                className="fs-11 fw-700"
                 style={{
-                  fontSize: 11,
-                  fontWeight: 700,
                   color: 'rgba(255,255,255,0.5)',
                   textTransform: 'uppercase',
                   letterSpacing: '0.02em',
@@ -419,16 +418,14 @@ function FieldVisualization({
             style={{ maxWidth: 500 }}
           >
             <div
-              className="fs-14 fw-700 mb-8"
-              style={{ color: 'var(--app-text, #ccc)' }}
+              className="fs-14 fw-700 mb-8 text-primary"
             >
               Overige selectie ({benchMembers.length})
             </div>
             <div
-              className="flex-col gap-4 rounded-8"
+              className="flex-col gap-4 rounded-8 py-8"
               style={{
                 background: 'var(--app-surface-secondary, #2a2a2a)',
-                padding: '8px 0',
               }}
             >
               {benchMembers.map((p: any) => {
@@ -443,8 +440,7 @@ function FieldVisualization({
                     style={{ padding: '6px 14px' }}
                   >
                     <span
-                      className="fs-13 fw-500"
-                      style={{ color: 'var(--app-text, #ccc)' }}
+                      className="fs-13 fw-500 text-primary"
                     >
                       {jersey ? `#${jersey} ` : ''}
                       {name}

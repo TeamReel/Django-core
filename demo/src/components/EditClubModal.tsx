@@ -158,6 +158,7 @@ export default function EditClubModal({
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -165,9 +166,6 @@ export default function EditClubModal({
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
       onClick={(e) => {
@@ -175,83 +173,69 @@ export default function EditClubModal({
       }}
     >
       <div
+        className="bg-surface p-24 rounded-12 overflow-auto text-primary border"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '12px',
           width: '500px',
           maxWidth: '90%',
           maxHeight: '90vh',
-          overflow: 'auto',
           boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
         }}
       >
-        <h2 style={{ marginTop: 0, marginBottom: '20px', fontSize: 20, fontWeight: 600 }}>
+        <h2 className="fs-20 fw-600" style={{ marginTop: 0, marginBottom: '20px' }}>
           Edit Club Settings
         </h2>
 
         {error && (
-          <Alert variant="error" style={{ marginBottom: 16 }}>
+          <Alert variant="error" className="mb-16">
             {error}
           </Alert>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="flex-col gap-24">
           {/* Logo Section */}
           <div>
             <label
-              style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: 600,
-                marginBottom: '8px',
-                color: 'var(--app-text)',
-              }}
+              className="block fs-13 fw-600 mb-8 text-primary"
             >
               Club Logo
             </label>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+            <div className="gap-16" style={{ display: 'flex', alignItems: 'flex-start' }}>
               {/* Logo Preview */}
               <div
+                className="flex-center rounded-12 overflow-hidden"
                 style={{
                   width: 100,
                   height: 100,
-                  borderRadius: 12,
                   border: '2px dashed var(--app-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                   backgroundColor: 'var(--app-surface-secondary)',
-                  overflow: 'hidden',
                   flexShrink: 0,
                 }}
               >
                 {uploading ? (
-                  <span style={{ fontSize: 24 }}>⏳</span>
+                  <span className="fs-24">⏳</span>
                 ) : previewUrl ? (
                   <img
                     src={previewUrl}
                     alt="Logo preview"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }}
+                    className="w-full h-full p-8"
+                    style={{ objectFit: 'contain' }}
                     onError={() => setPreviewUrl(null)}
                   />
                 ) : (
-                  <span style={{ fontSize: 36, color: 'var(--app-muted-text)', fontWeight: 700 }}>
+                  <span className="text-muted fw-700" style={{ fontSize: 36 }}>
                     {String(club.name || '?').charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
 
               {/* Upload Button */}
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={uploading}
                   onClick={() => fileInputRef.current?.click()}
-                  style={{ marginBottom: 8 }}
+                  className="mb-8"
                 >
                   {uploading ? 'Uploading...' : previewUrl ? 'Change Logo' : 'Upload Logo'}
                 </Button>
@@ -259,10 +243,10 @@ export default function EditClubModal({
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  style={{ display: 'none' }}
+                  className="hidden"
                   onChange={handleFileSelect}
                 />
-                <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
+                <div className="fs-12 text-muted">
                   PNG or JPG, recommended 200x200px
                 </div>
                 {previewUrl && (
@@ -272,14 +256,9 @@ export default function EditClubModal({
                       setLogoUrl('');
                       setPreviewUrl(null);
                     }}
+                    className="mt-8 py-4 px-8 fs-11 bg-transparent border-none cursor-pointer"
                     style={{
-                      marginTop: 8,
-                      padding: '4px 8px',
-                      fontSize: 11,
                       color: '#dc3545',
-                      background: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
                       textDecoration: 'underline',
                     }}
                   >
@@ -293,13 +272,7 @@ export default function EditClubModal({
           {/* Default Location */}
           <div>
             <label
-              style={{
-                display: 'block',
-                fontSize: '13px',
-                fontWeight: 600,
-                marginBottom: '8px',
-                color: 'var(--app-text)',
-              }}
+              className="block fs-13 fw-600 mb-8 text-primary"
             >
               Default Match Location
             </label>
@@ -307,16 +280,16 @@ export default function EditClubModal({
               value={defaultLocation}
               onChange={(e) => setDefaultLocation(e.target.value)}
               placeholder="e.g., Johan Cruijff ArenA, Amsterdam"
-              style={{ width: '100%' }}
+              className="w-full"
             />
-            <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginTop: 4 }}>
+            <div className="fs-12 text-muted mt-4">
               Used to prefill the location field when creating new matches
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: '24px' }}>
+        <div className="gap-12 mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

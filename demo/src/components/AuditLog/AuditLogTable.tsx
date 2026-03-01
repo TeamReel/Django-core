@@ -75,52 +75,46 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
     }
   }, [organisationId, projectId, limit]);
 
-  if (loading) return <div style={{ padding: '20px', textAlign: 'center' }}>Loading audit logs...</div>;
-  if (error) return <div style={{ color: 'var(--app-error)', padding: '20px' }}>Error: {error}</div>;
+  if (loading) return <div className="p-20 text-center">Loading audit logs...</div>;
+  if (error) return <div className="text-error p-20">Error: {error}</div>;
 
   return (
-    <div style={{ overflowX: 'auto', border: '1px solid var(--app-border)', borderRadius: '8px' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-        <thead style={{ backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}>
-          <tr style={{ textAlign: 'left' }}>
-            <th style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Time</th>
-            <th style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Action</th>
-            <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Actor</th>
-            <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>Resource</th>
-            <th className="hide-mobile hide-tablet" style={{ padding: '10px 8px', borderBottom: '1px solid var(--app-border)' }}>IP</th>
+    <div className="overflow-x-auto border rounded-8">
+      <table className="w-full fs-14" style={{ borderCollapse: 'collapse' }}>
+        <thead className="bg-surface-2 text-primary">
+          <tr className="text-left">
+            <th className="border-bottom" style={{ padding: '10px 8px' }}>Time</th>
+            <th className="border-bottom" style={{ padding: '10px 8px' }}>Action</th>
+            <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Actor</th>
+            <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Resource</th>
+            <th className="hide-mobile hide-tablet border-bottom" style={{ padding: '10px 8px' }}>IP</th>
           </tr>
         </thead>
         <tbody>
           {events.length === 0 ? (
             <tr>
-              <td colSpan={5} style={{ padding: '20px', textAlign: 'center', color: 'var(--app-text-muted)' }}>
+              <td colSpan={5} className="p-20 text-center text-muted">
                 No audit events found.
               </td>
             </tr>
           ) : (
             events.map((event) => (
-              <tr key={event.id} style={{ borderBottom: '1px solid var(--app-border)', color: 'var(--app-text)' }}>
-                <td style={{ padding: '10px 8px', whiteSpace: 'nowrap', fontSize: '12px' }}>
+              <tr key={event.id} className="border-bottom text-primary">
+                <td className="whitespace-nowrap fs-12" style={{ padding: '10px 8px' }}>
                   {new Date(event.timestamp).toLocaleDateString()}
                 </td>
                 <td style={{ padding: '10px 8px' }}>
-                  <span style={{
-                    padding: '2px 6px',
-                    borderRadius: '12px',
-                    backgroundColor: 'var(--app-surface-2)',
-                    fontSize: '11px',
-                    fontWeight: 500
-                  }}>
+                  <span className="rounded-12 bg-surface-2 fs-11 fw-500" style={{ padding: '2px 6px' }}>
                     {event.action.toUpperCase()}
                   </span>
                 </td>
-                <td className="hide-mobile" style={{ padding: '10px 8px', fontSize: '13px' }}>
+                <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
                   {event.actor?.email || 'System'}
                 </td>
-                <td className="hide-mobile" style={{ padding: '10px 8px', fontSize: '13px' }}>
+                <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
                    {event.resource_type}
                 </td>
-                <td className="hide-mobile hide-tablet" style={{ padding: '10px 8px', fontFamily: 'monospace', fontSize: '12px' }}>
+                <td className="hide-mobile hide-tablet fs-12" style={{ padding: '10px 8px', fontFamily: 'monospace' }}>
                   {event.remote_ip}
                 </td>
               </tr>

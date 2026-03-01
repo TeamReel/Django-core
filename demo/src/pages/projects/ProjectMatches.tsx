@@ -79,17 +79,15 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
     fetchMatches();
   }, [projectId, apiBaseUrl]);
 
-  if (isLoading) return <div style={{ padding: '20px', color: '#666' }}>Loading matches...</div>;
-  if (error) return <div style={{ padding: '20px', color: '#d32f2f' }}>{error}</div>;
+  if (isLoading) return <div className="p-20" style={{ color: '#666' }}>Loading matches...</div>;
+  if (error) return <div className="p-20" style={{ color: '#d32f2f' }}>{error}</div>;
 
   if (matches.length === 0) {
     return (
-      <div style={{
+      <div className="text-center rounded-8" style={{
         padding: '40px',
-        textAlign: 'center',
         color: '#666',
         backgroundColor: 'rgba(0,0,0,0.02)',
-        borderRadius: '8px',
         border: '1px dashed #ccc'
       }}>
         <p>No matches scheduled for this team yet.</p>
@@ -100,20 +98,20 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ margin: 0 }}>Match Schedule</h3>
+      <div className="flex-between mb-16">
+        <h3 className="m-0">Match Schedule</h3>
         <Badge variant="default" size="sm">{matches.length} Matches</Badge>
       </div>
 
       <Table>
         <thead>
           <tr>
-            <th style={{ textAlign: 'left' }}>Date</th>
-            <th style={{ textAlign: 'left' }}>Competition</th>
-            <th style={{ textAlign: 'left' }}>Match</th>
-            <th style={{ textAlign: 'center' }}>Score</th>
-            <th style={{ textAlign: 'right' }}>Status</th>
-            <th style={{ textAlign: 'right' }}>Action</th>
+            <th className="text-left">Date</th>
+            <th className="text-left">Competition</th>
+            <th className="text-left">Match</th>
+            <th className="text-center">Score</th>
+            <th className="text-right">Status</th>
+            <th className="text-right">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -125,11 +123,11 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
 
             return (
               <tr key={match.id}>
-                <td style={{ whiteSpace: 'nowrap' }}>
-                  <div style={{ fontWeight: 500 }}>
+                <td className="whitespace-nowrap">
+                  <div className="fw-500">
                     {date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#888' }}>
+                  <div className="fs-11" style={{ color: '#888' }}>
                     {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </td>
@@ -137,19 +135,19 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                    <Badge variant="default" size="sm">{competitionName}</Badge>
                 </td>
                 <td>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                     <span style={{ fontWeight: 600 }}>{match.title}</span>
-                     <span style={{ fontSize: '11px', color: '#666' }}>
+                  <div className="flex-col">
+                     <span className="fw-600">{match.title}</span>
+                     <span className="fs-11" style={{ color: '#666' }}>
                         vs {opponentName} • {match.metadata.venue || 'Home'}
                      </span>
                   </div>
                 </td>
-                <td style={{ textAlign: 'center', fontWeight: 'bold' }}>
+                <td className="text-center fw-700">
                   {status === 'finished'
                     ? `${match.metadata.home_score ?? 0} - ${match.metadata.away_score ?? 0}`
                     : '-'}
                 </td>
-                <td style={{ textAlign: 'right' }}>
+                <td className="text-right">
                    <Badge
                      variant={
                        status === 'finished' ? 'success' :
@@ -160,7 +158,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                      {status}
                    </Badge>
                 </td>
-                 <td style={{ textAlign: 'right' }}>
+                 <td className="text-right">
                    <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${(match as any).slug || match.id}`)}>View</Button>
                  </td>
               </tr>

@@ -31,6 +31,7 @@ export default function PeriodDetailModal({ opened, onClose, period }: PeriodDet
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -38,100 +39,80 @@ export default function PeriodDetailModal({ opened, onClose, period }: PeriodDet
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
       onClick={onClose}
     >
       <div
+        className="bg-surface p-24 rounded-8 overflow-auto text-primary border"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
           width: '640px',
           maxWidth: '95%',
           maxHeight: '80vh',
-          overflow: 'auto',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>Period Details</h2>
+        <div className="gap-12" style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>Period Details</h2>
           <button
             onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: 'var(--app-text)',
-            }}
+            className="bg-transparent border-none fs-18 cursor-pointer text-primary"
             aria-label="Close"
           >
             ×
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="flex-col gap-10">
           <div>
-            <div style={{ fontSize: '12px', opacity: 0.8 }}>Name</div>
-            <div style={{ fontWeight: 600 }}>{period.name}</div>
+            <div className="fs-12 opacity-80">Name</div>
+            <div className="fw-600">{period.name}</div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div className="grid gap-10" style={{ gridTemplateColumns: '1fr 1fr' }}>
             <div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Start</div>
+              <div className="fs-12 opacity-80">Start</div>
               <div>{period.start_date || '—'}</div>
             </div>
             <div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>End</div>
+              <div className="fs-12 opacity-80">End</div>
               <div>{period.end_date || '—'}</div>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+          <div className="grid gap-10" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
             <div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Children</div>
+              <div className="fs-12 opacity-80">Children</div>
               <div>{(period.children_count ?? 0).toString()}</div>
             </div>
             <div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Matches (direct)</div>
+              <div className="fs-12 opacity-80">Matches (direct)</div>
               <div>{(period.matches_count ?? 0).toString()}</div>
             </div>
             <div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Matches (total)</div>
+              <div className="fs-12 opacity-80">Matches (total)</div>
               <div>{(period.matches_total_count ?? period.matches_count ?? 0).toString()}</div>
             </div>
           </div>
 
           <div>
-            <div style={{ fontSize: '12px', opacity: 0.8 }}>Type</div>
+            <div className="fs-12 opacity-80">Type</div>
             <div>{type || '—'}</div>
           </div>
 
           {period.description ? (
             <div>
-              <div style={{ fontSize: '12px', opacity: 0.8 }}>Description</div>
+              <div className="fs-12 opacity-80">Description</div>
               <div style={{ whiteSpace: 'pre-wrap' }}>{period.description}</div>
             </div>
           ) : null}
 
-          <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="mt-12" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               onClick={onClose}
-              style={{
-                padding: '8px 14px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: 'pointer',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary cursor-pointer"
+              style={{ padding: '8px 14px' }}
             >
               Close
             </button>

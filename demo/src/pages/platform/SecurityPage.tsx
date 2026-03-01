@@ -281,7 +281,7 @@ export const SecurityPage: React.FC = () => {
           }
       />
       <PageContent>
-        <Card data-testid="security-summary" style={{ marginBottom: '16px' }}>
+        <Card data-testid="security-summary" className="mb-16">
           <div className="p-24">
             <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               <div className="p-16 border rounded-8 bg-surface">
@@ -305,7 +305,7 @@ export const SecurityPage: React.FC = () => {
         </Card>
 
         {security?.asvs_scorecard && (
-          <Card data-testid="asvs-scorecard" style={{ marginBottom: '16px' }}>
+          <Card data-testid="asvs-scorecard" className="mb-16">
             <div className="p-24">
               <h3 className="fs-18 fw-600 m-0 mb-16">ASVS Scorecard</h3>
               <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>

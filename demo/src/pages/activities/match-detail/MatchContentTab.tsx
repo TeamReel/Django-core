@@ -77,11 +77,9 @@ function getSyntheticTemplate(subtype: string): ContentTemplate | undefined {
 function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo: boolean; icon?: string }) {
   if (!url) {
     return (
-      <div style={{
+      <div className="flex-center rounded-8" style={{
         width: 56, height: 56, flexShrink: 0,
-        borderRadius: 8,
         background: 'var(--app-surface-secondary, #252526)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 22,
         color: 'var(--app-muted-text, #888)',
       }}>
@@ -91,12 +89,9 @@ function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo: boolea
   }
 
   return (
-    <div style={{
+    <div className="rounded-8 overflow-hidden relative" style={{
       width: 56, height: 56, flexShrink: 0,
-      borderRadius: 8,
-      overflow: 'hidden',
       background: '#000',
-      position: 'relative',
     }}>
       {isVideo ? (
         <>
@@ -106,10 +101,9 @@ function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo: boolea
             onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.1; } catch { /* */ } }}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'rgba(255,255,255,0.85)', fontSize: 18,
+          <div className="absolute flex-center fs-18" style={{
+            inset: 0,
+            color: 'rgba(255,255,255,0.85)',
             textShadow: '0 1px 6px rgba(0,0,0,0.6)', pointerEvents: 'none',
           }}>▶</div>
         </>
@@ -181,18 +175,11 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
       <Thumbnail url={mediaUrl} isVideo={isVideo} icon={icon} />
 
       {/* Text block */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: 'var(--app-text, #fff)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}>
+      <div className="flex-1-min">
+        <div className="fs-14 fw-600 text-primary truncate">
           {label}
         </div>
-        <div style={{ fontSize: 11, color: 'var(--app-muted-text, #888)', marginTop: 2 }}>
+        <div className="fs-11 text-muted" style={{ marginTop: 2 }}>
           {hasMedia && updatedAt
             ? new Date(updatedAt).toLocaleDateString('nl-NL', {
                 day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
@@ -202,7 +189,7 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
       </div>
 
       {/* Status + actions */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+      <div className="flex-row gap-6" style={{ flexShrink: 0 }}>
         <StatusBadge
           isGenerating={isGenerating}
           isFailed={isFailed}
@@ -210,7 +197,7 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
           workflowStatus={workflowStatus}
         />
         {hasMedia && mediaUrl && (
-          <div style={{ display: 'flex', gap: 2 }}>
+          <div className="flex-row gap-2">
             {/* Open in new tab */}
             <a
               href={mediaUrl}
@@ -218,12 +205,12 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               title="Openen"
+              className="flex-center rounded-6 fs-14 cursor-pointer border-none"
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 32, height: 32, borderRadius: 6,
+                width: 32, height: 32,
                 background: 'var(--app-surface-secondary, #252526)',
-                color: 'var(--app-text, #fff)', fontSize: 14,
-                textDecoration: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--app-text, #fff)',
+                textDecoration: 'none',
               }}
             >
               ↗
@@ -234,12 +221,12 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
               download
               onClick={(e) => e.stopPropagation()}
               title="Downloaden"
+              className="flex-center rounded-6 fs-14 cursor-pointer border-none"
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 32, height: 32, borderRadius: 6,
+                width: 32, height: 32,
                 background: 'var(--app-surface-secondary, #252526)',
-                color: 'var(--app-text, #fff)', fontSize: 14,
-                textDecoration: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--app-text, #fff)',
+                textDecoration: 'none',
               }}
             >
               ↓
@@ -309,12 +296,11 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
                   }
                 }}
                 title="Delen"
+                className="flex-center rounded-6 fs-14 cursor-pointer border-none"
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 32, height: 32, borderRadius: 6,
+                  width: 32, height: 32,
                   background: 'var(--app-surface-secondary, #252526)',
-                  color: 'var(--app-text, #fff)', fontSize: 14,
-                  border: 'none', cursor: 'pointer',
+                  color: 'var(--app-text, #fff)',
                 }}
               >
                 ⤴
@@ -328,12 +314,11 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
                   onGenerate();
                 }}
                 title="Vervangen"
+                className="flex-center rounded-6 fs-14 cursor-pointer border-none"
                 style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 32, height: 32, borderRadius: 6,
+                  width: 32, height: 32,
                   background: 'var(--app-surface-secondary, #252526)',
-                  color: 'var(--app-text, #fff)', fontSize: 14,
-                  border: 'none', cursor: 'pointer',
+                  color: 'var(--app-text, #fff)',
                 }}
               >
                 ⟳
@@ -342,7 +327,7 @@ function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerating, is
           </div>
         )}
         {!hasMedia && canGenerate && (
-          <span style={{ color: 'var(--app-muted-text, #666)', fontSize: 16 }}>›</span>
+          <span className="text-muted fs-16">›</span>
         )}
       </div>
     </div>
@@ -410,15 +395,15 @@ export default function MatchContentTab({
 
   if (matchMediaLoading) {
     return (
-      <div style={{ padding: '32px 0', textAlign: 'center', color: 'var(--app-muted-text, #888)' }}>
-        <div style={{ fontSize: 28, marginBottom: 8 }}>⏳</div>
+      <div className="text-center text-muted" style={{ padding: '32px 0' }}>
+        <div className="mb-8" style={{ fontSize: 28 }}>⏳</div>
         <div>Media laden...</div>
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex-col gap-16">
       {(['pre_match', 'during_match', 'post_match'] as const).map((categoryKey) => {
         const category = CONTENT_TYPES[categoryKey];
         if (!category) return null;
@@ -426,23 +411,19 @@ export default function MatchContentTab({
         return (
           <div key={categoryKey}>
             {/* Section header */}
-            <div style={{
-              fontSize: 11,
-              fontWeight: 700,
+            <div className="fs-11 fw-700 mb-8" style={{
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               color: 'var(--app-muted-text, #888)',
-              marginBottom: 8,
               paddingLeft: 2,
             }}>
               {category.label}
             </div>
 
             {/* Content rows */}
-            <div style={{
+            <div className="overflow-hidden" style={{
               borderRadius: 10,
               border: '1px solid var(--app-border, #333)',
-              overflow: 'hidden',
               background: 'var(--app-surface, #1e1e1e)',
             }}>
               {category.items.map((item, idx) => {

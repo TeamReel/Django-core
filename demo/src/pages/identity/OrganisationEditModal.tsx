@@ -42,87 +42,67 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
   if (!opened || !organisation) return null;
 
   return (
-    <div style={{
+    <div className="flex-center" style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       zIndex: 1000
     }}>
-      <div style={{
-        backgroundColor: 'var(--app-surface)',
-        padding: '24px',
-        borderRadius: '8px',
+      <div className="bg-surface p-24 rounded-8 text-primary border" style={{
         width: '500px',
         maxWidth: '90%',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        color: 'var(--app-text)',
-        border: '1px solid var(--app-border)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>Edit Organisation</h2>
+        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: '20px' }}>Edit Organisation</h2>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="flex-col gap-16">
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500, color: 'var(--app-text)' }}>Name</label>
+              <label className="field-label text-primary">Name</label>
               <input
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full p-8 rounded-4 border text-primary"
                 style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)'
+                  backgroundColor: 'var(--app-input-bg)'
                 }}
                 required
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500, color: 'var(--app-text)' }}>Slug</label>
+              <label className="field-label text-primary">Slug</label>
               <input
                 type="text"
                 value={formData.slug || ''}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full p-8 rounded-4 border text-primary"
                 style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)'
+                  backgroundColor: 'var(--app-input-bg)'
                 }}
                 required
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500, color: 'var(--app-text)' }}>Description</label>
+              <label className="field-label text-primary">Description</label>
               <textarea
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full p-8 rounded-4 border text-primary"
                 style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
                   backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
                   minHeight: '80px'
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--app-text)' }}>
+              <label className="flex-row gap-8 text-primary">
                 <input
                   type="checkbox"
                   checked={formData.is_active ?? true}
@@ -133,18 +113,14 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500, color: 'var(--app-text)' }}>Sport</label>
+              <label className="field-label text-primary">Sport</label>
               <select
                 value={formData.sport_id || ''}
                 onChange={(e) => setFormData({ ...formData, sport_id: e.target.value || null })}
                 disabled={sportsLoading}
+                className="w-full p-8 rounded-4 border text-primary"
                 style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)'
+                  backgroundColor: 'var(--app-input-bg)'
                 }}
               >
                 <option value="">— No sport selected —</option>
@@ -157,17 +133,13 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
+          <div className="gap-12 mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
+              className="py-8 px-16 rounded-4 border bg-surface-2 text-primary"
               style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
                 cursor: saving ? 'not-allowed' : 'pointer'
               }}
             >
@@ -176,10 +148,8 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
             <button
               type="submit"
               disabled={saving}
+              className="py-8 px-16 rounded-4 border-none"
               style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
                 backgroundColor: '#0066cc',
                 color: 'white',
                 cursor: saving ? 'not-allowed' : 'pointer',

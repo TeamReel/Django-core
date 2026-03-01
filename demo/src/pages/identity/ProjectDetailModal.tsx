@@ -24,58 +24,56 @@ export default function ProjectDetailModal({ opened, onClose, project }: Project
   if (!opened || !project) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'var(--app-surface)',
-        padding: '24px',
-        borderRadius: '8px',
-        width: '600px',
-        maxWidth: '90%',
-        maxHeight: '80vh',
-        overflow: 'auto',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        color: 'var(--app-text)',
-        border: '1px solid var(--app-border)'
-      }}>
-        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>Project Details</h2>
+    <div
+      className="flex-center"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        zIndex: 1000
+      }}
+    >
+      <div
+        className="bg-surface p-24 rounded-8 overflow-auto border"
+        style={{
+          width: '600px',
+          maxWidth: '90%',
+          maxHeight: '80vh',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          color: 'var(--app-text)',
+        }}
+      >
+        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: '20px' }}>Project Details</h2>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="flex-col gap-20">
           {/* Project Information */}
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Project Information</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 className="fs-16 fw-600 mb-16 text-primary">Project Information</h3>
+            <div className="flex-col gap-12">
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Name</label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{project.name}</div>
+                <label className="label-muted mb-4">Name</label>
+                <div className="fw-500 text-primary">{project.name}</div>
               </div>
 
               {project.description && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Description</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{project.description}</div>
+                <label className="label-muted mb-4">Description</label>
+                <div className="fw-500 text-primary">{project.description}</div>
                 </div>
               )}
 
               {project.organisation && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Organisation</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{project.organisation.name || project.organisation.slug || project.organisation.id || '—'}</div>
+                <label className="label-muted mb-4">Organisation</label>
+                <div className="fw-500 text-primary">{project.organisation.name || project.organisation.slug || project.organisation.id || '—'}</div>
                 </div>
               )}
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Status</label>
+                <label className="label-muted mb-4">Status</label>
                 <Badge variant={project.is_active ? 'success' : 'error'}>
                   {project.is_active ? 'Active' : 'Inactive'}
                 </Badge>
@@ -83,25 +81,18 @@ export default function ProjectDetailModal({ opened, onClose, project }: Project
 
               {typeof project.member_count === 'number' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Members</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{project.member_count}</div>
+                <label className="label-muted mb-4">Members</label>
+                <div className="fw-500 text-primary">{project.member_count}</div>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+        <div className="mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              cursor: 'pointer'
-            }}
+            className="py-8 px-16 rounded-4 border bg-surface-2 text-primary cursor-pointer"
           >
             Close
           </button>

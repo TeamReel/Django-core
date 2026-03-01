@@ -50,7 +50,7 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
   if (loading) {
     return (
-      <div style={{ padding: 20, color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
+      <div className="p-20 fs-13" style={{ color: 'var(--app-text-secondary, #6b7280)' }}>
         Loading workflows...
       </div>
     );
@@ -58,21 +58,21 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
   if (error) {
     return (
-      <div style={{ padding: 20, color: '#dc2626', fontSize: 13 }}>
+      <div className="p-20 fs-13" style={{ color: '#dc2626' }}>
         Failed to load workflows: {error}
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex-col gap-16">
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: 'var(--app-text, #111)' }}>
+      <div className="flex-between">
+        <h3 className="m-0 fw-600" style={{ fontSize: 15, color: 'var(--app-text, #111)' }}>
           {title || 'Workflow'}
         </h3>
         {instances.length > 1 && (
-          <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+          <span className="fs-11" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
             {instances.length} workflows
           </span>
         )}
@@ -81,37 +81,32 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
       {/* No workflows */}
       {instances.length === 0 && (
         <div
+          className="p-24 text-center fs-13 rounded-8"
           style={{
-            padding: 24,
-            textAlign: 'center',
             color: 'var(--app-text-secondary, #9ca3af)',
-            fontSize: 13,
             backgroundColor: 'var(--app-surface-2, #f9fafb)',
-            borderRadius: 8,
             border: '1px dashed var(--app-border, #e5e7eb)',
           }}
         >
-          <div style={{ fontSize: 24, marginBottom: 8 }}>📋</div>
+          <div className="fs-24 mb-8">📋</div>
           <div>No workflow attached to this item yet.</div>
-          <div style={{ fontSize: 11, marginTop: 4 }}>Workflows are automatically created when content enters the approval pipeline.</div>
+          <div className="fs-11 mt-4">Workflows are automatically created when content enters the approval pipeline.</div>
         </div>
       )}
 
       {/* Instance selector (if multiple) */}
       {instances.length > 1 && (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div className="gap-6 flex-wrap" style={{ display: 'flex' }}>
           {instances.map(inst => (
             <button
               key={inst.id}
               onClick={() => setSelectedInstance(inst)}
+              className="fs-12 rounded-6 cursor-pointer"
               style={{
-                fontSize: 12,
                 padding: '4px 10px',
-                borderRadius: 6,
                 border: `1px solid ${activeInstance?.id === inst.id ? 'var(--app-primary, #2563eb)' : 'var(--app-border, #e5e7eb)'}`,
                 backgroundColor: activeInstance?.id === inst.id ? 'var(--app-primary-light, #dbeafe)' : 'transparent',
                 color: 'var(--app-text, #111)',
-                cursor: 'pointer',
                 fontWeight: activeInstance?.id === inst.id ? 600 : 400,
               }}
             >
@@ -126,25 +121,24 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
         <>
           {/* Current state card */}
           <div
+            className="p-16 rounded-8"
             style={{
-              padding: 16,
               backgroundColor: 'var(--app-surface, #fff)',
-              borderRadius: 8,
               border: '1px solid var(--app-border, #e5e7eb)',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div className="flex-between mb-12">
               <div>
-                <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div className="fs-11 mb-4" style={{ color: 'var(--app-text-secondary, #9ca3af)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                   Current Status
                 </div>
                 <WorkflowStatusBadge state={activeInstance.current_state} />
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+              <div className="text-right">
+                <div className="fs-11" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
                   {activeInstance.workflow_name} v{activeInstance.workflow_version}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                <div className="fs-11" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
                   Created {new Date(activeInstance.created_at).toLocaleDateString()}
                   {activeInstance.created_by_username && ` by ${activeInstance.created_by_username}`}
                 </div>
@@ -154,13 +148,10 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
             {/* Action error */}
             {actionError && (
               <div
+                className="py-8 px-12 rounded-6 fs-12 mb-12"
                 style={{
-                  padding: '8px 12px',
                   backgroundColor: '#fee2e2',
                   color: '#dc2626',
-                  borderRadius: 6,
-                  fontSize: 12,
-                  marginBottom: 12,
                 }}
               >
                 {actionError}
@@ -180,14 +171,13 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
           {/* Timeline */}
           <div
+            className="p-16 rounded-8"
             style={{
-              padding: 16,
               backgroundColor: 'var(--app-surface, #fff)',
-              borderRadius: 8,
               border: '1px solid var(--app-border, #e5e7eb)',
             }}
           >
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 12 }}>
+            <div className="fs-13 fw-600 mb-12" style={{ color: 'var(--app-text, #111)' }}>
               History
             </div>
             <WorkflowTimeline history={history} loading={historyLoading} />

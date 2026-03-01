@@ -210,19 +210,19 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                         </td>
                         <td style={compactTdStyle}>
                           {sportDisplay?.category_name ? (
-                            <span style={{ fontSize: '12px' }}>{sportDisplay.category_name}</span>
+                            <span className="fs-12">{sportDisplay.category_name}</span>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td style={compactTdStyle}>
                           {sportDisplay ? (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span className="flex-row gap-4">
                               <span>{sportDisplay.sport_icon}</span>
-                              <span style={{ fontSize: '12px' }}>{sportDisplay.name}</span>
+                              <span className="fs-12">{sportDisplay.name}</span>
                             </span>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td style={compactTdStyle}>

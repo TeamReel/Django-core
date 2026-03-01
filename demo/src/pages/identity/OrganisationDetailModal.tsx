@@ -11,56 +11,47 @@ export default function OrganisationDetailModal({ opened, onClose, organisation 
   if (!opened || !organisation) return null;
 
   return (
-    <div style={{
+    <div className="flex-center" style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       zIndex: 1000
     }}>
-      <div style={{
-        backgroundColor: 'var(--app-surface)',
-        padding: '24px',
-        borderRadius: '8px',
+      <div className="bg-surface p-24 rounded-8 overflow-auto text-primary border" style={{
         width: '600px',
         maxWidth: '90%',
         maxHeight: '80vh',
-        overflow: 'auto',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        color: 'var(--app-text)',
-        border: '1px solid var(--app-border)'
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
       }}>
-        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>Organisation Details</h2>
+        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: '20px' }}>Organisation Details</h2>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div className="flex-col gap-20">
           {/* Organisation Information */}
           <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px', color: 'var(--app-text)' }}>Organisation Information</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h3 className="fs-16 fw-600 mb-16 text-primary">Organisation Information</h3>
+            <div className="flex-col gap-12">
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Name</label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{organisation.name}</div>
+                <label className="block fs-12 text-muted mb-4">Name</label>
+                <div className="fw-500 text-primary">{organisation.name}</div>
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Slug</label>
-                <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{organisation.slug}</div>
+                <label className="block fs-12 text-muted mb-4">Slug</label>
+                <div className="fw-500 text-primary">{organisation.slug}</div>
               </div>
 
               {organisation.description && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Description</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{organisation.description}</div>
+                  <label className="block fs-12 text-muted mb-4">Description</label>
+                  <div className="fw-500 text-primary">{organisation.description}</div>
                 </div>
               )}
 
               <div>
-                <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Status</label>
+                <label className="block fs-12 text-muted mb-4">Status</label>
                 <Badge variant={organisation.is_active ? 'success' : 'error'}>
                   {organisation.is_active ? 'Active' : 'Inactive'}
                 </Badge>
@@ -68,39 +59,32 @@ export default function OrganisationDetailModal({ opened, onClose, organisation 
 
               {typeof organisation.credit_balance === 'number' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Credits</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{organisation.credit_balance}</div>
+                  <label className="block fs-12 text-muted mb-4">Credits</label>
+                  <div className="fw-500 text-primary">{organisation.credit_balance}</div>
                 </div>
               )}
 
               {typeof organisation.member_count === 'number' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Members</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{organisation.member_count}</div>
+                  <label className="block fs-12 text-muted mb-4">Members</label>
+                  <div className="fw-500 text-primary">{organisation.member_count}</div>
                 </div>
               )}
 
               {typeof organisation.project_count === 'number' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Projects</label>
-                  <div style={{ fontWeight: 500, color: 'var(--app-text)' }}>{organisation.project_count}</div>
+                  <label className="block fs-12 text-muted mb-4">Projects</label>
+                  <div className="fw-500 text-primary">{organisation.project_count}</div>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+        <div className="mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={onClose}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              cursor: 'pointer'
-            }}
+            className="py-8 px-16 rounded-4 border bg-surface-2 text-primary cursor-pointer"
           >
             Close
           </button>

@@ -462,8 +462,8 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                     {step !== 'running' && (
                         <button
                             onClick={onClose}
-                            className="border-none bg-transparent cursor-pointer fs-20"
-                            style={{ color: 'var(--app-text-muted, #888)', padding: '4px', lineHeight: 1 }}
+                            className="border-none bg-transparent cursor-pointer fs-20 p-4"
+                            style={{ color: 'var(--app-text-muted, #888)', lineHeight: 1 }}
                             title="Sluiten"
                         >
                             ✕
@@ -584,7 +584,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
 
                             {selectedAction === 'delete' && (
                                 <div style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)' }}>
-                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                                    <div className="gap-10" style={{ display: 'flex', alignItems: 'flex-start' }}>
                                         <span className="fs-20">⚠️</span>
                                         <div>
                                             <div className="fw-600 fs-14" style={{ color: '#ef4444' }}>
@@ -654,7 +654,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
 
                             {errors.length > 0 && (
                                 <div style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)', marginTop: '12px' }}>
-                                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#ef4444', marginBottom: '6px' }}>
+                                    <div className="fs-13 fw-600" style={{ color: '#ef4444', marginBottom: '6px' }}>
                                         Fouten:
                                     </div>
                                     <ul className="m-0 fs-12 text-muted" style={{ paddingLeft: '18px' }}>

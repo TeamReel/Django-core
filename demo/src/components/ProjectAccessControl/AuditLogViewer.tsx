@@ -58,13 +58,14 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
   if (loading) return <div>Loading activity...</div>;
 
   return (
-    <div className="audit-log-viewer" style={{ padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+    <div className="audit-log-viewer p-20">
+      <div className="flex-between" style={{ marginBottom: '20px' }}>
         <h3>Project Activity</h3>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+          className="p-8 rounded-4"
+          style={{ border: '1px solid #ddd' }}
         >
           <option value="all">All Events</option>
           <option value="member_added">Member Added</option>
@@ -73,13 +74,13 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
         </select>
       </div>
 
-      <div style={{ border: '1px solid #eee', borderRadius: '8px', overflow: 'hidden' }}>
+      <div className="rounded-8 overflow-hidden" style={{ border: '1px solid #eee' }}>
         {filteredEvents.length === 0 ? (
-          <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>No events found.</div>
+          <div className="p-20 text-center" style={{ color: '#666' }}>No events found.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="w-full" style={{ borderCollapse: 'collapse' }}>
             <thead style={{ backgroundColor: '#f9f9f9' }}>
-              <tr style={{ textAlign: 'left' }}>
+              <tr className="text-left">
                 <th style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Action</th>
                 <th style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>User</th>
                 <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Details</th>
@@ -90,24 +91,22 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
               {filteredEvents.map((event) => (
                 <tr key={event.id} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: '10px 8px' }}>
-                    <span style={{
+                    <span className="rounded-4 fs-11" style={{
                       padding: '2px 6px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
                       backgroundColor: event.action === 'member_removed' ? '#ffebee' : '#e3f2fd',
                       color: event.action === 'member_removed' ? '#c62828' : '#1565c0'
                     }}>
                       {event.action.replace('_', ' ').toUpperCase()}
                     </span>
                   </td>
-                  <td style={{ padding: '10px 8px', fontSize: '13px' }}>
+                  <td className="fs-13" style={{ padding: '10px 8px' }}>
                     <div>{event.actor.name}</div>
                   </td>
-                  <td className="hide-mobile" style={{ padding: '10px 8px', fontSize: '13px' }}>
+                  <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
                     <div>{event.details}</div>
-                    <div style={{ fontSize: '11px', color: '#666' }}>Target: {event.target.name}</div>
+                    <div className="fs-11" style={{ color: '#666' }}>Target: {event.target.name}</div>
                   </td>
-                  <td className="hide-mobile" style={{ padding: '10px 8px', color: '#666', fontSize: '12px' }}>
+                  <td className="hide-mobile fs-12" style={{ padding: '10px 8px', color: '#666' }}>
                     {event.timestamp}
                   </td>
                 </tr>

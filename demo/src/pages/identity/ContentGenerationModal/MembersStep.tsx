@@ -80,20 +80,16 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupCloseupStyle(opt.value)}
+                        className="relative flex-row gap-12 py-12 px-16 rounded-12 cursor-pointer text-left text-primary"
                         style={{
-                          position: 'relative', display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '12px 16px',
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          borderRadius: 12,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          color: 'var(--app-text, #111)', cursor: 'pointer', transition: 'all 0.15s ease', textAlign: 'left',
+                          transition: 'all 0.15s ease',
                         }}
                       >
-                        <div style={{
+                        <div className="flex-center fs-14 fw-700" style={{
                           width: 36, height: 36, borderRadius: 10, flexShrink: 0,
                           backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 14, fontWeight: 700,
                           color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                         }}>{opt.icon}</div>
                         <div>
@@ -101,11 +97,11 @@ export function MembersStep({
                         <div className="fs-11 text-muted" style={{ marginTop: 1 }}>{opt.desc}</div>
                         </div>
                         {isSelected && (
-                          <div style={{
-                            position: 'absolute', top: 6, right: 6,
-                            width: 18, height: 18, borderRadius: '50%',
-                            background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, color: '#fff', fontWeight: 700,
+                          <div className="absolute rounded-full flex-center fw-700" style={{
+                            top: 6, right: 6,
+                            width: 18, height: 18,
+                            background: '#10b981',
+                            fontSize: 10, color: '#fff',
                           }}>✓</div>
                         )}
                       </button>
@@ -119,7 +115,7 @@ export function MembersStep({
             {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
                 <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Animatie Stijl</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                <div className="flex-wrap gap-8">
                   {[
                     { value: 'slide_up', label: 'Omhoog' },
                     { value: 'appear', label: 'Direct' },
@@ -132,23 +128,24 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
+                        className="relative flex-col gap-4 cursor-pointer text-primary"
                         style={{
-                          position: 'relative', flex: '1 1 calc(33% - 8px)', minWidth: 80,
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                          flex: '1 1 calc(33% - 8px)', minWidth: 80,
+                          alignItems: 'center',
                           padding: '10px 6px',
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                           borderRadius: 10,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          color: 'var(--app-text, #111)', cursor: 'pointer', transition: 'all 0.15s ease',
+                          transition: 'all 0.15s ease',
                         }}
                       >
                         <span className="fs-13 fw-600">{opt.label}</span>
                         {isSelected && (
-                          <div style={{
-                            position: 'absolute', top: 4, right: 4,
-                            width: 18, height: 18, borderRadius: '50%',
-                            background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, color: '#fff', fontWeight: 700,
+                          <div className="absolute rounded-full flex-center fw-700" style={{
+                            top: 4, right: 4,
+                            width: 18, height: 18,
+                            background: '#10b981',
+                            fontSize: 10, color: '#fff',
                           }}>✓</div>
                         )}
                       </button>
@@ -172,31 +169,29 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupIntroStyle(opt.value as typeof lineupIntroStyle)}
+                        className="relative flex-col flex-1 gap-6 cursor-pointer text-primary"
                         style={{
-                          position: 'relative', flex: 1,
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                          alignItems: 'center',
                           padding: '12px 8px',
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                           borderRadius: 10,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          color: 'var(--app-text, #111)', cursor: 'pointer', transition: 'all 0.15s ease',
+                          transition: 'all 0.15s ease',
                         }}
                       >
-                        <div style={{
+                        <div className="flex-center fs-14 fw-700" style={{
                           width: 36, height: 36, borderRadius: 10,
                           backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 14, fontWeight: 700,
                           color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                         }}>{opt.icon}</div>
                         <span className="fs-12 fw-600">{opt.label}</span>
-                        <span style={{ fontSize: 10, color: 'var(--app-text-muted, #6b7280)' }}>{opt.desc}</span>
+                        <span className="text-muted" style={{ fontSize: 10 }}>{opt.desc}</span>
                         {isSelected && (
-                          <div style={{
-                            position: 'absolute', top: 4, right: 4,
-                            width: 18, height: 18, borderRadius: '50%',
-                            background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 10, color: '#fff', fontWeight: 700,
+                          <div className="absolute rounded-full flex-center fw-700" style={{
+                            top: 4, right: 4,
+                            width: 18, height: 18,
+                            background: '#10b981',
+                            fontSize: 10, color: '#fff',
                           }}>✓</div>
                         )}
                       </button>
@@ -214,30 +209,30 @@ export function MembersStep({
                   {/* Default option */}
                   <button
                     onClick={() => setSelectedBackgroundUrl(null)}
+                    className="relative overflow-hidden cursor-pointer p-0"
                     style={{
-                      position: 'relative',
                       border: !selectedBackgroundUrl ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                      borderRadius: 10, overflow: 'hidden', cursor: 'pointer', padding: 0,
+                      borderRadius: 10,
                       background: !selectedBackgroundUrl ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
                       transition: 'all 0.15s ease',
                     }}
                   >
-                    <div style={{ width: '100%', aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div className="w-full flex-center" style={{ aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)' }}>
                       <span className="fs-14 fw-700 text-inverse">Auto</span>
                     </div>
-                    <div style={{
-                      padding: '4px 0', textAlign: 'center', fontWeight: 600, fontSize: 10,
+                    <div className="text-center fw-600" style={{
+                      padding: '4px 0', fontSize: 10,
                       color: !selectedBackgroundUrl ? 'white' : 'var(--app-text, #111)',
                       background: !selectedBackgroundUrl ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
                     }}>
                       Standaard
                     </div>
                     {!selectedBackgroundUrl && (
-                      <div style={{
-                        position: 'absolute', top: 3, right: 3,
-                        width: 16, height: 16, borderRadius: '50%',
-                        background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 9, color: '#fff', fontWeight: 700,
+                      <div className="absolute rounded-full flex-center fw-700" style={{
+                        top: 3, right: 3,
+                        width: 16, height: 16,
+                        background: '#10b981',
+                        fontSize: 9, color: '#fff',
                       }}>✓</div>
                     )}
                   </button>
@@ -249,29 +244,28 @@ export function MembersStep({
                       <button
                         key={bg.id}
                         onClick={() => setSelectedBackgroundUrl(bg.url)}
+                        className="relative overflow-hidden cursor-pointer p-0"
                         style={{
-                          position: 'relative',
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          borderRadius: 10, overflow: 'hidden', cursor: 'pointer', padding: 0,
+                          borderRadius: 10,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
                           transition: 'all 0.15s ease',
                         }}
                       >
-                        <div style={{ width: '100%', aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
-                        <div style={{
-                          padding: '4px 0', textAlign: 'center', fontWeight: 600, fontSize: 10,
+                        <div className="w-full" style={{ aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
+                        <div className="text-center fw-600 truncate" style={{
+                          padding: '4px 0', fontSize: 10,
                           color: isSelected ? 'white' : 'var(--app-text, #111)',
                           background: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {bg.label || bg.profile_name || 'Locatie'}
                         </div>
                         {isSelected && (
-                          <div style={{
-                            position: 'absolute', top: 3, right: 3,
-                            width: 16, height: 16, borderRadius: '50%',
-                            background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: 9, color: '#fff', fontWeight: 700,
+                          <div className="absolute rounded-full flex-center fw-700" style={{
+                            top: 3, right: 3,
+                            width: 16, height: 16,
+                            background: '#10b981',
+                            fontSize: 9, color: '#fff',
                           }}>✓</div>
                         )}
                       </button>

@@ -382,15 +382,11 @@ export const UsageEventsPage: React.FC = () => {
         actions={
           <div className="flex-row gap-12">
             {/* Demo Helper: Show current mode */}
-            <div style={{
-              fontSize: '11px',
+            <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
               padding: '4px 10px',
-              borderRadius: '6px',
               backgroundColor: isSuperadmin ? '#3b82f6' : '#a855f7',
               color: 'white',
-              fontWeight: 600,
               letterSpacing: '0.5px',
-              cursor: 'default',
             }}>
               {isSuperadmin ? '👑 ADMIN' : '👤 ORG'}
             </div>
@@ -398,21 +394,15 @@ export const UsageEventsPage: React.FC = () => {
             {/* Scope Selector - Only for Superadmin */}
             {isSuperadmin && (
               <>
-                <div style={{
+                <div className="opacity-50" style={{
                   height: '24px',
                   width: '1px',
                   backgroundColor: 'var(--app-border)',
-                  opacity: 0.5,
                 }} />
-                <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--app-surface)', padding: '3px', borderRadius: '6px', border: '1px solid var(--app-border)' }}>
+                <div className="gap-4 bg-surface rounded-6 border" style={{ display: 'flex', padding: '3px' }}>
                   <button
+                    className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
                     style={{
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      borderRadius: '4px',
-                      border: 'none',
-                      cursor: 'pointer',
                       transition: 'all 0.2s',
                       backgroundColor: editMode === 'global' ? '#3b82f6' : 'transparent',
                       color: editMode === 'global' ? 'white' : 'var(--app-text)',
@@ -422,13 +412,8 @@ export const UsageEventsPage: React.FC = () => {
                     Global View
                   </button>
                   <button
+                    className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
                     style={{
-                      padding: '4px 12px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      borderRadius: '4px',
-                      border: 'none',
-                      cursor: 'pointer',
                       transition: 'all 0.2s',
                       backgroundColor: editMode === 'org' ? '#a855f7' : 'transparent',
                       color: editMode === 'org' ? 'white' : 'var(--app-text)',
@@ -447,7 +432,7 @@ export const UsageEventsPage: React.FC = () => {
       <PageContent>
         {/* Filters */}
         <Card className="mb-4 min-w-0">
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', flexWrap: 'wrap' }}>
+          <div className="flex-wrap gap-12 overflow-x-auto" style={{ display: 'flex' }}>
             <div style={{ minWidth: '200px', flex: '0 0 200px' }}>
               <label className="block text-sm font-medium mb-1">Event Type</label>
               <select
@@ -719,6 +704,7 @@ export const UsageEventsPage: React.FC = () => {
         {/* Details Modal */}
         {selectedEvent && (
           <div
+            className="flex-center"
             style={{
               position: 'fixed',
               top: 0,
@@ -726,9 +712,6 @@ export const UsageEventsPage: React.FC = () => {
               right: 0,
               bottom: 0,
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               zIndex: 1000,
             }}
             onClick={() => setSelectedEvent(null)}

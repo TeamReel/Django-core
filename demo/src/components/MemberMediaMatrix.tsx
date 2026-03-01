@@ -77,15 +77,15 @@ export function MemberMediaMatrix({
   return (
     <div>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 4 }}>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{title}</h3>
+      <div className="flex-row gap-12 flex-wrap mb-4">
+        <h3 className="m-0 fs-16 fw-600">{title}</h3>
         {!membersLoading && members.length > 0 && (
           <Badge variant="default">
             {completeCount} / {members.length} Complete
           </Badge>
         )}
       </div>
-      <div style={{ marginBottom: 12, color: 'var(--app-muted-text)', fontSize: 13 }}>
+      <div className="mb-12 text-muted fs-13">
         Overview of media assets per squad member.{memberDetailHref ? ' Click a member to edit.' : ''}
       </div>
 
@@ -99,8 +99,8 @@ export function MemberMediaMatrix({
       ) : (
         <>
           {/* Table */}
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <div className="overflow-x-auto">
+            <table className="w-full fs-12" style={{ borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ ...thStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>
@@ -108,7 +108,7 @@ export function MemberMediaMatrix({
                   </th>
                   {MEDIA_SLOTS.map((slot) => (
                     <th key={slot.id} style={{ ...thStyle, textAlign: 'center', minWidth: 60, height: 80, verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                      <div className="flex-col gap-2" style={{ alignItems: 'center' }}>
                         <span style={{
                           display: 'block',
                           fontSize: 9,
@@ -120,7 +120,7 @@ export function MemberMediaMatrix({
                           opacity: 0.8,
                           letterSpacing: '0.02em',
                         }}>{slot.label}</span>
-                        <span style={{ fontSize: 16 }}>{slot.icon}</span>
+                        <span className="fs-16">{slot.icon}</span>
                       </div>
                     </th>
                   ))}
@@ -154,10 +154,10 @@ export function MemberMediaMatrix({
                                 style={{ textDecoration: 'none' }}
                                 title={`Edit ${slot.label}`}
                               >
-                                <span style={{ fontSize: 14 }}>{has ? '✅' : '⬜'}</span>
+                                <span className="fs-14">{has ? '✅' : '⬜'}</span>
                               </Link>
                             ) : (
-                              <span style={{ fontSize: 14 }}>{has ? '✅' : '⬜'}</span>
+                              <span className="fs-14">{has ? '✅' : '⬜'}</span>
                             )}
                           </td>
                         );
@@ -175,13 +175,13 @@ export function MemberMediaMatrix({
           </div>
 
           {/* Legend */}
-          <div style={{ marginTop: 16, padding: 12, background: 'var(--app-muted)', borderRadius: 8 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Legend</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 12 }}>
+          <div className="mt-16 p-12 rounded-8" style={{ background: 'var(--app-muted)' }}>
+            <div className="fs-12 fw-600 mb-8">Legend</div>
+            <div className="flex-wrap gap-16 fs-12">
               {MEDIA_SLOTS.map((slot) => (
-                <div key={slot.id} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <div key={slot.id} className="flex-row gap-4">
                   <span>{slot.icon}</span>
-                  <span style={{ opacity: 0.8 }}>{slot.label}</span>
+                  <span className="opacity-80">{slot.label}</span>
                 </div>
               ))}
             </div>

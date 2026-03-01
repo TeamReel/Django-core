@@ -95,13 +95,13 @@ export default function TransactionsPanel(props: {
   }, [apiBaseUrl, reloadToken, JSON.stringify(filters)]);
 
   return (
-    <Card style={{ padding: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap' }}>
+    <Card className="p-16">
+      <div className="gap-10 flex-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          {title ? <div style={{ fontWeight: 800, fontSize: '16px' }}>{title}</div> : null}
-          {description ? <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>{description}</div> : null}
+          {title ? <div className="stat-value">{title}</div> : null}
+          {description ? <div className="mt-4 text-muted fs-13">{description}</div> : null}
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div className="gap-8 flex-wrap" style={{ display: 'flex' }}>
           {onCreateTransaction ? (
             <Button
               variant="primary"
@@ -127,24 +127,24 @@ export default function TransactionsPanel(props: {
       </div>
 
       {error ? (
-        <Alert variant="info" style={{ marginTop: '12px' }}>
+        <Alert variant="info" className="mt-12">
           {error}
         </Alert>
       ) : null}
 
       {loading ? (
-        <div style={{ padding: '12px', opacity: 0.7, textAlign: 'center' }}>Loading…</div>
+        <div className="p-12 opacity-70 text-center">Loading…</div>
       ) : items.length === 0 ? (
-        <div style={{ padding: '12px', opacity: 0.7, textAlign: 'center' }}>No transactions found.</div>
+        <div className="p-12 opacity-70 text-center">No transactions found.</div>
       ) : (
-        <div style={{ marginTop: '12px', overflowX: 'auto' }}>
-          <Table style={{ width: '100%' }}>
+        <div className="mt-12 overflow-x-auto">
+          <Table className="w-full">
             <thead>
               <tr>
-                <th style={{ textAlign: 'left', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>When</th>
-                <th style={{ textAlign: 'right', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>Amount</th>
-                <th className="hide-mobile" style={{ textAlign: 'left', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>Type</th>
-                <th className="hide-mobile" style={{ textAlign: 'left', padding: '8px 6px', fontSize: '12px', opacity: 0.8 }}>Notes</th>
+                <th className="text-left fs-12 opacity-80" style={{ padding: '8px 6px' }}>When</th>
+                <th className="text-right fs-12 opacity-80" style={{ padding: '8px 6px' }}>Amount</th>
+                <th className="hide-mobile text-left fs-12 opacity-80" style={{ padding: '8px 6px' }}>Type</th>
+                <th className="hide-mobile text-left fs-12 opacity-80" style={{ padding: '8px 6px' }}>Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -152,16 +152,16 @@ export default function TransactionsPanel(props: {
                 const amount = Number(t.amount);
                 return (
                   <tr key={t.id}>
-                    <td style={{ padding: '8px 6px', fontSize: '13px', whiteSpace: 'nowrap' }}>{formatDateTime(t.timestamp)}</td>
-                    <td style={{ padding: '8px 6px', fontSize: '13px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: amountColor(amount) }}>
+                    <td className="fs-13 whitespace-nowrap" style={{ padding: '8px 6px' }}>{formatDateTime(t.timestamp)}</td>
+                    <td className="fs-13 text-right" style={{ padding: '8px 6px', fontVariantNumeric: 'tabular-nums', color: amountColor(amount) }}>
                       {t.amount}
                     </td>
-                    <td className="hide-mobile" style={{ padding: '8px 6px', fontSize: '13px' }}>
+                    <td className="hide-mobile fs-13" style={{ padding: '8px 6px' }}>
                       <Badge variant={String(t.source_type).toLowerCase() === 'usage_event' ? 'primary' : 'default'}>
                         {sourceTypeLabel(t.source_type)}
                       </Badge>
                     </td>
-                    <td className="hide-mobile" style={{ padding: '8px 6px', fontSize: '13px' }}>{t.notes || '—'}</td>
+                    <td className="hide-mobile fs-13" style={{ padding: '8px 6px' }}>{t.notes || '—'}</td>
                   </tr>
                 );
               })}

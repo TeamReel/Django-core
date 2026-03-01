@@ -25,48 +25,49 @@ export function VideoQueuedStep({
   onClose,
 }: VideoQueuedStepProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', paddingTop: '32px', paddingBottom: '32px' }}>
-      <div style={{ width: '100%', maxWidth: '448px', textAlign: 'center' }}>
+    <div className="flex-col flex-center h-full" style={{ paddingTop: '32px', paddingBottom: '32px' }}>
+      <div className="w-full text-center" style={{ maxWidth: '448px' }}>
 
         {/* Completed: show inline video preview */}
         {videoOutputUrl ? (
           <>
-            <div style={{
+            <div className="mx-auto mb-12 rounded-full flex-center" style={{
               background: videoApprovalStatus === 'approved' ? 'rgba(34,197,94,0.15)' : videoApprovalStatus === 'rejected' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
-              width: '56px', height: '56px', marginLeft: 'auto', marginRight: 'auto', marginBottom: '12px',
-              borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '56px', height: '56px',
             }}>
-              <span style={{ fontSize: '24px' }}>{videoApprovalStatus === 'approved' ? '' : videoApprovalStatus === 'rejected' ? '' : ''}</span>
+              <span className="fs-24">{videoApprovalStatus === 'approved' ? '' : videoApprovalStatus === 'rejected' ? '' : ''}</span>
             </div>
-            <h2 style={{ color: 'var(--app-text)', fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>
+            <h2 className="text-primary fs-18 fw-600 mb-12">
               {videoApprovalStatus === 'approved' ? 'Video goedgekeurd!' : videoApprovalStatus === 'rejected' ? 'Video afgewezen' : 'Video klaar!'}
             </h2>
-            <div style={{ background: '#000', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' }}>
+            <div className="rounded-12 overflow-hidden mb-16" style={{ background: '#000' }}>
               <video
                 src={videoOutputUrl}
                 controls
                 autoPlay
                 playsInline
-                style={{ width: '100%', maxHeight: 340, objectFit: 'contain' }}
+                className="w-full"
+                style={{ maxHeight: 340, objectFit: 'contain' }}
                 poster={videoThumbnailUrl || undefined}
               />
             </div>
 
             {/* Approval error */}
             {videoApprovalError && (
-              <p style={{ color: '#f87171', fontSize: '14px', marginBottom: '12px' }}>{videoApprovalError}</p>
+              <p className="fs-14 mb-12" style={{ color: '#f87171' }}>{videoApprovalError}</p>
             )}
 
             {/* Approve / Reject buttons (only when not yet decided) — merged duplicate style= */}
             {videoApprovalStatus === 'idle' || videoApprovalStatus === 'approving' || videoApprovalStatus === 'rejecting' ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '8px' }}>
+              <div className="flex-center gap-12 mb-8">
                 <button
                   onClick={() => handleVideoApproval('approve')}
                   disabled={videoApprovalStatus !== 'idle'}
+                  className="inline-flex gap-8 fs-14 fw-600 rounded-8"
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    alignItems: 'center',
                     paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px',
-                    fontSize: '14px', fontWeight: 600, borderRadius: '8px', transition: 'all 150ms ease',
+                    transition: 'all 150ms ease',
                     background: videoApprovalStatus === 'approving' ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.15)',
                     color: '#22c55e',
                     border: '1px solid rgba(34,197,94,0.3)',
@@ -79,10 +80,11 @@ export function VideoQueuedStep({
                 <button
                   onClick={() => handleVideoApproval('reject')}
                   disabled={videoApprovalStatus !== 'idle'}
+                  className="inline-flex gap-8 fs-14 fw-600 rounded-8"
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: '8px',
+                    alignItems: 'center',
                     paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px',
-                    fontSize: '14px', fontWeight: 600, borderRadius: '8px', transition: 'all 150ms ease',
+                    transition: 'all 150ms ease',
                     background: videoApprovalStatus === 'rejecting' ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.1)',
                     color: '#f87171',
                     border: '1px solid rgba(239,68,68,0.25)',
@@ -95,35 +97,35 @@ export function VideoQueuedStep({
               </div>
             ) : (
               /* After decision — show result */
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <p style={{ color: videoApprovalStatus === 'approved' ? '#22c55e' : '#f87171', fontSize: '14px', fontWeight: 500 }}>
+              <div className="flex-col gap-8 mb-8" style={{ alignItems: 'center' }}>
+                <p className="fs-14 fw-500" style={{ color: videoApprovalStatus === 'approved' ? '#22c55e' : '#f87171' }}>
                   {videoApprovalStatus === 'approved' ? 'Opgeslagen in wedstrijd content' : 'Video is afgewezen'}
                 </p>
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '4px' }}>
+            <div className="flex-center gap-8 mt-4">
               <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
             </div>
           </>
         ) : videoJobStatus === 'failed' ? (
           /* Failed */
           <>
-            <div style={{ background: 'rgba(239,68,68,0.15)', width: '56px', height: '56px', marginLeft: 'auto', marginRight: 'auto', marginBottom: '12px', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '24px' }}>!</span>
+            <div className="mx-auto mb-12 rounded-full flex-center" style={{ background: 'rgba(239,68,68,0.15)', width: '56px', height: '56px' }}>
+              <span className="fs-24">!</span>
             </div>
-            <h2 style={{ color: 'var(--app-text)', fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>Generatie mislukt</h2>
-            <p style={{ color: 'var(--app-muted)', fontSize: '14px', marginBottom: '16px' }}>
+            <h2 className="text-primary fs-18 fw-600 mb-8">Generatie mislukt</h2>
+            <p className="fs-14 mb-16" style={{ color: 'var(--app-muted)' }}>
               Er is iets misgegaan bij het verwerken van je video. Probeer het opnieuw of neem contact op.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div className="flex-col gap-8" style={{ alignItems: 'center' }}>
               <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
             </div>
           </>
         ) : (
           /* Queued / Processing: spinner + progress bar — fixed animate-spin className + merged duplicate style= */
           <>
-            <div style={{ background: 'rgba(59,130,246,0.12)', width: '56px', height: '56px', marginLeft: 'auto', marginRight: 'auto', marginBottom: '12px', borderRadius: '9999px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="mx-auto mb-12 rounded-full flex-center" style={{ background: 'rgba(59,130,246,0.12)', width: '56px', height: '56px' }}>
               <svg
                 width="28" height="28" viewBox="0 0 24 24" fill="none"
                 style={{ animation: 'spin 1s linear infinite' }}
@@ -132,39 +134,38 @@ export function VideoQueuedStep({
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
               </svg>
             </div>
-            <h2 style={{ color: 'var(--app-text)', fontSize: '18px', fontWeight: 600, marginBottom: '4px' }}>
+            <h2 className="text-primary fs-18 fw-600 mb-4">
               {videoJobStatus === 'processing' ? 'Video wordt gemaakt…' : 'In de wachtrij…'}
             </h2>
-            <p style={{ color: 'var(--app-muted)', fontSize: '14px', marginBottom: '16px' }}>
+            <p className="fs-14 mb-16" style={{ color: 'var(--app-muted)' }}>
               {videoJobStatus === 'processing'
                 ? 'Je video wordt nu gegenereerd. Dit kan even duren.'
                 : `Je ${selectedType?.label || 'video'} wordt op de achtergrond gegenereerd.`}
             </p>
 
             {/* Progress bar — merged duplicate style= */}
-            <div style={{ background: 'rgba(255,255,255,0.08)', width: '100%', borderRadius: '9999px', height: '8px', marginBottom: '4px' }}>
+            <div className="w-full rounded-full mb-4" style={{ background: 'rgba(255,255,255,0.08)', height: '8px' }}>
               <div
+                className="rounded-full"
                 style={{
                   height: '8px',
-                  borderRadius: '9999px',
                   transition: 'all 150ms ease',
                   width: `${Math.max(videoJobProgressRaw, videoJobStatus === 'processing' ? 5 : 0)}%`,
                   background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
                 }}
               />
             </div>
-            <p style={{ color: 'var(--app-muted)', fontSize: '12px', marginBottom: '20px' }}>
+            <p className="fs-12" style={{ color: 'var(--app-muted)', marginBottom: '20px' }}>
               {videoJobProgressRaw > 0 ? `${videoJobProgressRaw}%` : 'Wachten op verwerking…'}
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+            <div className="flex-col gap-8" style={{ alignItems: 'center' }}>
               {/* Merged duplicate style= on link */}
               <a
                 href="/approvals"
+                className="inline-flex gap-8 px-16 py-8 fs-14 fw-500 rounded-8"
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '8px',
-                  paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px',
-                  fontSize: '14px', fontWeight: 500, borderRadius: '8px',
+                  alignItems: 'center',
                   transition: 'color 150ms, background 150ms',
                   color: '#60a5fa', background: 'rgba(59,130,246,0.12)',
                 }}

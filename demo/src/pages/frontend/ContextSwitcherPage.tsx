@@ -4,30 +4,30 @@ import AppShell from '../../components/AppShell';
 export function ContextSwitcherPage() {
   return (
     <AppShell>
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }} data-testid="context-switcher-page">
-      <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700 }}>Context Switcher</h1>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--app-muted-text)' }}>F03 Multi-Tenancy Context Demo</p>
+    <div className="bg-primary" style={{ minHeight: '100vh' }} data-testid="context-switcher-page">
+      <div className="p-24 border-bottom bg-surface">
+        <h1 className="fw-700" style={{ margin: '0 0 8px 0', fontSize: '28px' }}>Context Switcher</h1>
+        <p className="m-0 fs-14 text-muted">F03 Multi-Tenancy Context Demo</p>
       </div>
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-          <h3 style={{ margin: '0 0 16px 0' }}>Current Context</h3>
-          <div style={{ marginBottom: '12px' }}>
-            <p style={{ margin: '0 0 4px 0', color: 'var(--app-muted-text)' }}>Organization</p>
+      <div className="page-container">
+        <Card className="p-24 mb-24 bg-surface border">
+          <h3 className="m-0 mb-16">Current Context</h3>
+          <div className="mb-12">
+            <p className="m-0 mb-4 text-muted">Organization</p>
             <Badge variant="primary">ACME Corp</Badge>
           </div>
           <div>
-            <p style={{ margin: '0 0 4px 0', color: 'var(--app-muted-text)' }}>Project</p>
+            <p className="m-0 mb-4 text-muted">Project</p>
             <Badge variant="success">Platform Core</Badge>
           </div>
         </Card>
-        <Card style={{ padding: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-          <h3 style={{ margin: '0 0 16px 0' }}>Available Organizations</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+        <Card className="p-24 bg-surface border">
+          <h3 className="m-0 mb-16">Available Organizations</h3>
+          <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
             {['ACME Corp', 'TechStart Inc', 'Global Solutions'].map((org) => (
-              <div key={org} style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '12px' }}>
-                <p style={{ margin: 0, fontWeight: 600 }}>{org}</p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--app-muted-text)' }}>3 projects</p>
+              <div key={org} className="border rounded-8 p-12">
+                <p className="m-0 fw-600">{org}</p>
+                <p className="m-0 mt-4 fs-12 text-muted">3 projects</p>
               </div>
             ))}
           </div>
