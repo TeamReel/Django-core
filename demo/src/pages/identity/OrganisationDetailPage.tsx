@@ -5,7 +5,7 @@ import {
   Card,
   Badge,
   Alert,
-  Input,
+
 } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import {
@@ -51,6 +51,10 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 import MobileTabBar from '../../components/MobileTabBar';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+import { OrgOverviewTab } from './OrgOverviewTab';
+import { OrgHierarchyTab } from './OrgHierarchyTab';
+import { OrgEditMemberRoleModal } from './OrgEditMemberRoleModal';
+import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod, getPeriodType } from './orgDetailUtils';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -113,9 +117,6 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const [isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<any | null>(null);
-  const [editingMemberRole, setEditingMemberRole] = useState<'admin' | 'member'>('member');
-  const [editMemberRoleSaving, setEditMemberRoleSaving] = useState(false);
-  const [editMemberRoleError, setEditMemberRoleError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -496,119 +497,8 @@ export const OrganisationDetailPage: React.FC = () => {
     return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
   };
 
-  const getPeriodType = (p: any): string => {
-    const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
-    return String(t || '').toLowerCase();
-  };
 
-  const getPeriodParentId = (p: any): string => {
-    const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
-    return parentId ? String(parentId) : '';
-  };
 
-  const isSeasonPeriod = (p: any): boolean => {
-    // TeamReel hierarchy: Season is a root Period (no parent_period).
-    // Do NOT infer by name; rely on parent/type.
-    const parentId = getPeriodParentId(p);
-    if (parentId) return false;
-
-    const type = getPeriodType(p);
-    if (type === 'season') return true;
-
-    // Guard against misconfigured root competitions.
-    if (['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type)) return false;
-
-    return true;
-  };
-
-  const isCompetitionPeriod = (p: any): boolean => {
-    const parentId = getPeriodParentId(p);
-    if (parentId) return true;
-
-    const type = getPeriodType(p);
-    // Allow explicit typing when present
-    return ['competition', 'league', 'cup', 'friendly', 'tournament', 'round'].includes(type);
-  };
-
-  const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' };
-  const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
-  const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid var(--app-border)' };
-  const compactTextTdStyle: React.CSSProperties = {
-    ...compactTdStyle,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    maxWidth: 0,
-  };
-  const compactActionsStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '8px',
-    flexWrap: 'wrap',
-  };
-
-  const compareText = (a: unknown, b: unknown) =>
-    String(a ?? '').localeCompare(String(b ?? ''), undefined, { sensitivity: 'base' });
-
-  const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
-  const TEAMREEL_ROLE_RANK: Record<string, number> = {
-    superadmin: 100,
-    'land admin': 90,
-    'club admin': 80,
-    'team admin': 70,
-    'team member': 60,
-    supporter: 50,
-    user: 10,
-  };
-  const TEAMREEL_ROLE_OPTIONS: Array<{ key: string; label: string }> = [
-    { key: 'superadmin', label: 'Superadmin' },
-    { key: 'land admin', label: 'Land Admin' },
-    { key: 'club admin', label: 'Club Admin' },
-    { key: 'team admin', label: 'Team Admin' },
-    { key: 'team member', label: 'Team Member' },
-    { key: 'supporter', label: 'Supporter' },
-    { key: 'user', label: 'User' },
-  ];
-  const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
-  const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, hasParentProject: boolean) => {
-    const membershipRole = normalizeRoleName(membershipRoleRaw);
-    const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
-    if (isAdminLike) return hasParentProject ? 'Team Admin' : 'Club Admin';
-    return hasParentProject ? 'Team Member' : 'Supporter';
-  };
-  const getTeamreelRoleDisplay = (user: any, orgMembership: any, projectMemberships: any[]) => {
-    const roles: string[] = [];
-
-    const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';
-    if (isSuper) return { bestKey: 'superadmin', label: 'Superadmin', title: 'Superadmin' };
-
-    const orgMembershipRole = normalizeRoleName(orgMembership?.role);
-    if (orgMembershipRole === 'admin') roles.push('Land Admin');
-
-    for (const pm of projectMemberships || []) {
-      const roleRaw = String(pm?.role ?? '').trim();
-      if (!roleRaw) continue;
-      const parentIdRaw = pm?.project?.parent_id ?? pm?.project?.parent?.id ?? pm?.project?.parent_project_id;
-      const hasParentProject = Boolean(parentIdRaw);
-      roles.push(mapMembershipToTeamreelRole(roleRaw, hasParentProject));
-    }
-
-    const uniqueByKey = new Map<string, string>();
-    for (const r of roles) {
-      const key = normalizeRoleName(r);
-      if (!key) continue;
-      if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
-    }
-    const unique = Array.from(uniqueByKey.values());
-    if (unique.length === 0) return { bestKey: 'user', label: 'User', title: 'User' };
-
-    const best = [...unique].sort(
-      (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
-    )[0];
-    const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
-    const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
-    return { bestKey: normalizeRoleName(best), label, title };
-  };
 
   const getCsrfToken = () =>
     document.cookie
@@ -701,25 +591,6 @@ export const OrganisationDetailPage: React.FC = () => {
     }
   };
 
-  const parseListEnvelope = (raw: any): { results: any[]; count: number } => {
-    const envelope = raw?.data ?? raw;
-    const results =
-      envelope?.results ??
-      envelope?.data ??
-      raw?.results ??
-      raw?.data ??
-      raw ??
-      [];
-
-    const list = Array.isArray(results) ? results : [];
-    const count =
-      typeof envelope?.count === 'number'
-        ? envelope.count
-        : typeof raw?.count === 'number'
-          ? raw.count
-          : list.length;
-    return { results: list, count };
-  };
 
   const fetchClubsPage = async (page: number) => {
     if (!currentOrgSlug) return;
@@ -1032,100 +903,6 @@ export const OrganisationDetailPage: React.FC = () => {
     const list = (allClubsForTeams && allClubsForTeams.length > 0) ? allClubsForTeams : clubs;
     return Array.isArray(list) ? list : [];
   }, [allClubsForTeams, clubs]);
-
-  const hierarchyGroups = useMemo(() => {
-    const q = String(hierarchySearch || '').trim().toLowerCase();
-    const toSlugOrId = (p: any) => String(p?.slug || p?.id || '').trim();
-    const toName = (p: any) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
-
-    const clubUsersCountById = membershipUserCounts?.clubUsersCountById || {};
-    const teamUsersCountById = membershipUserCounts?.teamUsersCountById || {};
-
-    const teamSeasons = teamSeasonsCountById || {};
-    const teamCompetitions = teamCompetitionsCountById || {};
-    const teamMatches = teamMatchesCountById || {};
-
-    const teamsByClubId = new Map<string, Project[]>();
-    for (const t of teams || []) {
-      const parent = (t as any)?.parent_id ?? (t as any)?.parent ?? (t as any)?.parent_project_id ?? (t as any)?.parent_project?.id ?? null;
-      const clubId = parent != null ? String(parent) : '';
-      if (!clubId) continue;
-      if (!teamsByClubId.has(clubId)) teamsByClubId.set(clubId, []);
-      teamsByClubId.get(clubId)!.push(t as any);
-    }
-
-    const clubRows = (clubsForHierarchy || []).map((c) => {
-      const clubId = String((c as any)?.id || '').trim();
-      const clubName = toName(c) || '—';
-      const clubSlugOrId = toSlugOrId(c);
-
-      const clubTeams = (teamsByClubId.get(clubId) || []).slice();
-      clubTeams.sort((a: any, b: any) => toName(a).localeCompare(toName(b), undefined, { sensitivity: 'base' }));
-
-      const mappedTeams = clubTeams.map((t: any) => {
-        const teamId = String(t?.id || '').trim();
-        return {
-          teamId,
-          teamName: toName(t) || '—',
-          teamSlugOrId: toSlugOrId(t),
-          memberCount: teamId ? (teamUsersCountById[teamId] ?? 0) : 0,
-          seasonsCount: teamId ? (teamSeasons[teamId] ?? 0) : 0,
-          competitionsCount: teamId ? (teamCompetitions[teamId] ?? 0) : 0,
-          matchesCount: teamId ? (teamMatches[teamId] ?? 0) : 0,
-        };
-      });
-
-      const clubMemberCount = clubId ? (clubUsersCountById[clubId] ?? 0) : 0;
-      const teamCount = mappedTeams.length;
-      const clubSeasonsCount = mappedTeams.reduce((sum, t) => sum + (t.seasonsCount ?? 0), 0);
-      const clubCompetitionsCount = mappedTeams.reduce((sum, t) => sum + (t.competitionsCount ?? 0), 0);
-      const clubMatchesCount = mappedTeams.reduce((sum, t) => sum + (t.matchesCount ?? 0), 0);
-
-      if (q) {
-        const clubMatch = clubName.toLowerCase().includes(q);
-        const teamsMatch = mappedTeams.some((t) => t.teamName.toLowerCase().includes(q));
-        if (!clubMatch && !teamsMatch) return null;
-        // If the query matches only some teams, filter to those teams.
-        const filteredTeams = clubMatch ? mappedTeams : mappedTeams.filter((t) => t.teamName.toLowerCase().includes(q));
-        return {
-          clubId,
-          clubName,
-          clubSlugOrId,
-          memberCount: clubMemberCount,
-          teamCount: filteredTeams.length,
-          seasonsCount: clubSeasonsCount,
-          competitionsCount: clubCompetitionsCount,
-          matchesCount: clubMatchesCount,
-          teams: filteredTeams,
-        };
-      }
-
-      return {
-        clubId,
-        clubName,
-        clubSlugOrId,
-        memberCount: clubMemberCount,
-        teamCount,
-        seasonsCount: clubSeasonsCount,
-        competitionsCount: clubCompetitionsCount,
-        matchesCount: clubMatchesCount,
-        teams: mappedTeams,
-      };
-    }).filter(Boolean) as Array<{
-      clubId: string;
-      clubName: string;
-      clubSlugOrId: string;
-      memberCount: number;
-      teamCount: number;
-      seasonsCount: number;
-      competitionsCount: number;
-      matchesCount: number;
-      teams: Array<{ teamId: string; teamName: string; teamSlugOrId: string; memberCount: number; seasonsCount: number; competitionsCount: number; matchesCount: number }>;
-    }>;
-
-    clubRows.sort((a, b) => a.clubName.localeCompare(b.clubName, undefined, { sensitivity: 'base' }));
-    return clubRows;
-  }, [teams, clubsForHierarchy, hierarchySearch, membershipUserCounts, teamSeasonsCountById, teamCompetitionsCountById, teamMatchesCountById]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1636,328 +1413,45 @@ export const OrganisationDetailPage: React.FC = () => {
 
       <PageContent>
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-16">
-                <div className="flex items-center justify-between mb-3 gap-12">
-                  <div className="text-sm font-semibold text-gray-900">
-                    Clubs <span className="text-gray-500 fw-600">({org.clubs_count || clubsCount || 0})</span>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('clubs'))}>
-                    View all
-                  </Button>
-                </div>
-                {clubsLoading && clubs.length === 0 ? (
-                  <div className="text-sm text-gray-500">Loading clubs…</div>
-                ) : clubs.length === 0 ? (
-                  <div className="text-sm text-gray-500">No clubs found.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {clubs.slice(0, 6).map((c: any) => (
-                      <button
-                        key={String(c?.id)}
-                        type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
-                        onClick={() =>
-                          navigate(
-                            `/organisations/${encodeURIComponent(String(currentOrgSlug || id || ''))}/projects/${encodeURIComponent(String(c?.slug || c?.id || ''))}`
-                          )
-                        }
-                      >
-                        {String(c?.name || 'Club')}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </Card>
-
-              <Card className="p-16">
-                <div className="flex items-center justify-between mb-3 gap-12">
-                  <div className="text-sm font-semibold text-gray-900">
-                    Teams <span className="text-gray-500 fw-600">({org.teams_count || teamsCount || 0})</span>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('teams'))}>
-                    View all
-                  </Button>
-                </div>
-                {teamsLoading && teams.length === 0 ? (
-                  <div className="text-sm text-gray-500">Loading teams…</div>
-                ) : teams.length === 0 ? (
-                  <div className="text-sm text-gray-500">No teams found.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {(teams as any[]).slice(0, 6).map((t: any) => (
-                      <button
-                        key={String(t?.id)}
-                        type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
-                        onClick={() =>
-                          navigate(
-                            `/organisations/${encodeURIComponent(String(currentOrgSlug || id || ''))}/projects/${encodeURIComponent(String(t?.slug || t?.id || ''))}`
-                          )
-                        }
-                      >
-                        {String(t?.name || 'Team')}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </Card>
-
-              <Card className="p-16">
-                <div className="flex items-center justify-between mb-3 gap-12">
-                  <div className="text-sm font-semibold text-gray-900">
-                    Members <span className="text-gray-500 fw-600">({org.member_count || members.length || 0})</span>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('users'))}>
-                    View all
-                  </Button>
-                </div>
-                {membersLoading && members.length === 0 ? (
-                  <div className="text-sm text-gray-500">Loading members…</div>
-                ) : members.length === 0 ? (
-                  <div className="text-sm text-gray-500">No members found.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {(members as any[]).slice(0, 6).map((m: any) => {
-                      const u = m?.user || m;
-                      const label =
-                        `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||
-                        String(u?.email || '').trim() ||
-                        `User ${String(u?.id || m?.id)}`;
-                      const userId = String(u?.id || m?.id || '').trim();
-                      return (
-                        <button
-                          key={String(userId || label)}
-                          type="button"
-                          className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
-                          onClick={() => (userId ? navigate(`/users/${encodeURIComponent(userId)}`) : void 0)}
-                          disabled={!userId}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </Card>
-
-              <Card className="p-16">
-                <div className="flex items-center justify-between mb-3 gap-12">
-                  <div className="text-sm font-semibold text-gray-900">
-                    Matches <span className="text-gray-500 fw-600">({matchesCount ?? '—'})</span>
-                  </div>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('matches'))}>
-                    View all
-                  </Button>
-                </div>
-                {scheduledMatchesLoading && scheduledMatches.length === 0 ? (
-                  <div className="text-sm text-gray-500">Loading matches…</div>
-                ) : scheduledMatches.length === 0 ? (
-                  <div className="text-sm text-gray-500">No upcoming matches scheduled.</div>
-                ) : (
-                  <div className="space-y-2">
-                    {scheduledMatches.slice(0, 6).map((m: any) => (
-                      <button
-                        key={String(m?.id)}
-                        type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
-                        onClick={() => navigate(getBestMatchDetailPath(m))}
-                      >
-                        {String(m?.title || m?.name || 'Match')}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </Card>
-            </div>
-
-            {/* Organisation Details Card */}
-            <Card>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold">Organisation Details</h3>
-                {canEditOrganisation(permissionContext) && (
-                  <button type="button" onClick={() => setIsOrgEditModalOpen(true)} style={actionButtonStyle('warning')}>
-                    Edit
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm font-medium text-gray-500">Name</div>
-                  <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-500">Sport</div>
-                  <div className="text-base text-gray-900 mt-1 flex-row gap-8">
-                    {org?.sport ? (
-                      <>
-                        <span>{org.sport.sport_icon}</span>
-                        <span>{org.sport.name}</span>
-                      </>
-                    ) : (
-                      '—'
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-500">Type</div>
-                  <div className="text-base text-gray-900 mt-1">{org?.metadata?.type || '—'}</div>
-                </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-500">Country</div>
-                  <div className="text-base text-gray-900 mt-1">{org?.metadata?.country || '—'}</div>
-                </div>
-              </div>
-            </Card>
-          </div>
+          <OrgOverviewTab
+            org={org}
+            clubs={clubs}
+            teams={teams}
+            members={members}
+            clubsCount={clubsCount}
+            clubsLoading={clubsLoading}
+            teamsCount={teamsCount}
+            teamsLoading={teamsLoading}
+            membersLoading={membersLoading}
+            matchesCount={matchesCount}
+            scheduledMatches={scheduledMatches}
+            scheduledMatchesLoading={scheduledMatchesLoading}
+            navigate={navigate}
+            makeTabHref={makeTabHref}
+            getBestMatchDetailPath={getBestMatchDetailPath}
+            currentOrgSlug={currentOrgSlug}
+            id={id}
+            permissionContext={permissionContext}
+            setIsOrgEditModalOpen={setIsOrgEditModalOpen}
+          />
         )}
 
         {activeTab === 'hierarchy' && (
-          <Card>
-            <div className="flex-between gap-12">
-              <div>
-                <div className="fs-16 fw-700">Hierarchy</div>
-                <div className="text-muted fs-13">
-                  Clubs → teams
-                </div>
-              </div>
-              <Input
-                value={hierarchySearch}
-                onChange={(e) => setHierarchySearch((e.target as any).value)}
-                placeholder="Search clubs / teams…"
-              />
-            </div>
-
-            {teamsLoading && hierarchyGroups.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2 mt-12">
-                Loading hierarchy...
-              </div>
-            ) : hierarchyGroups.length === 0 ? (
-              <div className="text-sm text-gray-500 py-2 mt-12">
-                No clubs/teams found.
-              </div>
-            ) : (
-              <div className="flex-col mt-12 gap-10">
-                {hierarchyGroups.map((club) => {
-                  const orgKey = String(orgSlugOrId || currentOrgSlug || id || '').trim();
-                  const clubPath = orgKey && club.clubSlugOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(club.clubSlugOrId)}` : '';
-
-                  const pillStyle: React.CSSProperties = {
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '2px 8px',
-                    borderRadius: 999,
-                    border: '1px solid var(--app-border)',
-                    background: 'var(--app-surface-2)',
-                    fontSize: 12,
-                    color: 'var(--app-muted-text)',
-                    fontWeight: 600,
-                  };
-
-                  return (
-                    <div
-                      key={club.clubId || club.clubSlugOrId}
-                      className="border overflow-hidden"
-                      style={{
-                        borderRadius: 10,
-                        background: 'var(--app-surface)',
-                      }}
-                    >
-                      <div
-                        className="flex-between border-bottom gap-12"
-                        style={{
-                          padding: '10px 12px',
-                          background: 'var(--app-surface-2)',
-                        }}
-                      >
-                        <div className="flex-col gap-2 min-w-0">
-                          {clubPath ? (
-                            <button
-                              type="button"
-                              className="app-unstyled-button hover:underline text-left fw-800 fs-14"
-                              onClick={() => navigate(clubPath)}
-                              style={{ color: '#60a5fa' }}
-                            >
-                              {club.clubName}
-                            </button>
-                          ) : (
-                            <div className="fw-800 fs-14 text-primary">{club.clubName}</div>
-                          )}
-                        </div>
-
-                        <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
-                          <span style={pillStyle}>Teams: {club.teamCount}</span>
-                          <span style={pillStyle}>Members: {club.memberCount}</span>
-                          <span style={pillStyle}>Seasons: {club.seasonsCount ?? 0}</span>
-                          <span style={pillStyle}>Competitions: {club.competitionsCount ?? 0}</span>
-                          <span style={pillStyle}>Matches: {club.matchesCount ?? 0}</span>
-                          {clubPath ? (
-                            <button type="button" className="app-action-button" onClick={() => navigate(clubPath)} style={actionButtonStyle('primary')}>
-                              View Club
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <div style={{ padding: '10px 12px' }}>
-                        {club.teams.length === 0 ? (
-                          <div className="text-sm text-gray-500 py-2">No teams.</div>
-                        ) : (
-                          <div className="flex-col gap-8">
-                            {club.teams.map((t) => {
-                              const teamPath = orgKey && club.clubSlugOrId && t.teamSlugOrId
-                                ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(club.clubSlugOrId)}/${encodeURIComponent(t.teamSlugOrId)}`
-                                : '';
-                              return (
-                                <div
-                                  key={t.teamId || t.teamSlugOrId}
-                                  className="flex-between gap-12 border rounded-8"
-                                  style={{
-                                    padding: '8px 10px',
-                                    background: 'var(--app-surface)',
-                                  }}
-                                >
-                                  <div className="min-w-0">
-                                    {teamPath ? (
-                                      <button
-                                        type="button"
-                                        className="app-unstyled-button hover:underline text-left fw-700 fs-13"
-                                        onClick={() => navigate(teamPath)}
-                                        style={{ color: '#60a5fa' }}
-                                      >
-                                        {t.teamName}
-                                      </button>
-                                    ) : (
-                                      <div className="fw-700 fs-13 text-primary">{t.teamName}</div>
-                                    )}
-                                  </div>
-
-                                  <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
-                                    <span style={pillStyle}>Members: {t.memberCount}</span>
-                                    <span style={pillStyle}>Seasons: {t.seasonsCount ?? 0}</span>
-                                    <span style={pillStyle}>Competitions: {t.competitionsCount ?? 0}</span>
-                                    <span style={pillStyle}>Matches: {t.matchesCount ?? 0}</span>
-                                    {teamPath ? (
-                                      <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
-                                        View Team
-                                      </button>
-                                    ) : null}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
+          <OrgHierarchyTab
+            hierarchySearch={hierarchySearch}
+            setHierarchySearch={setHierarchySearch}
+            teams={teams}
+            clubsForHierarchy={clubsForHierarchy}
+            membershipUserCounts={membershipUserCounts}
+            teamSeasonsCountById={teamSeasonsCountById}
+            teamCompetitionsCountById={teamCompetitionsCountById}
+            teamMatchesCountById={teamMatchesCountById}
+            teamsLoading={teamsLoading}
+            orgSlugOrId={orgSlugOrId}
+            currentOrgSlug={currentOrgSlug}
+            id={id}
+            navigate={navigate}
+          />
         )}
 
         {activeTab === 'audit' && (
@@ -2380,126 +1874,25 @@ export const OrganisationDetailPage: React.FC = () => {
         }}
       />
 
-      {isEditMemberRoleModalOpen && editingMember ? (
-        <div
-          className="flex-center"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            zIndex: 1100,
-          }}
-        >
-          <div
-            className="bg-surface p-24 rounded-8 text-primary border"
-            style={{
-              width: '520px',
-              maxWidth: '95%',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            }}
-          >
-            <div className="flex-between gap-12">
-              <h2 className="m-0">Edit Member</h2>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setIsEditMemberRoleModalOpen(false);
-                  setEditingMember(null);
-                }}
-                disabled={editMemberRoleSaving}
-              >
-                Close
-              </Button>
-            </div>
-
-            <div className="mt-12 fs-14 text-muted">
-              {String(editingMember?.user?.email || editingMember?.email || '')}
-            </div>
-
-            {editMemberRoleError ? (
-              <div className="mt-12 rounded-6" style={{ padding: '10px 12px', backgroundColor: '#fee', color: '#c00' }}>
-                {editMemberRoleError}
-              </div>
-            ) : null}
-
-            <div className="mt-16">
-              <label className="block fw-600" style={{ marginBottom: '6px' }}>Role</label>
-              <select
-                value={editingMemberRole}
-                onChange={(e) => setEditingMemberRole(e.target.value as any)}
-                disabled={editMemberRoleSaving}
-                className="w-full rounded-6 border bg-surface-2 text-primary"
-                style={{
-                  padding: '8px 10px',
-                }}
-              >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-
-            <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '18px' }}>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setIsEditMemberRoleModalOpen(false);
-                  setEditingMember(null);
-                }}
-                disabled={editMemberRoleSaving}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={async () => {
-                  if (!editingMember?.id) return;
-                  try {
-                    setEditMemberRoleSaving(true);
-                    setEditMemberRoleError(null);
-                    const apiV1BaseUrl = getApiV1BaseUrl();
-                    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${editingMember.id}/`, {
-                      method: 'PATCH',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken || '',
-                      },
-                      credentials: 'include',
-                      body: JSON.stringify({ role: editingMemberRole }),
-                    });
-
-                    if (!res.ok) {
-                      const detail = await res.text().catch(() => '');
-                      throw new Error(detail || 'Failed to update member');
-                    }
-
-                    const updated = await res.json().catch(() => null);
-                    setMembers((prev) =>
-                      (prev as any[]).map((m: any) => {
-                        if (String(m?.id) !== String(editingMember.id)) return m;
-                        return updated && updated.id ? updated : { ...m, role: editingMemberRole };
-                      })
-                    );
-
-                    setIsEditMemberRoleModalOpen(false);
-                    setEditingMember(null);
-                  } catch (e) {
-                    setEditMemberRoleError(e instanceof Error ? e.message : 'Failed to update member');
-                  } finally {
-                    setEditMemberRoleSaving(false);
-                  }
-                }}
-                loading={editMemberRoleSaving}
-              >
-                Save
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <OrgEditMemberRoleModal
+        opened={isEditMemberRoleModalOpen}
+        onClose={() => {
+          setIsEditMemberRoleModalOpen(false);
+          setEditingMember(null);
+        }}
+        editingMember={editingMember}
+        currentOrgSlug={currentOrgSlug}
+        onSaved={(updated, role) => {
+          setMembers((prev) =>
+            (prev as any[]).map((m: any) => {
+              if (String(m?.id) !== String(editingMember?.id)) return m;
+              return updated && updated.id ? updated : { ...m, role };
+            })
+          );
+          setIsEditMemberRoleModalOpen(false);
+          setEditingMember(null);
+        }}
+      />
 
       <OrganisationDetailModal
         opened={isOrgDetailModalOpen}
