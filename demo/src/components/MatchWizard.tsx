@@ -13,20 +13,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet, Button, Badge } from '@django-core/design-system';
 import {
-  ChevronLeft,
   ChevronRight,
   Check,
   Users,
   Zap,
-  Calendar,
-  Shirt,
   Play,
   Image,
   Video,
   FileText,
   Clock,
-  X,
-  ArrowLeft,
 } from 'lucide-react';
 import { useActivities, Activity } from '../hooks/useActivities';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
@@ -526,15 +521,15 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               aria-label="Terug"
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '36px', height: '36px', borderRadius: '50%',
-                backgroundColor: 'var(--app-surface-2)', border: 'none', cursor: 'pointer',
-                color: 'var(--app-text)',
+                width: '40px', height: '40px', borderRadius: '10px',
+                backgroundColor: 'var(--app-surface-2)', border: '1px solid var(--app-border)',
+                cursor: 'pointer', color: 'var(--app-text)', fontSize: '20px', lineHeight: 1,
               }}
             >
-              <ArrowLeft size={20} />
+              ←
             </button>
           ) : (
-            <div style={{ width: '36px' }} />
+            <div style={{ width: '40px' }} />
           )}
           <span style={{
             flex: 1, textAlign: 'center',
@@ -547,12 +542,12 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             aria-label="Sluiten"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: '36px', height: '36px', borderRadius: '50%',
-              backgroundColor: 'var(--app-surface-2)', border: 'none', cursor: 'pointer',
-              color: 'var(--app-text)',
+              width: '40px', height: '40px', borderRadius: '10px',
+              backgroundColor: 'var(--app-surface-2)', border: '1px solid var(--app-border)',
+              cursor: 'pointer', color: 'var(--app-text)', fontSize: '20px', lineHeight: 1,
             }}
           >
-            <X size={20} />
+            ×
           </button>
         </div>
 

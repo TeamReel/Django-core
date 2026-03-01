@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+﻿import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Button, Badge, Alert } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { FormationPicker } from './content-generation';
@@ -112,64 +112,64 @@ export const CONTENT_TYPES = {
     label: 'Pre-match',
     sportRequired: true,
     items: [
-      { id: 'flyer', label: 'Match Flyer', icon: '📣', subtype: 'flyer' },
-      { id: 'lineup', label: 'Lineup Video', icon: '🎬', subtype: 'lineup' },
-      { id: 'lineup_flyer', label: 'Lineup Flyer', icon: '📋', subtype: 'lineup_flyer' },
-      { id: 'match_intro', label: 'Match Intro', icon: '🎥', subtype: 'match_intro' },
-      { id: 'poster', label: 'Elftalfoto', icon: '📸', subtype: 'poster' },
-      { id: 'walkon', label: 'Walk-on Video', icon: '🚶', subtype: 'walkon' },
-      { id: 'anthem', label: 'Anthem Video', icon: '🎵', subtype: 'anthem' },
+      { id: 'flyer', label: 'Match Flyer', icon: 'MF', subtype: 'flyer' },
+      { id: 'lineup', label: 'Lineup Video', icon: 'LV', subtype: 'lineup' },
+      { id: 'lineup_flyer', label: 'Lineup Flyer', icon: 'LF', subtype: 'lineup_flyer' },
+      { id: 'match_intro', label: 'Match Intro', icon: 'MI', subtype: 'match_intro' },
+      { id: 'poster', label: 'Elftalfoto', icon: 'EF', subtype: 'poster' },
+      { id: 'walkon', label: 'Walk-on Video', icon: 'WO', subtype: 'walkon' },
+      { id: 'anthem', label: 'Anthem Video', icon: 'AV', subtype: 'anthem' },
     ],
   },
   during_match: {
     label: 'During match',
     sportRequired: true,
     items: [
-      { id: 'goal', label: 'Goal Celebration', icon: '⚽', subtype: 'goal' },
-      { id: 'score_update', label: 'Score Update', icon: '🔢', subtype: 'score_update' },
+      { id: 'goal', label: 'Goal Celebration', icon: 'GC', subtype: 'goal' },
+      { id: 'score_update', label: 'Score Update', icon: 'SU', subtype: 'score_update' },
     ],
   },
   post_match: {
     label: 'Post-match',
     sportRequired: true,
     items: [
-      { id: 'end_score', label: 'Final Score', icon: '🏁', subtype: 'end_score' },
-      { id: 'match_summary', label: 'Match Summary', icon: '📊', subtype: 'match_summary' },
-      { id: 'highlights', label: 'Highlights Reel', icon: '🎬', subtype: 'highlights' },
+      { id: 'end_score', label: 'Final Score', icon: 'FS', subtype: 'end_score' },
+      { id: 'match_summary', label: 'Match Summary', icon: 'MS', subtype: 'match_summary' },
+      { id: 'highlights', label: 'Highlights Reel', icon: 'HR', subtype: 'highlights' },
     ],
   },
   season: {
     label: 'Season',
     sportRequired: true,
     items: [
-      { id: 'duo_portret_cover', label: 'Duo Portret Cover', icon: '👥', subtype: 'duo_portret_cover' },
-      { id: 'duo_portret_overlay', label: 'Duo Portret Overlay', icon: '👥', subtype: 'duo_portret_overlay' },
-      { id: 'sidebyside_cover', label: 'Then vs Now Cover', icon: '⏪', subtype: 'sidebyside_cover' },
-      { id: 'sidebyside_overlay', label: 'Then vs Now Overlay', icon: '⏪', subtype: 'sidebyside_overlay' },
-      { id: 'transformation', label: 'Transformation', icon: '🔄', subtype: 'transformation' },
-      { id: 'walking_composite', label: 'Walking Composite', icon: '🚶', subtype: 'walking_composite' },
+      { id: 'duo_portret_cover', label: 'Duo Portret Cover', icon: 'DC', subtype: 'duo_portret_cover' },
+      { id: 'duo_portret_overlay', label: 'Duo Portret Overlay', icon: 'DO', subtype: 'duo_portret_overlay' },
+      { id: 'sidebyside_cover', label: 'Then vs Now Cover', icon: 'TC', subtype: 'sidebyside_cover' },
+      { id: 'sidebyside_overlay', label: 'Then vs Now Overlay', icon: 'TO', subtype: 'sidebyside_overlay' },
+      { id: 'transformation', label: 'Transformation', icon: 'TF', subtype: 'transformation' },
+      { id: 'walking_composite', label: 'Walking Composite', icon: 'WC', subtype: 'walking_composite' },
     ],
   },
   member: {
     label: 'Member',
     sportRequired: false, // Member templates don't require sport selection
     items: [
-      { id: 'member_intro', label: 'Short Intro', icon: '👋', subtype: 'member_intro' },
-      { id: 'member_goal_celebration', label: 'Goal Celebration', icon: '⚽', subtype: 'member_goal_celebration' },
-      { id: 'member_in_tenue', label: 'In Tenue', icon: '👕', subtype: 'member_in_tenue' },
-      { id: 'member_action_photo', label: 'Actiefoto', icon: '⚡', subtype: 'member_action_photo' },
-      { id: 'member_legacy_closeup', label: 'Legacy Closeup', icon: '📷', subtype: 'member_legacy_closeup' },
-      { id: 'member_legacy_in_tenue', label: 'Legacy In Tenue', icon: '🎽', subtype: 'member_legacy_in_tenue' },
+      { id: 'member_intro', label: 'Short Intro', icon: 'SI', subtype: 'member_intro' },
+      { id: 'member_goal_celebration', label: 'Goal Celebration', icon: 'GC', subtype: 'member_goal_celebration' },
+      { id: 'member_in_tenue', label: 'In Tenue', icon: 'IT', subtype: 'member_in_tenue' },
+      { id: 'member_action_photo', label: 'Actiefoto', icon: 'AF', subtype: 'member_action_photo' },
+      { id: 'member_legacy_closeup', label: 'Legacy Closeup', icon: 'LC', subtype: 'member_legacy_closeup' },
+      { id: 'member_legacy_in_tenue', label: 'Legacy In Tenue', icon: 'LT', subtype: 'member_legacy_in_tenue' },
     ],
   },
   custom: {
     label: 'Custom',
     sportRequired: false, // Custom templates don't require sport selection
     items: [
-      { id: 'custom_logo', label: 'Logo', icon: '🏷️', subtype: 'custom_logo' },
-      { id: 'custom_tenue', label: 'Tenue', icon: '👕', subtype: 'custom_tenue' },
-      { id: 'custom_tenue_logo', label: 'Tenue + Logo', icon: '🎨', subtype: 'custom_tenue_logo' },
-      { id: 'custom_tenue_logo_sponsor', label: 'Tenue + Logo + Sponsor', icon: '🏆', subtype: 'custom_tenue_logo_sponsor' },
+      { id: 'custom_logo', label: 'Logo', icon: 'LG', subtype: 'custom_logo' },
+      { id: 'custom_tenue', label: 'Tenue', icon: 'TN', subtype: 'custom_tenue' },
+      { id: 'custom_tenue_logo', label: 'Tenue + Logo', icon: 'TL', subtype: 'custom_tenue_logo' },
+      { id: 'custom_tenue_logo_sponsor', label: 'Tenue + Logo + Sponsor', icon: 'TS', subtype: 'custom_tenue_logo_sponsor' },
     ],
   },
 };
@@ -539,7 +539,7 @@ export default function ContentGenerationModal({
     const projectId = matchData?.project?.id || season?.project_id;
     const seasonId = season?.id;
 
-    console.log('🔍 ContentGenerationModal - Fetching members:', {
+    console.log('ContentGenerationModal - Fetching members:', {
       projectId,
       seasonId,
       matchData,
@@ -547,7 +547,7 @@ export default function ContentGenerationModal({
     });
 
     if (!projectId) {
-      console.warn('❌ No projectId found for fetching members');
+      console.warn('Œ No projectId found for fetching members');
       return;
     }
 
@@ -555,12 +555,12 @@ export default function ContentGenerationModal({
       try {
         // Fetch project members for lineup selection.
         // We do NOT filter by period_id because members may be registered
-        // without a period, or on a different season — all project members
+        // without a period, or on a different season â€” all project members
         // should be selectable for lineups.
         // Use page_size=200 to maximise results (API max = 200 via cursor, 100 via page).
         const url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/?page_size=100`;
 
-        console.log('📡 Fetching from URL:', url);
+        console.log('Fetching from URL:', url);
 
         const response = await fetch(url, {
           credentials: 'include',
@@ -569,7 +569,7 @@ export default function ContentGenerationModal({
 
         if (response.ok) {
           const data = await response.json();
-          console.log('✅ API Response:', data);
+          console.log('API Response:', data);
           // Handle envelope response: { status: 'success', data: [...], meta: { pagination: {...} } }
           let members: any[] = [];
           if (data?.data?.data && Array.isArray(data.data.data)) {
@@ -587,7 +587,7 @@ export default function ContentGenerationModal({
           // Handle pagination: fetch remaining pages if there's a `next` link
           let nextUrl = data?.meta?.pagination?.next;
           while (nextUrl) {
-            console.log('📡 Fetching next page:', nextUrl);
+            console.log('Fetching next page:', nextUrl);
             const nextResp = await fetch(nextUrl, {
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
@@ -606,12 +606,12 @@ export default function ContentGenerationModal({
             nextUrl = nextData?.meta?.pagination?.next;
           }
 
-          console.log('👥 Extracted members:', members.length, members);
+          console.log('Extracted members:', members.length, members);
           const grouped = groupParticipationsByRole(members);
-          console.log('📊 Grouped by role:', grouped);
+          console.log('Grouped by role:', grouped);
           setSeasonSquad(grouped);
         } else {
-          console.error('❌ API Error:', response.status, await response.text());
+          console.error('Œ API Error:', response.status, await response.text());
         }
       } catch (err) {
         console.error('Error fetching season squad:', err);
@@ -876,7 +876,7 @@ export default function ContentGenerationModal({
       setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
       // Notify parent so match media gets refreshed
       if (isApprove) {
-        onGenerated?.('✅ Video goedgekeurd en opgeslagen.');
+        onGenerated?.('Video goedgekeurd en opgeslagen.');
       }
     } catch (err) {
       setVideoApprovalError(err instanceof Error ? err.message : `${action} failed`);
@@ -913,11 +913,11 @@ export default function ContentGenerationModal({
             const outUrl = job.output_url || job.output_file?.url;
             if (outUrl) setVideoOutputUrl(outUrl);
             if (job.thumbnail_url) setVideoThumbnailUrl(job.thumbnail_url);
-            console.log('✅ Video job completed:', videoJobId, outUrl);
+            console.log('Video job completed:', videoJobId, outUrl);
             break;
           }
           if (job.status === 'failed') {
-            console.error('❌ Video job failed:', job.error_message);
+            console.error('Œ Video job failed:', job.error_message);
             break;
           }
         } catch (err: any) {
@@ -955,7 +955,7 @@ export default function ContentGenerationModal({
         else if (effectiveRole === 'coach' || effectiveRole === 'assistant') roleKey = 'coach';
 
         // Map media keys to images structure keys (they differ!)
-        // images uses: fullbody, closeup — media uses: kit, closeup
+        // images uses: fullbody, closeup â€” media uses: kit, closeup
         const imageStructureKey = mediaKey === 'kit' ? 'fullbody' : mediaKey;
 
         // 1. Check the 'images' structure (images.{type}.{variant})
@@ -985,7 +985,7 @@ export default function ContentGenerationModal({
             if (val && typeof val === 'object' && (val as any).raw) return (val as any).raw;
             if (val && typeof val === 'string' && val.trim()) return val;
           }
-          // Fallback: any variant — prefer processed
+          // Fallback: any variant â€” prefer processed
           for (const [, val] of Object.entries(variants)) {
             if (val && typeof val === 'object' && (val as any).processed) {
               return (val as any).processed;
@@ -1056,7 +1056,7 @@ export default function ContentGenerationModal({
 
       setProgress(30);
 
-      // Call the lineup-flyer endpoint (synchronous — returns URL directly)
+      // Call the lineup-flyer endpoint (synchronous â€” returns URL directly)
       const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-flyer/`, {
         method: 'POST',
         credentials: 'include',
@@ -1086,7 +1086,7 @@ export default function ContentGenerationModal({
       }
 
       const data = await response.json();
-      console.log('🖼️ Lineup flyer generated:', data);
+      console.log(' Lineup flyer generated:', data);
 
       const flyerUrl = data.data?.flyer_url || data.flyer_url;
       if (!flyerUrl) {
@@ -1109,13 +1109,13 @@ export default function ContentGenerationModal({
       setTimeout(() => setStep('success'), 300);
 
     } catch (err) {
-      console.error('❌ Lineup flyer generation failed:', err);
+      console.error('Œ Lineup flyer generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Flyer generation failed');
       setStep('error');
     }
   };
 
-  // Generate team poster (AI elftalfoto) — synchronous PNG generation
+  // Generate team poster (AI elftalfoto) â€” synchronous PNG generation
   const handleGenerateTeamPoster = async () => {
     setProgress(10);
 
@@ -1164,7 +1164,7 @@ export default function ContentGenerationModal({
       }
 
       const data = await response.json();
-      console.log('📸 Team poster generated:', data);
+      console.log('Team poster generated:', data);
 
       const posterUrl = data.poster_url || data.data?.poster_url;
       if (!posterUrl) {
@@ -1186,7 +1186,7 @@ export default function ContentGenerationModal({
       setTimeout(() => setStep('success'), 300);
 
     } catch (err) {
-      console.error('❌ Team poster generation failed:', err);
+      console.error('Œ Team poster generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Poster generation failed');
       setStep('error');
     }
@@ -1207,7 +1207,7 @@ export default function ContentGenerationModal({
 
       setProgress(30);
 
-      // Call the match-flyer endpoint (synchronous — returns a single flyer URL)
+      // Call the match-flyer endpoint (synchronous â€” returns a single flyer URL)
       const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`, {
         method: 'POST',
         credentials: 'include',
@@ -1250,14 +1250,14 @@ export default function ContentGenerationModal({
       }
 
       const data = await response.json();
-      console.log('📣 Match flyer generated:', data);
+      console.log('Match flyer generated:', data);
 
       const flyerUrl = data.data?.flyer_url || data.flyer_url;
       if (!flyerUrl) {
         throw new Error('Flyer generated but no URL returned');
       }
 
-      // Set result as a single generated variant (image, not video) — same as lineup flyer
+      // Set result as a single generated variant (image, not video) â€” same as lineup flyer
       setGeneratedVariants([{
         variant_index: 0,
         image_base64: null,
@@ -1273,7 +1273,7 @@ export default function ContentGenerationModal({
       setTimeout(() => setStep('success'), 300);
 
     } catch (err) {
-      console.error('❌ Match flyer generation failed:', err);
+      console.error('Œ Match flyer generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Match flyer generation failed');
       setStep('error');
     }
@@ -1326,7 +1326,7 @@ export default function ContentGenerationModal({
       }
 
       const data = await response.json();
-      console.log('📊 Match summary generated:', data);
+      console.log('Match summary generated:', data);
 
       const flyerUrl = data.data?.flyer_url || data.flyer_url;
       if (!flyerUrl) {
@@ -1348,7 +1348,7 @@ export default function ContentGenerationModal({
       setTimeout(() => setStep('success'), 300);
 
     } catch (err) {
-      console.error('❌ Match summary generation failed:', err);
+      console.error('Œ Match summary generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Match summary generation failed');
       setStep('error');
     }
@@ -1366,7 +1366,7 @@ export default function ContentGenerationModal({
       const segments: Array<{type: string; url: string; duration?: number; label?: string; scale?: number}> = [];
 
       // For lineup videos, enforce specific asset sequence: In Tenue -> Intro -> In Tenue -> Closeup (kleiner)
-      // TV-style lineup announcement: full body reveal → intro clip → full body again → close-up zoom
+      // TV-style lineup announcement: full body reveal ’ intro clip ’ full body again ’ close-up zoom
       // Also strictly limit to 1 GK + 10 Players
       let targetGKs = selectedMembers.goalkeeper;
       let targetPlayers = selectedMembers.player;
@@ -1462,8 +1462,8 @@ export default function ContentGenerationModal({
       // Use template-based endpoint when matchData is available
       // This endpoint auto-builds segments from match participations + brand assets + field background
       if (matchData?.id) {
-        console.log('🎬 Using template-based lineup video generation');
-        // Submit async job — frontend polls for completion
+        console.log('Using template-based lineup video generation');
+        // Submit async job â€” frontend polls for completion
         const response = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/lineup-from-template/`, {
           method: 'POST',
           credentials: 'include',
@@ -1495,20 +1495,20 @@ export default function ContentGenerationModal({
           const errMsg = typeof errData?.error === 'string'
             ? errData.error
             : errData?.error?.message || errData?.detail || `Failed to create video job: ${response.status}`;
-          console.error('❌ Lineup API error:', JSON.stringify(errData));
+          console.error('Œ Lineup API error:', JSON.stringify(errData));
           throw new Error(errMsg);
         }
 
         const jobData = await response.json();
         jobId = jobData.data?.id || jobData.id;
-        console.log('🎬 Template-based video job created:', jobId);
+        console.log('Template-based video job created:', jobId);
       } else {
         addMemberSegments(targetGKs, gkAssets, 'goalkeeper');
         addMemberSegments(targetPlayers, playerAssets, 'player');
         addMemberSegments(targetCoach, coachAssets, 'coach');
         addMemberSegments(targetAssistant, assistantAssets, 'assistant');
 
-        console.log('📹 Lineup video segments:', segments);
+        console.log('Lineup video segments:', segments);
 
         // Fallback: manual segments mode (no match context)
         if (segments.length === 0) {
@@ -1543,7 +1543,7 @@ export default function ContentGenerationModal({
 
         const jobData = await response.json();
         jobId = jobData.data?.id || jobData.id;
-        console.log('🎬 Manual video job created:', jobId);
+        console.log('Manual video job created:', jobId);
       }
 
       setVideoJobId(jobId);
@@ -1551,14 +1551,14 @@ export default function ContentGenerationModal({
       setVideoJobProgressRaw(0);
       setProgress(100);
 
-      // Show queued confirmation — video processes in the background
+      // Show queued confirmation â€” video processes in the background
       // and will appear in the approval queue when ready.
       setStep('video_queued');
-      onGenerated?.('🎬 Lineup video staat in de wachtrij en wordt op de achtergrond verwerkt.');
+      onGenerated?.('Lineup video staat in de wachtrij en wordt op de achtergrond verwerkt.');
 
     } catch (err) {
       if ((err as any)?.name === 'AbortError') return;
-      console.error('❌ Lineup video generation failed:', err);
+      console.error('Œ Lineup video generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
       setStep('error');
     }
@@ -1572,7 +1572,7 @@ export default function ContentGenerationModal({
     try {
       const projectId = matchData?.project?.id || season?.project_id;
       if (!projectId) {
-        throw new Error('No project ID available — cannot create video job');
+        throw new Error('No project ID available â€” cannot create video job');
       }
 
       if (!matchData?.id) {
@@ -1583,7 +1583,7 @@ export default function ContentGenerationModal({
         throw new Error('No goal scorer selected');
       }
 
-      console.log('⚽ Creating goal celebration video:', {
+      console.log('Creating goal celebration video:', {
         activity_id: matchData.id,
         scorer_member_id: goalScorerId,
         score_home: goalScoreHome,
@@ -1617,20 +1617,20 @@ export default function ContentGenerationModal({
 
       const jobData = await response.json();
       const jobId = jobData.data?.id || jobData.id;
-      console.log('⚽ Goal celebration video job created:', jobId);
+      console.log('Goal celebration video job created:', jobId);
 
       setVideoJobId(jobId);
       setVideoJobStatus('queued');
       setVideoJobProgressRaw(0);
       setProgress(100);
 
-      // Show queued confirmation — video processes in the background
+      // Show queued confirmation â€” video processes in the background
       setStep('video_queued');
-      onGenerated?.('⚽ Goal celebration staat in de wachtrij en wordt op de achtergrond verwerkt.');
+      onGenerated?.('Goal celebration staat in de wachtrij en wordt op de achtergrond verwerkt.');
 
     } catch (err) {
       if ((err as any)?.name === 'AbortError') return;
-      console.error('❌ Goal celebration video generation failed:', err);
+      console.error('Œ Goal celebration video generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
       setStep('error');
     }
@@ -1643,14 +1643,14 @@ export default function ContentGenerationModal({
     try {
       const projectId = matchData?.project?.id || season?.project_id;
       if (!projectId) {
-        throw new Error('No project ID available — cannot create video job');
+        throw new Error('No project ID available â€” cannot create video job');
       }
 
       if (!matchData?.id) {
         throw new Error('No match/activity data available for match intro');
       }
 
-      console.log('🎥 Creating match intro video:', {
+      console.log('Creating match intro video:', {
         activity_id: matchData.id,
       });
 
@@ -1677,20 +1677,20 @@ export default function ContentGenerationModal({
 
       const jobData = await response.json();
       const jobId = jobData.data?.id || jobData.id;
-      console.log('🎥 Match intro video job created:', jobId);
+      console.log('Match intro video job created:', jobId);
 
       setVideoJobId(jobId);
       setVideoJobStatus('queued');
       setVideoJobProgressRaw(0);
       setProgress(100);
 
-      // Show queued confirmation — video processes in the background
+      // Show queued confirmation â€” video processes in the background
       setStep('video_queued');
-      onGenerated?.('🎥 Match intro staat in de wachtrij en wordt op de achtergrond verwerkt.');
+      onGenerated?.('Match intro staat in de wachtrij en wordt op de achtergrond verwerkt.');
 
     } catch (err) {
       if ((err as any)?.name === 'AbortError') return;
-      console.error('❌ Match intro video generation failed:', err);
+      console.error('Œ Match intro video generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Video generation failed');
       setStep('error');
     }
@@ -1701,13 +1701,13 @@ export default function ContentGenerationModal({
   const handleSelectType = (type: string, subtype: string, label: string) => {
     setSelectedType({ type, subtype, label });
 
-    // Goal celebration and match intro skip template selection — go directly to confirm step
+    // Goal celebration and match intro skip template selection â€” go directly to confirm step
     if (subtype === 'goal' || subtype === 'match_intro') {
       setStep('confirm');
       return;
     }
 
-    // Poster (elftalfoto) skips template — needs lineup squad selection
+    // Poster (elftalfoto) skips template â€” needs lineup squad selection
     if (subtype === 'poster') {
       // Set a synthetic template so lineup_squad step can read member requirements
       setSelectedTemplate({
@@ -1888,13 +1888,13 @@ export default function ContentGenerationModal({
       }
 
       const data = await response.json();
-      console.log('🎉 Generation response:', data);
+      console.log('Generation response:', data);
 
       // Get all variants (from data.data.variants or data.variants)
       const responseData = data.data || data;
       const variants: GeneratedVariant[] = responseData.variants || [];
 
-      console.log(`📦 Parsed ${variants.length} variants from response`);
+      console.log(`Parsed ${variants.length} variants from response`);
 
       // Check for errors
       const firstError = variants.find((v: GeneratedVariant) => v.error);
@@ -1918,7 +1918,7 @@ export default function ContentGenerationModal({
       } else {
         // Fallback if no variants array but fields exist at root
         if (responseData.image_base64 || responseData.presigned_url) {
-           console.log('⚠️ No variants array found, falling back to legacy single variant extraction');
+           console.log('ï¸ No variants array found, falling back to legacy single variant extraction');
            const singleVariant: GeneratedVariant = {
               variant_index: 0,
               image_base64: responseData.image_base64,
@@ -1944,7 +1944,7 @@ export default function ContentGenerationModal({
 
     } catch (err) {
       clearInterval(progressInterval);
-      console.error('❌ Generation failed:', err);
+      console.error('Œ Generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Generation failed');
       setStep('error');
     }
@@ -2031,7 +2031,7 @@ export default function ContentGenerationModal({
       }
 
       const result = await response.json();
-      console.log(`✅ Asset saved (variant ${variantIdx + 1}):`, result);
+      console.log(`Asset saved (variant ${variantIdx + 1}):`, result);
 
       // Mark this variant as saved
       setSavedVariantIndices(prev => new Set([...prev, variantIdx]));
@@ -2072,7 +2072,7 @@ export default function ContentGenerationModal({
       }
 
     } catch (err) {
-      console.error(`❌ Failed to save variant ${variantIdx + 1}:`, err);
+      console.error(`Œ Failed to save variant ${variantIdx + 1}:`, err);
       setGenerationError(err instanceof Error ? err.message : 'Failed to save as asset');
     } finally {
       setSavingAsset(false);
@@ -2201,10 +2201,10 @@ export default function ContentGenerationModal({
         onClick={(e) => e.stopPropagation()}
         style={{
           backgroundColor: 'var(--app-surface, white)',
-          padding: '24px',
-          borderRadius: '12px',
-          width: '1200px',
-          maxWidth: '100%',
+          padding: '0',
+          borderRadius: '16px',
+          width: '100%',
+          maxWidth: '600px',
           boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
           color: 'var(--app-text)',
           display: 'flex',
@@ -2213,68 +2213,66 @@ export default function ContentGenerationModal({
           margin: 'auto',
         }}
       >
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6 border-b pb-4">
-          <div>
-            <h2 className="text-xl font-bold m-0">
-              {step === 'type' && 'Create Content'}
-              {step === 'template' && `Select ${selectedType?.label} Template`}
-              {step === 'members' && (isLineupFlow ? 'Lineup Opties' : `Create ${contentTypeLabel || selectedType?.label || 'Content'}`)}
-              {step === 'lineup_squad' && 'Opstelling kiezen'}
-              {step === 'generating' && 'Generating...'}
-              {step === 'video_queued' && 'In de wachtrij!'}
-              {step === 'success' && 'Content Ready!'}
-            </h2>
-            <div className="text-sm text-gray-500 mt-1">
-              {matchData?.project?.name} vs {matchData?.opponent_project?.name || 'Opponent'}
-              {organisationSport && (
-                <span className="ml-2">
-                  <Badge variant="info" size="sm">⚽ {organisationSport.name}</Badge>
-                </span>
-              )}
-            </div>
-          </div>
-          {!(isLineupFlow || step === 'generating' || step === 'video_queued' || step === 'members' || step === 'lineup_squad') && (
+        {/* Header - consistent back + title + close */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '16px',
+          borderBottom: '1px solid var(--app-border, #e5e7eb)',
+          flexShrink: 0,
+        }}>
+          {(step !== 'type' || initialTemplate) ? (
             <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-2xl"
-              aria-label="Close"
+              onClick={handleBack}
+              aria-label="Terug"
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: '40px', height: '40px', borderRadius: '10px',
+                backgroundColor: 'var(--app-surface-2, #f3f4f6)', border: '1px solid var(--app-border, #e5e7eb)',
+                cursor: 'pointer', color: 'var(--app-text, #111)', fontSize: '20px', lineHeight: 1,
+                flexShrink: 0,
+              }}
             >
-              ×
+              
             </button>
+          ) : (
+            <div style={{ width: '40px', flexShrink: 0 }} />
           )}
-        </div>
-
-        {/* Progress indicator - only show for multi-step flow */}
-        {!initialTemplate && (step === 'type' || step === 'template' || step === 'members' || step === 'lineup_squad') && (
-          <div className="flex items-center gap-2 mb-4 text-sm">
-            <span className={`px-3 py-1 rounded-full ${step === 'type' ? 'bg-blue-100 text-blue-700 font-medium' : 'bg-gray-100 text-gray-500'}`}>
-              1. Type
-            </span>
-            <span className="text-gray-300">→</span>
-            <span className={`px-3 py-1 rounded-full ${step === 'template' ? 'bg-blue-100 text-blue-700 font-medium' : selectedType ? 'bg-gray-100 text-gray-500' : 'text-gray-300'}`}>
-              2. Template
-            </span>
-            {totalRequiredMembers > 0 && (
-              <>
-                <span className="text-gray-300">→</span>
-                <span className={`px-3 py-1 rounded-full ${step === 'members' ? 'bg-blue-100 text-blue-700 font-medium' : 'bg-gray-100 text-gray-500'}`}>
-                  3. {isLineupFlow ? 'Opties' : 'Members'}
-                </span>
-                {isLineupFlow && (
-                  <>
-                    <span className="text-gray-300">→</span>
-                    <span className={`px-3 py-1 rounded-full ${step === 'lineup_squad' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-300'}`}>
-                      4. Opstelling
-                    </span>
-                  </>
-                )}
-              </>
+          <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
+            <div style={{ fontWeight: 600, fontSize: '16px', color: 'var(--app-text, #111)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {step === 'type' && 'Content aanmaken'}
+              {step === 'template' && `${selectedType?.label || 'Template'} kiezen`}
+              {step === 'members' && (isLineupFlow ? 'Lineup opties' : `${contentTypeLabel || selectedType?.label || 'Content'} instellen`)}
+              {step === 'lineup_squad' && 'Opstelling kiezen'}
+              {step === 'confirm' && (contentTypeLabel || selectedType?.label || 'Bevestigen')}
+              {step === 'generating' && 'Bezig met genereren...'}
+              {step === 'video_queued' && 'In de wachtrij'}
+              {step === 'success' && 'Content klaar'}
+              {step === 'error' && 'Fout opgetreden'}
+            </div>
+            {matchData && (
+              <div style={{ fontSize: '13px', color: 'var(--app-text-muted, #6b7280)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {matchData.project?.name} vs {matchData.opponent_project?.name || 'Tegenstander'}
+              </div>
             )}
           </div>
-        )}
+          <button
+            onClick={onClose}
+            aria-label="Sluiten"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '40px', height: '40px', borderRadius: '10px',
+              backgroundColor: 'var(--app-surface-2, #f3f4f6)', border: '1px solid var(--app-border, #e5e7eb)',
+              cursor: 'pointer', color: 'var(--app-text, #111)', fontSize: '20px', lineHeight: 1,
+              flexShrink: 0,
+            }}
+          >
+            Ã—
+          </button>
+        </div>
 
-        <div className="flex-1 overflow-y-auto min-h-[400px]">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
 
           {/* Step 1: Select Content Type */}
           {step === 'type' && (
@@ -2314,7 +2312,7 @@ export default function ContentGenerationModal({
               {error && (
                 <div className="space-y-4">
                   <div className="text-center py-6 px-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <div className="text-yellow-600 mb-2">⚠️ Could not load templates</div>
+                    <div className="text-yellow-600 mb-2">ï¸ Could not load templates</div>
                     <div className="text-sm text-gray-600 mb-4">
                       Make sure the backend server is running.
                     </div>
@@ -2327,13 +2325,13 @@ export default function ContentGenerationModal({
 
               {!loading && !error && templates.length === 0 && (
                 <div className="text-center py-10">
-                  <div className="text-5xl mb-4">📭</div>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "var(--app-surface-2, #f3f4f6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "var(--app-text-muted, #6b7280)", margin: "0 auto 16px" }}>?</div>
                   <div className="text-gray-600 mb-2">No templates found for "{selectedType?.label}"</div>
                   <div className="text-sm text-gray-400 mb-4">
                     {organisationSport ? `Looking for ${organisationSport.name} templates` : 'No sport filter active'}
                   </div>
                   <a href="/content-templates" className="text-blue-600 hover:underline text-sm">
-                    → Go to Content Templates to create one
+                    ’ Go to Content Templates to create one
                   </a>
                 </div>
               )}
@@ -2367,7 +2365,7 @@ export default function ContentGenerationModal({
                         )}
                         <div className="flex flex-wrap gap-1 items-center">
                           {template.sport_detail && (
-                            <Badge variant="info" size="sm">⚽ {template.sport_detail.name}</Badge>
+                            <Badge variant="info" size="sm">{template.sport_detail.name}</Badge>
                           )}
                           {template.formation_detail && (
                             <Badge variant="default" size="sm">{template.formation_detail.code}</Badge>
@@ -2377,7 +2375,7 @@ export default function ContentGenerationModal({
                           )}
                         </div>
                         <div className="flex justify-between items-center mt-auto pt-2 border-t text-xs text-gray-500">
-                          <span>💎 {template.credits_required ?? 1} credit{(template.credits_required ?? 1) !== 1 ? 's' : ''}</span>
+                          <span>{template.credits_required ?? 1} credit{(template.credits_required ?? 1) !== 1 ? 's' : ''}</span>
                           {reqSummary.length > 0 && (
                             <span>{reqSummary.join(', ')}</span>
                           )}
@@ -2397,19 +2395,19 @@ export default function ContentGenerationModal({
               {/* Lineup Options - Formation & Player Style (styled like AssetGenerationModal) */}
               {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
                 <div style={{
-                  border: '1px solid var(--vscode-widget-border, #333)',
+                  border: '1px solid var(--app-border, #e5e7eb)',
                   borderRadius: 12,
                   overflow: 'hidden',
-                  background: 'var(--vscode-editor-background, #1e1e1e)',
+                  background: 'var(--app-surface, white)',
                 }}>
                   {/* Section header */}
                   <div style={{
                     padding: '14px 20px',
-                    borderBottom: '1px solid var(--vscode-widget-border, #333)',
-                    background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                    borderBottom: '1px solid var(--app-border, #e5e7eb)',
+                    background: 'var(--app-surface-2, #f3f4f6)',
                   }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #ccc)' }}>
-                      ⚽ Lineup Opties
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--app-text, #111)' }}>
+                      Lineup opties
                     </h4>
                   </div>
 
@@ -2422,7 +2420,7 @@ export default function ContentGenerationModal({
                     label="Formatie"
                   />
 
-                  {/* Closeup style selector — not for poster */}
+                  {/* Closeup style selector â€” not for poster */}
                   {!(selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
                   <div>
                     <label style={{
@@ -2430,14 +2428,14 @@ export default function ContentGenerationModal({
                       fontSize: 12,
                       fontWeight: 600,
                       marginBottom: 10,
-                      color: 'var(--vscode-foreground, #ccc)',
+                      color: 'var(--app-text-muted, #6b7280)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Weergave Stijl</label>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       {[
-                        { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: '🧍' },
-                        { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: '⭕' },
+                        { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: 'P' },
+                        { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: 'B' },
                       ].map(opt => {
                         const isSelected = lineupCloseupStyle === opt.value;
                         return (
@@ -2448,25 +2446,31 @@ export default function ContentGenerationModal({
                               position: 'relative',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 10,
-                              padding: '10px 14px',
+                              gap: 12,
+                              padding: '12px 16px',
                               border: isSelected
-                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                : '1px solid var(--vscode-widget-border, #333)',
-                              borderRadius: 8,
+                                ? '2px solid var(--app-primary, #3B8EA5)'
+                                : '1px solid var(--app-border, #e5e7eb)',
+                              borderRadius: 12,
                               background: isSelected
-                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                : 'var(--vscode-editor-background, #1e1e1e)',
-                              color: 'var(--vscode-foreground, #ccc)',
+                                ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                : 'var(--app-surface, white)',
+                              color: 'var(--app-text, #111)',
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
                               textAlign: 'left',
                             }}
                           >
-                            <span style={{ fontSize: 26, flexShrink: 0 }}>{opt.icon}</span>
+                            <div style={{
+                              width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                              backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 14, fontWeight: 700,
+                              color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
+                            }}>{opt.icon}</div>
                             <div>
-                              <div style={{ fontWeight: 700, fontSize: 13 }}>{opt.label}</div>
-                              <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 1 }}>
+                              <div style={{ fontWeight: 600, fontSize: 13 }}>{opt.label}</div>
+                              <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginTop: 1 }}>
                                 {opt.desc}
                               </div>
                             </div>
@@ -2477,7 +2481,7 @@ export default function ContentGenerationModal({
                                 background: '#10b981', display: 'flex',
                                 alignItems: 'center', justifyContent: 'center',
                                 fontSize: 10, color: '#fff', fontWeight: 700,
-                              }}>✓</div>
+                              }}>“</div>
                             )}
                           </button>
                         );
@@ -2486,7 +2490,7 @@ export default function ContentGenerationModal({
                   </div>
                   )}
 
-                  {/* Animation style selector — only for video, not for static flyer or poster */}
+                  {/* Animation style selector â€” only for video, not for static flyer or poster */}
                   {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
                   <div>
                     <label style={{
@@ -2494,17 +2498,17 @@ export default function ContentGenerationModal({
                       fontSize: 12,
                       fontWeight: 600,
                       marginBottom: 10,
-                      color: 'var(--vscode-foreground, #ccc)',
+                      color: 'var(--app-text-muted, #6b7280)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Animatie Stijl</label>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {[
-                        { value: 'slide_up', label: 'Omhoog', icon: '⬆️' },
-                        { value: 'appear', label: 'Direct', icon: '✨' },
-                        { value: 'slide_in', label: 'Naar binnen', icon: '↔️' },
-                        { value: 'zoom', label: 'Inzoomen', icon: '🔍' },
-                        { value: 'fade', label: 'Vervagen', icon: '🌫️' },
+                        { value: 'slide_up', label: 'Omhoog' },
+                        { value: 'appear', label: 'Direct' },
+                        { value: 'slide_in', label: 'Naar binnen' },
+                        { value: 'zoom', label: 'Inzoomen' },
+                        { value: 'fade', label: 'Vervagen' },
                       ].map(opt => {
                         const isSelected = lineupAnimationStyle === opt.value;
                         return (
@@ -2521,19 +2525,18 @@ export default function ContentGenerationModal({
                               gap: 4,
                               padding: '10px 6px',
                               border: isSelected
-                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                : '1px solid var(--vscode-widget-border, #333)',
-                              borderRadius: 8,
+                                ? '2px solid var(--app-primary, #3B8EA5)'
+                                : '1px solid var(--app-border, #e5e7eb)',
+                              borderRadius: 10,
                               background: isSelected
-                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                : 'var(--vscode-editor-background, #1e1e1e)',
-                              color: 'var(--vscode-foreground, #ccc)',
+                                ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                : 'var(--app-surface, white)',
+                              color: 'var(--app-text, #111)',
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
                             }}
                           >
-                            <span style={{ fontSize: 20 }}>{opt.icon}</span>
-                            <span style={{ fontSize: 11, fontWeight: 600 }}>{opt.label}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600 }}>{opt.label}</span>
                             {isSelected && (
                               <div style={{
                                 position: 'absolute', top: 4, right: 4,
@@ -2541,7 +2544,7 @@ export default function ContentGenerationModal({
                                 background: '#10b981', display: 'flex',
                                 alignItems: 'center', justifyContent: 'center',
                                 fontSize: 10, color: '#fff', fontWeight: 700,
-                              }}>✓</div>
+                              }}>“</div>
                             )}
                           </button>
                         );
@@ -2550,7 +2553,7 @@ export default function ContentGenerationModal({
                   </div>
                   )}
 
-                  {/* Intro style selector — per line vs per player — only for video */}
+                  {/* Intro style selector â€” per line vs per player â€” only for video */}
                   {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
                   <div>
                     <label style={{
@@ -2558,14 +2561,14 @@ export default function ContentGenerationModal({
                       fontSize: 12,
                       fontWeight: 600,
                       marginBottom: 10,
-                      color: 'var(--vscode-foreground, #ccc)',
+                      color: 'var(--app-text-muted, #6b7280)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Introductie Stijl</label>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {[
-                        { value: 'per_line', label: 'Per linie', icon: '👥', desc: 'Hele linie tegelijk' },
-                        { value: 'per_player', label: 'Per speler', icon: '👤', desc: 'Eén voor één, groot in beeld' },
+                        { value: 'per_line', label: 'Per linie', icon: 'L', desc: 'Hele linie tegelijk' },
+                        { value: 'per_player', label: 'Per speler', icon: 'S', desc: 'EÃ©n voor Ã©Ã©n, groot in beeld' },
                       ].map(opt => {
                         const isSelected = lineupIntroStyle === opt.value;
                         return (
@@ -2578,23 +2581,29 @@ export default function ContentGenerationModal({
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
-                              gap: 4,
-                              padding: '10px 6px',
+                              gap: 6,
+                              padding: '12px 8px',
                               border: isSelected
-                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                : '1px solid var(--vscode-widget-border, #333)',
-                              borderRadius: 8,
+                                ? '2px solid var(--app-primary, #3B8EA5)'
+                                : '1px solid var(--app-border, #e5e7eb)',
+                              borderRadius: 10,
                               background: isSelected
-                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                : 'var(--vscode-editor-background, #1e1e1e)',
-                              color: 'var(--vscode-foreground, #ccc)',
+                                ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                : 'var(--app-surface, white)',
+                              color: 'var(--app-text, #111)',
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
                             }}
                           >
-                            <span style={{ fontSize: 20 }}>{opt.icon}</span>
-                            <span style={{ fontSize: 11, fontWeight: 600 }}>{opt.label}</span>
-                            <span style={{ fontSize: 9, color: '#999' }}>{opt.desc}</span>
+                            <div style={{
+                              width: 36, height: 36, borderRadius: 10,
+                              backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 14, fontWeight: 700,
+                              color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
+                            }}>{opt.icon}</div>
+                            <span style={{ fontSize: 12, fontWeight: 600 }}>{opt.label}</span>
+                            <span style={{ fontSize: 10, color: 'var(--app-text-muted, #6b7280)' }}>{opt.desc}</span>
                             {isSelected && (
                               <div style={{
                                 position: 'absolute', top: 4, right: 4,
@@ -2602,7 +2611,7 @@ export default function ContentGenerationModal({
                                 background: '#10b981', display: 'flex',
                                 alignItems: 'center', justifyContent: 'center',
                                 fontSize: 10, color: '#fff', fontWeight: 700,
-                              }}>✓</div>
+                              }}>“</div>
                             )}
                           </button>
                         );
@@ -2619,7 +2628,7 @@ export default function ContentGenerationModal({
                       fontSize: 12,
                       fontWeight: 600,
                       marginBottom: 10,
-                      color: 'var(--vscode-foreground, #ccc)',
+                      color: 'var(--app-text-muted, #6b7280)',
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
                     }}>Achtergrond / Locatie</label>
@@ -2628,21 +2637,21 @@ export default function ContentGenerationModal({
                       gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
                       gap: 8,
                     }}>
-                      {/* Default option — auto from club brand */}
+                      {/* Default option â€” auto from club brand */}
                       <button
                         onClick={() => setSelectedBackgroundUrl(null)}
                         style={{
                           position: 'relative',
                           border: !selectedBackgroundUrl
-                            ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                            : '1px solid var(--vscode-widget-border, #333)',
-                          borderRadius: 8,
+                            ? '2px solid var(--app-primary, #3B8EA5)'
+                            : '1px solid var(--app-border, #e5e7eb)',
+                          borderRadius: 10,
                           overflow: 'hidden',
                           cursor: 'pointer',
                           padding: 0,
                           background: !selectedBackgroundUrl
-                            ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                            : 'var(--vscode-editor-background, #1e1e1e)',
+                            ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                            : 'var(--app-surface, white)',
                           transition: 'all 0.15s ease',
                         }}
                       >
@@ -2654,17 +2663,17 @@ export default function ContentGenerationModal({
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}>
-                          <span style={{ fontSize: 24 }}>⚽</span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>Auto</span>
                         </div>
                         <div style={{
                           padding: '4px 0',
                           textAlign: 'center',
                           fontWeight: 600,
                           fontSize: 10,
-                          color: !selectedBackgroundUrl ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                          color: !selectedBackgroundUrl ? 'white' : 'var(--app-text, #111)',
                           background: !selectedBackgroundUrl
-                            ? 'var(--vscode-focusBorder, #007fd4)'
-                            : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                            ? 'var(--app-primary, #3B8EA5)'
+                            : 'var(--app-surface-2, #f3f4f6)',
                         }}>
                           Standaard
                         </div>
@@ -2675,7 +2684,7 @@ export default function ContentGenerationModal({
                             background: '#10b981', display: 'flex',
                             alignItems: 'center', justifyContent: 'center',
                             fontSize: 9, color: '#fff', fontWeight: 700,
-                          }}>✓</div>
+                          }}>“</div>
                         )}
                       </button>
 
@@ -2689,15 +2698,15 @@ export default function ContentGenerationModal({
                             style={{
                               position: 'relative',
                               border: isSelected
-                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                : '1px solid var(--vscode-widget-border, #333)',
-                              borderRadius: 8,
+                                ? '2px solid var(--app-primary, #3B8EA5)'
+                                : '1px solid var(--app-border, #e5e7eb)',
+                              borderRadius: 10,
                               overflow: 'hidden',
                               cursor: 'pointer',
                               padding: 0,
                               background: isSelected
-                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                : 'var(--vscode-editor-background, #1e1e1e)',
+                                ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                : 'var(--app-surface, white)',
                               transition: 'all 0.15s ease',
                             }}
                           >
@@ -2711,10 +2720,10 @@ export default function ContentGenerationModal({
                               textAlign: 'center',
                               fontWeight: 600,
                               fontSize: 10,
-                              color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                              color: isSelected ? 'white' : 'var(--app-text, #111)',
                               background: isSelected
-                                ? 'var(--vscode-focusBorder, #007fd4)'
-                                : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                ? 'var(--app-primary, #3B8EA5)'
+                                : 'var(--app-surface-2, #f3f4f6)',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
@@ -2728,7 +2737,7 @@ export default function ContentGenerationModal({
                                 background: '#10b981', display: 'flex',
                                 alignItems: 'center', justifyContent: 'center',
                                 fontSize: 9, color: '#fff', fontWeight: 700,
-                              }}>✓</div>
+                              }}>“</div>
                             )}
                           </button>
                         );
@@ -2823,7 +2832,7 @@ export default function ContentGenerationModal({
                               </option>
                               {/* Eligible members - can be selected */}
                               {eligibleMembers.length > 0 && assetTypes.length > 0 && (
-                                <optgroup label="✅ Ready (have required assets)">
+                                <optgroup label="Ready (have required assets)">
                                   {eligibleMembers.map(p => {
                                     const user = p.user || p.member;
                                     let memberName = 'Unknown';
@@ -2889,7 +2898,7 @@ export default function ContentGenerationModal({
                               })}
                               {/* Ineligible members - shown but disabled with reason */}
                               {ineligibleMembers.length > 0 && assetTypes.length > 0 && (
-                                <optgroup label="⚠️ Missing assets">
+                                <optgroup label="ï¸ Missing assets">
                                   {ineligibleMembers.map(p => {
                                     const user = p.user || p.member;
                                     let memberName = 'Unknown';
@@ -2937,7 +2946,7 @@ export default function ContentGenerationModal({
                             if (eligible === 0 && total > 0) {
                               return (
                                 <span className="text-red-600">
-                                  ⚠️ No {role}s have the required assets. Generate assets for members first.
+                                  ï¸ No {role}s have the required assets. Generate assets for members first.
                                 </span>
                               );
                             }
@@ -2989,7 +2998,7 @@ export default function ContentGenerationModal({
                   background: 'linear-gradient(to bottom, #16a34a, #15803d)',
                   borderRadius: 12,
                   overflow: 'hidden',
-                  border: '1px solid var(--vscode-widget-border, #333)',
+                  border: '1px solid var(--app-border, #e5e7eb)',
                 }}>
                   {/* Field markings */}
                   <div style={{ position: 'absolute', left: 16, right: 16, top: '15%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
@@ -3051,7 +3060,7 @@ export default function ContentGenerationModal({
                               // Clear this slot (keep position)
                               if (idx < newSelected.length) newSelected[idx] = '';
                             }
-                            // Keep sparse array — positions must stay aligned with formation slots
+                            // Keep sparse array â€” positions must stay aligned with formation slots
                             setSelectedMembers({ ...selectedMembers, [role]: [...newSelected] });
                           }}
                           style={{
@@ -3060,11 +3069,11 @@ export default function ContentGenerationModal({
                             fontSize: 11,
                             fontWeight: currentId ? 700 : 400,
                             background: currentId
-                              ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                              ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
                               : 'rgba(0,0,0,0.6)',
                             color: '#fff',
                             border: currentId
-                              ? '2px solid var(--vscode-focusBorder, #007fd4)'
+                              ? '2px solid var(--app-primary, #3B8EA5)'
                               : '1px solid rgba(255,255,255,0.3)',
                             borderRadius: 6,
                             outline: 'none',
@@ -3079,14 +3088,14 @@ export default function ContentGenerationModal({
                           }}
                         >
                           <option value="" style={{ background: '#1e1e1e', color: '#ccc' }}>
-                            — Kies —
+                            â€” Kies â€”
                           </option>
-                          {/* Guest player option — always available, can be used multiple times */}
+                          {/* Guest player option â€” always available, can be used multiple times */}
                           <option value="__guest__" style={{ background: '#1e1e1e', color: '#a78bfa' }}>
-                            🏃 Gast Speler
+                            Gast Speler
                           </option>
                           {assetTypes.length > 0 && eligibleMembers.length > 0 && (
-                            <optgroup label="✅ Beschikbaar">
+                            <optgroup label="Beschikbaar">
                               {eligibleMembers.map(p => {
                                 const name = getMemberName(p);
                                 const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
@@ -3094,7 +3103,7 @@ export default function ContentGenerationModal({
                                 const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
                                 return (
                                   <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
-                                    {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
+                                    {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' —' : ''}
                                   </option>
                                 );
                               })}
@@ -3107,12 +3116,12 @@ export default function ContentGenerationModal({
                             const isAlreadyUsed = allUsedIds.includes(p.id) && p.id !== currentId;
                             return (
                               <option key={p.id} value={p.id} disabled={isAlreadyUsed} style={{ background: '#1e1e1e', color: isAlreadyUsed ? '#666' : '#ccc' }}>
-                                {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' ✗' : ''}
+                                {jersey ? `#${jersey} ` : ''}{name}{isAlreadyUsed ? ' —' : ''}
                               </option>
                             );
                           })}
                           {assetTypes.length > 0 && ineligibleMembers.length > 0 && (
-                            <optgroup label="⚠️ Ontbrekende assets">
+                            <optgroup label="ï¸ Ontbrekende assets">
                               {ineligibleMembers.map(p => {
                                 const name = getMemberName(p);
                                 const jersey = p.metadata?.shirt_number || p.data?.jersey_number;
@@ -3141,7 +3150,7 @@ export default function ContentGenerationModal({
                             whiteSpace: 'nowrap',
                             textAlign: 'center',
                           }}>
-                            {isGuestSelected ? '🏃 Gast' : `${jerseyNumber ? `#${jerseyNumber} ` : ''}${currentMember ? getMemberName(currentMember) : ''}`}
+                            {isGuestSelected ? 'Gast' : `${jerseyNumber ? `#${jerseyNumber} ` : ''}${currentMember ? getMemberName(currentMember) : ''}`}
                           </div>
                         )}
                       </div>
@@ -3155,10 +3164,10 @@ export default function ContentGenerationModal({
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '8px 12px',
-                  background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                  background: 'var(--app-surface-2, #f3f4f6)',
                   borderRadius: 8,
                   fontSize: 12,
-                  color: 'var(--vscode-foreground, #ccc)',
+                  color: 'var(--app-text, #111)',
                 }}>
                   <span>Formatie: <strong>{lineupFormation}</strong></span>
                   <span>
@@ -3166,7 +3175,7 @@ export default function ContentGenerationModal({
                       const filled = [...gkSelected, ...playerSelected].filter(Boolean).length;
                       const total = formationLayout.positions.length;
                       return filled === total
-                        ? <span style={{ color: '#10b981' }}>✓ Alle {total} posities ingevuld</span>
+                        ? <span style={{ color: '#10b981' }}>“ Alle {total} posities ingevuld</span>
                         : <span>{filled} / {total} posities ingevuld</span>;
                     })()}
                   </span>
@@ -3177,12 +3186,19 @@ export default function ContentGenerationModal({
 
           {/* Confirm - Review before generation */}
           {step === 'confirm' && (
-            <div className="flex flex-col items-center justify-center h-full py-12">
-              <div className="text-6xl mb-6">{selectedType?.subtype === 'goal' ? '⚽' : selectedType?.subtype === 'flyer' ? '📣' : selectedType?.subtype === 'match_intro' ? '🎥' : '🎬'}</div>
-              <h3 className="text-2xl font-bold mb-2">
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '16px', marginBottom: '20px',
+                backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.1))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--app-primary, #3B8EA5)', fontSize: '28px', fontWeight: 700,
+              }}>
+                {(selectedType?.label || contentTypeLabel || '?').charAt(0).toUpperCase()}
+              </div>
+              <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: 'var(--app-text, #111)' }}>
                 {selectedType?.subtype === 'goal' ? 'Goal Celebration Video' : selectedType?.subtype === 'flyer' ? 'Match Flyer' : selectedType?.subtype === 'match_intro' ? 'Match Intro Video' : 'Klaar om te genereren'}
               </h3>
-              <p className="text-gray-600 mb-6 text-center max-w-md">
+              <p style={{ fontSize: '14px', color: 'var(--app-text-muted, #6b7280)', marginBottom: '24px', textAlign: 'center', maxWidth: '400px' }}>
                 {selectedType?.subtype === 'goal'
                   ? 'Vul de doelpuntgegevens in en kies een speler.'
                   : selectedType?.subtype === 'flyer'
@@ -3200,14 +3216,14 @@ export default function ContentGenerationModal({
                   maxWidth: 480,
                   padding: '14px 18px',
                   borderRadius: 10,
-                  border: '1px solid var(--vscode-widget-border, #333)',
-                  background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2d2e)',
+                  border: '1px solid var(--app-border, #e5e7eb)',
+                  background: 'var(--app-surface-2, #f3f4f6)',
                 }}>
-                  <div style={{ fontSize: 13, color: 'var(--vscode-foreground, #ccc)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--app-text, #111)' }}>
                     <strong>Wedstrijd:</strong> {matchData.title || `${matchData.project?.name} vs ${matchData.opponent_project?.name || 'Opponent'}`}
                   </div>
                   {matchData.start_time && (
-                    <div style={{ fontSize: 13, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 4 }}>
+                    <div style={{ fontSize: 13, color: 'var(--app-text-muted, #6b7280)', marginTop: 4 }}>
                       {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                   )}
@@ -3222,15 +3238,15 @@ export default function ContentGenerationModal({
                     fontSize: 12,
                     fontWeight: 600,
                     marginBottom: 10,
-                    color: 'var(--vscode-foreground, #ccc)',
+                    color: 'var(--app-text-muted, #6b7280)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>Ontwerpstijl</label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {([
-                      { key: 'modern' as const, label: 'Modern', desc: 'Geometrisch design met clubkleuren en vormen', icon: '🎨' },
-                      { key: 'action' as const, label: 'Actie', desc: 'Samengestelde flyer met actiefoto & clubkleuren', icon: '⚡' },
-                      { key: 'stadium' as const, label: 'Stadium AI', desc: 'AI-gegenereerde stadion achtergrond', icon: '✨' },
+                      { key: 'modern' as const, label: 'Modern', desc: 'Geometrisch design met clubkleuren en vormen', icon: 'M' },
+                      { key: 'action' as const, label: 'Actie', desc: 'Samengestelde flyer met actiefoto & clubkleuren', icon: 'A' },
+                      { key: 'stadium' as const, label: 'Stadium AI', desc: 'AI-gegenereerde stadion achtergrond', icon: 'S' },
                     ]).map((opt) => {
                       const isSelected = matchFlyerVariant === opt.key;
                       return (
@@ -3267,25 +3283,32 @@ export default function ContentGenerationModal({
                             position: 'relative',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
-                            padding: '10px 14px',
+                            gap: 12,
+                            padding: '12px 16px',
                             border: isSelected
-                              ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                              : '1px solid var(--vscode-widget-border, #333)',
-                            borderRadius: 8,
+                              ? '2px solid var(--app-primary, #3B8EA5)'
+                              : '1px solid var(--app-border, #e5e7eb)',
+                            borderRadius: 12,
                             background: isSelected
-                              ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                              : 'var(--vscode-editor-background, #1e1e1e)',
-                            color: 'var(--vscode-foreground, #ccc)',
+                              ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                              : 'var(--app-surface, white)',
+                            color: 'var(--app-text, #111)',
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
                             textAlign: 'left',
+                            width: '100%',
                           }}
                         >
-                          <span style={{ fontSize: 26, flexShrink: 0 }}>{opt.icon}</span>
-                          <div>
-                            <div style={{ fontWeight: 700, fontSize: 13 }}>{opt.label}</div>
-                            <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 1 }}>
+                          <div style={{
+                            width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                            backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16, fontWeight: 700,
+                            color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
+                          }}>{opt.icon}</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: 14 }}>{opt.label}</div>
+                            <div style={{ fontSize: 12, color: 'var(--app-text-muted, #6b7280)', marginTop: 1 }}>
                               {opt.desc}
                             </div>
                           </div>
@@ -3296,7 +3319,7 @@ export default function ContentGenerationModal({
                               background: '#10b981', display: 'flex',
                               alignItems: 'center', justifyContent: 'center',
                               fontSize: 10, color: '#fff', fontWeight: 700,
-                            }}>✓</div>
+                            }}>“</div>
                           )}
                         </button>
                       );
@@ -3306,13 +3329,13 @@ export default function ContentGenerationModal({
                   {/* Action variant: member + style selection */}
                   {matchFlyerVariant === 'action' && (() => {
                     const actionStyleOptions = [
-                      { key: 'dribbling', label: '🏃 Dribbelen' },
-                      { key: 'shooting', label: '⚽ Schieten' },
-                      { key: 'ball_at_feet', label: '🦶 Bal aan de voet' },
-                      { key: 'celebrating', label: '🎉 Vieren' },
-                      { key: 'heading', label: '🤕 Koppen' },
-                      { key: 'sliding_tackle', label: '🦵 Sliding' },
-                      { key: 'karate_kick', label: '🥋 Karatetrap' },
+                      { key: 'dribbling', label: 'Dribbelen' },
+                      { key: 'shooting', label: 'Schieten' },
+                      { key: 'ball_at_feet', label: 'Bal aan de voet' },
+                      { key: 'celebrating', label: 'Vieren' },
+                      { key: 'heading', label: 'Koppen' },
+                      { key: 'sliding_tackle', label: 'Sliding' },
+                      { key: 'karate_kick', label: 'Karatetrap' },
                     ];
 
                     // Find members that have at least one action photo (dedup by user identity)
@@ -3336,7 +3359,7 @@ export default function ContentGenerationModal({
                       if (!member) return [];
                       const tr = (member.metadata as any)?.teamreel_assets || {};
                       const actionImgs = tr?.images?.action_photo || {};
-                      // Keys like "home_dribbling", "away_ball_at_feet" — extract style part
+                      // Keys like "home_dribbling", "away_ball_at_feet" â€” extract style part
                       const styles = new Set<string>();
                       for (const key of Object.keys(actionImgs)) {
                         // Composite key: {kit}_{style} or {kit}_{style1}_{style2}
@@ -3352,12 +3375,12 @@ export default function ContentGenerationModal({
                       <div style={{
                         marginTop: 16,
                         padding: 16,
-                        border: '1px solid var(--vscode-widget-border, #333)',
+                        border: '1px solid var(--app-border, #e5e7eb)',
                         borderRadius: 10,
-                        background: 'var(--vscode-editor-inactiveSelectionBackground, #1a1a2e)',
+                        background: 'var(--app-surface-2, #f3f4f6)',
                       }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--vscode-foreground, #ccc)' }}>
-                          ⚡ Actiefoto Instellingen
+                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--app-text, #111)' }}>
+                          Actiefoto instellingen
                         </div>
 
                         {/* Member selector */}
@@ -3368,7 +3391,7 @@ export default function ContentGenerationModal({
                               fontSize: 11,
                               fontWeight: 600,
                               marginBottom: 6,
-                              color: 'var(--vscode-descriptionForeground, #888)',
+                              color: 'var(--app-text-muted, #6b7280)',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
                             }}>Speler</label>
@@ -3382,10 +3405,10 @@ export default function ContentGenerationModal({
                                 width: '100%',
                                 padding: '8px 10px',
                                 fontSize: 13,
-                                border: '1px solid var(--vscode-widget-border, #444)',
+                                border: '1px solid var(--app-border, #e5e7eb)',
                                 borderRadius: 6,
-                                background: 'var(--vscode-input-background, #2a2a3e)',
-                                color: 'var(--vscode-foreground, #ccc)',
+                                background: 'var(--app-surface-2, #f3f4f6)',
+                                color: 'var(--app-text, #111)',
                                 cursor: 'pointer',
                                 marginBottom: 12,
                               }}
@@ -3401,7 +3424,7 @@ export default function ContentGenerationModal({
                                 const shirtNr = (member.metadata as any)?.shirt_number;
                                 return (
                                   <option key={member.id} value={member.id}>
-                                    {shirtNr ? `#${shirtNr} ` : ''}{name} ⚡
+                                    {shirtNr ? `#${shirtNr} ` : ''}{name}
                                   </option>
                                 );
                               })}
@@ -3415,7 +3438,7 @@ export default function ContentGenerationModal({
                               fontSize: 11,
                               fontWeight: 600,
                               marginBottom: 6,
-                              color: 'var(--vscode-descriptionForeground, #888)',
+                              color: 'var(--app-text-muted, #6b7280)',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
                             }}>Stijl</label>
@@ -3426,10 +3449,10 @@ export default function ContentGenerationModal({
                                 width: '100%',
                                 padding: '8px 10px',
                                 fontSize: 13,
-                                border: '1px solid var(--vscode-widget-border, #444)',
+                                border: '1px solid var(--app-border, #e5e7eb)',
                                 borderRadius: 6,
-                                background: 'var(--vscode-input-background, #2a2a3e)',
-                                color: 'var(--vscode-foreground, #ccc)',
+                                background: 'var(--app-surface-2, #f3f4f6)',
+                                color: 'var(--app-text, #111)',
                                 cursor: 'pointer',
                               }}
                             >
@@ -3445,7 +3468,7 @@ export default function ContentGenerationModal({
 
                             {flyerMemberId && selectedMemberStyles.length === 0 && (
                               <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 8 }}>
-                                ⚠️ Deze speler heeft nog geen bewerkte actiefoto's
+                                ï¸ Deze speler heeft nog geen bewerkte actiefoto's
                               </div>
                             )}
                           </>
@@ -3455,8 +3478,8 @@ export default function ContentGenerationModal({
                             {(() => {
                               const slotCount = flyerPhotoLayout === 'triple' ? 3 : 3; // hero_duo: 1 big + 2 small = 3
                               const slotLabels = flyerPhotoLayout === 'triple'
-                                ? ['① Links', '② Midden', '③ Rechts']
-                                : ['① Groot (links)', '② Klein (rechtsboven)', '③ Klein (rechtsonder)'];
+                                ? [' Links', '¡ Midden', '¢ Rechts']
+                                : [' Groot (links)', '¡ Klein (rechtsboven)', '¢ Klein (rechtsonder)'];
 
                               return Array.from({ length: slotCount }).map((_, slotIdx) => {
                                 const slot = flyerPhotoSlots[slotIdx] || { member_id: null, style_variant: 'dribbling' };
@@ -3480,15 +3503,15 @@ export default function ContentGenerationModal({
                                   <div key={slotIdx} style={{
                                     padding: 10,
                                     marginBottom: slotIdx < slotCount - 1 ? 8 : 0,
-                                    border: '1px solid var(--vscode-widget-border, #444)',
+                                    border: '1px solid var(--app-border, #e5e7eb)',
                                     borderRadius: 8,
-                                    background: 'var(--vscode-editor-background, #1e1e2e)',
+                                    background: 'var(--app-surface, white)',
                                   }}>
                                     <div style={{
                                       fontSize: 12,
                                       fontWeight: 700,
                                       marginBottom: 8,
-                                      color: 'var(--vscode-foreground, #ccc)',
+                                      color: 'var(--app-text, #111)',
                                       display: 'flex',
                                       alignItems: 'center',
                                       gap: 6,
@@ -3500,7 +3523,7 @@ export default function ContentGenerationModal({
                                         width: 22,
                                         height: 22,
                                         borderRadius: '50%',
-                                        background: 'var(--vscode-focusBorder, #007fd4)',
+                                        background: 'var(--app-primary, #3B8EA5)',
                                         color: '#fff',
                                         fontSize: 11,
                                         fontWeight: 700,
@@ -3524,10 +3547,10 @@ export default function ContentGenerationModal({
                                         width: '100%',
                                         padding: '6px 8px',
                                         fontSize: 12,
-                                        border: '1px solid var(--vscode-widget-border, #444)',
+                                        border: '1px solid var(--app-border, #e5e7eb)',
                                         borderRadius: 5,
-                                        background: 'var(--vscode-input-background, #2a2a3e)',
-                                        color: 'var(--vscode-foreground, #ccc)',
+                                        background: 'var(--app-surface-2, #f3f4f6)',
+                                        color: 'var(--app-text, #111)',
                                         cursor: 'pointer',
                                         marginBottom: 6,
                                       }}
@@ -3560,10 +3583,10 @@ export default function ContentGenerationModal({
                                         width: '100%',
                                         padding: '6px 8px',
                                         fontSize: 12,
-                                        border: '1px solid var(--vscode-widget-border, #444)',
+                                        border: '1px solid var(--app-border, #e5e7eb)',
                                         borderRadius: 5,
-                                        background: 'var(--vscode-input-background, #2a2a3e)',
-                                        color: 'var(--vscode-foreground, #ccc)',
+                                        background: 'var(--app-surface-2, #f3f4f6)',
+                                        color: 'var(--app-text, #111)',
                                         cursor: 'pointer',
                                       }}
                                     >
@@ -3571,7 +3594,7 @@ export default function ContentGenerationModal({
                                         const available = !slot.member_id || slotMemberStyles.includes(opt.key);
                                         return (
                                           <option key={opt.key} value={opt.key} disabled={!available}>
-                                            {opt.label}{!available ? ' ✗' : ''}
+                                            {opt.label}{!available ? ' —' : ''}
                                           </option>
                                         );
                                       })}
@@ -3590,15 +3613,15 @@ export default function ContentGenerationModal({
                             fontSize: 11,
                             fontWeight: 600,
                             marginBottom: 8,
-                            color: 'var(--vscode-descriptionForeground, #888)',
+                            color: 'var(--app-text-muted, #6b7280)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em',
                           }}>Foto Layout</label>
                           <div style={{ display: 'flex', gap: 8 }}>
                             {([
-                              { key: 'single' as const, label: '1 Groot', icon: '🖼️', desc: '1 actiefoto' },
-                              { key: 'triple' as const, label: '3 Naast', icon: '🖼️🖼️🖼️', desc: '3 naast elkaar' },
-                              { key: 'hero_duo' as const, label: '1+2', icon: '🖼️+🖼️', desc: '1 groot + 2 klein' },
+                              { key: 'single' as const, label: '1 Groot', icon: '', desc: '1 actiefoto' },
+                              { key: 'triple' as const, label: '3 Naast', icon: '', desc: '3 naast elkaar' },
+                              { key: 'hero_duo' as const, label: '1+2', icon: '+', desc: '1 groot + 2 klein' },
                             ] as const).map((opt) => {
                               const isActive = flyerPhotoLayout === opt.key;
                               return (
@@ -3609,13 +3632,13 @@ export default function ContentGenerationModal({
                                     flex: 1,
                                     padding: '8px 4px',
                                     border: isActive
-                                      ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                      : '1px solid var(--vscode-widget-border, #444)',
+                                      ? '2px solid var(--app-primary, #3B8EA5)'
+                                      : '1px solid var(--app-border, #e5e7eb)',
                                     borderRadius: 8,
                                     background: isActive
-                                      ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                      : 'var(--vscode-input-background, #2a2a3e)',
-                                    color: isActive ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                      ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                      : 'var(--app-surface-2, #f3f4f6)',
+                                    color: isActive ? '#fff' : 'var(--app-text, #111)',
                                     cursor: 'pointer',
                                     textAlign: 'center',
                                     fontSize: 11,
@@ -3640,7 +3663,7 @@ export default function ContentGenerationModal({
                               fontSize: 11,
                               fontWeight: 600,
                               marginBottom: 8,
-                              color: 'var(--vscode-descriptionForeground, #888)',
+                              color: 'var(--app-text-muted, #6b7280)',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
                             }}>Achtergrond</label>
@@ -3649,21 +3672,21 @@ export default function ContentGenerationModal({
                               gridTemplateColumns: 'repeat(auto-fill, minmax(72px, 1fr))',
                               gap: 6,
                             }}>
-                              {/* Default — no custom background */}
+                              {/* Default â€” no custom background */}
                               <button
                                 onClick={() => setSelectedBackgroundUrl(null)}
                                 style={{
                                   position: 'relative',
                                   border: !selectedBackgroundUrl
-                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                    : '1px solid var(--vscode-widget-border, #444)',
+                                    ? '2px solid var(--app-primary, #3B8EA5)'
+                                    : '1px solid var(--app-border, #e5e7eb)',
                                   borderRadius: 6,
                                   overflow: 'hidden',
                                   cursor: 'pointer',
                                   padding: 0,
                                   background: !selectedBackgroundUrl
-                                    ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                    : 'var(--vscode-editor-background, #1e1e1e)',
+                                    ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                    : 'var(--app-surface, white)',
                                 }}
                               >
                                 <div style={{
@@ -3674,17 +3697,17 @@ export default function ContentGenerationModal({
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                 }}>
-                                  <span style={{ fontSize: 18 }}>⚽</span>
+
                                 </div>
                                 <div style={{
                                   padding: '2px 0',
                                   textAlign: 'center',
                                   fontWeight: 600,
                                   fontSize: 9,
-                                  color: !selectedBackgroundUrl ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                  color: !selectedBackgroundUrl ? '#fff' : 'var(--app-text, #111)',
                                   background: !selectedBackgroundUrl
-                                    ? 'var(--vscode-focusBorder, #007fd4)'
-                                    : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                    ? 'var(--app-primary, #3B8EA5)'
+                                    : 'var(--app-surface-2, #f3f4f6)',
                                 }}>Standaard</div>
                                 {!selectedBackgroundUrl && (
                                   <div style={{
@@ -3693,7 +3716,7 @@ export default function ContentGenerationModal({
                                     background: '#10b981', display: 'flex',
                                     alignItems: 'center', justifyContent: 'center',
                                     fontSize: 8, color: '#fff', fontWeight: 700,
-                                  }}>✓</div>
+                                  }}>“</div>
                                 )}
                               </button>
 
@@ -3706,15 +3729,15 @@ export default function ContentGenerationModal({
                                     style={{
                                       position: 'relative',
                                       border: isSelected
-                                        ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                        : '1px solid var(--vscode-widget-border, #444)',
+                                        ? '2px solid var(--app-primary, #3B8EA5)'
+                                        : '1px solid var(--app-border, #e5e7eb)',
                                       borderRadius: 6,
                                       overflow: 'hidden',
                                       cursor: 'pointer',
                                       padding: 0,
                                       background: isSelected
-                                        ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                        : 'var(--vscode-editor-background, #1e1e1e)',
+                                        ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                        : 'var(--app-surface, white)',
                                     }}
                                   >
                                     <div style={{
@@ -3727,10 +3750,10 @@ export default function ContentGenerationModal({
                                       textAlign: 'center',
                                       fontWeight: 600,
                                       fontSize: 9,
-                                      color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                      color: isSelected ? '#fff' : 'var(--app-text, #111)',
                                       background: isSelected
-                                        ? 'var(--vscode-focusBorder, #007fd4)'
-                                        : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                        ? 'var(--app-primary, #3B8EA5)'
+                                        : 'var(--app-surface-2, #f3f4f6)',
                                       overflow: 'hidden',
                                       textOverflow: 'ellipsis',
                                       whiteSpace: 'nowrap',
@@ -3744,7 +3767,7 @@ export default function ContentGenerationModal({
                                         background: '#10b981', display: 'flex',
                                         alignItems: 'center', justifyContent: 'center',
                                         fontSize: 8, color: '#fff', fontWeight: 700,
-                                      }}>✓</div>
+                                      }}>“</div>
                                     )}
                                   </button>
                                 );
@@ -3764,18 +3787,18 @@ export default function ContentGenerationModal({
                   width: '100%',
                   maxWidth: 480,
                   marginTop: 20,
-                  border: '1px solid var(--vscode-widget-border, #333)',
+                  border: '1px solid var(--app-border, #e5e7eb)',
                   borderRadius: 12,
                   overflow: 'hidden',
-                  background: 'var(--vscode-editor-background, #1e1e1e)',
+                  background: 'var(--app-surface, white)',
                 }}>
                   <div style={{
                     padding: '14px 20px',
-                    borderBottom: '1px solid var(--vscode-widget-border, #333)',
-                    background: 'var(--vscode-editor-inactiveSelectionBackground, #1a1a2e)',
+                    borderBottom: '1px solid var(--app-border, #e5e7eb)',
+                    background: 'var(--app-surface-2, #f3f4f6)',
                   }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #ccc)' }}>
-                      📊 Wedstrijd Samenvatting
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--app-text, #111)' }}>
+                      Wedstrijd Samenvatting
                     </h4>
                   </div>
 
@@ -3784,12 +3807,12 @@ export default function ContentGenerationModal({
                     <div>
                       <label style={{
                         display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 8,
-                        color: 'var(--vscode-descriptionForeground, #888)',
+                        color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase', letterSpacing: '0.05em',
                       }}>Eindstand</label>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
                         <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 4 }}>
+                          <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginBottom: 4 }}>
                             {homeTeamName}
                           </div>
                           <input
@@ -3801,15 +3824,15 @@ export default function ContentGenerationModal({
                             style={{
                               width: 60, padding: '10px', fontSize: 28, fontWeight: 700,
                               textAlign: 'center', borderRadius: 8,
-                              border: '1px solid var(--vscode-widget-border, #444)',
-                              background: 'var(--vscode-input-background, #2a2a3e)',
-                              color: 'var(--vscode-foreground, #fff)',
+                              border: '1px solid var(--app-border, #e5e7eb)',
+                              background: 'var(--app-surface-2, #f3f4f6)',
+                              color: 'var(--app-text, #111)',
                             }}
                           />
                         </div>
-                        <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--vscode-foreground, #ccc)' }}>-</span>
+                        <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--app-text, #111)' }}>-</span>
                         <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: 11, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 4 }}>
+                          <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginBottom: 4 }}>
                             {awayTeamName}
                           </div>
                           <input
@@ -3821,9 +3844,9 @@ export default function ContentGenerationModal({
                             style={{
                               width: 60, padding: '10px', fontSize: 28, fontWeight: 700,
                               textAlign: 'center', borderRadius: 8,
-                              border: '1px solid var(--vscode-widget-border, #444)',
-                              background: 'var(--vscode-input-background, #2a2a3e)',
-                              color: 'var(--vscode-foreground, #fff)',
+                              border: '1px solid var(--app-border, #e5e7eb)',
+                              background: 'var(--app-surface-2, #f3f4f6)',
+                              color: 'var(--app-text, #111)',
                             }}
                           />
                         </div>
@@ -3834,7 +3857,7 @@ export default function ContentGenerationModal({
                     <div>
                       <label style={{
                         display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 6,
-                        color: 'var(--vscode-descriptionForeground, #888)',
+                        color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase', letterSpacing: '0.05em',
                       }}>Doelpuntenmakers (1 per regel)</label>
                       <textarea
@@ -3845,9 +3868,9 @@ export default function ContentGenerationModal({
                         style={{
                           width: '100%', padding: '10px', fontSize: 13,
                           borderRadius: 8, resize: 'vertical',
-                          border: '1px solid var(--vscode-widget-border, #444)',
-                          background: 'var(--vscode-input-background, #2a2a3e)',
-                          color: 'var(--vscode-foreground, #ccc)',
+                          border: '1px solid var(--app-border, #e5e7eb)',
+                          background: 'var(--app-surface-2, #f3f4f6)',
+                          color: 'var(--app-text, #111)',
                           fontFamily: 'inherit',
                         }}
                       />
@@ -3858,7 +3881,7 @@ export default function ContentGenerationModal({
                       <div>
                         <label style={{
                           display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 8,
-                          color: 'var(--vscode-descriptionForeground, #888)',
+                          color: 'var(--app-text-muted, #6b7280)',
                           textTransform: 'uppercase', letterSpacing: '0.05em',
                         }}>Achtergrond</label>
                         <div style={{
@@ -3871,12 +3894,12 @@ export default function ContentGenerationModal({
                             style={{
                               position: 'relative',
                               border: !selectedBackgroundUrl
-                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                : '1px solid var(--vscode-widget-border, #444)',
+                                ? '2px solid var(--app-primary, #3B8EA5)'
+                                : '1px solid var(--app-border, #e5e7eb)',
                               borderRadius: 6, overflow: 'hidden', cursor: 'pointer', padding: 0,
                               background: !selectedBackgroundUrl
-                                ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                : 'var(--vscode-editor-background, #1e1e1e)',
+                                ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                : 'var(--app-surface, white)',
                             }}
                           >
                             <div style={{
@@ -3884,14 +3907,14 @@ export default function ContentGenerationModal({
                               background: 'linear-gradient(to bottom, #16a34a, #14532d)',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}>
-                              <span style={{ fontSize: 18 }}>⚽</span>
+
                             </div>
                             <div style={{
                               padding: '2px 0', textAlign: 'center', fontWeight: 600, fontSize: 9,
-                              color: !selectedBackgroundUrl ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                              color: !selectedBackgroundUrl ? '#fff' : 'var(--app-text, #111)',
                               background: !selectedBackgroundUrl
-                                ? 'var(--vscode-focusBorder, #007fd4)'
-                                : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                ? 'var(--app-primary, #3B8EA5)'
+                                : 'var(--app-surface-2, #f3f4f6)',
                             }}>Standaard</div>
                           </button>
                           {appBackgrounds.map((bg) => {
@@ -3903,12 +3926,12 @@ export default function ContentGenerationModal({
                                 style={{
                                   position: 'relative',
                                   border: isSelected
-                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                    : '1px solid var(--vscode-widget-border, #444)',
+                                    ? '2px solid var(--app-primary, #3B8EA5)'
+                                    : '1px solid var(--app-border, #e5e7eb)',
                                   borderRadius: 6, overflow: 'hidden', cursor: 'pointer', padding: 0,
                                   background: isSelected
-                                    ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                                    : 'var(--vscode-editor-background, #1e1e1e)',
+                                    ? 'var(--app-primary-light, rgba(59,142,165,0.08))'
+                                    : 'var(--app-surface, white)',
                                 }}
                               >
                                 <div style={{
@@ -3917,10 +3940,10 @@ export default function ContentGenerationModal({
                                 }} />
                                 <div style={{
                                   padding: '2px 0', textAlign: 'center', fontWeight: 600, fontSize: 9,
-                                  color: isSelected ? '#fff' : 'var(--vscode-foreground, #ccc)',
+                                  color: isSelected ? '#fff' : 'var(--app-text, #111)',
                                   background: isSelected
-                                    ? 'var(--vscode-focusBorder, #007fd4)'
-                                    : 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
+                                    ? 'var(--app-primary, #3B8EA5)'
+                                    : 'var(--app-surface-2, #f3f4f6)',
                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                                 }}>{bg.label || bg.profile_name || 'Locatie'}</div>
                                 {isSelected && (
@@ -3930,7 +3953,7 @@ export default function ContentGenerationModal({
                                     background: '#10b981', display: 'flex',
                                     alignItems: 'center', justifyContent: 'center',
                                     fontSize: 8, color: '#fff', fontWeight: 700,
-                                  }}>✓</div>
+                                  }}>“</div>
                                 )}
                               </button>
                             );
@@ -3948,19 +3971,19 @@ export default function ContentGenerationModal({
                   width: '100%',
                   maxWidth: 480,
                   marginTop: 20,
-                  border: '1px solid var(--vscode-widget-border, #ddd)',
+                  border: '1px solid var(--app-border, #e5e7eb)',
                   borderRadius: 12,
                   overflow: 'hidden',
-                  background: 'var(--vscode-editor-background, #fff)',
+                  background: 'var(--app-surface, white)',
                 }}>
                   {/* Section header */}
                   <div style={{
                     padding: '14px 20px',
-                    borderBottom: '1px solid var(--vscode-widget-border, #ddd)',
-                    background: 'var(--vscode-editor-inactiveSelectionBackground, #f5f5f5)',
+                    borderBottom: '1px solid var(--app-border, #e5e7eb)',
+                    background: 'var(--app-surface-2, #f3f4f6)',
                   }}>
-                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--vscode-foreground, #333)' }}>
-                      ⚽ Doelpunt Details
+                    <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--app-text, #111)' }}>
+                      Doelpunt Details
                     </h4>
                   </div>
 
@@ -3973,7 +3996,7 @@ export default function ContentGenerationModal({
                         fontSize: 12,
                         fontWeight: 600,
                         marginBottom: 10,
-                        color: 'var(--vscode-foreground, #555)',
+                        color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>Nieuwe Stand</label>
@@ -3983,7 +4006,7 @@ export default function ContentGenerationModal({
                           {homeLogoUrl ? (
                             <img src={homeLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
                           ) : null}
-                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--vscode-foreground, #666)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--app-text-muted, #6b7280)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
                             {homeTeamName}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
@@ -3991,39 +4014,39 @@ export default function ContentGenerationModal({
                               type="button"
                               onClick={() => setGoalScoreHome(Math.max(0, goalScoreHome - 1))}
                               style={{
-                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderRight: 'none',
-                                borderRadius: '8px 0 0 8px', background: 'var(--vscode-input-background, #fff)',
-                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                width: 32, height: 56, border: '2px solid var(--app-border, #e5e7eb)', borderRight: 'none',
+                                borderRadius: '8px 0 0 8px', background: 'var(--app-surface, white)',
+                                color: 'var(--app-text-muted, #6b7280)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                               }}
-                            >−</button>
+                            >âˆ’</button>
                             <div style={{
                               width: 48, height: 56, fontSize: 28, fontWeight: 700,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              borderTop: '2px solid var(--vscode-widget-border, #ccc)',
-                              borderBottom: '2px solid var(--vscode-widget-border, #ccc)',
-                              background: 'var(--vscode-input-background, #fff)',
-                              color: 'var(--vscode-foreground, #333)',
+                              borderTop: '2px solid var(--app-border, #e5e7eb)',
+                              borderBottom: '2px solid var(--app-border, #e5e7eb)',
+                              background: 'var(--app-surface, white)',
+                              color: 'var(--app-text, #111)',
                             }}>{goalScoreHome}</div>
                             <button
                               type="button"
                               onClick={() => setGoalScoreHome(Math.min(99, goalScoreHome + 1))}
                               style={{
-                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderLeft: 'none',
-                                borderRadius: '0 8px 8px 0', background: 'var(--vscode-input-background, #fff)',
-                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                width: 32, height: 56, border: '2px solid var(--app-border, #e5e7eb)', borderLeft: 'none',
+                                borderRadius: '0 8px 8px 0', background: 'var(--app-surface, white)',
+                                color: 'var(--app-text-muted, #6b7280)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                               }}
                             >+</button>
                           </div>
                         </div>
-                        <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--vscode-foreground, #666)', marginTop: 20 }}>-</span>
+                        <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--app-text-muted, #6b7280)', marginTop: 20 }}>-</span>
                         {/* Away team */}
                         <div style={{ textAlign: 'center', minWidth: 80 }}>
                           {awayLogoUrl ? (
                             <img src={awayLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
                           ) : null}
-                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--vscode-foreground, #666)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: 'var(--app-text-muted, #6b7280)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>
                             {awayTeamName}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
@@ -4031,27 +4054,27 @@ export default function ContentGenerationModal({
                               type="button"
                               onClick={() => setGoalScoreAway(Math.max(0, goalScoreAway - 1))}
                               style={{
-                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderRight: 'none',
-                                borderRadius: '8px 0 0 8px', background: 'var(--vscode-input-background, #fff)',
-                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                width: 32, height: 56, border: '2px solid var(--app-border, #e5e7eb)', borderRight: 'none',
+                                borderRadius: '8px 0 0 8px', background: 'var(--app-surface, white)',
+                                color: 'var(--app-text-muted, #6b7280)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                               }}
-                            >−</button>
+                            >âˆ’</button>
                             <div style={{
                               width: 48, height: 56, fontSize: 28, fontWeight: 700,
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              borderTop: '2px solid var(--vscode-widget-border, #ccc)',
-                              borderBottom: '2px solid var(--vscode-widget-border, #ccc)',
-                              background: 'var(--vscode-input-background, #fff)',
-                              color: 'var(--vscode-foreground, #333)',
+                              borderTop: '2px solid var(--app-border, #e5e7eb)',
+                              borderBottom: '2px solid var(--app-border, #e5e7eb)',
+                              background: 'var(--app-surface, white)',
+                              color: 'var(--app-text, #111)',
                             }}>{goalScoreAway}</div>
                             <button
                               type="button"
                               onClick={() => setGoalScoreAway(Math.min(99, goalScoreAway + 1))}
                               style={{
-                                width: 32, height: 56, border: '2px solid var(--vscode-widget-border, #ccc)', borderLeft: 'none',
-                                borderRadius: '0 8px 8px 0', background: 'var(--vscode-input-background, #fff)',
-                                color: 'var(--vscode-foreground, #666)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
+                                width: 32, height: 56, border: '2px solid var(--app-border, #e5e7eb)', borderLeft: 'none',
+                                borderRadius: '0 8px 8px 0', background: 'var(--app-surface, white)',
+                                color: 'var(--app-text-muted, #6b7280)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                               }}
                             >+</button>
@@ -4067,7 +4090,7 @@ export default function ContentGenerationModal({
                         fontSize: 12,
                         fontWeight: 600,
                         marginBottom: 10,
-                        color: 'var(--vscode-foreground, #555)',
+                        color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>Doelpuntenmaker</label>
@@ -4078,10 +4101,10 @@ export default function ContentGenerationModal({
                           width: '100%',
                           padding: '10px 12px',
                           fontSize: 14,
-                          border: '1px solid var(--vscode-widget-border, #ccc)',
+                          border: '1px solid var(--app-border, #e5e7eb)',
                           borderRadius: 8,
-                          background: 'var(--vscode-input-background, #fff)',
-                          color: 'var(--vscode-foreground, #333)',
+                          background: 'var(--app-surface, white)',
+                          color: 'var(--app-text, #111)',
                           cursor: 'pointer',
                         }}
                       >
@@ -4091,7 +4114,7 @@ export default function ContentGenerationModal({
                             arms_wide: 'Armen wijd',
                             fist_pump: 'Vuist omhoog',
                             point_to_sky: 'Wijs naar hemel',
-                            slide: 'Knieën slide',
+                            slide: 'KnieÃ«n slide',
                           };
                           const allMembers = [...(seasonSquad.goalkeeper || []), ...(seasonSquad.player || [])];
                           // Dedup by user ID (same person may appear in multiple roles)
@@ -4119,7 +4142,7 @@ export default function ContentGenerationModal({
                               const val = celebrationObj[k];
                               return val && (typeof val === 'string' || (typeof val === 'object' && Object.keys(val).length > 0));
                             });
-                            // Extract unique celebration types from composite keys (e.g. "home_arms_wide" → "arms_wide")
+                            // Extract unique celebration types from composite keys (e.g. "home_arms_wide" ’ "arms_wide")
                             const celebTypes = [...new Set(celebrationKeys.map(k => {
                               const parts = k.split('_');
                               return parts.length > 1 ? parts.slice(1).join('_') : k;
@@ -4144,7 +4167,7 @@ export default function ContentGenerationModal({
 
                           return options.map(({ member, name, hasCelebration, celebType, celebLabel }) => {
                             const suffix = hasCelebration
-                              ? ` — ${celebLabel}`
+                              ? ` â€” ${celebLabel}`
                               : ' (geen celebration video)';
                             return (
                               <option
@@ -4177,7 +4200,7 @@ export default function ContentGenerationModal({
                           fontSize: 12,
                           fontWeight: 600,
                           marginBottom: 10,
-                          color: 'var(--vscode-foreground, #555)',
+                          color: 'var(--app-text-muted, #6b7280)',
                           textTransform: 'uppercase',
                           letterSpacing: '0.05em',
                         }}>Achtergrond</label>
@@ -4191,8 +4214,8 @@ export default function ContentGenerationModal({
                             style={{
                               position: 'relative',
                               border: !selectedBackgroundUrl
-                                ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                : '1px solid var(--vscode-widget-border, #ddd)',
+                                ? '2px solid var(--app-primary, #3B8EA5)'
+                                : '1px solid var(--app-border, #e5e7eb)',
                               borderRadius: 8,
                               overflow: 'hidden',
                               cursor: 'pointer',
@@ -4207,14 +4230,14 @@ export default function ContentGenerationModal({
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}>
-                              <span style={{ fontSize: 20 }}>⚽</span>
+
                             </div>
                             <div style={{
                               padding: '3px 0',
                               textAlign: 'center',
                               fontWeight: 600,
                               fontSize: 9,
-                              color: !selectedBackgroundUrl ? 'var(--vscode-focusBorder, #007fd4)' : 'var(--vscode-foreground, #888)',
+                              color: !selectedBackgroundUrl ? 'var(--app-primary, #3B8EA5)' : 'var(--app-text-muted, #6b7280)',
                             }}>
                               Standaard
                             </div>
@@ -4229,8 +4252,8 @@ export default function ContentGenerationModal({
                                 style={{
                                   position: 'relative',
                                   border: isSel
-                                    ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                                    : '1px solid var(--vscode-widget-border, #ddd)',
+                                    ? '2px solid var(--app-primary, #3B8EA5)'
+                                    : '1px solid var(--app-border, #e5e7eb)',
                                   borderRadius: 8,
                                   overflow: 'hidden',
                                   cursor: 'pointer',
@@ -4247,7 +4270,7 @@ export default function ContentGenerationModal({
                                   textAlign: 'center',
                                   fontWeight: 600,
                                   fontSize: 9,
-                                  color: isSel ? 'var(--vscode-focusBorder, #007fd4)' : 'var(--vscode-foreground, #888)',
+                                  color: isSel ? 'var(--app-primary, #3B8EA5)' : 'var(--app-text-muted, #6b7280)',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
@@ -4284,42 +4307,42 @@ export default function ContentGenerationModal({
                 const displayProgress = isVideoJob && videoJobProgressRaw > 0 ? videoJobProgressRaw : progress;
 
                 // Dynamic headline and description based on status
-                let headline = 'Bezig met genereren…';
+                let headline = 'Bezig met genererenâ€¦';
                 let description = 'Even geduld, we maken je content.';
 
                 if (isGoalCelebration) {
-                  headline = '⚽ Goal Celebration wordt gemaakt';
+                  headline = 'Goal Celebration wordt gemaakt';
                   if (status === 'queued') {
-                    description = 'Wachten op verwerking…';
+                    description = 'Wachten op verwerkingâ€¦';
                   } else if (status === 'processing') {
                     if (displayProgress > 0) {
                       description = displayProgress < 30
-                        ? 'Assets worden geladen…'
+                        ? 'Assets worden geladenâ€¦'
                         : displayProgress < 70
-                          ? 'Video wordt samengesteld…'
-                          : 'Bijna klaar, video wordt afgerond…';
+                          ? 'Video wordt samengesteldâ€¦'
+                          : 'Bijna klaar, video wordt afgerondâ€¦';
                     } else {
-                      description = 'Celebration video wordt verwerkt…';
+                      description = 'Celebration video wordt verwerktâ€¦';
                     }
                   } else if (status === 'completed') {
-                    description = 'Voltooid! ⚽🎉';
+                    description = 'Voltooid!';
                   }
                 } else if (isMatchIntro) {
-                  headline = '🎥 Match Intro wordt gemaakt';
+                  headline = 'Match Intro wordt gemaakt';
                   if (status === 'queued') {
-                    description = 'Wachten op verwerking…';
+                    description = 'Wachten op verwerkingâ€¦';
                   } else if (status === 'processing') {
                     if (displayProgress > 0) {
                       description = displayProgress < 30
-                        ? 'Header en logo\'s worden geladen…'
+                        ? 'Header en logo\'s worden geladenâ€¦'
                         : displayProgress < 70
-                          ? 'Intro video wordt samengesteld…'
-                          : 'Bijna klaar, video wordt afgerond…';
+                          ? 'Intro video wordt samengesteldâ€¦'
+                          : 'Bijna klaar, video wordt afgerondâ€¦';
                     } else {
-                      description = 'Match intro wordt verwerkt…';
+                      description = 'Match intro wordt verwerktâ€¦';
                     }
                   } else if (status === 'completed') {
-                    description = 'Voltooid! 🎥🎉';
+                    description = 'Voltooid! Ž‰';
                   }
                 } else if (isLineupFlyer) {
                   headline = 'Flyer wordt gemaakt';
@@ -4332,18 +4355,18 @@ export default function ContentGenerationModal({
                   const segTotal = (videoJobMeta as Record<string, unknown>)?.segment_total as number | undefined;
 
                   if (status === 'queued') {
-                    description = 'Wachten op verwerking…';
+                    description = 'Wachten op verwerkingâ€¦';
                   } else if (status === 'processing') {
                     if (currentPlayer && segIdx && segTotal) {
                       description = `${currentPlayer} (${segIdx}/${segTotal})`;
                     } else if (displayProgress > 0) {
                       description = displayProgress < 50
-                        ? 'Intro en spelers worden verwerkt…'
+                        ? 'Intro en spelers worden verwerktâ€¦'
                         : displayProgress < 85
-                          ? 'Segmenten worden samengevoegd…'
-                          : 'Bijna klaar, video wordt afgerond…';
+                          ? 'Segmenten worden samengevoegdâ€¦'
+                          : 'Bijna klaar, video wordt afgerondâ€¦';
                     } else {
-                      description = 'Assets worden geladen…';
+                      description = 'Assets worden geladenâ€¦';
                     }
                   } else if (status === 'completed') {
                     description = 'Voltooid!';
@@ -4353,7 +4376,7 @@ export default function ContentGenerationModal({
                 return (
                   <div className="w-full max-w-md text-center">
                     {/* Icon */}
-                    <div className="text-5xl mb-6 animate-pulse">{isGoalCelebration ? '⚽' : isMatchIntro ? '🎥' : isLineupFlyer ? '📋' : '🎬'}</div>
+                    <div className="text-5xl mb-6 animate-pulse">{isGoalCelebration ? 'GC' : isMatchIntro ? 'MI' : isLineupFlyer ? 'LF' : 'LV'}</div>
 
                     {/* Headline */}
                     <h2 className="text-xl font-semibold text-gray-800 mb-2">{headline}</h2>
@@ -4374,7 +4397,7 @@ export default function ContentGenerationModal({
                     {isVideoJob && videoJobId && (
                       <div className="mt-8">
                         <p className="text-xs text-gray-400 mb-2">
-                          Je kunt dit venster sluiten — de video wordt op de achtergrond verwerkt.
+                          Je kunt dit venster sluiten â€” de video wordt op de achtergrond verwerkt.
                         </p>
                         <Button
                           variant="ghost"
@@ -4391,16 +4414,16 @@ export default function ContentGenerationModal({
             </div>
           )}
 
-          {/* Video Queued — shown after video job is submitted */}
+          {/* Video Queued â€” shown after video job is submitted */}
           {step === 'video_queued' && (
             <div className="flex flex-col items-center justify-center h-full py-8">
               <div className="w-full max-w-md text-center">
 
-                {/* ── Completed: show inline video preview ── */}
+                {/* €€ Completed: show inline video preview €€ */}
                 {videoOutputUrl ? (
                   <>
                     <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: videoApprovalStatus === 'approved' ? 'rgba(34,197,94,0.15)' : videoApprovalStatus === 'rejected' ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)' }}>
-                      <span className="text-2xl">{videoApprovalStatus === 'approved' ? '✅' : videoApprovalStatus === 'rejected' ? '🗑️' : '🎬'}</span>
+                      <span className="text-2xl">{videoApprovalStatus === 'approved' ? '' : videoApprovalStatus === 'rejected' ? '' : ''}</span>
                     </div>
                     <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--app-text)' }}>
                       {videoApprovalStatus === 'approved' ? 'Video goedgekeurd!' : videoApprovalStatus === 'rejected' ? 'Video afgewezen' : 'Video klaar!'}
@@ -4436,7 +4459,7 @@ export default function ContentGenerationModal({
                             cursor: videoApprovalStatus !== 'idle' ? 'wait' : 'pointer',
                           }}
                         >
-                          {videoApprovalStatus === 'approving' ? '⏳ Bezig...' : '✅ Goedkeuren'}
+                          {videoApprovalStatus === 'approving' ? 'Bezig...' : 'Goedkeuren'}
                         </button>
                         <button
                           onClick={() => handleVideoApproval('reject')}
@@ -4450,14 +4473,14 @@ export default function ContentGenerationModal({
                             cursor: videoApprovalStatus !== 'idle' ? 'wait' : 'pointer',
                           }}
                         >
-                          {videoApprovalStatus === 'rejecting' ? '⏳ Bezig...' : '❌ Afwijzen'}
+                          {videoApprovalStatus === 'rejecting' ? 'Bezig...' : 'Œ Afwijzen'}
                         </button>
                       </div>
                     ) : (
-                      /* After decision — show result + link to content */
+                      /* After decision â€” show result + link to content */
                       <div className="flex flex-col items-center gap-2 mb-2">
                         <p className="text-sm font-medium" style={{ color: videoApprovalStatus === 'approved' ? '#22c55e' : '#f87171' }}>
-                          {videoApprovalStatus === 'approved' ? '✅ Opgeslagen in wedstrijd content' : '🗑️ Video is afgewezen'}
+                          {videoApprovalStatus === 'approved' ? 'Opgeslagen in wedstrijd content' : ' Video is afgewezen'}
                         </p>
                       </div>
                     )}
@@ -4467,10 +4490,10 @@ export default function ContentGenerationModal({
                     </div>
                   </>
                 ) : videoJobStatus === 'failed' ? (
-                  /* ── Failed ── */
+                  /* €€ Failed €€ */
                   <>
                     <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
-                      <span className="text-2xl">❌</span>
+                      <span className="text-2xl">Œ</span>
                     </div>
                     <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--app-text)' }}>Generatie mislukt</h2>
                     <p className="text-sm mb-4" style={{ color: 'var(--app-muted)' }}>
@@ -4481,7 +4504,7 @@ export default function ContentGenerationModal({
                     </div>
                   </>
                 ) : (
-                  /* ── Queued / Processing: spinner + progress bar ── */
+                  /* €€ Queued / Processing: spinner + progress bar €€ */
                   <>
                     <div className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ background: 'rgba(59,130,246,0.12)' }}>
                       <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -4490,7 +4513,7 @@ export default function ContentGenerationModal({
                       </svg>
                     </div>
                     <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--app-text)' }}>
-                      {videoJobStatus === 'processing' ? 'Video wordt gemaakt…' : 'In de wachtrij…'}
+                      {videoJobStatus === 'processing' ? 'Video wordt gemaaktâ€¦' : 'In de wachtrijâ€¦'}
                     </h2>
                     <p className="text-sm mb-4" style={{ color: 'var(--app-muted)' }}>
                       {videoJobStatus === 'processing'
@@ -4509,7 +4532,7 @@ export default function ContentGenerationModal({
                       />
                     </div>
                     <p className="text-xs mb-5" style={{ color: 'var(--app-muted)' }}>
-                      {videoJobProgressRaw > 0 ? `${videoJobProgressRaw}%` : 'Wachten op verwerking…'}
+                      {videoJobProgressRaw > 0 ? `${videoJobProgressRaw}%` : 'Wachten op verwerkingâ€¦'}
                     </p>
 
                     <div className="flex flex-col items-center gap-2">
@@ -4518,7 +4541,7 @@ export default function ContentGenerationModal({
                         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
                         style={{ color: '#60a5fa', background: 'rgba(59,130,246,0.12)' }}
                       >
-                        📋 Ga naar Approvals
+                        Ga naar Approvals
                       </a>
                       <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
                     </div>
@@ -4532,10 +4555,10 @@ export default function ContentGenerationModal({
           {/* Success */}
           {step === 'success' && (
             <div className="flex flex-col items-center justify-center h-full py-8 text-center overflow-y-auto">
-              <div className="text-4xl mb-2">✨</div>
+              <div className="text-4xl mb-2">¨</div>
               <h3 className="text-xl font-bold mb-1">
                 {generatedVariants.length > 1
-                  ? (savedVariantIndices.size === generatedVariants.length ? '✅ Alles opgeslagen!' : 'Content Ready!')
+                  ? (savedVariantIndices.size === generatedVariants.length ? 'Alles opgeslagen!' : 'Content Ready!')
                   : 'Content Ready!'}
               </h3>
               <p className="text-gray-600 mb-4 max-w-sm text-sm">
@@ -4595,11 +4618,11 @@ export default function ContentGenerationModal({
                           <div className={`absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                             isSaved ? 'bg-green-500 text-white' : isSelected ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
                           }`}>
-                            {isSaved ? '✓' : index + 1}
+                            {isSaved ? '\u2713' : index + 1}
                           </div>
                           {isSaved && (
                             <div className="absolute top-2 right-2 text-green-500 text-sm font-bold">
-                              ✅
+
                             </div>
                           )}
                           {/* Per-tile save button */}
@@ -4616,7 +4639,7 @@ export default function ContentGenerationModal({
                                 disabled={savingAsset}
                                 className="px-2 py-0.5 bg-blue-500 hover:bg-blue-600 rounded text-white text-xs font-semibold transition-colors disabled:opacity-50"
                               >
-                                {savingAsset && selectedVariantIndex === index ? '⏳' : '💾 Opslaan'}
+                                {savingAsset && selectedVariantIndex === index ? '' : 'Opslaan'}
                               </button>
                             )}
                           </div>
@@ -4626,7 +4649,7 @@ export default function ContentGenerationModal({
                   </div>
                 </div>
               ) : (
-                // Single variant display — tile-based card (like member asset tiles)
+                // Single variant display â€” tile-based card (like member asset tiles)
                 <>
                   {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
                     <div
@@ -4687,7 +4710,7 @@ export default function ContentGenerationModal({
                               color: 'white',
                             }}
                           >
-                            {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '💾 Klik om op te slaan'}
+                            {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                           </div>
                           {/* File size badge */}
                           {generatedVariants[0].storage_info && (
@@ -4711,10 +4734,10 @@ export default function ContentGenerationModal({
                         {/* Tile footer */}
                         <div style={{ padding: '12px 16px', background: 'var(--app-surface, #111)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                           <div style={{ fontWeight: 600, fontSize: '14px', color: 'var(--app-text, white)', marginBottom: '6px' }}>
-                            🎬 Lineup Video
+                            Lineup Video
                           </div>
                           <div style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '8px' }}>
-                            {matchData?.title || 'Match'} — {new Date().toLocaleDateString('nl-NL')}
+                            {matchData?.title || 'Match'} â€” {new Date().toLocaleDateString('nl-NL')}
                           </div>
 
                           {/* Action buttons (shown after save) */}
@@ -4734,7 +4757,7 @@ export default function ContentGenerationModal({
                                   cursor: 'pointer',
                                 }}
                               >
-                                🔄 Opnieuw
+                                Opnieuw
                               </button>
                               <button
                                 onClick={(e) => {
@@ -4754,13 +4777,13 @@ export default function ContentGenerationModal({
                                   cursor: 'pointer',
                                 }}
                               >
-                                ⬇️ Download
+                                ‡ï¸ Download
                               </button>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   if (window.confirm('Weet je zeker dat je deze lineup video wilt verwijderen?')) {
-                                    // Reset state — effectively deletes from modal context
+                                    // Reset state â€” effectively deletes from modal context
                                     setGeneratedVariants([]);
                                     setSaveSuccess(false);
                                     setSavedVariantIndices(new Set());
@@ -4778,7 +4801,7 @@ export default function ContentGenerationModal({
                                   cursor: 'pointer',
                                 }}
                               >
-                                🗑️
+                                
                               </button>
                             </div>
                           ) : (
@@ -4802,7 +4825,7 @@ export default function ContentGenerationModal({
                                   opacity: savingAsset || saveSuccess ? 0.6 : 1,
                                 }}
                               >
-                                {savingAsset ? '⏳ Opslaan...' : '✅ Accepteren & Opslaan'}
+                                {savingAsset ? 'Opslaan...' : 'Accepteren & Opslaan'}
                               </button>
                               <button
                                 onClick={(e) => {
@@ -4822,7 +4845,7 @@ export default function ContentGenerationModal({
                                   cursor: 'pointer',
                                 }}
                               >
-                                🔍 Groot bekijken
+                                Groot bekijken
                               </button>
                             </div>
                           )}
@@ -4855,7 +4878,7 @@ export default function ContentGenerationModal({
                             fontSize: '11px', fontWeight: 600,
                             background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white',
                           }}>
-                            {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '💾 Klik om op te slaan'}
+                            {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                           </div>
                         </div>
                       </div>
@@ -4886,15 +4909,15 @@ export default function ContentGenerationModal({
                             fontSize: '11px', fontWeight: 600,
                             background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white',
                           }}>
-                            {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '💾 Klik om op te slaan'}
+                            {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                           </div>
                         </div>
                         <div style={{ padding: '10px 14px', background: 'var(--app-surface, #fff)', borderTop: '1px solid #e5e7eb' }}>
                           <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text, #333)', marginBottom: '4px' }}>
-                            📣 {selectedType?.label || 'Content'}
+                            {selectedType?.label || 'Content'}
                           </div>
                           <div style={{ fontSize: '11px', color: '#9ca3af' }}>
-                            {matchData?.title || 'Match'} — {new Date().toLocaleDateString('nl-NL')}
+                            {matchData?.title || 'Match'} â€” {new Date().toLocaleDateString('nl-NL')}
                           </div>
                         </div>
                       </div>
@@ -4910,14 +4933,14 @@ export default function ContentGenerationModal({
               {/* Save success message */}
               {saveSuccess && (
                 <div className="p-3 bg-green-100 text-green-800 rounded-lg text-sm border border-green-200 max-w-md mb-4">
-                  ✅ <strong>Saved!</strong> The selected variant has been saved as a brand asset.
+                  <strong>Saved!</strong> The selected variant has been saved as a brand asset.
                 </div>
               )}
 
               {/* Selected variant info */}
               {generatedVariants[selectedVariantIndex]?.storage_info && (
                 <details className="p-3 bg-gray-50 rounded-lg text-sm border max-w-md mb-4 text-left">
-                  <summary className="cursor-pointer font-medium">📦 Storage Info (Variant {selectedVariantIndex + 1})</summary>
+                  <summary className="cursor-pointer font-medium">Storage Info (Variant {selectedVariantIndex + 1})</summary>
                   <div className="mt-2 text-xs space-y-1">
                     <div><strong>Backend:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_backend}</div>
                     <div><strong>Path:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_path}</div>
@@ -4934,14 +4957,14 @@ export default function ContentGenerationModal({
           {/* Error */}
           {step === 'error' && (
             <div className="flex flex-col items-center justify-center h-full py-12 text-center">
-              <div className="text-6xl mb-4">❌</div>
+              <div className="text-6xl mb-4">Œ</div>
               <h3 className="text-2xl font-bold mb-2 text-red-600">Generation Failed</h3>
               <Alert variant="error" className="max-w-md mb-6">
                 {generationError || 'An unknown error occurred'}
               </Alert>
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => setStep('confirm')}>
-                  ← Try Again
+                   Try Again
                 </Button>
                 <Button variant="ghost" onClick={onClose}>
                   Close
@@ -4953,24 +4976,29 @@ export default function ContentGenerationModal({
         </div>
 
         {/* Footer */}
-        <div className="mt-6 pt-4 border-t flex justify-between">
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '12px 16px',
+          borderTop: '1px solid var(--app-border, #e5e7eb)',
+          flexShrink: 0,
+        }}>
           <div>
             {(step === 'template' || step === 'members' || step === 'lineup_squad' || step === 'confirm') && (
-              <Button variant="ghost" onClick={handleBack}>← Back</Button>
+              <Button variant="ghost" onClick={handleBack}>Terug</Button>
             )}
           </div>
-          <div className="flex gap-3">
+          <div style={{ display: 'flex', gap: '8px' }}>
             {step !== 'generating' && step !== 'success' && step !== 'error' && (
-              <Button variant="ghost" onClick={onClose}>Cancel</Button>
+              <Button variant="ghost" onClick={onClose}>Annuleren</Button>
             )}
             {step === 'members' && isLineupFlow && (
               <Button onClick={() => setStep('lineup_squad')}>
-                Opstelling kiezen →
+                Opstelling kiezen
               </Button>
             )}
             {step === 'members' && !isLineupFlow && (
               <Button disabled={!memberSelectionValid} onClick={() => setStep('confirm')}>
-                Continue →
+                Verder
               </Button>
             )}
             {step === 'lineup_squad' && (
@@ -4983,7 +5011,7 @@ export default function ContentGenerationModal({
                 }));
                 setStep('confirm');
               }}>
-                Continue →
+                Verder
               </Button>
             )}
             {step === 'confirm' && (
@@ -4991,7 +5019,7 @@ export default function ContentGenerationModal({
                 onClick={handleGenerate}
                 disabled={selectedType?.subtype === 'goal' && !goalScorerId}
               >
-                🚀 Generate Content
+                Genereer content
               </Button>
             )}
             {step === 'success' && (
@@ -5004,12 +5032,12 @@ export default function ContentGenerationModal({
                       onClick={handleSaveAsAsset}
                       disabled={savingAsset || saveSuccess}
                     >
-                      {savingAsset ? '⏳ Opslaan...' : saveSuccess ? '✅ Opgeslagen' : '✅ Accepteren & Opslaan'}
+                      {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Accepteren & Opslaan'}
                     </Button>
                   </>
                 ) : (
                   <>
-                    <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                    <Button variant="ghost" onClick={onClose}>Sluiten</Button>
                     <Button
                       variant="secondary"
                       onClick={() => {
@@ -5017,7 +5045,7 @@ export default function ContentGenerationModal({
                         handleGenerateInternal();
                       }}
                     >
-                      🔄 Regenerate
+                      Opnieuw
                     </Button>
                     {/* Download selected variant */}
                     {generatedVariants[selectedVariantIndex] && (
@@ -5043,7 +5071,7 @@ export default function ContentGenerationModal({
                           }
                         }}
                       >
-                        ⬇️ Download
+                        Download
                       </Button>
                     )}
                     {/* Save as BrandAsset button(s) */}
@@ -5055,20 +5083,20 @@ export default function ContentGenerationModal({
                           variant="secondary"
                         >
                           {savedVariantIndices.has(selectedVariantIndex)
-                            ? '✅ Opgeslagen'
+                            ? 'Opgeslagen'
                             : savingAsset
-                              ? '⏳ Opslaan...'
-                              : `💾 Sla variant ${selectedVariantIndex + 1} op`}
+                              ? 'Opslaan...'
+                              : `Variant ${selectedVariantIndex + 1} opslaan`}
                         </Button>
                         <Button
                           onClick={handleSaveAllAsAssets}
                           disabled={savingAsset || savedVariantIndices.size === generatedVariants.length}
                         >
                           {savedVariantIndices.size === generatedVariants.length
-                            ? '✅ Alles opgeslagen'
+                            ? 'Alles opgeslagen'
                             : savingAsset
-                              ? '⏳ Opslaan...'
-                              : `💾 Alles opslaan (${generatedVariants.length})`}
+                              ? 'Opslaan...'
+                              : `Alles opslaan (${generatedVariants.length})`}
                         </Button>
                       </>
                     ) : (
@@ -5076,7 +5104,7 @@ export default function ContentGenerationModal({
                         onClick={handleSaveAsAsset}
                         disabled={savingAsset || saveSuccess}
                       >
-                        {savingAsset ? '⏳ Saving...' : saveSuccess ? '✅ Saved' : '💾 Save as Asset'}
+                        {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Opslaan als asset'}
                       </Button>
                     )}
                   </>
