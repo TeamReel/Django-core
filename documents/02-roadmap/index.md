@@ -32,12 +32,15 @@ The project is divided into **18 Development Phases**. Click a phase to see its 
 ### Demo Foundation (Validation)
 *   **[Phase 8: Demo Foundation](phases/phase-08-demo-foundation.md)** (Modules 031-033) ✅
 
-### Extended Capabilities (Planned)
-*   **[Phase 9: Backend Infrastructure](phases/phase-09-backend-infrastructure.md)** (Modules 034-038) ✅
-*   **[Phase 10: Content Engine Core](phases/phase-10-content-engine-core.md)** (Modules 039-044) 🚧
-*   **[Phase 11: Frontend & Visual Development](phases/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋
-*   **[Phase 12: Advanced UI](phases/phase-12-advanced-ui.md)** (Modules 045-048) 📋
-*   **[Phase 13: Data Foundations Part 1](phases/phase-13-data-foundations-part-1.md)** (Modules 049-053) 📋
+### Extended Capabilities
+*   **[Phase 9: Backend Infrastructure](phases/done/phase-09-backend-infrastructure.md)** (Modules 034-038) ✅
+*   **[Phase 10: Content Engine Core](phases/done/phase-10-content-engine-core.md)** (Modules 039-044) ✅
+*   **Accelerated Modules** (045-049): B39, B40, B41, B37, B55 ✅
+
+### Planned Phases
+*   **[Phase 11: Frontend & Visual Development](phases/planned/phase-11-frontend-and-visual-development.md)** (Modules 045-047) 📋
+*   **[Phase 12: Workflows & Payments](phases/planned/phase-12-workflows-and-payments.md)** — B37 ✅, B36/B38 📋
+*   **[Phase 13: Advanced UI](phases/planned/phase-13-advanced-ui.md)** 📋
 *   **[Phase 14: Data Foundations Part 2](phases/phase-14-data-foundations-part-2.md)** (Modules 054-058) 📋
 *   **[Phase 15: ML/AI Platform](phases/phase-15-ml-ai-platform.md)** (Modules 059-064) 📋
 *   **[Phase 16: Platform Quality Gates](phases/phase-16-platform-quality-gates.md)** (Modules 065-069) 📋

@@ -9,31 +9,32 @@ It helps humans and AI agents understand what to focus on next.
 
 ## Roadmap Overview
 
-The roadmap is structured in **19 development phases** (Fase 1-19) spanning **78 modules** (001-078).
+The roadmap is structured in development phases spanning **83+ modules**.
 
 **Phase Structure:**
 - **Fase 1-5**: Backend Core (modules 001-021) — 21 modules ✅ **COMPLETE**
 - **Fase 6-7**: Frontend Core (modules 022-030) — 9 modules ✅ **COMPLETE**
-- **Fase 8**: Demo Foundation (modules 031-033) — 3 modules 🚧 **IN PROGRESS** (F10 ✅, F10b-Database 🚧)
-- **Fase 9**: Backend Infrastructure (modules 034-038) — 5 modules 🚧 **PARTIALLY STARTED** (B22 ✅, B23 ✅, B24 ✅, B25/B26 📋)
-- **Fase 10**: Content Engine Core (modules 039-044) — 6 modules � **IN PROGRESS** (B30 ✅, B31 ✅, B32 ✅, B33-B35 📋)
-- **Fase 11**: Frontend & Visual Dev (modules 045-047) — 3 modules 📋 **PLANNED**
-- **Fase 12**: Workflows & Payments (modules 048-050) — 3 modules 📋 **PLANNED**
-- **Fase 13**: Advanced UI (modules 051-054) — 4 modules 📋 **PLANNED**
-- **Fase 14**: Data Foundations Part 1 (modules 055-059) — 5 modules 📋 **PLANNED**
-- **Fase 15**: Data Foundations Part 2 (modules 060-064) — 5 modules 📋 **PLANNED**
-- **Fase 16**: ML/AI Platform (modules 065-070) — 6 modules 📋 **PLANNED**
-- **Fase 17**: Platform Quality Gates (modules 071-076) — 6 modules 📋 **PLANNED**
-- **Fase 18**: Integration Ecosystem (modules 077-078) — 2 modules 📋 **PLANNED**
+- **Fase 8**: Demo Foundation (modules 031-033) — 3 modules ✅ **COMPLETE**
+- **Fase 9**: Backend Infrastructure (modules 034-038) — 5 modules ✅ **COMPLETE**
+- **Fase 10**: Content Engine Core (modules 039-044) — 6 modules ✅ **COMPLETE**
+- **Accelerated**: Out-of-phase modules (045-049) — 5 modules ✅ **COMPLETE** (B39, B40, B41, B37, B55)
+- **Fase 11**: Frontend & Visual Dev — 3 modules 📋 **PLANNED**
+- **Fase 12**: Workflows & Payments — 2 remaining modules 🚧 **PARTIALLY COMPLETE** (B37 ✅, B36/B38 📋)
+- **Fase 13**: Advanced UI — 4 modules 📋 **PLANNED**
+- **Fase 14**: Data Foundations Part 1 — 5 modules 📋 **PLANNED**
+- **Fase 15**: Data Foundations Part 2 — 5 modules 📋 **PLANNED**
+- **Fase 16**: ML/AI Platform — 6 modules 📋 **PLANNED**
+- **Fase 17**: Platform Quality Gates — 6 modules 📋 **PLANNED**
+- **Fase 18**: Integration Ecosystem — 2 modules 📋 **PLANNED**
 
 **Key Architecture Decisions:**
 - **Fase 7 Module 029**: F08 reserved for future (placeholder, not F09 Visily.ai)
 - **Fase 8 Split**: F10 Demo Shell complete, F10b-Database + F10b-Pages added for production-ready demo
 - **Fase 10 Expansion**: Added B31 (Content Templates) and B32 (Sport Configuration) for TeamReel support
+- **Accelerated Modules**: B39/B40/B41 (search, performance, navigation) + B37 (workflows) + B55 (video) completed ahead of phase schedule
 - **Constitution Gates**: Distributed after Fases 8, 15, and 18 (not concentrated)
 - **Quality Gates Lightweight**: P01-P05 show scorecards in F10 dashboard, no separate demo pages
-- **Module Numbering**: 40 planned modules (B30-B35, F08-F15, B36-B38, D01-D16, P01-P05, I01-I02)
-- **Current Status**: 41/78 modules complete (53%), Fase 8-10 in progress
+- **Current Status**: 49 modules complete, Fases 1-10 done, accelerated modules done, Fase 11+ planned
 
 ---
 
@@ -135,13 +136,13 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **78
 **Modules:** F10, F10b-Database, F10b-Pages (031-033)
 
 - **#031 F10** — Demo Shell (Basic) ✅
-- **#032 F10b-Database** — Demo Production Database & Seed Data 🚧
-- **#033 F10b-Pages** — Demo Pages for Modules 001-030 📋
-- **📋 Constitution Gate** (Post Demo Foundation)
+- **#032 F10b-Database** — Demo Production Database & Seed Data ✅
+- **#033 F10b-Pages** — Demo Pages for Modules 001-030 ✅
+- **✅ Constitution Gate** (Post Demo Foundation)
 
 **Outcome:** Production-ready demo app with complete seed data and 30+ pages showcasing all modules 001-030.
 
-**Details:** See [phases/planned/fase-08-demo-foundation.md](phases/planned/fase-08-demo-foundation.md)
+**Details:** See [phases/done/fase-08-demo-foundation.md](phases/done/fase-08-demo-foundation.md)
 
 ---
 
@@ -152,14 +153,14 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **78
 - **#034 B22** — File & Media Management ✅
 - **#035 B23** — Real-time Infrastructure ✅
 - **#036 B24** — Full-text Search Foundation ✅
-- **#037 B25** — Cache Layer & Patterns 📋
+- **#037 B25** — Cache Layer & Patterns ✅
 - **#038 B26** — Project-Level Access Control ✅
 
 **Demo Pages:** `/demo/files`, `/demo/realtime`, `/demo/search`, `/demo/cache-test`, `/demo/project-access`
 
 **Outcome:** Core backend infrastructure voor files, real-time, search, caching en project access operational.
 
-**Details:** See [phases/planned/fase-09-backend-infrastructure.md](phases/planned/fase-09-backend-infrastructure.md)
+**Details:** See [phases/done/fase-09-backend-infrastructure.md](phases/done/fase-09-backend-infrastructure.md)
 
 ---
 
@@ -170,21 +171,37 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **78
 - **#039 B30** — Generic Activities & Periods ✅
 - **#040 B31** — Content Templates & Generation ✅ **🆕 TeamReel Critical**
 - **#041 B32** — Sport Configuration & Templates ✅ **🆕 TeamReel Critical**
-- **#042 B33** — Brand Identity Manager 📋
-- **#043 B34** — Generative Pipelines 📋
-- **#044 B35** — Smart Asset Library 📋
+- **#042 B33** — Brand Identity Manager ✅
+- **#043 B34** — Generative Pipelines ✅
+- **#044 B35** — Smart Asset Library ✅
 
 **Demo Pages:** `/demo/activities`, `/demo/content/*`, `/demo/sport-config/*`, `/demo/brand`, `/demo/pipelines`, `/demo/library`
 
 **Outcome:** Generic event planning, **content generation with approval workflow**, **sport-specific configuration**, brand identity, AI pipelines, and smart media library operational.
 
-**Details:** See [phases/planned/fase-10-content-engine.md](phases/planned/fase-10-content-engine.md)
+**Details:** See [phases/done/fase-10-content-engine.md](phases/done/fase-10-content-engine.md)
+
+---
+
+## Accelerated Modules — Completed Out-of-Phase (5 modules)
+
+**Modules:** B39, B40, B41, B37, B55 (045-049)
+
+These modules were prioritized ahead of their original phase schedule due to TeamReel product needs.
+
+- **#045 B39** — Hierarchical Search Navigation & Related Results ✅
+- **#046 B40** — Incremental Frontend Performance & Fetch Guardrails ✅
+- **#047 B41** — User Navigation State (Recents & Favorites) ✅
+- **#048 B37** — Workflow Engine & State Machine ✅
+- **#049 B55** — Video Processing Pipeline ✅
+
+**Outcome:** Advanced search hierarchy, performance guardrails, user navigation persistence, workflow automation, and video processing all operational.
 
 ---
 
 ## Fase 11 — Frontend & Visual Development (3 modules)
 
-**Modules:** F08, F09, F13 (045-047)
+**Modules:** F08, F09, F13
 
 - **#045 F08** — Data Visualization Components 📋
 - **#046 F09** — Design-to-Code Pipeline (Visily.ai Integration) 📋
@@ -203,7 +220,7 @@ The roadmap is structured in **19 development phases** (Fase 1-19) spanning **78
 **Modules:** B36-B38 (048-050)
 
 - **#048 B36** — Payment Gateway Adapters 📋
-- **#049 B37** — Workflow Engine & State Machine 📋
+- **#049 B37** — Workflow Engine & State Machine ✅ *(completed in Accelerated Modules)*
 - **#050 B38** — Advanced Reporting & Exports 📋
 
 **Demo Pages:** `/demo/payments`, `/demo/workflows/approval`, PDF export buttons

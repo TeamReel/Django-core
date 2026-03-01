@@ -32,9 +32,22 @@ This registry tracks every module in the Django Core-App system.
 | **B19** | Deploy Templates | Operations | ✅ Complete | Docker, Railway | [Link](operations/B19-deploy-templates.md) | 5 |
 | **B20** | Scaffolding CLI | Platform | ✅ Complete | Code generation | [Link](platform/B20-scaffolding-cli.md) | 5 |
 | **B21** | Docs & Examples | Platform | ✅ Complete | Documentation | [Link](platform/B21-docs-examples.md) | 5 |
-| **B22** | File & Media | Backend | 🚧 In Progress | Uploads, storage | [Link](backend/B22-file-media-management.md) | 9 |
-| **B23** | Real-time Infra | Backend | 🚧 In Progress | WebSockets | [Link](backend/B23-realtime-infrastructure.md) | 9 |
-| **B24** | Full-text Search | Backend | 🚧 In Progress | Search engine | [Link](backend/B24-fulltext-search.md) | 9 |
+| **B22** | File & Media | Backend | ✅ Complete | Uploads, storage | [Link](backend/B22-file-media-management.md) | 9 |
+| **B23** | Real-time Infra | Backend | ✅ Complete | WebSockets | [Link](backend/B23-realtime-infrastructure.md) | 9 |
+| **B24** | Full-text Search | Backend | ✅ Complete | Search engine | [Link](backend/B24-fulltext-search.md) | 9 |
+| **B25** | Cache Layer | Backend | ✅ Complete | Caching patterns | - | 9 |
+| **B26** | Project Access | Backend | ✅ Complete | Project-level ACL | - | 9 |
+| **B30** | Activities & Periods | Backend | ✅ Complete | Events, seasons | - | 10 |
+| **B31** | Content Templates | Backend | ✅ Complete | AI content generation | - | 10 |
+| **B32** | Sport Configuration | Backend | ✅ Complete | Sport rules, positions | - | 10 |
+| **B33** | Brand Identity | Backend | ✅ Complete | Design tokens, logos | - | 10 |
+| **B34** | Generative Pipelines | Backend | ✅ Complete | AI generation factory | - | 10 |
+| **B35** | Smart Asset Library | Backend | ✅ Complete | DAM, tagging, collections | - | 10 |
+| **B37** | Workflow Engine | Backend | ✅ Complete | State machine, transitions | - | 12 |
+| **B39** | Search Navigation | Backend | ✅ Complete | Hierarchical search | - | Accel. |
+| **B40** | Fetch Guardrails | Backend | ✅ Complete | Frontend performance | - | Accel. |
+| **B41** | Navigation State | Backend | ✅ Complete | Recents & favorites | - | Accel. |
+| **B55** | Video Processing | Backend | ✅ Complete | Transcoding, thumbnails | - | Accel. |
 | **F01** | Design System | Frontend | ✅ Complete | Tokens, components | [Link](frontend/F01-frontend-design-system.md) | 6 |
 | **F02** | Core Auth UI | Frontend | ✅ Complete | Login screens | [Link](frontend/F02-core-auth-identity-ui.md) | 6 |
 | **F03** | Context Switcher | Frontend | ✅ Complete | Org/Project menu | [Link](frontend/F03-multi-tenancy-context-switcher.md) | 6 |
@@ -44,5 +57,5 @@ This registry tracks every module in the Django Core-App system.
 | **F07** | Theme Support | Frontend | ✅ Complete | Branding | [Link](frontend/F07-theme-support-brand-variants.md) | 7 |
 | **F09** | Integration Guides | Frontend | ✅ Complete | API patterns | [Link](frontend/F09-frontend-backend-integration-guides.md) | 7 |
 | **F10** | Demo Shell | Frontend | ✅ Complete | Demo container | [Link](frontend/F10-demo-shell.md) | 8 |
-| **F10b** | Demo Database | Frontend | 🚧 In Progress | Seed data | [Link](frontend/F10b-database.md) | 8 |
-| **F10b** | Demo Pages | Frontend | 📋 Planned | Module pages | - | 8 |
+| **F10b** | Demo Database | Frontend | ✅ Complete | Seed data | [Link](frontend/F10b-database.md) | 8 |
+| **F10b** | Demo Pages | Frontend | ✅ Complete | Module pages | - | 8 |
