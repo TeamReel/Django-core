@@ -1233,20 +1233,14 @@ export const PreferencesPage: React.FC = () => {
             {activeTab === 'profile' && (
               <>
                 <Card>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+                  <div className="gap-16" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div className="flex-row gap-16">
                       <div
+                        className="overflow-hidden flex-center fw-800 cursor-pointer rounded-full"
                         style={{
                           width: 56,
                           height: 56,
-                          borderRadius: 999,
-                          overflow: 'hidden',
                           background: 'var(--app-border)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 800,
-                          cursor: 'pointer',
                         }}
                         role="button"
                         tabIndex={0}
@@ -1269,10 +1263,11 @@ export const PreferencesPage: React.FC = () => {
                           <img
                             src={String((user as any)?.avatar_url)}
                             alt="Profile"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            className="w-full h-full"
+                            style={{ objectFit: 'cover' }}
                           />
                         ) : (
-                          <span style={{ color: 'var(--app-text)' }}>
+                          <span className="text-primary">
                             {String((user as any)?.first_name || (user as any)?.email || 'U')
                               .trim()
                               .slice(0, 1)
@@ -1298,7 +1293,7 @@ export const PreferencesPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                    <div className="flex-wrap gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1351,7 +1346,7 @@ export const PreferencesPage: React.FC = () => {
                   }}
                   title="Edit profile"
                   footer={
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                    <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1478,7 +1473,7 @@ export const PreferencesPage: React.FC = () => {
                   }}
                   title="Change password"
                   footer={
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                    <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1581,7 +1576,7 @@ export const PreferencesPage: React.FC = () => {
                   }}
                   title="Update profile photo"
                   footer={
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                    <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -1701,7 +1696,7 @@ export const PreferencesPage: React.FC = () => {
                     );
                   })()}
 
-                  {activeContextError && <Alert variant="error" style={{ marginBottom: 12 }}>{activeContextError}</Alert>}
+                  {activeContextError && <Alert variant="error" className="mb-12">{activeContextError}</Alert>}
 
                   <div className="flex-col gap-16 max-w-600">
                     {loadingOrgs && (
@@ -2000,7 +1995,7 @@ export const PreferencesPage: React.FC = () => {
                   </Card>
 
                 {/* Localisation Section */}
-                <Card style={{ marginTop: '24px' }}>
+                <Card className="mt-24">
                   <h3 className="text-lg font-semibold mb-4">Localisation</h3>
                   <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
                     <div>
@@ -2055,7 +2050,7 @@ export const PreferencesPage: React.FC = () => {
 
                 {/* Effective i18n Preferences (Backend-Resolved) */}
                 {effectivePrefs && (
-                  <Card style={{ marginTop: '24px' }}>
+                  <Card className="mt-24">
                     <h3 className="text-lg font-semibold mb-2">
                       Effective Preferences (Server-Resolved)
                     </h3>
@@ -2233,7 +2228,7 @@ export const PreferencesPage: React.FC = () => {
                 </Card>
 
                 {/* Notification Channels Section */}
-                <Card style={{ marginTop: '24px' }}>
+                <Card className="mt-24">
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <h3 className="text-lg font-semibold">Notification Channels</h3>

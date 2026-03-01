@@ -146,18 +146,11 @@ function CopyableValue({ value, label }: { value: string; label?: string }) {
     <button
       onClick={handleCopy}
       title={`Copy ${label || value}`}
+      className="inline-flex gap-4 rounded-4 cursor-pointer fs-12 border text-secondary"
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
         padding: '2px 6px',
         background: 'var(--app-surface-alt, rgba(0,0,0,0.03))',
-        border: '1px solid var(--app-border)',
-        borderRadius: '4px',
-        cursor: 'pointer',
         fontFamily: 'monospace',
-        fontSize: '12px',
-        color: 'var(--app-text-secondary)',
       }}
     >
       {value}
@@ -183,21 +176,17 @@ function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
           {colors.map((token) => (
             <div
               key={token.id}
+              className="rounded-12 overflow-hidden border"
               style={{
-                borderRadius: '12px',
-                overflow: 'hidden',
-                border: '1px solid var(--app-border)',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               }}
             >
               {/* Color swatch - large */}
               <div
+                className="flex-center"
                 style={{
                   height: '100px',
                   backgroundColor: token.value,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                 }}
               >
                 <Text
@@ -232,12 +221,12 @@ function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
           <Text size="xs" weight="bold" color="secondary" className="mb-8" style={{ textTransform: 'uppercase' }}>
             Combined Preview
           </Text>
-          <div style={{ display: 'flex', height: '48px', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--app-border)' }}>
+          <div className="rounded-8 overflow-hidden border" style={{ display: 'flex', height: '48px' }}>
             {colors.map((token) => (
               <div
                 key={token.id}
+                className="flex-1"
                 style={{
-                  flex: 1,
                   backgroundColor: token.value,
                 }}
                 title={`${formatTokenKey(token.key)}: ${token.value}`}
@@ -266,11 +255,9 @@ function TypographySection({ fonts }: { fonts: DesignToken[] }) {
           {fonts.map((token) => (
             <div
               key={token.id}
+              className="p-20 rounded-12 border"
               style={{
-                padding: '20px',
                 backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-                borderRadius: '12px',
-                border: '1px solid var(--app-border)',
               }}
             >
               <div className="flex-between mb-12">
@@ -279,14 +266,14 @@ function TypographySection({ fonts }: { fonts: DesignToken[] }) {
               </div>
               {/* Font preview */}
               <div style={{ fontFamily: token.value, lineHeight: 1.4 }}>
-                <Text size="xs" color="secondary" style={{ marginBottom: '4px' }}>Preview:</Text>
+                <Text size="xs" color="secondary" className="mb-4">Preview:</Text>
                 <div style={{ fontSize: '28px', fontWeight: token.key.includes('heading') ? 700 : 400 }}>
                   The quick brown fox jumps
                 </div>
                 <div style={{ fontSize: '16px', marginTop: '8px', fontWeight: token.key.includes('heading') ? 700 : 400 }}>
                   ABCDEFGHIJKLMNOPQRSTUVWXYZ
                 </div>
-                <div style={{ fontSize: '14px', marginTop: '4px', color: 'var(--app-text-secondary)' }}>
+                <div className="fs-14 mt-4 text-secondary">
                   abcdefghijklmnopqrstuvwxyz 0123456789
                 </div>
               </div>
@@ -321,25 +308,20 @@ function OtherTokensSection({ tokens }: { tokens: Map<string, DesignToken[]> }) 
             return (
               <div key={type}>
                 <div className="flex-row gap-8 mb-12">
-                  <Icon size={16} style={{ opacity: 0.6 }} />
+                  <Icon size={16} className="opacity-60" />
                   <Text weight="bold" size="sm" style={{ textTransform: 'uppercase' }}>
                     {label}
                   </Text>
                   <Badge variant="default">{typeTokens.length}</Badge>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
+                <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
                   {typeTokens.map((token) => (
                     <div
                       key={token.id}
+                      className="flex-between rounded-8 border py-12 px-16"
                       style={{
-                        padding: '12px 16px',
                         backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-                        borderRadius: '8px',
-                        border: '1px solid var(--app-border)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
                       }}
                     >
                       <Text size="sm" weight="medium">{formatTokenKey(token.key)}</Text>
@@ -382,7 +364,7 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
               border: '2px dashed var(--app-border)',
             }}
           >
-            <Image size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
+            <Image size={48} className="mb-16" style={{ opacity: 0.2 }} />
             <Text color="secondary" size="sm">No brand assets uploaded yet</Text>
             <Text color="secondary" size="xs" className="mt-8">
               Upload logos, icons, banners and other visual assets
@@ -393,23 +375,17 @@ function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
             {assets.map((asset) => (
               <div
                 key={asset.id}
+                className="rounded-12 overflow-hidden border bg-surface"
                 style={{
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  border: '1px solid var(--app-border)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-                  backgroundColor: 'var(--app-surface)',
                 }}
               >
                 {/* Asset preview */}
                 <div
+                  className="flex-center p-16"
                   style={{
                     aspectRatio: '1',
                     backgroundColor: 'var(--app-surface-alt, #f8f8f8)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '16px',
                   }}
                 >
                   {asset.url ? (
@@ -470,17 +446,11 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
           {/* Logo or fallback icon */}
           {logoUrl ? (
             <div
+              className="rounded-12 border flex-center p-8 overflow-hidden"
               style={{
                 width: '80px',
                 height: '80px',
-                borderRadius: '12px',
-                border: '1px solid var(--app-border)',
                 backgroundColor: 'var(--app-surface-alt, #f8f8f8)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px',
-                overflow: 'hidden',
               }}
             >
               <img
@@ -499,14 +469,11 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
             </div>
           ) : (
             <div
+              className="rounded-12 flex-center"
               style={{
                 width: '64px',
                 height: '64px',
-                borderRadius: '12px',
                 background: 'linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark, var(--app-primary)) 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 color: 'white',
               }}
             >
@@ -527,7 +494,7 @@ function ProfileHeader({ profile, entityName, onEdit, onGenerateTokens, generati
             <Text color="secondary" size="sm" className="mt-4">
               Brand identity for {entityName}
             </Text>
-            <Text color="secondary" size="xs" style={{ marginTop: '8px' }}>
+            <Text color="secondary" size="xs" className="mt-8">
               Last updated: {new Date(profile.updated_at).toLocaleDateString('nl-NL', {
                 year: 'numeric',
                 month: 'long',
@@ -611,14 +578,11 @@ function EmptyState({ entityName, entityType, onCreateProfile }: {
   return (
     <Card className="text-center" style={{ padding: '48px' }}>
       <div
+        className="rounded-full flex-center"
         style={{
           width: '80px',
           height: '80px',
-          borderRadius: '50%',
           background: 'linear-gradient(135deg, var(--app-surface-alt) 0%, var(--app-border) 100%)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           margin: '0 auto 24px',
         }}
       >
@@ -635,7 +599,7 @@ function EmptyState({ entityName, entityType, onCreateProfile }: {
       {entityType === 'organisation' && (
         <Button
           variant="primary"
-          style={{ marginTop: '24px' }}
+          className="mt-24"
           onClick={onCreateProfile}
           disabled={!onCreateProfile}
         >
@@ -646,12 +610,9 @@ function EmptyState({ entityName, entityType, onCreateProfile }: {
 
       {entityType !== 'organisation' && (
         <div
+          className="mt-24 p-16 rounded-8 inline-block"
           style={{
-            marginTop: '24px',
-            padding: '16px',
             backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-            borderRadius: '8px',
-            display: 'inline-block',
           }}
         >
           <Text size="xs" color="secondary">
@@ -813,7 +774,7 @@ export default function BrandIdentityPage({
   if (loading) {
     return (
       <div className="text-center" style={{ padding: '48px' }}>
-        <Loader2 size={32} style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} />
+        <Loader2 size={32} className="opacity-50" style={{ animation: 'spin 1s linear infinite' }} />
         <Text color="secondary" className="mt-16">Loading brand identity...</Text>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>

@@ -141,8 +141,8 @@ export const WebSocketTestPage: React.FC = () => {
       />
       <PageContent>
         {/* Tab Navigation */}
-        <div style={{ marginBottom: '24px', borderBottom: '1px solid var(--app-border)' }}>
-          <nav style={{ display: 'flex', gap: '32px' }}>
+        <div className="mb-24 border-bottom">
+          <nav className="flex-row gap-32">
             <button
               onClick={() => setActiveTab('notifications')}
               style={{
@@ -193,14 +193,14 @@ export const WebSocketTestPage: React.FC = () => {
 
         {/* Notifications Tab */}
         {activeTab === 'notifications' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className="flex-col gap-24">
             <Card>
-              <div style={{ padding: '24px' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Connection Status</h3>
+              <div className="p-24">
+                <h3 className="mb-16" style={{ marginTop: 0 }}>Connection Status</h3>
 
-                <div style={{ marginBottom: '16px' }}>
-                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500 }}>WebSocket URL</label>
+                <div className="mb-16">
+                  <label className="block mb-8 fs-14 fw-500">WebSocket URL</label>
                   <Input
                     value={wsUrl}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWsUrl(e.target.value)}
@@ -209,16 +209,16 @@ export const WebSocketTestPage: React.FC = () => {
                   />
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                <div className="flex-row gap-16 mb-24">
                   <Badge variant={isConnected ? 'success' : 'error'}>
                     {isConnected ? 'CONNECTED' : 'DISCONNECTED'}
                   </Badge>
-                  <span style={{ fontSize: '14px', color: 'var(--app-text-muted)' }}>
+                  <span className="fs-14 text-muted">
                     {user ? `Authenticated as: ${user.email}` : 'Not authenticated'}
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px' }}>
+                <div className="flex-row gap-12">
                   <Button
                     onClick={connect}
                     disabled={isConnected}
@@ -238,9 +238,9 @@ export const WebSocketTestPage: React.FC = () => {
             </Card>
 
             <Card>
-              <div style={{ padding: '24px' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Send Message</h3>
-                <div style={{ display: 'flex', gap: '12px' }}>
+              <div className="p-24">
+                <h3 className="mb-16" style={{ marginTop: 0 }}>Send Message</h3>
+                <div className="flex-row gap-12">
                   <Input
                     value={messageInput}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMessageInput(e.target.value)}
@@ -255,7 +255,7 @@ export const WebSocketTestPage: React.FC = () => {
                     Send
                   </Button>
                 </div>
-                <p style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '8px' }}>
+                <p className="fs-12 text-muted mt-8">
                   Note: Sending "ping" will trigger a "pong" response from the server.
                 </p>
               </div>
@@ -263,23 +263,17 @@ export const WebSocketTestPage: React.FC = () => {
           </div>
 
           <Card>
-            <div style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0 }}>Event Log</h3>
+            <div className="p-24 h-full flex-col">
+              <div className="flex-between mb-16">
+                <h3 className="m-0">Event Log</h3>
                 <Button size="sm" variant="ghost" onClick={() => setLogs([])}>Clear</Button>
               </div>
-              <div style={{
-                flex: 1,
-                backgroundColor: 'var(--app-surface-2)',
-                borderRadius: '8px',
-                padding: '12px',
-                overflowY: 'auto',
+              <div className="flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12" style={{
                 maxHeight: '500px',
-                fontFamily: 'monospace',
-                fontSize: '12px'
+                fontFamily: 'monospace'
               }}>
                 {logs.length === 0 ? (
-                  <div style={{ color: 'var(--app-text-muted)', textAlign: 'center', padding: '20px' }}>
+                  <div className="text-muted text-center p-20">
                     No events yet
                   </div>
                 ) : (
@@ -296,7 +290,7 @@ export const WebSocketTestPage: React.FC = () => {
                           {log.type.toUpperCase()}
                         </span>
                       </div>
-                      <div style={{ wordBreak: 'break-all', color: 'var(--app-text)' }}>
+                      <div className="word-break-all text-primary">
                         {log.data}
                       </div>
                     </div>
@@ -310,15 +304,15 @@ export const WebSocketTestPage: React.FC = () => {
 
         {/* Presence Tab */}
         {activeTab === 'presence' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
           <div>
             <Card>
-              <div style={{ padding: '24px' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Presence Status</h3>
-                <p style={{ fontSize: '14px', color: 'var(--app-text-muted)', marginBottom: '16px' }}>
+              <div className="p-24">
+                <h3 className="mb-16" style={{ marginTop: 0 }}>Presence Status</h3>
+                <p className="fs-14 text-muted mb-16">
                   Emit presence events to indicate user online/offline status.
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="flex-col gap-12">
                   <Button
                     onClick={emitPresence}
                     disabled={!isConnected}
@@ -326,7 +320,7 @@ export const WebSocketTestPage: React.FC = () => {
                   >
                     🧪 Emit Presence Event
                   </Button>
-                  <p style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>
+                  <p className="fs-12 text-muted">
                     Sends presence event with user_id and online status
                   </p>
                 </div>
@@ -335,30 +329,24 @@ export const WebSocketTestPage: React.FC = () => {
           </div>
 
           <Card>
-            <div style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0 }}>Presence Log</h3>
+            <div className="p-24 h-full flex-col">
+              <div className="flex-between mb-16">
+                <h3 className="m-0">Presence Log</h3>
                 <Button size="sm" variant="ghost" onClick={() => setLogs([])}>Clear</Button>
               </div>
-              <div style={{
-                flex: 1,
-                backgroundColor: 'var(--app-surface-2)',
-                borderRadius: '8px',
-                padding: '12px',
-                overflowY: 'auto',
+              <div className="flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12" style={{
                 maxHeight: '500px',
-                fontFamily: 'monospace',
-                fontSize: '12px'
+                fontFamily: 'monospace'
               }}>
                 {logs.filter(l => l.data.includes('presence') || l.data.includes('"type":"presence"')).length === 0 ? (
-                  <div style={{ color: 'var(--app-text-muted)', textAlign: 'center', padding: '20px' }}>
+                  <div className="text-muted text-center p-20">
                     No presence events yet
                   </div>
                 ) : (
                   logs.filter(l => l.data.includes('presence') || l.data.includes('"type":"presence"')).map((log, i) => (
-                    <div key={i} style={{ marginBottom: '8px', borderBottom: '1px solid var(--app-border)', paddingBottom: '8px' }}>
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ color: 'var(--app-text-muted)' }}>[{log.timestamp}]</span>
+                    <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
+                      <div className="flex-row gap-8 mb-4">
+                        <span className="text-muted">[{log.timestamp}]</span>
                         <span style={{
                           fontWeight: 'bold',
                           color: log.type === 'sent' ? 'var(--app-info)' : 'var(--app-success)'
@@ -366,7 +354,7 @@ export const WebSocketTestPage: React.FC = () => {
                           {log.type.toUpperCase()}
                         </span>
                       </div>
-                      <div style={{ wordBreak: 'break-all', color: 'var(--app-text)' }}>
+                      <div className="word-break-all text-primary">
                         {log.data}
                       </div>
                     </div>
@@ -380,15 +368,15 @@ export const WebSocketTestPage: React.FC = () => {
 
         {/* Activity Tab */}
         {activeTab === 'activity' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
           <div>
             <Card>
-              <div style={{ padding: '24px' }}>
-                <h3 style={{ marginTop: 0, marginBottom: '16px' }}>Activity Tracking</h3>
-                <p style={{ fontSize: '14px', color: 'var(--app-text-muted)', marginBottom: '16px' }}>
+              <div className="p-24">
+                <h3 className="mb-16" style={{ marginTop: 0 }}>Activity Tracking</h3>
+                <p className="fs-14 text-muted mb-16">
                   Emit activity events to track user actions and page views.
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="flex-col gap-12">
                   <Button
                     onClick={emitActivity}
                     disabled={!isConnected}
@@ -396,7 +384,7 @@ export const WebSocketTestPage: React.FC = () => {
                   >
                     🧪 Emit Activity Event
                   </Button>
-                  <p style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>
+                  <p className="fs-12 text-muted">
                     Sends activity event with action type and page context
                   </p>
                 </div>
@@ -405,23 +393,17 @@ export const WebSocketTestPage: React.FC = () => {
           </div>
 
           <Card>
-            <div style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ margin: 0 }}>Activity Log</h3>
+            <div className="p-24 h-full flex-col">
+              <div className="flex-between mb-16">
+                <h3 className="m-0">Activity Log</h3>
                 <Button size="sm" variant="ghost" onClick={() => setLogs([])}>Clear</Button>
               </div>
-              <div style={{
-                flex: 1,
-                backgroundColor: 'var(--app-surface-2)',
-                borderRadius: '8px',
-                padding: '12px',
-                overflowY: 'auto',
+              <div className="flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12" style={{
                 maxHeight: '500px',
-                fontFamily: 'monospace',
-                fontSize: '12px'
+                fontFamily: 'monospace'
               }}>
                 {logs.filter(l => l.data.includes('activity') || l.data.includes('"type":"activity"')).length === 0 ? (
-                  <div style={{ color: 'var(--app-text-muted)', textAlign: 'center', padding: '20px' }}>
+                  <div className="text-muted text-center p-20">
                     No activity events yet
                   </div>
                 ) : (
@@ -436,7 +418,7 @@ export const WebSocketTestPage: React.FC = () => {
                           {log.type.toUpperCase()}
                         </span>
                       </div>
-                      <div style={{ wordBreak: 'break-all', color: 'var(--app-text)' }}>
+                      <div className="word-break-all text-primary">
                         {log.data}
                       </div>
                     </div>

@@ -148,8 +148,8 @@ function MembershipEditModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Edit member</h2>
+        <div className="flex-between gap-12">
+          <h2 className="m-0 fs-16 fw-700">Edit member</h2>
           <button
             onClick={onClose}
             style={{
@@ -165,10 +165,10 @@ function MembershipEditModal({
           </button>
         </div>
 
-        <div style={{ marginTop: '10px', color: 'var(--app-muted-text)', fontSize: '13px' }}>{displayName}</div>
+        <div className="text-muted fs-13" style={{ marginTop: '10px' }}>{displayName}</div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <div className="flex-col gap-10 mt-16">
+          <div className="flex-col gap-6">
             <label style={{ fontWeight: 600 }} htmlFor="membership-role">
               Access role
             </label>
@@ -190,17 +190,13 @@ function MembershipEditModal({
             </select>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <div style={{ fontWeight: 600 }}>Functional roles</div>
+          <div className="flex-col gap-6">
+            <div className="fw-600">Functional roles</div>
             <div
+              className="grid p-10 rounded-6 border bg-surface-2"
               style={{
-                display: 'grid',
                 gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
                 gap: '8px 12px',
-                padding: '10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
               }}
             >
               {FUNCTIONAL_ROLE_OPTIONS.map((opt) => {
@@ -208,7 +204,7 @@ function MembershipEditModal({
                 return (
                   <label
                     key={opt.value}
-                    style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}
+                    className="flex-row gap-8 cursor-pointer"
                   >
                     <input
                       type="checkbox"
@@ -742,16 +738,16 @@ export default function ProjectSeasonSquadPage() {
 
               <Card>
             <div style={{ padding: '16px 16px 0 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Players & Staff</h3>
+              <div className="flex-row gap-12 flex-wrap">
+                <h3 className="m-0 fs-16 fw-600">Players & Staff</h3>
                 <Badge variant="info">{members.length} members</Badge>
               </div>
-              <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+              <div className="mt-4 text-muted fs-13">
                 Season-scoped roster (filtered by period).
               </div>
             </div>
 
-            <div style={{ padding: '16px' }}>
+            <div className="p-16">
               <div className="overflow-x-auto">
                 <Table style={compactTableStyle}>
                   <thead>
@@ -825,7 +821,7 @@ export default function ProjectSeasonSquadPage() {
                           </td>
                           <td style={compactTdStyle}>
                             {functionalRoles.length ? (
-                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              <div className="flex-row gap-6 flex-wrap">
                                 {functionalRoles.map((r: string) => (
                                   <Badge key={r} variant="default">
                                     {r}

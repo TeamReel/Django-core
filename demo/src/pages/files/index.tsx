@@ -279,18 +279,18 @@ const FilesPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
+      <div className="bg-primary" style={{ minHeight: '100vh' }}>
         {/* Page Header */}
-        <div style={{ padding: '24px', borderBottom: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
-          <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: 700, color: 'var(--app-text)' }}>File Management Demo</h1>
-          <p style={{ margin: 0, fontSize: '14px', color: 'var(--app-muted-text)' }}>
+        <div className="p-24 border-bottom bg-surface">
+          <h1 className="fw-700 text-primary" style={{ margin: '0 0 8px 0', fontSize: '28px' }}>File Management Demo</h1>
+          <p className="m-0 fs-14 text-muted">
             Upload, view, download, and delete files using the File & Media Management system.
           </p>
         </div>
 
         {/* Content */}
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div className="page-container">
+          <div className="flex-col gap-24">
             {/* Demo Mode Alert */}
             <Alert variant="info">
               <strong>Demo Mode:</strong> This page demonstrates file upload functionality with mock data.
@@ -298,9 +298,9 @@ const FilesPage: React.FC = () => {
             </Alert>
 
             {/* Upload Section */}
-            <Card style={{ padding: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Upload Files</h2>
+            <Card className="p-24 bg-surface border">
+              <div className="flex-col gap-16">
+                <h2 className="m-0 fs-18 fw-600 text-primary">Upload Files</h2>
 
                 <FileUpload
                   files={activeUploads}
@@ -330,13 +330,13 @@ const FilesPage: React.FC = () => {
             )}
 
             {/* Files List */}
-            <Card style={{ padding: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>
+            <Card className="p-24 bg-surface border">
+              <div className="flex-col gap-16">
+                <div className="flex-between flex-wrap gap-12">
+                  <h2 className="m-0 fs-18 fw-600 text-primary">
                     Uploaded Files ({files.length})
                   </h2>
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div className="flex-row gap-8">
                     <button
                       onClick={() => {
                         localStorage.removeItem('demo-files');
@@ -377,28 +377,19 @@ const FilesPage: React.FC = () => {
                 </div>
 
                 {loading && files.length === 0 ? (
-                  <p style={{ color: 'var(--app-muted-text)', margin: 0 }}>Loading files...</p>
+                  <p className="text-muted m-0">Loading files...</p>
                 ) : files.length === 0 ? (
-                  <p style={{ color: 'var(--app-muted-text)', margin: 0 }}>No files uploaded yet. Upload some files to get started!</p>
+                  <p className="text-muted m-0">No files uploaded yet. Upload some files to get started!</p>
                 ) : (
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '16px'
+                  <div className="grid gap-16" style={{
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'
                   }}>
                     {files.map((file) => (
-                      <Card key={file.id} style={{ padding: '16px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <Card key={file.id} className="p-16 bg-surface border">
+                        <div className="flex-col gap-12">
                           {/* File thumbnail or icon */}
-                          <div style={{
-                            width: '100%',
-                            height: '120px',
-                            backgroundColor: 'var(--app-surface-2)',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden'
+                          <div className="w-full bg-surface-2 rounded-8 flex-center overflow-hidden" style={{
+                            height: '120px'
                           }}>
                             {file.thumbnail_url ? (
                               <img
@@ -418,18 +409,12 @@ const FilesPage: React.FC = () => {
                           </div>
 
                           {/* File info */}
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <p style={{
-                              margin: 0,
-                              fontSize: '14px',
-                              fontWeight: 500,
-                              color: 'var(--app-text)',
-                              wordBreak: 'break-word'
-                            }}>
+                          <div className="flex-col gap-8">
+                            <p className="m-0 fs-14 fw-500 text-primary break-word">
                               {file.original_filename}
                             </p>
 
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            <div className="flex-row gap-8 flex-wrap">
                               <Badge variant="default" size="sm">
                                 {formatFileSize(file.file_size)}
                               </Badge>
@@ -441,13 +426,13 @@ const FilesPage: React.FC = () => {
                               )}
                             </div>
 
-                            <p style={{ margin: 0, fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                            <p className="m-0 fs-12 text-muted">
                               Uploaded: {new Date(file.upload_date).toLocaleString()}
                             </p>
                           </div>
 
                           {/* Actions */}
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div className="flex-row gap-8">
                             <button
                               onClick={() => handleDownload(file)}
                               style={{

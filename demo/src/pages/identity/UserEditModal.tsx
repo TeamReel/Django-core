@@ -718,35 +718,29 @@ export default function UserEditModal({
   });
 
   return (
-    <div style={{
+    <div className="flex-center" style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
       zIndex: 1000
     }}>
-      <div style={{
+      <div className="flex-col rounded-8" style={{
         backgroundColor: 'var(--app-surface)',
-        borderRadius: '8px',
         width: '860px',
         maxWidth: '90%',
         maxHeight: '90vh',
-        display: 'flex',
-        flexDirection: 'column',
         boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         color: 'var(--app-text)',
         border: '1px solid var(--app-border)'
       }}>
-        <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--app-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
+        <div className="border-bottom" style={{ padding: '16px 18px' }}>
+          <div className="flex-between gap-12">
             <div>
-              <div style={{ fontSize: '16px', fontWeight: 800 }}>Edit user</div>
-              <div style={{ marginTop: '2px', fontSize: '12px', color: 'var(--app-muted-text)' }}>{user.email}</div>
+              <div className="fs-16 fw-800">Edit user</div>
+              <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>{user.email}</div>
             </div>
             <button
               type="button"
@@ -766,7 +760,7 @@ export default function UserEditModal({
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+          <div className="flex-row gap-8 mt-12 flex-wrap">
             <button type="button" onClick={() => setActiveTab('personal')} style={tabButtonStyle(activeTab === 'personal')}>
               Personal
             </button>
@@ -779,21 +773,20 @@ export default function UserEditModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+        <form onSubmit={handleSubmit} className="flex-col flex-1" style={{ minHeight: 0 }}>
           <div
+            className="overflow-y-auto flex-1"
             style={{
               padding: '18px',
-              overflowY: 'auto',
-              flex: 1,
               minHeight: 0,
             }}
           >
             {activeTab === 'personal' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ fontWeight: 800, marginBottom: '2px' }}>Personal settings</div>
+              <div className="flex-col" style={{ gap: '14px' }}>
+                <div className="fw-800" style={{ marginBottom: '2px' }}>Personal settings</div>
 
                 {/* Profile photo */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div className="flex-row gap-16">
                   <div
                     style={{
                       width: '72px',
@@ -812,7 +805,8 @@ export default function UserEditModal({
                       <img
                         src={avatarPreview || (user as any)?.avatar_url}
                         alt="Avatar"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        className="w-full h-full"
+                        style={{ objectFit: 'cover' }}
                       />
                     ) : (
                       <span style={{ fontSize: '28px', color: 'var(--app-muted-text)' }}>
@@ -820,7 +814,7 @@ export default function UserEditModal({
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div className="flex-col gap-6">
                     <button
                       type="button"
                       onClick={() => avatarInputRef.current?.click()}
@@ -842,16 +836,16 @@ export default function UserEditModal({
                       ref={avatarInputRef}
                       type="file"
                       accept="image/*"
-                      style={{ display: 'none' }}
+                      className="hidden"
                       onChange={handleAvatarSelect}
                     />
-                    <span style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>JPG, PNG — max 5 MB</span>
+                    <span className="fs-11 text-muted">JPG, PNG — max 5 MB</span>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '16px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600 }}>First name</label>
+                <div className="flex-row gap-16">
+                  <div className="flex-1">
+                    <label className="block mb-4 fw-600">First name</label>
                     <input
                       type="text"
                       value={formData.first_name || ''}
@@ -859,8 +853,8 @@ export default function UserEditModal({
                       style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' }}
                     />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600 }}>Last name</label>
+                  <div className="flex-1">
+                    <label className="block mb-4 fw-600">Last name</label>
                     <input
                       type="text"
                       value={formData.last_name || ''}
@@ -871,7 +865,7 @@ export default function UserEditModal({
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 600 }}>Email</label>
+                  <label className="block mb-4 fw-600">Email</label>
                   <input
                     type="email"
                     value={formData.email || ''}
@@ -882,37 +876,32 @@ export default function UserEditModal({
                 </div>
 
                 <div>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                  <label className="flex-row gap-10 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.is_active || false}
                       onChange={(e) => setFormData({ ...formData, is_active: e.currentTarget.checked })}
                     />
-                    <span style={{ fontWeight: 700 }}>Active</span>
+                    <span className="fw-700">Active</span>
                   </label>
                 </div>
               </div>
             ) : null}
 
             {activeTab === 'access' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
 
                 {/* RBAC role summary */}
-                <div style={{
-                  padding: '12px 14px',
-                  borderRadius: '8px',
-                  border: '1px solid var(--app-border)',
-                  background: 'var(--app-surface-2)',
-                }}>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '8px', fontWeight: 700 }}>
+                    <div className="rounded-8" style={{ padding: '12px 14px', border: '1px solid var(--app-border)', background: 'var(--app-surface-2)' }}>
+                  <div className="fs-12 text-muted mb-8 fw-700">
                     Huidige TeamReel rollen
                   </div>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div className="flex-row gap-8 flex-wrap">
                     {orgMembershipId && orgRole === 'admin' && <RbacBadge label="Land Admin" />}
                     {selectedClubKey && clubMembershipId && <RbacBadge label={getRbacLabel(clubAccessRole, false)} />}
                     {selectedTeamKey && teamMembershipId && <RbacBadge label={getRbacLabel(teamAccessRole, true)} />}
                     {!orgMembershipId && !clubMembershipId && !teamMembershipId && (
-                      <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                      <span className="fs-12 text-muted">
                         Geen actieve rollen gevonden. Selecteer een club of team hieronder.
                       </span>
                     )}
@@ -920,19 +909,19 @@ export default function UserEditModal({
                 </div>
 
                 <div>
-                  <div style={{ fontWeight: 800, marginBottom: '6px' }}>Federation settings</div>
+                  <div className="fw-800" style={{ marginBottom: '6px' }}>Federation settings</div>
                   {organisationSlug ? (
-                    <div style={{ padding: '12px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'var(--app-surface-2)' }}>
-                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="p-12 rounded-8" style={{ border: '1px solid var(--app-border)', background: 'var(--app-surface-2)' }}>
+                      <div className="flex-row gap-12 flex-wrap">
                         <div style={{ flex: '1 1 260px' }}>
-                          <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Federation</div>
-                          <div style={{ fontWeight: 800 }}>{String(organisationSlug)}</div>
+                          <div className="fs-12 text-muted mb-4">Federation</div>
+                          <div className="fw-800">{String(organisationSlug)}</div>
                         </div>
 
                         {orgMembershipId ? (
                           <div style={{ flex: '1 1 220px' }}>
-                            <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Org role</label>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <label className="block fw-700" style={{ marginBottom: '6px' }}>Org role</label>
+                            <div className="flex-row gap-10 flex-wrap">
                               <select
                                 value={orgRole}
                                 onChange={(e) => setOrgRole(e.target.value as any)}
@@ -947,10 +936,10 @@ export default function UserEditModal({
                           </div>
                         ) : (
                           <div style={{ flex: '1 1 360px' }}>
-                            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '6px' }}>
+                            <div className="fs-12 text-muted" style={{ marginBottom: '6px' }}>
                               This user is not a direct member of this federation.
                             </div>
-                            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                            <div className="flex-row gap-10 flex-wrap">
                               <select
                                 value={inviteOrgRole}
                                 onChange={(e) => setInviteOrgRole(e.target.value as any)}
@@ -988,17 +977,17 @@ export default function UserEditModal({
                       </div>
                     </div>
                   ) : (
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                    <div className="text-muted fs-12">
                       Tip: open this modal from a federation context to edit federation membership.
                     </div>
                   )}
                 </div>
 
-                <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
-                  <div style={{ fontWeight: 800, marginBottom: '10px' }}>Club Settings</div>
+                <div className="border-top" style={{ paddingTop: '12px' }}>
+                  <div className="fw-800" style={{ marginBottom: '10px' }}>Club Settings</div>
 
                   <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a club</label>
+                    <label className="block fw-700" style={{ marginBottom: '6px' }}>Choose a club</label>
                     <select
                       value={selectedClubKey}
                       onChange={(e) => setSelectedClubKey(e.target.value)}
@@ -1012,9 +1001,9 @@ export default function UserEditModal({
                   </div>
 
                   {selectedClubKey && clubMembershipId ? (
-                    <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>TeamReel rol</label>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="mb-12">
+                        <label className="block fw-700" style={{ marginBottom: '6px' }}>TeamReel rol</label>
+                        <div className="flex-row gap-12 flex-wrap">
                           <select
                             value={clubAccessRole}
                             onChange={(e) => setClubAccessRole(e.target.value as any)}
@@ -1026,24 +1015,24 @@ export default function UserEditModal({
                           </select>
                           <RbacBadge label={getRbacLabel(clubAccessRole, false)} />
                         </div>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                        <div className="fs-11" style={{ marginTop: '6px', color: 'var(--app-muted-text)' }}>
                           {ADMIN_LIKE_ROLES.has(clubAccessRole)
                             ? 'Club Admin — volledige toegang tot alle teams en content van deze club.'
                             : 'Supporter — kan content bekijken, geen bewerkrechten.'}
                         </div>
                     </div>
                   ) : selectedClubKey ? (
-                    <div style={{ marginBottom: '10px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                    <div className="text-muted fs-12" style={{ marginBottom: '10px' }}>
                          Gebruiker is geen lid van deze club. Ga naar "Add to club/team" om toe te voegen.
                     </div>
                   ) : null}
                 </div>
 
-                 <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
-                  <div style={{ fontWeight: 800, marginBottom: '10px' }}>Team Settings</div>
+                 <div className="border-top" style={{ paddingTop: '12px' }}>
+                  <div className="fw-800" style={{ marginBottom: '10px' }}>Team Settings</div>
 
                    <div style={{ marginBottom: '10px' }}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Choose a team</label>
+                      <label className="block fw-700" style={{ marginBottom: '6px' }}>Choose a team</label>
                       <select
                         value={selectedTeamKey}
                         onChange={(e) => setSelectedTeamKey(e.target.value)}
@@ -1056,16 +1045,16 @@ export default function UserEditModal({
                           </option>
                         ))}
                       </select>
-                       <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                       <div className="text-muted fs-12" style={{ marginTop: '6px' }}>
                         {selectedClubKey ? 'Showing teams for selected club.' : 'Select a club above to filter teams.'}
                       </div>
                     </div>
 
                   {selectedTeamKey && teamMembershipId ? (
                     <>
-                      <div style={{ marginBottom: '12px' }}>
-                        <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>TeamReel rol</label>
-                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <div className="mb-12">
+                        <label className="block fw-700" style={{ marginBottom: '6px' }}>TeamReel rol</label>
+                        <div className="flex-row gap-12 flex-wrap">
                           <select
                             value={teamAccessRole}
                             onChange={(e) => setTeamAccessRole(e.target.value as any)}
@@ -1077,7 +1066,7 @@ export default function UserEditModal({
                           </select>
                           <RbacBadge label={getRbacLabel(teamAccessRole, true)} />
                         </div>
-                        <div style={{ marginTop: '6px', fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                        <div className="fs-11" style={{ marginTop: '6px', color: 'var(--app-muted-text)' }}>
                           {ADMIN_LIKE_ROLES.has(teamAccessRole)
                             ? 'Team Admin — kan teamleden, content en wedstrijden beheren.'
                             : 'Team Member — kan eigen content uploaden en teamcontent bekijken.'}
@@ -1085,7 +1074,7 @@ export default function UserEditModal({
                       </div>
 
                       <div>
-                        <div style={{ fontWeight: 800, marginBottom: '6px' }}>Functional roles (team only)</div>
+                        <div className="fw-800" style={{ marginBottom: '6px' }}>Functional roles (team only)</div>
                         <div
                           style={{
                             display: 'grid',
@@ -1102,7 +1091,7 @@ export default function UserEditModal({
                             return (
                               <label
                                 key={opt.value}
-                                style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}
+                                className="flex-row gap-8 cursor-pointer"
                               >
                                 <input
                                   type="checkbox"
@@ -1128,7 +1117,7 @@ export default function UserEditModal({
                       </div>
                     </>
                   ) : selectedTeamKey ? (
-                    <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                    <div className="text-muted fs-12">
                         Gebruiker is geen lid van dit team. Ga naar "Add to club/team" om toe te voegen.
                     </div>
                   ) : null}
@@ -1137,10 +1126,10 @@ export default function UserEditModal({
             ) : null}
 
             {activeTab === 'link' ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ fontWeight: 800 }}>Add user to organisation</div>
+              <div className="flex-col gap-12">
+                <div className="fw-800">Add user to organisation</div>
                 {!organisationSlug ? (
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                  <div className="text-muted fs-12">
                     Open this from a federation context so we can list clubs/teams.
                   </div>
                 ) : null}
@@ -1153,11 +1142,11 @@ export default function UserEditModal({
 
                 {/* 1. Federation Section */}
                 {!orgMembershipId ? (
-                    <div style={{ padding: '12px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'var(--app-surface-2)' }}>
-                        <div style={{marginBottom: '10px', fontWeight: 800}}>Add to Federation</div>
-                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="p-12 rounded-8" style={{ border: '1px solid var(--app-border)', background: 'var(--app-surface-2)' }}>
+                        <div style={{marginBottom: '10px'}} className="fw-800">Add to Federation</div>
+                        <div className="flex-row gap-10 flex-wrap">
                              <div style={{ flex: '1 1 auto' }}>
-                                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Role</label>
+                                <label className="block fw-700" style={{ marginBottom: '6px' }}>Role</label>
                                 <select
                                 value={inviteOrgRole}
                                 onChange={(e) => setInviteOrgRole(e.target.value as any)}
@@ -1196,16 +1185,16 @@ export default function UserEditModal({
                     </div>
                 ) : (
                     <div style={{ padding: '10px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'rgba(40, 167, 69, 0.1)', color: 'var(--app-text)' }}>
-                         <div style={{ fontSize: '12px', fontWeight: 700 }}>✓ Member of {organisationSlug}</div>
+                         <div className="fs-12 fw-700">✓ Member of {organisationSlug}</div>
                     </div>
                 )}
 
                 {/* 2. Project Section */}
-                <div style={{ padding: '12px', border: '1px solid var(--app-border)', borderRadius: '8px', background: 'var(--app-surface-2)' }}>
-                   <div style={{marginBottom: '10px', fontWeight: 800}}>Add to Club / Team</div>
+                <div className="p-12 rounded-8" style={{ border: '1px solid var(--app-border)', background: 'var(--app-surface-2)' }}>
+                   <div style={{marginBottom: '10px'}} className="fw-800">Add to Club / Team</div>
 
                    <div style={{marginBottom: '10px'}}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>1. Select Club</label>
+                      <label className="block fw-700" style={{ marginBottom: '6px' }}>1. Select Club</label>
                       <select
                         value={linkClubKey}
                         onChange={(e) => {
@@ -1224,7 +1213,7 @@ export default function UserEditModal({
                    </div>
 
                    <div style={{marginBottom: '10px'}}>
-                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>2. Select Team (optional)</label>
+                      <label className="block fw-700" style={{ marginBottom: '6px' }}>2. Select Team (optional)</label>
                       <select
                         value={linkTeamKey}
                         onChange={(e) => setLinkTeamKey(e.target.value)}
@@ -1241,9 +1230,9 @@ export default function UserEditModal({
                       </select>
                    </div>
 
-                    <div style={{ display: 'flex', gap: '10px', marginTop: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <div className="flex-row gap-10 mt-16 flex-wrap">
                        <div style={{flex: '1 1 auto'}}>
-                          <label style={{ display: 'block', marginBottom: '6px', fontWeight: 700 }}>Initial Role</label>
+                          <label className="block fw-700" style={{ marginBottom: '6px' }}>Initial Role</label>
                           <select
                             value={linkAccessRole}
                             onChange={(e) => setLinkAccessRole(e.target.value as any)}
@@ -1258,7 +1247,7 @@ export default function UserEditModal({
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }} className="mt-8">
                     <button
                         type="button"
                         disabled={addingToProject || !linkClubKey}
@@ -1303,7 +1292,7 @@ export default function UserEditModal({
             ) : null}
           </div>
 
-          <div style={{ padding: '12px 18px', borderTop: '1px solid var(--app-border)', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <div className="border-top" style={{ padding: '12px 18px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
             <button
               type="button"
               onClick={onClose}

@@ -116,8 +116,8 @@ function MembershipDetailModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>User membership</h2>
+        <div className="flex-between gap-12">
+          <h2 className="m-0 fs-16 fw-700">User membership</h2>
           <button
             onClick={onClose}
             style={{
@@ -133,29 +133,29 @@ function MembershipDetailModal({
           </button>
         </div>
 
-        <div style={{ marginTop: '12px', display: 'grid', gap: '8px' }}>
+        <div className="mt-12" style={{ display: 'grid', gap: '8px' }}>
           <div>
-            <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Name</div>
-            <div style={{ fontWeight: 600 }}>{name}</div>
+            <div className="text-muted fs-12">Name</div>
+            <div className="fw-600">{name}</div>
           </div>
           <div>
-            <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Email</div>
-            <div style={{ fontWeight: 600 }}>{email}</div>
+            <div className="text-muted fs-12">Email</div>
+            <div className="fw-600">{email}</div>
           </div>
           <div>
-            <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Role</div>
-            <div style={{ fontWeight: 600 }}>
+            <div className="text-muted fs-12">Role</div>
+            <div className="fw-600">
               <Badge variant="default">{roleLabel(role)}</Badge>
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div>
-              <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Position</div>
-              <div style={{ fontWeight: 600 }}>{position}</div>
+              <div className="text-muted fs-12">Position</div>
+              <div className="fw-600">{position}</div>
             </div>
             <div>
-              <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>#</div>
-              <div style={{ fontWeight: 600 }}>{shirtNumber || '—'}</div>
+              <div className="text-muted fs-12">#</div>
+              <div className="fw-600">{shirtNumber || '—'}</div>
             </div>
           </div>
         </div>
@@ -260,8 +260,8 @@ function MembershipEditModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Edit user role</h2>
+        <div className="flex-between gap-12">
+          <h2 className="m-0 fs-16 fw-700">Edit user role</h2>
           <button
             onClick={onClose}
             style={{
@@ -277,11 +277,11 @@ function MembershipEditModal({
           </button>
         </div>
 
-        <div style={{ marginTop: '10px', color: 'var(--app-muted-text)', fontSize: '13px' }}>{displayName}</div>
+        <div className="text-muted fs-13" style={{ marginTop: '10px' }}>{displayName}</div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="competition-membership-role">
+        <div className="flex-col gap-10 mt-16">
+          <div className="flex-col" style={{ gap: '6px' }}>
+            <label className="fw-600" htmlFor="competition-membership-role">
               Access role
             </label>
             <select
@@ -302,8 +302,8 @@ function MembershipEditModal({
             </select>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <div style={{ fontWeight: 600 }}>Functional roles</div>
+          <div className="flex-col" style={{ gap: '6px' }}>
+            <div className="fw-600">Functional roles</div>
             <div
               style={{
                 display: 'grid',
@@ -433,8 +433,8 @@ function CreateUserHelpModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Create / add user</h2>
+        <div className="flex-between gap-12">
+          <h2 className="m-0 fs-16 fw-700">Create / add user</h2>
           <button
             onClick={onClose}
             style={{
@@ -450,7 +450,7 @@ function CreateUserHelpModal({
           </button>
         </div>
 
-        <div style={{ marginTop: '12px', color: 'var(--app-muted-text)', fontSize: '13px', lineHeight: 1.4 }}>
+        <div className="mt-12 text-muted fs-13" style={{ lineHeight: 1.4 }}>
           Users are managed at the team/club level. Add a user there, then they will appear here when assigned to this competition.
         </div>
 
@@ -662,7 +662,7 @@ function CompetitionLegacyMatchCreateModal({
 
         <form onSubmit={handleSubmit}>
           <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-venue">
+            <label className="fw-600" htmlFor="competition-match-venue">
               Venue
             </label>
             <select
@@ -691,7 +691,7 @@ function CompetitionLegacyMatchCreateModal({
               <option value="Away">Away</option>
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-title">
+            <label className="fw-600" htmlFor="competition-match-title">
               Title
             </label>
             <input
@@ -709,7 +709,7 @@ function CompetitionLegacyMatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-opponent">
+            <label className="fw-600" htmlFor="competition-match-opponent">
               Opponent
             </label>
             <select
@@ -742,7 +742,7 @@ function CompetitionLegacyMatchCreateModal({
               ))}
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-date">
+            <label className="fw-600" htmlFor="competition-match-date">
               Date
             </label>
             <input
@@ -761,7 +761,7 @@ function CompetitionLegacyMatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-time">
+            <label className="fw-600" htmlFor="competition-match-time">
               Time
             </label>
             <input
@@ -780,7 +780,7 @@ function CompetitionLegacyMatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-location">
+            <label className="fw-600" htmlFor="competition-match-location">
               Location
             </label>
             <input
@@ -797,7 +797,7 @@ function CompetitionLegacyMatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="competition-match-description">
+            <label className="fw-600" htmlFor="competition-match-description">
               Description
             </label>
             <textarea
@@ -1636,7 +1636,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
         <PageHeader
           title={competition ? competition.name : 'Competition'}
           actions={
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div className="flex-row gap-8 flex-wrap">
               {(() => {
                 const isActive = !!competition && String(activeContext?.competition?.id ?? '') === String((competition as any)?.id ?? '');
                 return (
@@ -1723,22 +1723,22 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
           {loading ? (
             <Card>
-              <div style={{ padding: '16px' }}>Loading…</div>
+              <div className="p-16">Loading…</div>
             </Card>
           ) : (
             <>
               {activeTab === 'overview' && (
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-                    <Card style={{ padding: '16px' }}>
+                    <Card className="p-16">
                       <div className="text-sm font-medium text-gray-500">Matches</div>
                       <div className="text-2xl font-bold mt-1">{competitionMatchesCount}</div>
                     </Card>
-                    <Card style={{ padding: '16px' }}>
+                    <Card className="p-16">
                       <div className="text-sm font-medium text-gray-500">Users</div>
                       <div className="text-2xl font-bold mt-1">{members.length}</div>
                     </Card>
-                    <Card style={{ padding: '16px' }}>
+                    <Card className="p-16">
                       <div className="text-sm font-medium text-gray-500">Sport Variant</div>
                       <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {competition?.sport ? (
@@ -1771,7 +1771,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                       </Card>
                     </div>
                     <div className="space-y-6">
-                      <Card style={{ padding: '16px' }}>
+                      <Card className="p-16">
                         <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
                         <div style={{ display: 'grid', gap: '8px' }}>
                           <Button variant="secondary" onClick={() => navigateToTab('hierarchy')}>
@@ -1833,14 +1833,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
               {activeTab === 'hierarchy' && (
                 <Card>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <div className="flex-between gap-12">
                     <div>
-                      <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
-                      <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                      <div className="fs-16 fw-700">Hierarchy</div>
+                      <div className="text-muted fs-13">
                         Season → Competition → Matches
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div className="flex-row gap-8 flex-wrap">
                       <Input
                         value={hierarchySearch}
                         onChange={(e) => setHierarchySearch(e.target.value)}
@@ -1853,18 +1853,18 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                   </div>
 
                   {/* Breadcrumb */}
-                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, color: 'var(--app-muted-text)', fontWeight: 600 }}>Season</span>
+                  <div className="mt-12 flex-row gap-8 flex-wrap">
+                    <span className="text-muted" style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, fontWeight: 600 }}>Season</span>
                     <Link
                       to={`${seasonsBasePath}/${seasonKeyOrId}`}
-                      className="hover:underline"
-                      style={{ textDecoration: 'none', fontWeight: 600, fontSize: 13, color: '#60a5fa' }}
+                      className="hover:underline fw-600 fs-13"
+                      style={{ textDecoration: 'none', color: '#60a5fa' }}
                     >
                       {season?.name || 'Season'}
                     </Link>
-                    <span style={{ color: 'var(--app-muted-text)' }}>→</span>
-                    <span style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, color: 'var(--app-muted-text)', fontWeight: 600 }}>Competition</span>
-                    <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--app-text)' }}>{competition?.name || 'Competition'}</span>
+                    <span className="text-muted">→</span>
+                    <span className="text-muted" style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, fontWeight: 600 }}>Competition</span>
+                    <span className="fw-600 fs-13" style={{ color: 'var(--app-text)' }}>{competition?.name || 'Competition'}</span>
                   </div>
 
                   {matchesLoading && filteredMatches.length === 0 ? (
@@ -1932,8 +1932,8 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                   background: 'var(--app-surface-2)',
                                 }}
                               >
-                                <div style={{ fontWeight: 800, fontSize: 14 }}>{group.label}</div>
-                                <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{group.rows.length} match{group.rows.length !== 1 ? 'es' : ''}</div>
+                        <div className="fw-800 fs-14">{group.label}</div>
+                                <div className="fs-12 text-muted">{group.rows.length} match{group.rows.length !== 1 ? 'es' : ''}</div>
                               </div>
 
                               <div style={{ padding: '10px 12px' }}>
@@ -1961,7 +1961,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                                         >
                                           {matchDisplayTitle(m)}
                                         </button>
-                                        <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
+                                        <div className="fs-12 text-muted">
                                           {m.start_time ? new Date(m.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'} • {m.location || '—'}
                                         </div>
                                       </div>
@@ -2015,7 +2015,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
               {activeTab === 'matches' && (
                 <Card>
-                  <div style={{ padding: '16px' }}>
+                  <div className="p-16">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold">Matches</h3>
                       <Button onClick={() => setIsMatchCreateModalOpen(true)}>Create Match</Button>
@@ -2045,7 +2045,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
 
                 return (
                   <Card title="📊 Content Matrix">
-                    <div style={{ padding: '16px' }}>
+                    <div className="p-16">
                       {matchMediaLoading ? (
                         <Alert variant="info">Media laden…</Alert>
                       ) : sortedMatches.length === 0 ? (
@@ -2132,7 +2132,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                             </tbody>
                           </table>
                           {/* Legend */}
-                          <div style={{ marginTop: 12, display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: 11, color: 'var(--app-text-secondary, #999)' }}>
+                          <div className="mt-12 flex-row gap-16 flex-wrap" style={{ fontSize: 11, color: 'var(--app-text-secondary, #999)' }}>
                             <span>✅ = Gereed</span>
                             <span>⬜ = Niet gemaakt</span>
                             {matchContentTypes.map(ct => (

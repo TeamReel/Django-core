@@ -229,11 +229,11 @@ export const RoutingRulesPage: React.FC = () => {
           { label: 'Routing Rules' },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div className="flex-row gap-12">
             <Button variant="secondary" size="sm" onClick={fetchRules} disabled={loading}>
               Refresh
             </Button>
-            <a href="/routing-logs" style={{ color: 'var(--app-link)', textDecoration: 'none', fontSize: 13 }}>
+            <a href="/routing-logs" className="text-link fs-13" style={{ textDecoration: 'none' }}>
               View routing logs
             </a>
           </div>
@@ -241,41 +241,41 @@ export const RoutingRulesPage: React.FC = () => {
       />
 
       <PageContent>
-        <div style={{ display: 'grid', gap: 16 }}>
+        <div className="grid gap-16">
           <Card>
-            <div style={{ padding: 16 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div className="p-16">
+              <div className="flex-between gap-12 flex-wrap">
                 <div>
-                  <h3 style={{ margin: 0, color: 'var(--app-text)' }}>Organisation</h3>
-                  <div style={{ marginTop: 6, color: 'var(--app-text-muted)', fontSize: 13 }}>
+                  <h3 className="m-0 text-primary">Organisation</h3>
+                  <div className="fs-13" style={{ marginTop: 6, color: 'var(--app-text-muted)' }}>
                     {currentOrgId ? `${currentOrgName} (${currentOrgId})` : 'No organisation selected'}
                   </div>
                 </div>
               </div>
 
-              {error && <div style={{ marginTop: 12 }}><Alert variant="error">{error}</Alert></div>}
+              {error && <div className="mt-12"><Alert variant="error">{error}</Alert></div>}
             </div>
           </Card>
 
           <Card>
-            <div style={{ padding: 16 }}>
-              <h3 style={{ margin: '0 0 12px', color: 'var(--app-text)' }}>Add org rule</h3>
-              <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-                <label style={{ display: 'grid', gap: 6, fontSize: 13, color: 'var(--app-text)' }}>
+            <div className="p-16">
+              <h3 className="m-0 mb-12 text-primary">Add org rule</h3>
+              <div className="grid gap-10" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                <label className="grid gap-6 fs-13 text-primary">
                   Event type
                   <input
                     value={createDraft.event_type}
                     onChange={(e) => setCreateDraft({ ...createDraft, event_type: e.target.value })}
-                    style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--app-border)', background: 'var(--app-surface)', color: 'var(--app-text)' }}
+                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
                   />
                 </label>
 
-                <label style={{ display: 'grid', gap: 6, fontSize: 13, color: 'var(--app-text)' }}>
+                <label className="grid gap-6 fs-13 text-primary">
                   Channel
                   <select
                     value={createDraft.channel}
                     onChange={(e) => setCreateDraft({ ...createDraft, channel: e.target.value as any })}
-                    style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--app-border)', background: 'var(--app-surface)', color: 'var(--app-text)' }}
+                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
                   >
                     <option value="in_app">In-app</option>
                     <option value="email">Email</option>
@@ -283,22 +283,22 @@ export const RoutingRulesPage: React.FC = () => {
                   </select>
                 </label>
 
-                <label style={{ display: 'grid', gap: 6, fontSize: 13, color: 'var(--app-text)' }}>
+                <label className="grid gap-6 fs-13 text-primary">
                   Target role (optional)
                   <input
                     value={createDraft.target_role}
                     onChange={(e) => setCreateDraft({ ...createDraft, target_role: e.target.value })}
                     placeholder="org_admin"
-                    style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--app-border)', background: 'var(--app-surface)', color: 'var(--app-text)' }}
+                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
                   />
                 </label>
 
-                <label style={{ display: 'grid', gap: 6, fontSize: 13, color: 'var(--app-text)' }}>
+                <label className="grid gap-6 fs-13 text-primary">
                   Priority
                   <select
                     value={String(createDraft.priority)}
                     onChange={(e) => setCreateDraft({ ...createDraft, priority: Number(e.target.value) })}
-                    style={{ padding: '8px 10px', borderRadius: 6, border: '1px solid var(--app-border)', background: 'var(--app-surface)', color: 'var(--app-text)' }}
+                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
                   >
                     <option value="0">Low</option>
                     <option value="1">Normal</option>
@@ -307,7 +307,7 @@ export const RoutingRulesPage: React.FC = () => {
                   </select>
                 </label>
 
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--app-text)', marginTop: 22 }}>
+                <label className="flex-row gap-8 fs-13 text-primary" style={{ marginTop: 22 }}>
                   <input
                     type="checkbox"
                     checked={createDraft.enabled}
@@ -317,7 +317,7 @@ export const RoutingRulesPage: React.FC = () => {
                 </label>
               </div>
 
-              <div style={{ marginTop: 12 }}>
+              <div className="mt-12">
                 <Button onClick={createRule} disabled={creating || !currentOrgId}>
                   {creating ? 'Creating…' : 'Create rule'}
                 </Button>
@@ -326,33 +326,23 @@ export const RoutingRulesPage: React.FC = () => {
           </Card>
 
           <Card>
-            <div style={{ padding: 16 }}>
-              <h3 style={{ margin: '0 0 12px', color: 'var(--app-text)' }}>Rules</h3>
+            <div className="p-16">
+              <h3 className="m-0 mb-12 text-primary">Rules</h3>
 
               {loading ? (
                 <div style={{ color: 'var(--app-text-muted)' }}>Loading…</div>
               ) : rules.length === 0 ? (
                 <div style={{ color: 'var(--app-text-muted)' }}>No rules found.</div>
               ) : (
-                <div style={{ display: 'grid', gap: 10 }}>
+                <div className="grid gap-10">
                   {rules.map((rule) => (
                     <div
                       key={rule.id}
-                      style={{
-                        border: '1px solid var(--app-border)',
-                        borderRadius: 8,
-                        padding: 12,
-                        background: 'var(--app-surface-2)',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                        flexWrap: 'wrap',
-                        alignItems: 'center',
-                      }}
+                      className="border rounded-8 p-12 bg-surface-2 flex-between gap-12 flex-wrap"
                     >
                       <div>
-                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                          <span style={{ fontWeight: 600, color: 'var(--app-text)' }}>{rule.event_type}</span>
+                        <div className="flex-row gap-8 flex-wrap">
+                          <span className="fw-600 text-primary">{rule.event_type}</span>
                           <Badge size="sm" variant={rule.enabled ? 'success' : 'warning'}>
                             {rule.enabled ? 'ENABLED' : 'DISABLED'}
                           </Badge>
@@ -364,7 +354,7 @@ export const RoutingRulesPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <div className="flex-row gap-10">
                         <Button size="sm" variant="secondary" onClick={() => toggleRule(rule)}>
                           {rule.enabled ? 'Disable' : 'Enable'}
                         </Button>

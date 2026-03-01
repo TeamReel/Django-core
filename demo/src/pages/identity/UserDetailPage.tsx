@@ -51,6 +51,7 @@ function ProjectMembershipEditModal({
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -58,18 +59,14 @@ function ProjectMembershipEditModal({
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
       onClick={onClose}
     >
       <div
+        className="p-20 rounded-8"
         style={{
           backgroundColor: 'var(--app-surface)',
-          padding: '20px',
-          borderRadius: '8px',
           width: '520px',
           maxWidth: '95%',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
@@ -78,15 +75,12 @@ function ProjectMembershipEditModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-          <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Edit membership role</h2>
+        <div className="flex-between gap-12">
+          <h2 className="m-0 fs-16 fw-700">Edit membership role</h2>
           <button
             onClick={onClose}
+            className="bg-transparent border-none fs-18 cursor-pointer"
             style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
               color: 'var(--app-text)',
             }}
             aria-label="Close"
@@ -96,15 +90,15 @@ function ProjectMembershipEditModal({
           </button>
         </div>
 
-        <div style={{ marginTop: '10px', color: 'var(--app-muted-text)', fontSize: '13px' }}>{membership.projectName}</div>
+        <div className="text-muted fs-13" style={{ marginTop: '10px' }}>{membership.projectName}</div>
 
         {error ? (
-          <div style={{ marginTop: '12px', padding: '10px 12px', borderRadius: '6px', backgroundColor: '#fee', color: '#c00' }}>{error}</div>
+          <div className="mt-12 rounded-6" style={{ padding: '10px 12px', backgroundColor: '#fee', color: '#c00' }}>{error}</div>
         ) : null}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="membership-role-select">
+        <div className="flex-col gap-10 mt-16">
+          <div className="flex-col gap-6">
+            <label className="fw-600" htmlFor="membership-role-select">
               Role
             </label>
             <select
@@ -112,11 +106,10 @@ function ProjectMembershipEditModal({
               value={role}
               onChange={(e) => setRole(e.target.value)}
               disabled={saving}
+              className="rounded-6 bg-surface-2"
               style={{
                 padding: '8px 10px',
-                borderRadius: '6px',
                 border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
                 color: 'var(--app-text)',
               }}
             >
@@ -126,16 +119,15 @@ function ProjectMembershipEditModal({
             </select>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+          <div className="gap-8 mt-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
+              className="rounded-6 bg-surface-2"
               style={{
                 padding: '8px 12px',
-                borderRadius: '6px',
                 border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
                 color: 'var(--app-text)',
                 cursor: saving ? 'not-allowed' : 'pointer',
               }}
@@ -157,9 +149,9 @@ function ProjectMembershipEditModal({
                   setSaving(false);
                 }
               }}
+              className="rounded-6"
               style={{
                 padding: '8px 12px',
-                borderRadius: '6px',
                 border: '1px solid #007bff',
                 backgroundColor: '#007bff',
                 color: '#fff',
@@ -265,7 +257,8 @@ export const UserDetailPage: React.FC = () => {
           e.preventDefault();
           navigate(href);
         }}
-        style={{ color: '#007bff', textDecoration: 'none', fontWeight: 600 }}
+        className="fw-600"
+        style={{ color: '#007bff', textDecoration: 'none' }}
       >
         {safe || '—'}
       </a>
@@ -929,7 +922,7 @@ export const UserDetailPage: React.FC = () => {
           { label: userDisplayName, current: true },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div className="flex-row gap-10">
             <button
               type="button"
               className="app-action-button"
@@ -980,10 +973,10 @@ export const UserDetailPage: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+              <Card className="p-16">
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Federations <span className="text-gray-500" style={{ fontWeight: 600 }}>({userOrgs.length})</span>
+                    Federations <span className="text-gray-500 fw-600">({userOrgs.length})</span>
                   </div>
                   <button type="button" className="app-action-button" onClick={() => setTab('federations')} style={actionButtonStyle('neutral')}>
                     View all
@@ -1000,14 +993,13 @@ export const UserDetailPage: React.FC = () => {
                         <button
                           key={String(o?.id || o?.slug || orgSlugOrId)}
                           type="button"
-                          className="app-unstyled-button text-blue-600 hover:underline"
+                          className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                           onClick={() => navigate(orgPath)}
-                          style={{ textAlign: 'left', fontWeight: 600 }}
                         >
                           {String(o?.name || orgSlugOrId)}
                         </button>
                       ) : (
-                        <div key={String(o?.id || o?.slug || orgSlugOrId)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <div key={String(o?.id || o?.slug || orgSlugOrId)} className="text-sm text-gray-900 fw-600">
                           {String(o?.name || 'Federation')}
                         </div>
                       );
@@ -1016,10 +1008,10 @@ export const UserDetailPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+              <Card className="p-16">
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Clubs <span className="text-gray-500" style={{ fontWeight: 600 }}>({clubsForTab.length})</span>
+                    Clubs <span className="text-gray-500 fw-600">({clubsForTab.length})</span>
                   </div>
                   <button type="button" className="app-action-button" onClick={() => setTab('clubs')} style={actionButtonStyle('neutral')}>
                     View all
@@ -1037,14 +1029,13 @@ export const UserDetailPage: React.FC = () => {
                         <button
                           key={String(c?.id || clubKeyOrId)}
                           type="button"
-                          className="app-unstyled-button text-blue-600 hover:underline"
+                          className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                           onClick={() => navigate(clubPath)}
-                          style={{ textAlign: 'left', fontWeight: 600 }}
                         >
                           {String(c?.name || 'Club')}
                         </button>
                       ) : (
-                        <div key={String(c?.id || clubKeyOrId)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <div key={String(c?.id || clubKeyOrId)} className="text-sm text-gray-900 fw-600">
                           {String(c?.name || 'Club')}
                         </div>
                       );
@@ -1053,10 +1044,10 @@ export const UserDetailPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+              <Card className="p-16">
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Teams <span className="text-gray-500" style={{ fontWeight: 600 }}>({teamMemberships.length})</span>
+                    Teams <span className="text-gray-500 fw-600">({teamMemberships.length})</span>
                   </div>
                   <button type="button" className="app-action-button" onClick={() => setTab('teams')} style={actionButtonStyle('neutral')}>
                     View all
@@ -1078,14 +1069,13 @@ export const UserDetailPage: React.FC = () => {
                         <button
                           key={String(t?.id || teamKeyOrId)}
                           type="button"
-                          className="app-unstyled-button text-blue-600 hover:underline"
+                          className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                           onClick={() => navigate(teamPath)}
-                          style={{ textAlign: 'left', fontWeight: 600 }}
                         >
                           {String(t?.name || 'Team')}
                         </button>
                       ) : (
-                        <div key={String(t?.id || teamKeyOrId)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <div key={String(t?.id || teamKeyOrId)} className="text-sm text-gray-900 fw-600">
                           {String(t?.name || 'Team')}
                         </div>
                       );
@@ -1094,10 +1084,10 @@ export const UserDetailPage: React.FC = () => {
                 )}
               </Card>
 
-              <Card style={{ padding: 16 }}>
-                <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+              <Card className="p-16">
+                <div className="flex items-center justify-between mb-3 gap-12">
                   <div className="text-sm font-semibold text-gray-900">
-                    Matches <span className="text-gray-500" style={{ fontWeight: 600 }}>({linkedMatches.length})</span>
+                    Matches <span className="text-gray-500 fw-600">({linkedMatches.length})</span>
                   </div>
                   <button type="button" className="app-action-button" onClick={() => setTab('matches')} style={actionButtonStyle('neutral')}>
                     View all
@@ -1114,14 +1104,13 @@ export const UserDetailPage: React.FC = () => {
                         <button
                           key={String(m?.id || matchKeyOrId)}
                           type="button"
-                          className="app-unstyled-button text-blue-600 hover:underline"
+                          className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                           onClick={() => navigate(matchPath)}
-                          style={{ textAlign: 'left', fontWeight: 600 }}
                         >
                           {String(m?.title || m?.name || 'Match')}
                         </button>
                       ) : (
-                        <div key={String(m?.id || 'match')} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <div key={String(m?.id || 'match')} className="text-sm text-gray-900 fw-600">
                           {String(m?.title || m?.name || 'Match')}
                         </div>
                       );
@@ -1133,21 +1122,21 @@ export const UserDetailPage: React.FC = () => {
 
             <Card>
               <h3 style={{ marginTop: 0 }}>User</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '8px 16px' }}>
-                <div style={{ color: 'var(--app-muted-text)' }}>Name</div>
-                <div style={{ fontWeight: 600 }}>{userDisplayName}</div>
+              <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: '8px 16px' }}>
+                <div className="text-muted">Name</div>
+                <div className="fw-600">{userDisplayName}</div>
 
-                <div style={{ color: 'var(--app-muted-text)' }}>Email</div>
+                <div className="text-muted">Email</div>
                 <div>{user.email}</div>
 
-                <div style={{ color: 'var(--app-muted-text)' }}>Role</div>
+                <div className="text-muted">Role</div>
                 <div>
                   <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
                     {user.role}
                   </Badge>
                 </div>
 
-                <div style={{ color: 'var(--app-muted-text)' }}>Status</div>
+                <div className="text-muted">Status</div>
                 <div>
                   <Badge variant={user.is_active ? 'success' : 'error'}>{user.is_active ? 'Active' : 'Inactive'}</Badge>
                 </div>
@@ -1159,20 +1148,16 @@ export const UserDetailPage: React.FC = () => {
         {activeTab === 'identity' && user && (
           <div className="space-y-6">
             {/* Profile Photo Section */}
-            <Card style={{ padding: 20 }}>
-              <h3 style={{ marginTop: 0, marginBottom: 16 }}>Profile Photo</h3>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24 }}>
+            <Card className="p-20">
+              <h3 className="mb-16" style={{ marginTop: 0 }}>Profile Photo</h3>
+              <div className="flex-row gap-24" style={{ alignItems: 'flex-start' }}>
                 <div
+                  className="overflow-hidden flex-center rounded-full"
                   style={{
                     width: 120,
                     height: 120,
-                    borderRadius: '50%',
                     backgroundColor: 'var(--app-surface-alt, #f5f5f5)',
                     border: '2px solid var(--app-border)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     flexShrink: 0,
                   }}
                 >
@@ -1180,7 +1165,8 @@ export const UserDetailPage: React.FC = () => {
                     <img
                       src={(user as any).avatar_url}
                       alt={`${userDisplayName} avatar`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      className="w-full h-full"
+                      style={{ objectFit: 'cover' }}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
@@ -1191,18 +1177,19 @@ export const UserDetailPage: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: 13, marginBottom: 8 }}>
+                <div className="flex-1">
+                  <div className="text-muted fs-13 mb-8">
                     This is the user's primary profile photo. It's displayed across the platform.
                   </div>
                   {(user as any).avatar_url && (
-                    <div style={{ marginTop: 8, fontSize: 12, color: 'var(--app-muted-text)' }}>
+                    <div className="mt-8 fs-12 text-muted">
                       <strong>URL:</strong>{' '}
                       <a
                         href={(user as any).avatar_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ color: '#007bff', wordBreak: 'break-all' }}
+                        className="word-break-all"
+                        style={{ color: '#007bff' }}
                       >
                         {(user as any).avatar_url}
                       </a>
@@ -1213,9 +1200,9 @@ export const UserDetailPage: React.FC = () => {
             </Card>
 
             {/* Profile Details Section */}
-            <Card style={{ padding: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ marginTop: 0, marginBottom: 0 }}>Profile Details</h3>
+            <Card className="p-20">
+              <div className="flex-between mb-16">
+                <h3 className="m-0">Profile Details</h3>
                 {!identityEditing && (
                   <button
                     type="button"
@@ -1234,21 +1221,21 @@ export const UserDetailPage: React.FC = () => {
               </div>
 
               {identitySaveSuccess && (
-                <Alert variant="success" style={{ marginBottom: 16 }}>
+                <Alert variant="success" className="mb-16">
                   Profile updated successfully!
                 </Alert>
               )}
 
               {identitySaveError && (
-                <Alert variant="error" style={{ marginBottom: 16 }}>
+                <Alert variant="error" className="mb-16">
                   {identitySaveError}
                 </Alert>
               )}
 
               {identityEditing ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="flex-col gap-16">
                   <div>
-                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>First Name</label>
+                    <label className="block fw-600" style={{ marginBottom: 6 }}>First Name</label>
                     <Input
                       value={identityFirstName}
                       onChange={(e) => setIdentityFirstName((e.target as any).value)}
@@ -1257,7 +1244,7 @@ export const UserDetailPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Last Name</label>
+                    <label className="block fw-600" style={{ marginBottom: 6 }}>Last Name</label>
                     <Input
                       value={identityLastName}
                       onChange={(e) => setIdentityLastName((e.target as any).value)}
@@ -1266,13 +1253,13 @@ export const UserDetailPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 600 }}>Email</label>
+                    <label className="block fw-600" style={{ marginBottom: 6 }}>Email</label>
                     <Input value={user.email || ''} disabled />
-                    <div style={{ fontSize: 12, color: 'var(--app-muted-text)', marginTop: 4 }}>
+                    <div className="fs-12 text-muted mt-4">
                       Email cannot be changed here.
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                  <div className="flex-row gap-8 mt-8">
                     <button
                       type="button"
                       disabled={identitySaving}
@@ -1317,34 +1304,34 @@ export const UserDetailPage: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '12px 16px' }}>
-                  <div style={{ color: 'var(--app-muted-text)' }}>First Name</div>
-                  <div style={{ fontWeight: 600 }}>{user.first_name || '—'}</div>
+                <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: '12px 16px' }}>
+                  <div className="text-muted">First Name</div>
+                  <div className="fw-600">{user.first_name || '—'}</div>
 
-                  <div style={{ color: 'var(--app-muted-text)' }}>Last Name</div>
-                  <div style={{ fontWeight: 600 }}>{user.last_name || '—'}</div>
+                  <div className="text-muted">Last Name</div>
+                  <div className="fw-600">{user.last_name || '—'}</div>
 
-                  <div style={{ color: 'var(--app-muted-text)' }}>Email</div>
+                  <div className="text-muted">Email</div>
                   <div>{user.email || '—'}</div>
 
-                  <div style={{ color: 'var(--app-muted-text)' }}>Role</div>
+                  <div className="text-muted">Role</div>
                   <div>
                     <Badge variant={String(user.role || '').toLowerCase() === 'superadmin' ? 'primary' : 'default'}>
                       {user.role || 'User'}
                     </Badge>
                   </div>
 
-                  <div style={{ color: 'var(--app-muted-text)' }}>Status</div>
+                  <div className="text-muted">Status</div>
                   <div>
                     <Badge variant={user.is_active ? 'success' : 'error'}>
                       {user.is_active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
 
-                  <div style={{ color: 'var(--app-muted-text)' }}>Last Login</div>
+                  <div className="text-muted">Last Login</div>
                   <div>{user.last_login ? new Date(user.last_login).toLocaleString() : '—'}</div>
 
-                  <div style={{ color: 'var(--app-muted-text)' }}>Date Joined</div>
+                  <div className="text-muted">Date Joined</div>
                   <div>{user.date_joined ? new Date(user.date_joined).toLocaleString() : '—'}</div>
                 </div>
               )}
@@ -1353,10 +1340,10 @@ export const UserDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'balance' && (
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="grid gap-12">
             <Card>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                <h3 style={{ marginTop: 0, marginBottom: 0 }}>Balance</h3>
+              <div className="flex-between gap-12">
+                <h3 className="m-0">Balance</h3>
                 <button
                   type="button"
                   onClick={() => setUserBalanceReloadToken((n) => n + 1)}
@@ -1368,21 +1355,21 @@ export const UserDetailPage: React.FC = () => {
               </div>
 
               {userBalanceError ? (
-                <div style={{ marginTop: '12px' }}>
+                <div className="mt-12">
                   <Alert variant="warning">{userBalanceError}</Alert>
                 </div>
               ) : null}
 
-              <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="mt-12 grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                 <Card>
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Current balance</div>
+                  <div className="text-muted fs-12">Current balance</div>
                   <div style={{ fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>
                     {userBalanceLoading ? 'Loading…' : userBalance != null ? userBalance : '—'}
                   </div>
                 </Card>
                 <Card>
-                  <div style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>Quick links</div>
-                  <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div className="text-muted fs-12">Quick links</div>
+                  <div className="mt-10 flex-row gap-8 flex-wrap">
                     <button type="button" onClick={() => setTab('transactions')} style={actionButtonStyle('primary')}>
                       View transactions
                     </button>
@@ -1397,7 +1384,7 @@ export const UserDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'transactions' && (
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="grid gap-12">
             <TransactionsPanel
               title="Transactions"
               description="User-scoped transactions (charged_user_id)"
@@ -1411,11 +1398,11 @@ export const UserDetailPage: React.FC = () => {
 
         {activeTab === 'hierarchy' && (
           <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'center' }}>
-              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Hierarchy</h3>
+            <div className="flex-between gap-12">
+              <h3 className="m-0">Hierarchy</h3>
               <Input value={hierarchySearch} onChange={(e) => setHierarchySearch((e.target as any).value)} placeholder="Search…" />
             </div>
-            <div style={{ marginTop: '12px' }}>
+            <div className="mt-12">
               <Table style={compactTableStyle}>
                 <thead>
                   <tr>
@@ -1463,7 +1450,7 @@ export const UserDetailPage: React.FC = () => {
                   {!hierarchyRows.length && (
                     <tr>
                       <td style={compactTdStyle} colSpan={4}>
-                        <em style={{ color: 'var(--app-muted-text)' }}>No linked seasons found.</em>
+                        <em className="text-muted">No linked seasons found.</em>
                       </td>
                     </tr>
                   )}
@@ -1475,8 +1462,8 @@ export const UserDetailPage: React.FC = () => {
 
         {activeTab === 'federations' && (
           <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Federations</h3>
+            <div className="flex-between gap-10">
+              <h3 className="m-0">Federations</h3>
               <button type="button" onClick={() => setIsLinkModalOpen(true)} style={actionButtonStyle('neutral')} disabled={!user}>
                 Add to…
               </button>
@@ -1513,12 +1500,9 @@ export const UserDetailPage: React.FC = () => {
                               alert(e instanceof Error ? e.message : 'Failed to update role');
                             }
                           }}
+                          className="border-none bg-transparent p-0 fw-700"
                           style={{
-                            border: 'none',
-                            background: 'transparent',
-                            padding: 0,
                             color: orgSlugOrId ? '#007bff' : 'var(--app-muted-text)',
-                            fontWeight: 700,
                             cursor: orgSlugOrId ? 'pointer' : 'not-allowed',
                             textDecoration: orgSlugOrId ? 'underline' : 'none',
                           }}
@@ -1576,7 +1560,7 @@ export const UserDetailPage: React.FC = () => {
                 {!userOrgs.length && (
                   <tr>
                     <td style={compactTdStyle} colSpan={3}>
-                      <em style={{ color: 'var(--app-muted-text)' }}>No federation memberships.</em>
+                      <em className="text-muted">No federation memberships.</em>
                     </td>
                   </tr>
                 )}
@@ -1587,8 +1571,8 @@ export const UserDetailPage: React.FC = () => {
 
         {activeTab === 'clubs' && (
           <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Clubs</h3>
+            <div className="flex-between gap-10">
+              <h3 className="m-0">Clubs</h3>
               <button
                 type="button"
                 onClick={() => setIsLinkModalOpen(true)}
@@ -1626,12 +1610,9 @@ export const UserDetailPage: React.FC = () => {
                               setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer'), membershipId });
                               setIsEditMembershipModalOpen(true);
                             }}
+                            className="border-none bg-transparent p-0 fw-700"
                             style={{
-                              border: 'none',
-                              background: 'transparent',
-                              padding: 0,
                               color: projectId ? '#007bff' : 'var(--app-muted-text)',
-                              fontWeight: 700,
                               cursor: projectId ? 'pointer' : 'not-allowed',
                               textDecoration: projectId ? 'underline' : 'none',
                             }}
@@ -1641,7 +1622,7 @@ export const UserDetailPage: React.FC = () => {
                           </button>
                         ) : (
                           <span title="This user is linked to this club via team membership.">
-                            <span style={{ color: 'var(--app-muted-text)', fontWeight: 700 }}>Via team</span>
+                            <span className="text-muted fw-700">Via team</span>
                           </span>
                         )}
                       </td>
@@ -1690,7 +1671,7 @@ export const UserDetailPage: React.FC = () => {
                 {!clubsForTab.length && (
                   <tr>
                     <td style={compactTdStyle} colSpan={3}>
-                      <em style={{ color: 'var(--app-muted-text)' }}>No club memberships.</em>
+                      <em className="text-muted">No club memberships.</em>
                     </td>
                   </tr>
                 )}
@@ -1701,8 +1682,8 @@ export const UserDetailPage: React.FC = () => {
 
         {activeTab === 'teams' && (
           <Card>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-              <h3 style={{ marginTop: 0, marginBottom: 0 }}>Teams</h3>
+            <div className="flex-between gap-10">
+              <h3 className="m-0">Teams</h3>
               <button
                 type="button"
                 onClick={() => setIsLinkModalOpen(true)}
@@ -1745,12 +1726,9 @@ export const UserDetailPage: React.FC = () => {
                             setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
                             setIsEditMembershipModalOpen(true);
                           }}
+                          className="border-none bg-transparent p-0 fw-700"
                           style={{
-                            border: 'none',
-                            background: 'transparent',
-                            padding: 0,
                             color: projectId ? '#007bff' : 'var(--app-muted-text)',
-                            fontWeight: 700,
                             cursor: projectId ? 'pointer' : 'not-allowed',
                             textDecoration: projectId ? 'underline' : 'none',
                           }}
@@ -1802,7 +1780,7 @@ export const UserDetailPage: React.FC = () => {
                 {!teamMemberships.length && (
                   <tr>
                     <td style={compactTdStyle} colSpan={4}>
-                      <em style={{ color: 'var(--app-muted-text)' }}>No team memberships.</em>
+                      <em className="text-muted">No team memberships.</em>
                     </td>
                   </tr>
                 )}
@@ -1812,7 +1790,7 @@ export const UserDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'seasons' && (
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="grid gap-12">
             {loadingRelations && <Alert variant="info">Loading seasons, competitions and matches…</Alert>}
 
             <Card>
@@ -1863,7 +1841,7 @@ export const UserDetailPage: React.FC = () => {
                   {!teamSeasonPairs.length && (
                     <tr>
                       <td style={compactTdStyle} colSpan={4}>
-                        <em style={{ color: 'var(--app-muted-text)' }}>No season-linked team memberships.</em>
+                        <em className="text-muted">No season-linked team memberships.</em>
                       </td>
                     </tr>
                   )}
@@ -1874,7 +1852,7 @@ export const UserDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'competitions' && (
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="grid gap-12">
             {loadingRelations && <Alert variant="info">Loading competitions…</Alert>}
             <Card>
               <h3 style={{ marginTop: 0 }}>Competitions</h3>
@@ -1930,7 +1908,7 @@ export const UserDetailPage: React.FC = () => {
                   {!linkedCompetitions.length && (
                     <tr>
                       <td style={compactTdStyle} colSpan={4}>
-                        <em style={{ color: 'var(--app-muted-text)' }}>No competitions found for linked seasons.</em>
+                        <em className="text-muted">No competitions found for linked seasons.</em>
                       </td>
                     </tr>
                   )}
@@ -1941,7 +1919,7 @@ export const UserDetailPage: React.FC = () => {
         )}
 
         {activeTab === 'matches' && (
-          <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="grid gap-12">
             {loadingRelations && <Alert variant="info">Loading matches…</Alert>}
             <Card>
               <h3 style={{ marginTop: 0 }}>Matches</h3>
@@ -1981,15 +1959,10 @@ export const UserDetailPage: React.FC = () => {
                           {matchPath ? (
                             <a
                               href={matchPath}
-                              className="text-blue-600 hover:underline"
+                              className="text-blue-600 hover:underline fw-700 inline-block truncate"
                               style={{
                                 textDecoration: 'none',
-                                fontWeight: 700,
-                                display: 'inline-block',
                                 maxWidth: '100%',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
                               }}
                               onClick={(e) => {
                                 e.preventDefault();
@@ -2000,7 +1973,7 @@ export const UserDetailPage: React.FC = () => {
                               {String(m?.title || '') || '—'}
                             </a>
                           ) : (
-                            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td style={compactTextTdStyle}>{String(m?.start_time || '')}</td>
@@ -2054,14 +2027,14 @@ export const UserDetailPage: React.FC = () => {
                   {!linkedMatches.length && (
                     <tr>
                       <td style={compactTdStyle} colSpan={4}>
-                        <em style={{ color: 'var(--app-muted-text)' }}>No matches found.</em>
+                        <em className="text-muted">No matches found.</em>
                       </td>
                     </tr>
                   )}
                 </tbody>
               </Table>
               {linkedMatches.length > 200 && (
-                <div style={{ marginTop: '8px', color: 'var(--app-muted-text)' }}>
+                <div className="mt-8 text-muted">
                   Showing first 200 matches.
                 </div>
               )}

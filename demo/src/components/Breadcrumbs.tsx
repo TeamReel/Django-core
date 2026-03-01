@@ -671,30 +671,23 @@ export default function Breadcrumbs() {
     ];
 
     return (
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+      <nav aria-label="Breadcrumb" className="flex-row">
         <ol
-          style={{
-            display: 'flex',
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-          }}
+          className="flex-row p-0 m-0 flex-wrap"
+          style={{ listStyle: 'none' }}
         >
           {crumbs.map((item, index) => (
-            <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+            <li key={`${index}:${item.path}`} className="flex-row">
               {index > 0 && (
-                <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                <span className="fs-14" style={{ margin: '0 8px', color: 'var(--app-muted-text)' }}>/</span>
               )}
               {typeof item.label === 'string' ? (
                 <Link
                   to={item.path}
+                  className="fs-14 whitespace-nowrap"
                   style={{
                     color: index === crumbs.length - 1 ? 'var(--app-text)' : 'var(--app-muted-text)',
                     textDecoration: 'none',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
                     fontWeight: index === crumbs.length - 1 ? 600 : 400,
                   }}
                 >
@@ -749,30 +742,23 @@ export default function Breadcrumbs() {
     ];
 
     return (
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+      <nav aria-label="Breadcrumb" className="flex-row">
         <ol
-          style={{
-            display: 'flex',
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-          }}
+          className="flex-row p-0 m-0 flex-wrap"
+          style={{ listStyle: 'none' }}
         >
           {crumbs.map((item, index) => (
-            <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+            <li key={`${index}:${item.path}`} className="flex-row">
               {index > 0 && (
-                <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                <span className="fs-14" style={{ margin: '0 8px', color: 'var(--app-muted-text)' }}>/</span>
               )}
               {typeof item.label === 'string' ? (
                 <Link
                   to={item.path}
+                  className="fs-14 whitespace-nowrap"
                   style={{
                     color: index === crumbs.length - 1 ? 'var(--app-text)' : 'var(--app-muted-text)',
                     textDecoration: 'none',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
                     fontWeight: index === crumbs.length - 1 ? 600 : 400,
                   }}
                 >
@@ -821,30 +807,23 @@ export default function Breadcrumbs() {
     ];
 
     return (
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+      <nav aria-label="Breadcrumb" className="flex-row">
         <ol
-          style={{
-            display: 'flex',
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-          }}
+          className="flex-row p-0 m-0 flex-wrap"
+          style={{ listStyle: 'none' }}
         >
           {crumbs.map((item, index) => (
-            <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+            <li key={`${index}:${item.path}`} className="flex-row">
               {index > 0 && (
-                <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                <span className="fs-14" style={{ margin: '0 8px', color: 'var(--app-muted-text)' }}>/</span>
               )}
               {typeof item.label === 'string' ? (
                 <Link
                   to={item.path}
+                  className="fs-14 whitespace-nowrap"
                   style={{
                     color: index === crumbs.length - 1 ? 'var(--app-text)' : 'var(--app-muted-text)',
                     textDecoration: 'none',
-                    fontSize: '14px',
-                    whiteSpace: 'nowrap',
                     fontWeight: index === crumbs.length - 1 ? 600 : 400,
                   }}
                 >
@@ -907,32 +886,25 @@ export default function Breadcrumbs() {
       }
 
       return (
-        <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+        <nav aria-label="Breadcrumb" className="flex-row">
           <ol
-            style={{
-              display: 'flex',
-              listStyle: 'none',
-              padding: 0,
-              margin: 0,
-              alignItems: 'center',
-              flexWrap: 'wrap',
-            }}
+            className="flex-row p-0 m-0 flex-wrap"
+            style={{ listStyle: 'none' }}
           >
             {items.map((item, index) => {
               const isLast = index === items.length - 1;
               return (
-                <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+                <li key={`${index}:${item.path}`} className="flex-row">
                   {index > 0 && (
-                    <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                    <span className="fs-14" style={{ margin: '0 8px', color: 'var(--app-muted-text)' }}>/</span>
                   )}
                   {typeof item.label === 'string' ? (
                     <Link
                       to={item.path}
+                      className="fs-14 whitespace-nowrap"
                       style={{
                         color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
                         textDecoration: 'none',
-                        fontSize: '14px',
-                        whiteSpace: 'nowrap',
                         fontWeight: isLast ? 600 : 400,
                       }}
                       aria-current={isLast ? 'page' : undefined}
@@ -978,32 +950,25 @@ export default function Breadcrumbs() {
     }
 
     return (
-      <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
+      <nav aria-label="Breadcrumb" className="flex-row">
         <ol
-          style={{
-            display: 'flex',
-            listStyle: 'none',
-            padding: 0,
-            margin: 0,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-          }}
+          className="flex-row p-0 m-0 flex-wrap"
+          style={{ listStyle: 'none' }}
         >
           {items.map((item, index) => {
             const isLast = index === items.length - 1;
             return (
-              <li key={`${index}:${item.path}`} style={{ display: 'flex', alignItems: 'center' }}>
+              <li key={`${index}:${item.path}`} className="flex-row">
                 {index > 0 && (
-                  <span style={{ margin: '0 8px', color: 'var(--app-muted-text)', fontSize: '14px' }}>/</span>
+                  <span className="fs-14" style={{ margin: '0 8px', color: 'var(--app-muted-text)' }}>/</span>
                 )}
                 {typeof item.label === 'string' ? (
                   <Link
                     to={item.path}
+                    className="fs-14 whitespace-nowrap"
                     style={{
                       color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
                       textDecoration: 'none',
-                      fontSize: '14px',
-                      whiteSpace: 'nowrap',
                       fontWeight: isLast ? 600 : 400,
                     }}
                     aria-current={isLast ? 'page' : undefined}
@@ -1252,34 +1217,25 @@ export default function Breadcrumbs() {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" style={{ display: 'flex', alignItems: 'center' }}>
-      <ol style={{
-          display: 'flex',
-          listStyle: 'none',
-          padding: 0,
-          margin: 0,
-          alignItems: 'center',
-          flexWrap: 'wrap'
-      }}>
+    <nav aria-label="Breadcrumb" className="flex-row">
+      <ol className="flex-row p-0 m-0 flex-wrap" style={{ listStyle: 'none' }}>
         {items.map((item, index) => {
            const isLast = index === items.length - 1;
            return (
-            <li key={item.path} style={{ display: 'flex', alignItems: 'center' }}>
+            <li key={item.path} className="flex-row">
                 {index > 0 && (
-                    <span style={{
+                    <span className="fs-14" style={{
                         margin: '0 8px',
                         color: 'var(--app-muted-text)',
-                        fontSize: '14px'
                     }}>/</span>
                 )}
                 {typeof item.label === 'string' ? (
                   <Link
                       to={item.path}
+                      className="fs-14 whitespace-nowrap"
                       style={{
                           color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
                           textDecoration: 'none',
-                          fontSize: '14px',
-                          whiteSpace: 'nowrap',
                           fontWeight: isLast ? 600 : 400
                       }}
                       aria-current={isLast ? 'page' : undefined}
@@ -1288,12 +1244,10 @@ export default function Breadcrumbs() {
                   </Link>
                 ) : (
                   <span
+                    className="inline-flex fs-14 whitespace-nowrap"
                     style={{
                       color: isLast ? 'var(--app-text)' : 'var(--app-muted-text)',
-                      fontSize: '14px',
-                      whiteSpace: 'nowrap',
                       fontWeight: isLast ? 600 : 400,
-                      display: 'inline-flex',
                       alignItems: 'center',
                     }}
                     aria-current={isLast ? 'page' : undefined}

@@ -684,7 +684,7 @@ export default function ContentTemplatesPage() {
       <PageContent>
         <Card>
           {/* Search & Filters */}
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="flex-row gap-12 flex-wrap mb-16">
             <div style={{ flex: 1, minWidth: '200px' }}>
               <Input
                 placeholder="Search templates..."
@@ -806,7 +806,7 @@ export default function ContentTemplatesPage() {
               </select>
             )}
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+            <label className="flex-row gap-8 fs-14">
               <input
                 type="checkbox"
                 checked={showInactive}
@@ -826,7 +826,7 @@ export default function ContentTemplatesPage() {
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--app-text-muted)' }}>
                   No templates found
                   {selectedCategory !== 'all' && (
-                    <div style={{ marginTop: '8px' }}>
+                    <div className="mt-8">
                       <Button variant="secondary" size="sm" onClick={() => navigate('/content-templates?tab=all')}>
                         Show all templates
                       </Button>
@@ -861,7 +861,7 @@ export default function ContentTemplatesPage() {
                       <tr key={template.id}>
                         <td>
                           <div>
-                            <div style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className="fw-500 flex-row gap-8">
                               {template.name}
                               {template.organisation === null && (
                                 <Badge variant="warning" style={{ fontSize: '10px', padding: '2px 6px' }}>Global</Badge>
@@ -886,39 +886,39 @@ export default function ContentTemplatesPage() {
                               {SUBTYPE_LABELS[template.template_subtype] || template.template_subtype}
                             </Badge>
                           ) : (
-                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td>
                           {baseSport ? (
                             <span>⚽ {baseSport}</span>
                           ) : (
-                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td>
                           {sportVariant ? (
                             <Badge variant="default">{sportVariant}</Badge>
                           ) : (
-                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td>
                           {template.formation_detail ? (
                             <Badge variant="info">{template.formation_detail.code}</Badge>
                           ) : (
-                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td>
                           {template.style_variant ? (
                             <Badge variant="success">{template.style_variant}</Badge>
                           ) : (
-                            <span style={{ color: 'var(--app-text-muted)' }}>—</span>
+                            <span className="text-muted">—</span>
                           )}
                         </td>
                         <td>
-                          <span style={{ fontWeight: 500 }}>{template.credits_required ?? 1}</span>
+                          <span className="fw-500">{template.credits_required ?? 1}</span>
                         </td>
                         <td>
                           <Badge variant={template.is_active ? 'success' : 'default'}>
@@ -926,7 +926,7 @@ export default function ContentTemplatesPage() {
                           </Badge>
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                          <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
                             <Button
                               variant="secondary"
                               size="sm"
@@ -959,19 +959,19 @@ export default function ContentTemplatesPage() {
             </Card>
 
             {/* Stats Card */}
-            <Card style={{ marginTop: '16px' }}>
-              <div style={{ display: 'flex', gap: '32px' }}>
+            <Card className="mt-16">
+              <div className="flex-row gap-32">
                 <div>
-                  <div style={{ fontSize: '24px', fontWeight: 600 }}>{templates.length}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>Total Templates</div>
+                  <div className="fs-24 fw-600">{templates.length}</div>
+                  <div className="fs-12 text-muted">Total Templates</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '24px', fontWeight: 600 }}>{templates.filter(t => t.is_active).length}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>Active</div>
+                  <div className="fs-24 fw-600">{templates.filter(t => t.is_active).length}</div>
+                  <div className="fs-12 text-muted">Active</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '24px', fontWeight: 600 }}>{new Set(templates.map(t => t.template_type)).size}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-text-muted)' }}>Categories</div>
+                  <div className="fs-24 fw-600">{new Set(templates.map(t => t.template_type)).size}</div>
+                  <div className="fs-12 text-muted">Categories</div>
                 </div>
               </div>
             </Card>
@@ -1001,12 +1001,12 @@ export default function ContentTemplatesPage() {
             style={{ width: '700px', maxHeight: '90vh', overflow: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ marginBottom: '16px' }}>
+            <h2 className="mb-16">
               {editingTemplate ? 'Edit Template' : 'Create Template'}
             </h2>
 
             {/* Modal Tabs */}
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '20px', borderBottom: '1px solid var(--app-border)' }}>
+            <div className="flex-row" style={{ gap: '4px', marginBottom: '20px', borderBottom: '1px solid var(--app-border)' }}>
               <button
                 onClick={() => setModalTab('basic')}
                 style={{
@@ -1039,10 +1039,10 @@ export default function ContentTemplatesPage() {
 
             {/* Basic Info Tab */}
             {modalTab === 'basic' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
                 {/* Name */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  <label className="field-label">
                     Name *
                   </label>
                   <Input
@@ -1054,7 +1054,7 @@ export default function ContentTemplatesPage() {
 
                 {/* Description */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  <label className="field-label">
                     Description
                   </label>
                   <textarea
@@ -1076,9 +1076,9 @@ export default function ContentTemplatesPage() {
                 </div>
 
                 {/* Template Type & Subtype - cascading */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    <label className="field-label">
                       Type *
                     </label>
                     <select
@@ -1114,7 +1114,7 @@ export default function ContentTemplatesPage() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    <label className="field-label">
                       Subtype
                     </label>
                     <select
@@ -1139,9 +1139,9 @@ export default function ContentTemplatesPage() {
                 </div>
 
                 {/* Sport Category & Variant - cascading */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    <label className="field-label">
                       Sport Category
                     </label>
                     <select
@@ -1174,7 +1174,7 @@ export default function ContentTemplatesPage() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    <label className="field-label">
                       Sport Variant
                     </label>
                     <select
@@ -1205,9 +1205,9 @@ export default function ContentTemplatesPage() {
                 </div>
 
                 {/* Formation & Style - formation is now free text */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    <label className="field-label">
                       Formation Code
                     </label>
                     <Input
@@ -1225,7 +1225,7 @@ export default function ContentTemplatesPage() {
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                    <label className="field-label">
                       Style Variant
                     </label>
                     <Input
@@ -1238,7 +1238,7 @@ export default function ContentTemplatesPage() {
 
                 {/* AI Workflow ID */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  <label className="field-label">
                     AI Workflow ID
                   </label>
                   <Input
@@ -1249,7 +1249,7 @@ export default function ContentTemplatesPage() {
                 </div>
 
                 {/* Active Toggle */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="flex-row gap-8">
                   <input
                     type="checkbox"
                     id="is_active"
@@ -1257,12 +1257,12 @@ export default function ContentTemplatesPage() {
                     onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
                     style={{ width: '18px', height: '18px' }}
                   />
-                  <label htmlFor="is_active" style={{ fontWeight: 500 }}>Active</label>
+                  <label htmlFor="is_active" className="fw-500">Active</label>
                 </div>
 
                 {/* Credits Required */}
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>
+                  <label className="field-label">
                     Credits Required
                   </label>
                   <Input
@@ -1282,19 +1282,19 @@ export default function ContentTemplatesPage() {
 
             {/* Input Requirements Tab */}
             {modalTab === 'requirements' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
                 <p style={{ color: 'var(--app-text-muted)', margin: 0 }}>
                   Define what inputs are required for this template to generate content.
                 </p>
 
                 {/* Members Required Section */}
                 <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
-                  <h4 style={{ margin: '0 0 16px 0', fontWeight: 600, fontSize: '15px' }}>
+                  <h4 className="fw-600" style={{ margin: '0 0 16px 0', fontSize: '15px' }}>
                     👥 Members Required
                   </h4>
 
                   {/* Functional Roles Grid */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="flex-col gap-12">
                     {/* Keeper */}
                     <div style={{ display: 'grid', gridTemplateColumns: '140px 80px 1fr', gap: '12px', alignItems: 'start' }}>
                       <label style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px', paddingTop: '6px' }}>
@@ -1321,7 +1321,7 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <div className="flex-row flex-wrap gap-8">
                         {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
                           const isChecked = editForm.input_requirements?.members?.goalkeeper?.asset_types?.includes(assetType) ?? false;
                           const isDisabled = !editForm.input_requirements?.members?.goalkeeper?.count;
@@ -1392,7 +1392,7 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <div className="flex-row flex-wrap gap-8">
                         {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
                           const isChecked = editForm.input_requirements?.members?.player?.asset_types?.includes(assetType) ?? false;
                           const isDisabled = !editForm.input_requirements?.members?.player?.count;
@@ -1463,7 +1463,7 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <div className="flex-row flex-wrap gap-8">
                         {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
                           const isChecked = editForm.input_requirements?.members?.coach?.asset_types?.includes(assetType) ?? false;
                           const isDisabled = !editForm.input_requirements?.members?.coach?.count;
@@ -1534,7 +1534,7 @@ export default function ContentTemplatesPage() {
                       >
                         {[0,1,2,3].map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <div className="flex-row flex-wrap gap-8">
                         {['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'].map(assetType => {
                           const isChecked = editForm.input_requirements?.members?.assistant?.asset_types?.includes(assetType) ?? false;
                           const isDisabled = !editForm.input_requirements?.members?.assistant?.count;
@@ -1601,7 +1601,7 @@ export default function ContentTemplatesPage() {
 
                 {/* Match Data Section */}
                 <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <div className="flex-row gap-8 mb-12">
                     <input
                       type="checkbox"
                       id="req_match"
@@ -1617,7 +1617,7 @@ export default function ContentTemplatesPage() {
                       }}
                       style={{ width: '18px', height: '18px' }}
                     />
-                    <label htmlFor="req_match" style={{ fontWeight: 600, fontSize: '15px' }}>
+                    <label htmlFor="req_match" className="fw-600" style={{ fontSize: '15px' }}>
                       ⚽ Match Data Required
                     </label>
                   </div>
@@ -1630,7 +1630,7 @@ export default function ContentTemplatesPage() {
 
                 {/* Organisation Assets Section */}
                 <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <div className="flex-row gap-8 mb-12">
                     <input
                       type="checkbox"
                       id="req_org_assets"
@@ -1648,7 +1648,7 @@ export default function ContentTemplatesPage() {
                       }}
                       style={{ width: '18px', height: '18px' }}
                     />
-                    <label htmlFor="req_org_assets" style={{ fontWeight: 600, fontSize: '15px' }}>
+                    <label htmlFor="req_org_assets" className="fw-600" style={{ fontSize: '15px' }}>
                       🏢 Organisation Assets Required
                     </label>
                   </div>
@@ -1661,12 +1661,12 @@ export default function ContentTemplatesPage() {
 
                 {/* Output Settings */}
                 <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', padding: '16px' }}>
-                  <h4 style={{ margin: '0 0 12px 0', fontWeight: 600, fontSize: '15px' }}>
+                  <h4 className="fw-600" style={{ margin: '0 0 12px 0', fontSize: '15px' }}>
                     📤 Output Format
                   </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px' }}>Type</label>
+                      <label className="block fs-13" style={{ marginBottom: '4px' }}>Type</label>
                       <select
                         value={editForm.input_requirements?.output?.type || 'image'}
                         onChange={(e) => {
@@ -1688,7 +1688,7 @@ export default function ContentTemplatesPage() {
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px' }}>Aspect Ratio</label>
+                      <label className="block fs-13" style={{ marginBottom: '4px' }}>Aspect Ratio</label>
                       <select
                         value={editForm.input_requirements?.output?.dimensions?.aspect_ratio || '9:16'}
                         onChange={(e) => {
@@ -1725,7 +1725,7 @@ export default function ContentTemplatesPage() {
             )}
 
             {/* Actions */}
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '24px' }}>
+            <div className="flex-row gap-8" style={{ justifyContent: 'flex-end', marginTop: '24px' }}>
               <Button
                 variant="secondary"
                 onClick={() => {

@@ -168,7 +168,7 @@ export default function BrandProfileCard({
     return (
       <Card style={{ padding: '24px' }}>
         <Stack direction="column" gap="3">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="flex-row gap-8">
             <Palette size={20} />
             <Text weight="bold" size="md">Brand Identity</Text>
           </div>
@@ -182,7 +182,7 @@ export default function BrandProfileCard({
     return (
       <Card style={{ padding: '24px' }}>
         <Stack direction="column" gap="3">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="flex-row gap-8">
             <Palette size={20} />
             <Text weight="bold" size="md">Brand Identity</Text>
           </div>
@@ -196,7 +196,7 @@ export default function BrandProfileCard({
     return (
       <Card style={{ padding: '24px' }}>
         <Stack direction="column" gap="3">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="flex-row gap-8">
             <Palette size={20} />
             <Text weight="bold" size="md">Brand Identity</Text>
           </div>
@@ -217,8 +217,8 @@ export default function BrandProfileCard({
     <Card style={{ padding: '24px' }}>
       <Stack direction="column" gap="4">
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="flex-between">
+          <div className="flex-row gap-8">
             <Palette size={20} />
             <Text weight="bold" size="md">Brand Identity</Text>
           </div>
@@ -234,7 +234,7 @@ export default function BrandProfileCard({
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'flex', gap: '24px' }}>
+        <div className="flex-row gap-24">
           <div>
             <Text size="sm" color="secondary">Design Tokens</Text>
             <Text weight="bold" size="lg">{profile.token_count || profile.tokens?.length || 0}</Text>
@@ -247,7 +247,7 @@ export default function BrandProfileCard({
 
         {/* Design Tokens by Type */}
         {tokensByType.size > 0 && (
-          <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '16px' }}>
+          <div className="border-top" style={{ paddingTop: '16px' }}>
             <Text weight="bold" size="sm" style={{ marginBottom: '12px' }}>Design Tokens</Text>
 
             <Stack direction="column" gap="3">
@@ -259,37 +259,32 @@ export default function BrandProfileCard({
 
                   return (
                     <div key={type}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                      <div className="flex-row gap-6 mb-8">
                         <Icon size={14} style={{ opacity: 0.6 }} />
                         <Text size="xs" weight="bold" color="secondary" style={{ textTransform: 'uppercase' }}>
                           {label}
                         </Text>
                       </div>
 
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      <div className="flex-row flex-wrap gap-8">
                         {tokens.map((token) => (
                           <div
                             key={token.id}
+                            className="flex-row gap-8 rounded-6 border"
                             style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
                               padding: '6px 10px',
                               backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.03))',
-                              borderRadius: '6px',
-                              border: '1px solid var(--app-border)',
                             }}
                             title={token.description || token.key}
                           >
                             {/* Color swatch for color tokens */}
                             {isColorValue(token.value) && (
                               <div
+                                className="rounded-4 border"
                                 style={{
                                   width: 16,
                                   height: 16,
-                                  borderRadius: '4px',
                                   backgroundColor: token.value,
-                                  border: '1px solid var(--app-border)',
                                   flexShrink: 0,
                                 }}
                               />
@@ -314,8 +309,8 @@ export default function BrandProfileCard({
 
         {/* Brand Assets */}
         {profile.assets && profile.assets.length > 0 && (
-          <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+          <div className="border-top" style={{ paddingTop: '16px' }}>
+            <div className="flex-row gap-6 mb-12">
               <Image size={14} style={{ opacity: 0.6 }} />
               <Text weight="bold" size="sm">Brand Assets</Text>
             </div>
@@ -324,29 +319,18 @@ export default function BrandProfileCard({
               {profile.assets.map((asset) => (
                 <div
                   key={asset.id}
+                  className="flex-col gap-8 p-12 rounded-8 border"
                   style={{
-                    padding: '12px',
                     backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.03))',
-                    borderRadius: '8px',
-                    border: '1px solid var(--app-border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
                   }}
                 >
                   {/* Asset Preview */}
                   {asset.file_url && (
                     <div
+                      className="w-full flex-center rounded-6 overflow-hidden border"
                       style={{
-                        width: '100%',
                         aspectRatio: '1',
                         backgroundColor: 'var(--app-surface)',
-                        borderRadius: '6px',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid var(--app-border)',
                       }}
                     >
                       <img
@@ -366,15 +350,10 @@ export default function BrandProfileCard({
                   )}
                   {!asset.file_url && (
                     <div
+                      className="w-full flex-center rounded-6 border"
                       style={{
-                        width: '100%',
                         aspectRatio: '1',
                         backgroundColor: 'var(--app-surface)',
-                        borderRadius: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid var(--app-border)',
                       }}
                     >
                       <Image size={24} style={{ opacity: 0.3 }} />
@@ -393,7 +372,7 @@ export default function BrandProfileCard({
         )}
 
         {/* Last Updated */}
-        <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '12px' }}>
+        <div className="border-top" style={{ paddingTop: '12px' }}>
           <Text size="xs" color="secondary">
             Last updated: {new Date(profile.updated_at).toLocaleDateString('nl-NL', {
               year: 'numeric',

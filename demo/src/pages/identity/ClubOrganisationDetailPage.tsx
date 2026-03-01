@@ -357,12 +357,7 @@ function ClubKitsTab({
             return (
               <div
                 key={kitType.id}
-                style={{
-                  border: '1px solid var(--app-border)',
-                  borderRadius: 12,
-                  padding: 16,
-                  backgroundColor: 'var(--app-surface)',
-                }}
+                className="border rounded-12 p-16 bg-surface"
               >
                 <div className="fw-600 mb-4">{kitType.label}</div>
                 <div className="fs-12 text-muted mb-16">
@@ -370,21 +365,15 @@ function ClubKitsTab({
                 </div>
 
                 <div
+                  className="w-full rounded-8 flex-center overflow-hidden mb-12"
                   style={{
-                    width: '100%',
                     aspectRatio: '3/4',
                     backgroundColor: 'var(--app-surface-secondary)',
-                    borderRadius: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    overflow: 'hidden',
-                    marginBottom: 12,
                   }}
                 >
                   {uploadingType === kitType.id ? (
                     <div className="text-center text-muted">
-                      <div className="mb-8" style={{ fontSize: 24 }}>⏳</div>
+                      <div className="mb-8 fs-24">⏳</div>
                       <div className="fs-12">Uploading...</div>
                     </div>
                   ) : imageUrl ? (
@@ -1528,7 +1517,7 @@ export default function ClubOrganisationDetailPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="p-16">
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Teams{' '}
                       <span className="text-gray-500 fw-600">
@@ -1557,14 +1546,13 @@ export default function ClubOrganisationDetailPage() {
                             {teamPath ? (
                               <button
                                 type="button"
-                                className="app-unstyled-button text-blue-600 hover:underline"
+                                className="app-unstyled-button text-blue-600 hover:underline text-left fw-600 min-w-0"
                                 onClick={() => navigate(teamPath)}
-                                style={{ textAlign: 'left', fontWeight: 600, minWidth: 0 }}
                               >
                                 {t.name}
                               </button>
                             ) : (
-                              <div className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                              <div className="text-sm text-gray-900 fw-600">
                                 {t.name}
                               </div>
                             )}
@@ -1576,7 +1564,7 @@ export default function ClubOrganisationDetailPage() {
                 </Card>
 
                 <Card className="p-16">
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Seasons{' '}
                       <span className="text-gray-500 fw-600">
@@ -1594,7 +1582,7 @@ export default function ClubOrganisationDetailPage() {
                   ) : (
                     <div className="space-y-2">
                       {overviewSeasons.map((s) => (
-                        <div key={String((s as any)?.id)} className="text-sm text-gray-900" style={{ fontWeight: 600 }}>
+                        <div key={String((s as any)?.id)} className="text-sm text-gray-900 fw-600">
                           {String((s as any)?.name || 'Season')}
                         </div>
                       ))}
@@ -1603,7 +1591,7 @@ export default function ClubOrganisationDetailPage() {
                 </Card>
 
                 <Card className="p-16">
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Members{' '}
                       <span className="text-gray-500 fw-600">
@@ -1629,9 +1617,8 @@ export default function ClubOrganisationDetailPage() {
                           <button
                             key={String(m.id)}
                             type="button"
-                            className="app-unstyled-button text-blue-600 hover:underline"
+                            className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
                             onClick={() => navigate(`/users/${encodeURIComponent(String(m.id))}`)}
-                            style={{ textAlign: 'left', fontWeight: 600 }}
                           >
                             {label}
                           </button>
@@ -1642,7 +1629,7 @@ export default function ClubOrganisationDetailPage() {
                 </Card>
 
                 <Card className="p-16">
-                  <div className="flex items-center justify-between mb-3" style={{ gap: 12 }}>
+                  <div className="flex items-center justify-between mb-3 gap-12">
                     <div className="text-sm font-semibold text-gray-900">
                       Matches <span className="text-gray-500 fw-600">(—)</span>
                     </div>
@@ -1678,7 +1665,7 @@ export default function ClubOrganisationDetailPage() {
 
           {activeTabFromUrl === 'hierarchy' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
             <Card>
-              <div className="flex-between" style={{ gap: 12 }}>
+              <div className="flex-between gap-12">
                 <div>
                   <div className="fs-16 fw-700">Hierarchy</div>
                   <div className="text-muted fs-13">Teams → seasons</div>
@@ -1738,23 +1725,12 @@ export default function ClubOrganisationDetailPage() {
                     return (
                       <>
                         <div
-                          style={{
-                            border: '1px solid var(--app-border)',
-                            borderRadius: 10,
-                            background: 'var(--app-surface)',
-                            overflow: 'hidden',
-                          }}
+                          className="border bg-surface overflow-hidden"
+                          style={{ borderRadius: 10 }}
                         >
                           <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              padding: '10px 12px',
-                              borderBottom: '1px solid var(--app-border)',
-                              background: 'var(--app-surface-2)',
-                              gap: 12,
-                            }}
+                            className="flex-between gap-12 border-bottom bg-surface-2"
+                            style={{ padding: '10px 12px' }}
                           >
                             <div className="flex-col gap-2 min-w-0">
                               <div className="fw-800 fs-14 text-primary">{club?.name || 'Club'}</div>
@@ -1790,23 +1766,12 @@ export default function ClubOrganisationDetailPage() {
                           return (
                             <div
                               key={team.id}
-                              style={{
-                                border: '1px solid var(--app-border)',
-                                borderRadius: 10,
-                                background: 'var(--app-surface)',
-                                overflow: 'hidden',
-                              }}
+                              className="border bg-surface overflow-hidden"
+                              style={{ borderRadius: 10 }}
                             >
                               <div
-                                style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  padding: '10px 12px',
-                                  borderBottom: '1px solid var(--app-border)',
-                                  background: 'var(--app-surface-2)',
-                                  gap: 12,
-                                }}
+                                className="flex-between gap-12 border-bottom bg-surface-2"
+                                style={{ padding: '10px 12px' }}
                               >
                                 <div className="flex-col gap-2 min-w-0">
                                   {teamPath ? (

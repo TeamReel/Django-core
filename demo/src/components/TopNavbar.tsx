@@ -129,7 +129,7 @@ function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Navba
       <div style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
         {/* Header */}
         <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #334155)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="flex-between">
             <div>
               <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #fff)' }}>
                 {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
@@ -697,14 +697,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           )}
 
           {/* Left side: Navigation items */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-            flex: 1,
+          <div className="desktop-nav flex-row gap-4 flex-1 h-full" style={{
             flexWrap: 'nowrap',
-            height: '100%',
-          }} className="desktop-nav">
+          }}>
             {/* TeamReel logo → Dashboard */}
             <Link
               to={dashboardItem.path}
@@ -902,7 +897,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 }}
               >
                 <AppIcon icon={Command} size={18} />
-                <span style={{ fontSize: 13, fontWeight: 800 }}>Quick switch</span>
+                <span className="fs-13 fw-800">Quick switch</span>
               </button>
             )}
 
@@ -927,7 +922,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 }}
               >
                 <AppIcon icon={Plus} size={18} />
-                <span style={{ fontSize: 13, fontWeight: 800 }}>Create</span>
+                <span className="fs-13 fw-800">Create</span>
               </button>
               <button
                 type="button"
@@ -1001,8 +996,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                         e.currentTarget.style.backgroundColor = 'transparent';
                       }}
                     >
-                      <span style={{ fontSize: 14, fontWeight: 700 }}>{item.label}</span>
-                      <span style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{item.hint}</span>
+                      <span className="fs-14 fw-700">{item.label}</span>
+                      <span className="fs-12 text-muted">{item.hint}</span>
                     </button>
                   ))}
                 </div>
@@ -1030,7 +1025,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
             {/* Language Switcher - hidden on mobile */}
             {!isMobile && (
-            <div className="language-menu-container" style={{ position: 'relative' }}>
+            <div className="language-menu-container relative">
               <button
                 onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
                 className="nav-icon-button"
@@ -1217,7 +1212,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             </div>
           </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="flex-row gap-12">
               <Link
                 to="/login"
                 style={{
@@ -1369,7 +1364,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
           {/* Groups */}
           {filteredNavGroups.map(group => (
-            <div key={group.id} style={{ marginBottom: '16px' }}>
+            <div key={group.id} className="mb-16">
               <div style={{
                 padding: '8px 12px',
                 fontWeight: 600,
@@ -1406,7 +1401,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
           {/* Mobile User Controls */}
           {user && (
-            <div style={{ borderTop: '1px solid var(--app-border)', marginTop: '16px', paddingTop: '16px', padding: '16px' }}>
+            <div className="border-top mt-16 p-16">
               <ProfileAvatarDropdown />
             </div>
           )}
@@ -1442,8 +1437,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     In Progress ({inProgressJobs.length})
                   </button>
                 </div>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>{queueModalTab === 'review' ? '✅' : '⏳'}</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)', marginBottom: 8 }}>
+                <div className="mb-12" style={{ fontSize: 48 }}>{queueModalTab === 'review' ? '✅' : '⏳'}</div>
+                <div className="mb-8" style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)' }}>
                   {queueModalTab === 'review' ? 'Alles beoordeeld!' : 'Geen actieve jobs'}
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--app-text-secondary, #9ca3af)', marginBottom: 20 }}>
@@ -1481,7 +1476,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               >
                 {/* Header with tabs */}
                 <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <div className="flex-between mb-12">
                     <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)' }}>Queue</div>
                     <button onClick={() => setQuickReviewOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>
                   </div>
@@ -1502,14 +1497,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 </div>
 
                 {/* In-progress list */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+                <div className="flex-1 overflow-y-auto p-16">
                   {inProgressJobs.map((j, i) => (
-                    <div key={j.task_id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px', borderRadius: 8, background: 'var(--app-background, #0f172a)', marginBottom: 8 }}>
+                    <div key={j.task_id} className="flex-row gap-12 p-12 rounded-8 mb-8" style={{ background: 'var(--app-background, #0f172a)' }}>
                       <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: j.status === 'processing' ? '#f59e0b' : '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
                         {j.status === 'processing' ? '⚙️' : '⏳'}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text)' }}>{j.label || j.template_id}</div>
+                      <div className="flex-1">
+                        <div className="fs-13 fw-600 text-primary">{j.label || j.template_id}</div>
                         <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
                           {j.status === 'processing' ? 'Bezig...' : 'In wachtrij'} · {new Date(j.created_at).toLocaleTimeString()}
                         </div>
@@ -1519,7 +1514,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div className="flex-between" style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)' }}>
                   <button
                     onClick={() => { setQuickReviewOpen(false); navigate('/approvals?tab=ai_queue'); }}
                     style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
@@ -1541,9 +1536,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
             >
               <div onClick={e => e.stopPropagation()} style={{ backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, padding: '40px 48px', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                <div className="mb-12" style={{ fontSize: 48 }}>✅</div>
                 <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)', marginBottom: 8 }}>Alles beoordeeld!</div>
-                <div style={{ fontSize: 13, color: 'var(--app-text-secondary, #9ca3af)', marginBottom: 20 }}>Er zijn geen items meer die review nodig hebben.</div>
+                <div className="fs-13 mb-8" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>Er zijn geen items meer die review nodig hebben.</div>
                 <button
                   onClick={() => setQuickReviewOpen(false)}
                   style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
@@ -1652,8 +1647,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                   </button>
                 </div>
                 {/* Job info row */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ flex: 1 }}>
+                <div className="flex-row gap-12">
+                  <div className="flex-1">
                     <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
                       {job.label || job.template_id}
                     </div>
@@ -1689,7 +1684,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               </div>
 
               {/* Variants */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+              <div className="flex-1 overflow-y-auto p-16">
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: variants.length > 1 ? `repeat(${Math.min(variants.length, 4)}, 1fr)` : '1fr',
@@ -1747,9 +1742,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               </div>
 
               {/* Footer — approve / reject */}
-              <div style={{
+              <div className="flex-between" style={{
                 padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0,
+                flexShrink: 0,
               }}>
                 <button
                   onClick={() => handleQuickReview('reject')}
@@ -1762,7 +1757,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 >
                   ❌ Afwijzen
                 </button>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <div className="flex-row gap-8">
                   <button
                     onClick={() => { setQuickReviewOpen(false); navigate('/approvals?tab=review'); }}
                     style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
@@ -1813,7 +1808,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           >
             {/* Header */}
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
                   Notificaties
                 </div>
@@ -1839,14 +1834,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               </button>
             </div>
             {/* Content */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+            <div className="flex-1 overflow-y-auto p-16">
               {notificationsList.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: 24, color: 'var(--app-text-secondary, #9ca3af)' }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
-                  <div style={{ fontSize: 14 }}>Geen notificaties</div>
+                <div className="text-center p-24" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
+                  <div className="mb-8" style={{ fontSize: 32 }}>📭</div>
+                  <div className="fs-14">Geen notificaties</div>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="flex-col gap-8">
                   {notificationsList.slice(0, 10).map((notif: any) => (
                     <div
                       key={notif.id}
@@ -1893,7 +1888,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           >
             {/* Header */}
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-              <div style={{ flex: 1 }}>
+              <div className="flex-1">
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
                   Credits
                 </div>
@@ -1906,7 +1901,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               </button>
             </div>
             {/* Content */}
-            <div style={{ padding: 24, textAlign: 'center' }}>
+            <div className="p-24 text-center">
               <div style={{ fontSize: 48, fontWeight: 700, color: 'var(--app-primary, #3b82f6)' }}>
                 {myCreditsBalance}
               </div>

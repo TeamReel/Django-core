@@ -268,6 +268,7 @@ export default function PeriodCreateModal({
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -275,36 +276,26 @@ export default function PeriodCreateModal({
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
     >
       <div
+        className="p-24 rounded-8 text-primary border bg-surface"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
           width: '640px',
           maxWidth: '95%',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>{title}</h2>
+        <div className="flex-between gap-12">
+          <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>{title}</h2>
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
+            className="rounded-4 border bg-surface-2 text-primary"
             style={{
               padding: '6px 10px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
               cursor: saving ? 'not-allowed' : 'pointer',
               height: 'fit-content',
             }}
@@ -314,10 +305,10 @@ export default function PeriodCreateModal({
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+          <div className="grid" style={{ gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
             {hasOrgSelect && (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="period-create-org">
+                <label className="fw-600" htmlFor="period-create-org">
                   Federation
                 </label>
                 <select
@@ -331,13 +322,8 @@ export default function PeriodCreateModal({
                   }}
                   disabled={saving}
                   required={requireOrganisation}
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 >
                   <option value="">Select federation…</option>
                   {sortedOrganisations.map((o) => (
@@ -351,7 +337,7 @@ export default function PeriodCreateModal({
 
             {hasClubSelect && (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="period-create-club">
+                <label className="fw-600" htmlFor="period-create-club">
                   Club
                 </label>
                 <select
@@ -360,13 +346,8 @@ export default function PeriodCreateModal({
                   onChange={(e) => applyClubSelection(e.target.value)}
                   disabled={saving}
                   required={requireClub}
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 >
                   <option value="">Select club…</option>
                   {filteredClubs.map((c) => (
@@ -380,7 +361,7 @@ export default function PeriodCreateModal({
 
             {hasTeamSelect && (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="period-create-team">
+                <label className="fw-600" htmlFor="period-create-team">
                   Team
                 </label>
                 <select
@@ -389,13 +370,8 @@ export default function PeriodCreateModal({
                   onChange={(e) => applyTeamSelection(e.target.value)}
                   disabled={saving}
                   required={requireTeam}
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 >
                   <option value="">Select team…</option>
                   {filteredTeams.map((t) => (
@@ -409,7 +385,7 @@ export default function PeriodCreateModal({
 
             {requireSeason && (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="period-create-season">
+                <label className="fw-600" htmlFor="period-create-season">
                   Season
                 </label>
                 <select
@@ -428,13 +404,8 @@ export default function PeriodCreateModal({
                   }}
                   disabled={saving || seasonsLoading}
                   required
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 >
                   <option value="">{seasonsLoading ? 'Loading seasons…' : 'Select season…'}</option>
                   {seasonOptions.map((s) => (
@@ -446,7 +417,7 @@ export default function PeriodCreateModal({
               </>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="period-create-name">
+            <label className="fw-600" htmlFor="period-create-name">
               Name
             </label>
             <input
@@ -455,16 +426,11 @@ export default function PeriodCreateModal({
               onChange={(e) => setName(e.target.value)}
               required
               disabled={saving}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="period-create-start">
+            <label className="fw-600" htmlFor="period-create-start">
               Start Date
             </label>
             <input
@@ -474,16 +440,11 @@ export default function PeriodCreateModal({
               onChange={(e) => setStartDate(e.target.value)}
               disabled={saving}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="period-create-end">
+            <label className="fw-600" htmlFor="period-create-end">
               End Date
             </label>
             <input
@@ -493,16 +454,11 @@ export default function PeriodCreateModal({
               onChange={(e) => setEndDate(e.target.value)}
               disabled={saving}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="period-create-description">
+            <label className="fw-600" htmlFor="period-create-description">
               Description
             </label>
             <textarea
@@ -511,19 +467,13 @@ export default function PeriodCreateModal({
               onChange={(e) => setDescription(e.target.value)}
               rows={5}
               disabled={saving}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                resize: 'vertical',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px', resize: 'vertical' }}
             />
 
             {showSportVariant && (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="period-create-sport">
+                <label className="fw-600" htmlFor="period-create-sport">
                   Sport Variant
                 </label>
                 <select
@@ -531,13 +481,8 @@ export default function PeriodCreateModal({
                   value={selectedSportId}
                   onChange={(e) => setSelectedSportId(e.target.value)}
                   disabled={saving || sportsLoading}
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 >
                   <option value="">— Select sport variant —</option>
                   {variants.map((sport) => (
@@ -550,20 +495,18 @@ export default function PeriodCreateModal({
             )}
           </div>
 
-          {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className="mt-12 text-danger">{error}</div>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+          <div className="mt-16 gap-10" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="submit"
               disabled={saving}
+              className="py-8 px-12 rounded-6 fw-600"
               style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
                 border: '1px solid #1e5aa5',
                 backgroundColor: '#2563eb',
                 color: '#fff',
                 cursor: saving ? 'not-allowed' : 'pointer',
-                fontWeight: 600,
                 opacity: saving ? 0.7 : 1,
               }}
             >

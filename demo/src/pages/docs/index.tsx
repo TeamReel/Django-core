@@ -106,9 +106,9 @@ export function TasksPage() {
         }
       />
       <PageContent>
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="tasks-page">
+        <div className="page-container" data-testid="tasks-page">
           {error && (
-            <Alert variant="warning" style={{ marginBottom: '16px' }}>
+            <Alert variant="warning" className="mb-16">
               {error}
             </Alert>
           )}
@@ -119,52 +119,52 @@ export function TasksPage() {
             </div>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-                <Card style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Total</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{tasks.length}</div>
+              <div className="grid gap-16 mb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                <Card className="p-16">
+                  <div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Total</div>
+                  <div className="fs-24 fw-700">{tasks.length}</div>
                 </Card>
-                <Card style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Running</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{statusCounts.running || 0}</div>
+                <Card className="p-16">
+                  <div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Running</div>
+                  <div className="fs-24 fw-700">{statusCounts.running || 0}</div>
                 </Card>
-                <Card style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Pending</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{statusCounts.pending || 0}</div>
+                <Card className="p-16">
+                  <div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Pending</div>
+                  <div className="fs-24 fw-700">{statusCounts.pending || 0}</div>
                 </Card>
-                <Card style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '4px' }}>Scheduled</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700 }}>{statusCounts.scheduled || 0}</div>
+                <Card className="p-16">
+                  <div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Scheduled</div>
+                  <div className="fs-24 fw-700">{statusCounts.scheduled || 0}</div>
                 </Card>
               </div>
 
-              <Card style={{ padding: 0, overflow: 'hidden' }}>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <Card className="p-0 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Task Name</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Status</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Worker</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Started</th>
+                        <th className="p-12 text-left fs-12 fw-600">Task Name</th>
+                        <th className="p-12 text-left fs-12 fw-600">Status</th>
+                        <th className="p-12 text-left fs-12 fw-600">Worker</th>
+                        <th className="p-12 text-left fs-12 fw-600">Started</th>
                       </tr>
                     </thead>
                     <tbody>
                       {tasks.length === 0 ? (
                         <tr>
-                          <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                          <td colSpan={4} className="p-24 text-center" style={{ color: '#6b7280' }}>
                             No tasks currently running or queued
                           </td>
                         </tr>
                       ) : (
                         tasks.map(task => (
                           <tr key={task.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                            <td style={{ padding: '12px' }}>{task.name}</td>
-                            <td style={{ padding: '12px' }}>{getStatusBadge(task.status)}</td>
-                            <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
+                            <td className="p-12">{task.name}</td>
+                            <td className="p-12">{getStatusBadge(task.status)}</td>
+                            <td className="p-12 fs-14" style={{ color: '#6b7280' }}>
                               {task.worker || '-'}
                             </td>
-                            <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
+                            <td className="p-12 fs-14" style={{ color: '#6b7280' }}>
                               {task.time_start ? new Date(task.time_start * 1000).toLocaleString() : '-'}
                             </td>
                           </tr>
@@ -177,30 +177,30 @@ export function TasksPage() {
 
               {/* Periodic Tasks (Beat Schedule) */}
               {beatSchedule.length > 0 && (
-                <div style={{ marginTop: '24px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>
+                <div className="mt-24">
+                  <h2 className="fs-18 fw-600 mb-12">
                     ⏰ Periodic Tasks (Celery Beat Schedule)
                   </h2>
-                  <Card style={{ padding: 0, overflow: 'hidden' }}>
-                    <div style={{ overflowX: 'auto' }}>
-                      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <Card className="p-0 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                         <thead>
                           <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
-                            <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Task Name</th>
-                            <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Schedule</th>
-                            <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Status</th>
+                            <th className="p-12 text-left fs-12 fw-600">Task Name</th>
+                            <th className="p-12 text-left fs-12 fw-600">Schedule</th>
+                            <th className="p-12 text-left fs-12 fw-600">Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {beatSchedule.map((task, index) => (
                             <tr key={index} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                              <td style={{ padding: '12px', fontFamily: 'monospace', fontSize: '14px' }}>
+                              <td className="p-12 fs-14" style={{ fontFamily: 'monospace' }}>
                                 {task.name}
                               </td>
-                              <td style={{ padding: '12px', fontSize: '14px', color: '#6b7280' }}>
+                              <td className="p-12 fs-14" style={{ color: '#6b7280' }}>
                                 {task.schedule || 'N/A'}
                               </td>
-                              <td style={{ padding: '12px' }}>
+                              <td className="p-12">
                                 <Badge variant="success">Enabled</Badge>
                               </td>
                             </tr>
@@ -339,14 +339,14 @@ export function NotificationsPage() {
     <AppShell>
       <PageHeader title="Notifications" subtitle="In-App Notifications with Persistent Read/Unread Status" />
       <PageContent>
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="notifications-page">
+        <div className="page-container" data-testid="notifications-page">
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
               <Spinner />
             </div>
           ) : error ? (
-            <Card style={{ padding: '24px', textAlign: 'center', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-              <p style={{ color: '#ef4444', marginBottom: '16px' }}>{error}</p>
+            <Card className="p-24 text-center bg-surface border">
+              <p className="mb-16" style={{ color: '#ef4444' }}>{error}</p>
               <button
                 onClick={fetchNotifications}
                 style={{
@@ -365,11 +365,11 @@ export function NotificationsPage() {
             </Card>
           ) : (
             <>
-              <Card style={{ padding: '16px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Card className="p-16 mb-24 bg-surface border">
+                <div className="flex-between">
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Unread: {unreadCount}</h3>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+                    <h3 className="m-0 fs-18 fw-600 text-primary">Unread: {unreadCount}</h3>
+                    <p className="fs-14 text-muted" style={{ margin: '4px 0 0 0' }}>
                       Total: {notifications.length} notifications
                     </p>
                   </div>
@@ -426,18 +426,18 @@ export function NotificationsPage() {
               </Card>
 
               {filtered.length === 0 ? (
-                <Card style={{ padding: '48px', textAlign: 'center', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
+              <Card className="text-center bg-surface border" style={{ padding: '48px' }}>
                   <p style={{ color: 'var(--app-muted-text)' }}>
                     {filter === 'unread' ? 'No unread notifications' : 'No notifications'}
                   </p>
                 </Card>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="flex-col gap-12">
                   {filtered.map(notif => (
                     <Card key={notif.id} style={{ padding: '16px', backgroundColor: notif.is_read ? 'var(--app-surface)' : 'var(--app-surface-2)', border: '1px solid var(--app-border)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <div className="flex-row gap-8 mb-8">
                             <Badge variant={
                               notif.level === 'error' ? 'error' :
                               notif.level === 'warning' ? 'warning' :
@@ -448,9 +448,9 @@ export function NotificationsPage() {
                             </Badge>
                             {!notif.is_read && <Badge variant="info">NEW</Badge>}
                           </div>
-                          <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 600, color: 'var(--app-text)' }}>{notif.title}</h4>
-                          <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--app-muted-text)' }}>{notif.message}</p>
-                          <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                          <h4 className="fs-16 fw-600 text-primary" style={{ margin: '0 0 4px 0' }}>{notif.title}</h4>
+                          <p className="fs-14 text-muted" style={{ margin: '0 0 8px 0' }}>{notif.message}</p>
+                          <div className="fs-12 text-muted">
                             {new Date(notif.created_at).toLocaleString()}
                           </div>
                         </div>
@@ -561,26 +561,26 @@ export function DeploymentPage() {
     <AppShell>
       <PageHeader title="Deployment Status" subtitle="B19 Container & Service Health" />
       <PageContent>
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="deployment-page">
+        <div className="page-container" data-testid="deployment-page">
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
               <Spinner />
             </div>
           ) : (
             <>
-              <Alert variant="info" style={{ marginBottom: '24px' }}>
+              <Alert variant="info" className="mb-24">
                 <strong>Environment:</strong> Demo / Production
                 <br />
                 <strong>Deployment:</strong> Railway (Backend) + Vercel (Frontend)
               </Alert>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
                 {services.map(service => (
-                  <Card key={service.name} style={{ padding: '20px' }}>
+                  <Card key={service.name} className="p-20">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
                       <div>
-                        <h4 style={{ margin: 0 }}>{service.name}</h4>
-                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>
+                        <h4 className="m-0">{service.name}</h4>
+                        <div className="fs-12 mt-4" style={{ color: '#6b7280' }}>
                           {service.type} • v{service.version}
                         </div>
                       </div>
@@ -596,7 +596,7 @@ export function DeploymentPage() {
                 ))}
               </div>
 
-              <Card style={{ padding: '16px', marginTop: '24px' }}>
+              <Card className="p-16 mt-24">
                 <h4 style={{ margin: '0 0 12px 0' }}>Quick Links</h4>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <Button variant="secondary" onClick={() => window.location.href = '/health'}>
@@ -662,15 +662,15 @@ export function DocsPage() {
     <AppShell>
       <PageHeader title="Documentation Browser" subtitle="B21 Module Documentation & Status" />
       <PageContent>
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="docs-page">
+        <div className="page-container" data-testid="docs-page">
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
               <Spinner />
             </div>
           ) : (
             <>
-              <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-                <h3 style={{ margin: '0 0 16px 0', fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Documentation Resources</h3>
+              <Card className="p-24 mb-24 bg-surface border">
+                <h3 className="fs-18 fw-600 text-primary" style={{ margin: '0 0 16px 0' }}>Documentation Resources</h3>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <button
                     onClick={() => window.open('http://localhost:8001/docs', '_blank')}
@@ -720,25 +720,25 @@ export function DocsPage() {
                 </div>
               </Card>
 
-              <Card style={{ padding: '24px' }}>
+              <Card className="p-24">
                 <h3 style={{ margin: '0 0 16px 0' }}>Module Status Matrix</h3>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Module ID</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Name</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Status</th>
-                        <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: 600 }}>Docs Available</th>
+                        <th className="p-12 text-left fs-12 fw-600">Module ID</th>
+                        <th className="p-12 text-left fs-12 fw-600">Name</th>
+                        <th className="p-12 text-left fs-12 fw-600">Status</th>
+                        <th className="p-12 text-left fs-12 fw-600">Docs Available</th>
                       </tr>
                     </thead>
                     <tbody>
                       {modules.map(module => (
                         <tr key={module.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                          <td style={{ padding: '12px', fontWeight: 600 }}>{module.id}</td>
-                          <td style={{ padding: '12px' }}>{module.name}</td>
-                          <td style={{ padding: '12px' }}>{getStatusBadge(module.status)}</td>
-                          <td style={{ padding: '12px' }}>
+                          <td className="p-12 fw-600">{module.id}</td>
+                          <td className="p-12">{module.name}</td>
+                          <td className="p-12">{getStatusBadge(module.status)}</td>
+                          <td className="p-12">
                             {module.docs ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}
                           </td>
                         </tr>
@@ -822,32 +822,32 @@ export function I18nPage() {
     <AppShell>
       <PageHeader title="Internationalization" subtitle="B04 i18n & B12 Language Preferences" />
       <PageContent>
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }} data-testid="i18n-page">
-          <Card style={{ padding: '24px', marginBottom: '24px' }}>
+        <div className="page-container" data-testid="i18n-page">
+          <Card className="p-24 mb-24">
             <h2 style={{ margin: '0 0 8px 0' }}>{t.welcome}</h2>
-            <p style={{ margin: 0, fontSize: '14px', color: '#6b7280' }}>{t.description}</p>
+            <p className="m-0 fs-14" style={{ color: '#6b7280' }}>{t.description}</p>
           </Card>
 
           {savedMessage && (
-            <Alert variant="success" style={{ marginBottom: '24px' }}>
+            <Alert variant="success" className="mb-24">
               {savedMessage}
             </Alert>
           )}
 
-          <Card style={{ padding: '24px', marginBottom: '24px' }}>
+          <Card className="p-24 mb-24">
             <h3 style={{ margin: '0 0 16px 0' }}>{t.currentLang}</h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
               <span style={{ fontSize: '32px' }}>{currentLangInfo?.flag}</span>
               <div>
-                <div style={{ fontWeight: 600, fontSize: '18px' }}>{currentLangInfo?.name}</div>
-                <div style={{ fontSize: '14px', color: '#6b7280' }}>Code: {language.toUpperCase()}</div>
+                <div className="fw-600 fs-18">{currentLangInfo?.name}</div>
+                <div className="fs-14" style={{ color: '#6b7280' }}>Code: {language.toUpperCase()}</div>
               </div>
             </div>
           </Card>
 
-          <Card style={{ padding: '24px', marginBottom: '24px' }}>
+          <Card className="p-24 mb-24">
             <h3 style={{ margin: '0 0 16px 0' }}>{t.selectLang}</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+            <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               {languages.map(lang => (
                 <button
                   key={lang.code}
@@ -862,21 +862,21 @@ export function I18nPage() {
                     transition: 'all 0.2s',
                   }}
                 >
-                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>{lang.flag}</div>
-                  <div style={{ fontWeight: 600 }}>{lang.name}</div>
-                  <div style={{ fontSize: '12px', color: '#6b7280' }}>{lang.code.toUpperCase()}</div>
+                  <div className="fs-24 mb-8">{lang.flag}</div>
+                  <div className="fw-600">{lang.name}</div>
+                  <div className="fs-12" style={{ color: '#6b7280' }}>{lang.code.toUpperCase()}</div>
                 </button>
               ))}
             </div>
           </Card>
 
-          <Card style={{ padding: '24px' }}>
+          <Card className="p-24">
             <h3 style={{ margin: '0 0 16px 0' }}>{t.sampleText}</h3>
             <div style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
-              <p style={{ margin: 0, fontSize: '16px' }}>{t.greeting}</p>
+              <p className="m-0 fs-16">{t.greeting}</p>
             </div>
-            <div style={{ marginTop: '16px', fontSize: '14px', color: '#6b7280' }}>
-              <p style={{ margin: 0 }}>
+            <div className="mt-16 fs-14" style={{ color: '#6b7280' }}>
+              <p className="m-0">
                 <strong>Note:</strong> In production, this would integrate with B04 gettext utilities for comprehensive translation
                 management and B12 preferences API for persistent language storage across sessions.
               </p>

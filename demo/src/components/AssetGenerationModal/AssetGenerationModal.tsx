@@ -109,14 +109,14 @@ function TemplateCard({
       }}
     >
       <span style={{ fontSize: 28 }}>{template.icon}</span>
-      <span style={{ fontSize: 12, fontWeight: 600, textAlign: 'center' }}>
+                <span className="fs-12 fw-600 text-center">
         {template.name}
       </span>
       <span
+        className="text-center"
         style={{
           fontSize: 10,
           color: 'var(--vscode-descriptionForeground, #888)',
-          textAlign: 'center',
         }}
       >
         {template.creditsCost} credit{template.creditsCost > 1 ? 's' : ''} / variant
@@ -137,13 +137,10 @@ function ParameterSelect({
   onChange: (val: string) => void;
 }) {
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div className="mb-12">
       <label
+        className="block fs-12 fw-600 mb-4"
         style={{
-          display: 'block',
-          fontSize: 12,
-          fontWeight: 600,
-          marginBottom: 4,
           color: 'var(--vscode-foreground, #ccc)',
         }}
       >
@@ -264,17 +261,11 @@ function VariantCard({
         )
       ) : (
         <div
+          className="w-full flex-center fs-12 p-8 text-center"
           style={{
-            width: '100%',
             aspectRatio: isVideoContent ? '9 / 16' : '3 / 4',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             background: 'var(--vscode-input-background, #3c3c3c)',
             color: '#ef4444',
-            fontSize: 12,
-            padding: 8,
-            textAlign: 'center',
           }}
         >
           {variant.error || (isVideoContent ? 'Geen video' : 'Geen afbeelding')}
@@ -339,15 +330,13 @@ function VariantCard({
 
 function ProgressBar({ progress }: { progress: number }) {
   return (
-    <div
-      style={{
-        width: '100%',
-        height: 6,
-        background: 'var(--vscode-progressBar-background, #333)',
-        borderRadius: 3,
-        overflow: 'hidden',
-      }}
-    >
+      <div
+        className="w-full overflow-hidden rounded-4"
+        style={{
+          height: 6,
+          background: 'var(--vscode-progressBar-background, #333)',
+        }}
+      >
       <div
         style={{
           width: `${progress}%`,
@@ -764,17 +753,12 @@ export default function AssetGenerationModal({
         }}
       >
         {/* Header */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+        <div className="flex-between" style={{
             padding: '16px 20px',
             borderBottom: '1px solid var(--vscode-widget-border, #333)',
-          }}
-        >
+          }}>
           <div>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>
+            <h2 className="fs-16 fw-700" style={{ margin: 0 }}>
               🎨 AI Asset Genereren
             </h2>
             <p
@@ -803,7 +787,7 @@ export default function AssetGenerationModal({
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflow: 'auto', padding: '16px 20px' }}>
+        <div className="flex-1 overflow-auto" style={{ padding: '16px 20px' }}>
           {/* ── STEP 1: Template Selection ── */}
           {modalStep === 'template' && (
             <div
@@ -829,19 +813,15 @@ export default function AssetGenerationModal({
             <div>
               {/* Template info */}
               <div
+                className="flex-row gap-12 py-12 px-16 rounded-8 mb-16"
                 style={{
-                  display: 'flex',
                   alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 16px',
                   background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
-                  borderRadius: 8,
-                  marginBottom: 16,
                 }}
               >
                 <span style={{ fontSize: 32 }}>{selectedTemplate.icon}</span>
                 <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>
+                <div className="fw-600 fs-14">
                     {selectedTemplate.name}
                   </div>
                   <div
@@ -857,19 +837,17 @@ export default function AssetGenerationModal({
 
               {/* Source Selection — shown whenever there's a previous AI result to choose from */}
               {previousResultUrl && _getPrimaryInputKey(selectedTemplate) && (
-                <div style={{ marginBottom: 16 }}>
+                <div className="mb-16">
                   <label
+                    className="block fs-12 fw-600"
                     style={{
-                      display: 'block',
-                      fontSize: 12,
-                      fontWeight: 600,
                       marginBottom: 6,
                       color: 'var(--vscode-foreground, #ccc)',
                     }}
                   >
                     Input Bron
                   </label>
-                  <div style={{ display: 'flex', gap: 8 }}>
+              <div className="flex-row gap-8">
                     <button
                       onClick={() => setReferenceSource('upload')}
                       style={{
@@ -903,7 +881,7 @@ export default function AssetGenerationModal({
                        🎨 Huidige AI Versie
                     </button>
                   </div>
-                   <div style={{ fontSize: 11, color: '#888', marginTop: 4}}>
+                   <div className="fs-11 mt-4" style={{ color: '#888' }}>
                       {referenceSource === 'upload'
                         ? 'Gebruikt de origineel geüploade afbeelding als basis.'
                         : 'Gebruikt het huidige AI resultaat als basis voor verdere aanpassingen.'}
@@ -963,17 +941,14 @@ export default function AssetGenerationModal({
               {['photo_composite_gemini', 'walking_composite_far', 'walking_composite_near'].includes(selectedTemplate.id) && availableBackgrounds.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
                   <label
+                    className="block fs-12 fw-600 mb-8"
                     style={{
-                      display: 'block',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      marginBottom: 8,
                       color: 'var(--vscode-foreground, #ccc)',
                     }}
                   >
                     Selecteer achtergrond
                   </label>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div className="flex-row gap-8 flex-wrap">
                     {availableBackgrounds.map((bg, idx) => (
                       <button
                         key={idx}
@@ -1020,7 +995,7 @@ export default function AssetGenerationModal({
                     ))}
                   </div>
                   {availableBackgrounds[selectedBackgroundIdx]?.label && (
-                    <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
+                    <div className="fs-11 mt-4" style={{ color: '#888' }}>
                       {availableBackgrounds[selectedBackgroundIdx].label}
                     </div>
                   )}
@@ -1028,19 +1003,17 @@ export default function AssetGenerationModal({
               )}
 
               {/* Variant count */}
-              <div style={{ marginBottom: 12 }}>
+              <div className="mb-12">
                 <label
+                  className="block fs-12 fw-600"
                   style={{
-                    display: 'block',
-                    fontSize: 12,
-                    fontWeight: 600,
                     marginBottom: 6,
                     color: 'var(--vscode-foreground, #ccc)',
                   }}
                 >
                   Aantal varianten
                 </label>
-                <div style={{ display: 'flex', gap: 8 }}>
+              <div className="flex-row gap-8">
                   {[1, 2, 3, 4].map((n) => (
                     <button
                       key={n}
@@ -1079,7 +1052,7 @@ export default function AssetGenerationModal({
               </div>
 
               {/* Extra Instructions */}
-              <div style={{ marginBottom: 16 }}>
+              <div className="mb-16">
 
               {/* ── AI Model Selector ── */}
               {(() => {
@@ -1131,19 +1104,17 @@ export default function AssetGenerationModal({
                 const models = isVideo ? VIDEO_MODELS : IMAGE_MODELS;
 
                 return (
-                  <div style={{ marginBottom: 16 }}>
+                  <div className="mb-16">
                     <label
+                      className="block fs-12 fw-600"
                       style={{
-                        display: 'block',
-                        fontSize: 12,
-                        fontWeight: 600,
                         marginBottom: 6,
                         color: 'var(--vscode-foreground, #ccc)',
                       }}
                     >
                       {isVideo ? 'Video Model' : 'Image Model'}
                     </label>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    <div className="flex-row gap-6 flex-wrap">
                       {models.map((opt) => (
                         <button
                           key={opt.modelId}
@@ -1173,7 +1144,7 @@ export default function AssetGenerationModal({
                             textAlign: 'center',
                           }}
                         >
-                          <div style={{ fontWeight: 600, fontSize: 11 }}>{opt.label}</div>
+                          <div className="fw-600 fs-11">{opt.label}</div>
                           <div
                             style={{
                               fontSize: 9,
@@ -1214,11 +1185,8 @@ export default function AssetGenerationModal({
               })()}
 
                 <label
+                  className="block fs-12 fw-600 mb-4"
                   style={{
-                    display: 'block',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    marginBottom: 4,
                     color: 'var(--vscode-foreground, #ccc)',
                   }}
                 >
@@ -1250,11 +1218,11 @@ export default function AssetGenerationModal({
             <div>
               {/* Submitting (sending request) */}
               {generation.step === 'submitting' && (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>
+                <div className="text-center" style={{ padding: '40px 0' }}>
+                  <div className="mb-16" style={{ fontSize: 48 }}>
                     {selectedTemplate?.outputType === 'video' ? '🎬' : '🎨'}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                  <div className="fs-14 fw-600 mb-8">
                     {selectedTemplate?.outputType === 'video'
                       ? 'Video aanmelden...'
                       : 'Afbeelding aanmelden...'}
@@ -1268,9 +1236,9 @@ export default function AssetGenerationModal({
 
               {/* Polling — video is being generated, waiting for result */}
               {generation.step === 'polling' && (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>🎬</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                <div className="text-center" style={{ padding: '40px 0' }}>
+                  <div className="mb-16" style={{ fontSize: 48 }}>🎬</div>
+                  <div className="fs-14 fw-600 mb-8">
                     Video wordt gegenereerd...
                   </div>
                   <ProgressBar progress={generation.progress} />
@@ -1282,9 +1250,9 @@ export default function AssetGenerationModal({
 
               {/* Queued — video job accepted, processing on background */}
               {generation.step === 'queued' && (
-                <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                  <div style={{ fontSize: 64, marginBottom: 16 }}>🟢</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
+                <div className="text-center" style={{ padding: '40px 0' }}>
+                  <div className="mb-16" style={{ fontSize: 64 }}>🟢</div>
+                  <div className="fs-16 fw-700 mb-8">
                     {requireApproval ? 'In Approvals Wachtrij!' : 'Toegevoegd aan de AI Queue!'}
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 24, maxWidth: 320, margin: '0 auto 24px' }}>
@@ -1322,17 +1290,17 @@ export default function AssetGenerationModal({
               {/* Error state */}
               {generation.step === 'error' && (
                 <div
+                  className="text-center"
                   style={{
-                    textAlign: 'center',
                     padding: '40px 0',
                     color: 'var(--vscode-errorForeground, #f44)',
                   }}
                 >
-                  <div style={{ fontSize: 48, marginBottom: 16 }}>❌</div>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8 }}>
+                  <div className="mb-16" style={{ fontSize: 48 }}>❌</div>
+                  <div className="fs-14 fw-600 mb-8">
                     Generatie mislukt
                   </div>
-                  <div style={{ fontSize: 12, marginBottom: 16 }}>
+                  <div className="fs-12 mb-16">
                     {generation.error}
                   </div>
                   <Button onClick={handleRegenerate}>Opnieuw proberen</Button>
@@ -1344,11 +1312,7 @@ export default function AssetGenerationModal({
                 generation.variants.length > 0 && (
                   <div>
                     <div
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 600,
-                        marginBottom: 12,
-                      }}
+                      className="fs-13 fw-600 mb-12"
                     >
                       Kies de beste variant:
                     </div>
@@ -1398,7 +1362,7 @@ export default function AssetGenerationModal({
                     {/* Feedback / Refine - only for images, not videos */}
                     {selectedTemplate?.outputType !== 'video' && (
                     <div style={{ marginTop: 20, borderTop: '1px solid var(--vscode-widget-border, #333)', paddingTop: 16 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Combineer & Verbeter Varianten:</div>
+                    <div className="fs-13 fw-600 mb-12">Combineer & Verbeter Varianten:</div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                            {[
                              { id: 'colors', label: 'Kleuren (Vb: "Rood zoals V1")' },
@@ -1407,7 +1371,7 @@ export default function AssetGenerationModal({
                              { id: 'collar', label: 'Kraag/Mouwen' },
                            ].map(field => (
                              <div key={field.id}>
-                               <label style={{display:'block', fontSize:11, marginBottom:4, color:'var(--vscode-descriptionForeground, #888)'}}>{field.label}</label>
+                               <label className="block fs-11 mb-4" style={{color:'var(--vscode-descriptionForeground, #888)'}}>{field.label}</label>
                                <input
                                   type="text"
                                   value={(feedbackFields as any)[field.id]}
@@ -1426,8 +1390,8 @@ export default function AssetGenerationModal({
                              </div>
                            ))}
                         </div>
-                        <div style={{ marginTop: 12 }}>
-                           <label style={{display:'block', fontSize:11, marginBottom:4, color:'var(--vscode-descriptionForeground, #888)'}}>Overig / Specifiek</label>
+                        <div className="mt-12">
+                           <label className="block fs-11 mb-4" style={{color:'var(--vscode-descriptionForeground, #888)'}}>Overig / Specifiek</label>
                            <input
                               type="text"
                               value={feedbackFields.other}
@@ -1455,12 +1419,9 @@ export default function AssetGenerationModal({
 
         {/* Footer */}
         <div
+          className="flex-between border-top"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
             padding: '12px 20px',
-            borderTop: '1px solid var(--vscode-widget-border, #333)',
           }}
         >
           <div>
@@ -1485,7 +1446,7 @@ export default function AssetGenerationModal({
             )}
           </div>
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="flex-row gap-8">
             <button
               onClick={handleClose}
               style={{

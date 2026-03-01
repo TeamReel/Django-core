@@ -533,12 +533,11 @@ export const PermissionsPage: React.FC = () => {
 
         {/* Tabs */}
         <div
+          className="gap-6 flex-wrap"
           style={{
             display: 'flex',
-            gap: '6px',
             borderBottom: '1px solid var(--app-border)',
             marginBottom: '20px',
-            flexWrap: 'wrap',
           }}
           aria-label="Tabs"
         >
@@ -583,7 +582,7 @@ export const PermissionsPage: React.FC = () => {
         {activeTab === 'hierarchy' && (
           <>
             <Card className="mb-6 p-20">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+              <div className="gap-16 flex-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <h3 className="m-0 fs-18 fw-700">Role Hierarchy</h3>
                   <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
@@ -614,25 +613,22 @@ export const PermissionsPage: React.FC = () => {
                       <div
                         key={roleKey}
                         data-testid={`role-hierarchy-${roleKey}`}
+                        className="rounded-12"
                         style={{
                           border: `1px solid ${isCurrent ? 'var(--app-focus-ring)' : 'var(--app-border)'}`,
                           backgroundColor: isCurrent ? 'var(--app-surface-2)' : 'var(--app-surface)',
-                          borderRadius: '12px',
                           padding: '14px',
                           boxShadow: isCurrent ? '0 0 0 2px rgba(0,0,0,0)' : 'none',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-                          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div className="gap-12" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                          <div className="gap-12" style={{ display: 'flex', alignItems: 'flex-start' }}>
                             <div
+                              className="flex-center fw-800"
                               style={{
                                 width: '34px',
                                 height: '34px',
                                 borderRadius: '10px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: 800,
                                 backgroundColor: 'var(--app-table-header-bg)',
                                 border: '1px solid var(--app-border)',
                               }}
@@ -659,7 +655,7 @@ export const PermissionsPage: React.FC = () => {
                         {roleHighlights[roleKey]?.length ? (
                           <div className="grid gap-6" style={{ marginTop: '10px' }}>
                             {roleHighlights[roleKey].map((line) => (
-                              <div key={line} style={{ display: 'flex', gap: '8px', color: 'var(--app-muted-text)', fontSize: '0.85rem' }}>
+                              <div key={line} className="gap-8" style={{ display: 'flex', color: 'var(--app-muted-text)', fontSize: '0.85rem' }}>
                                 <span aria-hidden="true">•</span>
                                 <span>{line}</span>
                               </div>
@@ -678,25 +674,24 @@ export const PermissionsPage: React.FC = () => {
                 Scopes flow from org → club → team, with increasing restrictions.
               </p>
 
-              <div style={{ marginTop: '14px', padding: '14px', border: '1px solid var(--app-border)', borderRadius: '12px', backgroundColor: 'var(--app-surface)' }}>
+              <div className="rounded-12" style={{ marginTop: '14px', padding: '14px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
                 {Object.entries(roleDescriptions)
                   .sort(([, a], [, b]) => a.level - b.level)
                   .map(([roleKey, roleInfo], idx, arr) => {
                     const isCurrent = currentRoleKey === roleKey;
                     const isLast = idx === arr.length - 1;
                     return (
-                      <div key={roleKey} style={{ display: 'flex', gap: '12px' }}>
-                        <div style={{ width: '18px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <div key={roleKey} className="gap-12" style={{ display: 'flex' }}>
+                        <div className="flex-col" style={{ width: '18px', alignItems: 'center' }}>
                           <div
+                            className="rounded-full mt-4"
                             style={{
                               width: '10px',
                               height: '10px',
-                              borderRadius: '999px',
                               backgroundColor: isCurrent ? 'var(--app-focus-ring)' : 'var(--app-border)',
-                              marginTop: '4px',
                             }}
                           />
-                          {!isLast ? <div style={{ width: '2px', flex: 1, backgroundColor: 'var(--app-border)', opacity: 0.8 }} /> : null}
+                          {!isLast ? <div className="flex-1 opacity-80" style={{ width: '2px', backgroundColor: 'var(--app-border)' }} /> : null}
                         </div>
 
                         <div style={{ paddingBottom: isLast ? 0 : '12px' }}>
@@ -727,10 +722,10 @@ export const PermissionsPage: React.FC = () => {
               </div>
 
               <div
+                className="overflow-auto"
                 style={{
                   border: '1px solid var(--app-border)',
                   borderRadius: '10px',
-                  overflow: 'auto',
                   maxHeight: 'calc(100vh - 320px)',
                   backgroundColor: 'var(--app-surface)',
                 }}
@@ -746,9 +741,9 @@ export const PermissionsPage: React.FC = () => {
                 <thead>
                   <tr>
                     <th
+                      className="sticky"
                       style={{
                         ...compactThStyle,
-                        position: 'sticky',
                         top: 0,
                         left: 0,
                         zIndex: 4,
@@ -761,14 +756,12 @@ export const PermissionsPage: React.FC = () => {
                     {roleColumns.map((col) => (
                       <th
                         key={String(col.key)}
+                        className="sticky text-center whitespace-nowrap"
                         style={{
                           ...compactThStyle,
-                          position: 'sticky',
                           top: 0,
                           zIndex: 3,
-                          textAlign: 'center',
                           fontSize: '0.75rem',
-                          whiteSpace: 'nowrap',
                           backgroundColor: 'var(--app-table-header-bg)',
                         }}
                       >
@@ -785,28 +778,23 @@ export const PermissionsPage: React.FC = () => {
                     rows.push(
                       <tr key={`cat-${category.category}`}>
                         <td colSpan={1 + roleColumns.length} style={{ ...compactTdStyle, paddingTop: '14px' }}>
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
+                          <div className="flex-row gap-12 rounded-8" style={{
                             padding: '8px 10px',
                             border: '1px solid var(--app-border)',
-                            borderRadius: '8px',
                             backgroundColor: 'var(--app-surface-2)',
                           }}>
                             <span
+                              className="fw-800 whitespace-nowrap"
                               style={{
                                 fontSize: '0.78rem',
-                                fontWeight: 800,
                                 letterSpacing: '0.06em',
                                 textTransform: 'uppercase',
-                                whiteSpace: 'nowrap',
                               }}
                             >
                               {category.category}
                             </span>
-                            <span style={{ height: 1, backgroundColor: 'var(--app-border)', flex: 1, opacity: 0.9 }} />
-                            <span style={{ fontSize: '0.75rem', opacity: 0.75, whiteSpace: 'nowrap' }}>
+                            <span className="flex-1" style={{ height: 1, backgroundColor: 'var(--app-border)', opacity: 0.9 }} />
+                            <span className="whitespace-nowrap" style={{ fontSize: '0.75rem', opacity: 0.75 }}>
                               {category.permissions.length} features
                             </span>
                           </div>
@@ -821,15 +809,14 @@ export const PermissionsPage: React.FC = () => {
                       rows.push(
                         <tr key={row.permission} data-testid={`permission-row-${row.permission}`}>
                           <td
+                            className="sticky break-word"
                             style={{
                               ...compactTdStyle,
                               verticalAlign: 'top',
-                              position: 'sticky',
                               left: 0,
                               zIndex: 1,
                               borderRight: '1px solid var(--app-border)',
                               whiteSpace: 'normal',
-                              wordBreak: 'break-word',
                               backgroundColor: 'var(--app-table-row-bg)',
                             }}
                           >
@@ -837,16 +824,16 @@ export const PermissionsPage: React.FC = () => {
                             {desc ? (
                               <div style={{ fontSize: '0.78rem', opacity: 0.75, marginTop: 2 }}>{desc}</div>
                             ) : null}
-                            <div style={{ fontSize: '0.72rem', opacity: 0.55, marginTop: 4, fontFamily: 'monospace' }}>
+                            <div className="mt-4" style={{ fontSize: '0.72rem', opacity: 0.55, fontFamily: 'monospace' }}>
                               {row.permission}
                             </div>
                           </td>
                           {roleColumns.map((col) => (
                             <td
                               key={String(col.key)}
+                              className="text-center"
                               style={{
                                 ...compactTdStyle,
-                                textAlign: 'center',
                                 fontWeight: row[col.key] ? 700 : 400,
                                 color: row[col.key] ? 'var(--app-text)' : 'var(--app-muted-text)',
                               }}

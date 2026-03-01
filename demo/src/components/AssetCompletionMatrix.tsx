@@ -147,7 +147,7 @@ export function AssetCompletionMatrix({
   if (loading) {
     return (
       <Card>
-        <div style={{ padding: 16 }}>
+        <div className="p-16">
           <Alert variant="info">Assets laden…</Alert>
         </div>
       </Card>
@@ -157,7 +157,7 @@ export function AssetCompletionMatrix({
   if (error) {
     return (
       <Card>
-        <div style={{ padding: 16 }}>
+        <div className="p-16">
           <Alert variant="error">Fout bij laden: {error}</Alert>
         </div>
       </Card>
@@ -167,20 +167,20 @@ export function AssetCompletionMatrix({
   return (
     <Card>
       <div style={{ padding: '16px 16px 0 16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{title}</h3>
+        <div className="flex-row gap-12 flex-wrap">
+          <h3 className="m-0 fs-16 fw-600">{title}</h3>
           <Badge variant={filledCells === totalCells ? 'success' : filledCells > 0 ? 'warning' : 'default'}>
             {filledCells} / {totalCells} Assets
           </Badge>
         </div>
-        <div style={{ marginTop: 4, color: 'var(--app-muted-text)', fontSize: 13 }}>
+        <div className="mt-4 text-muted fs-13">
           Overview van alle brand assets en hun bewerkingsfase.
           {entityName ? ` (${entityName})` : ''}
         </div>
       </div>
 
-      <div style={{ padding: 16, overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+      <div className="p-16 overflow-x-auto">
+        <table className="w-full fs-12" style={{ borderCollapse: 'collapse' }}>
           <thead>
             <tr>
               <th style={{ ...thStyle, textAlign: 'left', minWidth: 160 }}>Content Type</th>
@@ -218,8 +218,8 @@ export function AssetCompletionMatrix({
                   {/* Upload */}
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     {row.uploadType ? (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14 }}>{upload.exists ? '✅' : '⬜'}</span>
+                      <div className="flex-center gap-6">
+                        <span className="fs-14">{upload.exists ? '✅' : '⬜'}</span>
                         {upload.url && (
                           <img src={upload.url} alt="" style={thumbnailStyle} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
@@ -232,8 +232,8 @@ export function AssetCompletionMatrix({
                   {/* AI Bewerkt */}
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     {row.processedType ? (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14 }}>{processed.exists ? '✅' : '⬜'}</span>
+                      <div className="flex-center gap-6">
+                        <span className="fs-14">{processed.exists ? '✅' : '⬜'}</span>
                         {processed.url && (
                           <img src={processed.url} alt="" style={thumbnailStyle} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
@@ -249,11 +249,11 @@ export function AssetCompletionMatrix({
         </table>
 
         {/* Progress bar */}
-        <div style={{ marginTop: 16, padding: 12, background: 'var(--app-muted)', borderRadius: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+        <div className="mt-16 p-12 rounded-8" style={{ background: 'var(--app-muted)' }}>
+          <div className="fs-13 fw-600" style={{ marginBottom: 6 }}>
             Completion: {filledCells} / {totalCells} assets
           </div>
-          <div style={{ height: 8, background: '#e5e7eb', borderRadius: 4, overflow: 'hidden' }}>
+          <div className="rounded-4 overflow-hidden" style={{ height: 8, background: '#e5e7eb' }}>
             <div
               style={{
                 height: '100%',
@@ -266,17 +266,17 @@ export function AssetCompletionMatrix({
         </div>
 
         {/* Legend */}
-        <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 11, opacity: 0.7 }}>
+        <div className="flex-row flex-wrap mt-12 gap-16 fs-11 opacity-70">
           {PHASE_COLUMNS.map((col) => (
-            <div key={col.key} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div key={col.key} className="flex-row gap-4">
               <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: col.color }} />
               <span>{col.label}</span>
             </div>
           ))}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div className="flex-row gap-4">
             <span>✅</span> <span>Aanwezig</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div className="flex-row gap-4">
             <span>⬜</span> <span>Ontbreekt</span>
           </div>
         </div>

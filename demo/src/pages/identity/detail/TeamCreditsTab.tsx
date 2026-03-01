@@ -334,11 +334,11 @@ export default function TeamCreditsTab(props: {
 
                           return (
                             <div key={txn.id} className="flex-row gap-12">
-                              <div style={{ minWidth: '120px', fontSize: '12px', opacity: 0.7, textAlign: 'right' }}>
+                              <div className="fs-12 opacity-70 text-right" style={{ minWidth: '120px' }}>
                                 {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </div>
 
-                              <div style={{ flex: 1, position: 'relative', height: '32px', display: 'flex', alignItems: 'center' }}>
+                              <div className="flex-row flex-1 relative" style={{ height: '32px' }}>
                                 <div
                                   style={{
                                     width: `${barWidth}%`,
@@ -355,12 +355,8 @@ export default function TeamCreditsTab(props: {
                                   }}
                                 >
                                   <span
-                                    style={{
-                                      fontSize: '12px',
-                                      fontWeight: 'bold',
-                                      color: 'white',
-                                      whiteSpace: 'nowrap',
-                                    }}
+                                    className="fs-12 fw-700 whitespace-nowrap"
+                                    style={{ color: 'white' }}
                                   >
                                     {isPositive ? '+' : ''}
                                     {Number.isFinite(amount) ? amount.toLocaleString() : String(txn.amount)}
@@ -369,14 +365,8 @@ export default function TeamCreditsTab(props: {
                               </div>
 
                               <div
-                                style={{
-                                  minWidth: '150px',
-                                  fontSize: '12px',
-                                  opacity: 0.6,
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
+                                className="fs-12 opacity-60 truncate"
+                                style={{ minWidth: '150px' }}
                               >
                                 {txn.notes || sourceTypeLabel(txn.source_type)}
                               </div>
@@ -396,7 +386,7 @@ export default function TeamCreditsTab(props: {
 
                 <Card className="p-24">
                   <div className="flex-between" style={{ marginBottom: '20px' }}>
-                    <h3 style={{ margin: 0, fontSize: '18px' }}>📋 Recent Activity</h3>
+                    <h3 className="m-0 fs-18">📋 Recent Activity</h3>
                   </div>
 
                   {transactionsLoading ? (

@@ -595,17 +595,12 @@ export const CreditsPage: React.FC = () => {
           }
         ]}
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="flex-row gap-12">
             {/* Demo Helper: Show current mode */}
-            <div style={{
-              fontSize: '11px',
+            <div className="fs-11 rounded-6 fw-600 cursor-default text-inverse" style={{
               padding: '4px 10px',
-              borderRadius: '6px',
               backgroundColor: isSuperAdmin ? '#3b82f6' : '#a855f7',
-              color: 'white',
-              fontWeight: 600,
               letterSpacing: '0.5px',
-              cursor: 'default',
             }}>
               {isSuperAdmin ? '👑 ADMIN' : '👤 ORG'}
             </div>
@@ -614,7 +609,7 @@ export const CreditsPage: React.FC = () => {
       />
 
       <PageContent>
-        <div style={{ marginBottom: 16 }}>
+        <div className="mb-16">
           <div className="text-sm text-gray-600">
             {scope === 'personal'
               ? 'My Wallet'
@@ -625,7 +620,7 @@ export const CreditsPage: React.FC = () => {
         {scope === 'personal' ? (
              <div>
                {personalError && (
-                 <Alert variant="info" style={{ marginBottom: '16px' }}>
+                 <Alert variant="info" className="mb-16">
                    {personalError}
                  </Alert>
                )}
@@ -663,26 +658,23 @@ export const CreditsPage: React.FC = () => {
                          No recent personal activity.
                        </div>
                      ) : (
-                       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                       <div className="flex-col gap-10">
                          {personalRecentTransactions.map((txn) => (
                            <div
                              key={txn.id}
+                             className="flex-between rounded-8"
                              style={{
-                               display: 'flex',
-                               alignItems: 'center',
-                               justifyContent: 'space-between',
                                padding: '10px 12px',
                                border: '1px solid var(--border-color, #e0e0e0)',
-                               borderRadius: '8px',
                              }}
                            >
-                             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                               <div style={{ fontWeight: 600, fontSize: '13px' }}>{txn.source_type}</div>
-                               <div style={{ fontSize: '12px', opacity: 0.7 }}>
+                             <div className="flex-col gap-2">
+                               <div className="fw-600 fs-13">{txn.source_type}</div>
+                               <div className="fs-12 opacity-70">
                                  {txn.timestamp ? new Date(txn.timestamp).toLocaleString() : ''}
                                </div>
                              </div>
-                             <div style={{ fontWeight: 700 }}>{txn.amount}</div>
+                             <div className="fw-700">{txn.amount}</div>
                            </div>
                          ))}
                        </div>
@@ -695,18 +687,16 @@ export const CreditsPage: React.FC = () => {
         <>
         {/* Toast notification */}
         {toastMessage && (
-          <div style={{
+          <div className="fs-14 rounded-8" style={{
             position: 'fixed',
             bottom: '24px',
             right: '24px',
             backgroundColor: '#323232',
             color: 'white',
             padding: '16px 24px',
-            borderRadius: '8px',
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
             zIndex: 9999,
             maxWidth: '400px',
-            fontSize: '14px',
             lineHeight: '1.5'
           }}>
             {toastMessage}
@@ -714,38 +704,29 @@ export const CreditsPage: React.FC = () => {
         )}
 
         {/* Tab Switcher */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '24px',
-          borderBottom: '1px solid var(--border-color, #e0e0e0)'
-        }}>
+        <div className="flex-row gap-8 mb-24 border-bottom">
           <button
             onClick={() => setActiveTab('balance')}
+            className="border-none cursor-pointer fs-16"
             style={{
               padding: '12px 24px',
               background: activeTab === 'balance' ? 'var(--primary-bg, #1976d2)' : 'transparent',
               color: activeTab === 'balance' ? 'white' : 'var(--text-color, inherit)',
-              border: 'none',
               borderBottom: activeTab === 'balance' ? '2px solid var(--primary-bg, #1976d2)' : '2px solid transparent',
-              cursor: 'pointer',
               fontWeight: activeTab === 'balance' ? 'bold' : 'normal',
-              fontSize: '16px',
             }}
           >
             Balance
           </button>
           <button
             onClick={() => setActiveTab('transactions')}
+            className="border-none cursor-pointer fs-16"
             style={{
               padding: '12px 24px',
               background: activeTab === 'transactions' ? 'var(--primary-bg, #1976d2)' : 'transparent',
               color: activeTab === 'transactions' ? 'white' : 'var(--text-color, inherit)',
-              border: 'none',
               borderBottom: activeTab === 'transactions' ? '2px solid var(--primary-bg, #1976d2)' : '2px solid transparent',
-              cursor: 'pointer',
               fontWeight: activeTab === 'transactions' ? 'bold' : 'normal',
-              fontSize: '16px',
             }}
           >
             Transactions
@@ -754,14 +735,13 @@ export const CreditsPage: React.FC = () => {
 
         {/* Toast Notification */}
         {toastMessage && (
-          <div style={{
+          <div className="rounded-4" style={{
             position: 'fixed',
             bottom: '24px',
             right: '24px',
             padding: '16px 24px',
             background: '#323232',
             color: 'white',
-            borderRadius: '4px',
             boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
             zIndex: 9999,
           }}>
@@ -773,7 +753,7 @@ export const CreditsPage: React.FC = () => {
         {activeTab === 'balance' && (
           <>
         {loading && (
-          <div style={{ padding: '24px', textAlign: 'center' }}>
+          <div className="p-24 text-center">
             <div className="spinner" style={{
               border: '4px solid #f3f3f3',
               borderTop: '4px solid #3498db',
@@ -800,7 +780,7 @@ export const CreditsPage: React.FC = () => {
         )}
 
         {error && !loading && currentOrgId && (
-          <Alert variant="info" style={{ marginBottom: '16px' }}>
+          <Alert variant="info" className="mb-16">
             {error}
           </Alert>
         )}
@@ -809,89 +789,81 @@ export const CreditsPage: React.FC = () => {
           <>
             {/* Low Balance Alert */}
             {Number(credits.current_balance) < 500 && (
-              <Alert variant="warning" style={{ marginBottom: '24px' }}>
+              <Alert variant="warning" className="mb-24">
                 <strong>⚠️ Low Credit Balance</strong>
-                <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
+                <p className="fs-14" style={{ margin: '8px 0 0 0' }}>
                   Your balance is {credits.current_balance} credits. Consider adding more credits to avoid service interruption.
                 </p>
               </Alert>
             )}
 
             {/* Hero Balance Card */}
-            <Card style={{
-              padding: '32px',
-              marginBottom: '24px',
+            <Card className="p-32 mb-24 text-center" style={{
               background: Number(credits.current_balance) < 500
                 ? 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)'
-                : 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
-              textAlign: 'center'
+                : 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)'
             }}>
-              <div style={{ fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6, marginBottom: '8px' }}>
+              <div className="fs-14 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
                 Current Balance
               </div>
-              <div style={{
+              <div className="fw-700" style={{
                 fontSize: '64px',
-                fontWeight: 'bold',
                 margin: '8px 0',
                 color: Number(credits.current_balance) < 500 ? 'var(--app-warning)' : 'var(--app-success)'
               }}>
                 {Number(credits.current_balance || 0).toLocaleString()}
               </div>
-              <div style={{ fontSize: '20px', opacity: 0.7, marginBottom: '12px' }}>
+              <div className="fs-20 opacity-70 mb-12">
                 credits
               </div>
-              <div style={{ opacity: 0.5, fontSize: '13px' }}>
+              <div className="opacity-50 fs-13">
                 {credits.organisation_name} • Last updated {credits.updated_at ? new Date(credits.updated_at).toLocaleString() : 'Just now'}
               </div>
             </Card>
 
             {/* Summary Statistics Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
-              marginBottom: '24px'
+            <div className="grid gap-16 mb-24" style={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))'
             }}>
               {/* Credits Added */}
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.6, marginBottom: '8px' }}>
+              <Card className="p-20 text-center">
+                <div className="fs-12 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   ➕ Total Added
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--app-success)' }}>
+                <div className="fw-700 text-success" style={{ fontSize: '32px' }}>
                   +{allTransactions
                     .filter(t => parseFloat(t.amount) > 0)
                     .reduce((sum, t) => sum + parseFloat(t.amount), 0)
                     .toLocaleString()}
                 </div>
-                <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '4px' }}>
+                <div className="fs-11 opacity-50 mt-4">
                   {allTransactions.filter(t => parseFloat(t.amount) > 0).length} transactions
                 </div>
               </Card>
 
               {/* Credits Used */}
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.6, marginBottom: '8px' }}>
+              <Card className="p-20 text-center">
+                <div className="fs-12 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   ➖ Total Used
                 </div>
-                <div style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--app-error)' }}>
+                <div className="fw-700 text-error" style={{ fontSize: '32px' }}>
                   {allTransactions
                     .filter(t => parseFloat(t.amount) < 0)
                     .reduce((sum, t) => sum + parseFloat(t.amount), 0)
                     .toLocaleString()}
                 </div>
-                <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '4px' }}>
+                <div className="fs-11 opacity-50 mt-4">
                   {allTransactions.filter(t => parseFloat(t.amount) < 0).length} transactions
                 </div>
               </Card>
 
               {/* Net Change */}
-              <Card style={{ padding: '20px', textAlign: 'center' }}>
-                <div style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.6, marginBottom: '8px' }}>
+              <Card className="p-20 text-center">
+                <div className="fs-12 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   📊 Net Total
                 </div>
-                <div style={{
+                <div className="fw-700" style={{
                   fontSize: '32px',
-                  fontWeight: 'bold',
                   color: allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0) >= 0
                     ? 'var(--app-success)'
                     : 'var(--app-error)'
@@ -899,22 +871,22 @@ export const CreditsPage: React.FC = () => {
                   {allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0) >= 0 ? '+' : ''}
                   {allTransactions.reduce((sum, t) => sum + parseFloat(t.amount), 0).toLocaleString()}
                 </div>
-                <div style={{ fontSize: '11px', opacity: 0.5, marginTop: '4px' }}>
+                <div className="fs-11 opacity-50 mt-4">
                   {allTransactions.length} total transactions
                 </div>
               </Card>
             </div>
 
             {/* Transaction Timeline Chart */}
-            <Card style={{ padding: '24px', marginBottom: '24px' }}>
-              <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>📊 Transaction Timeline</h3>
+            <Card className="p-24 mb-24">
+              <h3 className="fs-18" style={{ margin: '0 0 20px 0' }}>📊 Transaction Timeline</h3>
               {allTransactions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>
+                <div className="text-center p-20 opacity-60">
                   No transactions recorded yet.
                 </div>
               ) : (
                 <>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div className="flex-col gap-8">
                     {allTransactions.slice(0, 10).map((txn, index) => {
                       const amount = parseFloat(txn.amount);
                       const maxAmount = Math.max(
@@ -924,19 +896,16 @@ export const CreditsPage: React.FC = () => {
                       const isPositive = amount > 0;
 
                       return (
-                        <div key={txn.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div key={txn.id} className="flex-row gap-12">
                           {/* Date/Label */}
-                          <div style={{
+                          <div className="text-right fs-12 opacity-70" style={{
                             minWidth: '120px',
-                            fontSize: '12px',
-                            opacity: 0.7,
-                            textAlign: 'right'
                           }}>
                             {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </div>
 
                           {/* Bar */}
-                          <div style={{ flex: 1, position: 'relative', height: '32px', display: 'flex', alignItems: 'center' }}>
+                          <div className="flex-1 relative flex-row" style={{ height: '32px' }}>
                             <div style={{
                               width: `${barWidth}%`,
                               height: '24px',
@@ -950,25 +919,15 @@ export const CreditsPage: React.FC = () => {
                               paddingRight: '8px',
                               minWidth: '60px'
                             }}>
-                              <span style={{
-                                fontSize: '12px',
-                                fontWeight: 'bold',
-                                color: 'white',
-                                whiteSpace: 'nowrap'
-                              }}>
+                              <span className="fs-12 fw-700 text-inverse whitespace-nowrap">
                                 {isPositive ? '+' : ''}{amount.toLocaleString()}
                               </span>
                             </div>
                           </div>
 
                           {/* Note */}
-                          <div style={{
+                          <div className="truncate fs-12 opacity-60" style={{
                             minWidth: '150px',
-                            fontSize: '12px',
-                            opacity: 0.6,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
                           }}>
                             {txn.notes || 'Adjustment'}
                           </div>
@@ -977,12 +936,7 @@ export const CreditsPage: React.FC = () => {
                     })}
                   </div>
                   {allTransactions.length > 10 && (
-                    <div style={{
-                      marginTop: '16px',
-                      textAlign: 'center',
-                      fontSize: '12px',
-                      opacity: 0.6
-                    }}>
+                    <div className="mt-16 text-center fs-12 opacity-60">
                       Showing 10 of {allTransactions.length} transactions
                     </div>
                   )}
@@ -991,9 +945,9 @@ export const CreditsPage: React.FC = () => {
             </Card>
 
             {/* Recent Transactions List */}
-            <Card style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0, fontSize: '18px' }}>📋 Recent Activity</h3>
+            <Card className="p-24">
+              <div className="flex-between" style={{ marginBottom: '20px' }}>
+                <h3 className="m-0 fs-18">📋 Recent Activity</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -1003,39 +957,30 @@ export const CreditsPage: React.FC = () => {
                 </Button>
               </div>
               {recentTransactions.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>
+                <div className="text-center p-20 opacity-60">
                   No recent activity.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div className="flex-col gap-8">
                   {recentTransactions.map((txn) => (
                     <div
                       key={txn.id}
+                      className="flex-between p-16 rounded-8 bg-surface-2 border"
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        backgroundColor: 'var(--app-surface-2)',
-                        border: '1px solid var(--app-border)',
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '6px' }}>
+                      <div className="flex-1">
+                        <div className="fw-500" style={{ fontSize: '15px', marginBottom: '6px' }}>
                           {txn.notes || 'Credit adjustment'}
                         </div>
-                        <div style={{ fontSize: '13px', opacity: 0.6 }}>
+                        <div className="fs-13 opacity-60">
                           {new Date(txn.timestamp).toLocaleDateString()} • {new Date(txn.timestamp).toLocaleTimeString()}
                         </div>
                       </div>
-                      <div style={{
-                        fontSize: '20px',
-                        fontWeight: 'bold',
+                      <div className="fs-20 fw-700 text-right" style={{
                         color: parseFloat(txn.amount) > 0 ? 'var(--app-success)' : 'var(--app-error)',
-                        minWidth: '100px',
-                        textAlign: 'right'
+                        minWidth: '100px'
                       }}>
                         {parseFloat(txn.amount) > 0 ? '+' : ''}{parseFloat(txn.amount).toLocaleString()}
                       </div>
@@ -1053,10 +998,10 @@ export const CreditsPage: React.FC = () => {
         {activeTab === 'transactions' && (
           <>
             {/* Filters */}
-            <Card style={{ padding: '16px', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <Card className="p-16 mb-16">
+              <div className="flex-row gap-12 flex-wrap" style={{ alignItems: 'flex-end' }}>
                 <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>Source Type</label>
+                  <label className="block fs-14 fw-500 mb-4">Source Type</label>
                   <select
                     value={sourceTypeFilter}
                     onChange={(e) => {
@@ -1067,14 +1012,12 @@ export const CreditsPage: React.FC = () => {
                       }
                       setSearchParams(searchParams);
                     }}
+                    className="w-full rounded-4 fs-14"
                     style={{
-                      width: '100%',
                       padding: '8px 12px',
-                      borderRadius: '4px',
                       border: '1px solid var(--border-color, #d1d5db)',
                       backgroundColor: 'var(--app-surface)',
-                      color: 'var(--text-primary)',
-                      fontSize: '14px'
+                      color: 'var(--text-primary)'
                     }}
                   >
                     <option value="">All Types</option>
@@ -1085,7 +1028,7 @@ export const CreditsPage: React.FC = () => {
                   </select>
                 </div>
                 <div style={{ minWidth: '180px', flex: '1 1 180px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>User</label>
+                  <label className="block fs-14 fw-500 mb-4">User</label>
                   <Input
                     type="text"
                     placeholder="Search by email..."
@@ -1101,7 +1044,7 @@ export const CreditsPage: React.FC = () => {
                   />
                 </div>
                 <div style={{ minWidth: '150px', flex: '1 1 150px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>From Date</label>
+                  <label className="block fs-14 fw-500 mb-4">From Date</label>
                   <Input
                     type="date"
                     value={dateFromFilter}
@@ -1116,7 +1059,7 @@ export const CreditsPage: React.FC = () => {
                   />
                 </div>
                 <div style={{ minWidth: '150px', flex: '1 1 150px' }}>
-                  <label style={{ display: 'block', fontSize: '14px', fontWeight: 500, marginBottom: '4px' }}>To Date</label>
+                  <label className="block fs-14 fw-500 mb-4">To Date</label>
                   <Input
                     type="date"
                     value={dateToFilter}
@@ -1140,7 +1083,7 @@ export const CreditsPage: React.FC = () => {
                       searchParams.delete('date_to');
                       setSearchParams(searchParams);
                     }}
-                    style={{ width: '100%' }}
+                    className="w-full"
                   >
                     Clear Filters
                   </Button>
@@ -1149,7 +1092,7 @@ export const CreditsPage: React.FC = () => {
             </Card>
 
             {transactionsLoading && (
-              <div style={{ padding: '24px', textAlign: 'center' }}>
+              <div className="p-24 text-center">
                 <div className="spinner" style={{
                   border: '4px solid #f3f3f3',
                   borderTop: '4px solid #3498db',
@@ -1164,46 +1107,43 @@ export const CreditsPage: React.FC = () => {
             )}
 
             {!transactionsLoading && transactions.length === 0 && (
-              <Alert variant="info" style={{ marginBottom: '16px' }}>
+              <Alert variant="info" className="mb-16">
                 No credit transactions yet.
               </Alert>
             )}
 
             {!transactionsLoading && transactions.length > 0 && (
-              <Card style={{ padding: '24px', marginBottom: '16px' }}>
+              <Card className="p-24 mb-16">
                 <h2 style={{ marginTop: 0 }}>Transaction History</h2>
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div className="overflow-x-auto">
+                  <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                     <thead>
                       <tr style={{ borderBottom: '2px solid #ddd' }}>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Date</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Type</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>User</th>
-                        <th style={{ padding: '12px', textAlign: 'right' }}>Amount</th>
-                        <th style={{ padding: '12px', textAlign: 'left' }}>Notes</th>
+                        <th className="p-12 text-left">Date</th>
+                        <th className="p-12 text-left">Type</th>
+                        <th className="p-12 text-left">User</th>
+                        <th className="p-12 text-right">Amount</th>
+                        <th className="p-12 text-left">Notes</th>
                       </tr>
                     </thead>
                     <tbody>
                       {transactions.map((txn) => (
                         <tr key={txn.id} style={{ borderBottom: '1px solid #eee' }}>
-                          <td style={{ padding: '12px' }}>
+                          <td className="p-12">
                             {new Date(txn.timestamp).toLocaleString()}
                           </td>
-                          <td style={{ padding: '12px' }}>
+                          <td className="p-12">
                             <Badge variant="info">{txn.source_type.replace('_', ' ')}</Badge>
                           </td>
-                          <td style={{ padding: '12px', fontSize: '14px', opacity: 0.8 }}>
+                          <td className="p-12 fs-14 opacity-80">
                             {txn.created_by_email || '-'}
                           </td>
-                          <td style={{
-                            padding: '12px',
-                            textAlign: 'right',
-                            color: parseFloat(txn.amount) > 0 ? 'var(--app-success)' : 'var(--app-error)',
-                            fontWeight: 'bold'
+                          <td className="p-12 text-right fw-700" style={{
+                            color: parseFloat(txn.amount) > 0 ? 'var(--app-success)' : 'var(--app-error)'
                           }}>
                             {parseFloat(txn.amount) > 0 ? '+' : ''}{parseFloat(txn.amount).toLocaleString()}
                           </td>
-                          <td style={{ padding: '12px', opacity: 0.7 }}>
+                          <td className="p-12 opacity-70">
                             {txn.notes || '-'}
                           </td>
                         </tr>
@@ -1218,23 +1158,14 @@ export const CreditsPage: React.FC = () => {
             {canSeeTestControls && (
               <Card
                 variant="outlined"
-                style={{
-                  padding: '16px',
-                  maxWidth: '600px',
-                  marginTop: '16px'
-                }}
+                className="p-16 mt-16 max-w-600"
               >
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '12px'
-                }}>
-                  <h3 style={{ margin: 0, fontSize: '14px' }}>
+                <div className="flex-between mb-12">
+                  <h3 className="m-0 fs-14">
                     🧪 Test controls (demo)
                   </h3>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div className="flex-row gap-8 flex-wrap">
                   <Button
                     onClick={() => handleTestAction('+500')}
                     variant="outline"
@@ -1257,10 +1188,8 @@ export const CreditsPage: React.FC = () => {
                     +1000
                   </Button>
                 </div>
-                <p style={{
+                <p className="fs-11 opacity-70" style={{
                   margin: '8px 0 0 0',
-                  fontSize: '11px',
-                  opacity: 0.7,
                   fontStyle: 'italic'
                 }}>
                   Creates real credit transactions via POST /api/v1/transactions/ (demo mode: visible to all users)

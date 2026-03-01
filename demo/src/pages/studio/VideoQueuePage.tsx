@@ -55,16 +55,13 @@ function formatTime(iso: string | null | undefined): string {
 
 function ProgressBar({ percent }: { percent: number }) {
   return (
-    <div style={{
-      width: '100%',
+    <div className="w-full overflow-hidden" style={{
       height: 6,
       borderRadius: 3,
       backgroundColor: 'var(--app-border, #e5e7eb)',
-      overflow: 'hidden',
     }}>
-      <div style={{
+      <div className="h-full" style={{
         width: `${Math.min(percent, 100)}%`,
-        height: '100%',
         borderRadius: 3,
         backgroundColor: percent >= 100 ? '#059669' : '#2563eb',
         transition: 'width 0.5s ease-out',
@@ -89,36 +86,25 @@ function JobCard({
   const isActive = job.status === 'queued' || job.status === 'processing';
 
   return (
-    <div style={{
-      padding: 16,
+    <div className="p-16 flex-col gap-10 border bg-surface-2" style={{
       borderRadius: 10,
-      border: '1px solid var(--app-border, #e5e7eb)',
-      backgroundColor: 'var(--app-surface-2, #fff)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 10,
     }}>
       {/* Header row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 18 }}>{typeDisplay.icon}</span>
-          <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--app-text)' }}>
+      <div className="flex-between">
+        <div className="flex-row gap-8">
+          <span className="fs-18">{typeDisplay.icon}</span>
+          <span className="fw-600 fs-14 text-primary">
             {typeDisplay.label}
           </span>
-          <span style={{
-            fontSize: 11,
+          <span className="fs-11 text-secondary" style={{
             fontFamily: 'monospace',
-            color: 'var(--app-text-secondary, #6b7280)',
           }}>
             {job.id.slice(0, 8)}
           </span>
         </div>
 
-        <span style={{
-          fontSize: 11,
-          fontWeight: 600,
+        <span className="fs-11 fw-600 rounded-12" style={{
           padding: '3px 10px',
-          borderRadius: 12,
           color: statusDisplay.color,
           backgroundColor: statusDisplay.bgColor,
         }}>
@@ -128,23 +114,19 @@ function JobCard({
 
       {/* Progress bar for active jobs */}
       {isActive && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ flex: 1 }}>
+        <div className="flex-row gap-8">
+          <div className="flex-1">
             <ProgressBar percent={job.progress_percent} />
           </div>
-          <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', minWidth: 32 }}>
+          <span className="fs-11 text-secondary" style={{ minWidth: 32 }}>
             {job.progress_percent}%
           </span>
         </div>
       )}
 
       {/* Meta row */}
-      <div style={{
+      <div className="flex-wrap gap-16 fs-12 text-secondary" style={{
         display: 'flex',
-        gap: 16,
-        fontSize: 12,
-        color: 'var(--app-text-secondary, #6b7280)',
-        flexWrap: 'wrap',
       }}>
         <span>Created: {formatTime(job.created_at)}</span>
         {job.started_at && (
@@ -156,12 +138,9 @@ function JobCard({
 
       {/* Error message */}
       {job.error_message && (
-        <div style={{
-          fontSize: 12,
+        <div className="fs-12 py-8 px-12 rounded-6" style={{
           color: '#dc2626',
           backgroundColor: '#fef2f2',
-          padding: '8px 12px',
-          borderRadius: 6,
           borderLeft: '3px solid #dc2626',
         }}>
           {job.error_message}
@@ -170,30 +149,21 @@ function JobCard({
 
       {/* Workflow info */}
       {job.workflow_instance && (
-        <div style={{
-          fontSize: 11,
-          color: 'var(--app-text-secondary, #6b7280)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-        }}>
+        <div className="fs-11 text-secondary flex-row gap-6">
           🔄 Workflow: {job.workflow_instance.template_name} — {job.workflow_instance.current_state}
         </div>
       )}
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+      <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
         {(job.status === 'queued' || job.status === 'processing') && (
           <button
             onClick={() => onCancel(job.id)}
+            className="fs-12 rounded-6 bg-transparent cursor-pointer"
             style={{
-              fontSize: 12,
               padding: '5px 12px',
-              borderRadius: 6,
               border: '1px solid #dc2626',
-              backgroundColor: 'transparent',
               color: '#dc2626',
-              cursor: 'pointer',
             }}
           >
             Cancel
@@ -202,14 +172,12 @@ function JobCard({
         {job.status === 'failed' && (
           <button
             onClick={() => onRetry(job.id)}
+            className="fs-12 rounded-6 cursor-pointer"
             style={{
-              fontSize: 12,
               padding: '5px 12px',
-              borderRadius: 6,
               border: '1px solid #2563eb',
               backgroundColor: '#2563eb',
               color: '#fff',
-              cursor: 'pointer',
             }}
           >
             Retry
@@ -266,14 +234,11 @@ export default function VideoQueuePage() {
         actions={
           <button
             onClick={refresh}
+            className="fs-12 rounded-6 bg-transparent cursor-pointer"
             style={{
-              fontSize: 12,
               padding: '6px 14px',
-              borderRadius: 6,
               border: '1px solid var(--app-border, #e5e7eb)',
-              backgroundColor: 'transparent',
               color: 'var(--app-text, #111)',
-              cursor: 'pointer',
             }}
           >
             ↻ Refresh
@@ -283,19 +248,18 @@ export default function VideoQueuePage() {
 
       <PageContent>
         {/* Filter bar */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div className="flex-wrap gap-6 mb-16" style={{ display: 'flex' }}>
           {STATUS_FILTERS.map(opt => (
             <button
               key={opt.value}
               onClick={() => setFilter(opt.value)}
+              className="fs-12 cursor-pointer"
               style={{
-                fontSize: 12,
                 padding: '5px 12px',
                 borderRadius: 16,
                 border: `1px solid ${filter === opt.value ? '#2563eb' : 'var(--app-border, #e5e7eb)'}`,
                 backgroundColor: filter === opt.value ? '#dbeafe' : 'transparent',
                 color: filter === opt.value ? '#2563eb' : 'var(--app-text-secondary, #6b7280)',
-                cursor: 'pointer',
                 fontWeight: filter === opt.value ? 600 : 400,
               }}
             >
@@ -306,20 +270,16 @@ export default function VideoQueuePage() {
 
         {/* Loading */}
         {loading && jobs.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 40, color: 'var(--app-text-secondary, #6b7280)' }}>
+          <div className="text-center text-secondary" style={{ padding: 40 }}>
             Loading video jobs...
           </div>
         )}
 
         {/* Error */}
         {error && (
-          <div style={{
-            padding: 12,
-            borderRadius: 8,
+          <div className="p-12 rounded-8 fs-13 mb-16" style={{
             backgroundColor: '#fef2f2',
             color: '#dc2626',
-            fontSize: 13,
-            marginBottom: 16,
           }}>
             {error}
           </div>
@@ -327,19 +287,17 @@ export default function VideoQueuePage() {
 
         {/* Empty state */}
         {!loading && filteredJobs.length === 0 && (
-          <div style={{
-            textAlign: 'center',
+          <div className="text-center text-secondary" style={{
             padding: 60,
-            color: 'var(--app-text-secondary, #6b7280)',
           }}>
-            <span style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>🎬</span>
-            <p style={{ fontSize: 14, marginBottom: 4 }}>No video jobs {filter !== 'all' ? `with status "${filter}"` : ''}</p>
-            <p style={{ fontSize: 12 }}>Video jobs appear here when content is generated with video output.</p>
+            <span className="block mb-12" style={{ fontSize: 48 }}>🎬</span>
+            <p className="fs-14 mb-4">No video jobs {filter !== 'all' ? `with status "${filter}"` : ''}</p>
+            <p className="fs-12">Video jobs appear here when content is generated with video output.</p>
           </div>
         )}
 
         {/* Job list */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="flex-col gap-10">
           {filteredJobs.map(job => (
             <JobCard
               key={job.id}

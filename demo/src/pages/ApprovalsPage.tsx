@@ -258,7 +258,7 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
 
         {/* Header */}
         <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #e5e7eb)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="flex-between">
             <div>
               <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #111)' }}>🎬 Video's genereren?</div>
               <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
@@ -270,20 +270,20 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
         </div>
 
         {/* Body */}
-        <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 20, maxHeight: '60vh', overflowY: 'auto' }}>
+        <div className="flex-col gap-20 overflow-y-auto" style={{ padding: '16px 24px', maxHeight: '60vh' }}>
 
           {/* Short Intro section */}
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--app-text, #111)', marginBottom: 8 }}>🎬 Short Intro</div>
+            <div className="fs-14 fw-700 mb-8" style={{ color: 'var(--app-text, #111)' }}>🎬 Short Intro</div>
             <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 10 }}>Korte intro video (6 sec) — kies een pose:</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
               {INTRO_POSES.map(pose => (
                 <div
                   key={pose.value}
                   onClick={() => setSelectedIntro(prev => prev === pose.value ? null : pose.value)}
                   style={chipStyle(selectedIntro === pose.value)}
                 >
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>{pose.label}</div>
+                  <div className="fs-13 fw-600" style={{ color: 'var(--app-text, #111)' }}>{pose.label}</div>
                   <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', lineHeight: 1.3 }}>{pose.desc}</div>
                 </div>
               ))}
@@ -292,16 +292,16 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
 
           {/* Goal Celebration section */}
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--app-text, #111)', marginBottom: 8 }}>⚽ Goal Celebration</div>
+            <div className="fs-14 fw-700 mb-8" style={{ color: 'var(--app-text, #111)' }}>⚽ Goal Celebration</div>
             <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 10 }}>Korte viering video (6 sec) — kies een stijl:</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+            <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
               {CELEBRATION_STYLES.map(style => (
                 <div
                   key={style.value}
                   onClick={() => setSelectedCelebration(prev => prev === style.value ? null : style.value)}
                   style={chipStyle(selectedCelebration === style.value)}
                 >
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>{style.label}</div>
+                  <div className="fs-13 fw-600" style={{ color: 'var(--app-text, #111)' }}>{style.label}</div>
                   <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', lineHeight: 1.3 }}>{style.desc}</div>
                 </div>
               ))}
@@ -314,7 +314,7 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="flex-between" style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #e5e7eb)' }}>
           <button
             onClick={onClose}
             style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', color: 'var(--app-text-secondary, #6b7280)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
@@ -411,7 +411,7 @@ function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: PhotoCompos
 
         {/* Header */}
         <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #e5e7eb)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div className="flex-between">
             <div>
               <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #111)' }}>
                 {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
@@ -548,7 +548,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
 
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          <div style={{ flex: 1 }}>
+          <div className="flex-1">
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{job.label || job.template_id}</div>
             <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
               {job.output_type} · {new Date(job.created_at).toLocaleString()}
@@ -640,7 +640,7 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
               {job.approval_status === 'approved' ? '✔ Goedgekeurd' : '✘ Afgewezen'}
             </div>
           )}
-          {isCanReview && <div style={{ flex: 1 }} />}
+          {isCanReview && <div className="flex-1" />}
           {isCanReview && variants.length > 1 && (
             <div style={{ display: 'flex', gap: 6 }}>
               <button onClick={() => selectAll(true)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #c6f0d4', background: '#f0fdf4', color: '#15803d', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Alles ✔</button>
@@ -722,7 +722,7 @@ function VideoReviewModal({ job, onClose, onActionComplete, pushToast, approveJo
 
         {/* Header */}
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-          <div style={{ flex: 1 }}>
+          <div className="flex-1">
             <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{typeDisplay.icon} {typeDisplay.label}</div>
             <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
               video · {new Date(job.created_at).toLocaleString('nl-NL')}
@@ -755,7 +755,7 @@ function VideoReviewModal({ job, onClose, onActionComplete, pushToast, approveJo
         <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
           {isApproved && <div style={{ flex: 1, fontSize: 12, color: '#16a34a', fontWeight: 600 }}>✔ Goedgekeurd</div>}
           {isRejected && <div style={{ flex: 1, fontSize: 12, color: '#dc2626', fontWeight: 600 }}>✘ Afgewezen</div>}
-          {isCanReview && <div style={{ flex: 1 }} />}
+          {isCanReview && <div className="flex-1" />}
           {!isCanReview && !isApproved && !isRejected && (
             <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>Status: {job.status}</div>
           )}
@@ -1084,7 +1084,7 @@ export default function ApprovalsPage() {
         title={tabTitles[filter].title}
         subtitle={tabTitles[filter].subtitle}
         actions={
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div className="flex-row gap-8">
             {needsReviewJobs.length > 0 && (filter === 'ai_queue' || filter === 'review' || filter === 'all') && (
               <button
                 onClick={() => openModal(needsReviewJobs[0])}
@@ -1135,7 +1135,7 @@ export default function ApprovalsPage() {
           <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Geen items</div>
-            <div style={{ fontSize: 12 }}>Er zijn geen items voor dit filter.</div>
+            <div className="fs-12">Er zijn geen items voor dit filter.</div>
           </div>
         )}
 
@@ -1177,7 +1177,7 @@ export default function ApprovalsPage() {
 
         {/* ── Unified Jobs List (AI + Video interleaved by date) ── */}
         {!aiLoading && !videoLoading && unifiedItems.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: filtered.length > 0 ? 24 : 0 }}>
+          <div className="flex-col gap-8" style={{ marginBottom: filtered.length > 0 ? 24 : 0 }}>
             {unifiedItems.map(item => {
               if (item.kind === 'ai') {
                 const job = item.job;
@@ -1205,12 +1205,12 @@ export default function ApprovalsPage() {
                     onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
                     onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                   >
-                    <span style={{ fontSize: 20, flexShrink: 0 }}>{statusIcon[job.status]}</span>
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <span className="fs-20" style={{ flexShrink: 0 }}>{statusIcon[job.status]}</span>
+                    <div className="flex-1 min-w-0">
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
                       <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
                         {job.output_type} · {new Date(job.created_at).toLocaleString()}
-                        {job.provider && <> · <span style={{ fontWeight: 600 }}>{job.provider}</span></>}
+                        {job.provider && <> · <span className="fw-600">{job.provider}</span></>}
                         {job.model && <> · {job.model}</>}
                         {job.duration_seconds != null && <> · {job.duration_seconds < 60 ? `${Math.round(job.duration_seconds)}s` : `${Math.floor(job.duration_seconds / 60)}m ${Math.round(job.duration_seconds % 60)}s`}</>}
                         {(job.variant_count ?? 0) > 1 && <> · {job.variant_count} varianten</>}
@@ -1263,13 +1263,13 @@ export default function ApprovalsPage() {
                     onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                   >
                     {/* Header */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 18 }}>{typeDisplay.icon}</span>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--app-text)' }}>{typeDisplay.label}</span>
+                    <div className="flex-between">
+                      <div className="flex-row gap-8">
+                        <span className="fs-18">{typeDisplay.icon}</span>
+                        <span className="fw-600 fs-13 text-primary">{typeDisplay.label}</span>
                         <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--app-text-secondary, #6b7280)' }}>{vJob.id.slice(0, 8)}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div className="flex-row gap-6">
                         <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
                           {vJob.job_type === 'lineup' ? 'LINEUP' : vJob.job_type === 'goal_celebration' ? 'GOAL' : 'VIDEO'}
                         </span>
@@ -1281,7 +1281,7 @@ export default function ApprovalsPage() {
 
                     {/* Progress */}
                     {isActive && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div className="flex-row gap-8">
                         <div style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: 'var(--app-border, #e5e7eb)', overflow: 'hidden' }}>
                           <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : '#2563eb', transition: 'width 0.5s ease-out' }} />
                         </div>
@@ -1366,7 +1366,7 @@ export default function ApprovalsPage() {
 
         {/* ── Workflow instances (hidden on ai_queue and video tabs) ── */}
         {filter !== 'ai_queue' && filter !== 'video' && !loading && filtered.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="flex-col gap-10">
             {filtered.map(instance => (
               <div
                 key={instance.id}

@@ -223,6 +223,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
   return (
     <div
+      className="flex-center"
       style={{
         position: 'fixed',
         top: 0,
@@ -230,66 +231,48 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         zIndex: 1000,
       }}
       onClick={onClose}
     >
       <div
+        className="p-24 rounded-8 bg-surface text-primary border"
         style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
           width: '640px',
           maxWidth: '95%',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>Edit Period</h2>
+        <div className="flex-between gap-12">
+          <h2 className="m-0 mb-12 text-primary">Edit Period</h2>
           <button
             onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: 'var(--app-text)',
-            }}
+            className="bg-transparent border-none fs-18 cursor-pointer text-primary"
             aria-label="Close"
           >
             ×
           </button>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="period-name">
+        <div className="flex-col gap-12">
+          <div className="flex-col gap-6">
+            <label className="fw-600" htmlFor="period-name">
               Name
             </label>
             <input
               id="period-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
           </div>
 
           {showDates && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontWeight: 600 }} htmlFor="period-start">
+              <div className="flex-col gap-6">
+                <label className="fw-600" htmlFor="period-start">
                   Start (YYYY-MM-DD)
                 </label>
                 <input
@@ -297,18 +280,13 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   placeholder="YYYY-MM-DD"
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 />
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontWeight: 600 }} htmlFor="period-end">
+              <div className="flex-col gap-6">
+                <label className="fw-600" htmlFor="period-end">
                   End (YYYY-MM-DD)
                 </label>
                 <input
@@ -316,20 +294,15 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   placeholder="YYYY-MM-DD"
-                  style={{
-                    padding: '8px 10px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface-2)',
-                    color: 'var(--app-text)',
-                  }}
+                  className="rounded-6 border bg-surface-2 text-primary"
+                  style={{ padding: '8px 10px' }}
                 />
               </div>
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="period-type">
+          <div className="flex-col gap-6">
+            <label className="fw-600" htmlFor="period-type">
               Type (optional)
             </label>
             <input
@@ -337,19 +310,14 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               value={type}
               onChange={(e) => setType(e.target.value)}
               placeholder="season / league / cup"
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px' }}
             />
           </div>
 
           {showSportVariant && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontWeight: 600 }} htmlFor="period-sport">
+            <div className="flex-col gap-6">
+              <label className="fw-600" htmlFor="period-sport">
                 Sport Variant
               </label>
               <select
@@ -357,13 +325,8 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                 value={selectedSportId}
                 onChange={(e) => setSelectedSportId(e.target.value)}
                 disabled={saving || sportsLoading}
-                style={{
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                }}
+                className="rounded-6 border bg-surface-2 text-primary"
+                style={{ padding: '8px 10px' }}
               >
                 <option value="">— Select sport variant —</option>
                 {filteredVariants.map((sport) => (
@@ -375,8 +338,8 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="period-description">
+          <div className="flex-col gap-6">
+            <label className="fw-600" htmlFor="period-description">
               Description
             </label>
             <textarea
@@ -384,33 +347,20 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                resize: 'vertical',
-              }}
+              className="rounded-6 border bg-surface-2 text-primary"
+              style={{ padding: '8px 10px', resize: 'vertical' }}
             />
           </div>
 
-          {error && <div style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className="text-danger">{error}</div>}
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              style={{
-                padding: '8px 14px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: 'pointer',
-                opacity: saving ? 0.7 : 1,
-              }}
+              className="rounded-6 border bg-surface-2 text-primary cursor-pointer"
+              style={{ padding: '8px 14px', opacity: saving ? 0.7 : 1 }}
             >
               Cancel
             </button>
@@ -418,13 +368,12 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               type="button"
               onClick={handleSave}
               disabled={saving}
+              className="rounded-6 cursor-pointer"
               style={{
                 padding: '8px 14px',
-                borderRadius: '6px',
                 border: '1px solid var(--app-primary, #2563eb)',
                 backgroundColor: 'var(--app-primary, #2563eb)',
                 color: '#fff',
-                cursor: 'pointer',
                 opacity: saving ? 0.7 : 1,
               }}
             >

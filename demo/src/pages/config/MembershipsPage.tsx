@@ -152,35 +152,25 @@ export const MembershipsPage: React.FC = () => {
         )}
 
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-            gap: 20,
-          }}
+          className="grid gap-20"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))' }}
         >
-          <Card style={{ padding: 24 }}>
+          <Card className="p-24">
             <h3 className="text-lg font-semibold mb-2">Federations</h3>
-            <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+            <div className="text-sm text-gray-600 mb-12">
               Organisations you belong to.
             </div>
             {organisations.length === 0 ? (
               <div className="text-sm text-gray-600">No organisation memberships found.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="flex-col gap-8">
                 {organisations.map((o) => (
                   <div
                     key={String(o?.id ?? o?.slug ?? Math.random())}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '10px 12px',
-                      border: '1px solid var(--app-border)',
-                      borderRadius: 8,
-                      background: 'var(--app-surface)',
-                    }}
+                    className="flex-between rounded-8 border bg-surface"
+                    style={{ padding: '10px 12px' }}
                   >
-                    <div style={{ fontWeight: 700 }}>{String(o?.name || o?.title || o?.slug || o?.id || '—')}</div>
+                    <div className="fw-700">{String(o?.name || o?.title || o?.slug || o?.id || '—')}</div>
                     <div className="text-xs text-gray-500">{String(o?.role || o?.membership_role || '').trim()}</div>
                   </div>
                 ))}
@@ -188,29 +178,22 @@ export const MembershipsPage: React.FC = () => {
             )}
           </Card>
 
-          <Card style={{ padding: 24 }}>
+          <Card className="p-24">
             <h3 className="text-lg font-semibold mb-2">Clubs</h3>
-            <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+            <div className="text-sm text-gray-600 mb-12">
               Clubs you belong to.
             </div>
             {clubs.length === 0 ? (
               <div className="text-sm text-gray-600">No project memberships found.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="flex-col gap-8">
                 {clubs.map((p) => (
                   <div
                     key={String(p?.id ?? p?.slug ?? Math.random())}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '10px 12px',
-                      border: '1px solid var(--app-border)',
-                      borderRadius: 8,
-                      background: 'var(--app-surface)',
-                    }}
+                    className="flex-between rounded-8 border bg-surface"
+                    style={{ padding: '10px 12px' }}
                   >
-                    <div style={{ fontWeight: 700 }}>{String(p?.name || p?.title || p?.slug || p?.id || '—')}</div>
+                    <div className="fw-700">{String(p?.name || p?.title || p?.slug || p?.id || '—')}</div>
                     <div className="text-xs text-gray-500">{String(p?.role || p?.membership_role || '').trim()}</div>
                   </div>
                 ))}
@@ -218,29 +201,22 @@ export const MembershipsPage: React.FC = () => {
             )}
           </Card>
 
-          <Card style={{ padding: 24 }}>
+          <Card className="p-24">
             <h3 className="text-lg font-semibold mb-2">Teams</h3>
-            <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+            <div className="text-sm text-gray-600 mb-12">
               Teams you belong to.
             </div>
             {teams.length === 0 ? (
               <div className="text-sm text-gray-600">No team memberships found.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="flex-col gap-8">
                 {teams.map((p) => (
                   <div
                     key={String(p?.id ?? p?.slug ?? Math.random())}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '10px 12px',
-                      border: '1px solid var(--app-border)',
-                      borderRadius: 8,
-                      background: 'var(--app-surface)',
-                    }}
+                    className="flex-between rounded-8 border bg-surface"
+                    style={{ padding: '10px 12px' }}
                   >
-                    <div style={{ fontWeight: 700 }}>{String(p?.name || p?.title || p?.slug || p?.id || '—')}</div>
+                    <div className="fw-700">{String(p?.name || p?.title || p?.slug || p?.id || '—')}</div>
                     <div className="text-xs text-gray-500">{String(p?.role || p?.membership_role || '').trim()}</div>
                   </div>
                 ))}
@@ -248,11 +224,11 @@ export const MembershipsPage: React.FC = () => {
             )}
           </Card>
 
-          <Card style={{ padding: 24 }}>
+          <Card className="p-24">
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
               <div>
                 <h3 className="text-lg font-semibold mb-2">Seasons</h3>
-                <div className="text-sm text-gray-600" style={{ marginBottom: 12 }}>
+                <div className="text-sm text-gray-600 mb-12">
                   Seasons in your active federation (trapsgewijs: Seasons → Competitions → Matches).
                 </div>
               </div>
@@ -280,7 +256,7 @@ export const MembershipsPage: React.FC = () => {
             ) : seasons.length === 0 ? (
               <div className="text-sm text-gray-600">No seasons found.</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="flex-col gap-8">
                 {seasons.map((season) => {
                   const isOpen = Boolean(openSeasonIds[season.id]);
                   const comps = competitionsBySeason[season.id] || [];
@@ -309,7 +285,7 @@ export const MembershipsPage: React.FC = () => {
                         }}
                       >
                         <div>
-                          <div style={{ fontWeight: 800 }}>{String(season.name || season.id)}</div>
+                          <div className="fw-800">{String(season.name || season.id)}</div>
                           <div className="text-xs text-gray-500">
                             {(season.start_date || season.end_date) ? `${season.start_date || '—'} → ${season.end_date || '—'}` : ''}
                           </div>
@@ -324,7 +300,7 @@ export const MembershipsPage: React.FC = () => {
                           ) : comps.length === 0 ? (
                             <div className="text-sm text-gray-600">No competitions found under this season.</div>
                           ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div className="flex-col gap-8">
                               {comps.map((comp) => {
                                 const compOpen = Boolean(openCompetitionIds[comp.id]);
                                 const matches = matchesByCompetition[comp.id] || [];
@@ -352,7 +328,7 @@ export const MembershipsPage: React.FC = () => {
                                         gap: 12,
                                       }}
                                     >
-                                      <div style={{ fontWeight: 700 }}>{String(comp.name || comp.id)}</div>
+                                      <div className="fw-700">{String(comp.name || comp.id)}</div>
                                       <div className="text-xs text-gray-500">{compOpen ? 'Hide matches' : 'Show matches'}</div>
                                     </button>
 
@@ -363,21 +339,15 @@ export const MembershipsPage: React.FC = () => {
                                         ) : matches.length === 0 ? (
                                           <div className="text-sm text-gray-600">No matches found.</div>
                                         ) : (
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                          <div className="flex-col gap-6">
                                             {matches.slice(0, 20).map((m) => {
                                               const label = String(m.title || m.name || m.metadata?.title || m.metadata?.name || m.id);
                                               const when = String(m.start_datetime || m.start_date || '').trim();
                                               return (
-                                                <div key={m.id} style={{
-                                                  display: 'flex',
-                                                  alignItems: 'center',
-                                                  justifyContent: 'space-between',
+                                                <div key={m.id} className="flex-between rounded-8 border bg-surface" style={{
                                                   padding: '8px 10px',
-                                                  border: '1px solid var(--app-border)',
-                                                  borderRadius: 8,
-                                                  background: 'var(--app-surface)',
                                                 }}>
-                                                  <div style={{ fontWeight: 600 }}>{label}</div>
+                                                  <div className="fw-600">{label}</div>
                                                   <div className="text-xs text-gray-500">{when ? when : '—'}</div>
                                                 </div>
                                               );

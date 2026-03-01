@@ -121,10 +121,9 @@ export function MediaAssetCard({
   return (
     <>
       <div
+        className="rounded-8 overflow-hidden"
         style={{
           border: `1px solid ${borderColor}`,
-          borderRadius: 8,
-          overflow: 'hidden',
           background: 'var(--vscode-editor-background, #1e1e1e)',
           transition: 'all 0.2s ease',
           cursor: mediaItem && onPreview ? 'pointer' : 'default',
@@ -143,16 +142,13 @@ export function MediaAssetCard({
         {/* Preview area */}
         <div
           onClick={() => mediaItem && onPreview?.(mediaItem)}
+          className="relative flex-center"
           style={{
             aspectRatio,
             background: url
               ? '#000'
               : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-            position: 'relative',
             minHeight: 100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
           {url && isVideo ? (
@@ -164,25 +160,24 @@ export function MediaAssetCard({
               onLoadedMetadata={(e) => {
                 try { e.currentTarget.currentTime = 0.1; } catch { /* ignore */ }
               }}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              className="w-full h-full"
+              style={{ objectFit: 'cover' }}
             />
           ) : url ? (
             <img
               src={url}
               alt={label}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              className="w-full h-full"
+              style={{ objectFit: 'cover' }}
             />
           ) : null}
 
           {/* Play overlay for video */}
           {url && isVideo && (
             <div
+              className="absolute flex-center"
               style={{
-                position: 'absolute',
                 inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 color: 'rgba(255,255,255,0.9)',
                 fontSize: 28,
                 textShadow: '0 2px 12px rgba(0,0,0,0.7)',
@@ -195,16 +190,16 @@ export function MediaAssetCard({
 
           {/* Empty state */}
           {!url && !isGenerating && (
-            <div style={{ textAlign: 'center', color: 'var(--vscode-descriptionForeground, #888)', fontSize: 12 }}>
-              {icon && <div style={{ fontSize: 24, marginBottom: 4 }}>{icon}</div>}
+            <div className="text-center fs-12" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
+              {icon && <div className="mb-4 fs-24">{icon}</div>}
               <div>Niet ingesteld</div>
             </div>
           )}
 
           {/* Generating state */}
           {isGenerating && !url && (
-            <div style={{ textAlign: 'center', color: '#f59e0b', fontSize: 12 }}>
-              <div style={{ fontSize: 24, marginBottom: 4 }}>⏳</div>
+            <div className="text-center fs-12" style={{ color: '#f59e0b' }}>
+              <div className="mb-4 fs-24">⏳</div>
               <div>Bezig met genereren...</div>
             </div>
           )}
@@ -212,16 +207,14 @@ export function MediaAssetCard({
           {/* Status badge */}
           {badgeText && (
             <span
+              className="absolute fw-600 rounded-4"
               style={{
-                position: 'absolute',
                 top: 6,
                 right: 6,
                 background: badgeColor,
                 color: '#fff',
                 fontSize: 10,
                 padding: '2px 6px',
-                borderRadius: 4,
-                fontWeight: 600,
               }}
             >
               {badgeText}
@@ -233,16 +226,14 @@ export function MediaAssetCard({
             const ws = getStateDisplay(workflowStatus);
             return (
               <span
+                className="absolute fw-600 rounded-4"
                 style={{
-                  position: 'absolute',
                   top: badgeText ? 28 : 6,
                   right: 6,
                   background: ws.bgColor,
                   color: ws.color,
                   fontSize: 10,
                   padding: '2px 6px',
-                  borderRadius: 4,
-                  fontWeight: 600,
                 }}
               >
                 {ws.icon} {ws.label}
@@ -254,17 +245,13 @@ export function MediaAssetCard({
           {mediaItem && historyItems.length > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
+              className="absolute border-none rounded-4 fs-12 cursor-pointer"
               style={{
-                position: 'absolute',
                 top: 6,
                 left: 6,
                 background: 'rgba(0,0,0,0.6)',
                 color: '#fff',
-                border: 'none',
-                borderRadius: 4,
-                fontSize: 12,
                 padding: '2px 6px',
-                cursor: 'pointer',
               }}
               title={`${historyItems.length} eerdere versie(s)`}
             >
@@ -275,29 +262,25 @@ export function MediaAssetCard({
 
         {/* Info + actions */}
         <div style={{ padding: '8px 10px' }}>
-          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{label}</div>
+          <div className="fs-12 fw-600 mb-4">{label}</div>
 
           {/* Error message */}
           {isFailed && errorMessage && (
-            <div style={{ fontSize: 10, color: '#ef4444', marginBottom: 4, lineHeight: 1.3 }}>
+            <div className="mb-4" style={{ fontSize: 10, color: '#ef4444', lineHeight: 1.3 }}>
               {errorMessage}
             </div>
           )}
 
           {/* Action buttons */}
-          <div style={{ display: 'grid', gridTemplateColumns: mediaItem ? '1fr 1fr' : '1fr', gap: 4 }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: mediaItem ? '1fr 1fr' : '1fr' }}>
             {onReplace && (
               <button
                 onClick={(e) => { e.stopPropagation(); onReplace(subtype); }}
+                className="w-full fs-11 cursor-pointer border-none rounded-4"
                 style={{
-                  width: '100%',
                   padding: '4px 8px',
-                  fontSize: 11,
-                  cursor: 'pointer',
                   background: 'var(--vscode-button-background, #0078d4)',
                   color: 'var(--vscode-button-foreground, #fff)',
-                  border: 'none',
-                  borderRadius: 4,
                 }}
               >
                 {mediaItem ? 'Vervang' : 'Genereer'}
@@ -306,15 +289,11 @@ export function MediaAssetCard({
             {mediaItem && onReplace && (
               <button
                 onClick={(e) => { e.stopPropagation(); onReplace(subtype); }}
+                className="w-full fs-11 cursor-pointer border-none rounded-4"
                 style={{
-                  width: '100%',
                   padding: '4px 8px',
-                  fontSize: 11,
-                  cursor: 'pointer',
                   background: '#8b5cf6',
                   color: '#fff',
-                  border: 'none',
-                  borderRadius: 4,
                 }}
               >
                 Verbeter
@@ -331,16 +310,11 @@ export function MediaAssetCard({
                   onDelete(mediaItem);
                 }
               }}
+              className="w-full fs-11 cursor-pointer rounded-4 mt-4 bg-transparent"
               style={{
-                width: '100%',
                 padding: '4px 8px',
-                fontSize: 11,
-                cursor: 'pointer',
-                background: 'transparent',
                 color: '#ef4444',
                 border: '1px solid #ef4444',
-                borderRadius: 4,
-                marginTop: 4,
               }}
             >
               Verwijderen
@@ -349,7 +323,7 @@ export function MediaAssetCard({
 
           {/* Updated date */}
           {mediaItem && (
-            <div style={{ fontSize: 10, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 4 }}>
+            <div className="mt-4" style={{ fontSize: 10, color: 'var(--vscode-descriptionForeground, #888)' }}>
               {new Date(mediaItem.updated_at).toLocaleDateString('nl-NL')}
             </div>
           )}
@@ -359,45 +333,42 @@ export function MediaAssetCard({
       {/* History Modal */}
       {showHistory && (
         <div
+          className="flex-center"
           style={{
             position: 'fixed',
             inset: 0,
             background: 'rgba(0,0,0,0.6)',
             zIndex: 1100,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
           }}
           onClick={() => setShowHistory(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
+            className="rounded-8 p-20 overflow-auto"
             style={{
               background: '#1e1e1e',
               border: '1px solid #333',
-              borderRadius: 8,
-              padding: 20,
               width: 500,
               maxHeight: '80vh',
-              overflow: 'auto',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis — {label}</h3>
+            <div className="flex-between mb-16">
+              <h3 className="m-0 fs-16">Versiegeschiedenis — {label}</h3>
               <button
                 onClick={() => setShowHistory(false)}
-                style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: 16 }}
+                className="border-none cursor-pointer fs-16"
+                style={{ background: 'none', color: '#ccc' }}
               >
                 ✕
               </button>
             </div>
 
             {historyItems.length === 0 ? (
-              <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>
+              <div className="p-20 text-center" style={{ color: '#888' }}>
                 Geen eerdere versies gevonden.
               </div>
             ) : (
-              <div style={{ display: 'grid', gap: 12 }}>
+              <div className="grid gap-12">
                 {historyItems.map((item) => {
                   const histUrl = item.file_url || getAssetUrl(item.storage_path);
                   const histIsVideo = Boolean(
@@ -407,24 +378,18 @@ export function MediaAssetCard({
                   return (
                     <div
                       key={item.id}
+                      className="flex-row gap-12 p-10 rounded-6"
                       style={{
-                        display: 'flex',
-                        gap: 12,
-                        padding: 10,
                         background: '#252526',
-                        borderRadius: 6,
-                        alignItems: 'center',
                       }}
                     >
                       <div
+                        className="rounded-4 overflow-hidden relative"
                         style={{
                           width: 80,
                           height: 50,
-                          borderRadius: 4,
                           flexShrink: 0,
                           background: '#000',
-                          overflow: 'hidden',
-                          position: 'relative',
                         }}
                       >
                         {histUrl && histIsVideo ? (
@@ -436,25 +401,27 @@ export function MediaAssetCard({
                             onLoadedMetadata={(e) => {
                               try { e.currentTarget.currentTime = 0.1; } catch { /* ignore */ }
                             }}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            className="w-full h-full"
+                            style={{ objectFit: 'cover' }}
                           />
                         ) : histUrl ? (
                           <img
                             src={histUrl}
                             alt={item.title}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            className="w-full h-full"
+                            style={{ objectFit: 'cover' }}
                           />
                         ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#888', fontSize: 10 }}>
+                          <div className="flex-center h-full" style={{ color: '#888', fontSize: 10 }}>
                             —
                           </div>
                         )}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600 }}>
+                      <div className="flex-1">
+                        <div className="fs-12 fw-600">
                           {new Date(item.created_at).toLocaleString('nl-NL')}
                         </div>
-                        <div style={{ fontSize: 11, color: '#888' }}>
+                        <div className="fs-11" style={{ color: '#888' }}>
                           {item.title}
                         </div>
                       </div>
@@ -466,14 +433,11 @@ export function MediaAssetCard({
                               setShowHistory(false);
                             }
                           }}
+                          className="border-none rounded-4 fs-12 cursor-pointer"
                           style={{
                             padding: '6px 12px',
                             background: '#094771',
                             color: '#fff',
-                            border: 'none',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            cursor: 'pointer',
                           }}
                         >
                           Herstellen
@@ -498,11 +462,9 @@ export function MediaAssetCard({
 export function MediaAssetGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="media-asset-grid"
+      className="media-asset-grid grid gap-12"
       style={{
-        display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-        gap: 12,
       }}
     >
       {children}

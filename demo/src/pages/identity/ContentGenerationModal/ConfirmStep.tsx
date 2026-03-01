@@ -86,7 +86,7 @@ export function ConfirmStep({
   awayLogoUrl,
 }: ConfirmStepProps) {
   return (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 16px' }}>
+            <div className="flex-col flex-center" style={{ padding: '32px 16px' }}>
               <div style={{
                 width: '64px', height: '64px', borderRadius: '16px', marginBottom: '20px',
                 backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.1))',
@@ -95,10 +95,10 @@ export function ConfirmStep({
               }}>
                 {(selectedType?.label || contentTypeLabel || '?').charAt(0).toUpperCase()}
               </div>
-              <h3 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '8px', color: 'var(--app-text, #111)' }}>
+              <h3 className="fs-20 fw-700 mb-8" style={{ color: 'var(--app-text, #111)' }}>
                 {selectedType?.subtype === 'goal' ? 'Doelpunt Viering Video' : selectedType?.subtype === 'flyer' ? 'Match Flyer' : selectedType?.subtype === 'match_intro' ? 'Wedstrijd Intro Video' : 'Klaar om te genereren'}
               </h3>
-              <p style={{ fontSize: '14px', color: 'var(--app-text-muted, #6b7280)', marginBottom: '24px', textAlign: 'center', maxWidth: '400px' }}>
+              <p className="fs-14 text-center mb-24" style={{ color: 'var(--app-text-muted, #6b7280)', maxWidth: '400px' }}>
                 {selectedType?.subtype === 'goal'
                   ? 'Vul de doelpuntgegevens in en kies een speler.'
                   : selectedType?.subtype === 'flyer'
@@ -119,11 +119,11 @@ export function ConfirmStep({
                   border: '1px solid var(--app-border, #e5e7eb)',
                   background: 'var(--app-surface-2, #f3f4f6)',
                 }}>
-                  <div style={{ fontSize: 13, color: 'var(--app-text, #111)' }}>
+                  <div className="fs-13" style={{ color: 'var(--app-text, #111)' }}>
                     <strong>Wedstrijd:</strong> {matchData.title || `${matchData.project?.name} vs ${matchData.opponent_project?.name || 'Opponent'}`}
                   </div>
                   {matchData.start_time && (
-                    <div style={{ fontSize: 13, color: 'var(--app-text-muted, #6b7280)', marginTop: 4 }}>
+                    <div className="fs-13 mt-4" style={{ color: 'var(--app-text-muted, #6b7280)' }}>
                       {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
                     </div>
                   )}
@@ -133,16 +133,13 @@ export function ConfirmStep({
               {/* Match Flyer Variant Picker */}
               {selectedType?.subtype === 'flyer' && (
                 <div style={{ width: '100%', maxWidth: 480, marginTop: 20 }}>
-                  <label style={{
-                    display: 'block',
-                    fontSize: 12,
-                    fontWeight: 600,
+                  <label className="block fs-12 fw-600" style={{
                     marginBottom: 10,
                     color: 'var(--app-text-muted, #6b7280)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
                   }}>Ontwerpstijl</label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div className="flex-col gap-8">
                     {([
                       { key: 'modern' as const, label: 'Modern', desc: 'Geometrisch design met clubkleuren en vormen', icon: 'M' },
                       { key: 'action' as const, label: 'Actie', desc: 'Samengestelde flyer met actiefoto & clubkleuren', icon: 'A' },
@@ -206,9 +203,9 @@ export function ConfirmStep({
                             fontSize: 16, fontWeight: 700,
                             color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                           }}>{opt.icon}</div>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontWeight: 600, fontSize: 14 }}>{opt.label}</div>
-                            <div style={{ fontSize: 12, color: 'var(--app-text-muted, #6b7280)', marginTop: 1 }}>
+                          <div className="flex-1">
+                            <div className="fw-600 fs-14">{opt.label}</div>
+                            <div className="fs-12" style={{ color: 'var(--app-text-muted, #6b7280)', marginTop: 1 }}>
                               {opt.desc}
                             </div>
                           </div>
@@ -279,17 +276,14 @@ export function ConfirmStep({
                         borderRadius: 10,
                         background: 'var(--app-surface-2, #f3f4f6)',
                       }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12, color: 'var(--app-text, #111)' }}>
+                        <div className="fs-13 fw-700 mb-12" style={{ color: 'var(--app-text, #111)' }}>
                           Actiefoto instellingen
                         </div>
 
                         {/* Member selector */}
                         {flyerPhotoLayout === 'single' ? (
                           <>
-                            <label style={{
-                              display: 'block',
-                              fontSize: 11,
-                              fontWeight: 600,
+                            <label className="block fs-11 fw-600" style={{
                               marginBottom: 6,
                               color: 'var(--app-text-muted, #6b7280)',
                               textTransform: 'uppercase',
@@ -333,10 +327,7 @@ export function ConfirmStep({
                               )}
                             </select>
 
-                            <label style={{
-                              display: 'block',
-                              fontSize: 11,
-                              fontWeight: 600,
+                            <label className="block fs-11 fw-600" style={{
                               marginBottom: 6,
                               color: 'var(--app-text-muted, #6b7280)',
                               textTransform: 'uppercase',
@@ -367,7 +358,7 @@ export function ConfirmStep({
                             </select>
 
                             {flyerMemberId && selectedMemberStyles.length === 0 && (
-                              <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 8 }}>
+                              <div className="fs-11 mt-8" style={{ color: '#f59e0b' }}>
                                  Deze speler heeft nog geen bewerkte actiefoto's
                               </div>
                             )}
@@ -507,17 +498,13 @@ export function ConfirmStep({
                         )}
 
                         {/* Photo layout selector */}
-                        <div style={{ marginTop: 16 }}>
-                          <label style={{
-                            display: 'block',
-                            fontSize: 11,
-                            fontWeight: 600,
-                            marginBottom: 8,
+                        <div className="mt-16">
+                          <label className="block fs-11 fw-600 mb-8" style={{
                             color: 'var(--app-text-muted, #6b7280)',
                             textTransform: 'uppercase',
                             letterSpacing: '0.05em',
                           }}>Foto Layout</label>
-                          <div style={{ display: 'flex', gap: 8 }}>
+                          <div className="flex-row gap-8">
                             {([
                               { key: 'single' as const, label: '1 Groot', icon: '\u25A0', desc: '1 actiefoto' },
                               { key: 'triple' as const, label: '3 Naast', icon: '\u25A0\u25A0\u25A0', desc: '3 naast elkaar' },
@@ -546,8 +533,8 @@ export function ConfirmStep({
                                     transition: 'all 0.15s ease',
                                   }}
                                 >
-                                  <div style={{ fontSize: 16, marginBottom: 2 }}>{opt.icon}</div>
-                                  <div style={{ fontWeight: 700 }}>{opt.label}</div>
+                                  <div className="fs-16" style={{ marginBottom: 2 }}>{opt.icon}</div>
+                                  <div className="fw-700">{opt.label}</div>
                                   <div style={{ fontSize: 9, opacity: 0.7, marginTop: 2 }}>{opt.desc}</div>
                                 </button>
                               );
@@ -557,12 +544,8 @@ export function ConfirmStep({
 
                         {/* Background selector for action flyer */}
                         {appBackgrounds.length > 0 && (
-                          <div style={{ marginTop: 16 }}>
-                            <label style={{
-                              display: 'block',
-                              fontSize: 11,
-                              fontWeight: 600,
-                              marginBottom: 8,
+                          <div className="mt-16">
+                            <label className="block fs-11 fw-600 mb-8" style={{
                               color: 'var(--app-text-muted, #6b7280)',
                               textTransform: 'uppercase',
                               letterSpacing: '0.05em',
@@ -702,16 +685,15 @@ export function ConfirmStep({
                     </h4>
                   </div>
 
-                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="p-16 flex-col gap-16">
                     {/* Score input */}
                     <div>
-                      <label style={{
-                        display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 8,
+                      <label className="block fs-11 fw-600 mb-8" style={{
                         color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase', letterSpacing: '0.05em',
                       }}>Eindstand</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'center' }}>
-                        <div style={{ textAlign: 'center' }}>
+                          <div className="flex-center gap-12">
+                        <div className="text-center">
                           <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginBottom: 4 }}>
                             {homeTeamName}
                           </div>
@@ -730,8 +712,8 @@ export function ConfirmStep({
                             }}
                           />
                         </div>
-                        <span style={{ fontSize: 28, fontWeight: 700, color: 'var(--app-text, #111)' }}>-</span>
-                        <div style={{ textAlign: 'center' }}>
+                        <span className="fw-700" style={{ fontSize: 28, color: 'var(--app-text, #111)' }}>-</span>
+                        <div className="text-center">
                           <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginBottom: 4 }}>
                             {awayTeamName}
                           </div>
@@ -755,8 +737,8 @@ export function ConfirmStep({
 
                     {/* Goal scorers */}
                     <div>
-                      <label style={{
-                        display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 6,
+                      <label className="block fs-11 fw-600" style={{
+                        marginBottom: 6,
                         color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase', letterSpacing: '0.05em',
                       }}>Doelpuntenmakers (1 per regel)</label>
@@ -779,8 +761,7 @@ export function ConfirmStep({
                     {/* Background selector (reuse appBackgrounds) */}
                     {appBackgrounds.length > 0 && (
                       <div>
-                        <label style={{
-                          display: 'block', fontSize: 11, fontWeight: 600, marginBottom: 8,
+                        <label className="block fs-11 fw-600 mb-8" style={{
                           color: 'var(--app-text-muted, #6b7280)',
                           textTransform: 'uppercase', letterSpacing: '0.05em',
                         }}>Achtergrond</label>
@@ -887,22 +868,19 @@ export function ConfirmStep({
                     </h4>
                   </div>
 
-                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="p-16 flex-col gap-16">
 
                     {/* Score input */}
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: 12,
-                        fontWeight: 600,
+                      <label className="block fs-12 fw-600" style={{
                         marginBottom: 10,
                         color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
                       }}>Nieuwe Stand</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'center' }}>
+                      <div className="flex-center gap-16">
                         {/* Home team */}
-                        <div style={{ textAlign: 'center', minWidth: 80 }}>
+                        <div className="text-center" style={{ minWidth: 80 }}>
                           {homeLogoUrl ? (
                             <img src={homeLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
                           ) : null}
@@ -942,7 +920,7 @@ export function ConfirmStep({
                         </div>
                         <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--app-text-muted, #6b7280)', marginTop: 20 }}>-</span>
                         {/* Away team */}
-                        <div style={{ textAlign: 'center', minWidth: 80 }}>
+                        <div className="text-center" style={{ minWidth: 80 }}>
                           {awayLogoUrl ? (
                             <img src={awayLogoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
                           ) : null}
@@ -985,10 +963,7 @@ export function ConfirmStep({
 
                     {/* Goal scorer dropdown selector */}
                     <div>
-                      <label style={{
-                        display: 'block',
-                        fontSize: 12,
-                        fontWeight: 600,
+                      <label className="block fs-12 fw-600" style={{
                         marginBottom: 10,
                         color: 'var(--app-text-muted, #6b7280)',
                         textTransform: 'uppercase',
@@ -1086,7 +1061,7 @@ export function ConfirmStep({
                         })()}
                       </select>
                       {!goalScorerId && (
-                        <div style={{ fontSize: 11, color: '#e11d48', marginTop: 6 }}>
+                        <div className="fs-11" style={{ color: '#e11d48', marginTop: 6 }}>
                           Selecteer een doelpuntenmaker
                         </div>
                       )}
@@ -1095,10 +1070,7 @@ export function ConfirmStep({
                     {/* Background selector (reuse same pattern) */}
                     {appBackgrounds.length > 0 && (
                       <div>
-                        <label style={{
-                          display: 'block',
-                          fontSize: 12,
-                          fontWeight: 600,
+                        <label className="block fs-12 fw-600" style={{
                           marginBottom: 10,
                           color: 'var(--app-text-muted, #6b7280)',
                           textTransform: 'uppercase',

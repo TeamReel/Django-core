@@ -1467,7 +1467,7 @@ export default function HierarchyMatchDetailPage() {
         <PageHeader
           title={match.title}
           actions={
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div className="flex-row gap-8 flex-wrap">
               {(() => {
                 const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 const headerButtonStyle: React.CSSProperties = {
@@ -1513,16 +1513,8 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsMatchDetailModalOpen(true)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
+                style={{ padding: '6px 12px' }}
               >
                 View
               </button>
@@ -1530,16 +1522,8 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsMatchEditModalOpen(true)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
+                style={{ padding: '6px 12px' }}
               >
                 Edit
               </button>
@@ -1548,16 +1532,8 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={handleDeleteMatch}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
+                style={{ padding: '6px 12px' }}
               >
                 Delete
               </button>
@@ -1566,16 +1542,8 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => openContentModal()}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
+                style={{ padding: '6px 12px' }}
               >
                 Generate Content (AI)
               </button>
@@ -1584,16 +1552,8 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => setIsCreateTxnModalOpen(true)}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
+                style={{ padding: '6px 12px' }}
               >
                 Create transaction
               </button>
@@ -1681,19 +1641,14 @@ export default function HierarchyMatchDetailPage() {
             >
               {/* Modal Header */}
               <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px 20px',
-                  borderBottom: '1px solid var(--app-border)',
-                }}
+                className="flex-between border-bottom"
+                style={{ padding: '16px 20px' }}
               >
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+                  <h3 className="m-0 fs-18 fw-600">
                     {selectedContentItem.template?.name || 'Generated Content'}
                   </h3>
-                  <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                  <div className="fs-13 text-muted mt-4">
                     Generated {new Date(selectedContentItem.created_at).toLocaleString()}
                   </div>
                 </div>
@@ -1713,9 +1668,9 @@ export default function HierarchyMatchDetailPage() {
               </div>
 
               {/* Modal Body */}
-              <div style={{ padding: '20px' }}>
+              <div className="p-20">
                 {selectedContentItem.output_file?.url ? (
-                  <div style={{ textAlign: 'center' }}>
+                  <div className="text-center">
                     {/* Check if it's a video or image based on file extension or url */}
                     {selectedContentItem.output_file.url.match(/\.(mp4|webm|mov)$/i) ? (
                       <video
@@ -1751,22 +1706,15 @@ export default function HierarchyMatchDetailPage() {
 
               {/* Modal Footer */}
               <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px 20px',
-                  borderTop: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-bg)',
-                  borderRadius: '0 0 12px 12px',
-                }}
+                className="flex-between border-top bg-primary"
+                style={{ padding: '16px 20px', borderRadius: '0 0 12px 12px' }}
               >
                 <Badge
                   variant={['completed', 'approved'].includes(selectedContentItem.status) ? 'success' : 'warning'}
                 >
                   {selectedContentItem.status}
                 </Badge>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div className="flex-row gap-8">
                   {selectedContentItem.output_file?.url && (
                     <a
                       href={selectedContentItem.output_file.url}
@@ -1826,18 +1774,13 @@ export default function HierarchyMatchDetailPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px 20px',
-                  borderBottom: '1px solid var(--app-border)',
-                }}
+                className="flex-between border-bottom"
+                style={{ padding: '16px 20px' }}
               >
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{savedAssetPreview.title}</h3>
+                  <h3 className="m-0 fs-18 fw-600">{savedAssetPreview.title}</h3>
                   {savedAssetPreview.subtitle && (
-                    <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+                    <div className="fs-13 text-muted mt-4">
                       {savedAssetPreview.subtitle}
                     </div>
                   )}
@@ -1857,8 +1800,8 @@ export default function HierarchyMatchDetailPage() {
                 </button>
               </div>
 
-              <div style={{ padding: '20px' }}>
-                <div style={{ textAlign: 'center' }}>
+              <div className="p-20">
+                <div className="text-center">
                   {savedAssetPreview.isVideo ? (
                     <video
                       src={savedAssetPreview.url}
@@ -1876,16 +1819,11 @@ export default function HierarchyMatchDetailPage() {
               </div>
 
               <div
+                className="flex-row flex-wrap gap-8 border-top bg-primary"
                 style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
                   justifyContent: 'flex-end',
-                  alignItems: 'center',
                   padding: '12px 16px',
-                  borderTop: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-bg)',
                   borderRadius: '0 0 12px 12px',
-                  gap: '8px',
                 }}
               >
                 {/* Share (Web Share API Ã¢â‚¬â€ mobile) */}
@@ -2059,7 +1997,7 @@ export default function HierarchyMatchDetailPage() {
 
       {/* Toast notifications */}
       {toasts.length > 0 && (
-        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
+        <div className="flex-col gap-8" style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, maxWidth: 420 }}>
           {toasts.map(toast => (
             <div
               key={toast.id}
@@ -2077,7 +2015,7 @@ export default function HierarchyMatchDetailPage() {
                 animation: 'slideInRight 0.3s ease-out',
               }}
             >
-              <span style={{ flex: 1 }}>{toast.message}</span>
+              <span className="flex-1">{toast.message}</span>
               <button
                 onClick={() => dismissToast(toast.id)}
                 style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, opacity: 0.7 }}

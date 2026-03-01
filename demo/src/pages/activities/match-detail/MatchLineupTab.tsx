@@ -47,16 +47,9 @@ export default function MatchLineupTab({
   saveLineup,
 }: MatchLineupTabProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex-col gap-16">
       <Card title="⚽ Opstelling">
-        <div
-          style={{
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 16,
-          }}
-        >
+        <div className="p-16 flex-col gap-16">
           {/* Formation picker */}
           <FormationPicker
             selectedFormation={lineupFormation}
@@ -66,13 +59,7 @@ export default function MatchLineupTab({
 
           {/* Field visualization */}
           {lineupSquadLoading ? (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: 32,
-                color: 'var(--app-text-secondary)',
-              }}
-            >
+            <div className="text-center p-32 text-secondary">
               Spelers laden...
             </div>
           ) : (
@@ -141,7 +128,7 @@ function FieldVisualization({
   const playerSelected = lineupSlots.player || [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex-col gap-16">
       <div
         style={{
           position: 'relative',
@@ -359,22 +346,16 @@ function FieldVisualization({
 
       {/* Summary bar + Save button */}
       <div
+        className="flex-between rounded-8 fs-13 w-full mx-auto"
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
           padding: '10px 14px',
           background: 'var(--app-surface-secondary, #2a2a2a)',
-          borderRadius: 8,
-          fontSize: 13,
           maxWidth: 500,
-          margin: '0 auto',
-          width: '100%',
         }}
       >
-        <span style={{ color: 'var(--app-text-secondary, #999)' }}>
+        <span className="text-secondary">
           Formatie:{' '}
-          <strong style={{ color: 'var(--app-text, #ccc)' }}>
+          <strong className="text-primary">
             {lineupFormation}
           </strong>
           {' • '}
@@ -394,10 +375,11 @@ function FieldVisualization({
             );
           })()}
         </span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="flex-row gap-8">
           {lineupSaveSuccess && (
             <span
-              style={{ color: '#10b981', fontSize: 12, fontWeight: 600 }}
+              className="fs-12 fw-600"
+              style={{ color: '#10b981' }}
             >
               ✓ Opgeslagen!
             </span>
@@ -405,14 +387,11 @@ function FieldVisualization({
           <button
             onClick={saveLineup}
             disabled={lineupSaving}
+            className="fs-13 fw-600 border-none rounded-6"
             style={{
               padding: '8px 20px',
-              fontSize: 13,
-              fontWeight: 600,
               background: '#16a34a',
               color: 'white',
-              border: 'none',
-              borderRadius: 6,
               cursor: lineupSaving ? 'not-allowed' : 'pointer',
               opacity: lineupSaving ? 0.7 : 1,
             }}
@@ -436,29 +415,19 @@ function FieldVisualization({
 
         return (
           <div
-            style={{
-              maxWidth: 500,
-              margin: '0 auto',
-              width: '100%',
-            }}
+            className="w-full mx-auto"
+            style={{ maxWidth: 500 }}
           >
             <div
-              style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: 'var(--app-text, #ccc)',
-                marginBottom: 8,
-              }}
+              className="fs-14 fw-700 mb-8"
+              style={{ color: 'var(--app-text, #ccc)' }}
             >
               Overige selectie ({benchMembers.length})
             </div>
             <div
+              className="flex-col gap-4 rounded-8"
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 4,
                 background: 'var(--app-surface-secondary, #2a2a2a)',
-                borderRadius: 8,
                 padding: '8px 0',
               }}
             >
@@ -470,25 +439,17 @@ function FieldVisualization({
                 return (
                   <div
                     key={p.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '6px 14px',
-                      gap: 8,
-                    }}
+                    className="flex-between gap-8"
+                    style={{ padding: '6px 14px' }}
                   >
                     <span
-                      style={{
-                        fontSize: 13,
-                        color: 'var(--app-text, #ccc)',
-                        fontWeight: 500,
-                      }}
+                      className="fs-13 fw-500"
+                      style={{ color: 'var(--app-text, #ccc)' }}
                     >
                       {jersey ? `#${jersey} ` : ''}
                       {name}
                     </span>
-                    <div style={{ display: 'flex', gap: 4 }}>
+                    <div className="flex-row gap-4">
                       <button
                         onClick={() =>
                           setLineupBenchStatus((prev) => {

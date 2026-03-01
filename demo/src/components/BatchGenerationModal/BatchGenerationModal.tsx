@@ -802,13 +802,13 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
       <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div style={headerStyle}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '24px' }}>🚀</span>
+          <div className="flex-row gap-12">
+            <span className="fs-24">🚀</span>
             <div>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+              <h2 className="m-0 fs-18 fw-600">
                 Batch AI Generatie
               </h2>
-              <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+              <span className="fs-12 text-muted">
                 {members.length} {members.length === 1 ? 'member' : 'members'} geselecteerd
               </span>
             </div>
@@ -835,11 +835,11 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
           {step === 'configure' && (
             <>
               {/* Template selector */}
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+              <div className="mb-20">
+                <label className="block fs-13 fw-600" style={{ marginBottom: '6px' }}>
                   Template
                 </label>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div className="flex-row gap-8 flex-wrap">
                   {memberTemplates.map((t) => (
                     <button
                       key={t.id}
@@ -869,8 +869,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
               {/* Default params */}
               {selectedTemplate && (
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
+                <div className="mb-20">
+                  <label className="block fs-13 fw-600" style={{ marginBottom: '6px' }}>
                     Standaard Instellingen (voor alle members)
                   </label>
                   <div style={{
@@ -906,14 +906,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               )}
 
               {/* Note: Processing (bg removal, closeup crop) now happens automatically on the backend after approval */}
-              <div style={{
-                marginBottom: '20px',
+              <div className="mb-20 rounded-8 fs-12 text-muted" style={{
                 padding: '10px 12px',
                 background: 'rgba(34, 197, 94, 0.1)',
-                borderRadius: '8px',
                 border: '1px solid rgba(34, 197, 94, 0.25)',
-                fontSize: '12px',
-                color: 'var(--app-muted-text)',
               }}>
                 ✅ Bewerking (achtergrond verwijderen, closeup crop) verloopt automatisch na goedkeuring
               </div>
@@ -921,28 +917,24 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               {/* Member list with optional per-member overrides */}
               {/* Info box for video templates: existing variants are auto-detected */}
               {selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
-                <div style={{
-                  marginBottom: '16px',
-                  padding: '12px',
+                <div className="mb-16 p-12 rounded-8 fs-13" style={{
                   background: 'rgba(34, 197, 94, 0.1)',
-                  borderRadius: '8px',
                   border: '1px solid rgba(34, 197, 94, 0.3)',
-                  fontSize: '13px',
                   color: 'var(--app-text)',
                 }}>
-                  <div style={{ fontWeight: 600, marginBottom: '4px' }}>🔄 Slimme video verwerking</div>
-                  <div style={{ fontSize: '12px', opacity: 0.9 }}>
+                  <div className="fw-600 mb-4">🔄 Slimme video verwerking</div>
+                  <div className="fs-12" style={{ opacity: 0.9 }}>
                     Members met een bestaande onverwerkte video worden automatisch verwerkt in plaats van opnieuw gegenereerd.
                     Alleen members zonder video krijgen een nieuwe gegenereerd.
                   </div>
                 </div>
               )}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                  <label style={{ fontSize: '13px', fontWeight: 600 }}>
+                <div className="flex-between mb-8">
+                  <label className="fs-13 fw-600">
                     Members ({members.length})
                   </label>
-                  <span style={{ fontSize: '11px', color: 'var(--app-muted-text)' }}>
+                  <span className="fs-11 text-muted">
                     Klik op een member om instellingen aan te passen
                   </span>
                 </div>
@@ -971,7 +963,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                   }
 
                   return (
-                    <div key={member.id} style={{ marginBottom: '4px' }}>
+                    <div key={member.id} className="mb-4">
                       <div
                         onClick={() => toggleMemberExpanded(member.id)}
                         style={{
@@ -988,16 +980,16 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                             👤
                           </div>
                         )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '14px', fontWeight: 500 }}>{member.name}</div>
+                        <div className="flex-1-min">
+                          <div className="fs-14 fw-500">{member.name}</div>
                           {missingPerson && (
-                            <div style={{ fontSize: '11px', color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
+                            <div className="fs-11" style={{ color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
                           )}
                           {existingVideoVariant && (
-                            <div style={{ fontSize: '11px', color: '#22c55e' }}>✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
+                            <div className="fs-11" style={{ color: '#22c55e' }}>✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
                           )}
                           {hasOverrides && (
-                            <div style={{ fontSize: '11px', color: '#3b82f6' }}>Aangepaste instellingen</div>
+                            <div className="fs-11" style={{ color: '#3b82f6' }}>Aangepaste instellingen</div>
                           )}
                         </div>
                         <span style={{ fontSize: '12px', color: 'var(--app-muted-text)', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -1097,8 +1089,8 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
               )}
 
               {/* Progress overview */}
-              <div style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '8px' }}>
+              <div className="mb-16">
+                <div className="flex-row gap-12 mb-8">
                   <Badge variant="info">{completedCount}/{members.length} verwerkt</Badge>
                   {successCount > 0 && <Badge variant="success">{successCount} gelukt</Badge>}
                   {errorCount > 0 && <Badge variant="error">{errorCount} mislukt</Badge>}
@@ -1145,13 +1137,13 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
                         👤
                       </div>
                     )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '14px', fontWeight: 500 }}>{member.name}</div>
+                    <div className="flex-1-min">
+                      <div className="fs-14 fw-500">{member.name}</div>
                       {job?.error && (
-                        <div style={{ fontSize: '11px', color: '#ef4444' }}>{job.error}</div>
+                        <div className="fs-11" style={{ color: '#ef4444' }}>{job.error}</div>
                       )}
                       {job?.status === 'running' && (
-                        <div style={{ fontSize: '11px', color: '#60a5fa' }}>
+                        <div className="fs-11" style={{ color: '#60a5fa' }}>
                           {job.totalFrames && job.progressFrames
                             ? `Frame ${job.progressFrames}/${job.totalFrames} (${Math.round((job.progressFrames / job.totalFrames) * 100)}%)`
                             : 'Bezig met verwerken...'}
@@ -1170,10 +1162,10 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
         <div style={footerStyle}>
           {step === 'configure' && (
             <>
-              <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+              <div className="fs-12 text-muted">
                 💎 {selectedTemplate ? selectedTemplate.creditsCost * members.length : 0} credits totaal ({selectedTemplate?.creditsCost || 0} per member)
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex-row gap-8">
                 <Button variant="secondary" onClick={onClose}>
                   Annuleren
                 </Button>
@@ -1190,7 +1182,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
           {step === 'running' && (
             <>
-              <div style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+              <div className="fs-13 text-muted">
                 ⏳ {completedCount}/{members.length} verwerkt...
               </div>
               <Button variant="secondary" onClick={cancelBatch}>
@@ -1201,7 +1193,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = ({
 
           {step === 'done' && (
             <>
-              <div style={{ fontSize: '13px' }}>
+              <div className="fs-13">
                 {errorCount === 0 ? '✅ Batch voltooid!' : `⚠️ ${errorCount} van ${members.length} mislukt`}
               </div>
               <Button

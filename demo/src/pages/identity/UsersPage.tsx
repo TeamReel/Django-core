@@ -911,7 +911,7 @@ export default function UsersPage() {
                           </div>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                        <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             {/* View Button - Show for both Memberships and Unassigned Users */}
                             {((isMembership && (orgIdParam || context.organisation)) || (!isMembership)) && (
                                 <button
@@ -919,8 +919,8 @@ export default function UsersPage() {
                                         setDetailUser(user);
                                         setIsDetailModalOpen(true);
                                     }}
-                                    className="rounded-4 bg-surface cursor-pointer fs-12"
-                                    style={{ padding: '4px 8px', border: '1px solid #6c757d', color: '#6c757d' }}
+                                    className="rounded-4 bg-surface cursor-pointer fs-12 py-4 px-8"
+                                    style={{ border: '1px solid #6c757d', color: '#6c757d' }}
                                 >
                                     View
                                 </button>
@@ -934,8 +934,8 @@ export default function UsersPage() {
                                         handleEditClick(item);
                                     }
                                 }}
-                                className="rounded-4 bg-surface cursor-pointer fs-12"
-                                style={{ padding: '4px 8px', border: '1px solid var(--app-warning)', color: 'var(--app-warning)' }}
+                                className="rounded-4 bg-surface cursor-pointer fs-12 py-4 px-8"
+                                style={{ border: '1px solid var(--app-warning)', color: 'var(--app-warning)' }}
                             >
                                 Edit
                             </button>
@@ -970,8 +970,8 @@ export default function UsersPage() {
                                         alert('Error deleting user');
                                     }
                                 }}
-                                className="rounded-4 bg-surface cursor-pointer fs-12"
-                                style={{ padding: '4px 8px', border: '1px solid #dc3545', color: '#dc3545' }}
+                                className="rounded-4 bg-surface cursor-pointer fs-12 py-4 px-8"
+                                style={{ border: '1px solid #dc3545', color: '#dc3545' }}
                             >
                                 Delete
                             </button>
@@ -1056,8 +1056,8 @@ export default function UsersPage() {
                                                     alert('Error removing member');
                                                 }
                                             }}
-                                            className="rounded-4 bg-surface cursor-pointer fs-12"
-                                            style={{ padding: '4px 8px', border: '1px solid #dc3545', color: '#dc3545' }}
+                                            className="rounded-4 bg-surface cursor-pointer fs-12 py-4 px-8"
+                                            style={{ border: '1px solid #dc3545', color: '#dc3545' }}
                                         >
                                             Unassign
                                         </button>
@@ -1122,7 +1122,7 @@ export default function UsersPage() {
             >
               Previous
             </Button>
-            <span style={{ fontSize: '0.875rem', color: 'var(--app-muted-text)' }}>
+            <span className="fs-14 text-muted">
               Page {currentPage} of {totalPages} ({total} total users)
             </span>
             <Button

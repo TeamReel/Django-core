@@ -23,36 +23,30 @@ export default function WorkflowTemplatesPage() {
 
       <PageContent>
         {error && (
-          <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+          <div className="rounded-8 fs-13 mb-16" style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626' }}>
             {error}
           </div>
         )}
 
         {loading && (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
+          <div className="text-center text-secondary fs-13" style={{ padding: 40 }}>
             Loading templates...
           </div>
         )}
 
         {!loading && templates.length === 0 && (
           <div
-            style={{
-              padding: 48,
-              textAlign: 'center',
-              color: 'var(--app-text-secondary, #9ca3af)',
-              backgroundColor: 'var(--app-surface-2, #f9fafb)',
-              borderRadius: 12,
-              border: '1px dashed var(--app-border, #e5e7eb)',
-            }}
+            className="text-center text-secondary bg-surface-2 rounded-12"
+            style={{ padding: 48, border: '1px dashed var(--app-border, #e5e7eb)' }}
           >
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>No workflow templates</div>
-            <div style={{ fontSize: 12 }}>Create workflow templates via the API to define approval flows.</div>
+            <div className="mb-8" style={{ fontSize: 32 }}>📋</div>
+            <div className="fw-600 mb-4" style={{ fontSize: 15 }}>No workflow templates</div>
+            <div className="fs-12">Create workflow templates via the API to define approval flows.</div>
           </div>
         )}
 
         {!loading && templates.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex-col gap-12">
             {templates.map(template => {
               const isExpanded = expandedId === template.id;
               const states = template.definition?.states || [];
@@ -71,21 +65,11 @@ export default function WorkflowTemplatesPage() {
                   {/* Header — clickable to expand */}
                   <button
                     onClick={() => setExpandedId(isExpanded ? null : template.id)}
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: 16,
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                    }}
+                    className="w-full flex-between p-16 bg-transparent border-none cursor-pointer text-left"
                   >
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--app-text, #111)' }}>
+                        <div className="flex-row gap-8">
+                        <span className="fw-600" style={{ fontSize: 15, color: 'var(--app-text, #111)' }}>
                           {template.name}
                         </span>
                         <span
@@ -107,13 +91,13 @@ export default function WorkflowTemplatesPage() {
                         )}
                       </div>
                       {template.description && (
-                        <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+                        <div className="fs-12 text-secondary" style={{ marginTop: 2 }}>
                           {template.description}
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                    <div className="flex-row gap-12">
+                      <span className="fs-11" style={{ color: '#9ca3af' }}>
                         {states.length} states · {transitions.length} transitions
                       </span>
                       <span style={{ fontSize: 16, color: '#9ca3af', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }}>▾</span>
@@ -123,19 +107,17 @@ export default function WorkflowTemplatesPage() {
                   {/* Expanded detail */}
                   {isExpanded && (
                     <div
-                      style={{
-                        padding: '0 16px 16px',
-                        borderTop: '1px solid var(--app-border, #e5e7eb)',
-                      }}
+                      className="border-top"
+                      style={{ padding: '0 16px 16px' }}
                     >
                       {/* States */}
-                      <div style={{ marginTop: 16 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <div className="mt-16">
+                        <div className="fs-12 fw-600 text-secondary mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           States
                         </div>
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                        <div className="flex-row gap-8 flex-wrap">
                           {states.map(state => (
-                            <div key={state.name} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <div key={state.name} className="flex-row gap-4">
                               <WorkflowStatusBadge state={state.name} size="sm" />
                               {state.is_initial && (
                                 <span style={{ fontSize: 9, color: '#6b7280' }}>(initial)</span>
@@ -146,16 +128,13 @@ export default function WorkflowTemplatesPage() {
                       </div>
 
                       {/* Transitions */}
-                      <div style={{ marginTop: 16 }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      <div className="mt-16">
+                        <div className="fs-12 fw-600 text-secondary mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                           Transitions
                         </div>
                         <div
-                          style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                            gap: 8,
-                          }}
+                          className="grid gap-8"
+                          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
                         >
                           {transitions.map((t, idx) => {
                             const actionStyle = getActionDisplay(t.action);
@@ -165,14 +144,9 @@ export default function WorkflowTemplatesPage() {
                             return (
                               <div
                                 key={idx}
-                                style={{
-                                  padding: 10,
-                                  backgroundColor: 'var(--app-surface-2, #f9fafb)',
-                                  borderRadius: 6,
-                                  fontSize: 12,
-                                }}
+                                className="p-10 bg-surface-2 rounded-6 fs-12"
                               >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                                <div className="flex-row gap-6" style={{ marginBottom: 6 }}>
                                   <span
                                     style={{
                                       fontWeight: 600,
@@ -183,7 +157,7 @@ export default function WorkflowTemplatesPage() {
                                     {actionStyle.icon} {t.action.replace(/_/g, ' ').toUpperCase()}
                                   </span>
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <div className="flex-row gap-6">
                                   <span style={{
                                     padding: '1px 6px',
                                     borderRadius: 4,
@@ -207,7 +181,7 @@ export default function WorkflowTemplatesPage() {
                                   </span>
                                 </div>
                                 {t.required_permission && (
-                                  <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 4 }}>
+                                  <div className="mt-4" style={{ fontSize: 10, color: '#9ca3af' }}>
                                     🔒 Requires: {t.required_permission}
                                   </div>
                                 )}
@@ -223,7 +197,7 @@ export default function WorkflowTemplatesPage() {
                       </div>
 
                       {/* Metadata */}
-                      <div style={{ marginTop: 12, fontSize: 11, color: '#9ca3af' }}>
+                      <div className="mt-12 fs-11" style={{ color: '#9ca3af' }}>
                         Created {new Date(template.created_at).toLocaleDateString()} · Last updated {new Date(template.updated_at).toLocaleDateString()}
                       </div>
                     </div>

@@ -171,7 +171,7 @@ function AssetCard({
 
       {/* Info + actions */}
       <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{label}</div>
+        <div className="fs-12 fw-600 mb-4">{label}</div>
 
         {!readOnly && isUploadType && onUpload && (
           <>
@@ -194,7 +194,7 @@ function AssetCard({
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) onUpload(file, assetType);
@@ -226,10 +226,10 @@ interface SectionProps {
 
 function Section({ title, description, children }: SectionProps) {
   return (
-    <div style={{ marginBottom: 24 }}>
-      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{title}</h3>
+    <div className="mb-24">
+      <h3 className="fs-14 fw-600 mb-4">{title}</h3>
       {description && (
-        <p style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 12 }}>
+        <p className="fs-12 mb-12" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
           {description}
         </p>
       )}
@@ -241,11 +241,8 @@ function Section({ title, description, children }: SectionProps) {
 function AssetGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-        gap: 12,
-      }}
+      className="grid gap-12"
+      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
     >
       {children}
     </div>
@@ -313,7 +310,7 @@ export function IdentityTab({
 
   if (loading || parentBrand.loading) {
     return (
-      <div style={{ padding: 24, textAlign: 'center', color: 'var(--vscode-descriptionForeground, #888)' }}>
+      <div className="p-24 text-center" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
         Brand identity laden...
       </div>
     );
@@ -321,7 +318,7 @@ export function IdentityTab({
 
   if (error) {
     return (
-      <div style={{ padding: 24, color: 'var(--vscode-errorForeground, #f44)' }}>
+      <div className="p-24" style={{ color: 'var(--vscode-errorForeground, #f44)' }}>
         Fout bij laden: {error}
       </div>
     );
@@ -330,7 +327,7 @@ export function IdentityTab({
   // ── ORGANISATION level ──
   if (level === 'organisation') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Organisatie Logo" description="Het logo van de organisatie.">
           <AssetGrid>
             <AssetCard
@@ -351,7 +348,7 @@ export function IdentityTab({
   // ── CLUB level ──
   if (level === 'club') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         {/* Logo */}
         <Section title="Logo" description="Upload het clublogo. De AI maakt er een gestandaardiseerde versie van.">
           <AssetGrid>
@@ -438,7 +435,7 @@ export function IdentityTab({
   // ── TEAM level ──
   if (level === 'team') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         {/* Inherited logo */}
         <Section title="Logo" description="Geërfd van de club. Kan niet worden overschreven op teamniveau.">
           <AssetGrid>
@@ -503,8 +500,8 @@ export function IdentityTab({
             const kitEff = getEffectiveAsset(`kit_${role.id}`);
 
             return (
-              <div key={role.id} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{role.icon} {role.label}</div>
+              <div key={role.id} className="mb-12">
+                <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>{role.icon} {role.label}</div>
                 <AssetGrid>
                   <AssetCard
                     label={`${role.label} (bewerkt)`}
@@ -534,11 +531,11 @@ export function IdentityTab({
   // ── SEASON level ──
   if (level === 'season') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Seizoen Identiteit" description="Snapshot van de team-identiteit voor dit seizoen. Tenue en sponsor kunnen per seizoen wijzigen.">
           {/* Logo - always inherited */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Logo</div>
+          <div className="mb-16">
+            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Logo</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('logo'); return (
                 <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
@@ -547,8 +544,8 @@ export function IdentityTab({
           </div>
 
           {/* Sponsor - can override */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Sponsor</div>
+          <div className="mb-16">
+            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Sponsor</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
                 <AssetCard
@@ -575,7 +572,7 @@ export function IdentityTab({
 
           {/* Kits - combined with this season's sponsor */}
           <div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Tenues (dit seizoen)</div>
+            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Tenues (dit seizoen)</div>
             <AssetGrid>
               {KIT_ROLES.slice(0, 4).map((role) => {
                 const combinedType = `kit_${role.id}_combined`;
@@ -602,7 +599,7 @@ export function IdentityTab({
   // ── MATCH level ──
   if (level === 'match') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Wedstrijd Identiteit" description="Visuele identiteit voor deze wedstrijd (read-only, geërfd van het seizoen).">
           <AssetGrid>
             {(() => { const e = getEffectiveAsset('logo'); return (
@@ -626,7 +623,7 @@ export function IdentityTab({
   // ── MEMBER level ──
   if (level === 'member') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Speler Identiteit" description="Tenue en logo geërfd van het team/seizoen. Profielfoto van de gebruiker.">
           <AssetGrid>
             {(() => { const e = getEffectiveAsset('logo'); return (

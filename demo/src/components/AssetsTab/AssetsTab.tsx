@@ -313,7 +313,7 @@ function AssetCard({
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              style={{ display: 'none' }}
+              className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) onUpload(file, assetType);
@@ -368,8 +368,8 @@ interface SectionProps {
 
 function Section({ title, description, children }: SectionProps) {
   return (
-    <div style={{ marginBottom: 24 }}>
-      <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>{title}</h3>
+    <div className="mb-24">
+      <h3 className="fs-14 fw-600" style={{ marginBottom: 4 }}>{title}</h3>
       {description && (
         <p style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 12 }}>
           {description}
@@ -891,7 +891,7 @@ export function AssetsTab({
 
   if (loading || parentBrand.loading) {
     return (
-      <div style={{ padding: 24, textAlign: 'center', color: 'var(--vscode-descriptionForeground, #888)' }}>
+      <div className="p-24 text-center" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
         Assets laden...
       </div>
     );
@@ -899,7 +899,7 @@ export function AssetsTab({
 
   if (error) {
     return (
-      <div style={{ padding: 24, color: 'var(--vscode-errorForeground, #f44)' }}>
+      <div className="p-24" style={{ color: 'var(--vscode-errorForeground, #f44)' }}>
         Fout bij laden: {error}
       </div>
     );
@@ -908,7 +908,7 @@ export function AssetsTab({
   // ── ORGANISATION level ──
   if (level === 'organisation') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Organisatie Logo" description="Het logo van de organisatie.">
           <AssetGrid>
             <AssetCard
@@ -930,9 +930,9 @@ export function AssetsTab({
   // ── CLUB level ──
   if (level === 'club') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         {/* AI Generation Button */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <div className="flex-row gap-8 mb-20">
           <button
             onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
             style={{
@@ -1009,21 +1009,21 @@ export function AssetsTab({
         {showHistoryModal && (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, padding: 20, width: 500, maxHeight: '80vh', overflow: 'auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div className="flex-between mb-16">
                         <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis</h3>
                         <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' }}>✕</button>
                     </div>
                     {loadingHistory ? (
-                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geschiedenis laden...</div>
+                        <div className="p-20 text-center" style={{ color: '#888' }}>Geschiedenis laden...</div>
                     ) : historyList.length === 0 ? (
-                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geen eerdere versies gevonden.</div>
+                        <div className="p-20 text-center" style={{ color: '#888' }}>Geen eerdere versies gevonden.</div>
                     ) : (
                         <div style={{ display: 'grid', gap: 12 }}>
                            {historyList.map(item => (
                                <div key={item.id} style={{ display: 'flex', gap: 12, padding: 10, background: '#252526', borderRadius: 6, alignItems: 'center' }}>
                                    <div style={{ width: 60, height: 80, background: `url(${item.url}) center/contain no-repeat`, backgroundSize: 'cover', borderRadius: 4, flexShrink: 0 }} />
-                                   <div style={{ flex: 1 }}>
-                                       <div style={{ fontSize: 12, fontWeight: 600 }}>{new Date(item.created_at).toLocaleString()}</div>
+                                   <div className="flex-1">
+                                       <div className="fs-12 fw-600">{new Date(item.created_at).toLocaleString()}</div>
                                        <div style={{ fontSize: 11, color: '#888' }}>{item.original_name}</div>
                                    </div>
                                    <button
@@ -1082,7 +1082,7 @@ export function AssetsTab({
         </div>
 
         {/* Kits Grid */}
-        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Tenues</h3>
+        <h3 className="fs-14 fw-600 mb-12">Tenues</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
         {KIT_ROLES.map((role) => {
           const uploadType = `kit_${role.id}_upload`;
@@ -1090,7 +1090,7 @@ export function AssetsTab({
 
           return (
             <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div className="flex-row gap-8 mb-8">
                     <span style={{ fontSize: 18 }}>{role.icon}</span>
                     <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
                 </div>
@@ -1196,13 +1196,13 @@ export function AssetsTab({
             return (
               <>
                 {/* Upload Button */}
-                <div style={{ marginBottom: 16 }}>
+                <div className="mb-16">
                   <input
                     ref={bgFileRef}
                     type="file"
                     accept="image/*"
                     multiple
-                    style={{ display: 'none' }}
+                    className="hidden"
                     onChange={async (e) => {
                       const files = Array.from(e.target.files || []);
                       for (const file of files) {
@@ -1307,9 +1307,9 @@ export function AssetsTab({
   // ── TEAM level ── (mirrors club layout, with inheritance fallbacks)
   if (level === 'team') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         {/* AI Generation Buttons */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div className="flex-row gap-8 mb-20 flex-wrap">
           <button
             onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
             style={{
@@ -1353,21 +1353,21 @@ export function AssetsTab({
         {showHistoryModal && (
             <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <div style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, padding: 20, width: 500, maxHeight: '80vh', overflow: 'auto' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div className="flex-between mb-16">
                         <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis</h3>
                         <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' }}>✕</button>
                     </div>
                     {loadingHistory ? (
-                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geschiedenis laden...</div>
+                        <div className="p-20 text-center" style={{ color: '#888' }}>Geschiedenis laden...</div>
                     ) : historyList.length === 0 ? (
-                        <div style={{ padding: 20, textAlign: 'center', color: '#888' }}>Geen eerdere versies gevonden.</div>
+                        <div className="p-20 text-center" style={{ color: '#888' }}>Geen eerdere versies gevonden.</div>
                     ) : (
                         <div style={{ display: 'grid', gap: 12 }}>
                            {historyList.map(item => (
                                <div key={item.id} style={{ display: 'flex', gap: 12, padding: 10, background: '#252526', borderRadius: 6, alignItems: 'center' }}>
                                    <div style={{ width: 60, height: 80, background: `url(${item.url}) center/contain no-repeat`, backgroundSize: 'cover', borderRadius: 4, flexShrink: 0 }} />
-                                   <div style={{ flex: 1 }}>
-                                       <div style={{ fontSize: 12, fontWeight: 600 }}>{new Date(item.created_at).toLocaleString()}</div>
+                                   <div className="flex-1">
+                                       <div className="fs-12 fw-600">{new Date(item.created_at).toLocaleString()}</div>
                                        <div style={{ fontSize: 11, color: '#888' }}>{item.original_name}</div>
                                    </div>
                                    <button
@@ -1521,11 +1521,11 @@ export function AssetsTab({
   // ── SEASON level ──
   if (level === 'season') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Seizoen Assets" description="Visuele assets voor dit seizoen. Tenue en sponsor kunnen per seizoen wijzigen.">
           {/* Logo - always inherited */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Logo</div>
+          <div className="mb-16">
+            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Logo</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('logo'); return (
                 <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
@@ -1534,8 +1534,8 @@ export function AssetsTab({
           </div>
 
           {/* Sponsor - can override */}
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>Sponsor</div>
+          <div className="mb-16">
+            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Sponsor</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
                 <AssetCard
@@ -1674,7 +1674,7 @@ export function AssetsTab({
   // ── MATCH level ──
   if (level === 'match') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Wedstrijd Assets" description="Visuele assets voor deze wedstrijd (read-only, geërfd van het seizoen).">
           <AssetGrid>
             {(() => { const e = getEffectiveAsset('logo'); return (
@@ -1698,7 +1698,7 @@ export function AssetsTab({
   // ── MEMBER level ──
   if (level === 'member') {
     return (
-      <div style={{ padding: 16 }}>
+      <div className="p-16">
         <Section title="Speler Assets" description="Tenue en logo geërfd van het team/seizoen.">
           <AssetGrid>
             {(() => { const e = getEffectiveAsset('logo'); return (

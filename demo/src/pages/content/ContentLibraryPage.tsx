@@ -238,9 +238,9 @@ function ContentCard({
     >
       <div className="gallery-card-inner flex-col flex-1">
       {/* Thumbnail */}
-      <div className="gallery-card-thumb flex-center overflow-hidden relative" style={{
+      <div className="gallery-card-thumb flex-center overflow-hidden relative border-bottom" style={{
         height: 180,
-        backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+        backgroundColor: 'var(--app-bg)',
         flexShrink: 0,
       }}>
         {url ? (
@@ -256,7 +256,8 @@ function ContentCard({
             <img
               src={url}
               alt={item.title || getAssetTypeLabel(normalizedType)}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', padding: 8 }}
+              className="p-8"
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
@@ -266,17 +267,17 @@ function ContentCard({
           </span>
         )}
         {/* Type badge */}
-        <span style={{
-          position: 'absolute', top: 8, left: 8,
-          fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+        <span className="absolute fw-700" style={{
+          top: 8, left: 8,
+          fontSize: 10, padding: '2px 8px', borderRadius: 10,
           backgroundColor: '#2563eb', color: '#fff',
         }}>
           {getAssetTypeLabel(normalizedType)}
         </span>
         {isVideo && (
-          <span style={{
-            position: 'absolute', top: 8, right: 8,
-            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
+          <span className="absolute fw-700" style={{
+            top: 8, right: 8,
+            fontSize: 10, padding: '2px 8px', borderRadius: 10,
             backgroundColor: '#dc2626', color: '#fff',
           }}>
             🎬 Video
@@ -284,9 +285,9 @@ function ContentCard({
         )}
         {/* Sport badge */}
         {sportType && (
-          <span style={{
-            position: 'absolute', bottom: 8, left: 8,
-            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
+          <span className="absolute fw-600" style={{
+            bottom: 8, left: 8,
+            fontSize: 10, padding: '2px 8px', borderRadius: 10,
             backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff',
           }}>
             ⚽ {sportType}
@@ -330,9 +331,9 @@ function ContentCard({
 
         {/* Match details: opponent, date, score */}
         {(opponent || activityDate || scoreHome !== undefined) && (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', fontSize: 10, color: 'var(--app-text-secondary)' }}>
+          <div className="flex-row flex-wrap gap-6 text-secondary" style={{ fontSize: 10 }}>
             {opponent && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <span className="flex-row gap-2">
                 {homeAway === 'away' ? '📍' : '🏠'} vs {opponent}
               </span>
             )}
@@ -353,16 +354,15 @@ function ContentCard({
         {tags.length > 0 && (
           <div className="gallery-card-verbose flex-row flex-wrap gap-4">
             {tags.slice(0, 3).map((tag, i) => (
-              <span key={i} style={{
-                fontSize: 10, padding: '1px 6px', borderRadius: 6,
+              <span key={i} className="rounded-6 text-secondary" style={{
+                fontSize: 10, padding: '1px 6px',
                 backgroundColor: 'var(--app-surface-2, #f3f4f6)',
-                color: 'var(--app-text-secondary)',
               }}>
                 #{tag}
               </span>
             ))}
             {tags.length > 3 && (
-              <span style={{ fontSize: 10, color: 'var(--app-text-secondary)' }}>
+              <span className="text-secondary" style={{ fontSize: 10 }}>
                 +{tags.length - 3}
               </span>
             )}
@@ -389,37 +389,28 @@ function ContentCard({
         </Text>
 
         {/* Action buttons */}
-        <div className="mt-8 gap-4 border-top" style={{ display: 'flex', paddingTop: 8 }}>
+        <div className="mt-8 gap-4 border-top flex-row" style={{ paddingTop: 8 }}>
           <button
             onClick={(e) => { e.stopPropagation(); onDownload?.(item); }}
             title="Download"
-            style={{
-              flex: 1, padding: '6px 8px', border: '1px solid var(--app-border)', borderRadius: 4,
-              backgroundColor: 'var(--app-surface)', cursor: 'pointer', fontSize: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-            }}
+            className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface"
+            style={{ padding: '6px 8px' }}
           >
             ⬇️
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onShare?.(item); }}
             title="Share"
-            style={{
-              flex: 1, padding: '6px 8px', border: '1px solid var(--app-border)', borderRadius: 4,
-              backgroundColor: 'var(--app-surface)', cursor: 'pointer', fontSize: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-            }}
+            className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface"
+            style={{ padding: '6px 8px' }}
           >
             📤
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete?.(item); }}
             title="Delete"
-            style={{
-              flex: 1, padding: '6px 8px', border: '1px solid var(--app-border)', borderRadius: 4,
-              backgroundColor: 'var(--app-surface)', cursor: 'pointer', fontSize: 12,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-            }}
+            className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface"
+            style={{ padding: '6px 8px' }}
           >
             🗑️
           </button>
@@ -511,11 +502,9 @@ function GalleryCreateContentButton() {
       <button
         type="button"
         onClick={() => setShowModal(true)}
+        className="flex-row gap-6 rounded-8 border-none fs-14 fw-600 cursor-pointer whitespace-nowrap py-8 px-16"
         style={{
-          padding: '8px 16px', borderRadius: 8, border: 'none',
           background: 'var(--app-primary, #3b82f6)', color: '#fff',
-          fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
         }}
       >
         + Create
@@ -561,10 +550,10 @@ function GalleryCreateContentButton() {
                     setShowModal(false);
                     navigate(`/matches/${matchId}?tab=content`);
                   }}
+                  className="flex-row gap-12 w-full cursor-pointer text-left border"
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 12, width: '100%',
-                    padding: '14px 16px', border: '1px solid var(--app-border)', borderRadius: 10,
-                    background: 'var(--app-surface)', cursor: 'pointer', textAlign: 'left',
+                    padding: '14px 16px', borderRadius: 10,
+                    background: 'var(--app-surface)',
                     transition: 'background 0.15s',
                   }}
                   onMouseOver={(e) => (e.currentTarget.style.background = 'var(--app-surface-2)')}
@@ -1089,17 +1078,16 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       )}
 
       {/* Toolbar: directory-style filters — wrapped in MobileFilterSheet for mobile */}
-      <div className="gallery-toolbar flex-row gap-12 flex-wrap border-bottom" style={{ padding: '16px 24px' }}>
+      <div className="gallery-toolbar flex-row gap-12 flex-wrap border-bottom py-16 px-24">
         {/* Search — always visible */}
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Zoeken..."
+          className="flex-1 fs-13 rounded-6 border bg-surface"
           style={{
-            flex: 1, minWidth: 120, padding: '8px 12px', borderRadius: 6,
-            border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)',
-            fontSize: 13,
+            minWidth: 120, padding: '8px 12px',
           }}
         />
 
@@ -1119,9 +1107,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="rounded-6 border bg-surface fs-13 w-full"
             style={{
-              padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 140, width: '100%',
+              padding: '8px 12px', minWidth: 140,
             }}
           >
             <option value="newest">Nieuwste eerst</option>
@@ -1143,9 +1131,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                   setSelectedSeasonId('');
                   setSelectedMatchId('');
                 }}
+                className="rounded-6 border bg-surface fs-13 w-full"
                 style={{
-                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                  padding: '8px 12px', minWidth: 160,
                 }}
               >
                 <option value="">Federation: All</option>
@@ -1168,9 +1156,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                   setSelectedSeasonId('');
                   setSelectedMatchId('');
                 }}
+                className="rounded-6 border bg-surface fs-13 w-full"
                 style={{
-                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                  padding: '8px 12px', minWidth: 160,
                 }}
               >
                 <option value="">Club: All</option>
@@ -1192,9 +1180,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                   setSelectedSeasonId('');
                   setSelectedMatchId('');
                 }}
+                className="rounded-6 border bg-surface fs-13 w-full"
                 style={{
-                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                  padding: '8px 12px', minWidth: 160,
                 }}
               >
                 <option value="">Team: All</option>
@@ -1215,9 +1203,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
                   setSelectedSeasonId(e.target.value);
                   setSelectedMatchId('');
                 }}
+                className="rounded-6 border bg-surface fs-13 w-full"
                 style={{
-                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 160, width: '100%',
+                  padding: '8px 12px', minWidth: 160,
                 }}
               >
                 <option value="">Season: All</option>
@@ -1235,9 +1223,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
               <select
                 value={selectedMatchId}
                 onChange={(e) => setSelectedMatchId(e.target.value)}
+                className="rounded-6 border bg-surface fs-13 w-full"
                 style={{
-                  padding: '8px 12px', borderRadius: 6, border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface)', fontSize: 13, minWidth: 200, width: '100%',
+                  padding: '8px 12px', minWidth: 200,
                 }}
               >
                 <option value="">Match: All</option>
@@ -1256,7 +1244,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
             variant="secondary"
             size="md"
             onClick={clearFilters}
-            style={{ width: '100%', marginTop: 4 }}
+            className="w-full mt-4"
           >
             Filters wissen
           </Button>
@@ -1382,10 +1370,10 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({
       {/* Preview Modal */}
       {previewItem && (
         <div
+          className="flex-center"
           style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 1000,
           }}
           onClick={closePreview}

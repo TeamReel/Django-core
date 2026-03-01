@@ -1118,8 +1118,8 @@ export default function MatchCreateModal({
           border: '1px solid var(--app-border)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>{headerText || 'Create Match'}</h2>
+        <div className="flex-between gap-12">
+          <h2 className="mb-12" style={{ marginTop: 0, color: 'var(--app-text)' }}>{headerText || 'Create Match'}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -1140,7 +1140,7 @@ export default function MatchCreateModal({
 
         <form onSubmit={handleCreate}>
           <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-title">
+            <label className="fw-600" htmlFor="match-create-title">
               Title
             </label>
             {isTeamContextMode ? (
@@ -1162,7 +1162,7 @@ export default function MatchCreateModal({
               />
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-org">
+            <label className="fw-600" htmlFor="match-create-org">
               Federation
             </label>
             {isTeamContextMode && selectedOrganisationId ? (
@@ -1195,7 +1195,7 @@ export default function MatchCreateModal({
               </select>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-club">
+            <label className="fw-600" htmlFor="match-create-club">
               Club
             </label>
             {isTeamContextMode && resolvedClubId ? (
@@ -1218,7 +1218,7 @@ export default function MatchCreateModal({
               </select>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-team">
+            <label className="fw-600" htmlFor="match-create-team">
               Team
             </label>
             {isTeamContextMode && selectedTeamId ? (
@@ -1241,7 +1241,7 @@ export default function MatchCreateModal({
               </select>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-season">
+            <label className="fw-600" htmlFor="match-create-season">
               Season
             </label>
             {isTeamContextMode ? (
@@ -1269,7 +1269,7 @@ export default function MatchCreateModal({
               </select>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-competition">
+            <label className="fw-600" htmlFor="match-create-competition">
               Competition
             </label>
             {isTeamContextMode ? (
@@ -1294,7 +1294,7 @@ export default function MatchCreateModal({
               </select>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-location">
+            <label className="fw-600" htmlFor="match-create-location">
               Location
             </label>
             {isTeamContextMode ? (
@@ -1317,7 +1317,7 @@ export default function MatchCreateModal({
 
             {(isSeasonDetailMode || isTeamContextMode) ? (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent-org">
+                <label className="fw-600" htmlFor="match-create-opponent-org">
                   Opponent Federation
                 </label>
                 <select
@@ -1340,7 +1340,7 @@ export default function MatchCreateModal({
                   ))}
                 </select>
 
-                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent-club">
+                <label className="fw-600" htmlFor="match-create-opponent-club">
                   Opponent Club
                 </label>
                 <select
@@ -1362,7 +1362,7 @@ export default function MatchCreateModal({
                   ))}
                 </select>
 
-                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent">
+                <label className="fw-600" htmlFor="match-create-opponent">
                   Opponent Team
                 </label>
                 <select
@@ -1386,7 +1386,7 @@ export default function MatchCreateModal({
               </>
             ) : (
               <>
-                <label style={{ fontWeight: 600 }} htmlFor="match-create-opponent">
+                <label className="fw-600" htmlFor="match-create-opponent">
                   Opponent
                 </label>
                 <select
@@ -1410,7 +1410,7 @@ export default function MatchCreateModal({
               </>
             )}
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-venue">
+            <label className="fw-600" htmlFor="match-create-venue">
               Venue
             </label>
             <select
@@ -1427,7 +1427,7 @@ export default function MatchCreateModal({
               <option value="Away">Away</option>
             </select>
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-date">
+            <label className="fw-600" htmlFor="match-create-date">
               Date
             </label>
             <input
@@ -1443,7 +1443,7 @@ export default function MatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-time">
+            <label className="fw-600" htmlFor="match-create-time">
               Time
             </label>
             <input
@@ -1459,7 +1459,7 @@ export default function MatchCreateModal({
               }}
             />
 
-            <label style={{ fontWeight: 600 }} htmlFor="match-create-description">
+            <label className="fw-600" htmlFor="match-create-description">
               Description
             </label>
             {isTeamContextMode ? (
@@ -1483,9 +1483,9 @@ export default function MatchCreateModal({
             )}
           </div>
 
-          {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className="mt-12" style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+          <div className="mt-16 gap-10" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               type="submit"
               disabled={isSaving}

@@ -299,7 +299,7 @@ export const AuditLogPage: React.FC = () => {
 
       <PageContent>
         {/* Filters */}
-        <Card className="mb-4" style={{ minWidth: 0 }}>
+        <Card className="mb-4 min-w-0">
           <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
             <div style={{ minWidth: '180px', flex: '0 0 180px' }}>
               <label className="block text-sm font-medium mb-1">Event Type</label>
@@ -535,7 +535,7 @@ export const AuditLogPage: React.FC = () => {
 
                     return (
                       <tr key={event.id}>
-                        <td style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                        <td className="fs-sm whitespace-nowrap">
                           {new Date(event.timestamp).toLocaleString()}
                         </td>
                         <td>
@@ -546,11 +546,11 @@ export const AuditLogPage: React.FC = () => {
                             {event.event_type.replace(/_/g, ' ')}
                           </Badge>
                         </td>
-                        <td style={{ fontSize: '0.85rem' }}>
+                        <td className="fs-sm">
                           {event.user?.name || 'System'}
                         </td>
                         <td>{getOutcomeBadge()}</td>
-                        <td style={{ fontSize: '0.85rem' }}>
+                        <td className="fs-sm">
                           {getTargetDisplay()}
                         </td>
                         <td>
@@ -578,7 +578,7 @@ export const AuditLogPage: React.FC = () => {
             </Card>
 
             {/* Pagination */}
-            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px' }}>
+            <div className="flex-center gap-12" style={{ marginTop: '20px' }}>
               <Button
                 variant="secondary"
                 onClick={() => handlePageChange(currentPage - 1)}
@@ -642,8 +642,8 @@ export const AuditLogPage: React.FC = () => {
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600, color: 'var(--app-text)' }}>
+                <div className="flex-between mb-24">
+                <h2 className="m-0 fs-20 fw-600 text-primary">
                   Audit Event Details
                 </h2>
                 <button
@@ -662,27 +662,27 @@ export const AuditLogPage: React.FC = () => {
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Event ID</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '14px', color: 'var(--app-text)' }}>{selectedEvent.id}</div>
+                  <div className="fs-12 text-muted mb-4">Event ID</div>
+                  <div className="fs-14 text-primary" style={{ fontFamily: 'monospace' }}>{selectedEvent.id}</div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Timestamp (ISO)</div>
-                  <div style={{ fontFamily: 'monospace', fontSize: '14px', color: 'var(--app-text)' }}>
+                  <div className="fs-12 text-muted mb-4">Timestamp (ISO)</div>
+                  <div className="fs-14 text-primary" style={{ fontFamily: 'monospace' }}>
                     {new Date(selectedEvent.timestamp).toISOString()}
                   </div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Event Type</div>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text)' }}>{selectedEvent.event_type}</div>
+                  <div className="fs-12 text-muted mb-4">Event Type</div>
+                  <div className="fs-14 text-primary">{selectedEvent.event_type}</div>
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>User</div>
-                  <div style={{ fontSize: '14px', color: 'var(--app-text)' }}>
+                  <div className="fs-12 text-muted mb-4">User</div>
+                  <div className="fs-14 text-primary">
                     {selectedEvent.user?.name || 'System'}
                     {selectedEvent.user?.email && ` (${selectedEvent.user.email})`}
                   </div>
@@ -690,8 +690,8 @@ export const AuditLogPage: React.FC = () => {
 
                 {selectedEvent.organisation_id && (
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Organisation ID</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: '14px', color: 'var(--app-text)' }}>
+                    <div className="fs-12 text-muted mb-4">Organisation ID</div>
+                    <div className="fs-14 text-primary" style={{ fontFamily: 'monospace' }}>
                       {selectedEvent.organisation_id}
                     </div>
                   </div>
@@ -699,8 +699,8 @@ export const AuditLogPage: React.FC = () => {
 
                 {selectedEvent.project_id && (
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Project ID</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: '14px', color: 'var(--app-text)' }}>
+                    <div className="fs-12 text-muted mb-4">Project ID</div>
+                    <div className="fs-14 text-primary" style={{ fontFamily: 'monospace' }}>
                       {selectedEvent.project_id}
                     </div>
                   </div>
@@ -708,17 +708,10 @@ export const AuditLogPage: React.FC = () => {
 
                 {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
                   <div>
-                    <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginBottom: '4px' }}>Metadata</div>
-                    <pre style={{
+                    <div className="fs-12 text-muted mb-4">Metadata</div>
+                    <pre className="fs-12 bg-surface-2 p-12 rounded-4 overflow-auto text-primary border" style={{
                       fontFamily: 'monospace',
-                      fontSize: '12px',
-                      backgroundColor: 'var(--app-surface-2)',
-                      padding: '12px',
-                      borderRadius: '4px',
-                      overflow: 'auto',
                       maxHeight: '300px',
-                      color: 'var(--app-text)',
-                      border: '1px solid var(--app-border)',
                     }}>
                       {JSON.stringify(selectedEvent.metadata, null, 2)}
                     </pre>

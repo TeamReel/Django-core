@@ -521,10 +521,10 @@ export default function LinkUserModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>
+        <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>
           Link {userDisplayName}
         </h2>
-        <div style={{ marginBottom: '16px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+        <div className="mb-16 text-muted fs-13">
           Link this user to a Federation (organisation) and optionally to a Club/Team.
         </div>
 
@@ -559,23 +559,16 @@ export default function LinkUserModal({
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                   Federation
                 </label>
                 <select
                   value={organisationId}
                   onChange={(e) => setOrganisationId(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-input-bg)',
-                    color: 'var(--app-text)',
-                    fontSize: '14px',
-                  }}
+                  className="w-full p-8 rounded-4 border text-primary fs-14"
+                  style={{ backgroundColor: 'var(--app-input-bg)' }}
                 >
                   <option value="">(optional) Select Federation…</option>
                   {(organisations || []).map((org) => (
@@ -589,7 +582,7 @@ export default function LinkUserModal({
                   ))}
                 </select>
                 {organisationId && existingOrgIds.has(String(organisationId)) && (
-                  <div style={{ marginTop: '8px' }}>
+                  <div className="mt-8">
                     <button
                       type="button"
                       disabled={saving}
@@ -627,21 +620,14 @@ export default function LinkUserModal({
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                   Federation Role
                 </label>
                 <select
                   value={orgRole}
                   onChange={(e) => setOrgRole(e.target.value as any)}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-input-bg)',
-                    color: 'var(--app-text)',
-                    fontSize: '14px',
-                  }}
+                  className="w-full p-8 rounded-4 border text-primary fs-14"
+                  style={{ backgroundColor: 'var(--app-input-bg)' }}
                   disabled={!organisationId}
                 >
                   <option value="member">Member</option>
@@ -650,9 +636,9 @@ export default function LinkUserModal({
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                   Club
                 </label>
                 <select
@@ -663,15 +649,8 @@ export default function LinkUserModal({
                     setSeasonId('');
                     setSeasonOptions([]);
                   }}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-input-bg)',
-                    color: 'var(--app-text)',
-                    fontSize: '14px',
-                  }}
+                  className="w-full p-8 rounded-4 border text-primary fs-14"
+                  style={{ backgroundColor: 'var(--app-input-bg)' }}
                 >
                   <option value="">(optional) Select Club…</option>
                   {filteredClubs.map((c) => (
@@ -684,7 +663,7 @@ export default function LinkUserModal({
                   ))}
                 </select>
                 {clubId && existingProjectIds.has(String(clubId)) && (
-                  <div style={{ marginTop: '8px' }}>
+                  <div className="mt-8">
                     <button
                       type="button"
                       disabled={saving}
@@ -722,7 +701,7 @@ export default function LinkUserModal({
               </div>
 
               <div>
-                <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                   Team
                 </label>
                 <select
@@ -731,15 +710,8 @@ export default function LinkUserModal({
                     setTeamId(e.target.value);
                     setSeasonId('');
                   }}
-                  style={{
-                    width: '100%',
-                    padding: '8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-input-bg)',
-                    color: 'var(--app-text)',
-                    fontSize: '14px',
-                  }}
+                  className="w-full p-8 rounded-4 border text-primary fs-14"
+                  style={{ backgroundColor: 'var(--app-input-bg)' }}
                 >
                   <option value="">(optional) Select Team…</option>
                   {filteredTeams.map((t) => (
@@ -752,7 +724,7 @@ export default function LinkUserModal({
                   ))}
                 </select>
                 {teamId && existingProjectIds.has(String(teamId)) && (
-                  <div style={{ marginTop: '8px' }}>
+                  <div className="mt-8">
                     <button
                       type="button"
                       disabled={saving}
@@ -791,21 +763,14 @@ export default function LinkUserModal({
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+              <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                 Access Role (permissions)
               </label>
               <select
                 value={accessRole}
                 onChange={(e) => setAccessRole((e.target.value as any) || 'viewer')}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  fontSize: '14px',
-                }}
+                className="w-full p-8 rounded-4 border text-primary fs-14"
+                style={{ backgroundColor: 'var(--app-input-bg)' }}
                 disabled={!clubId && !teamId}
               >
                 {accessRoleOptions.map((o) => (
@@ -814,14 +779,14 @@ export default function LinkUserModal({
                   </option>
                 ))}
               </select>
-              <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
+              <div className="text-muted fs-12" style={{ marginTop: '6px', lineHeight: 1.35 }}>
                 This controls backend access for the Club/Team (viewer/editor/admin). Team-level functional roles are managed
                 separately and can be multi-valued.
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+              <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                 Functional Roles (team only)
               </label>
               <div
@@ -839,7 +804,7 @@ export default function LinkUserModal({
                 {functionalRoleOptions.map((opt) => {
                   const checked = functionalRoles.includes(opt.value);
                   return (
-                    <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                    <label key={opt.value} className="flex-row gap-8 fs-13">
                       <input
                         type="checkbox"
                         disabled={!teamId}
@@ -859,27 +824,20 @@ export default function LinkUserModal({
                   );
                 })}
               </div>
-              <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
+              <div className="text-muted fs-12" style={{ marginTop: '6px', lineHeight: 1.35 }}>
                 Tip: Team Admins automatically show as “Coach” in the API.
               </div>
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '6px', fontWeight: 600, fontSize: '13px' }}>
+              <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>
                 Season (optional)
               </label>
               <select
                 value={seasonId}
                 onChange={(e) => setSeasonId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  fontSize: '14px',
-                }}
+                className="w-full p-8 rounded-4 border text-primary fs-14"
+                style={{ backgroundColor: 'var(--app-input-bg)' }}
                 disabled={!teamId || seasonOptions.length === 0}
               >
                 <option value="">{!teamId ? 'Select a team first…' : '(optional) Select Season…'}</option>
@@ -889,7 +847,7 @@ export default function LinkUserModal({
                   </option>
                 ))}
               </select>
-              <div style={{ marginTop: '6px', color: 'var(--app-muted-text)', fontSize: '12px', lineHeight: 1.35 }}>
+              <div className="text-muted fs-12" style={{ marginTop: '6px', lineHeight: 1.35 }}>
                 If set, the team membership will be scoped to this season via `period_id`.
               </div>
             </div>

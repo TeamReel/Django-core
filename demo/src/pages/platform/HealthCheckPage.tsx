@@ -100,9 +100,9 @@ export const HealthCheckPage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <div style={{ padding: '24px' }}>
-          <h1 style={{ color: 'var(--app-text)' }}>System Health</h1>
-          <p style={{ color: 'var(--app-text)' }}>Loading demo health check data...</p>
+        <div className="p-24">
+          <h1 className="text-primary">System Health</h1>
+          <p className="text-primary">Loading demo health check data...</p>
         </div>
       </>
     );
@@ -111,8 +111,8 @@ export const HealthCheckPage: React.FC = () => {
   if (error) {
     return (
       <>
-        <div style={{ padding: '24px' }}>
-          <h1 style={{ color: 'var(--app-text)' }}>System Health</h1>
+        <div className="p-24">
+          <h1 className="text-primary">System Health</h1>
           <div style={{
             padding: '16px',
             backgroundColor: 'var(--app-error)',
@@ -132,32 +132,27 @@ export const HealthCheckPage: React.FC = () => {
 
   return (
     <>
-      <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h1 style={{ margin: 0, color: 'var(--app-text)' }}>System Health</h1>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Last Checked: {new Date(data.timestamp).toLocaleString()}</div>
-            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+      <div className="page-container">
+        <div className="flex-between mb-24">
+          <h1 className="m-0 text-primary">System Health</h1>
+          <div className="text-right">
+            <div className="fs-14 text-muted">Last Checked: {new Date(data.timestamp).toLocaleString()}</div>
+            <div className="fs-12 text-muted mt-4">
               Demo environment – status based on application-level health checks.
             </div>
           </div>
         </div>
 
-        <p style={{ marginBottom: '32px', fontSize: '16px', color: 'var(--app-text)' }}>
+        <p className="mb-32 fs-16 text-primary">
           This environment uses controlled demo data to validate application behaviour and data consistency.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '24px' }}>
+        <div className="grid gap-24" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
 
           {/* Core Service Checks */}
-          <div style={{
-            border: '1px solid var(--app-border)',
-            borderRadius: '8px',
-            padding: '20px',
-            backgroundColor: 'var(--app-surface-2)'
-          }}>
-            <h2 style={{ marginTop: 0, borderBottom: '1px solid var(--app-border)', paddingBottom: '12px', color: 'var(--app-text)' }}>Core Services</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="border rounded-8 p-20 bg-surface-2">
+            <h2 className="border-bottom text-primary" style={{ marginTop: 0, paddingBottom: '12px' }}>Core Services</h2>
+            <div className="flex-col gap-12">
               <ServiceRow label="Database Connectivity" status={data.core_services.database?.status} detail={data.core_services.database?.latency_ms ? `${data.core_services.database.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
               <ServiceRow label="Cache Availability" status={data.core_services.cache?.status} detail={data.core_services.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
               <ServiceRow label="Auth & Permissions" status={data.core_services.auth?.status} detail={data.core_services.auth?.message} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
@@ -166,17 +161,12 @@ export const HealthCheckPage: React.FC = () => {
           </div>
 
           {/* Data Integrity */}
-          <div style={{
-            border: '1px solid var(--app-border)',
-            borderRadius: '8px',
-            padding: '20px',
-            backgroundColor: 'var(--app-surface-2)'
-          }}>
-            <h2 style={{ marginTop: 0, borderBottom: '1px solid var(--app-border)', paddingBottom: '12px', color: 'var(--app-text)' }}>Data Integrity</h2>
+          <div className="border rounded-8 p-20 bg-surface-2">
+            <h2 className="border-bottom text-primary" style={{ marginTop: 0, paddingBottom: '12px' }}>Data Integrity</h2>
             {data.data_integrity.error ? (
-               <div style={{ color: 'var(--app-error)' }}>{data.data_integrity.error}</div>
+               <div className="text-error">{data.data_integrity.error}</div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="flex-col gap-12">
                 <IntegrityRow label="Total Organisations" count={data.data_integrity.organisations_total} min={1} />
                 <IntegrityRow label="Active Organisations (with members)" count={data.data_integrity.organisations_active} min={1} />
                 <IntegrityRow label="Total Users" count={data.data_integrity.users_total} min={10} />
@@ -188,14 +178,9 @@ export const HealthCheckPage: React.FC = () => {
           </div>
 
           {/* Feature Availability */}
-          <div style={{
-            border: '1px solid var(--app-border)',
-            borderRadius: '8px',
-            padding: '20px',
-            backgroundColor: 'var(--app-surface-2)'
-          }}>
-            <h2 style={{ marginTop: 0, borderBottom: '1px solid var(--app-border)', paddingBottom: '12px', color: 'var(--app-text)' }}>Feature Availability</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="border rounded-8 p-20 bg-surface-2">
+            <h2 className="border-bottom text-primary" style={{ marginTop: 0, paddingBottom: '12px' }}>Feature Availability</h2>
+            <div className="flex-col gap-12">
               <ServiceRow label="Identity & Context" status={data.features.identity_context} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
               <ServiceRow label="Projects & Memberships" status={data.features.projects_memberships} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
               <ServiceRow label="Notifications" status={data.features.notifications} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
@@ -212,18 +197,10 @@ export const HealthCheckPage: React.FC = () => {
 
 function ServiceRow({ label, status, detail, getIcon, getColor, getTextColor }: any) {
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '8px',
-      backgroundColor: 'var(--app-surface)',
-      borderRadius: '4px',
-      border: '1px solid var(--app-border)'
-    }}>
-      <span style={{ fontWeight: 500, color: 'var(--app-text)' }}>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {detail && <span style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>{detail}</span>}
+    <div className="flex-between p-8 bg-surface rounded-4 border">
+      <span className="fw-500 text-primary">{label}</span>
+      <div className="flex-row gap-8">
+        {detail && <span className="fs-12 text-muted">{detail}</span>}
         <span style={{
           padding: '4px 8px',
           borderRadius: '12px',
@@ -259,16 +236,8 @@ function IntegrityRow({ label, count, min }: { label: string, count?: number, mi
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '8px',
-      backgroundColor: 'var(--app-surface)',
-      borderRadius: '4px',
-      border: '1px solid var(--app-border)'
-    }}>
-      <span style={{ fontWeight: 500, color: 'var(--app-text)' }}>{label}</span>
+    <div className="flex-between p-8 bg-surface rounded-4 border">
+      <span className="fw-500 text-primary">{label}</span>
       <span style={{
         padding: '4px 12px',
         borderRadius: '12px',
