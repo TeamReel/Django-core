@@ -1,0 +1,207 @@
+import React from 'react';
+import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import {
+  normalizeVariantValue,
+  getBestUrl,
+  isLineupReady,
+  isProcessing,
+} from '../../constants/assetProcessingSpecs';
+import type { MemberTabCommonProps } from './memberDetailUtils';
+import {
+  getVariantRawUrl,
+  triggerAssetProcessing,
+  cancelAssetProcessing,
+} from './memberDetailUtils';
+import { ProcessingBadge } from './MemberProcessingBadge';
+import s from './ProjectSeasonMemberDetailPage.module.css';
+
+export function MemberPhotoCompositeTab({
+  videoVariants,
+  setVideoVariants,
+  userCanEditProject,
+  apiBaseUrl,
+  membershipId,
+  project,
+  resolveDisplayUrl,
+  openAiModal,
+  startProcessingPoll,
+  setVideoPreviewUrl,
+  setMembership,
+  form,
+}: MemberTabCommonProps) {
+  const legacyHalfbodyUrl =
+    resolveDisplayUrl(getBestUrl(videoVariants.halfbody.legacy)) || null;
+  const currentHalfbodyUrl =
+    resolveDisplayUrl(getBestUrl(videoVariants.halfbody.home)) || null;
+  const hasBothInputs = Boolean(legacyHalfbodyUrl) && Boolean(currentHalfbodyUrl);
+
+  // Step 1: Gemini composite image
+  const compositeImageData = videoVariants.photo_composite?.home;
+  const compositeImageUrl = compositeImageData ? resolveDisplayUrl(getBestUrl(compositeImageData)) : null;
+  const hasCompositeImage = Boolean(compositeImageData && getBestUrl(compositeImageData));
+
+  // Step 2: MiniMax video
+  const compositeVideoData = videoVariants.photo_composite?.default;
+  const compositeVideoUrl = compositeVideoData ? resolveDisplayUrl(getBestUrl(compositeVideoData)) : null;
+  const hasCompositeVideo = Boolean(compositeVideoData && getBestUrl(compositeVideoData));
+  const compositeVideoNormalized = normalizeVariantValue(compositeVideoData as any);
+  const compositeVideoLineupReady = isLineupReady(compositeVideoData);
+  const compositeVideoProcessing = isProcessing(compositeVideoData);
+  const compositeVideoCancellingOrProcessing =
+    compositeVideoNormalized?.processing_state === 'processing' ||
+    compositeVideoNormalized?.processing_state === 'cancelling';
+
+  return (
+    <Card>
+      <div className={s.cardPadding}>
+        <div className={s.flexSpaceBetween}>
+          <div className={s.flexCenterGap8}>
+            <span className={s.tabIcon}>👥</span>
+            <div className={s.tabTitle}>Duo Portret</div>
+          </div>
+          <Badge variant={userCanEditProject ? 'default' : 'info'}>
+            {userCanEditProject ? 'Editable' : 'Read-only'}
+          </Badge>
+        </div>
+
+        <div className={s.tabDescription}>
+          AI-composiet van twee versies van de speler (legacy + huidig). Vereist halfbody afbeeldingen van beide versies.
+        </div>
+
+        {/* Prerequisites */}
+        <div className={s.prerequisiteRow}>
+          <div className={s.prerequisiteCard} style={{
+            border: legacyHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy Halfbody</div>
+            {legacyHalfbodyUrl ? (
+              <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            ) : (
+              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy Halfbody</div>
+            )}
+          </div>
+          <div className={s.prerequisiteCard} style={{
+            border: currentHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
+          }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Halfbody</div>
+            {currentHalfbodyUrl ? (
+              <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            ) : (
+              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Halfbody</div>
+            )}
+          </div>
+        </div>
+
+        {/* Pipeline steps */}
+        <div className={s.kitSectionMargin}>
+          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
+            {/* Step 1: Gemini Composite Image */}
+            <div className={s.variantCard} style={{
+              border: hasCompositeImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+            }}>
+              <div className={s.variantPreview916} style={{ background: hasCompositeImage ? '#000' : undefined }}>
+                {hasCompositeImage && compositeImageUrl ? (
+                  <>
+                    <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" className={s.mediaCoverContain} />
+                    <div className={s.overlayBadgeContainer}><div className={s.aiBadge}>AI</div></div>
+                  </>
+                ) : (
+                  <div className={s.notGeneratedText}>Niet gegenereerd</div>
+                )}
+              </div>
+              <div className={s.cardFooterPadding}>
+                <div className={s.variantLabel}>📸 Gemini Composite</div>
+                <div className={s.actionButtonRow}>
+                  <Button size="sm" onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)} disabled={!hasBothInputs} className={s.btnSmall} style={{ width: '100%' }}>
+                    {hasCompositeImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: MiniMax Video */}
+            <div className={s.variantCard} style={{
+              border: hasCompositeVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
+              opacity: hasCompositeImage ? 1 : 0.4,
+            }}>
+              <div
+                onClick={() => { if (compositeVideoUrl) setVideoPreviewUrl(compositeVideoUrl); }}
+                className={s.variantPreview916}
+                style={{
+                  background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : undefined,
+                  cursor: hasCompositeVideo ? 'pointer' : 'default',
+                }}>
+                {hasCompositeVideo && compositeVideoUrl ? (
+                  <>
+                    <video key={compositeVideoUrl} src={compositeVideoUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay />
+                    <div className={s.overlayBadgeContainer}>
+                      <div className={s.aiBadge}>AI</div>
+                      <ProcessingBadge value={compositeVideoData} />
+                    </div>
+                  </>
+                ) : (
+                  <div className={s.notGeneratedText}>Niet gegenereerd</div>
+                )}
+              </div>
+              <div className={s.cardFooterPadding}>
+                <div className={s.variantLabel}>🎬 MiniMax Video</div>
+                <div className={s.actionButtonRow}>
+                  {hasCompositeVideo ? (
+                    <>
+                      <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={s.btnSmall} style={{ flex: 1 }}>
+                        Opnieuw
+                      </Button>
+                      {!compositeVideoProcessing && (
+                        <Button size="sm" variant="secondary" onClick={async () => {
+                          const result = await triggerAssetProcessing(apiBaseUrl, membershipId!, 'photo_composite', 'default', null);
+                          if (result.ok) {
+                            const rawUrl = getVariantRawUrl(compositeVideoData) || '';
+                            setVideoVariants(prev => ({ ...prev, photo_composite: { ...prev.photo_composite, default: { raw: rawUrl, processed: null, processing_state: 'processing' as const } } }));
+                            startProcessingPoll('photo_composite', 'default');
+                          }
+                        }} className={s.btnProcess}>
+                          {compositeVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                        </Button>
+                      )}
+                      {compositeVideoCancellingOrProcessing && (
+                        <Button size="sm" variant="ghost" onClick={async () => {
+                          const isCancelling = compositeVideoNormalized?.processing_state === 'cancelling';
+                          const result = await cancelAssetProcessing(apiBaseUrl, membershipId!, 'photo_composite', 'default', null, isCancelling);
+                          if (result.ok) {
+                            if (isCancelling) {
+                              try {
+                                const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`, { credentials: 'include' });
+                                if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+                              } catch { /* best-effort */ }
+                            } else {
+                              const rawUrl = getVariantRawUrl(compositeVideoData) || '';
+                              setVideoVariants(prev => ({ ...prev, photo_composite: { ...prev.photo_composite, default: { raw: rawUrl, processed: null, processing_state: 'cancelling' as const } } }));
+                              startProcessingPoll('photo_composite', 'default');
+                            }
+                          }
+                        }} className={s.btnCancelOrange}>
+                          {compositeVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                        </Button>
+                      )}
+                      {compositeVideoLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                    </>
+                  ) : (
+                    <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={s.btnSmall} style={{ width: '100%' }}>
+                      ✨ Genereer
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!userCanEditProject && (
+          <div style={{ marginTop: '16px' }}>
+            <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+}
