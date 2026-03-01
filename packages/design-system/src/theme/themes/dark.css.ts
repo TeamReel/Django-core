@@ -4,21 +4,21 @@ import { themeVars } from '../../tokens/theme.css';
 export const darkTheme = createTheme(themeVars, {
   color: {
     text: {
-      primary: '#EDF6FF',
+      primary: '#EDF6FF',     // Ice White
       secondary: '#94a3b8',
       tertiary: '#64748b',
       disabled: '#475569',
-      inverse: '#0A192F',
-      link: '#4CA1FF',
+      inverse: '#0A192F',     // Midnight Navy
+      link: '#4CA1FF',        // Sky Blue
       error: '#f87171',
       success: '#4ade80',
-      warning: '#fd7e14',
+      warning: '#fbbf24',
     },
     background: {
-      primary: '#1C355E', // Surface 1 (Cards, Modals)
-      secondary: '#243f6e', // Surface 2 (Filled Cards, Inputs)
-      tertiary: '#2e4a6d', // Surface 3 (Hover states)
-      inverse: '#EDF6FF',
+      primary: '#1C355E',     // Deep Navy — Surface 1 (Cards, Modals)
+      secondary: '#243f6e',   // Surface 2 (Filled Cards, Inputs)
+      tertiary: '#2e4a6d',    // Surface 3 (Hover states)
+      inverse: '#EDF6FF',     // Ice White
       overlay: 'rgba(0, 0, 0, 0.75)',
       success: '#14532d',
       warning: '#422006',
@@ -28,19 +28,19 @@ export const darkTheme = createTheme(themeVars, {
     border: {
       primary: '#2e4a6d',
       secondary: 'rgba(148, 163, 184, 0.22)',
-      focus: '#4CA1FF',
+      focus: '#4CA1FF',       // Sky Blue
       error: '#f87171',
     },
     interactive: {
-      primary: '#3b82f6',
-      primaryHover: '#60a5fa',
-      primaryActive: '#2563eb',
-      secondary: '#243f6e',
+      primary: '#4CA1FF',         // Sky Blue (lighter primary for dark mode)
+      primaryHover: '#6DB8FF',    // Lighter Sky Blue
+      primaryActive: '#3B8EA5',   // Ocean Teal
+      secondary: '#243f6e',       // Deep Navy secondary
       secondaryHover: '#2e4a6d',
       secondaryActive: '#37567c',
-      destructive: '#ef4444',
+      destructive: '#E63946',     // Signal Red
       destructiveHover: '#f87171',
-      destructiveActive: '#dc2626',
+      destructiveActive: '#C62D39',
       disabled: '#2e4a6d',
     },
     palette: {
@@ -58,56 +58,56 @@ export const darkTheme = createTheme(themeVars, {
         '950': '#0a0a0a',
       },
       primary: {
-        '50': '#eff6ff',
-        '100': '#dbeafe',
-        '200': '#bfdbfe',
-        '300': '#93c5fd',
-        '400': '#60a5fa',
-        '500': '#3b82f6',
-        '600': '#2563eb',
-        '700': '#1d4ed8',
-        '800': '#1e40af',
-        '900': '#1e3a8a',
-        '950': '#172554',
+        '50': '#EDF8FB',
+        '100': '#D5EFF6',
+        '200': '#A8DDE9',
+        '300': '#76C5D8',
+        '400': '#51AABD',
+        '500': '#3B8EA5',     // Ocean Teal (brand base)
+        '600': '#2D7189',
+        '700': '#246074',
+        '800': '#1C4F5F',
+        '900': '#153D49',
+        '950': '#0D262E',
       },
       success: {
-        '50': '#f0fdf4',
-        '100': '#dcfce7',
-        '200': '#bbf7d0',
-        '300': '#86efac',
-        '400': '#4ade80',
-        '500': '#22c55e',
-        '600': '#16a34a',
-        '700': '#15803d',
-        '800': '#166534',
-        '900': '#14532d',
-        '950': '#052e16',
+        '50': '#ECFDF5',
+        '100': '#D1FAE5',
+        '200': '#A7F3D0',
+        '300': '#6EE7B7',
+        '400': '#34D399',
+        '500': '#06D6A0',     // Team Green
+        '600': '#059669',
+        '700': '#047857',
+        '800': '#065F46',
+        '900': '#064E3B',
+        '950': '#022C22',
       },
       warning: {
-        '50': '#fefce8',
-        '100': '#fef9c3',
-        '200': '#fef08a',
-        '300': '#fde047',
-        '400': '#facc15',
-        '500': '#eab308',
-        '600': '#ca8a04',
-        '700': '#a16207',
-        '800': '#854d0e',
-        '900': '#713f12',
+        '50': '#FFFBEB',
+        '100': '#FEF3C7',
+        '200': '#FDE68A',
+        '300': '#FCD34D',
+        '400': '#FFD166',     // Focus Amber
+        '500': '#F59E0B',
+        '600': '#D97706',
+        '700': '#B45309',
+        '800': '#92400E',
+        '900': '#78350F',
         '950': '#422006',
       },
       error: {
-        '50': '#fef2f2',
-        '100': '#fee2e2',
-        '200': '#fecaca',
-        '300': '#fca5a5',
-        '400': '#f87171',
-        '500': '#ef4444',
-        '600': '#dc2626',
-        '700': '#b91c1c',
-        '800': '#991b1b',
-        '900': '#7f1d1d',
-        '950': '#450a0a',
+        '50': '#FEF2F2',
+        '100': '#FEE2E2',
+        '200': '#FECACA',
+        '300': '#FCA5A5',
+        '400': '#F87171',
+        '500': '#E63946',     // Signal Red
+        '600': '#C62D39',
+        '700': '#A8242F',
+        '800': '#8B1C26',
+        '900': '#6D151E',
+        '950': '#450A0A',
       },
     },
   },

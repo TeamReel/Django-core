@@ -4,43 +4,43 @@ import { themeVars } from '../../tokens/theme.css';
 export const lightTheme = createTheme(themeVars, {
   color: {
     text: {
-      primary: '#1a1a1a',
-      secondary: '#525252',
-      tertiary: '#737373',
-      disabled: '#a3a3a3',
-      inverse: '#ffffff',
-      link: '#2563eb',
-      error: '#dc2626',
-      success: '#16a34a',
-      warning: '#fd7e14',
+      primary: '#1C355E',     // Deep Navy (TeamReel brand)
+      secondary: '#6b7280',   // Neutral gray
+      tertiary: '#94a3b8',    // Lighter gray
+      disabled: '#9ca3af',
+      inverse: '#EDF6FF',     // Ice White
+      link: '#3B8EA5',        // Ocean Teal (TeamReel primary)
+      error: '#E63946',       // Signal Red
+      success: '#06D6A0',     // Team Green
+      warning: '#d97706',     // Amber (darker for text contrast)
     },
     background: {
-      primary: '#ffffff', // Surface 1 (Cards) - Distinct from page bg #f5f5f5
-      secondary: '#f9fafb', // Surface 2 (Filled Cards)
-      tertiary: '#f3f4f6', // Surface 3
-      inverse: '#1a1a1a',
+      primary: '#ffffff',     // Surface 1 (Cards)
+      secondary: '#F8FAFC',   // Surface 2
+      tertiary: '#F0F4F8',    // Surface 3 (matches --app-surface-2)
+      inverse: '#1C355E',     // Deep Navy
       overlay: 'rgba(0, 0, 0, 0.5)',
       success: '#dcfce7',
       warning: '#fff4e6',
       error: '#fee2e2',
-      info: '#dbeafe',
+      info: '#EDF6FF',        // Ice White tint
     },
     border: {
-      primary: '#e5e5e5',
-      secondary: '#d4d4d4',
-      focus: '#2563eb',
-      error: '#dc2626',
+      primary: '#e5e5e5',     // matches --app-border
+      secondary: '#d1d5db',   // matches --app-input-border
+      focus: '#4CA1FF',       // Sky Blue (matches --app-focus-ring)
+      error: '#E63946',       // Signal Red
     },
     interactive: {
-      primary: '#2563eb',
-      primaryHover: '#1d4ed8',
-      primaryActive: '#1e40af',
-      secondary: '#f5f5f5',
-      secondaryHover: '#e5e5e5',
-      secondaryActive: '#d4d4d4',
-      destructive: '#dc2626',
-      destructiveHover: '#b91c1c',
-      destructiveActive: '#991b1b',
+      primary: '#3B8EA5',         // Ocean Teal
+      primaryHover: '#2D7189',    // Darker teal
+      primaryActive: '#246074',   // Darkest teal
+      secondary: '#F0F4F8',       // matches --app-surface-2
+      secondaryHover: '#e2e8f0',
+      secondaryActive: '#cbd5e1',
+      destructive: '#E63946',     // Signal Red
+      destructiveHover: '#C62D39',
+      destructiveActive: '#A8242F',
       disabled: '#e5e5e5',
     },
     palette: {
@@ -58,56 +58,56 @@ export const lightTheme = createTheme(themeVars, {
         '950': '#0a0a0a',
       },
       primary: {
-        '50': '#eff6ff',
-        '100': '#dbeafe',
-        '200': '#bfdbfe',
-        '300': '#93c5fd',
-        '400': '#60a5fa',
-        '500': '#3b82f6',
-        '600': '#2563eb',
-        '700': '#1d4ed8',
-        '800': '#1e40af',
-        '900': '#1e3a8a',
-        '950': '#172554',
+        '50': '#EDF8FB',
+        '100': '#D5EFF6',
+        '200': '#A8DDE9',
+        '300': '#76C5D8',
+        '400': '#51AABD',
+        '500': '#3B8EA5',     // Ocean Teal (brand base)
+        '600': '#2D7189',
+        '700': '#246074',
+        '800': '#1C4F5F',
+        '900': '#153D49',
+        '950': '#0D262E',
       },
       success: {
-        '50': '#f0fdf4',
-        '100': '#dcfce7',
-        '200': '#bbf7d0',
-        '300': '#86efac',
-        '400': '#4ade80',
-        '500': '#22c55e',
-        '600': '#16a34a',
-        '700': '#15803d',
-        '800': '#166534',
-        '900': '#14532d',
-        '950': '#052e16',
+        '50': '#ECFDF5',
+        '100': '#D1FAE5',
+        '200': '#A7F3D0',
+        '300': '#6EE7B7',
+        '400': '#34D399',
+        '500': '#06D6A0',     // Team Green (brand)
+        '600': '#059669',
+        '700': '#047857',
+        '800': '#065F46',
+        '900': '#064E3B',
+        '950': '#022C22',
       },
       warning: {
-        '50': '#fefce8',
-        '100': '#fef9c3',
-        '200': '#fef08a',
-        '300': '#fde047',
-        '400': '#facc15',
-        '500': '#eab308',
-        '600': '#ca8a04',
-        '700': '#a16207',
-        '800': '#854d0e',
-        '900': '#713f12',
+        '50': '#FFFBEB',
+        '100': '#FEF3C7',
+        '200': '#FDE68A',
+        '300': '#FCD34D',
+        '400': '#FFD166',     // Focus Amber (brand)
+        '500': '#F59E0B',
+        '600': '#D97706',
+        '700': '#B45309',
+        '800': '#92400E',
+        '900': '#78350F',
         '950': '#422006',
       },
       error: {
-        '50': '#fef2f2',
-        '100': '#fee2e2',
-        '200': '#fecaca',
-        '300': '#fca5a5',
-        '400': '#f87171',
-        '500': '#ef4444',
-        '600': '#dc2626',
-        '700': '#b91c1c',
-        '800': '#991b1b',
-        '900': '#7f1d1d',
-        '950': '#450a0a',
+        '50': '#FEF2F2',
+        '100': '#FEE2E2',
+        '200': '#FECACA',
+        '300': '#FCA5A5',
+        '400': '#F87171',
+        '500': '#E63946',     // Signal Red (brand)
+        '600': '#C62D39',
+        '700': '#A8242F',
+        '800': '#8B1C26',
+        '900': '#6D151E',
+        '950': '#450A0A',
       },
     },
   },

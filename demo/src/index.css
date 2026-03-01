@@ -25,6 +25,17 @@
   --app-text-muted: #6b7280;
   --app-surface-active: #D6EAFF; /* Stronger Ice White tint */
 
+  /* Derived aliases — referenced in code but previously undefined */
+  --app-primary: var(--app-link);               /* Ocean Teal — alias for link/action color */
+  --app-primary-light: rgba(59, 142, 165, 0.08); /* Teal tint for hover/active states */
+  --app-danger: var(--app-error);               /* Signal Red — alias for error */
+  --app-text-secondary: var(--app-muted-text);  /* Alias for muted text */
+  --app-muted: var(--app-muted-text);           /* Alias for muted text */
+  --app-background: var(--app-bg);              /* Alias for page background */
+  --app-surface-1: var(--app-surface);          /* Alias for primary surface */
+  --app-surface-elevated: #ffffff;              /* Elevated surface (popover/dropdown) */
+  --app-surface-hover: var(--app-surface-2);    /* Surface hover state */
+
   /* Mapping for SearchBar and other components using design system tokens */
   --color-text-primary: var(--app-text);
   --color-text-secondary: var(--app-muted-text);
@@ -57,6 +68,17 @@
   --app-info: #4CA1FF;
   --app-text-muted: #9ca3af;
   --app-surface-active: #1e3a8a;
+
+  /* Derived aliases — dark mode */
+  --app-primary: var(--app-link);               /* Sky Blue in dark mode */
+  --app-primary-light: rgba(76, 161, 255, 0.12); /* Blue tint for hover/active */
+  --app-danger: var(--app-error);               /* Signal Red */
+  --app-text-secondary: var(--app-muted-text);  /* Alias for muted text */
+  --app-muted: var(--app-muted-text);           /* Alias for muted text */
+  --app-background: var(--app-bg);              /* Alias for page background */
+  --app-surface-1: var(--app-surface);          /* Alias for primary surface */
+  --app-surface-elevated: #243f6e;              /* Elevated surface (popover/dropdown) */
+  --app-surface-hover: #2e4a6d;                 /* Surface hover state */
 
   /* Reset border for dark mode to be less aggressive than Teal if needed */
   --app-border: #2e4a6d;
