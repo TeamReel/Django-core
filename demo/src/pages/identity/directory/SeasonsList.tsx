@@ -1,16 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { periodPathKey } from '../../../utils/periodPath';
-import { Alert, Card, Button, Badge } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
-import { Table } from '@/shims/design-system';
+import { Badge } from '@django-core/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
 import {
-    compactTableStyle,
     compactThStyle,
     compactTdStyle,
     compactTextTdStyle,
@@ -22,14 +19,15 @@ import {
     getCsrfToken,
     sortKey,
     getFederationName,
-    getTeamId,
     getTeamName,
     getClubName,
     matchesSportFilter,
+    resolveRowContext,
 } from '../../../utils/directoryHelpers';
-import type { DirectoryListProps } from '../../../utils/directoryHelpers';
+import type { DirectoryListProps, RowContextConfig } from '../../../utils/directoryHelpers';
 import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
 import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
+import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 
 type Period = {
   id: string;
@@ -395,6 +393,13 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
     return list;
   }, [filteredSeasons, organisations, clubs, teams]);
 
+  const rowConfig = useMemo<RowContextConfig>(() => ({
+    organisations, clubs, teams,
+    preselectedClubSlug, preselectedTeamSlug,
+    selectedOrgId, selectedClubId,
+    fallbackOrgSlug: orgKeyForRoutes,
+  }), [organisations, clubs, teams, preselectedClubSlug, preselectedTeamSlug, selectedOrgId, selectedClubId, orgKeyForRoutes]);
+
   return (
     <div>
       <DirectoryFilterBar
@@ -403,19 +408,14 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
         onCreateClick={() => setIsCreateModalOpen(true)}
       />
 
-      {isLoading && <LoadingState message="Loading options..." />}
-      {error && <Alert variant="error">{error}</Alert>}
-
-      {!isLoading && !error && seasonsLoading && <LoadingState message="Loading seasons..." />}
-
-      {!isLoading && !error && !seasonsLoading && filteredSeasons.length === 0 && (
-          <Alert variant="info">No seasons found. Use filters to narrow your search.</Alert>
-      )}
-
-      {!isLoading && !error && !seasonsLoading && filteredSeasons.length > 0 && (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table style={compactTableStyle}>
+      <DirectoryTableShell
+        isLoading={isLoading}
+        error={error}
+        domainLoading={seasonsLoading}
+        domainLoadingMessage="Loading seasons..."
+        emptyMessage="No seasons found. Use filters to narrow your search."
+        itemCount={filteredSeasons.length}
+      >
               <thead>
                 <tr>
                     {!orgLocked && (
@@ -437,111 +437,76 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
               </thead>
               <tbody>
                 {sortedSeasons.map((season) => {
-                    const org = season.organisation;
-                    const project = season.project;
-                    const orgName = typeof org === 'string' ? org : org?.name || '-';
-                    const teamName = typeof project === 'string' ? project : project?.name || '-';
-                    const teamId =
-                      (typeof project === 'string' ? project : project?.id) ??
-                      (season as any)?.project_id ??
-                      (season as any)?.project?.id ??
-                      '';
-
-                    // Find the team in teams list to get parent club info
-                    const teamObj = teams.find(t => String(t.id) === String(teamId));
-                    const clubId = teamObj?.parent_id || (teamObj as any)?.parent_project_id;
-                    const clubObj = clubs.find(c => String(c.id) === String(clubId));
-                    const clubName = clubObj?.name || '-';
-
-                    const orgId =
-                      (typeof org === 'string' ? org : org?.id) ??
-                      (season as any)?.organisation_id ??
-                      (season as any)?.organisation?.id ??
-                      '';
-                    const orgFromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-                    const rowOrgSlugOrId = String(orgFromList?.slug || (org as any)?.slug || orgId || '').trim();
-                    const orgForRowRoutes = rowOrgSlugOrId || orgKeyForRoutes;
+                    const row = resolveRowContext(season, rowConfig);
 
                     // Season shows its own sport VARIANT only (not org category as fallback)
-                    // If season has no sport variant assigned, show "—"
                     const seasonSport = (season as any).sport;
                     const sportDisplay = seasonSport
                       ? { name: seasonSport.name, sport_icon: seasonSport.sport_icon, category_name: seasonSport.category_name }
                       : null;
 
-                    const clubSlugOrId = (clubObj as any)?.slug || preselectedClubSlug || clubId || selectedClubId;
-                    const teamSlugOrId = (teamObj as any)?.slug || preselectedTeamSlug || String(teamId || '').trim() || selectedTeamId;
                     const seasonSlugOrId = periodPathKey(season) || season.slug || season.id;
 
-                    const teamDetailPath = (orgForRowRoutes && clubSlugOrId && teamSlugOrId)
-                      ? `/${orgForRowRoutes}/${clubSlugOrId}/${teamSlugOrId}`
-                      : (orgForRowRoutes && teamSlugOrId)
-                        ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}`
-                        : null;
-
                     // Use canonical vanity path when club is available: /:org/:club/:team/:season
-                    const seasonDetailPath = (orgForRowRoutes && clubSlugOrId && teamSlugOrId && seasonSlugOrId)
-                      ? `/${orgForRowRoutes}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
-                      : (orgForRowRoutes && teamSlugOrId && seasonSlugOrId)
-                        ? `/organisations/${orgForRowRoutes}/projects/${teamSlugOrId}/seasons/${seasonSlugOrId}`
-                        : null;
-
-                    // Use activities_count for matches if available, else 0
-                    const matchesCount = (season as any).matches_count ?? season.activities_count ?? 0;
+                    const seasonDetailPath = (row.orgSlug && row.teamSlug && seasonSlugOrId)
+                      ? (row.clubSlug
+                          ? `/${row.orgSlug}/${row.clubSlug}/${row.teamSlug}/${seasonSlugOrId}`
+                          : `/organisations/${row.orgSlug}/projects/${row.teamSlug}/seasons/${seasonSlugOrId}`)
+                      : null;
 
                     return (
                     <tr key={season.id}>
                         {!orgLocked && (
                           <td style={compactTextTdStyle}>
-                            {orgForRowRoutes ? (
+                            {row.orgSlug ? (
                               <a
-                                href={`/organisations/${orgForRowRoutes}`}
+                                href={`/organisations/${row.orgSlug}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${orgForRowRoutes}`);
+                                  navigate(`/organisations/${row.orgSlug}`);
                                 }}
                               >
-                                {orgName}
+                                {row.orgName}
                               </a>
                             ) : (
-                              orgName
+                              row.orgName
                             )}
                           </td>
                         )}
                         {!clubLocked && (
                           <td style={compactTextTdStyle}>
-                            {clubSlugOrId && orgForRowRoutes ? (
+                            {row.clubSlug && row.orgSlug ? (
                               <a
-                                href={`/${orgForRowRoutes}/${clubSlugOrId}`}
+                                href={`/${row.orgSlug}/${row.clubSlug}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/${orgForRowRoutes}/${clubSlugOrId}`);
+                                  navigate(`/${row.orgSlug}/${row.clubSlug}`);
                                 }}
                               >
-                                {clubName}
+                                {row.clubName}
                               </a>
                             ) : (
-                              clubName
+                              row.clubName
                             )}
                           </td>
                         )}
                         {!teamLocked && (
                           <td style={compactTextTdStyle}>
-                            {teamDetailPath ? (
+                            {row.teamSlug && row.orgSlug ? (
                               <a
-                                href={teamDetailPath}
+                                href={row.teamBasePath}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(teamDetailPath);
+                                  navigate(row.teamBasePath);
                                 }}
                               >
-                                {teamName}
+                                {row.teamName}
                               </a>
                             ) : (
-                              teamName
+                              row.teamName
                             )}
                           </td>
                         )}
@@ -647,7 +612,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                               Edit
                             </button>
                             <button
-                                onClick={() => handleDelete(String(orgId), season.id, season.name)}
+                                onClick={() => handleDelete(String(row.orgId), season.id, season.name)}
                                 style={actionButtonStyle('danger')}
                             >
                                 Delete
@@ -658,10 +623,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                     );
                 })}
               </tbody>
-            </Table>
-          </div>
-        </Card>
-      )}
+      </DirectoryTableShell>
 
       <PeriodCreateModal
         opened={isCreateModalOpen}

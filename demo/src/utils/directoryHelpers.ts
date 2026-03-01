@@ -228,3 +228,148 @@ export const filterSelectStyle: React.CSSProperties = {
   fontSize: '14px',
   backgroundColor: 'var(--app-surface)',
 };
+
+// ────────────────────────────────────────────
+// Row context resolution (shared across all directory tables)
+// ────────────────────────────────────────────
+
+export interface RowContextConfig {
+  organisations: OrganisationOption[];
+  clubs: ProjectOption[];
+  teams: ProjectOption[];
+  /** Resolved locked-org slug (from `useDirectoryFilters`). */
+  lockedOrgSlug?: string;
+  /** Preselected slug overrides. */
+  preselectedClubSlug?: string;
+  preselectedTeamSlug?: string;
+  /** Currently selected IDs (used as fallbacks). */
+  selectedOrgId?: string;
+  selectedClubId?: string;
+  /** Fallback org route key (e.g. `orgKeyForRoutes` from the hook). */
+  fallbackOrgSlug?: string;
+}
+
+export interface RowContext {
+  orgId: string;
+  orgName: string;
+  orgSlug: string;
+  clubId: string;
+  clubName: string;
+  clubSlug: string;
+  teamId: string;
+  teamName: string;
+  teamSlug: string;
+  teamObj: any;
+  clubObj: any;
+  orgObj: OrganisationOption | undefined;
+  /** Canonical path to the team page. */
+  teamBasePath: string;
+}
+
+/**
+ * Resolve the common org/club/team context for a table row.
+ *
+ * Every directory list table row needs to resolve the same chain:
+ * item → project (team) → parent (club) → organisation → slugs → paths.
+ *
+ * Call this once per row and destructure the result.
+ */
+export function resolveRowContext(
+  item: any,
+  config: RowContextConfig,
+): RowContext {
+  const {
+    organisations,
+    clubs,
+    teams,
+    lockedOrgSlug = '',
+    preselectedClubSlug,
+    preselectedTeamSlug,
+    selectedOrgId = '',
+    selectedClubId = '',
+    fallbackOrgSlug = '',
+  } = config;
+
+  // ── Team ────────────────────────────────────────────────────────
+  const project = item?.project;
+  const teamId = String(
+    (typeof project === 'object' ? project?.id : project) ??
+      item?.project_id ??
+      '',
+  );
+  const teamName =
+    (typeof project === 'object' ? project?.name : undefined) || '-';
+  const teamObj: any = teamId
+    ? teams.find((t) => String(t.id) === String(teamId))
+    : undefined;
+
+  // ── Club ────────────────────────────────────────────────────────
+  const clubId = String(
+    getTeamParentId(teamObj) ??
+      (typeof project === 'object' ? (project as any)?.parent_id : undefined) ??
+      '',
+  );
+  const clubObj: any = clubId
+    ? clubs.find((c) => String(c.id) === String(clubId))
+    : undefined;
+  const clubName: string = clubObj?.name || '-';
+
+  // ── Organisation ────────────────────────────────────────────────
+  // Prefer the item's own org data; fall back to selectedOrgId for items
+  // that don't embed org info (e.g. Activity/match).
+  const rawOrg = item?.organisation;
+  const orgId = String(
+    (typeof rawOrg === 'object' ? rawOrg?.id : rawOrg) ||
+      item?.organisation_id ||
+      selectedOrgId ||
+      (clubObj as any)?.organisation ||
+      (teamObj as any)?.organisation ||
+      '',
+  );
+  const orgObj = orgId
+    ? organisations.find((o) => String(o.id) === String(orgId))
+    : undefined;
+  const orgName: string =
+    (typeof rawOrg === 'object' ? rawOrg?.name : undefined) ||
+    orgObj?.name ||
+    '-';
+
+  // ── Slugs for URL construction ──────────────────────────────────
+  const orgSlugResolved =
+    lockedOrgSlug ||
+    orgObj?.slug ||
+    (typeof rawOrg === 'object' ? (rawOrg as any)?.slug : undefined) ||
+    orgId;
+  const orgSlug = String(orgSlugResolved || fallbackOrgSlug || '').trim();
+  const clubSlug = String(
+    (clubObj as any)?.slug || preselectedClubSlug || clubId || selectedClubId || '',
+  ).trim();
+  const teamSlug = String(
+    (teamObj as any)?.slug ||
+      (typeof project === 'object' ? (project as any)?.slug : undefined) ||
+      preselectedTeamSlug ||
+      teamId ||
+      '',
+  ).trim();
+
+  // ── Team base path ──────────────────────────────────────────────
+  const teamBasePath = clubSlug
+    ? `/${orgSlug}/${clubSlug}/${teamSlug}`
+    : `/organisations/${orgSlug}/projects/${teamSlug}`;
+
+  return {
+    orgId,
+    orgName,
+    orgSlug,
+    clubId,
+    clubName,
+    clubSlug,
+    teamId,
+    teamName,
+    teamSlug,
+    teamObj,
+    clubObj,
+    orgObj,
+    teamBasePath,
+  };
+}

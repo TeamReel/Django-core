@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Alert, Card, Button, Badge } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
-import { Table } from '@/shims/design-system';
+import { Button, Badge } from '@django-core/design-system';
+import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { periodPathKey } from '../../../utils/periodPath';
@@ -10,7 +9,6 @@ import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
 import MatchCreateModal from '../MatchCreateModal';
 import {
-    compactTableStyle,
     compactThStyle,
     compactTdStyle,
     compactTextTdStyle,
@@ -28,8 +26,9 @@ import {
   getTeamName,
   getClubName,
   filterSelectStyle,
+  resolveRowContext,
 } from '../../../utils/directoryHelpers';
-import type { DirectoryListProps, SeasonOption } from '../../../utils/directoryHelpers';
+import type { DirectoryListProps, SeasonOption, RowContextConfig } from '../../../utils/directoryHelpers';
 
 type Activity = {
   id: string;
@@ -537,6 +536,20 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
     variantFilter !== 'all',
   ].filter(Boolean).length;
 
+  const rowConfig = useMemo<RowContextConfig>(
+    () => ({
+      organisations,
+      clubs,
+      teams,
+      lockedOrgSlug,
+      preselectedClubSlug,
+      preselectedTeamSlug,
+      selectedOrgId,
+      selectedClubId,
+    }),
+    [organisations, clubs, teams, lockedOrgSlug, preselectedClubSlug, preselectedTeamSlug, selectedOrgId, selectedClubId],
+  );
+
   return (
     <div>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -714,21 +727,14 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
         </div>
       </div>
 
-        {isLoading && <LoadingState message="Loading options..." />}
-        {error && <Alert variant="error">{error}</Alert>}
-
-        {!isLoading && !error && matchesLoading && (
-          <LoadingState message="Loading matches..." />
-        )}
-
-        {!isLoading && !error && !matchesLoading && sortedMatches.length === 0 && (
-          <Alert variant="info">No matches found. Use filters to narrow your search.</Alert>
-        )}
-
-        {!isLoading && !error && !matchesLoading && sortedMatches.length > 0 && (
-          <Card>
-            <div className="overflow-x-auto">
-              <Table style={compactTableStyle}>
+        <DirectoryTableShell
+          isLoading={isLoading}
+          error={error}
+          domainLoading={matchesLoading}
+          domainLoadingMessage="Loading matches..."
+          emptyMessage="No matches found. Use filters to narrow your search."
+          itemCount={sortedMatches.length}
+        >
                 <thead>
                   <tr>
                     {!orgLocked && (
@@ -750,20 +756,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                 </thead>
                 <tbody>
                   {sortedMatches.map((m) => {
-                    const project = m.project;
-                    const teamId = project?.id;
-                    const teamName = project?.name || '-';
-                    // Find team in loaded teams to get parent (Club)
-                    const teamObj = teams.find((t) => String(t.id) === String(teamId));
-                    const clubId = (teamObj as any)?.parent_id || (teamObj as any)?.parent || (typeof project === 'object' && (project as any)?.parent_id);
-                    const club = clubs.find((c) => String(c.id) === String(clubId));
-                    const clubName = club?.name || '-';
-
-                    // Organisation - resolve slug from lookup list to avoid UUIDs in URLs
-                    const orgId = selectedOrgId || m.organisation?.id || (club as any)?.organisation || (teamObj as any)?.organisation;
-                    const org = organisations.find((o) => String(o.id) === String(orgId));
-                    const orgName = m.organisation?.name || org?.name || '-';
-                    const orgSlugResolved = org?.slug || m.organisation?.slug;
+                    const row = resolveRowContext(m, rowConfig);
 
                     const competition = m.period;
                     const compName = competition?.name || '-';
@@ -776,11 +769,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                       return start.getTime() >= Date.now();
                     })();
 
-                    // Link Targets - prefer slugs from lookup lists over raw UUIDs
-                    const orgTarget = lockedOrgSlug || orgSlugResolved || orgId;
-                    const clubTarget = (club as any)?.slug || preselectedClubSlug || clubId;
-                    const teamTarget = (teamObj as any)?.slug || preselectedTeamSlug || teamId;
-                    // Use periodPathKey to generate slug from name (Period model has no slug field)
+                    // Season/competition targets (match-specific; Period has no slug field)
                     const seasonId = season?.id;
                     const seasonFromList = seasonId ? seasons.find((s: any) => String(s.id) === String(seasonId)) : undefined;
                     const seasonTarget = periodPathKey(seasonFromList || season) || seasonId;
@@ -788,70 +777,65 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                     const compFromList = compId ? competitions.find((c: any) => String(c.id) === String(compId)) : undefined;
                     const compTarget = periodPathKey(compFromList || competition) || compId;
 
-                    // Use canonical vanity path when club is available
-                    const teamBasePath = clubTarget
-                      ? `/${orgTarget}/${clubTarget}/${teamTarget}`
-                      : `/organisations/${orgTarget}/projects/${teamTarget}`;
-
                     return (
                         <tr key={m.id}>
                         {!orgLocked && (
                           <td className="hide-mobile" style={compactTextTdStyle}>
-                            {orgId ? (
+                            {row.orgId ? (
                               <a
-                                href={`/organisations/${orgTarget}`}
+                                href={`/organisations/${row.orgSlug}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${orgTarget}`);
+                                  navigate(`/organisations/${row.orgSlug}`);
                                 }}
                               >
-                                {orgName}
+                                {row.orgName}
                               </a>
-                            ) : orgName}
+                            ) : row.orgName}
                           </td>
                         )}
                         {!clubLocked && (
                           <td className="hide-mobile" style={compactTextTdStyle}>
-                            {clubId ? (
+                            {row.clubId ? (
                               <a
-                            href={`/${orgTarget}/${clubTarget}`}
+                            href={`/${row.orgSlug}/${row.clubSlug}`}
                               className="text-blue-600 hover:underline"
                               onClick={(e) => {
                                 e.preventDefault();
-                            navigate(`/${orgTarget}/${clubTarget}`);
+                            navigate(`/${row.orgSlug}/${row.clubSlug}`);
                               }}
                               >
-                              {clubName}
+                              {row.clubName}
                               </a>
-                            ) : clubName}
+                            ) : row.clubName}
                           </td>
                         )}
                         {!teamLocked && (
                           <td className="hide-mobile" style={compactTextTdStyle}>
-                            {teamId ? (
+                            {row.teamId ? (
                               <a
-                                href={teamBasePath}
+                                href={row.teamBasePath}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(teamBasePath);
+                                  navigate(row.teamBasePath);
                                 }}
                               >
-                                {teamName}
+                                {row.teamName}
                               </a>
-                            ) : teamName}
+                            ) : row.teamName}
                           </td>
                         )}
                         <td style={compactTextTdStyle}>
                              {season ? (
                                 <a
-                            href={`${teamBasePath}/${seasonTarget}`}
+                            href={`${row.teamBasePath}/${seasonTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if(seasonTarget) {
-                                navigate(`${teamBasePath}/${seasonTarget}`);
+                                navigate(`${row.teamBasePath}/${seasonTarget}`);
                                     }
                                 }}
                                 >
@@ -862,12 +846,12 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                             <td style={compactTextTdStyle}>
                               {competition ? (
                                 <a
-                            href={`${teamBasePath}/${seasonTarget}/${compTarget}`}
+                            href={`${row.teamBasePath}/${seasonTarget}/${compTarget}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
                                   if(seasonTarget && compTarget) {
-                              navigate(`${teamBasePath}/${seasonTarget}/${compTarget}`);
+                              navigate(`${row.teamBasePath}/${seasonTarget}/${compTarget}`);
                                   }
                                 }}
                                 >
@@ -895,8 +879,8 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                         <td style={compactTextTdStyle}>
                             {(() => {
                               const matchKey = (m as any).slug || m.id;
-                              const matchPath = (orgTarget && clubTarget && teamTarget && seasonTarget && compTarget)
-                                ? `/${orgTarget}/${clubTarget}/${teamTarget}/${seasonTarget}/${compTarget}/${matchKey}`
+                              const matchPath = (row.orgSlug && row.clubSlug && row.teamSlug && seasonTarget && compTarget)
+                                ? `/${row.orgSlug}/${row.clubSlug}/${row.teamSlug}/${seasonTarget}/${compTarget}/${matchKey}`
                                 : `/matches/${matchKey}`;
                               return (
                                 <a
@@ -958,10 +942,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
                     );
                   })}
                 </tbody>
-              </Table>
-            </div>
-          </Card>
-        )}
+        </DirectoryTableShell>
 
         <MatchDetailModal
           opened={isDetailModalOpen}

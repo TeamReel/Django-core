@@ -1,0 +1,60 @@
+/**
+ * Wrapper component for all directory list tables.
+ *
+ * Handles the common loading → error → empty → Card + Table flow so each
+ * directory page only provides the `<thead>` and `<tbody>` content.
+ */
+
+import React from 'react';
+import { Alert, Card } from '@django-core/design-system';
+import LoadingState from './LoadingState';
+import { Table } from '@/shims/design-system';
+import { compactTableStyle } from '../utils/directoryStyles';
+
+export interface DirectoryTableShellProps {
+  /** Global options loading (orgs/clubs/teams from the hook). */
+  isLoading: boolean;
+  /** Global error. */
+  error: string | null;
+  /** Domain-specific loading (e.g. seasonsLoading, matchesLoading). */
+  domainLoading: boolean;
+  /** Message while domain data loads. */
+  domainLoadingMessage: string;
+  /** Message when no rows are found after loading. */
+  emptyMessage: string;
+  /** Number of items to decide empty vs table. */
+  itemCount: number;
+  /** The `<thead>` + `<tbody>` to render inside the table. */
+  children: React.ReactNode;
+}
+
+export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
+  isLoading,
+  error,
+  domainLoading,
+  domainLoadingMessage,
+  emptyMessage,
+  itemCount,
+  children,
+}) => (
+  <>
+    {isLoading && <LoadingState message="Loading options..." />}
+    {error && <Alert variant="error">{error}</Alert>}
+
+    {!isLoading && !error && domainLoading && (
+      <LoadingState message={domainLoadingMessage} />
+    )}
+
+    {!isLoading && !error && !domainLoading && itemCount === 0 && (
+      <Alert variant="info">{emptyMessage}</Alert>
+    )}
+
+    {!isLoading && !error && !domainLoading && itemCount > 0 && (
+      <Card>
+        <div className="overflow-x-auto">
+          <Table style={compactTableStyle}>{children}</Table>
+        </div>
+      </Card>
+    )}
+  </>
+);

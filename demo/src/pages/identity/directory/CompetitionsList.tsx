@@ -1,13 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Button, Badge } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
-import { Table } from '@/shims/design-system';
+import { Badge } from '@django-core/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { periodPathKey } from '../../../utils/periodPath';
 import {
-  compactTableStyle,
   compactThStyle,
   compactTdStyle,
   compactTextTdStyle,
@@ -19,16 +16,17 @@ import {
   getCsrfToken,
   sortKey,
   getFederationName,
-  getTeamId,
   getTeamName,
   getClubName,
   getSeasonName,
   isPeriodActive,
   matchesSportFilter,
+  resolveRowContext,
 } from '../../../utils/directoryHelpers';
-import type { DirectoryListProps } from '../../../utils/directoryHelpers';
+import type { DirectoryListProps, RowContextConfig } from '../../../utils/directoryHelpers';
 import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
 import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
+import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
@@ -498,6 +496,14 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
     return list;
   }, [filteredCompetitions, organisations, clubs, teams, seasons]);
 
+  const rowConfig = useMemo<RowContextConfig>(() => ({
+    organisations, clubs, teams,
+    lockedOrgSlug,
+    preselectedClubSlug, preselectedTeamSlug,
+    selectedOrgId, selectedClubId,
+    fallbackOrgSlug: orgKeyForRoutes,
+  }), [organisations, clubs, teams, lockedOrgSlug, preselectedClubSlug, preselectedTeamSlug, selectedOrgId, selectedClubId, orgKeyForRoutes]);
+
   const handleDelete = async (orgId: string, compId: string, compName: string) => {
     if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
         return;
@@ -533,21 +539,14 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
         showVariantFilter
       />
 
-      {isLoading && <LoadingState message="Loading options..." />}
-      {error && <Alert variant="error">{error}</Alert>}
-
-      {!isLoading && !error && competitionsLoading && (
-        <LoadingState message="Loading competitions..." />
-      )}
-
-      {!isLoading && !error && !competitionsLoading && sortedCompetitions.length === 0 && (
-        <Alert variant="info">No competitions found. Use filters to narrow your search.</Alert>
-      )}
-
-      {!isLoading && !error && !competitionsLoading && sortedCompetitions.length > 0 && (
-        <Card>
-          <div className="overflow-x-auto">
-            <Table style={compactTableStyle}>
+      <DirectoryTableShell
+        isLoading={isLoading}
+        error={error}
+        domainLoading={competitionsLoading}
+        domainLoadingMessage="Loading competitions..."
+        emptyMessage="No competitions found. Use filters to narrow your search."
+        itemCount={sortedCompetitions.length}
+      >
               <thead>
                 <tr>
                     {!orgLocked && (
@@ -577,104 +576,80 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                     return true;
                   })
                   .map((comp) => {
+                    const row = resolveRowContext(comp, rowConfig);
                     const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
-                    const org = comp.organisation;
-                    const project = comp.project;
-                    const orgId = typeof org === 'object' ? org?.id : org;
-                    const orgName = typeof org === 'string' ? org : org?.name || '-';
-                    const teamId = typeof project === 'object' ? project?.id : project;
-                    const teamSlug = typeof project === 'object' ? (project as any)?.slug : undefined;
-                    const teamName = typeof project === 'string' ? project : project?.name || '-';
-
-                    // Get club by finding team's parent in clubs array
-                    const teamObj = teams.find(t => String(t.id) === String(teamId));
-                    const clubId = teamObj?.parent_id || teamObj?.parent || (typeof project === 'object' && (project as any)?.parent_id);
-                    const club = clubs.find(c => String(c.id) === String(clubId));
-                    const clubName = club?.name || '-';
 
                     // Use matches_count
                     const matchesCount = comp.matches_count || 0;
 
-                    // Link URL logic - resolve slugs from lookup lists to avoid UUIDs in URLs
-                    const orgFromList = orgId ? organisations.find(o => String(o.id) === String(orgId)) : undefined;
-                    const orgSlugResolved = orgFromList?.slug || (typeof org === 'object' ? (org as any)?.slug : undefined);
-                    const orgSlugOrId = lockedOrgSlug || orgSlugResolved || orgId;
-                    const clubSlugOrId = (club as any)?.slug || preselectedClubSlug || clubId;
-                    const teamSlugResolved = (teamObj as any)?.slug || teamSlug;
-                    const teamSlugOrId = teamSlugResolved || preselectedTeamSlug || teamId;
                     // Use periodPathKey to generate slug from name (Period model has no slug field)
                     const seasonFromList = seasonId ? seasons.find(s => String(s.id) === String(seasonId)) : undefined;
                     const seasonSlugOrId = periodPathKey(seasonFromList || comp.parent_period) || seasonId;
                     const compSlugOrId = periodPathKey(comp) || comp.id;
 
                     // Competition shows its own sport VARIANT only (not org category as fallback)
-                    // If competition has no sport variant assigned, show "—"
                     const compSport = (comp as any).sport;
                     const sportDisplay = compSport || null;
-
-                    const teamBasePath = clubSlugOrId
-                      ? `/${orgSlugOrId}/${clubSlugOrId}/${teamSlugOrId}`
-                      : `/organisations/${orgSlugOrId}/projects/${teamSlugOrId}`;
 
                     return (
                         <tr key={comp.id}>
                         {!orgLocked && (
                           <td style={compactTextTdStyle}>
-                            {orgId ? (
+                            {row.orgId ? (
                               <a
-                                href={`/organisations/${orgSlugOrId}`}
+                                href={`/organisations/${row.orgSlug}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/organisations/${orgSlugOrId}`);
+                                  navigate(`/organisations/${row.orgSlug}`);
                                 }}
                               >
-                                {orgName}
+                                {row.orgName}
                               </a>
-                            ) : orgName}
+                            ) : row.orgName}
                           </td>
                         )}
                         {!clubLocked && (
                           <td style={compactTextTdStyle}>
-                            {clubId ? (
+                            {row.clubId ? (
                               <a
-                                href={`/${orgSlugOrId}/${clubSlugOrId}`}
+                                href={`/${row.orgSlug}/${row.clubSlug}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
+                                  navigate(`/${row.orgSlug}/${row.clubSlug}`);
                                 }}
                               >
-                                {clubName}
+                                {row.clubName}
                               </a>
-                            ) : clubName}
+                            ) : row.clubName}
                           </td>
                         )}
                         {!teamLocked && (
                           <td style={compactTextTdStyle}>
-                            {teamId ? (
+                            {row.teamId ? (
                               <a
-                                href={teamBasePath}
+                                href={row.teamBasePath}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  navigate(teamBasePath);
+                                  navigate(row.teamBasePath);
                                 }}
                               >
-                                {teamName}
+                                {row.teamName}
                               </a>
-                            ) : teamName}
+                            ) : row.teamName}
                           </td>
                         )}
                         <td style={compactTextTdStyle}>
                             {seasonId ? (
                                 <a
-                            href={`${teamBasePath}/${seasonSlugOrId}`}
+                            href={`${row.teamBasePath}/${seasonSlugOrId}`}
                                 className="text-blue-600 hover:underline"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     navigate(
-                                `${teamBasePath}/${seasonSlugOrId}`
+                                `${row.teamBasePath}/${seasonSlugOrId}`
                                     );
                                 }}
                                 >
@@ -686,12 +661,12 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                         </td>
                         <td style={compactTextTdStyle}>
                             <a
-                          href={`${teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`}
+                          href={`${row.teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`}
                             className="text-blue-600 hover:underline"
                             onClick={(e) => {
                                 e.preventDefault();
                                 navigate(
-                            `${teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`,
+                            `${row.teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`,
                                 );
                             }}
                             >
@@ -752,7 +727,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(String(orgId), comp.id, comp.name)}
+                                    onClick={() => handleDelete(String(row.orgId), comp.id, comp.name)}
                                     style={actionButtonStyle('danger')}
                                 >
                                     Delete
@@ -763,10 +738,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                     );
                 })}
               </tbody>
-            </Table>
-          </div>
-        </Card>
-      )}
+      </DirectoryTableShell>
 
       <PeriodCreateModal
         opened={isCreateModalOpen}
