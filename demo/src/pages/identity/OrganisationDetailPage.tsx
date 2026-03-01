@@ -1,62 +1,29 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import React from 'react';
 import {
   Button,
   Card,
-  Badge,
   Alert,
-
 } from '@django-core/design-system';
-import { Table } from '../../shims/design-system';
 import {
   PageHeader,
   PageContent,
-  BreadcrumbContextSwitcher,
-  useBreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
-import { useContextSwitcher } from '@django-core/context-switcher';
-import { useAuth } from '@django-core/auth-ui';
-import { Organisation, User, Project } from '../../types';
-import AppShell from '../../components/AppShell';
-import OrganisationDetailModal from './OrganisationDetailModal';
-import { EntityEditModal } from '../../components/EntityEditModal';
-import ProjectDetailModal from './ProjectDetailModal';
-import ProjectEditModal from './ProjectEditModal';
-import ProjectCreateModal from './ProjectCreateModal';
-import PeriodCreateModal from './PeriodCreateModal';
-import MatchCreateModal from './MatchCreateModal';
-import AddMemberModal from './AddMemberModal';
-import UserDetailModal from './UserDetailModal';
-import {
-  canEditOrganisation,
-  canDeleteOrganisation,
-  canInviteMembers,
-  canManageMembers,
-  canEditProject,
-  canDeleteProject,
-} from '../../utils/permissions';
+import { Organisation } from '../../types';
 import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
 import { PolicyList } from '../../components/Organisations/PolicyList';
-import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
-import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { periodPathKey } from '../../utils/periodPath';
-import { actionButtonStyle } from '../../utils/directoryStyles';
 import { ClubsList } from './directory/ClubsList';
 import { TeamsList } from './directory/TeamsList';
 import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
 import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import MobileTabBar from '../../components/MobileTabBar';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { OrgOverviewTab } from './OrgOverviewTab';
 import { OrgHierarchyTab } from './OrgHierarchyTab';
-import { OrgEditMemberRoleModal } from './OrgEditMemberRoleModal';
-import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod, getPeriodType } from './orgDetailUtils';
-
-const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
+import { OrgModals } from './OrgModals';
+import { useOrgData } from './useOrgData';
 
 /**
  * T007 - Organisation Detail Page
@@ -67,1234 +34,13 @@ const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOG
  * - Permission-aware: viewer sees read-only view
  */
 export const OrganisationDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { organisations } = useContextSwitcher();
-  const { user } = useAuth();
-  const [org, setOrg] = useState<Organisation | null>(null);
-  const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<any | null>(null);
-  const [members, setMembers] = useState<User[]>([]);
-  const [membersLoading, setMembersLoading] = useState(false);
-  const [clubs, setClubs] = useState<Project[]>([]);
-  const [clubsCount, setClubsCount] = useState(0);
-  const [clubsPage, setClubsPage] = useState(1);
-  const clubsPageSize = 25;
-  const [clubsLoading, setClubsLoading] = useState(false);
+  const d = useOrgData();
 
-  const [teams, setTeams] = useState<Project[]>([]);
-  const [teamsLoading, setTeamsLoading] = useState(false);
-  const [allClubsForTeams, setAllClubsForTeams] = useState<Project[]>([]);
-
-  const teamsFetchedForOrgRef = useRef<string>('');
-  const teamsFetchInFlightRef = useRef(false);
-  const orgPeriodsFetchInFlightRef = useRef(false);
-
-  const [orgPeriods, setOrgPeriods] = useState<any[]>([]);
-  const [orgPeriodsLoading, setOrgPeriodsLoading] = useState(false);
-  const [teamSeasonsCountById, setTeamSeasonsCountById] = useState<Record<string, number>>({});
-  const [teamCompetitionsCountById, setTeamCompetitionsCountById] = useState<Record<string, number>>({});
-  const [teamMatchesCountById, setTeamMatchesCountById] = useState<Record<string, number>>({});
-
-  const [seasonsCount, setSeasonsCount] = useState<number | null>(null);
-  const [competitionsCount, setCompetitionsCount] = useState<number | null>(null);
-  const [matchesCount, setMatchesCount] = useState<number | null>(null);
-  const [teamsCount, setTeamsCount] = useState<number | null>(null);
-
-  const [selectedClub, setSelectedClub] = useState<Project | null>(null);
-  const [isClubModalOpen, setIsClubModalOpen] = useState(false);
-  const [detailProject, setDetailProject] = useState<Project | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [selectedEditProject, setSelectedEditProject] = useState<Project | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isCreateClubModalOpen, setIsCreateClubModalOpen] = useState(false);
-  const [isCreateTeamModalOpen, setIsCreateTeamModalOpen] = useState(false);
-  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
-  const [isCreateSeasonModalOpen, setIsCreateSeasonModalOpen] = useState(false);
-  const [isCreateCompetitionModalOpen, setIsCreateCompetitionModalOpen] = useState(false);
-  const [isCreateMatchModalOpen, setIsCreateMatchModalOpen] = useState(false);
-
-  const [isEditMemberRoleModalOpen, setIsEditMemberRoleModalOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState<'admin' | 'member'>('member');
-  const [inviteLoading, setInviteLoading] = useState(false);
-
-  const [memberSearch, setMemberSearch] = useState('');
-  const [userRoleFilter, setUserRoleFilter] = useState<string>('');
-  const [userClubFilterId, setUserClubFilterId] = useState<string>('');
-  const [userTeamFilterId, setUserTeamFilterId] = useState<string>('');
-  const [usersPage, setUsersPage] = useState(1);
-  const usersPageSize = 25;
-
-  const [teamSearch, setTeamSearch] = useState('');
-  const [teamStatusFilter, setTeamStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [teamClubFilterId, setTeamClubFilterId] = useState<string>('');
-
-  const [clubSearch, setClubSearch] = useState('');
-  const [clubStatusFilter, setClubStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-
-  const [seasonSearch, setSeasonSearch] = useState('');
-  const [seasonClubFilterId, setSeasonClubFilterId] = useState<string>('');
-  const [seasonTeamFilterId, setSeasonTeamFilterId] = useState<string>('');
-
-  const [competitionSearch, setCompetitionSearch] = useState('');
-  const [compClubFilterId, setCompClubFilterId] = useState<string>('');
-  const [compTeamFilterId, setCompTeamFilterId] = useState<string>('');
-  const [compSeasonFilterId, setCompSeasonFilterId] = useState<string>('');
-  const [compMatchesFilter, setCompMatchesFilter] = useState<'all' | 'with' | 'without'>('all');
-
-  const [matchSearch, setMatchSearch] = useState('');
-  const [matchClubFilterId, setMatchClubFilterId] = useState<string>('');
-  const [matchTeamFilterId, setMatchTeamFilterId] = useState<string>('');
-  const [matchSeasonFilterId, setMatchSeasonFilterId] = useState<string>('');
-  const [matchCompFilterId, setMatchCompFilterId] = useState<string>('');
-
-  const [federationMatches, setFederationMatches] = useState<any[]>([]);
-  const [federationMatchesLoading, setFederationMatchesLoading] = useState(false);
-  const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
-  const [scheduledMatchesLoading, setScheduledMatchesLoading] = useState(false);
-  const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
-  const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
-
-  // Hierarchy tab (club -> team)
-  const [hierarchySearch, setHierarchySearch] = useState('');
-
-  // Inline edit state for Overview
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editType, setEditType] = useState('');
-  const [editCountry, setEditCountry] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  // Modal state for view/edit
-  const [isOrgDetailModalOpen, setIsOrgDetailModalOpen] = useState(false);
-  const [isOrgEditModalOpen, setIsOrgEditModalOpen] = useState(false);
-  const [detailUser, setDetailUser] = useState<any | null>(null);
-  const [isUserDetailModalOpen, setIsUserDetailModalOpen] = useState(false);
-
-  // Compute period hierarchy for recursive activity counts
-  const periodChildrenMap = useMemo(() => {
-    const map = new Map<string, any[]>();
-    for (const p of orgPeriods) {
-      const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
-      if (parentId) {
-        const key = String(parentId);
-        const arr = map.get(key) || [];
-        arr.push(p);
-        map.set(key, arr);
-      }
-    }
-    return map;
-  }, [orgPeriods]);
-
-  const getRecursiveMatchesCount = (p: any): number => {
-    let count = (p.activities_count ?? 0);
-    const children = periodChildrenMap.get(String(p.id));
-    if (children) {
-      for (const child of children) {
-        count += getRecursiveMatchesCount(child);
-      }
-    }
-    return count;
-  };
-
-  // Resolve slug from ID if needed
-  const resolvedOrg = organisations.find(o =>
-    o.slug?.toLowerCase() === id?.toLowerCase() || o.id === id
-  );
-  const currentOrgSlug = resolvedOrg?.slug || id?.toLowerCase(); // Use slug for API calls
-  const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
-
-  // Organisation detail "tabs" are driven by Panel B via `?tab=`.
-  const activeTab = useMemo(() => {
-    const raw = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
-    if (!raw) return 'overview';
-    const allowed = new Set([
-      'overview',
-      'hierarchy',
-      'clubs',
-      'teams',
-      'seasons',
-      'competitions',
-      'matches',
-      'users',
-      'audit',
-      'governance',
-      'operations',
-      'identity',
-      'settings',
-    ]);
-    return allowed.has(raw) ? raw : 'overview';
-  }, [location.search]);
-
-  // Load active context when component mounts
-  useEffect(() => {
-    let cancelled = false;
-    const loadActiveContext = async () => {
-      try {
-        const context = await getActiveContext();
-        if (!cancelled) setActiveContextState(context);
-      } catch (e) {
-        console.error('Failed to load active context:', e);
-      }
-    };
-    void loadActiveContext();
-    return () => { cancelled = true; };
-  }, []);
-
-  useEffect(() => {
-    if (!currentOrgSlug) return;
-
-    if (activeTab === 'clubs') {
-      if (!clubsLoading && clubs.length === 0) {
-        void fetchClubsPage(1);
-      }
-    }
-
-    if (activeTab === 'teams') {
-      if (!teamsLoading && teams.length === 0) {
-        void fetchTeamsForOrg({ force: true });
-      }
-    }
-
-    if (activeTab === 'hierarchy') {
-      if (!teamsLoading && (teams.length === 0 || allClubsForTeams.length === 0)) {
-        void fetchTeamsForOrg({ force: true });
-      }
-    }
-
-    if (activeTab === 'users') {
-      void fetchMembers(false);
-    }
-
-    if (activeTab === 'overview') {
-      if (!clubsLoading && clubs.length === 0) {
-        void fetchClubsPage(1);
-      }
-      if (!teamsLoading && teams.length === 0) {
-        void fetchTeamsForOrg({ force: false });
-      }
-      if (!membersLoading && members.length === 0) {
-        void fetchMembers(false);
-      }
-    }
-  }, [activeTab, currentOrgSlug]);
-
-  const createModalOrganisations = useMemo(() => {
-    const orgIdStr = String(currentOrgId || org?.id || '').trim();
-    const orgName = String(org?.name || resolvedOrg?.name || '').trim();
-    if (!orgIdStr || !orgName) return [];
-    return [{ id: orgIdStr, name: orgName, slug: currentOrgSlug }];
-  }, [currentOrgId, org?.id, org?.name, resolvedOrg?.name, currentOrgSlug]);
-
-  const createModalClubs = useMemo(() => {
-    const list = allClubsForTeams.length > 0 ? allClubsForTeams : clubs;
-    return (list || []) as any[];
-  }, [allClubsForTeams, clubs]);
-
-  const getBestMatchDetailPath = (m: any): string => {
-    const matchSlugOrId = String((m as any)?.slug || m?.id || '').trim();
-    if (!matchSlugOrId) return '/matches';
-
-    const orgSlug = String(currentOrgSlug || '').trim();
-    if (!orgSlug) return `/matches/${matchSlugOrId}`;
-
-    const clubById = new Map<string, any>();
-    for (const c of clubs as any[]) {
-      if (!c) continue;
-      clubById.set(String(c.id), c);
-    }
-
-    const teamById = new Map<string, any>();
-    for (const t of teams as any[]) {
-      if (!t) continue;
-      teamById.set(String(t.id), t);
-    }
-
-    const periodById = new Map<string, any>();
-    for (const p of orgPeriods as any[]) {
-      if (!p) continue;
-      periodById.set(String(p.id), p);
-    }
-
-    const teamId = String(m?.project?.id ?? m?.project_id ?? '').trim();
-    const team = teamId ? teamById.get(teamId) : null;
-    const teamSlugOrId = String(team?.slug || team?.id || teamId || '').trim();
-
-    const rawClubId = String(
-      (team?.parent_id ?? team?.parent ?? team?.parent_project ?? team?.parent_project_id) ??
-        (m?.project?.parent_id ?? m?.project?.parent?.id ?? m?.project?.parent_project_id) ??
-        ''
-    ).trim();
-    const club = rawClubId ? clubById.get(rawClubId) : null;
-    const clubSlugOrId = String(club?.slug || club?.id || rawClubId || '').trim();
-
-    const periodId = String(m?.period?.id ?? m?.period_id ?? '').trim();
-    const competition = periodId ? (periodById.get(periodId) || m?.period) : m?.period;
-    const competitionKeyOrId = String(periodPathKey(competition) || (competition as any)?.slug || (competition as any)?.id || periodId || '').trim();
-    const seasonId = String((competition as any)?.parent_period_id ?? (competition as any)?.parent_period?.id ?? '').trim();
-    const season = seasonId ? periodById.get(seasonId) : (competition as any)?.parent_period;
-    const seasonKeyOrId = String(periodPathKey(season) || (season as any)?.slug || (season as any)?.id || seasonId || '').trim();
-
-    if (orgSlug && clubSlugOrId && teamSlugOrId && seasonKeyOrId && competitionKeyOrId) {
-      return `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}/${matchSlugOrId}`;
-    }
-
-    return `/matches/${matchSlugOrId}`;
-  };
-
-  const membershipUserCounts = useMemo(() => {
-    const clubUserIdsByClubId = new Map<string, Set<string>>();
-    const teamUserIdsByTeamId = new Map<string, Set<string>>();
-
-    const teamToClubId = new Map<string, string>();
-    for (const t of teams as any[]) {
-      const teamId = String(t?.id ?? '').trim();
-      if (!teamId) continue;
-      const clubId = String(t?.parent_id ?? t?.parent ?? t?.parent_project ?? t?.parent_project_id ?? '').trim();
-      if (clubId) teamToClubId.set(teamId, clubId);
-    }
-
-    const getOrCreateSet = (map: Map<string, Set<string>>, key: string) => {
-      const existing = map.get(key);
-      if (existing) return existing;
-      const next = new Set<string>();
-      map.set(key, next);
-      return next;
-    };
-
-    for (const item of members as any[]) {
-      const user = item?.user ?? item;
-      const userId = String(user?.id ?? '').trim();
-      if (!userId) continue;
-
-      const raw =
-        item?.project_memberships ??
-        item?.project_membership_details ??
-        item?.project_memberships_details ??
-        [];
-      const pms = Array.isArray(raw) ? raw : [];
-
-      for (const pm of pms) {
-        if (!pm) continue;
-        const pmId = String(pm?.id ?? '');
-        if (pmId.startsWith('pm:')) continue;
-
-        const teamId = String(pm?.project_id ?? pm?.project?.id ?? '').trim();
-        let clubId = String(
-          pm?.club_id ??
-            pm?.club?.id ??
-            pm?.project?.parent_id ??
-            pm?.project?.parent?.id ??
-            pm?.project?.parent_project_id ??
-            pm?.parent_project_id ??
-            (typeof pm?.parent_project === 'object' ? pm?.parent_project?.id : pm?.parent_project) ??
-            pm?.parent_id ??
-            (typeof pm?.parent === 'object' ? pm?.parent?.id : pm?.parent) ??
-            ''
-        ).trim();
-
-        if (!clubId && teamId) {
-          clubId = String(teamToClubId.get(teamId) || '').trim();
-        }
-
-        if (clubId) getOrCreateSet(clubUserIdsByClubId, clubId).add(userId);
-        if (teamId) getOrCreateSet(teamUserIdsByTeamId, teamId).add(userId);
-      }
-    }
-
-    const clubUsersCountById: Record<string, number> = {};
-    for (const [clubId, userIds] of clubUserIdsByClubId.entries()) {
-      clubUsersCountById[String(clubId)] = userIds.size;
-    }
-
-    const teamUsersCountById: Record<string, number> = {};
-    for (const [teamId, userIds] of teamUserIdsByTeamId.entries()) {
-      teamUsersCountById[String(teamId)] = userIds.size;
-    }
-
-    return { clubUsersCountById, teamUsersCountById };
-  }, [members, teams]);
-
-  // Permission checks using centralized helper
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
-  const permissionContext = {
-    currentOrganisation: (org || resolvedOrg) as any,
-    isSuperAdmin,
-  };
-  const userCanEditOrg = canEditOrganisation(permissionContext);
-  const userCanDeleteOrg = canDeleteOrganisation(permissionContext);
-  const userCanInvite = canInviteMembers(permissionContext);
-  const userCanManageMembers = canManageMembers(permissionContext);
-  const userCanEditProject = canEditProject(permissionContext);
-  const userCanDeleteProject = canDeleteProject(permissionContext);
-
-  // Breadcrumb context switcher setup
-  const {
-    organisationOptions,
-  } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
-    projects: [],
-    users: [],
-    context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
-    basePath: '',
-  });
-
-  // Custom handler to navigate to the selected organisation's detail page
-  const handleOrganisationSwitch = (option: { id: string; label: string; slug?: string }) => {
-    navigate(`/${option.slug || option.id}${location.search || ''}`);
-  };
-
-  const tabs = useMemo(
-    () => [
-      { id: 'overview' as const, label: 'Overview' },
-      { id: 'hierarchy' as const, label: 'Hierarchy' },
-      { id: 'clubs' as const, label: 'Clubs' },
-      { id: 'teams' as const, label: 'Teams' },
-      { id: 'seasons' as const, label: 'Seasons' },
-      { id: 'competitions' as const, label: 'Competitions' },
-      { id: 'matches' as const, label: 'Matches' },
-      { id: 'users' as const, label: 'Members' },
-      { id: 'audit' as const, label: 'Audit' },
-      { id: 'governance' as const, label: 'Governance' },
-      { id: 'operations' as const, label: 'Operations (Admin)' },
-      { id: 'settings' as const, label: 'Settings' },
-    ],
-    []
-  );
-
-  const visibleTabs = useMemo(() => {
-    return tabs.filter((t) => {
-      if (t.id === 'operations') return isSuperAdmin;
-      if (t.id === 'audit' || t.id === 'governance') return Boolean(isSuperAdmin || userCanEditOrg);
-      return true;
-    });
-  }, [tabs, isSuperAdmin, userCanEditOrg]);
-
-  const orgIdForDirectoryLists = useMemo(() => {
-    return String(currentOrgId || org?.id || '').trim();
-  }, [currentOrgId, org?.id]);
-
-  const makeTabHref = (tabId: string): string => {
-    const params = new URLSearchParams(location.search);
-    const t = String(tabId || '').trim().toLowerCase();
-    if (!t || t === 'overview') params.delete('tab');
-    else params.set('tab', t);
-    const qs = params.toString();
-    return qs ? `${location.pathname}?${qs}` : location.pathname;
-  };
-
-  const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
-
-  const getApiV1BaseUrl = () => {
-    const raw = getApiBaseUrl();
-    return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
-  };
-
-
-
-
-  const getCsrfToken = () =>
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] || '';
-
-  const fetchFederationMatches = async (organisationId: string) => {
-    if (!organisationId) return;
-    setFederationMatchesLoading(true);
-    try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const params = new URLSearchParams();
-      // Keep this bounded; some federations can have hundreds+ of matches.
-      params.set('page_size', '50');
-      params.set('activity_type', 'match');
-      params.set('organisation_id', organisationId);
-      params.set('ordering', '-start_time');
-
-      const all = await fetchAllPages<any>(
-        `${apiV1BaseUrl}/activities/?${params.toString()}`,
-        { credentials: 'include' },
-        {
-          ttlMs: 30_000,
-          cacheKey: `GET:activities:federation:matches:${organisationId}`,
-          maxItems: 250,
-        }
-      );
-
-      setFederationMatches(Array.isArray(all) ? all : []);
-    } catch (e) {
-      console.error(e);
-      setFederationMatches([]);
-    } finally {
-      setFederationMatchesLoading(false);
-    }
-  };
-
-  const fetchScheduledMatches = async (organisationId: string) => {
-    if (!organisationId) return;
-    setScheduledMatchesLoading(true);
-    try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const params = new URLSearchParams();
-      params.set('page_size', '5');
-      params.set('activity_type', 'match');
-      params.set('organisation_id', organisationId);
-      params.set('ordering', 'start_time');
-      params.set('start_time__gte', new Date().toISOString());
-
-      const res = await fetch(`${apiV1BaseUrl}/activities/?${params.toString()}`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const { results } = parseListEnvelope(json);
-        setScheduledMatches(results);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setScheduledMatchesLoading(false);
-    }
-  };
-
-  const fetchRecentPlayedMatches = async (organisationId: string) => {
-    if (!organisationId) return;
-    setRecentPlayedMatchesLoading(true);
-    try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const params = new URLSearchParams();
-      params.set('page_size', '5');
-      params.set('activity_type', 'match');
-      params.set('organisation_id', organisationId);
-      params.set('ordering', '-start_time'); // Newest first
-      params.set('start_time__lt', new Date().toISOString()); // Only past matches
-
-      const res = await fetch(`${apiV1BaseUrl}/activities/?${params.toString()}`, {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const { results } = parseListEnvelope(json);
-        setRecentPlayedMatches(results);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setRecentPlayedMatchesLoading(false);
-    }
-  };
-
-
-  const fetchClubsPage = async (page: number) => {
-    if (!currentOrgSlug) return;
-    setClubsLoading(true);
-    try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const url = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`;
-      const res = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': String(org?.id || currentOrgId || ''),
-        },
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error(`Failed to fetch clubs (${res.status})`);
-      const json = await res.json();
-      const { results, count } = parseListEnvelope(json);
-
-      const clubsOnly = results.filter((p: any) => {
-        const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
-        return !parentId;
-      });
-
-      setClubs(clubsOnly);
-      setClubsCount(count);
-    } catch (e) {
-      console.error(e);
-      setClubs([]);
-      setClubsCount(0);
-    } finally {
-      setClubsLoading(false);
-    }
-  };
-
-  const fetchTeamsForOrg = async ({ force = false }: { force?: boolean } = {}) => {
-    if (!currentOrgSlug) return;
-    if (!force && teamsFetchedForOrgRef.current === currentOrgSlug && teams.length > 0) return;
-    if (teamsFetchInFlightRef.current) return;
-    teamsFetchInFlightRef.current = true;
-    if (DEBUG_LOGS) {
-      console.log('[OrganisationDetailPage] fetchTeamsForOrg starting', {
-        currentOrgSlug,
-        orgId: org?.id || currentOrgId,
-      });
-    }
-    setTeamsLoading(true);
-    try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const clubsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
-      const teamsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
-
-      if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Fetching teams from', teamsUrl);
-
-      const [clubsAll, teamsAll] = await Promise.all([
-        fetchAllPages<Project>(clubsUrl, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(org?.id || currentOrgId || ''),
-          },
-          credentials: 'include',
-        }),
-        fetchAllPages<Project>(teamsUrl, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(org?.id || currentOrgId || ''),
-          },
-          credentials: 'include',
-        }),
-      ]);
-
-      const clubsOnly = (clubsAll || []).filter((p: any) => {
-        const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
-        return !parentId;
-      });
-
-      const teamsOnly = (teamsAll || []).filter((p: any) => {
-        const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
-        return Boolean(parentId);
-      });
-
-      if (DEBUG_LOGS) {
-        console.log('[OrganisationDetailPage] Teams loaded:', teamsOnly.length, 'Clubs loaded:', clubsOnly.length);
-      }
-      setAllClubsForTeams(clubsOnly);
-      setTeams(teamsOnly);
-      teamsFetchedForOrgRef.current = currentOrgSlug;
-    } catch (e) {
-      console.error(e);
-      setTeams([]);
-      setAllClubsForTeams([]);
-    } finally {
-      setTeamsLoading(false);
-      teamsFetchInFlightRef.current = false;
-    }
-  };
-
-  const recomputePeriodCounts = (allPeriods: any[]) => {
-    const seasonsByProjectId: Record<string, number> = {};
-    const competitionsByProjectId: Record<string, number> = {};
-    const matchesByProjectId: Record<string, number> = {};
-
-    // Build a local parent->children map so we can compute recursive activity counts
-    // without relying on state that may not have updated yet.
-    const childrenMap = new Map<string, any[]>();
-    for (const p of allPeriods || []) {
-      const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
-      if (!parentId) continue;
-      const key = String(parentId);
-      const arr = childrenMap.get(key) || [];
-      arr.push(p);
-      childrenMap.set(key, arr);
-    }
-
-    const getRecursiveActivitiesCount = (p: any): number => {
-      let count = (p?.activities_count ?? 0);
-      const children = childrenMap.get(String(p?.id));
-      if (children) {
-        for (const child of children) {
-          count += getRecursiveActivitiesCount(child);
-        }
-      }
-      return count;
-    };
-
-    const seasons = allPeriods.filter((p: any) => {
-      const isSeason = isSeasonPeriod(p);
-      if (isSeason) {
-        const projectId = p.project_id ?? p.project?.id ?? null;
-        if (projectId) {
-          const key = String(projectId);
-          seasonsByProjectId[key] = (seasonsByProjectId[key] || 0) + 1;
-        }
-      }
-      return isSeason;
-    });
-
-    const competitions = allPeriods.filter((p: any) => {
-      const isCompetition = isCompetitionPeriod(p);
-      if (isCompetition) {
-        const projectId = p.project_id ?? p.project?.id ?? null;
-        if (projectId) {
-          const key = String(projectId);
-          competitionsByProjectId[key] = (competitionsByProjectId[key] || 0) + 1;
-
-          // Matches count derived from competition subtree activities_count.
-          matchesByProjectId[key] = (matchesByProjectId[key] || 0) + getRecursiveActivitiesCount(p);
-        }
-      }
-      return isCompetition;
-    });
-
-    setSeasonsCount(seasons.length);
-    setCompetitionsCount(competitions.length);
-    setTeamSeasonsCountById(seasonsByProjectId);
-    setTeamCompetitionsCountById(competitionsByProjectId);
-    setTeamMatchesCountById(matchesByProjectId);
-  };
-
-  const ensureOrgPeriodsLoaded = async () => {
-    if (DEBUG_LOGS) {
-      console.log('[OrganisationDetailPage] ensureOrgPeriodsLoaded called', {
-        teamsCount: teams.length,
-        orgPeriodsCount: orgPeriods.length,
-        loading: orgPeriodsLoading,
-      });
-    }
-    if (orgPeriodsFetchInFlightRef.current) return;
-    if (orgPeriodsLoading) return;
-    if (orgPeriods.length > 0) return;
-
-    // If the backend doesn't support organisation-level period filtering, we fall back to
-    // fetching periods by team. That requires teams to be loaded.
-    if (!teams || teams.length === 0) {
-      if (!teamsLoading && currentOrgSlug) {
-        void fetchTeamsForOrg({ force: true });
-      }
-      return;
-    }
-
-    orgPeriodsFetchInFlightRef.current = true;
-    setOrgPeriodsLoading(true);
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    try {
-      const unique = new Map<string, any>();
-
-        // Chunk requests to avoid rate limiting and long sequential wait
-        const chunkSize = 6; // Railway/Python can handle 6-10 concurrent easily
-        const teamChunks = [];
-        for (let i = 0; i < teams.length; i += chunkSize) {
-          teamChunks.push(teams.slice(i, i + chunkSize));
-        }
-
-        if (DEBUG_LOGS) {
-          console.log(
-            `[OrganisationDetailPage] Fetching periods for ${teams.length} teams in ${teamChunks.length} chunks`
-          );
-        }
-
-        for (const chunk of teamChunks) {
-           await Promise.all(chunk.map(async (t: any) => {
-              const teamId = t?.id;
-              if (!teamId) return;
-              const params = new URLSearchParams();
-              params.set('page_size', '250');
-              params.set('project_id', String(teamId));
-
-              try {
-                const url = `${apiV1BaseUrl}/periods/?${params.toString()}`;
-                const periods = await fetchAllPages<any>(url, {
-                    credentials: 'include',
-                });
-                for (const p of periods || []) {
-                    if (!p?.id) continue;
-                    unique.set(String(p.id), p);
-                }
-              } catch (e) {
-                 console.warn(`Failed to fetch periods for team ${teamId}`, e);
-              }
-           }));
-        } // Close chunk loop
-
-        if (DEBUG_LOGS) {
-          console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
-        }
-
-        const merged = Array.from(unique.values());
-        setOrgPeriods(merged);
-        recomputePeriodCounts(merged);
-      } catch (e) {
-        console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
-      } finally {
-        setOrgPeriodsLoading(false);
-        orgPeriodsFetchInFlightRef.current = false;
-      }
-    };
-
-  const fetchFederationCounts = async (organisationId: string) => {
-    if (!organisationId) return;
-    const apiV1BaseUrl = getApiV1BaseUrl();
-
-    try {
-      // Teams count (child projects)
-      if (currentOrgSlug) {
-        const teamsRes = await fetch(
-          `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=1&parent_project__isnull=false`,
-          { credentials: 'include' }
-        );
-        if (teamsRes.ok) {
-          const json = await teamsRes.json();
-          const { count } = parseListEnvelope(json);
-          setTeamsCount(count);
-        }
-      }
-
-      // Seasons/competitions counts – computed client-side from federation periods
-      {
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('organisation_id', organisationId);
-
-        const allPeriods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${params.toString()}`, {
-          credentials: 'include',
-        });
-
-        const list = Array.isArray(allPeriods) ? allPeriods : [];
-        setOrgPeriods(list);
-        if (list.length > 0) {
-          recomputePeriodCounts(list);
-        } else {
-          // Likely unsupported filter on backend; fall back to team-scoped loading.
-          void fetchTeamsForOrg({ force: true });
-        }
-      }
-
-      // Matches count
-      {
-        const params = new URLSearchParams();
-        params.set('page_size', '1');
-        params.set('activity_type', 'match');
-        params.set('organisation_id', organisationId);
-        const res = await fetch(`${apiV1BaseUrl}/activities/?${params.toString()}`, { credentials: 'include' });
-        if (res.ok) {
-          const json = await res.json();
-          const { count } = parseListEnvelope(json);
-          setMatchesCount(count);
-        }
-      }
-    } catch (e) {
-      console.warn('[OrganisationDetailPage] Failed to fetch counts', e);
-    }
-
-    // Fallback: if org-level period filtering isn't supported, load periods via team scope.
-    if (!orgPeriodsLoading && orgPeriods.length === 0) {
-      void ensureOrgPeriodsLoaded();
-    }
-  };
-
-  useEffect(() => {
-    const shouldEnsurePeriods = activeTab === 'seasons' || activeTab === 'competitions' || activeTab === 'hierarchy';
-    if (!shouldEnsurePeriods) return;
-    if (orgPeriodsLoading) return;
-    if (orgPeriods.length > 0) return;
-    void ensureOrgPeriodsLoaded();
-  }, [activeTab, orgPeriodsLoading, orgPeriods.length, teams.length, currentOrgSlug]);
-
-  const clubsForHierarchy = useMemo(() => {
-    const list = (allClubsForTeams && allClubsForTeams.length > 0) ? allClubsForTeams : clubs;
-    return Array.isArray(list) ? list : [];
-  }, [allClubsForTeams, clubs]);
-
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-
-    try {
-      setInviteLoading(true);
-      const apiV1BaseUrl = getApiV1BaseUrl();
-
-      // First find user by email (in a real app this would be an invite flow)
-      // For this demo, we'll assume we need the user ID.
-      // Since we don't have a user search endpoint exposed for this demo,
-      // we'll try to use the email directly if the backend supports it,
-      // or we might need to mock this part if the backend strictly requires UUID.
-
-      // NOTE: The backend MembershipCreateSerializer expects 'user_id' (UUID).
-      // Since we can't easily look up UUIDs by email from the frontend without a search endpoint,
-      // we will add a temporary helper to the backend or just ask the user for UUID in this demo.
-      // For better UX, let's try to implement a simple lookup or just use the ID input for now.
-
-      // Actually, let's change the input to ask for User ID for this technical demo
-      // to avoid complexity of implementing user search right now.
-
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: inviteEmail,
-          role: inviteRole,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.email?.[0] || data.detail || 'Failed to invite member');
-      }
-
-      // Refresh members (all pages)
-      try {
-        const params = new URLSearchParams();
-        params.set('include_project_memberships', 'true');
-        params.set('include_role_assignments', 'true');
-        params.set('include_project_membership_details', 'true');
-        params.set('page_size', '250');
-        const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
-        const allMembers = await fetchAllPages<any>(
-          membersUrl,
-          {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(org?.id || currentOrgId || ''),
-          },
-          credentials: 'include',
-          },
-          { bypass: true }
-        );
-        setMembers(allMembers);
-      } catch {
-        // ignore
-      }
-
-      setInviteEmail('');
-      alert('Member added successfully');
-    } catch (err) {
-      console.error('Invite error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to invite member');
-    } finally {
-      setInviteLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this organisation? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      setDeleteLoading(true);
-      const apiV1BaseUrl = getApiV1BaseUrl();
-
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete organisation (${response.status})`);
-      }
-
-      navigate('/federations');
-    } catch (err) {
-      console.error('Delete error:', err);
-      alert('Failed to delete organisation');
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  const handleEdit = () => {
-    setEditName(org?.name || '');
-    setEditType(org?.metadata?.type || '');
-    setEditCountry(org?.metadata?.country || '');
-    setIsEditMode(true);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditMode(false);
-    setEditName('');
-    setEditType('');
-    setEditCountry('');
-  };
-
-  const handleSaveEdit = async () => {
-    if (!org || !editName.trim()) {
-      alert('Organisation name is required');
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const apiV1BaseUrl = getApiV1BaseUrl();
-
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: editName.trim(),
-          metadata: {
-            ...org.metadata,
-            type: editType.trim(),
-            country: editCountry.trim(),
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update organisation (${response.status})`);
-      }
-
-      const updatedOrg = await response.json();
-      setOrg(updatedOrg);
-      setIsEditMode(false);
-    } catch (err) {
-      console.error('Update error:', err);
-      alert('Failed to update organisation');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const saveOrganisationEdits = async (orgData: Partial<Organisation> & { sport_id?: string | null }) => {
-    if (!org) throw new Error('Missing organisation');
-
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    const patch: any = { ...orgData };
-    delete patch.slug;
-    delete patch.sport; // Remove nested sport object, use sport_id instead
-
-    const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(detail || `Failed to update organisation (${response.status})`);
-    }
-
-    // PATCH responses are sometimes lightweight and may omit nested fields like `sport`.
-    // Refetch to ensure the details card updates immediately without a full page refresh.
-    const raw = await response.json().catch(() => null);
-    const updatedOrg = (raw as any)?.data || raw;
-    if (updatedOrg) setOrg(updatedOrg);
-
-    invalidateFetchAllPagesCache();
-    try {
-      const refreshedRes = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-      });
-      if (refreshedRes.ok) {
-        const refreshedRaw = await refreshedRes.json().catch(() => null);
-        const refreshed = (refreshedRaw as any)?.data || refreshedRaw;
-        if (refreshed) setOrg(refreshed);
-      }
-    } catch {
-      // Best-effort; leave optimistic state if refresh fails.
-    }
-  };
-
-  // Lazy load members only when Users tab is active (performance optimization)
-  const fetchMembers = async (force = false) => {
-    if (membersLoading) return;
-    const haveMembershipDetails = members.some((item: any) => {
-      const u = item?.user || item;
-      const details =
-        (item as any)?.project_membership_details ||
-        (u as any)?.project_membership_details ||
-        (item as any)?.project_memberships_details ||
-        (u as any)?.project_memberships_details;
-      return Array.isArray(details);
-    });
-    if (!force && members.length > 0 && haveMembershipDetails) return;
-    if (!org?.id && !currentOrgId) return;
-
-    setMembersLoading(true);
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    const orgId = String(org?.id || currentOrgId);
-
-    try {
-      const params = new URLSearchParams();
-      params.set('include_project_memberships', 'true');
-      params.set('include_role_assignments', 'true');
-      params.set('include_project_membership_details', 'true');
-      params.set('page_size', '250');
-
-      const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${params.toString()}`;
-      const allMembers = await fetchAllPages<any>(
-        membersUrl,
-        {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': orgId,
-        },
-        credentials: 'include',
-        },
-        force ? { bypass: true } : { ttlMs: 5 * 60_000 }
-      );
-      console.log('[OrganisationDetailPage] Members loaded:', allMembers.length);
-      setMembers(allMembers);
-    } catch (e) {
-      console.error('[OrganisationDetailPage] Members fetch failed:', e);
-      setMembers([]);
-    } finally {
-      setMembersLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const fetchOrgDetails = async () => {
-      if (!currentOrgSlug) return;
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const apiV1BaseUrl = getApiV1BaseUrl();
-
-        // Fetch organisation details using slug
-        const orgResponse = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(currentOrgId || ''),
-          },
-          credentials: 'include',
-        });
-
-        if (!orgResponse.ok) {
-          throw new Error(`Failed to fetch organisation (${orgResponse.status})`);
-        }
-
-        const rawOrgData = await orgResponse.json();
-        // Handle B13 response envelope
-        const orgData = rawOrgData.data || rawOrgData;
-        if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Org data loaded', orgData);
-        setOrg(orgData);
-        // NOTE: We intentionally avoid calling the context switcher here.
-        // In production this triggers a call to `/api/v1/context/set/` which may not exist,
-        // spamming the console with 404s without improving this page.
-
-        // Members are now loaded lazily when Users tab is opened (performance optimization)
-
-        // Federation-wide counts (high-over)
-        const organisationIdForCounts = String(orgData.id || currentOrgId || '');
-        if (organisationIdForCounts) {
-          fetchFederationCounts(organisationIdForCounts);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch organisation details');
-        console.error('Org detail fetch error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (currentOrgSlug) {
-      fetchOrgDetails();
-    }
-  }, [currentOrgSlug, currentOrgId]);
-
-  useEffect(() => {
-       const orgId = String(org?.id || currentOrgId || '');
-       if (orgId) {
-         fetchScheduledMatches(orgId);
-         fetchRecentPlayedMatches(orgId);
-         // Ensure basic stats are loaded
-         if (!orgPeriodsLoading && orgPeriods.length === 0) {
-             void fetchFederationCounts(orgId);
-         }
-       }
-  }, [org?.id, currentOrgId]);
-
-  useEffect(() => {
-    if (activeTab !== 'hierarchy') return;
-    const orgId = String(org?.id || currentOrgId || '').trim();
-    if (!orgId) return;
-    if (orgPeriodsLoading) return;
-    if (orgPeriods.length > 0) return;
-    void fetchFederationCounts(orgId);
-  }, [activeTab, org?.id, currentOrgId, orgPeriodsLoading, orgPeriods.length]);
-
-  const saveProjectEdits = async (project: Project, patch: Partial<Project>) => {
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    const projectSlugOrId = (project as any).slug || project.id;
-
-    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-
-    if (!res.ok) {
-      let msg = `Failed to save (${res.status})`;
-      try {
-        const data = await res.json();
-        msg = data?.detail || msg;
-      } catch {
-        // ignore
-      }
-      throw new Error(msg);
-    }
-
-    const json = await res.json();
-    const updated = (json?.data || json) as any;
-
-    // Update local lists.
-    setClubs((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
-    setTeams((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
-    setAllClubsForTeams((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
-  };
-
-  if (loading) {
+  if (d.loading) {
     return (
       <div className="p-6 org-detail-page">
         <div>
-          <PageHeader
-            title="Organisation Details"
-          />
+          <PageHeader title="Organisation Details" />
           <PageContent>
             <Card>
               <div className="text-center py-8 text-gray-500">
@@ -1307,18 +53,16 @@ export const OrganisationDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !org) {
+  if (d.error || !d.org) {
     return (
       <div className="p-6 org-detail-page">
         <div>
-          <PageHeader
-            title="Organisation Details"
-          />
+          <PageHeader title="Organisation Details" />
           <PageContent>
             <Alert variant="error" data-testid="org-detail-error">
-              {error || 'Organisation not found'}
+              {d.error || 'Organisation not found'}
             </Alert>
-            <Button variant="secondary" onClick={() => navigate('/federations')}>
+            <Button variant="secondary" onClick={() => d.navigate('/federations')}>
               Back to Organisations
             </Button>
           </PageContent>
@@ -1327,604 +71,259 @@ export const OrganisationDetailPage: React.FC = () => {
     );
   }
 
+  const org = d.org;
+  const isActive =
+    String(d.activeContext?.organisation?.id ?? '') === String((org as any)?.id ?? '') ||
+    d.activeContext?.organisation?.slug === (org as any)?.slug;
+
   return (
     <>
       <div className="org-detail-page">
         <PageHeader
-        title={org.name}
-        subtitle="Federation overview"
-        actions={
-          <div className="flex-row flex-wrap gap-8">
-            {(() => {
-              const isActive =
-                String(activeContext?.organisation?.id ?? '') === String((org as any)?.id ?? '') ||
-                activeContext?.organisation?.slug === (org as any)?.slug;
-              return (
-                <button
-                  onClick={async () => {
-                    if (isActive) return;
-                    try {
-                      setActivatingContext(true);
-                      await setActiveContext('organisation', String((org as any)?.slug || (org as any)?.id || ''));
-                      const context = await getActiveContext();
-                      setActiveContextState(context);
-                    } finally {
-                      setActivatingContext(false);
-                    }
-                  }}
-                  disabled={activatingContext || isActive}
-                  className="rounded-4 fs-12"
-                  style={{
-                    padding: '6px 12px',
-                    border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
-                    backgroundColor: isActive ? '#dcfce7' : 'var(--app-surface-2)',
-                    color: isActive ? '#166534' : 'var(--app-text)',
-                    cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
-                    fontWeight: isActive ? 600 : 500,
-                    opacity: (activatingContext || isActive) ? 0.8 : 1,
-                  }}
-                  title={isActive ? 'This federation is already your active context' : 'Set this federation as your active context'}
-                >
-                  {isActive ? '✓ Active Context' : 'Make active'}
-                </button>
-              );
-            })()}
-            <Button variant="secondary" size="sm" onClick={() => navigate('/federations')}>
-              Back
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => setIsOrgDetailModalOpen(true)}>
-              View
-            </Button>
-            {userCanEditOrg && (
-              <Button variant="secondary" size="sm" onClick={() => setIsOrgEditModalOpen(true)}>
-                Edit
-              </Button>
-            )}
-            {userCanEditOrg && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleDelete}
-                disabled={deleteLoading}
+          title={org.name}
+          subtitle="Federation overview"
+          actions={
+            <div className="flex-row flex-wrap gap-8">
+              <button
+                onClick={() => { if (!isActive) void d.handleActivateContext(); }}
+                disabled={d.activatingContext || isActive}
+                className="rounded-4 fs-12"
+                style={{
+                  padding: '6px 12px',
+                  border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
+                  backgroundColor: isActive ? '#dcfce7' : 'var(--app-surface-2)',
+                  color: isActive ? '#166534' : 'var(--app-text)',
+                  cursor: (d.activatingContext || isActive) ? 'not-allowed' : 'pointer',
+                  fontWeight: isActive ? 600 : 500,
+                  opacity: (d.activatingContext || isActive) ? 0.8 : 1,
+                }}
+                title={isActive ? 'This federation is already your active context' : 'Set this federation as your active context'}
               >
-                {deleteLoading ? 'Deleting...' : 'Delete'}
+                {isActive ? '✓ Active Context' : 'Make active'}
+              </button>
+              <Button variant="secondary" size="sm" onClick={() => d.navigate('/federations')}>
+                Back
               </Button>
-            )}
-          </div>
-        }
-      />
-
-      {/* Mobile Tab Bar */}
-      <MobileTabBar
-        tabs={[
-          { id: 'overview', label: 'Overview' },
-          { id: 'hierarchy', label: 'Hierarchy' },
-          { id: 'clubs', label: 'Clubs' },
-          { id: 'teams', label: 'Teams' },
-          { id: 'seasons', label: 'Seasons' },
-          { id: 'competitions', label: 'Competitions' },
-          { id: 'matches', label: 'Matches' },
-          { id: 'users', label: 'Users' },
-          { id: 'identity', label: 'Identity' },
-          { id: 'settings', label: 'Settings' },
-        ]}
-        activeTab={activeTab}
-      />
-
-      <PageContent>
-        {activeTab === 'overview' && (
-          <OrgOverviewTab
-            org={org}
-            clubs={clubs}
-            teams={teams}
-            members={members}
-            clubsCount={clubsCount}
-            clubsLoading={clubsLoading}
-            teamsCount={teamsCount}
-            teamsLoading={teamsLoading}
-            membersLoading={membersLoading}
-            matchesCount={matchesCount}
-            scheduledMatches={scheduledMatches}
-            scheduledMatchesLoading={scheduledMatchesLoading}
-            navigate={navigate}
-            makeTabHref={makeTabHref}
-            getBestMatchDetailPath={getBestMatchDetailPath}
-            currentOrgSlug={currentOrgSlug}
-            id={id}
-            permissionContext={permissionContext}
-            setIsOrgEditModalOpen={setIsOrgEditModalOpen}
-          />
-        )}
-
-        {activeTab === 'hierarchy' && (
-          <OrgHierarchyTab
-            hierarchySearch={hierarchySearch}
-            setHierarchySearch={setHierarchySearch}
-            teams={teams}
-            clubsForHierarchy={clubsForHierarchy}
-            membershipUserCounts={membershipUserCounts}
-            teamSeasonsCountById={teamSeasonsCountById}
-            teamCompetitionsCountById={teamCompetitionsCountById}
-            teamMatchesCountById={teamMatchesCountById}
-            teamsLoading={teamsLoading}
-            orgSlugOrId={orgSlugOrId}
-            currentOrgSlug={currentOrgSlug}
-            id={id}
-            navigate={navigate}
-          />
-        )}
-
-        {activeTab === 'audit' && (
-          <Card>
-            {isSuperAdmin || userCanEditOrg ? (
-              <AuditLogTable organisationId={String(currentOrgId || org?.id || '')} limit={50} />
-            ) : (
-              <Alert variant="error">You do not have access to the audit log for this organisation.</Alert>
-            )}
-          </Card>
-        )}
-
-        {activeTab === 'governance' && (
-          <Card>
-            {isSuperAdmin || userCanEditOrg ? (
-              <PolicyList organisationId={String(currentOrgId || org?.id || '')} />
-            ) : (
-              <Alert variant="error">You do not have access to governance policies for this organisation.</Alert>
-            )}
-          </Card>
-        )}
-
-        {activeTab === 'operations' && (
-          <Card>
-            {isSuperAdmin ? (
-              <div className="p-12 text-muted">
-                Operations tooling is not wired yet for this demo.
-              </div>
-            ) : (
-              <Alert variant="error">You do not have access to operations for this organisation.</Alert>
-            )}
-          </Card>
-        )}
-
-        {activeTab === 'clubs' && orgIdForDirectoryLists && (
-          <ClubsList preselectedOrgId={orgIdForDirectoryLists} />
-        )}
-
-        {activeTab === 'teams' && orgIdForDirectoryLists && (
-          <TeamsList preselectedOrgId={orgIdForDirectoryLists} />
-        )}
-
-        {activeTab === 'seasons' && orgIdForDirectoryLists && (
-          <SeasonsList preselectedOrgId={orgIdForDirectoryLists} />
-        )}
-
-        {activeTab === 'competitions' && orgIdForDirectoryLists && (
-          <CompetitionsList preselectedOrgId={orgIdForDirectoryLists} />
-        )}
-
-        {activeTab === 'matches' && orgIdForDirectoryLists && (
-          <MatchesList preselectedOrgId={orgIdForDirectoryLists} />
-        )}
-
-        {activeTab === 'users' && orgIdForDirectoryLists && (
-          <UsersList preselectedOrgId={orgIdForDirectoryLists} />
-        )}
-
-        {activeTab === 'identity' && org && (
-          <BrandIdentityPage
-            organisationId={org.slug || String(org.id)}
-            organisationName={org.name}
-          />
-        )}
-
-        {activeTab === 'settings' && org && (
-          <ContentAvailabilityCard
-            scopeType="ORGANISATION"
-            organisationId={String(org.id)}
-            scopeName={org.name}
-          />
-        )}
-
-      </PageContent>
-
-      <ProjectDetailModal
-        opened={isClubModalOpen}
-        onClose={() => setIsClubModalOpen(false)}
-        project={selectedClub}
-      />
-
-      <ProjectDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        project={detailProject}
-      />
-
-      <ProjectEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        project={selectedEditProject as any}
-        onSave={(patch) => {
-          if (!selectedEditProject) return Promise.resolve();
-          return saveProjectEdits(selectedEditProject, patch as any);
-        }}
-      />
-
-      <ProjectCreateModal
-        opened={isCreateClubModalOpen}
-        onClose={() => setIsCreateClubModalOpen(false)}
-        title="Create Club"
-        organisations={createModalOrganisations}
-        requireOrganisation={createModalOrganisations.length > 0}
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        onCreate={async (projectData) => {
-          const apiV1BaseUrl = getApiV1BaseUrl();
-          const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              name: projectData.name,
-              description: projectData.description || '',
-            }),
-          });
-
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            throw new Error(detail || 'Failed to create club');
+              <Button variant="secondary" size="sm" onClick={() => d.setIsOrgDetailModalOpen(true)}>
+                View
+              </Button>
+              {d.userCanEditOrg && (
+                <Button variant="secondary" size="sm" onClick={() => d.setIsOrgEditModalOpen(true)}>
+                  Edit
+                </Button>
+              )}
+              {d.userCanEditOrg && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={d.handleDelete}
+                  disabled={d.deleteLoading}
+                >
+                  {d.deleteLoading ? 'Deleting...' : 'Delete'}
+                </Button>
+              )}
+            </div>
           }
+        />
 
-          // Make the UX feel instant:
-          // - update local state immediately (so the club appears right away)
-          // - kick off any heavier refetch work in the background
-          const payload: any = await res.json().catch(() => null);
-          const created: any = payload?.data?.data || payload?.data || payload;
+        {/* Mobile Tab Bar */}
+        <MobileTabBar
+          tabs={[
+            { id: 'overview', label: 'Overview' },
+            { id: 'hierarchy', label: 'Hierarchy' },
+            { id: 'clubs', label: 'Clubs' },
+            { id: 'teams', label: 'Teams' },
+            { id: 'seasons', label: 'Seasons' },
+            { id: 'competitions', label: 'Competitions' },
+            { id: 'matches', label: 'Matches' },
+            { id: 'users', label: 'Users' },
+            { id: 'identity', label: 'Identity' },
+            { id: 'settings', label: 'Settings' },
+          ]}
+          activeTab={d.activeTab}
+        />
 
-          if (created && typeof created === 'object') {
-            const createdKey = String(created?.slug || created?.id || '');
-            if (createdKey) {
-              setClubsPage(1);
-              setClubs((prev) => {
-                if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
-                // Newest-first in UI; server refetch will normalize ordering if needed.
-                return [created, ...prev];
-              });
-              setClubsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
-              setAllClubsForTeams((prev) => {
-                if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
-                return [created, ...prev];
-              });
-            }
-          }
+        <PageContent>
+          {d.activeTab === 'overview' && (
+            <OrgOverviewTab
+              org={org}
+              clubs={d.clubs}
+              teams={d.teams}
+              members={d.members}
+              clubsCount={d.clubsCount}
+              clubsLoading={d.clubsLoading}
+              teamsCount={d.teamsCount}
+              teamsLoading={d.teamsLoading}
+              membersLoading={d.membersLoading}
+              matchesCount={d.matchesCount}
+              scheduledMatches={d.scheduledMatches}
+              scheduledMatchesLoading={d.scheduledMatchesLoading}
+              navigate={d.navigate}
+              makeTabHref={d.makeTabHref}
+              getBestMatchDetailPath={d.getBestMatchDetailPath}
+              currentOrgSlug={d.currentOrgSlug}
+              id={d.id}
+              permissionContext={d.permissionContext}
+              setIsOrgEditModalOpen={d.setIsOrgEditModalOpen}
+            />
+          )}
 
-          invalidateFetchAllPagesCache();
-          void fetchClubsPage(1);
-          void fetchTeamsForOrg({ force: true });
-        }}
-      />
+          {d.activeTab === 'hierarchy' && (
+            <OrgHierarchyTab
+              hierarchySearch={d.hierarchySearch}
+              setHierarchySearch={d.setHierarchySearch}
+              teams={d.teams}
+              clubsForHierarchy={d.clubsForHierarchy}
+              membershipUserCounts={d.membershipUserCounts}
+              teamSeasonsCountById={d.teamSeasonsCountById}
+              teamCompetitionsCountById={d.teamCompetitionsCountById}
+              teamMatchesCountById={d.teamMatchesCountById}
+              teamsLoading={d.teamsLoading}
+              orgSlugOrId={d.orgSlugOrId}
+              currentOrgSlug={d.currentOrgSlug}
+              id={d.id}
+              navigate={d.navigate}
+            />
+          )}
 
-      <ProjectCreateModal
-        opened={isCreateTeamModalOpen}
-        onClose={() => setIsCreateTeamModalOpen(false)}
-        title="Create Team"
-        organisations={createModalOrganisations}
-        clubs={createModalClubs}
-        requireOrganisation={createModalOrganisations.length > 0}
-        requireClub
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        initialClubId={teamClubFilterId || ''}
-        onCreate={async (projectData) => {
-          const clubId = String(projectData.parent_project_id || '').trim();
-          if (!clubId) throw new Error('Select a club first.');
+          {d.activeTab === 'audit' && (
+            <Card>
+              {d.isSuperAdmin || d.userCanEditOrg ? (
+                <AuditLogTable organisationId={String(d.currentOrgId || org?.id || '')} limit={50} />
+              ) : (
+                <Alert variant="error">You do not have access to the audit log for this organisation.</Alert>
+              )}
+            </Card>
+          )}
 
-          const apiV1BaseUrl = getApiV1BaseUrl();
-          const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              name: projectData.name,
-              description: projectData.description || '',
-              parent_project_id: clubId,
-            }),
-          });
+          {d.activeTab === 'governance' && (
+            <Card>
+              {d.isSuperAdmin || d.userCanEditOrg ? (
+                <PolicyList organisationId={String(d.currentOrgId || org?.id || '')} />
+              ) : (
+                <Alert variant="error">You do not have access to governance policies for this organisation.</Alert>
+              )}
+            </Card>
+          )}
 
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            throw new Error(detail || 'Failed to create team');
-          }
+          {d.activeTab === 'operations' && (
+            <Card>
+              {d.isSuperAdmin ? (
+                <div className="p-12 text-muted">
+                  Operations tooling is not wired yet for this demo.
+                </div>
+              ) : (
+                <Alert variant="error">You do not have access to operations for this organisation.</Alert>
+              )}
+            </Card>
+          )}
 
-          // Make UX feel instant: update local lists immediately, then refresh in background.
-          const payload: any = await res.json().catch(() => null);
-          const created: any = payload?.data?.data || payload?.data || payload;
+          {d.activeTab === 'clubs' && d.orgIdForDirectoryLists && (
+            <ClubsList preselectedOrgId={d.orgIdForDirectoryLists} />
+          )}
 
-          if (created && typeof created === 'object') {
-            const createdKey = String(created?.slug || created?.id || '').trim();
-            if (createdKey) {
-              setTeams((prev) => {
-                const list = Array.isArray(prev) ? prev : [];
-                if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
-                return [created, ...list];
-              });
-              setTeamsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
-            }
-          }
+          {d.activeTab === 'teams' && d.orgIdForDirectoryLists && (
+            <TeamsList preselectedOrgId={d.orgIdForDirectoryLists} />
+          )}
 
-          invalidateFetchAllPagesCache();
-          void fetchTeamsForOrg({ force: true });
-        }}
-      />
+          {d.activeTab === 'seasons' && d.orgIdForDirectoryLists && (
+            <SeasonsList preselectedOrgId={d.orgIdForDirectoryLists} />
+          )}
 
-      <AddMemberModal
-        isOpen={isAddMemberModalOpen}
-        onClose={() => setIsAddMemberModalOpen(false)}
-        onSuccess={() => {
-          fetchMembers(true);
-        }}
-        contextLevel="organisation"
-        orgSlug={String(currentOrgSlug || '')}
-      />
+          {d.activeTab === 'competitions' && d.orgIdForDirectoryLists && (
+            <CompetitionsList preselectedOrgId={d.orgIdForDirectoryLists} />
+          )}
 
-      <PeriodCreateModal
-        opened={isCreateSeasonModalOpen}
-        onClose={() => setIsCreateSeasonModalOpen(false)}
-        title="Create Season"
-        organisations={createModalOrganisations}
-        clubs={createModalClubs}
-        teams={teams as any}
-        requireOrganisation
-        requireClub
-        requireTeam
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        initialClubId={seasonClubFilterId || ''}
-        initialTeamId={seasonTeamFilterId || ''}
-        onCreate={async (payload) => {
-          const apiV1BaseUrl = getApiV1BaseUrl();
-          const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
-          const teamId = String(payload.project_id || '').trim();
-          if (!orgId) throw new Error('Select a federation first');
-          if (!teamId) throw new Error('Select a team first');
+          {d.activeTab === 'matches' && d.orgIdForDirectoryLists && (
+            <MatchesList preselectedOrgId={d.orgIdForDirectoryLists} />
+          )}
 
-          const res = await fetch(`${apiV1BaseUrl}/periods/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCsrfToken() || '',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              organisation_id: orgId,
-              project_id: teamId ? Number(teamId) : undefined,
-              parent_period_id: null,
-              name: payload.name,
-              description: payload.description,
-              start_date: payload.start_date,
-              end_date: payload.end_date,
-              metadata: { type: 'season' },
-            }),
-          });
+          {d.activeTab === 'users' && d.orgIdForDirectoryLists && (
+            <UsersList preselectedOrgId={d.orgIdForDirectoryLists} />
+          )}
 
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            throw new Error(detail || 'Failed to create season');
-          }
+          {d.activeTab === 'identity' && org && (
+            <BrandIdentityPage
+              organisationId={org.slug || String(org.id)}
+              organisationName={org.name}
+            />
+          )}
 
-          const raw: any = await res.json().catch(() => null);
-          const created: any = raw?.data?.data || raw?.data || raw;
-          if (created && typeof created === 'object') {
-            const createdId = String(created?.id || '').trim();
-            if (createdId) {
-              setOrgPeriods((prev) => {
-                const list = Array.isArray(prev) ? prev : [];
-                if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
-                const next = [created, ...list];
-                recomputePeriodCounts(next);
-                return next;
-              });
-            }
-          }
+          {d.activeTab === 'settings' && org && (
+            <ContentAvailabilityCard
+              scopeType="ORGANISATION"
+              organisationId={String(org.id)}
+              scopeName={org.name}
+            />
+          )}
+        </PageContent>
 
-          invalidateFetchAllPagesCache();
-          void fetchFederationCounts(orgId);
-        }}
-      />
-
-      <PeriodCreateModal
-        opened={isCreateCompetitionModalOpen}
-        onClose={() => setIsCreateCompetitionModalOpen(false)}
-        title="Create Competition"
-        organisations={createModalOrganisations}
-        clubs={createModalClubs}
-        teams={teams as any}
-        requireOrganisation
-        requireClub
-        requireTeam
-        requireSeason
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        initialClubId={compClubFilterId || ''}
-        initialTeamId={compTeamFilterId || ''}
-        onCreate={async (payload) => {
-          const apiV1BaseUrl = getApiV1BaseUrl();
-          const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
-          const teamId = String(payload.project_id || '').trim();
-          const seasonId = String(payload.parent_period_id || '').trim();
-          if (!orgId) throw new Error('Select a federation first');
-          if (!teamId) throw new Error('Select a team first');
-          if (!seasonId) throw new Error('Select a season first');
-
-          const res = await fetch(`${apiV1BaseUrl}/periods/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCsrfToken() || '',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              organisation_id: orgId,
-              project_id: teamId ? Number(teamId) : undefined,
-              parent_period_id: seasonId || null,
-              name: payload.name,
-              description: payload.description,
-              start_date: payload.start_date,
-              end_date: payload.end_date,
-              metadata: { type: 'competition' },
-            }),
-          });
-
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            throw new Error(detail || 'Failed to create competition');
-          }
-
-          const raw: any = await res.json().catch(() => null);
-          const created: any = raw?.data?.data || raw?.data || raw;
-          if (created && typeof created === 'object') {
-            const createdId = String(created?.id || '').trim();
-            if (createdId) {
-              setOrgPeriods((prev) => {
-                const list = Array.isArray(prev) ? prev : [];
-                if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
-                const next = [created, ...list];
-                recomputePeriodCounts(next);
-                return next;
-              });
-            }
-          }
-
-          invalidateFetchAllPagesCache();
-          void fetchFederationCounts(orgId);
-        }}
-      />
-
-      <MatchCreateModal
-        opened={isCreateMatchModalOpen}
-        onClose={() => setIsCreateMatchModalOpen(false)}
-        organisations={createModalOrganisations}
-        clubs={createModalClubs}
-        teams={teams as any}
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        initialClubId={matchClubFilterId || ''}
-        initialTeamId={matchTeamFilterId || ''}
-        onCreate={async (payload) => {
-          const apiV1BaseUrl = getApiV1BaseUrl();
-          const csrfToken = getCsrfToken();
-
-          const orgIdToRefresh = String(currentOrgId || org?.id || '').trim();
-          const teamId = String(payload.project_id || '').trim();
-          const competitionId = String(payload.period_id || '').trim();
-          if (!teamId) throw new Error('Select a team first');
-          if (!competitionId) throw new Error('Select a competition first');
-
-          const res = await fetch(`${apiV1BaseUrl}/activities/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken || '',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              title: payload.title,
-              activity_type: 'match',
-              project_id: teamId ? Number(teamId) : undefined,
-              opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
-              period_id: competitionId,
-              start_time: payload.start_time,
-              end_time: payload.end_time,
-              location: payload.location,
-              description: payload.description,
-              metadata: {
-                venue: payload.venue || 'Home',
-                is_home: (payload.venue || 'Home') === 'Home',
-                ...(payload as any)?.metadata,
-              },
-            }),
-          });
-
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            throw new Error(detail || 'Failed to create match');
-          }
-
-          // Make UX feel instant: insert created match locally and refresh counts in background.
-          const raw: any = await res.json().catch(() => null);
-          const created: any = raw?.data?.data || raw?.data || raw;
-          if (created && typeof created === 'object') {
-            const createdId = String(created?.id || '').trim();
-            if (createdId) {
-              setFederationMatches((prev) => {
-                const list = Array.isArray(prev) ? prev : [];
-                if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
-                return [created, ...list];
-              });
-              setMatchesCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
-            }
-          }
-
-          invalidateFetchAllPagesCache();
-          if (orgIdToRefresh) {
-            void fetchFederationCounts(orgIdToRefresh);
-          }
-        }}
-      />
-
-      <OrgEditMemberRoleModal
-        opened={isEditMemberRoleModalOpen}
-        onClose={() => {
-          setIsEditMemberRoleModalOpen(false);
-          setEditingMember(null);
-        }}
-        editingMember={editingMember}
-        currentOrgSlug={currentOrgSlug}
-        onSaved={(updated, role) => {
-          setMembers((prev) =>
-            (prev as any[]).map((m: any) => {
-              if (String(m?.id) !== String(editingMember?.id)) return m;
-              return updated && updated.id ? updated : { ...m, role };
-            })
-          );
-          setIsEditMemberRoleModalOpen(false);
-          setEditingMember(null);
-        }}
-      />
-
-      <OrganisationDetailModal
-        opened={isOrgDetailModalOpen}
-        onClose={() => setIsOrgDetailModalOpen(false)}
-        organisation={org as any}
-      />
-
-      <EntityEditModal
-        isOpen={isOrgEditModalOpen}
-        onClose={() => setIsOrgEditModalOpen(false)}
-        onSaved={() => window.location.reload()}
-        entityType="organisation"
-        entityId={currentOrgSlug || id!}
-        entityName={org?.name}
-        organisationId={String(org?.id || currentOrgId || '')}
-        initialEntityData={org ? {
-          id: String(org.id),
-          name: org.name,
-          slug: org.slug,
-          description: (org as any).description,
-          is_active: (org as any).is_active ?? true,
-          sport_id: (org as any).sport?.id || (org as any).sport_id || null,
-        } : undefined}
-        canEditGeneral={canEditOrganisation(permissionContext)}
-        canEditBrand={canEditOrganisation(permissionContext)}
-      />
-
-      <UserDetailModal
-        user={detailUser}
-        opened={isUserDetailModalOpen}
-        onClose={() => setIsUserDetailModalOpen(false)}
-      />
+        <OrgModals
+          org={org}
+          currentOrgSlug={d.currentOrgSlug}
+          currentOrgId={d.currentOrgId}
+          permissionContext={d.permissionContext}
+          getApiV1BaseUrl={d.getApiV1BaseUrl}
+          getCsrfToken={d.getCsrfToken}
+          fetchClubsPage={d.fetchClubsPage}
+          fetchTeamsForOrg={d.fetchTeamsForOrg}
+          fetchMembers={d.fetchMembers}
+          fetchFederationCounts={d.fetchFederationCounts}
+          recomputePeriodCounts={d.recomputePeriodCounts}
+          saveProjectEdits={d.saveProjectEdits}
+          setClubs={d.setClubs}
+          setClubsPage={d.setClubsPage}
+          setClubsCount={d.setClubsCount}
+          setAllClubsForTeams={d.setAllClubsForTeams}
+          setTeams={d.setTeams}
+          setTeamsCount={d.setTeamsCount}
+          setOrgPeriods={d.setOrgPeriods}
+          setFederationMatches={d.setFederationMatches}
+          setMatchesCount={d.setMatchesCount}
+          setMembers={d.setMembers as any}
+          isClubModalOpen={d.isClubModalOpen}
+          setIsClubModalOpen={d.setIsClubModalOpen}
+          selectedClub={d.selectedClub}
+          isDetailModalOpen={d.isDetailModalOpen}
+          setIsDetailModalOpen={d.setIsDetailModalOpen}
+          detailProject={d.detailProject}
+          isEditModalOpen={d.isEditModalOpen}
+          setIsEditModalOpen={d.setIsEditModalOpen}
+          selectedEditProject={d.selectedEditProject}
+          isCreateClubModalOpen={d.isCreateClubModalOpen}
+          setIsCreateClubModalOpen={d.setIsCreateClubModalOpen}
+          isCreateTeamModalOpen={d.isCreateTeamModalOpen}
+          setIsCreateTeamModalOpen={d.setIsCreateTeamModalOpen}
+          teamClubFilterId={d.teamClubFilterId}
+          isAddMemberModalOpen={d.isAddMemberModalOpen}
+          setIsAddMemberModalOpen={d.setIsAddMemberModalOpen}
+          isCreateSeasonModalOpen={d.isCreateSeasonModalOpen}
+          setIsCreateSeasonModalOpen={d.setIsCreateSeasonModalOpen}
+          seasonClubFilterId={d.seasonClubFilterId}
+          seasonTeamFilterId={d.seasonTeamFilterId}
+          isCreateCompetitionModalOpen={d.isCreateCompetitionModalOpen}
+          setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
+          compClubFilterId={d.compClubFilterId}
+          compTeamFilterId={d.compTeamFilterId}
+          isCreateMatchModalOpen={d.isCreateMatchModalOpen}
+          setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
+          matchClubFilterId={d.matchClubFilterId}
+          matchTeamFilterId={d.matchTeamFilterId}
+          isEditMemberRoleModalOpen={d.isEditMemberRoleModalOpen}
+          setIsEditMemberRoleModalOpen={d.setIsEditMemberRoleModalOpen}
+          editingMember={d.editingMember}
+          setEditingMember={d.setEditingMember}
+          isOrgDetailModalOpen={d.isOrgDetailModalOpen}
+          setIsOrgDetailModalOpen={d.setIsOrgDetailModalOpen}
+          isOrgEditModalOpen={d.isOrgEditModalOpen}
+          setIsOrgEditModalOpen={d.setIsOrgEditModalOpen}
+          detailUser={d.detailUser}
+          isUserDetailModalOpen={d.isUserDetailModalOpen}
+          setIsUserDetailModalOpen={d.setIsUserDetailModalOpen}
+          createModalOrganisations={d.createModalOrganisations}
+          createModalClubs={d.createModalClubs}
+          teams={d.teams}
+        />
       </div>
     </>
   );
