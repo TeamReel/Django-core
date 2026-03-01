@@ -32,6 +32,7 @@ import {
   type VideoJob,
   type VideoJobStatus,
 } from '../hooks/useVideoJobs';
+import s from './ApprovalsPage.module.css';
 
 type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected' | 'ai_queue' | 'video';
 type ContentTypeFilter = 'all' | 'ai_video' | 'ai_image' | 'lineup_video' | 'video_processing';
@@ -251,40 +252,40 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 10001, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className={s.modalOverlayHigh}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 560, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+      <div className={s.modalPanel} style={{ maxWidth: 560 }}>
 
         {/* Header */}
-        <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #e5e7eb)' }}>
+        <div className={s.modalHeaderSimple}>
           <div className="flex-between">
             <div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #111)' }}>🎬 Video's genereren?</div>
-              <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
+              <div className={s.modalTitle}>🎬 Video's genereren?</div>
+              <div className={s.modalSubtitle}>
                 Fullbody goedgekeurd voor <strong>{info.memberName}</strong> ({info.kitType}). Wil je ook video's genereren?
               </div>
             </div>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>
+            <button onClick={onClose} className={s.closeBtnMuted}>✕</button>
           </div>
         </div>
 
         {/* Body */}
-        <div className="flex-col gap-20 overflow-y-auto" style={{ padding: '16px 24px', maxHeight: '60vh' }}>
+        <div className={`flex-col gap-20 ${s.modalBody}`}>
 
           {/* Short Intro section */}
           <div>
-            <div className="fs-14 fw-700 mb-8" style={{ color: 'var(--app-text, #111)' }}>🎬 Short Intro</div>
-            <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 10 }}>Korte intro video (6 sec) — kies een pose:</div>
-            <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+            <div className={`fs-14 fw-700 mb-8 ${s.sectionLabel}`}>🎬 Short Intro</div>
+            <div className={s.sectionDescription}>Korte intro video (6 sec) — kies een pose:</div>
+            <div className={`grid gap-8 ${s.grid3col}`}>
               {INTRO_POSES.map(pose => (
                 <div
                   key={pose.value}
                   onClick={() => setSelectedIntro(prev => prev === pose.value ? null : pose.value)}
                   style={chipStyle(selectedIntro === pose.value)}
                 >
-                  <div className="fs-13 fw-600" style={{ color: 'var(--app-text, #111)' }}>{pose.label}</div>
-                  <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', lineHeight: 1.3 }}>{pose.desc}</div>
+                  <div className={`fs-13 fw-600 ${s.chipLabel}`}>{pose.label}</div>
+                  <div className={s.chipDescription}>{pose.desc}</div>
                 </div>
               ))}
             </div>
@@ -292,43 +293,43 @@ function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUpModalPr
 
           {/* Goal Celebration section */}
           <div>
-            <div className="fs-14 fw-700 mb-8" style={{ color: 'var(--app-text, #111)' }}>⚽ Goal Celebration</div>
-            <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginBottom: 10 }}>Korte viering video (6 sec) — kies een stijl:</div>
-            <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+            <div className={`fs-14 fw-700 mb-8 ${s.sectionLabel}`}>⚽ Goal Celebration</div>
+            <div className={s.sectionDescription}>Korte viering video (6 sec) — kies een stijl:</div>
+            <div className={`grid gap-8 ${s.grid2col}`}>
               {CELEBRATION_STYLES.map(style => (
                 <div
                   key={style.value}
                   onClick={() => setSelectedCelebration(prev => prev === style.value ? null : style.value)}
                   style={chipStyle(selectedCelebration === style.value)}
                 >
-                  <div className="fs-13 fw-600" style={{ color: 'var(--app-text, #111)' }}>{style.label}</div>
-                  <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', lineHeight: 1.3 }}>{style.desc}</div>
+                  <div className={`fs-13 fw-600 ${s.chipLabel}`}>{style.label}</div>
+                  <div className={s.chipDescription}>{style.desc}</div>
                 </div>
               ))}
             </div>
           </div>
 
           {error && (
-            <div style={{ fontSize: 12, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 8, padding: '8px 12px' }}>{error}</div>
+            <div className={s.errorAlert}>{error}</div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex-between" style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #e5e7eb)' }}>
+        <div className={`flex-between ${s.modalFooter}`}>
           <button
             onClick={onClose}
-            style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', color: 'var(--app-text-secondary, #6b7280)', fontWeight: 500, fontSize: 13, cursor: 'pointer' }}
+            className={s.btnGhost}
           >
             Overslaan
           </button>
           <button
             onClick={handleSubmit}
             disabled={submitting || submitCount === 0}
+            className={s.btnPrimary}
             style={{
-              padding: '9px 24px', borderRadius: 8, border: 'none',
-              background: submitCount > 0 ? '#2563eb' : '#94a3b8', color: '#fff',
-              fontWeight: 600, fontSize: 13, cursor: submitting ? 'wait' : submitCount > 0 ? 'pointer' : 'not-allowed',
+              cursor: submitting ? 'wait' : submitCount > 0 ? 'pointer' : 'not-allowed',
               opacity: submitting ? 0.7 : 1,
+              background: submitCount > 0 ? '#2563eb' : '#94a3b8',
             }}
           >
             {submitting ? 'Bezig...' : submitCount > 0 ? `🚀 Genereer ${submitCount} video${submitCount > 1 ? "'s" : ''}` : 'Selecteer een optie'}
@@ -404,50 +405,50 @@ function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: PhotoCompos
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 10001, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className={s.modalOverlayHigh}
       onClick={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+      <div className={s.modalPanel} style={{ maxWidth: 480 }}>
 
         {/* Header */}
-        <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #e5e7eb)' }}>
+        <div className={s.modalHeaderSimple}>
           <div className="flex-between">
             <div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #111)' }}>
+              <div className={s.modalTitle}>
                 {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
+              <div className={s.modalSubtitle}>
                 {submitted
                   ? `De video wordt gegenereerd en verschijnt binnenkort in de approval queue.`
                   : `Foto composite goedgekeurd voor ${info.memberName}. Wil je de geanimeerde video versie genereren?`
                 }
               </div>
             </div>
-            {!submitting && <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>}
+            {!submitting && <button onClick={onClose} className={s.closeBtnMuted}>✕</button>}
           </div>
         </div>
 
         {/* Preview */}
         {!submitted && (
-          <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'center' }}>
+          <div className={s.previewCenter}>
             <img
               src={info.approvedImageUrl}
               alt="Approved composite"
-              style={{ maxHeight: 200, maxWidth: '100%', borderRadius: 8, objectFit: 'contain' }}
+              className={s.previewImg}
             />
           </div>
         )}
 
         {error && (
-          <div style={{ margin: '0 24px 16px', fontSize: 12, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 8, padding: '8px 12px' }}>{error}</div>
+          <div className={s.errorAlert} style={{ margin: '0 24px 16px' }}>{error}</div>
         )}
 
         {/* Footer */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', justifyContent: submitted ? 'center' : 'space-between', alignItems: 'center' }}>
+        <div className={s.modalFooter} style={{ justifyContent: submitted ? 'center' : 'space-between' }}>
           {submitted ? (
             <button
               onClick={() => { onSubmitted(); onClose(); }}
-              style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+              className={s.btnPrimary}
             >
               Sluiten
             </button>
@@ -456,19 +457,16 @@ function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: PhotoCompos
               <button
                 onClick={onClose}
                 disabled={submitting}
-                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #e5e7eb)', background: 'transparent', color: 'var(--app-text-secondary, #6b7280)', fontWeight: 500, fontSize: 13, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+                className={s.btnGhost}
+                style={{ cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
               >
                 Overslaan
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                style={{
-                  padding: '9px 24px', borderRadius: 8, border: 'none',
-                  background: '#2563eb', color: '#fff',
-                  fontWeight: 600, fontSize: 13, cursor: submitting ? 'wait' : 'pointer',
-                  opacity: submitting ? 0.7 : 1,
-                }}
+                className={s.btnPrimary}
+                style={{ cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1 }}
               >
                 {submitting ? 'Bezig...' : '🚀 Genereer Video'}
               </button>
@@ -541,22 +539,22 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className={s.modalOverlay}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: variants.length > 1 ? 980 : 740, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+      <div className={s.modalPanel} style={{ maxWidth: variants.length > 1 ? 980 : 740, maxHeight: '92vh' }}>
 
         {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+        <div className={s.modalHeader}>
           <div className="flex-1">
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{job.label || job.template_id}</div>
-            <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+            <div className={s.modalTitle15}>{job.label || job.template_id}</div>
+            <div className={s.modalSubtitle11}>
               {job.output_type} · {new Date(job.created_at).toLocaleString()}
               {reviewList.length > 0 && ` · ${currentIdx + 1} van ${reviewList.length}`}
               {variants.length > 1 && ` · ${variants.length} varianten`}
             </div>
             {(job.provider || job.model || job.duration_seconds != null) && (
-              <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div className={s.providerInfo}>
                 {job.provider && <span>🤖 <strong>{job.provider}</strong></span>}
                 {job.model && <span>📦 {job.model}</span>}
                 {job.duration_seconds != null && <span>⏱️ {job.duration_seconds < 60 ? `${Math.round(job.duration_seconds)}s` : `${Math.floor(job.duration_seconds / 60)}m ${Math.round(job.duration_seconds % 60)}s`}</span>}
@@ -567,20 +565,20 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
             <button disabled={!hasPrev} onClick={() => onReviewed('__prev__', 'approve')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 16 }}>&#8249;</button>
             <button disabled={!hasNext} onClick={() => onReviewed('__next__', 'reject')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasNext ? 'pointer' : 'default', opacity: hasNext ? 1 : 0.3, fontSize: 16 }}>&#8250;</button>
           </div>
-          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#6b7280' }}>&times;</button>
+          <button onClick={onClose} className={s.closeBtn}>&times;</button>
         </div>
 
         {/* Variants gallery */}
         <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', padding: variants.length > 1 ? 12 : 0 }}>
           {variants.length === 0 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 280, padding: 24, color: '#6b7280', fontSize: 13, textAlign: 'center', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 32 }}>&#128679;</div>
+            <div className={s.emptyGallery}>
+              <div className={s.emptyIcon}>&#128679;</div>
               <div>Preview niet beschikbaar</div>
-              <div style={{ fontSize: 11, color: '#4b5563' }}>Bestand nog niet opgeslagen — genereer opnieuw om op te slaan</div>
+              <div className={s.emptyHint}>Bestand nog niet opgeslagen — genereer opnieuw om op te slaan</div>
             </div>
           )}
           {variants.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+            <div className={s.variantsRow}>
               {variants.map(v => {
                 const url = v.presigned_url || '';
                 const sel = selections[v.variant_index];
@@ -599,18 +597,18 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: variants.length === 1 ? 280 : 160, color: '#475569', fontSize: 12, flexDirection: 'column', gap: 6 }}>
                           <div style={{ fontSize: 28 }}>&#128679;</div>
                           <div>Geen preview</div>
-                          {v.storage_path && <div style={{ fontSize: 10, color: '#334155', wordBreak: 'break-all', padding: '0 8px' }}>{v.storage_path}</div>}
+                          {v.storage_path && <div className={s.storagePath}>{v.storage_path}</div>}
                         </div>
                       )}
                       {variants.length > 1 && (
-                        <div style={{ position: 'absolute', top: 6, left: 8, fontSize: 11, fontWeight: 700, color: '#e2e8f0', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 6px' }}>
+                        <div className={s.variantBadge}>
                           Variant {v.variant_index + 1}
                         </div>
                       )}
                     </div>
                     {/* Per-variant approve/reject — only for multi-variant jobs */}
                     {isCanReview && variants.length > 1 && (
-                      <div style={{ display: 'flex', gap: 6, padding: '8px 2px' }}>
+                      <div className={s.variantBtnRow}>
                         <button
                           onClick={() => toggleVariant(v.variant_index, true)}
                           style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: `1.5px solid ${sel === true ? '#16a34a' : '#c6f0d4'}`, background: sel === true ? '#16a34a' : '#f0fdf4', color: sel === true ? '#fff' : '#15803d', fontWeight: 600, fontSize: 12, cursor: 'pointer', transition: 'all 0.12s' }}
@@ -633,18 +631,18 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
-          {reviewError && <div style={{ flex: 1, fontSize: 12, color: '#dc2626' }}>{reviewError}</div>}
+        <div className={s.modalFooter}>
+          {reviewError && <div className={s.reviewError}>{reviewError}</div>}
           {!isCanReview && !reviewError && (
-            <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>
+            <div className={s.reviewStatus}>
               {job.approval_status === 'approved' ? '✔ Goedgekeurd' : '✘ Afgewezen'}
             </div>
           )}
           {isCanReview && <div className="flex-1" />}
           {isCanReview && variants.length > 1 && (
-            <div style={{ display: 'flex', gap: 6 }}>
-              <button onClick={() => selectAll(true)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #c6f0d4', background: '#f0fdf4', color: '#15803d', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Alles ✔</button>
-              <button onClick={() => selectAll(false)} style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff5f5', color: '#dc2626', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>Alles ✘</button>
+            <div className={s.selectAllRow}>
+              <button onClick={() => selectAll(true)} className={s.btnSelectAll}>Alles ✔</button>
+              <button onClick={() => selectAll(false)} className={s.btnRejectAll}>Alles ✘</button>
             </div>
           )}
           {isCanReview && (
@@ -652,14 +650,16 @@ function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModalProps)
               <button
                 onClick={() => handleSubmit('reject')}
                 disabled={!!reviewing}
-                style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
+                className={s.btnReject}
+                style={{ background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
                 {reviewing === 'reject' ? '...' : '✘ Afwijzen'}
               </button>
               <button
                 onClick={() => handleSubmit('approve')}
                 disabled={!!reviewing}
-                style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: reviewing === 'approve' ? '#15803d' : '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
+                className={s.btnApprove}
+                style={{ background: reviewing === 'approve' ? '#15803d' : '#16a34a', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
               >
                 {reviewing === 'approve' ? '...' : '✔ Goedkeuren'}
               </button>
@@ -715,63 +715,65 @@ function VideoReviewModal({ job, onClose, onActionComplete, pushToast, approveJo
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className={s.modalOverlay}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ width: '100%', maxWidth: 740, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+      <div className={s.modalPanel} style={{ maxWidth: 740, maxHeight: '92vh' }}>
 
         {/* Header */}
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+        <div className={s.modalHeader}>
           <div className="flex-1">
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text, #111)' }}>{typeDisplay.icon} {typeDisplay.label}</div>
-            <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+            <div className={s.modalTitle15}>{typeDisplay.icon} {typeDisplay.label}</div>
+            <div className={s.modalSubtitle11}>
               video · {new Date(job.created_at).toLocaleString('nl-NL')}
               {job.preset_name && <> · Preset: {job.preset_name}</>}
             </div>
           </div>
-          <button onClick={onClose} style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: 'pointer', fontSize: 18, color: '#6b7280' }}>&times;</button>
+          <button onClick={onClose} className={s.closeBtn}>&times;</button>
         </div>
 
         {/* Video Preview */}
-        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a' }}>
+        <div className={s.previewArea}>
           {job.output_url ? (
             <video
               src={job.output_url}
               controls
               autoPlay
               playsInline
-              style={{ width: '100%', maxHeight: 450, display: 'block' }}
+              className={s.previewVideo}
               poster={job.thumbnail_url || undefined}
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 280, padding: 24, color: '#6b7280', fontSize: 13, textAlign: 'center', gap: 8 }}>
-              <div style={{ fontSize: 32 }}>🎬</div>
+            <div className={s.emptyGallery}>
+              <div className={s.emptyIcon}>🎬</div>
               <div>Video preview niet beschikbaar</div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #e5e7eb)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
-          {isApproved && <div style={{ flex: 1, fontSize: 12, color: '#16a34a', fontWeight: 600 }}>✔ Goedgekeurd</div>}
-          {isRejected && <div style={{ flex: 1, fontSize: 12, color: '#dc2626', fontWeight: 600 }}>✘ Afgewezen</div>}
+        <div className={s.modalFooter}>
+          {isApproved && <div className={s.reviewApproved}>✔ Goedgekeurd</div>}
+          {isRejected && <div className={s.reviewRejected}>✘ Afgewezen</div>}
           {isCanReview && <div className="flex-1" />}
           {!isCanReview && !isApproved && !isRejected && (
-            <div style={{ flex: 1, fontSize: 12, color: '#6b7280' }}>Status: {job.status}</div>
+            <div className={s.reviewStatus}>Status: {job.status}</div>
           )}
           {isCanReview && (
             <>
               <button
                 onClick={() => handleAction('reject')}
                 disabled={!!reviewing}
-                style={{ padding: '9px 20px', borderRadius: 8, border: '1px solid #fca5a5', background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', color: '#dc2626', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
+                className={s.btnReject}
+                style={{ background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
               >
                 {reviewing === 'reject' ? '...' : '✘ Afwijzen'}
               </button>
               <button
                 onClick={() => handleAction('approve')}
                 disabled={!!reviewing}
-                style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: reviewing === 'approve' ? '#15803d' : '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13, cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
+                className={s.btnApprove}
+                style={{ background: reviewing === 'approve' ? '#15803d' : '#16a34a', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
               >
                 {reviewing === 'approve' ? '...' : '✔ Goedkeuren'}
               </button>
@@ -1021,7 +1023,7 @@ export default function ApprovalsPage() {
   return (
     <>
       {/* Toasts */}
-      <div style={{ position: 'fixed', bottom: 88, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'none' }}>
+      <div className={s.toastContainer} style={{ pointerEvents: 'none' }}>
         {toasts.map(t => (
           <div key={t.id} style={{ padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 500, color: '#fff', backgroundColor: t.type === 'success' ? '#16a34a' : '#dc2626', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', pointerEvents: 'auto', maxWidth: 360 }}>
             {t.message}
@@ -1088,12 +1090,12 @@ export default function ApprovalsPage() {
             {needsReviewJobs.length > 0 && (filter === 'ai_queue' || filter === 'review' || filter === 'all') && (
               <button
                 onClick={() => openModal(needsReviewJobs[0])}
-                style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #d97706', background: '#fffbeb', color: '#d97706', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                className={s.btnBeginReview}
               >
                 Begin beoordelen ({needsReviewJobs.length})
               </button>
             )}
-            <button onClick={() => { refresh(); refreshAiJobs(); refreshVideoJobs(); }} style={{ fontSize: 12, padding: '6px 14px', borderRadius: 6, border: '1px solid var(--app-border, #e5e7eb)', backgroundColor: 'transparent', color: 'var(--app-text, #111)', cursor: 'pointer' }}>
+            <button onClick={() => { refresh(); refreshAiJobs(); refreshVideoJobs(); }} className={s.btnRefresh}>
               ↻ Refresh
             </button>
           </div>
@@ -1118,30 +1120,30 @@ export default function ApprovalsPage() {
 
         {/* ── Errors ── */}
         {(error || actionError || aiError || videoError) && (
-          <div style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: 8, fontSize: 13, marginBottom: 16 }}>
+          <div className={s.errorBanner}>
             {actionError || error || aiError || videoError}
           </div>
         )}
 
         {/* ── Loading ── */}
         {(loading || aiLoading || videoLoading) && (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
+          <div className={s.loadingCenter}>
             Loading...
           </div>
         )}
 
         {/* ── Empty state ── */}
         {!loading && !aiLoading && !videoLoading && filtered.length === 0 && unifiedItems.length === 0 && (
-          <div style={{ padding: 48, textAlign: 'center', color: 'var(--app-text-secondary, #9ca3af)', backgroundColor: 'var(--app-surface-2, #f9fafb)', borderRadius: 12, border: '1px dashed var(--app-border, #e5e7eb)' }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
-            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Geen items</div>
+          <div className={s.emptyState}>
+            <div className={s.emptyIcon}>📭</div>
+            <div className={s.emptyTitle}>Geen items</div>
             <div className="fs-12">Er zijn geen items voor dit filter.</div>
           </div>
         )}
 
         {/* ── Content type filter chips ── */}
         {!aiLoading && !videoLoading && (visibleAiJobs.length > 0 || visibleVideoJobs.length > 0) && (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+          <div className={s.chipsRow}>
             {CONTENT_TYPE_CHIPS.map(chip => {
               const count = contentTypeCounts[chip.key];
               const isActive = contentType === chip.key;
@@ -1205,10 +1207,10 @@ export default function ApprovalsPage() {
                     onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
                     onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
                   >
-                    <span className="fs-20" style={{ flexShrink: 0 }}>{statusIcon[job.status]}</span>
+                    <span className={`fs-20 ${s.jobStatusIcon}`}>{statusIcon[job.status]}</span>
                     <div className="flex-1 min-w-0">
-                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)', marginBottom: 2 }}>{job.label || job.template_id}</div>
-                      <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                      <div className={s.jobLabel}>{job.label || job.template_id}</div>
+                      <div className={s.jobMeta}>
                         {job.output_type} · {new Date(job.created_at).toLocaleString()}
                         {job.provider && <> · <span className="fw-600">{job.provider}</span></>}
                         {job.model && <> · {job.model}</>}
@@ -1216,15 +1218,15 @@ export default function ApprovalsPage() {
                         {(job.variant_count ?? 0) > 1 && <> · {job.variant_count} varianten</>}
                       </div>
                       {isActive && (
-                        <div style={{ height: 3, backgroundColor: '#e5e7eb', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
+                        <div className={s.progressTrack} style={{ marginTop: 6 }}>
                           <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
                         </div>
                       )}
                       {job.status === 'failed' && job.error_message && (
-                        <div style={{ fontSize: 11, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 6, padding: '3px 8px', marginTop: 4 }}>{job.error_message}</div>
+                        <div className={s.errorInline}>{job.error_message}</div>
                       )}
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                    <div className={s.badgesCol}>
                       <span style={{ fontSize: 10, fontWeight: 700, color: typeBadgeColor, backgroundColor: `${typeBadgeColor}18`, borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
                         {typeBadgeLabel}
                       </span>
@@ -1237,7 +1239,7 @@ export default function ApprovalsPage() {
                         </span>
                       )}
                     </div>
-                    {job.status === 'completed' && <span style={{ color: '#d1d5db', fontSize: 16, flexShrink: 0 }}>›</span>}
+                    {job.status === 'completed' && <span className={s.chevron}>›</span>}
                   </div>
                 );
               } else {
@@ -1267,10 +1269,10 @@ export default function ApprovalsPage() {
                       <div className="flex-row gap-8">
                         <span className="fs-18">{typeDisplay.icon}</span>
                         <span className="fw-600 fs-13 text-primary">{typeDisplay.label}</span>
-                        <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--app-text-secondary, #6b7280)' }}>{vJob.id.slice(0, 8)}</span>
+                        <span className={s.jobShortId}>{vJob.id.slice(0, 8)}</span>
                       </div>
                       <div className="flex-row gap-6">
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#0891b2', backgroundColor: '#0891b218', borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                        <span className={s.pillBadge} style={{ color: '#0891b2', background: '#0891b218' }}>
                           {vJob.job_type === 'lineup' ? 'LINEUP' : vJob.job_type === 'goal_celebration' ? 'GOAL' : 'VIDEO'}
                         </span>
                         <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
@@ -1282,15 +1284,15 @@ export default function ApprovalsPage() {
                     {/* Progress */}
                     {isActive && (
                       <div className="flex-row gap-8">
-                        <div style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: 'var(--app-border, #e5e7eb)', overflow: 'hidden' }}>
+                        <div className={s.progressTrackThick}>
                           <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : '#2563eb', transition: 'width 0.5s ease-out' }} />
                         </div>
-                        <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', minWidth: 32 }}>{vJob.progress_percent}%</span>
+                        <span className={s.progressPercent}>{vJob.progress_percent}%</span>
                       </div>
                     )}
 
                     {/* Meta */}
-                    <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--app-text-secondary, #6b7280)', flexWrap: 'wrap' }}>
+                    <div className={s.metaRow}>
                       <span>{new Date(vJob.created_at).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                       {vJob.started_at && <span>Duur: {formatVideoDuration(vJob.started_at, vJob.completed_at)}</span>}
                       {vJob.preset_name && <span>Preset: {vJob.preset_name}</span>}
@@ -1299,27 +1301,27 @@ export default function ApprovalsPage() {
 
                     {/* Error */}
                     {vJob.error_message && (
-                      <div style={{ fontSize: 12, color: '#dc2626', backgroundColor: '#fef2f2', padding: '8px 12px', borderRadius: 6, borderLeft: '3px solid #dc2626' }}>
+                      <div className={s.errorBordered}>
                         {vJob.error_message}
                       </div>
                     )}
 
                     {/* Workflow info */}
                     {vJob.workflow_instance && (
-                      <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #6b7280)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <div className={s.workflowInfo}>
                         🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
                         {vJob.workflow_instance.current_state === 'ready_for_review' && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#d97706', backgroundColor: '#d9770618', borderRadius: 99, padding: '2px 8px' }}>
+                          <span className={s.pillBadge} style={{ color: '#d97706', background: '#d9770618' }}>
                             Te beoordelen
                           </span>
                         )}
                         {vJob.workflow_instance.current_state === 'approved' && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#16a34a', backgroundColor: '#16a34a18', borderRadius: 99, padding: '2px 8px' }}>
+                          <span className={s.pillBadge} style={{ color: '#16a34a', background: '#16a34a18' }}>
                             Goedgekeurd
                           </span>
                         )}
                         {vJob.workflow_instance.current_state === 'rejected' && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#dc2626', backgroundColor: '#dc262618', borderRadius: 99, padding: '2px 8px' }}>
+                          <span className={s.pillBadge} style={{ color: '#dc2626', background: '#dc262618' }}>
                             Afgewezen
                           </span>
                         )}
@@ -1328,21 +1330,21 @@ export default function ApprovalsPage() {
 
                     {/* Clickable hint for completed jobs */}
                     {isClickable && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                      <div className={s.hintRow}>
+                        <span className={s.hintText}>
                           {vJob.workflow_instance?.available_actions?.length ? 'Klik om te beoordelen' : 'Klik voor preview'}
                         </span>
-                        <span style={{ color: '#d1d5db', fontSize: 16 }}>›</span>
+                        <span className={s.chevron}>›</span>
                       </div>
                     )}
 
                     {/* Cancel/Retry actions */}
                     {(isActive || vJob.status === 'failed') && (
-                      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <div className={s.actionsRow}>
                         {isActive && (
                           <button
                             onClick={() => cancelVideoJob(vJob.id)}
-                            style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #dc2626', backgroundColor: 'transparent', color: '#dc2626', cursor: 'pointer' }}
+                            className={s.btnCancel}
                           >
                             Cancel
                           </button>
@@ -1350,7 +1352,7 @@ export default function ApprovalsPage() {
                         {vJob.status === 'failed' && (
                           <button
                             onClick={() => retryVideoJob(vJob.id)}
-                            style={{ fontSize: 12, padding: '5px 12px', borderRadius: 6, border: '1px solid #2563eb', backgroundColor: '#2563eb', color: '#fff', cursor: 'pointer' }}
+                            className={s.btnRetry}
                           >
                             Retry
                           </button>
@@ -1370,21 +1372,21 @@ export default function ApprovalsPage() {
             {filtered.map(instance => (
               <div
                 key={instance.id}
-                style={{ padding: 16, backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10, border: '1px solid var(--app-border, #e5e7eb)', transition: 'box-shadow 0.15s' }}
+                className={s.workflowCard}
                 onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)')}
                 onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 10 }}>
+                <div className={s.workflowCardHeader}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', backgroundColor: '#f3f4f6', borderRadius: 4, padding: '2px 6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <div className={s.workflowBadgeRow}>
+                      <span className={s.entityTypeBadge}>
                         {getEntityLabel(instance.content_type_name)}
                       </span>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text, #111)' }}>
+                      <span className={s.entityTitle}>
                         {instance.context?.title || instance.context?.name || `#${instance.object_id}`}
                       </span>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                    <div className={s.workflowMeta}>
                       {instance.workflow_name} · Updated {new Date(instance.updated_at).toLocaleDateString()}
                       {instance.created_by_username && ` · by ${instance.created_by_username}`}
                     </div>

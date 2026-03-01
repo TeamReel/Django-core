@@ -29,6 +29,7 @@ import {
 import { useAssetGeneration } from '../../hooks/useAssetGeneration';
 import { getTemplate } from '../../constants/assetTemplates';
 import { AssetGenerationModal } from '../AssetGenerationModal';
+import s from './AssetsTab.module.css';
 
 // ============================================================================
 // Types
@@ -119,39 +120,24 @@ function AssetCard({
 
   return (
     <div
-      style={{
-        border: '1px solid var(--vscode-widget-border, #333)',
-        borderRadius: 8,
-        overflow: 'hidden',
-        background: 'var(--vscode-editor-background, #1e1e1e)',
-        opacity: inherited ? 0.8 : 1,
-      }}
+      className={s.assetCard}
+      style={{ opacity: inherited ? 0.8 : 1 }}
     >
       {/* Preview area */}
       <div
+        className={s.previewArea}
         style={{
           aspectRatio,
           background: url
             ? `url(${url}) center/contain no-repeat`
             : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-          position: 'relative',
-          minHeight: 120,
         }}
       >
         {/* Phase badge */}
         {badgeText && (
           <span
-            style={{
-              position: 'absolute',
-              top: 6,
-              right: 6,
-              background: badgeColor,
-              color: '#fff',
-              fontSize: 10,
-              padding: '2px 6px',
-              borderRadius: 4,
-              fontWeight: 600,
-            }}
+            className={s.phaseBadge}
+            style={{ background: badgeColor }}
           >
             {badgeText}
           </span>
@@ -171,18 +157,8 @@ function AssetCard({
           ].includes(assetType) && (
             <button
                 onClick={() => onShowHistory(assetType)}
-                style={{
-                  position: 'absolute',
-                  top: 6,
-                  right: badgeText ? 80 : 6, // Position left of badge if exists
-                  background: 'rgba(0,0,0,0.6)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 4,
-                  fontSize: 12,
-                  padding: '2px 6px',
-                  cursor: 'pointer'
-                }}
+                className={s.historyBtn}
+                style={{ right: badgeText ? 80 : 6 }}
             >
              ⏱️
             </button>
@@ -190,82 +166,39 @@ function AssetCard({
 
         {/* Inherited badge */}
         {inherited && (
-          <span
-            style={{
-              position: 'absolute',
-              top: 6,
-              left: 6,
-              background: '#f59e0b',
-              color: '#000',
-              fontSize: 10,
-              padding: '2px 6px',
-              borderRadius: 4,
-              fontWeight: 600,
-            }}
-          >
+          <span className={s.inheritedBadge}>
             ← {inheritedFrom || 'Geërfd'}
           </span>
         )}
 
         {/* Processing overlay */}
         {isProcessing && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: 'rgba(0,0,0,0.7)',
-              zIndex: 5,
-              gap: 8,
-            }}
-          >
-            <div style={{ width: 24, height: 24, border: '3px solid #8b5cf6', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <span style={{ color: '#fff', fontSize: 11 }}>Bewerken...</span>
+          <div className={s.processingOverlay}>
+            <div className={s.spinner} />
+            <span className={s.spinnerText}>Bewerken...</span>
           </div>
         )}
 
         {/* Empty state */}
         {!url && !isProcessing && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--vscode-descriptionForeground, #888)',
-              fontSize: 12,
-            }}
-          >
+          <div className={s.emptyLabel}>
             Niet ingesteld
           </div>
         )}
       </div>
 
       {/* Info + actions */}
-      <div style={{ padding: '8px 10px' }}>
-        <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      <div className={s.infoSection}>
+        <div className={s.assetLabel}>{label}</div>
 
         {!readOnly && onUpload && (
           <>
             {/* AI processed assets with Genereer + Bewerk buttons */}
             {isProcessed && onReplace ? (
-              <div style={{ display: 'grid', gridTemplateColumns: onPostProcess ? '1fr 1fr' : '1fr', gap: 4 }}>
+              <div className={s.btnGrid} style={{ gridTemplateColumns: onPostProcess ? '1fr 1fr' : '1fr' }}>
                 <button
                   onClick={() => onReplace(assetType)}
-                  style={{
-                    width: '100%',
-                    padding: '4px 8px',
-                    fontSize: 11,
-                    cursor: 'pointer',
-                    background: 'var(--vscode-button-background, #0078d4)',
-                    color: 'var(--vscode-button-foreground, #fff)',
-                    border: 'none',
-                    borderRadius: 4,
-                  }}
+                  className={s.btnPrimary}
                 >
                   🎨 Genereer
                 </button>
@@ -273,15 +206,10 @@ function AssetCard({
                   <button
                     onClick={() => onPostProcess(assetType)}
                     disabled={isProcessing}
+                    className={s.btnPrimary}
                     style={{
-                      width: '100%',
-                      padding: '4px 8px',
-                      fontSize: 11,
                       cursor: isProcessing ? 'not-allowed' : 'pointer',
                       background: isProcessing ? '#555' : '#8b5cf6',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 4,
                       opacity: isProcessing ? 0.6 : 1,
                     }}
                   >
@@ -291,19 +219,10 @@ function AssetCard({
               </div>
             ) : (
               /* Upload-type assets with file picker */
-              <div style={{ display: 'grid', gridTemplateColumns: url ? '1fr 1fr' : '1fr', gap: 4 }}>
+              <div className={s.btnGrid} style={{ gridTemplateColumns: url ? '1fr 1fr' : '1fr' }}>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  style={{
-                    width: '100%',
-                    padding: '4px 8px',
-                    fontSize: 11,
-                    cursor: 'pointer',
-                    background: 'var(--vscode-button-background, #0078d4)',
-                    color: 'var(--vscode-button-foreground, #fff)',
-                    border: 'none',
-                    borderRadius: 4,
-                  }}
+                  className={s.btnPrimary}
                 >
                   {url ? 'Vervang' : 'Uploaden'}
                 </button>
@@ -330,24 +249,14 @@ function AssetCard({
                 onDelete(assetType);
               }
             }}
-            style={{
-              width: '100%',
-              padding: '4px 8px',
-              fontSize: 11,
-              cursor: 'pointer',
-              background: 'transparent',
-              color: '#ef4444',
-              border: '1px solid #ef4444',
-              borderRadius: 4,
-              marginTop: 4,
-            }}
+            className={s.btnDelete}
           >
             Verwijderen
           </button>
         )}
 
         {asset && (
-          <div style={{ fontSize: 10, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 4 }}>
+          <div className={s.dateText}>
             {new Date(asset.updated_at).toLocaleDateString('nl-NL')}
           </div>
         )}
@@ -369,9 +278,9 @@ interface SectionProps {
 function Section({ title, description, children }: SectionProps) {
   return (
     <div className="mb-24">
-      <h3 className="fs-14 fw-600" style={{ marginBottom: 4 }}>{title}</h3>
+      <h3 className="fs-14 fw-600 mb-4">{title}</h3>
       {description && (
-        <p style={{ fontSize: 12, color: 'var(--vscode-descriptionForeground, #888)', marginBottom: 12 }}>
+        <p className={s.sectionDesc}>
           {description}
         </p>
       )}
@@ -382,13 +291,7 @@ function Section({ title, description, children }: SectionProps) {
 
 function AssetGrid({ children }: { children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-        gap: 12,
-      }}
-    >
+    <div className={s.assetGrid}>
       {children}
     </div>
   );
@@ -891,7 +794,7 @@ export function AssetsTab({
 
   if (loading || parentBrand.loading) {
     return (
-      <div className="p-24 text-center" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
+      <div className={`p-24 text-center ${s.loadingText}`}>
         Assets laden...
       </div>
     );
@@ -899,7 +802,7 @@ export function AssetsTab({
 
   if (error) {
     return (
-      <div className="p-24" style={{ color: 'var(--vscode-errorForeground, #f44)' }}>
+      <div className={`p-24 ${s.errorText}`}>
         Fout bij laden: {error}
       </div>
     );
@@ -935,71 +838,25 @@ export function AssetsTab({
         <div className="flex-row gap-8 mb-20">
           <button
             onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 20px',
-              fontSize: 13,
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              transition: 'opacity 0.15s',
-            }}
+            className={s.aiGradientBtn}
           >
             🎨 AI Asset Genereren
           </button>
           <button
             onClick={() => { setAiPreselectedTemplate('tenue_generate'); setAiInitialParams({ kit_type: 'home' }); setShowAiModal(true); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '10px 16px',
-              fontSize: 12,
-              background: 'transparent',
-              color: 'var(--vscode-foreground, #ccc)',
-              border: '1px solid var(--vscode-widget-border, #444)',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
+            className={s.quickBtn}
           >
             👕 Tenue
           </button>
           <button
             onClick={() => { setAiPreselectedTemplate('keeper_tenue'); setAiInitialParams({}); setShowAiModal(true); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '10px 16px',
-              fontSize: 12,
-              background: 'transparent',
-              color: 'var(--vscode-foreground, #ccc)',
-              border: '1px solid var(--vscode-widget-border, #444)',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
+            className={s.quickBtn}
           >
             🧤 Keeper
           </button>
           <button
             onClick={() => { setAiPreselectedTemplate('tracksuit_generate'); setAiInitialParams({}); setShowAiModal(true); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '10px 16px',
-              fontSize: 12,
-              background: 'transparent',
-              color: 'var(--vscode-foreground, #ccc)',
-              border: '1px solid var(--vscode-widget-border, #444)',
-              borderRadius: 8,
-              cursor: 'pointer',
-            }}
+            className={s.quickBtn}
           >
             🏃 Training
           </button>
@@ -1007,28 +864,28 @@ export function AssetsTab({
 
         {/* History Modal */}
         {showHistoryModal && (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, padding: 20, width: 500, maxHeight: '80vh', overflow: 'auto' }}>
+            <div className={s.historyOverlay}>
+                <div className={s.historyPanel}>
                     <div className="flex-between mb-16">
-                        <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis</h3>
-                        <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' }}>✕</button>
+                        <h3 className={s.historyTitle}>Versiegeschiedenis</h3>
+                        <button onClick={() => setShowHistoryModal(false)} className={s.closeBtn}>✕</button>
                     </div>
                     {loadingHistory ? (
-                        <div className="p-20 text-center" style={{ color: '#888' }}>Geschiedenis laden...</div>
+                        <div className={`p-20 text-center ${s.grayText}`}>Geschiedenis laden...</div>
                     ) : historyList.length === 0 ? (
-                        <div className="p-20 text-center" style={{ color: '#888' }}>Geen eerdere versies gevonden.</div>
+                        <div className={`p-20 text-center ${s.grayText}`}>Geen eerdere versies gevonden.</div>
                     ) : (
-                        <div style={{ display: 'grid', gap: 12 }}>
+                        <div className={s.historyList}>
                            {historyList.map(item => (
-                               <div key={item.id} style={{ display: 'flex', gap: 12, padding: 10, background: '#252526', borderRadius: 6, alignItems: 'center' }}>
-                                   <div style={{ width: 60, height: 80, background: `url(${item.url}) center/contain no-repeat`, backgroundSize: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                               <div key={item.id} className={s.historyItem}>
+                                   <div className={s.historyThumb} style={{ background: `url(${item.url}) center/contain no-repeat` }} />
                                    <div className="flex-1">
                                        <div className="fs-12 fw-600">{new Date(item.created_at).toLocaleString()}</div>
-                                       <div style={{ fontSize: 11, color: '#888' }}>{item.original_name}</div>
+                                       <div className={s.historyName}>{item.original_name}</div>
                                    </div>
                                    <button
                                      onClick={() => handleRestore(item.id)}
-                                     style={{ padding: '6px 12px', background: '#094771', color: '#fff', border: 'none', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}
+                                     className={s.restoreBtn}
                                    >
                                      Herstellen
                                    </button>
@@ -1059,11 +916,11 @@ export function AssetsTab({
         />
 
         {/* Assets Top Row: Logo & Sponsor */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 24, marginBottom: 24 }}>
+        <div className={s.topRowGrid}>
           {/* Logo */}
-          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
-             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Logo</h3>
-             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het clublogo → AI standaardiseert het.</p>
+          <div className={s.sectionBox}>
+             <h3 className={s.sectionBoxTitle}>Logo</h3>
+             <p className={s.sectionBoxDesc}>Upload het clublogo → AI standaardiseert het.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 <AssetCard label="Logo (bewerkt)" assetType="logo" asset={getAsset('logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'logo' || uploadProcessingAsset === 'logo'} aspectRatio="1 / 1" />
@@ -1071,9 +928,9 @@ export function AssetsTab({
           </div>
 
           {/* Sponsor */}
-          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
-             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Sponsor</h3>
-             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
+          <div className={s.sectionBox}>
+             <h3 className={s.sectionBoxTitle}>Sponsor</h3>
+             <p className={s.sectionBoxDesc}>Upload het sponsor logo. Wordt gestandaardiseerd door AI.</p>
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 <AssetCard label="Sponsor (bewerkt)" assetType="sponsor_logo" asset={getAsset('sponsor_logo')} onUpload={handleUpload} onDelete={handleDelete} onReplace={handleReplaceAi} onPostProcess={handlePostProcess} isProcessing={postProcessingAsset === 'sponsor_logo' || uploadProcessingAsset === 'sponsor_logo'} aspectRatio="1 / 1" />
@@ -1083,16 +940,16 @@ export function AssetsTab({
 
         {/* Kits Grid */}
         <h3 className="fs-14 fw-600 mb-12">Tenues</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+        <div className={s.kitsGrid}>
         {KIT_ROLES.map((role) => {
           const uploadType = `kit_${role.id}_upload`;
           const processedType = `kit_${role.id}`;
 
           return (
-            <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
+            <div key={role.id} className={s.sectionBoxSmall}>
                 <div className="flex-row gap-8 mb-8">
-                    <span style={{ fontSize: 18 }}>{role.icon}</span>
-                    <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
+                    <span className={s.kitIcon}>{role.icon}</span>
+                    <span className={s.kitLabel}>{role.label}</span>
                 </div>
               {/* Legacy era selection moved into the AI modal (template parameters) */}
               <AssetGrid>
@@ -1214,17 +1071,9 @@ export function AssetsTab({
                   <button
                     onClick={() => bgFileRef.current?.click()}
                     disabled={uploading === 'club_background_upload'}
+                    className={s.bgUploadBtn}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '10px 20px',
-                      fontSize: 13,
-                      fontWeight: 600,
                       background: uploading === 'club_background_upload' ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: 8,
                       cursor: uploading === 'club_background_upload' ? 'not-allowed' : 'pointer',
                     }}
                   >
@@ -1234,12 +1083,12 @@ export function AssetsTab({
 
                 {/* Background pairs: upload + AI processed */}
                 {bgPairs.length > 0 ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+                  <div className={s.bgPairsGrid}>
                     {bgPairs.map((pair) => (
-                      <div key={pair.label} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <span style={{ fontSize: 18 }}>🖼️</span>
-                          <span style={{ fontWeight: 600, fontSize: 13 }}>{pair.label}</span>
+                      <div key={pair.label} className={s.sectionBoxSmall}>
+                        <div className={s.kitHeader}>
+                          <span className={s.kitIcon}>🖼️</span>
+                          <span className={s.kitLabel}>{pair.label}</span>
                         </div>
                         <AssetGrid>
                           <AssetCard
@@ -1277,7 +1126,7 @@ export function AssetsTab({
                     ))}
                   </div>
                 ) : (
-                  <div style={{ padding: 20, textAlign: 'center', color: '#888', fontSize: 13, background: '#252526', borderRadius: 8, border: '1px dashed #444' }}>
+                  <div className={s.bgEmptyState}>
                     Nog geen achtergronden geüpload. Klik op "Achtergrond Uploaden" om te beginnen.
                   </div>
                 )}
@@ -1287,16 +1136,7 @@ export function AssetsTab({
         </Section>
 
         {!profile && (
-          <div
-            style={{
-              padding: 16,
-              background: 'var(--vscode-inputValidation-warningBackground, #5a4000)',
-              border: '1px solid var(--vscode-inputValidation-warningBorder, #856d00)',
-              borderRadius: 8,
-              marginTop: 16,
-              fontSize: 12,
-            }}
-          >
+          <div className={s.warningBox}>
             ⚠️ Nog geen brand profiel aangemaakt voor deze club. Assets worden opgeslagen zodra er een brand profiel is.
           </div>
         )}
@@ -1312,38 +1152,25 @@ export function AssetsTab({
         <div className="flex-row gap-8 mb-20 flex-wrap">
           <button
             onClick={() => { setAiPreselectedTemplate(undefined); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 20px',
-              fontSize: 13,
-              fontWeight: 600,
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              transition: 'opacity 0.15s',
-            }}
+            className={s.aiGradientBtn}
           >
             🎨 AI Asset Genereren
           </button>
           <button
             onClick={() => { setAiPreselectedTemplate('tenue_generate'); setAiInitialParams({ kit_type: 'home' }); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', fontSize: 12, background: 'transparent', color: 'var(--vscode-foreground, #ccc)', border: '1px solid var(--vscode-widget-border, #444)', borderRadius: 8, cursor: 'pointer' }}
+            className={s.quickBtn}
           >
             👕 Tenue
           </button>
           <button
             onClick={() => { setAiPreselectedTemplate('keeper_tenue'); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', fontSize: 12, background: 'transparent', color: 'var(--vscode-foreground, #ccc)', border: '1px solid var(--vscode-widget-border, #444)', borderRadius: 8, cursor: 'pointer' }}
+            className={s.quickBtn}
           >
             🧤 Keeper
           </button>
           <button
             onClick={() => { setAiPreselectedTemplate('tracksuit_generate'); setAiInitialParams({}); setAiCustomInputs(baseAiInputAssets); setShowAiModal(true); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px', fontSize: 12, background: 'transparent', color: 'var(--vscode-foreground, #ccc)', border: '1px solid var(--vscode-widget-border, #444)', borderRadius: 8, cursor: 'pointer' }}
+            className={s.quickBtn}
           >
             🏃 Training
           </button>
@@ -1351,28 +1178,28 @@ export function AssetsTab({
 
         {/* History Modal */}
         {showHistoryModal && (
-            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, padding: 20, width: 500, maxHeight: '80vh', overflow: 'auto' }}>
+            <div className={s.historyOverlay}>
+                <div className={s.historyPanel}>
                     <div className="flex-between mb-16">
-                        <h3 style={{ margin: 0, fontSize: 16 }}>Versiegeschiedenis</h3>
-                        <button onClick={() => setShowHistoryModal(false)} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer' }}>✕</button>
+                        <h3 className={s.historyTitle}>Versiegeschiedenis</h3>
+                        <button onClick={() => setShowHistoryModal(false)} className={s.closeBtn}>✕</button>
                     </div>
                     {loadingHistory ? (
-                        <div className="p-20 text-center" style={{ color: '#888' }}>Geschiedenis laden...</div>
+                        <div className={`p-20 text-center ${s.grayText}`}>Geschiedenis laden...</div>
                     ) : historyList.length === 0 ? (
-                        <div className="p-20 text-center" style={{ color: '#888' }}>Geen eerdere versies gevonden.</div>
+                        <div className={`p-20 text-center ${s.grayText}`}>Geen eerdere versies gevonden.</div>
                     ) : (
-                        <div style={{ display: 'grid', gap: 12 }}>
+                        <div className={s.historyList}>
                            {historyList.map(item => (
-                               <div key={item.id} style={{ display: 'flex', gap: 12, padding: 10, background: '#252526', borderRadius: 6, alignItems: 'center' }}>
-                                   <div style={{ width: 60, height: 80, background: `url(${item.url}) center/contain no-repeat`, backgroundSize: 'cover', borderRadius: 4, flexShrink: 0 }} />
+                               <div key={item.id} className={s.historyItem}>
+                                   <div className={s.historyThumb} style={{ background: `url(${item.url}) center/contain no-repeat` }} />
                                    <div className="flex-1">
                                        <div className="fs-12 fw-600">{new Date(item.created_at).toLocaleString()}</div>
-                                       <div style={{ fontSize: 11, color: '#888' }}>{item.original_name}</div>
+                                       <div className={s.historyName}>{item.original_name}</div>
                                    </div>
                                    <button
                                      onClick={() => handleRestore(item.id)}
-                                     style={{ padding: '6px 12px', background: '#094771', color: '#fff', border: 'none', borderRadius: 4, fontSize: 12, cursor: 'pointer' }}
+                                     className={s.restoreBtn}
                                    >
                                      Herstellen
                                    </button>
@@ -1403,11 +1230,11 @@ export function AssetsTab({
         />
 
         {/* Assets Top Row: Logo & Sponsor */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: 24, marginBottom: 24 }}>
+        <div className={s.topRowGrid}>
           {/* Logo */}
-          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
-             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Logo</h3>
-             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het teamlogo → AI standaardiseert het. Zonder eigen logo wordt het clublogo geërfd.</p>
+          <div className={s.sectionBox}>
+             <h3 className={s.sectionBoxTitle}>Logo</h3>
+             <p className={s.sectionBoxDesc}>Upload het teamlogo → AI standaardiseert het. Zonder eigen logo wordt het clublogo geërfd.</p>
              <AssetGrid>
                 <AssetCard label="Logo (upload)" assetType="logo_upload" asset={getAsset('logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 {(() => { const e = getEffectiveAsset('logo'); return (
@@ -1417,9 +1244,9 @@ export function AssetsTab({
           </div>
 
           {/* Sponsor */}
-          <div style={{ background: '#252526', padding: 16, borderRadius: 8, border: '1px solid #333' }}>
-             <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Sponsor</h3>
-             <p style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>Upload het sponsor logo → AI standaardiseert. Zonder eigen sponsor wordt de clubsponsor geërfd.</p>
+          <div className={s.sectionBox}>
+             <h3 className={s.sectionBoxTitle}>Sponsor</h3>
+             <p className={s.sectionBoxDesc}>Upload het sponsor logo → AI standaardiseert. Zonder eigen sponsor wordt de clubsponsor geërfd.</p>
              <AssetGrid>
                 <AssetCard label="Sponsor (upload)" assetType="sponsor_logo_upload" asset={getAsset('sponsor_logo_upload')} onUpload={handleUpload} onDelete={handleDelete} aspectRatio="1 / 1" />
                 {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
@@ -1430,19 +1257,19 @@ export function AssetsTab({
         </div>
 
         {/* Kits Grid — same layout as club */}
-        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Tenues</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 16 }}>
+        <h3 className={s.sectionBoxTitle} style={{ marginBottom: 12 }}>Tenues</h3>
+        <div className={s.kitsGrid}>
         {KIT_ROLES.map((role) => {
           const uploadType = `kit_${role.id}_upload`;
           const processedType = `kit_${role.id}`;
           const eff = getEffectiveAsset(processedType);
 
           return (
-            <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 18 }}>{role.icon}</span>
-                    <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
-                    {eff.inherited && <span style={{ fontSize: 10, background: '#0e639c', color: '#fff', padding: '2px 6px', borderRadius: 4 }}>Club</span>}
+            <div key={role.id} className={s.sectionBoxSmall}>
+                <div className={s.kitHeader}>
+                    <span className={s.kitIcon}>{role.icon}</span>
+                    <span className={s.kitLabel}>{role.label}</span>
+                    {eff.inherited && <span className={s.clubBadge}>Club</span>}
                 </div>
               <AssetGrid>
                 <AssetCard
@@ -1501,16 +1328,7 @@ export function AssetsTab({
         </Section>
 
         {!profile && (
-          <div
-            style={{
-              padding: 16,
-              background: 'var(--vscode-inputValidation-warningBackground, #5a4000)',
-              border: '1px solid var(--vscode-inputValidation-warningBorder, #856d00)',
-              borderRadius: 8,
-              marginTop: 16,
-              fontSize: 12,
-            }}
-          >
+          <div className={s.warningBox}>
             ⚠️ Nog geen brand profiel voor dit team. Upload of genereer een asset — het profiel wordt automatisch aangemaakt.
           </div>
         )}
@@ -1525,7 +1343,7 @@ export function AssetsTab({
         <Section title="Seizoen Assets" description="Visuele assets voor dit seizoen. Tenue en sponsor kunnen per seizoen wijzigen.">
           {/* Logo - always inherited */}
           <div className="mb-16">
-            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Logo</div>
+            <div className={`fs-12 fw-600 ${s.seasonLabel}`}>Logo</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('logo'); return (
                 <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
@@ -1535,7 +1353,7 @@ export function AssetsTab({
 
           {/* Sponsor - can override */}
           <div className="mb-16">
-            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Sponsor</div>
+            <div className={`fs-12 fw-600 ${s.seasonLabel}`}>Sponsor</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
                 <AssetCard
@@ -1562,9 +1380,9 @@ export function AssetsTab({
           </div>
 
           {/* Kits - combined with this season's sponsor */}
-          <div style={{ marginTop: 24 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Tenues (dit seizoen)</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: 16 }}>
+          <div className="mt-24">
+            <div className={s.seasonSubtitle}>Tenues (dit seizoen)</div>
+            <div className={s.kitsGrid} style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
               {KIT_ROLES.map((role) => {
                 const uploadType = `kit_${role.id}_upload`;
                 const processedType = `kit_${role.id}`;
@@ -1579,18 +1397,18 @@ export function AssetsTab({
                 const isOverridden = !!localUpload || !!localProcessed;
 
                 return (
-                  <div key={role.id} style={{ background: '#252526', padding: 12, borderRadius: 8, border: '1px solid #333' }}>
-                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 18 }}>{role.icon}</span>
-                            <span style={{ fontWeight: 600, fontSize: 13 }}>{role.label}</span>
-                            {isOverridden && <span style={{ fontSize: 10, background: '#eab308', color: '#000', padding: '2px 6px', borderRadius: 4 }}>Aangepast</span>}
+                  <div key={role.id} className={s.sectionBoxSmall}>
+                     <div className={s.seasonKitHeader}>
+                         <div className={s.seasonKitHeaderInner}>
+                            <span className={s.kitIcon}>{role.icon}</span>
+                            <span className={s.kitLabel}>{role.label}</span>
+                            {isOverridden && <span className={s.overrideBadge}>Aangepast</span>}
                          </div>
                          {/* If overridden, allow clearing the override specific to this role (both upload and processed) */}
                          {!readOnly && isOverridden && (
                             <button
                                 onClick={() => { if(window.confirm('Aangepast tenue verwijderen en weer erven van club?')) { handleDelete(uploadType); handleDelete(processedType); } }}
-                                style={{ color: '#ef4444', fontSize: 11, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                                className={s.resetLink}
                             >
                                 Herstel
                             </button>
@@ -1638,24 +1456,14 @@ export function AssetsTab({
 
                       {/* 3. AI Helper Button (if not overridden) */}
                       {!readOnly && !isOverridden && (
-                           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+                           <div className={s.seasonKitHelperCol}>
                                 <button
                                     onClick={() => handleReplaceAi(processedType)}
-                                    style={{
-                                        padding: '8px 12px',
-                                        fontSize: 12,
-                                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: 6,
-                                        cursor: 'pointer',
-                                        textAlign: 'center',
-                                        fontWeight: 500
-                                    }}
+                                    className={s.seasonAiBtn}
                                 >
                                     ✨ Genereer met AI
                                 </button>
-                                <span style={{ fontSize: 10, color: '#888', textAlign: 'center', lineHeight: 1.4 }}>
+                                <span className={s.seasonHelperText}>
                                     Genereert een nieuw tenue voor dit seizoen.<br/>(Gebruikt seizoens- of clubsponsor)
                                 </span>
                            </div>

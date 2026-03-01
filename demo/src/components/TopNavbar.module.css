@@ -1,0 +1,778 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TopNavbar — CSS Module
+   Extracted from inline styles for maintainability (Phase 2b)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Layout ──────────────────────────────────────────────────────────────── */
+
+.wrapper {
+  height: 57px;
+  position: relative;
+  z-index: 500;
+}
+
+.nav {
+  background-color: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  overflow: visible;
+}
+
+.navContainer {
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.desktopNavWrap {
+  flex-wrap: nowrap;
+}
+
+/* ─── Logo ────────────────────────────────────────────────────────────────── */
+
+.logoLink {
+  padding: 4px 8px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logoImg {
+  height: 28px;
+  width: auto;
+}
+
+/* ─── Mobile Menu Button ──────────────────────────────────────────────────── */
+
+.mobileMenuBtn {
+  display: flex;
+  background: transparent;
+  cursor: pointer;
+  color: var(--app-text);
+  padding: 8px;
+  border: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+}
+
+/* ─── Dropdown Trigger ────────────────────────────────────────────────────── */
+
+.dropdownContainer {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.groupTrigger {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── Mega Menu ───────────────────────────────────────────────────────────── */
+
+.megaPanel {
+  position: absolute;
+  top: calc(100% - 10px);
+  left: 0;
+  padding-top: 10px;
+  min-width: 600px;
+  z-index: 100;
+}
+
+.megaPanelInner {
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+}
+
+.megaItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background-color 0.15s;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.megaItemIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.megaItemTextWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.megaItemLabel {
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.megaItemDescription {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  line-height: 1.3;
+}
+
+/* ─── Right-side Controls ─────────────────────────────────────────────────── */
+
+.userControls {
+  display: flex;
+  align-items: center;
+}
+
+.searchWrap {
+  min-width: 220px;
+  max-width: 560px;
+}
+
+.quickSwitchBtn {
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+}
+
+/* ─── Create Menu ─────────────────────────────────────────────────────────── */
+
+.createWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.createMainBtn {
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.createChevronBtn {
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid var(--app-border);
+}
+
+.createDropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 260px;
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  z-index: 1200;
+}
+
+.createMenuItem {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--app-text);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ─── Theme / Language ────────────────────────────────────────────────────── */
+
+.themeBtn {
+  padding: 8px;
+  position: relative;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.langBtn {
+  padding: 8px 12px;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--app-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.langDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  z-index: 1000;
+}
+
+.langItem {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* ─── Nav Icon Buttons (Queue / Notification / Credits) ───────────────────── */
+
+.navIconBtn {
+  position: relative;
+  padding: 8px;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.creditsBtn {
+  position: relative;
+  padding: 8px;
+  background-color: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--app-text);
+}
+
+.badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.profileWrap {
+  flex-shrink: 0;
+}
+
+/* ─── Auth Links ──────────────────────────────────────────────────────────── */
+
+.signInLink {
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.registerLink {
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: white;
+  background-color: #2563eb;
+  border: 1px solid #2563eb;
+}
+
+/* ─── Mobile Overlay ──────────────────────────────────────────────────────── */
+
+.mobileOverlay {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--app-surface);
+  border-top: 1px solid var(--app-border);
+  overflow-y: auto;
+  z-index: 999;
+  padding: 16px;
+}
+
+.mobileDashLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.mobileGroupLabel {
+  padding: 8px 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.mobileGroupItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-left: 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* ─── Modal System ────────────────────────────────────────────────────────── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modalOverlayHigh {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modalPanel {
+  background-color: var(--app-surface, #1e293b);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalPanelCentered {
+  background-color: var(--app-surface, #1e293b);
+  border-radius: 16px;
+  padding: 24px 32px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+  min-width: 400px;
+}
+
+.modalPanelCenteredLarge {
+  background-color: var(--app-surface, #1e293b);
+  border-radius: 16px;
+  padding: 40px 48px;
+  text-align: center;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+}
+
+.modalHeader {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--app-border, #334155);
+  flex-shrink: 0;
+}
+
+.modalHeaderRow {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--app-border, #334155);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.modalFooter {
+  padding: 14px 20px;
+  border-top: 1px solid var(--app-border, #334155);
+  flex-shrink: 0;
+}
+
+/* ─── Modal Text ──────────────────────────────────────────────────────────── */
+
+.modalTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.modalTitle15 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.modalSubtitle {
+  font-size: 11px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 2px;
+}
+
+.modalSubtitle12 {
+  font-size: 12px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 4px;
+}
+
+.textSecondary13 {
+  font-size: 13px;
+  color: var(--app-text-secondary, #9ca3af);
+}
+
+.textSecondary11 {
+  font-size: 11px;
+  color: var(--app-text-secondary, #9ca3af);
+}
+
+.textSecondary10 {
+  font-size: 10px;
+  color: var(--app-text-secondary, #6b7280);
+  margin-top: 4px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+}
+
+.emptyIcon32 {
+  font-size: 32px;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--app-text-secondary);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+}
+
+.closeBtnMuted {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+}
+
+.btnPrimary {
+  padding: 9px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnSecondary {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-text-secondary);
+  font-weight: 500;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btnGhost {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #475569);
+  background-color: transparent;
+  color: var(--app-text-secondary, #9ca3af);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tabBtn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tabBtnSmall {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.rejectBtn {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: 1px solid #dc2626;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.approveBtn {
+  padding: 9px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ─── Nav Arrow Buttons ───────────────────────────────────────────────────── */
+
+.navArrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-text);
+  font-size: 14px;
+}
+
+/* ─── Tabs Row ────────────────────────────────────────────────────────────── */
+
+.tabsRow {
+  display: flex;
+  gap: 8px;
+}
+
+.tabsRowCenter {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.actionsRowCenter {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ─── In-Progress Job Card ────────────────────────────────────────────────── */
+
+.jobIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+/* ─── Variant Grid ────────────────────────────────────────────────────────── */
+
+.variantGrid {
+  justify-items: center;
+}
+
+.variantCard {
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #0f172a;
+  width: 100%;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.variantCheckmark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.previewMedia {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  display: block;
+}
+
+.noPreview {
+  padding: 40px;
+  text-align: center;
+  color: var(--app-text-secondary);
+}
+
+/* ─── Notification Card ───────────────────────────────────────────────────── */
+
+.notifMessage {
+  font-size: 13px;
+  color: var(--app-text);
+}
+
+.notifDetail {
+  font-size: 11px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 4px;
+}
+
+/* ─── Credits Modal ───────────────────────────────────────────────────────── */
+
+.creditsBalance {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--app-primary, #3b82f6);
+}
+
+.creditsLabel {
+  font-size: 14px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 4px;
+}
+
+.creditsLink {
+  margin-top: 20px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #475569);
+  background-color: transparent;
+  color: var(--app-text);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ─── Follow-Up Modal ─────────────────────────────────────────────────────── */
+
+.followUpPanel {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--app-surface, #1e293b);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+}
+
+.followUpHeader {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--app-border, #334155);
+}
+
+.followUpTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--app-text, #fff);
+}
+
+.followUpSubtitle {
+  font-size: 12px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 4px;
+}
+
+.followUpPreview {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.followUpImg {
+  max-height: 200px;
+  max-width: 100%;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.followUpError {
+  margin: 0 24px 16px;
+  font-size: 12px;
+  color: #dc2626;
+  background-color: #fee2e2;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.followUpFooter {
+  padding: 14px 24px;
+  border-top: 1px solid var(--app-border, #334155);
+  display: flex;
+  align-items: center;
+}
+
+.followUpSkipBtn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #334155);
+  background: transparent;
+  color: var(--app-text-secondary, #9ca3af);
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.followUpSubmitBtn {
+  padding: 9px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+}

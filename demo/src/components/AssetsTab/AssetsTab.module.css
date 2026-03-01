@@ -1,0 +1,430 @@
+/* ============================================================================
+   AssetsTab — CSS Module
+   ============================================================================ */
+
+/* ── AssetCard ── */
+.assetCard {
+  border: 1px solid var(--vscode-widget-border, #333);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--vscode-editor-background, #1e1e1e);
+}
+
+.previewArea {
+  position: relative;
+  min-height: 120px;
+}
+
+.phaseBadge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  color: #fff;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.historyBtn {
+  position: absolute;
+  top: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.inheritedBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: #f59e0b;
+  color: #000;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.processingOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 5;
+  gap: 8px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #8b5cf6;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinnerText {
+  color: #fff;
+  font-size: 11px;
+}
+
+.emptyLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vscode-descriptionForeground, #888);
+  font-size: 12px;
+}
+
+.infoSection {
+  padding: 8px 10px;
+}
+
+.assetLabel {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.btnGrid {
+  display: grid;
+  gap: 4px;
+}
+
+.btnPrimary {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  background: var(--vscode-button-background, #0078d4);
+  color: var(--vscode-button-foreground, #fff);
+  border: none;
+  border-radius: 4px;
+}
+
+.btnDelete {
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  background: transparent;
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.dateText {
+  font-size: 10px;
+  color: var(--vscode-descriptionForeground, #888);
+  margin-top: 4px;
+}
+
+/* ── Section ── */
+.sectionDesc {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground, #888);
+  margin-bottom: 12px;
+}
+
+/* ── AssetGrid ── */
+.assetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* ── AI Gradient Button ── */
+.aiGradientBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.quickBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 12px;
+  background: transparent;
+  color: var(--vscode-foreground, #ccc);
+  border: 1px solid var(--vscode-widget-border, #444);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ── History Modal ── */
+.historyOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.historyPanel {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 20px;
+  width: 500px;
+  max-height: 80vh;
+  overflow: auto;
+}
+
+.historyTitle {
+  margin: 0;
+  font-size: 16px;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.grayText {
+  color: #888;
+}
+
+.historyList {
+  display: grid;
+  gap: 12px;
+}
+
+.historyItem {
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+  background: #252526;
+  border-radius: 6px;
+  align-items: center;
+}
+
+.historyThumb {
+  width: 60px;
+  height: 80px;
+  background-size: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.historyName {
+  font-size: 11px;
+  color: #888;
+}
+
+.restoreBtn {
+  padding: 6px 12px;
+  background: #094771;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ── Layout Grids ── */
+.topRowGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.kitsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.bgPairsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* ── Section Boxes ── */
+.sectionBox {
+  background: #252526;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.sectionBoxSmall {
+  background: #252526;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.sectionBoxTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.sectionBoxDesc {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+/* ── Kit / Background Headers ── */
+.kitHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.kitIcon {
+  font-size: 18px;
+}
+
+.kitLabel {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ── Background Upload Button (green gradient) ── */
+.bgUploadBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+}
+
+/* ── States ── */
+.bgEmptyState {
+  padding: 20px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+  background: #252526;
+  border-radius: 8px;
+  border: 1px dashed #444;
+}
+
+.warningBox {
+  padding: 16px;
+  background: var(--vscode-inputValidation-warningBackground, #5a4000);
+  border: 1px solid var(--vscode-inputValidation-warningBorder, #856d00);
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+}
+
+/* ── Team-specific badges ── */
+.clubBadge {
+  font-size: 10px;
+  background: #0e639c;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.overrideBadge {
+  font-size: 10px;
+  background: #eab308;
+  color: #000;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.resetLink {
+  color: #ef4444;
+  font-size: 11px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ── Season AI generate ── */
+.seasonAiBtn {
+  padding: 8px 12px;
+  font-size: 12px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  font-weight: 500;
+}
+
+.seasonHelperText {
+  font-size: 10px;
+  color: #888;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.seasonKitHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.seasonKitHeaderInner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seasonKitHelperCol {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ── Season subtitle ── */
+.seasonSubtitle {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.loadingText {
+  color: var(--vscode-descriptionForeground, #888);
+}
+
+.errorText {
+  color: var(--vscode-errorForeground, #f44);
+}
+
+.seasonLabel {
+  margin-bottom: 6px;
+}

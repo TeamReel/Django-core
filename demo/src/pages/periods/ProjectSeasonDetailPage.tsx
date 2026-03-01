@@ -50,6 +50,7 @@ import {
 import { useSeasonContext, isSeasonPeriod } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 import { getCsrfToken } from '../../types/season';
+import s from './ProjectSeasonDetailPage.module.css';
 
 // Types (Period, Project, Organisation) imported from ../../types/season
 // Helpers (getCsrfToken, isSeasonPeriod) imported from providers / types/season
@@ -1678,7 +1679,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert('Error deleting season');
                     }
                   }}
-                  style={{ color: '#dc2626' }}
+                  className={s.dangerText}
                 >
                   Delete
                 </Button>
@@ -1906,7 +1907,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            className={s.quickActionBtn}
                             onClick={() => navigateToTab('identity')}
                           >
                             Brand Identity Settings
@@ -1914,7 +1915,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            className={s.quickActionBtn}
                             onClick={() => navigateToTab('competitions')}
                           >
                             Manage Competitions
@@ -1922,7 +1923,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            className={s.quickActionBtn}
                             onClick={() => navigateToTab('matches')}
                           >
                             View Matches
@@ -1930,7 +1931,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            className={s.quickActionBtn}
                             onClick={() => navigateToTab('squad')}
                           >
                             View Squad
@@ -1938,7 +1939,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Button
                             variant="secondary"
                             size="sm"
-                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                            className={s.quickActionBtn}
                             onClick={() => navigateToTab('media')}
                           >
                              Media Matrix
@@ -1956,7 +1957,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                              <Button
                                 variant="secondary"
                                 size="sm"
-                                style={{ width: '100%', justifyContent: 'flex-start' }}
+                                className={s.quickActionBtn}
                                 onClick={() => alert('Smart Import: Allows selecting a source season (e.g. 23/24) to copy players into this campaign.')}
                               >
                                 Import Squad from Previous Season
@@ -1970,7 +1971,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               )}
 
               {activeTab === 'content' && (
-                <div style={{ display: 'grid', gap: '16px' }}>
+                <div className={s.contentGrid}>
                   {/* Sport info header */}
                   {org?.sport && (
                     <div className="flex items-center justify-between">
@@ -2013,20 +2014,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               ? `Create ${item.label}${matchedTemplate?.style_variant ? ` (${matchedTemplate.style_variant})` : ''}`
                               : `No ${item.label} template available`
                             }
+                            className={s.contentTile}
                             style={{
-                              width: '100px',
-                              padding: '12px 8px',
                               border: (isThenVsNow || hasTemplate) ? '1px solid var(--app-border)' : '1px dashed var(--app-border)',
-                              borderRadius: '8px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              textAlign: 'center',
                               cursor: (isThenVsNow || hasTemplate) ? 'pointer' : 'not-allowed',
                               opacity: (isThenVsNow || hasTemplate) ? 1 : 0.5,
                               backgroundColor: (isThenVsNow || hasTemplate) ? 'var(--app-card-bg)' : 'var(--app-bg)',
-                              transition: 'all 0.2s ease',
                             }}
                             onMouseEnter={(e) => {
                               if (isThenVsNow || hasTemplate) {
@@ -2039,36 +2032,30 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               e.currentTarget.style.boxShadow = 'none';
                             }}
                           >
-                            <div style={{
-                              fontSize: '20px',
-                              marginBottom: '4px',
+                            <div className={s.contentTileIcon} style={{
                               filter: (isThenVsNow || hasTemplate) ? 'none' : 'grayscale(100%)',
                             }}>
                               {item.icon}
                             </div>
-                            <div style={{
-                              fontWeight: 600,
-                              fontSize: '11px',
+                            <div className={s.contentTileLabel} style={{
                               color: (isThenVsNow || hasTemplate) ? 'var(--app-text)' : 'var(--app-muted-text)',
-                              lineHeight: 1.3,
-                              textAlign: 'center',
                             }}>
                               {item.label}
                             </div>
                             {hasTemplate && matchedTemplate && (
-                              <div style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center' }}>
+                              <div className={s.contentTileMeta}>
                                 {matchedTemplate.style_variant && (
-                                  <Badge variant="info" size="sm" style={{ fontSize: '9px', padding: '2px 4px' }}>{matchedTemplate.style_variant}</Badge>
+                                  <Badge variant="info" size="sm" className={s.badgeXs}>{matchedTemplate.style_variant}</Badge>
                                 )}
                                 {matchedTemplate.credits_required && matchedTemplate.credits_required > 0 && (
-                                  <span style={{ fontSize: '9px', color: 'var(--app-muted-text)' }}>
+                                  <span className={s.creditsText}>
                                     {matchedTemplate.credits_required} cr
                                   </span>
                                 )}
                               </div>
                             )}
                             {!hasTemplate && (
-                              <div style={{ fontSize: '9px', color: 'var(--app-muted-text)', marginTop: '4px' }}>"”</div>
+                              <div className={s.noTemplate}>"”</div>
                             )}
                           </div>
                         );
@@ -2091,7 +2078,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       </div>
                     )}
                     {completedVideoJobs.length > 0 && (
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+                      <div className={s.videoGrid}>
                         {completedVideoJobs.map(job => {
                           const typeDisplay = getJobTypeDisplay(job.job_type);
                           // Differentiate video types based on config.video_type + composition_style
@@ -2144,10 +2131,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   setPreviewVideoLabel(`${tileLabel.icon} ${tileLabel.label}`);
                                 }
                               }}
+                              className={s.videoCard}
                               style={{
                                 border: '1px solid var(--app-border)',
-                                borderRadius: 10,
-                                overflow: 'hidden',
                                 backgroundColor: 'var(--app-card-bg, var(--app-surface))',
                                 cursor: stableUrl ? 'pointer' : 'default',
                                 transition: 'box-shadow 0.15s ease',
@@ -2157,35 +2143,31 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             >
                               {/* Video thumbnail — use metadata preload + poster for first-frame preview */}
                               {stableUrl && (
-                                <div style={{ position: 'relative', width: '100%', height: 180, backgroundColor: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div className={s.videoThumbnail} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <video
                                     src={stableUrl}
                                     preload="metadata"
                                     {...(job.thumbnail_url ? { poster: job.thumbnail_url } : {})}
                                     muted
                                     playsInline
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                    className={s.videoFill}
                                   />
                                 </div>
                               )}
                               {/* Meta */}
-                              <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--app-text)' }}>
+                              <div className={s.videoCardMeta}>
+                                <div className={s.videoCardHeader}>
+                                  <span className={s.videoCardTitle}>
                                     {tileLabel.icon} {tileLabel.label}
                                   </span>
-                                  <span style={{
-                                    fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-                                    color: '#059669', backgroundColor: '#d1fae5',
-                                    textTransform: 'uppercase', letterSpacing: '0.04em',
-                                  }}>
+                                  <span className={s.statusPillComplete}>
                                     ✅ Completed
                                   </span>
                                 </div>
-                                <div style={{ fontSize: 11, color: 'var(--app-muted-text)', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                <div className={s.videoCardInfo}>
                                   <span>{ago}</span>
                                   {fileSize && <span>{fileSize}</span>}
-                                  <span style={{ fontFamily: 'monospace', fontSize: 10 }}>{job.id.slice(0, 8)}</span>
+                                  <span className={s.monoId}>{job.id.slice(0, 8)}</span>
                                 </div>
                                 {stableUrl && (
                                   <a
@@ -2193,7 +2175,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    style={{ fontSize: 11, color: '#2563eb', fontWeight: 600, textDecoration: 'none', marginTop: 2 }}
+                                    className={s.downloadLink}
                                   >
                                     ⬇ Download
                                   </a>
@@ -2210,26 +2192,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   {previewVideoUrl && (
                     <div
                       onClick={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
-                      style={{
-                        position: 'fixed', inset: 0, zIndex: 9999,
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        padding: 24,
-                      }}
+                      className={s.modalBackdrop}
                     >
                       <div
                         onClick={(e) => e.stopPropagation()}
-                        style={{
-                          backgroundColor: 'var(--app-card-bg, #1e293b)',
-                          borderRadius: 12, overflow: 'hidden', maxWidth: 900,
-                          width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-                        }}
+                        className={s.previewModalContainer}
+                        style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
                       >
-                        <div style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 16px', borderBottom: '1px solid var(--app-border)',
-                        }}>
-                          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                        <div className={s.previewModalHeader}>
+                          <span className={s.previewTitle}>
                             {previewVideoLabel || 'Video Preview'}
                           </span>
                           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -2237,17 +2208,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               href={previewVideoUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              style={{ fontSize: 12, color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}
+                              className={s.downloadLink12}
                             >
                               ⬇ Download
                             </a>
                             <button
                               type="button"
                               onClick={() => { setPreviewVideoUrl(null); setPreviewVideoLabel(''); }}
-                              style={{
-                                background: 'none', border: 'none', color: 'var(--app-muted-text)',
-                                cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: '4px 8px',
-                              }}
+                              className={s.closeButton}
+                              style={{ lineHeight: 1, padding: '4px 8px' }}
                             >
                               ✕
                             </button>
@@ -2258,7 +2227,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           controls
                           autoPlay
                           playsInline
-                          style={{ width: '100%', maxHeight: '85vh', display: 'block', backgroundColor: '#000' }}
+                          className={s.videoPlayerFull}
                         />
                       </div>
                     </div>
@@ -2269,10 +2238,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {activeTab === 'hierarchy' && (
                 <Card>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <div className={s.hierarchyHeader}>
                     <div>
-                      <div style={{ fontSize: 16, fontWeight: 700 }}>Hierarchy</div>
-                      <div style={{ color: 'var(--app-muted-text)', fontSize: 13 }}>
+                      <div className={s.hierarchyTitle}>Hierarchy</div>
+                      <div className={s.mutedSubtitle}>
                         Competitions â†’ Matches
                       </div>
                     </div>
@@ -2338,21 +2307,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             });
                           });
 
-                      const pillStyle: React.CSSProperties = {
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        padding: '2px 8px',
-                        borderRadius: 999,
-                        border: '1px solid var(--app-border)',
-                        background: 'var(--app-surface-2)',
-                        fontSize: 12,
-                        color: 'var(--app-muted-text)',
-                        fontWeight: 600,
-                      };
-
                       return (
-                        <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div className={s.verticalList} style={{ marginTop: 12 }}>
                           {filteredCompetitions.map((competition) => {
                             const compId = String(competition.id);
                             const competitionKey = periodPathKey(competition) || compId;
@@ -2372,35 +2328,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             return (
                               <div
                                 key={compId}
-                                style={{
-                                  border: '1px solid var(--app-border)',
-                                  borderRadius: 10,
-                                  background: 'var(--app-surface)',
-                                  overflow: 'hidden',
-                                }}
+                                className={s.competitionCard}
                               >
-                                <div
-                                  style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    padding: '10px 12px',
-                                    borderBottom: '1px solid var(--app-border)',
-                                    background: 'var(--app-surface-2)',
-                                    gap: 12,
-                                  }}
-                                >
-                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                                <div className={s.competitionCardHeader}>
+                                  <div className={s.competitionCardInfo}>
                                     <button
                                       type="button"
-                                      className="app-unstyled-button hover:underline"
+                                      className={`app-unstyled-button hover:underline ${s.competitionLink}`}
                                       onClick={() => navigate(competitionPath)}
-                                      style={{ textAlign: 'left', fontWeight: 800, fontSize: 14, color: '#60a5fa' }}
                                     >
                                       {competition.name || `Competition ${compId}`}
                                     </button>
                                     {competition.sport && (
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--app-muted-text)' }}>
+                                      <div className={s.sportInfo}>
                                         <span>{competition.sport.sport_icon}</span>
                                         <span>{competition.sport.name}</span>
                                       </div>
@@ -2408,8 +2348,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   </div>
 
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                    <span style={pillStyle}>Matches: {getMatchCountForCompetition(competition)}</span>
-                                    <span style={pillStyle}>Participants: {getCompetitionParticipantsCount(competition)}</span>
+                                    <span className={s.pill}>Matches: {getMatchCountForCompetition(competition)}</span>
+                                    <span className={s.pill}>Participants: {getCompetitionParticipantsCount(competition)}</span>
                                     <button type="button" className="app-action-button" onClick={() => { setSelectedDetailPeriod(competition); setIsPeriodDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
                                       View
                                     </button>
@@ -2454,7 +2394,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   ) : visibleMatches.length === 0 ? (
                                     <div className="text-sm text-gray-500 py-2">No matches.</div>
                                   ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <div className={s.verticalListTight}>
                                       {visibleMatches.map((match: any) => {
                                         const matchKey = (match as any).slug || match.id;
                                         const matchPath = isTeamRoute
@@ -2463,33 +2403,23 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         return (
                                           <div
                                             key={match.id}
-                                            style={{
-                                              display: 'flex',
-                                              justifyContent: 'space-between',
-                                              alignItems: 'center',
-                                              gap: 12,
-                                              padding: '8px 10px',
-                                              border: '1px solid var(--app-border)',
-                                              borderRadius: 8,
-                                              background: 'var(--app-surface)',
-                                            }}
+                                            className={s.matchRow}
                                           >
                                             <div style={{ minWidth: 0 }}>
                                               <button
                                                 type="button"
-                                                className="app-unstyled-button hover:underline"
+                                                className={`app-unstyled-button hover:underline ${s.matchLink}`}
                                                 onClick={() => navigate(matchPath)}
-                                                style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                                               >
                                                 {matchDisplayTitle(match)}
                                               </button>
-                                              <div style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>
+                                              <div className={s.matchDate}>
                                                 {match.start_time ? new Date(match.start_time).toLocaleString() : '"”'}
                                               </div>
                                             </div>
 
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                                              <span style={pillStyle}>Participants: {getMatchParticipantsCount(match)}</span>
+                                              <span className={s.pill}>Participants: {getMatchParticipantsCount(match)}</span>
                                               <button type="button" className="app-action-button" onClick={() => { setSelectedDetailMatch(match); setIsMatchDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
                                                 View
                                               </button>
@@ -2675,8 +2605,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         {href ? (
                                           <Link
                                             to={href}
-                                            className="hover:underline"
-                                            style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
+                                            className={`hover:underline ${s.appLink}`}
                                           >
                                             {name}
                                           </Link>
@@ -2785,8 +2714,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         {href ? (
                                           <Link
                                             to={href}
-                                            className="hover:underline"
-                                            style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
+                                            className={`hover:underline ${s.appLink}`}
                                           >
                                             {name}
                                           </Link>
@@ -2836,10 +2764,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card>
                       <div style={{ padding: '16px 16px 0 16px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Team Members</h3>
+                          <h3 className={s.sectionTitle}>Team Members</h3>
                           <Badge variant="default">{eligibleTeamMembers.length} Available</Badge>
                         </div>
-                        <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                        <div className={s.sectionSubtitle}>
                           Team members not yet assigned to this season. Select members to add them to the squad.
                         </div>
                       </div>
@@ -2986,14 +2914,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   <Card>
                     <div style={{ padding: '16px 16px 0 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}> Media Completion Matrix</h3>
+                        <h3 className={s.sectionTitle}> Media Completion Matrix</h3>
                         <Badge variant="default">
                           {members.filter((m) => countProcessedMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
                         </Badge>
                         <Button
                           variant="outline"
                           onClick={() => setIsActiveJobsModalOpen(true)}
-                          style={{ marginLeft: batchSelectedMemberIds.size > 0 ? undefined : 'auto', fontSize: '13px', padding: '6px 14px' }}
+                          className={s.mediaHeaderBtn}
+                          style={{ marginLeft: batchSelectedMemberIds.size > 0 ? undefined : 'auto' }}
                         >
                           ⚙️ Actieve Jobs
                         </Button>
@@ -3001,13 +2930,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           <Button
                             variant="primary"
                             onClick={() => setIsBatchModalOpen(true)}
-                            style={{ fontSize: '13px', padding: '6px 14px' }}
+                            className={s.mediaHeaderBtn}
                           >
                             🚀 Batch Genereer ({batchSelectedMemberIds.size})
                           </Button>
                         )}
                       </div>
-                      <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+                      <div className={s.sectionSubtitle}>
                         Selecteer members en klik &quot;Batch Genereer&quot; om AI assets in bulk te genereren.
                       </div>
                     </div>
@@ -3053,7 +2982,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         opacity: 0.8,
                                         letterSpacing: '0.02em',
                                       }}>{slot.label}</span>
-                                      <span style={{ fontSize: '16px' }}>{slot.icon}</span>
+                                      <span className={s.slotIcon}>{slot.icon}</span>
                                     </div>
                                   </th>
                                 ))}
@@ -3062,12 +2991,12 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             </thead>
                             <tbody>
                               {/* Guest Player row — always shown at top of matrix */}
-                              <tr style={{ background: 'rgba(167, 139, 250, 0.06)' }}>
+                              <tr className={s.guestRow}>
                                 <td style={{ ...compactTdStyle, textAlign: 'center' }}>
                                   {/* No batch checkbox for guest */}
                                 </td>
                                 <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
-                                  <span style={{ color: '#a78bfa', fontWeight: 600 }}>🏃 Gast Speler</span>
+                                  <span className={s.guestLabel}>🏃 Gast Speler</span>
                                 </td>
                                 {MEDIA_SLOTS.map((slot) => {
                                   // Guest supports: kit (fullbody), closeup, intro, celebration
@@ -3087,7 +3016,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                     return (
                                       <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
                                         <span
-                                          style={{ fontSize: '14px', cursor: 'pointer' }}
+                                          className={s.guestIndicator}
                                           title={guestSlot.has ? `${guestSlot.label}: Beschikbaar — klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
                                           onClick={handleClick}
                                         >
@@ -3099,7 +3028,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   // Other slots: dash (not applicable for guest)
                                   return (
                                     <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
-                                      <span style={{ fontSize: '14px', opacity: 0.3 }} title={`${slot.label}: N.v.t. voor gast`}>—</span>
+                                      <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}>—</span>
                                     </td>
                                   );
                                 })}
@@ -3153,8 +3082,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       {href ? (
                                         <Link
                                           to={href}
-                                          className="hover:underline"
-                                          style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
+                                          className={`hover:underline ${s.appLink}`}
                                         >
                                           {name}
                                         </Link>
@@ -3190,10 +3118,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                               style={{ textDecoration: 'none' }}
                                               title={title}
                                             >
-                                              <span style={{ fontSize: '14px' }}>{indicator}</span>
+                                              <span className={s.indicatorIcon}>{indicator}</span>
                                             </Link>
                                           ) : (
-                                            <span style={{ fontSize: '14px' }} title={title}>{indicator}</span>
+                                            <span className={s.indicatorIcon} title={title}>{indicator}</span>
                                           )}
                                         </td>
                                       );
@@ -3212,32 +3140,32 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       )}
 
                       {/* Legend */}
-                      <div style={{ marginTop: '16px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>Legend</div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', marginBottom: '10px' }}>
+                      <div className={s.legendBox}>
+                        <div className={s.legendTitle}>Legend</div>
+                        <div className={s.legendRow}>
                           {MEDIA_SLOTS.map((slot) => (
-                            <div key={slot.id} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div key={slot.id} className={s.legendItem}>
                               <span>{slot.icon}</span>
-                              <span style={{ opacity: 0.8 }}>{slot.label}</span>
+                              <span className={s.legendLabel}>{slot.label}</span>
                             </div>
                           ))}
                         </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', borderTop: '1px solid var(--app-border, #333)', paddingTop: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <div className={s.legendRowDivided}>
+                          <div className={s.legendItem}>
                             <span>✅</span>
-                            <span style={{ opacity: 0.8 }}>Lineup-ready (bewerkt)</span>
+                            <span className={s.legendLabel}>Lineup-ready (bewerkt)</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div className={s.legendItem}>
                             <span>🔶</span>
-                            <span style={{ opacity: 0.8 }}>Ruw (niet bewerkt)</span>
+                            <span className={s.legendLabel}>Ruw (niet bewerkt)</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div className={s.legendItem}>
                             <span>⏳</span>
-                            <span style={{ opacity: 0.8 }}>Bezig met bewerken</span>
+                            <span className={s.legendLabel}>Bezig met bewerken</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <div className={s.legendItem}>
                             <span>⬜</span>
-                            <span style={{ opacity: 0.8 }}>Ontbreekt</span>
+                            <span className={s.legendLabel}>Ontbreekt</span>
                           </div>
                         </div>
                       </div>
@@ -3252,7 +3180,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Competitions</h3>
+                      <h3 className={s.sectionTitle}>Competitions</h3>
                       {userCanEditProject ? (
                         <button
                           type="button"
@@ -3290,8 +3218,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                       ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
                                       : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
                                   }
-                                  className="hover:underline"
-                                  style={{ textDecoration: 'none', color: '#60a5fa' }}
+                                  className={`hover:underline ${s.appLink}`}
                                 >
                                   {competition.name}
                                 </Link>
@@ -3395,7 +3322,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     <Card>
                   <div style={{ padding: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Matches</h3>
+                      <h3 className={s.sectionTitle}>Matches</h3>
                       {userCanEditProject ? (
                         <button
                           type="button"
@@ -3438,8 +3365,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   return (
                                 <Link
                                       to={matchPath}
-                                  className="hover:underline"
-                                  style={{ textDecoration: 'none', color: '#60a5fa' }}
+                                  className={`hover:underline ${s.appLink}`}
                                 >
                                   {matchDisplayTitle(match)}
                                 </Link>
@@ -3454,8 +3380,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         ? `${seasonsBasePath}/${seasonPathKey}/${String(match.period?.id)}`
                                         : `${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`
                                     }
-                                    className="hover:underline"
-                                    style={{ textDecoration: 'none', color: '#60a5fa' }}
+                                    className={`hover:underline ${s.appLink}`}
                                   >
                                     {match.period?.name || 'Competition'}
                                   </Link>
@@ -3929,71 +3854,45 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         {/* Edit Member Modal */}
         {isEditMemberModalOpen && selectedEditMember && (
           <div
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 9999,
-            }}
+            className={s.modalOverlay}
             onClick={() => setIsEditMemberModalOpen(false)}
           >
             <div
-              style={{
-                backgroundColor: '#1e293b',
-                padding: '32px',
-                borderRadius: '8px',
-                maxWidth: '600px',
-                width: '90%',
-                maxHeight: '90vh',
-                overflow: 'auto',
-                color: '#f1f5f9',
-              }}
+              className={s.editMemberModal}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 style={{ marginTop: 0, marginBottom: '24px', fontSize: '24px', fontWeight: 600, color: '#f1f5f9' }}>
+              <h2 className={s.editMemberTitle}>
                 Edit Member Roles
               </h2>
 
               <div style={{ marginBottom: '24px' }}>
-                <div style={{ marginBottom: '16px', color: '#e2e8f0' }}>
-                  <strong style={{ color: '#cbd5e1' }}>Name:</strong>{' '}
+                <div className={s.memberInfoRow}>
+                  <strong className={s.memberInfoLabel}>Name:</strong>{' '}
                   {selectedEditMember.user?.name ||
                     `${selectedEditMember.user?.first_name || ''} ${selectedEditMember.user?.last_name || ''}`.trim() ||
                     selectedEditMember.user?.email ||
                     '—'}
                 </div>
-                <div style={{ marginBottom: '16px', color: '#e2e8f0' }}>
-                  <strong style={{ color: '#cbd5e1' }}>Email:</strong> {selectedEditMember.user?.email || '—'}
+                <div className={s.memberInfoRow}>
+                  <strong className={s.memberInfoLabel}>Email:</strong> {selectedEditMember.user?.email || '—'}
                 </div>
               </div>
 
               {/* Access Role Section */}
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: '#f1f5f9' }}>
+                <label className={s.fieldLabel}>
                   🔐 Access Role
                 </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className={s.radioGroup}>
                   {accessRoleOptions.map((opt) => {
                     const isSelected = editAccessRole === opt.value;
                     return (
                       <label
                         key={opt.value}
+                        className={s.radioCard}
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '14px 16px',
                           border: isSelected ? '2px solid #3b82f6' : '1px solid #475569',
-                          borderRadius: '8px',
-                          cursor: 'pointer',
                           backgroundColor: isSelected ? '#1e3a5f' : '#334155',
-                          transition: 'all 0.15s ease',
                         }}
                       >
                         <input
@@ -4002,13 +3901,13 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           value={opt.value}
                           checked={isSelected}
                           onChange={() => setEditAccessRole(opt.value)}
-                          style={{ cursor: 'pointer', accentColor: '#3b82f6' }}
+                          className={s.radioInput}
                         />
                         <div>
-                          <div style={{ fontWeight: 600, color: '#f1f5f9', fontSize: '14px' }}>
+                          <div className={s.radioCardTitle}>
                             {opt.icon} {opt.label}
                           </div>
-                          <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                          <div className={s.radioCardDesc}>
                             {opt.description}
                           </div>
                         </div>
@@ -4019,10 +3918,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               </div>
 
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', marginBottom: '12px', fontWeight: 600, color: '#f1f5f9' }}>
+                <label className={s.fieldLabel}>
                   Functional Roles
                 </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                <div className={s.roleGrid}>
                   {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map((role) => {
                     const currentRoles = getFunctionalRolesFromMembership(selectedEditMember);
                     const isChecked = currentRoles.includes(role);
@@ -4030,14 +3929,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     return (
                       <label
                         key={role}
+                        className={s.checkboxCard}
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          padding: '12px',
-                          border: '1px solid #475569',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
                           backgroundColor: isChecked ? '#1e40af' : '#334155',
                           borderColor: isChecked ? '#3b82f6' : '#475569',
                         }}
@@ -4066,25 +3959,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                           }}
                           style={{ cursor: 'pointer' }}
                         />
-                        <span style={{ textTransform: 'capitalize', color: '#f1f5f9' }}>{role}</span>
+                        <span className={s.roleLabel}>{role}</span>
                       </label>
                     );
                   })}
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <div className={s.modalActions}>
                 <button
                   onClick={() => setIsEditMemberModalOpen(false)}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '6px',
-                    border: '1px solid #475569',
-                    backgroundColor: '#334155',
-                    color: '#f1f5f9',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                  }}
+                  className={s.btnCancel}
                 >
                   Cancel
                 </button>
@@ -4173,16 +4058,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                       alert(err.message || 'Failed to update member');
                     }
                   }}
-                  style={{
-                    padding: '10px 20px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
+                  className={s.btnSave}
                 >
                   Save Changes
                 </button>
@@ -4275,15 +4151,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         {/* Then vs Now compilation modal (member picker → submit → auto-close) */}
         {thenVsNowModalOpen && (
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.75)', padding: '20px' }}
+            className={s.thenNowBackdrop}
             onClick={() => { if (thenVsNowModalStep !== 'generating') closeThenVsNowModal(); }}
           >
             <div
-              style={{ backgroundColor: 'var(--app-surface, #1a1a2e)', borderRadius: '12px', maxWidth: '640px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', border: '1px solid var(--app-border, #333)' }}
+              className={s.thenNowModal}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal header */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--app-border, #333)' }}>
+              <div className={s.thenNowHeader}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
                     Compilatie — {
@@ -4306,7 +4182,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 {thenVsNowModalStep !== 'generating' && (
                   <button
                     onClick={closeThenVsNowModal}
-                    style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: 'var(--app-text)', padding: '4px 8px' }}
+                    className={s.modalCloseBtn}
                   >&times;</button>
                 )}
               </div>
@@ -4358,8 +4234,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 return (
                   <div style={{ padding: '16px 20px' }}>
                     {/* Select all / deselect all */}
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                    <div className={s.selectAllRow}>
+                      <div className={s.selectionCounter}>
                         {thenVsNowModalSelected.length} van {eligible.length} speler{eligible.length !== 1 ? 's' : ''} geselecteerd
                       </div>
                       <button
@@ -4370,7 +4246,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                             setThenVsNowModalSelected(eligible.map((m: any) => m.id));
                           }
                         }}
-                        style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)', whiteSpace: 'nowrap' }}
+                        className={s.selectAllBtn}
                       >
                         {thenVsNowModalSelected.length === eligible.length ? 'Deselecteer alles' : 'Selecteer alles'}
                       </button>
@@ -4379,33 +4255,32 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     {/* Selected members — ordered list with reorder controls */}
                     {selectedOrdered.length > 0 && (
                       <div style={{ marginBottom: '16px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                        <div className={s.sectionLabel}>
                           Volgorde in video
                         </div>
-                        <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '260px', overflowY: 'auto' }}>
+                        <div className={s.orderedList}>
                           {selectedOrdered.map((m: any, idx: number) => (
                             <div
                               key={m.id}
+                              className={s.orderedMemberRow}
                               style={{
-                                display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px',
                                 borderBottom: idx < selectedOrdered.length - 1 ? '1px solid var(--app-border)' : 'none',
-                                backgroundColor: 'var(--app-surface-2, #2a2a3e)',
                               }}
                             >
                               {/* Order number */}
-                              <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--app-muted-text)', width: '20px', textAlign: 'center', flexShrink: 0 }}>
+                              <span className={s.orderNumber}>
                                 {idx + 1}
                               </span>
                               {/* Name + info */}
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text)' }}>{m.name}</div>
-                                <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', display: 'flex', gap: '8px', marginTop: '1px' }}>
+                                <div className={s.memberName}>{m.name}</div>
+                                <div className={s.memberMeta}>
                                   {m.shirtNumber && <span>#{m.shirtNumber}</span>}
                                   {m.position && <span>{m.position}</span>}
                                 </div>
                                 {/* Transformation variant picker (when member has multiple variants) */}
                                 {thenVsNowModalType === 'transformation' && m.transformationKeys && m.transformationKeys.length > 1 && (
-                                  <div style={{ display: 'flex', gap: '4px', marginTop: '4px', flexWrap: 'wrap' }}>
+                                  <div className={s.variantRow}>
                                     {m.transformationKeys.map((vk: string) => {
                                       const label = vk.replace('transformation_', '').replace('transformation', 'default').replace(/_/g, ' ');
                                       const isSelected = (thenVsNowVariantKeys[m.id] || '') === vk;
@@ -4414,12 +4289,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                         <button
                                           key={vk}
                                           onClick={() => setThenVsNowVariantKeys(prev => ({ ...prev, [m.id]: vk }))}
+                                          className={s.variantPill}
                                           style={{
-                                            padding: '2px 8px', fontSize: '10px', fontWeight: 600, borderRadius: '10px',
                                             border: (isSelected || isDefault) ? '1px solid var(--app-primary, #2563eb)' : '1px solid var(--app-border)',
                                             backgroundColor: (isSelected || isDefault) ? 'var(--app-primary, #2563eb)' : 'transparent',
                                             color: (isSelected || isDefault) ? '#fff' : 'var(--app-muted-text)',
-                                            cursor: 'pointer', textTransform: 'capitalize',
                                           }}
                                         >{label}</button>
                                       );
@@ -4432,20 +4306,22 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 onClick={() => moveUp(idx)}
                                 disabled={idx === 0}
                                 title="Omhoog"
-                                style={{ background: 'none', border: 'none', cursor: idx === 0 ? 'default' : 'pointer', opacity: idx === 0 ? 0.25 : 0.7, fontSize: '14px', padding: '2px 4px', color: 'var(--app-text)' }}
+                                className={s.arrowBtn}
+                                style={{ cursor: idx === 0 ? 'default' : 'pointer', opacity: idx === 0 ? 0.25 : 0.7 }}
                               >{"\u25B2"}</button>
                               {/* Move down */}
                               <button
                                 onClick={() => moveDown(idx)}
                                 disabled={idx === selectedOrdered.length - 1}
                                 title="Omlaag"
-                                style={{ background: 'none', border: 'none', cursor: idx === selectedOrdered.length - 1 ? 'default' : 'pointer', opacity: idx === selectedOrdered.length - 1 ? 0.25 : 0.7, fontSize: '14px', padding: '2px 4px', color: 'var(--app-text)' }}
+                                className={s.arrowBtn}
+                                style={{ cursor: idx === selectedOrdered.length - 1 ? 'default' : 'pointer', opacity: idx === selectedOrdered.length - 1 ? 0.25 : 0.7 }}
                               >{"\u25BC"}</button>
                               {/* Remove */}
                               <button
                                 onClick={() => removeItem(m.id)}
                                 title="Verwijderen"
-                                style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.5, fontSize: '14px', padding: '2px 4px', color: 'var(--app-danger, #ef4444)' }}
+                                className={s.removeBtn}
                               >{"\u2715"}</button>
                             </div>
                           ))}
@@ -4457,7 +4333,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     {unselected.length > 0 && (
                       <div>
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          <div className={s.unselectedHeader}>
                             Beschikbare spelers
                           </div>
                           <input
@@ -4470,25 +4346,21 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                         </div>
                         <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '160px', overflowY: 'auto' }}>
                           {filteredUnselected.length === 0 ? (
-                            <div style={{ padding: '12px', textAlign: 'center', color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                            <div className={s.emptyState}>
                               Geen spelers gevonden
                             </div>
                           ) : filteredUnselected.map((m: any) => (
                             <div
                               key={m.id}
                               onClick={() => addItem(m.id)}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px',
-                                borderBottom: '1px solid var(--app-border)', cursor: 'pointer',
-                                transition: 'background 0.15s',
-                              }}
+                              className={s.clickableRow}
                               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2, #2a2a3e)'; }}
                               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                             >
-                              <span style={{ fontSize: '14px', color: 'var(--app-primary, #2563eb)', flexShrink: 0 }}>+</span>
+                              <span className={s.addIcon}>+</span>
                               <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--app-text)' }}>{m.name}</div>
-                                <div style={{ fontSize: '11px', color: 'var(--app-muted-text)', display: 'flex', gap: '8px', marginTop: '1px' }}>
+                                <div className={s.memberName}>{m.name}</div>
+                                <div className={s.memberMeta}>
                                   {m.shirtNumber && <span>#{m.shirtNumber}</span>}
                                   {m.position && <span>{m.position}</span>}
                                 </div>
@@ -4501,10 +4373,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                     {/* Background / Location selector — hidden for cover mode (no background needed) */}
                     {thenVsNowBackgrounds.length > 0 && thenVsNowModalType !== 'duo_portret_cover' && thenVsNowModalType !== 'sidebyside_cover' && (
                       <div style={{ marginTop: '16px' }}>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--app-muted-text)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                        <div className={s.sectionLabel}>
                           Achtergrond / Locatie
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '8px' }}>
+                        <div className={s.bgSelectorGrid}>
                           {/* Default option */}
                           <button
                             onClick={() => setThenVsNowSelectedBgUrl(null)}
@@ -4517,14 +4389,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                               background: !thenVsNowSelectedBgUrl ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
                             }}
                           >
-                            <div style={{ width: '100%', aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div className={s.bgPreviewDefault}>
                               <span style={{ fontSize: '20px' }}>{"\u26BD"}</span>
                             </div>
-                            <div style={{ padding: '3px 0', textAlign: 'center', fontWeight: 600, fontSize: '10px', color: !thenVsNowSelectedBgUrl ? '#fff' : 'var(--app-muted-text)', background: !thenVsNowSelectedBgUrl ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)' }}>
+                            <div className={s.bgOptionLabel} style={{ color: !thenVsNowSelectedBgUrl ? '#fff' : 'var(--app-muted-text)', background: !thenVsNowSelectedBgUrl ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)' }}>
                               Standaard
                             </div>
                             {!thenVsNowSelectedBgUrl && (
-                              <div style={{ position: 'absolute', top: 3, right: 3, width: 14, height: 14, borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#fff', fontWeight: 700 }}>{"\u2713"}</div>
+                              <div className={s.checkBadge}>{"\u2713"}</div>
                             )}
                           </button>
                           {/* App-level backgrounds */}
@@ -4544,8 +4416,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                 }}
                               >
                                 <div style={{ width: '100%', aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
-                                <div style={{
-                                  padding: '3px 0', textAlign: 'center', fontWeight: 600, fontSize: '10px',
+                                <div className={s.bgOptionLabel} style={{
                                   color: isSelected ? '#fff' : 'var(--app-muted-text)',
                                   background: isSelected ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)',
                                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -4553,7 +4424,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                                   {bg.label || bg.profile_name || 'Locatie'}
                                 </div>
                                 {isSelected && (
-                                  <div style={{ position: 'absolute', top: 3, right: 3, width: 14, height: 14, borderRadius: '50%', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#fff', fontWeight: 700 }}>{"\u2713"}</div>
+                                  <div className={s.checkBadge}>{"\u2713"}</div>
                                 )}
                               </button>
                             );
@@ -4567,9 +4438,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {/* Step: Generating (brief loading while POST in progress) */}
               {thenVsNowModalStep === 'generating' && (
-                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>{"\u23F3"}</div>
-                  <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-text)', marginBottom: '8px' }}>
+                <div className={s.statusStep}>
+                  <div className={s.statusEmoji}>{"\u23F3"}</div>
+                  <div className={s.statusTitle}>
                     Job wordt aangemaakt...
                   </div>
                 </div>
@@ -4577,15 +4448,15 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {/* Step: Submitted — confirmation, auto-closes */}
               {thenVsNowModalStep === 'submitted' && (
-                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>{"\u2705"}</div>
-                  <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-text)', marginBottom: '8px' }}>
+                <div className={s.statusStep}>
+                  <div className={s.statusEmoji}>{"\u2705"}</div>
+                  <div className={s.statusTitle}>
                     Job gestart!
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--app-muted-text)', marginBottom: '12px' }}>
+                  <div className={s.statusDesc}>
                     {thenVsNowModalSelected.length} speler{thenVsNowModalSelected.length !== 1 ? 's' : ''} • Video wordt op de achtergrond verwerkt
                   </div>
-                  <div style={{ fontSize: '12px', color: 'var(--app-muted-text)' }}>
+                  <div className={s.statusDesc}>
                     Bekijk de voortgang bij <strong>Workflow</strong> of in de <strong>Video Jobs</strong> queue.
                   </div>
                 </div>
@@ -4593,32 +4464,33 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {/* Step: Error */}
               {thenVsNowModalStep === 'error' && (
-                <div style={{ padding: '40px 20px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>{"\u274C"}</div>
-                  <div style={{ fontWeight: 700, fontSize: '16px', color: 'var(--app-danger, #c62828)', marginBottom: '8px' }}>
+                <div className={s.statusStep}>
+                  <div className={s.statusEmoji}>{"\u274C"}</div>
+                  <div className={s.statusTitleError}>
                     Generatie mislukt
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+                  <div className={s.statusDesc}>
                     {thenVsNowModalError || 'Unknown error'}
                   </div>
                 </div>
               )}
 
               {/* Modal footer */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid var(--app-border, #333)', gap: '8px' }}>
+              <div className={s.thenNowFooter}>
                 {thenVsNowModalStep === 'members' && (
                   <>
                     <button
                       onClick={closeThenVsNowModal}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
+                      className={s.modalBtnSecondary}
                     >Annuleren</button>
                     <button
                       onClick={submitThenVsNowCompilation}
                       disabled={thenVsNowModalSelected.length === 0}
+                      className={s.modalBtnPrimary}
                       style={{
-                        padding: '8px 16px', fontSize: '13px', fontWeight: 700, border: 'none', borderRadius: '6px', cursor: thenVsNowModalSelected.length > 0 ? 'pointer' : 'not-allowed',
-                        backgroundColor: thenVsNowModalSelected.length > 0 ? 'var(--app-primary, #2563eb)' : '#6b7280',
-                        color: '#fff', opacity: thenVsNowModalSelected.length > 0 ? 1 : 0.5,
+                        cursor: thenVsNowModalSelected.length > 0 ? 'pointer' : 'not-allowed',
+                        background: thenVsNowModalSelected.length > 0 ? '#6366f1' : '#6b7280',
+                        opacity: thenVsNowModalSelected.length > 0 ? 1 : 0.5,
                       }}
                     >{"\uD83C\uDFAC"} Genereer Video ({thenVsNowModalSelected.length})</button>
                   </>
@@ -4626,18 +4498,18 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 {thenVsNowModalStep === 'submitted' && (
                   <button
                     onClick={closeThenVsNowModal}
-                    style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
+                    className={s.modalBtnSecondary}
                   >Sluiten</button>
                 )}
                 {thenVsNowModalStep === 'error' && (
                   <>
                     <button
                       onClick={() => setThenVsNowModalStep('members')}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
+                      className={s.modalBtnSecondary}
                     >{"\u2190"} Terug</button>
                     <button
                       onClick={closeThenVsNowModal}
-                      style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600, border: '1px solid var(--app-border)', borderRadius: '6px', cursor: 'pointer', backgroundColor: 'var(--app-surface-2, #2a2a3e)', color: 'var(--app-text)' }}
+                      className={s.modalBtnSecondary}
                     >Sluiten</button>
                   </>
                 )}
@@ -4649,28 +4521,19 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
       {/* Toast notifications */}
       {toasts.length > 0 && (
-        <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 420 }}>
+        <div className={s.toastContainer}>
           {toasts.map(toast => (
             <div
               key={toast.id}
+              className={s.toast}
               style={{
-                padding: '12px 16px',
-                borderRadius: 8,
                 background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 500,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                animation: 'slideInRight 0.3s ease-out',
               }}
             >
               <span style={{ flex: 1 }}>{toast.message}</span>
               <button
                 onClick={() => dismissToast(toast.id)}
-                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, opacity: 0.7 }}
+                className={s.toastDismiss}
               >
                 ×
               </button>

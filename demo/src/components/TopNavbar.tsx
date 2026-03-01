@@ -33,6 +33,7 @@ import {
 import { AppIcon } from './AppIcon';
 import { useUserRole } from './PermissionGuards';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
+import s from './TopNavbar.module.css';
 import { SearchBar } from './SearchBar';
 import Breadcrumbs from './Breadcrumbs';
 import CommandPalette from './CommandPalette';
@@ -124,48 +125,48 @@ function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Navba
   return (
     <div
       onClick={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
-      style={{ position: 'fixed', inset: 0, zIndex: 10001, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      className={s.modalOverlayHigh}
     >
-      <div style={{ width: '100%', maxWidth: 480, backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
+      <div className={s.followUpPanel}>
         {/* Header */}
-        <div style={{ padding: '20px 24px 12px', borderBottom: '1px solid var(--app-border, #334155)' }}>
+        <div className={s.followUpHeader}>
           <div className="flex-between">
             <div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text, #fff)' }}>
+              <div className={s.followUpTitle}>
                 {submitted ? '✅ Video in de wachtrij!' : '🎬 Video genereren?'}
               </div>
-              <div style={{ fontSize: 12, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 4 }}>
+              <div className={s.followUpSubtitle}>
                 {submitted
                   ? 'De video wordt gegenereerd en verschijnt binnenkort in de approval queue.'
                   : `Foto composite goedgekeurd voor ${info.memberName}. Wil je de geanimeerde video versie genereren?`
                 }
               </div>
             </div>
-            {!submitting && <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>}
+            {!submitting && <button onClick={onClose} className={s.closeBtnMuted}>✕</button>}
           </div>
         </div>
 
         {/* Preview */}
         {!submitted && (
-          <div style={{ padding: '16px 24px', display: 'flex', justifyContent: 'center' }}>
+          <div className={s.followUpPreview}>
             <img
               src={info.approvedImageUrl}
               alt="Approved composite"
-              style={{ maxHeight: 200, maxWidth: '100%', borderRadius: 8, objectFit: 'contain' }}
+              className={s.followUpImg}
             />
           </div>
         )}
 
         {error && (
-          <div style={{ margin: '0 24px 16px', fontSize: 12, color: '#dc2626', backgroundColor: '#fee2e2', borderRadius: 8, padding: '8px 12px' }}>{error}</div>
+          <div className={s.followUpError}>{error}</div>
         )}
 
         {/* Footer */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--app-border, #334155)', display: 'flex', justifyContent: submitted ? 'center' : 'space-between', alignItems: 'center' }}>
+        <div className={s.followUpFooter} style={{ justifyContent: submitted ? 'center' : 'space-between' }}>
           {submitted ? (
             <button
               onClick={() => { onSubmitted(); onClose(); }}
-              style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+              className={s.btnPrimary}
             >
               Sluiten
             </button>
@@ -174,19 +175,16 @@ function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Navba
               <button
                 onClick={onClose}
                 disabled={submitting}
-                style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--app-border, #334155)', background: 'transparent', color: 'var(--app-text-secondary, #9ca3af)', fontWeight: 500, fontSize: 13, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+                className={s.followUpSkipBtn}
+                style={{ cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
               >
                 Overslaan
               </button>
               <button
                 onClick={handleSubmitVideo}
                 disabled={submitting}
-                style={{
-                  padding: '9px 24px', borderRadius: 8, border: 'none',
-                  background: '#2563eb', color: '#fff',
-                  fontWeight: 600, fontSize: 13, cursor: submitting ? 'wait' : 'pointer',
-                  opacity: submitting ? 0.7 : 1,
-                }}
+                className={s.followUpSubmitBtn}
+                style={{ cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1 }}
               >
                 {submitting ? 'Bezig...' : '🚀 Genereer Video'}
               </button>
@@ -651,45 +649,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   const activeGroup = openDropdown ? filteredNavGroups.find(g => g.id === openDropdown) : null;
 
   return (
-    <div style={{ height: '57px', position: 'relative', zIndex: 500 }}>
+    <div className={s.wrapper}>
       <CommandPalette isOpen={commandOpen} onClose={() => setCommandOpen(false)} />
-      <nav style={{
-        backgroundColor: 'var(--app-surface)',
-        borderBottom: '1px solid var(--app-border)',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 500,
-        overflow: 'visible',
-      }}>
-        <div style={{
-          maxWidth: '100%',
-          padding: isMobile ? '0 12px' : '0 24px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: isMobile ? '8px' : '16px',
-          height: '56px',
-        }}>
+      <nav className={s.nav}>
+        <div className={s.navContainer} style={{ padding: isMobile ? '0 12px' : '0 24px', gap: isMobile ? '8px' : '16px' }}>
           {/* Mobile Menu Button - Hamburger for sidebar toggle */}
           {isMobile && (
             <button
-              className="mobile-menu-button"
+              className={`${s.mobileMenuBtn} mobile-menu-button`}
               onClick={onToggleSidebar}
-              style={{
-                display: 'flex',
-                background: 'transparent',
-                cursor: 'pointer',
-                color: 'var(--app-text)',
-                padding: '8px',
-                border: 'none',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minWidth: '44px',
-                minHeight: '44px',
-                borderRadius: '8px',
-              }}
               aria-label="Toggle menu"
             >
               <AppIcon icon={Menu} size={22} strokeWidth={2.5} />
@@ -697,27 +665,18 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           )}
 
           {/* Left side: Navigation items */}
-          <div className="desktop-nav flex-row gap-4 flex-1 h-full" style={{
-            flexWrap: 'nowrap',
-          }}>
+          <div className={`desktop-nav flex-row gap-4 flex-1 h-full ${s.desktopNavWrap}`}>
             {/* TeamReel logo → Dashboard */}
             <Link
               to={dashboardItem.path}
               title={dashboardItem.label}
               aria-label={dashboardItem.label}
-              className="nav-icon-button"
-              style={{
-                padding: '4px 8px',
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
+              className={`nav-icon-button ${s.logoLink}`}
             >
               <img
                 src="/teamreel-icon.svg"
                 alt="TeamReel"
-                style={{ height: '28px', width: 'auto' }}
+                className={s.logoImg}
               />
             </Link>
 
@@ -732,13 +691,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               return (
                 <div
                   key={group.id}
-                  className="nav-dropdown-container"
-                  style={{
-                    position: 'relative',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
+                  className={`nav-dropdown-container ${s.dropdownContainer}`}
                 >
                   <button
                     onClick={(e) => handleClickTrigger(group.id, e)}
@@ -750,19 +703,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     aria-haspopup="menu"
                     aria-expanded={isOpen}
                     aria-controls={`mega-menu-panel`}
+                    className={s.groupTrigger}
                     style={{
-                      padding: '8px 12px',
-                      borderRadius: '4px',
-                      border: 'none',
-                      cursor: 'pointer',
                       color: isActive ? '#2563eb' : 'var(--app-text)',
                       backgroundColor: isActive || isOpen ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                       fontWeight: isActive ? 600 : 500,
-                      fontSize: '14px',
-                      whiteSpace: 'nowrap',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
                     }}
                   >
                     <span>{group.label}</span>
@@ -776,28 +721,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                       role="menu"
                       onMouseEnter={() => handleMouseEnterDropdown(group.id)}
                       onMouseLeave={() => handleMouseLeaveDropdown(group.id)}
-                      style={{
-                        position: 'absolute',
-                        top: 'calc(100% - 10px)', // Overlap by 10px
-                        left: '0',
-                        paddingTop: '10px', // Push content down
-                        minWidth: '600px',
-                        zIndex: 100,
-                      }}
+                      className={s.megaPanel}
                     >
-                      <div style={{
-                        backgroundColor: 'var(--app-surface)',
-                        border: '1px solid var(--app-border)',
-                        borderRadius: '12px',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-                        padding: '20px',
-                      }}>
+                      <div className={s.megaPanelInner}>
                       <div
                         style={{
                           display: 'grid',
                           gridTemplateColumns: `repeat(${getColumnCount(group.items.length)}, minmax(0, 1fr))`,
-                          columnGap: '40px',
-                          rowGap: '10px',
+                          columnGap: 40,
+                          rowGap: 10,
                         }}
                       >
                         {group.items.map((item) => (
@@ -806,18 +738,10 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                             to={item.path}
                             role="menuitem"
                             onClick={() => setOpenDropdown(null)}
+                            className={s.megaItem}
                             style={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: '12px',
-                              padding: '10px 12px',
-                              textDecoration: 'none',
                               color: isItemActive(item.path) ? '#2563eb' : 'var(--app-text)',
                               backgroundColor: isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                              borderRadius: '10px',
-                              transition: 'background-color 0.15s',
-                              pointerEvents: 'auto',
-                              cursor: 'pointer',
                             }}
                             onMouseEnter={(e) => {
                               if (!isItemActive(item.path)) {
@@ -830,21 +754,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                               }
                             }}
                           >
-                            {item.icon && <span style={{ flexShrink: 0, marginTop: '2px' }}><AppIcon icon={item.icon} size={16} /></span>}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
-                              <span style={{
-                                fontSize: '14px',
-                                fontWeight: isItemActive(item.path) ? 600 : 500,
-                                lineHeight: '1.3',
-                              }}>
+                            {item.icon && <span className={s.megaItemIcon}><AppIcon icon={item.icon} size={16} /></span>}
+                            <div className={s.megaItemTextWrap}>
+                              <span className={s.megaItemLabel} style={{ fontWeight: isItemActive(item.path) ? 600 : 500 }}>
                                 {item.label}
                               </span>
                               {item.description && (
-                                <span style={{
-                                  fontSize: '12px',
-                                  color: 'var(--app-muted-text)',
-                                  lineHeight: '1.3',
-                                }}>
+                                <span className={s.megaItemDescription}>
                                   {item.description}
                                 </span>
                               )}
@@ -862,16 +778,12 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
           {/* Right side: User controls */}
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '16px' }}>
+            <div className={s.userControls} style={{ gap: isMobile ? 8 : 16 }}>
             {/* Search Bar - hidden on mobile */}
             {!isMobile && (
               <div
-                className={`nav-search-container${navSearchHasQuery ? ' has-query' : ''}`}
-                style={{
-                  flex: '1 1 360px',
-                  minWidth: '220px',
-                  maxWidth: '560px',
-                }}
+                className={`nav-search-container${navSearchHasQuery ? ' has-query' : ''} ${s.searchWrap}`}
+                style={{ flex: '1 1 360px' }}
               >
                 <SearchBar
                   placeholder="Search..."
@@ -885,16 +797,9 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               <button
                 type="button"
                 onClick={() => setCommandOpen(true)}
-                className="nav-icon-button"
+                className={`nav-icon-button ${s.quickSwitchBtn}`}
                 title="Quick switch"
                 aria-label="Quick switch"
-                style={{
-                  padding: '8px 10px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  borderRadius: 10,
-                }}
               >
                 <AppIcon icon={Command} size={18} />
                 <span className="fs-13 fw-800">Quick switch</span>
@@ -903,23 +808,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
             {/* + Create CTA (main action opens Content Library) - hidden on mobile */}
             {!isMobile && (
-            <div ref={createMenuRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+            <div ref={createMenuRef} className={s.createWrap}>
               <button
                 type="button"
                 onClick={() => navigate('/content')}
-                className="nav-icon-button"
+                className={`nav-icon-button ${s.createMainBtn}`}
                 title="Create content"
                 aria-label="Create content"
-                style={{
-                  padding: '8px 12px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  borderRadius: 10,
-                  borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0,
-                  background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-                }}
+                style={{ background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent' }}
               >
                 <AppIcon icon={Plus} size={18} />
                 <span className="fs-13 fw-800">Create</span>
@@ -927,37 +823,17 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               <button
                 type="button"
                 onClick={() => setCreateMenuOpen((v) => !v)}
-                className="nav-icon-button"
+                className={`nav-icon-button ${s.createChevronBtn}`}
                 title="More create options"
                 aria-label="More create options"
-                style={{
-                  padding: '8px 10px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  borderRadius: 10,
-                  borderTopLeftRadius: 0,
-                  borderBottomLeftRadius: 0,
-                  borderLeft: '1px solid var(--app-border)',
-                  background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-                }}
+                style={{ background: createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent' }}
               >
                 <AppIcon icon={createMenuOpen ? ChevronUp : ChevronDown} size={12} />
               </button>
 
               {createMenuOpen && (
                 <div
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 10px)',
-                    right: 0,
-                    minWidth: 260,
-                    backgroundColor: 'var(--app-surface)',
-                    border: '1px solid var(--app-border)',
-                    borderRadius: 12,
-                    boxShadow: '0 10px 28px rgba(0, 0, 0, 0.18)',
-                    padding: '8px',
-                    zIndex: 1200,
-                  }}
+                  className={s.createDropdown}
                 >
                   {[
                     { label: 'Content Library', path: '/content', hint: 'Create content for match/season' },
@@ -976,19 +852,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                         setCreateMenuOpen(false);
                         navigate(item.path);
                       }}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        border: 'none',
-                        background: 'transparent',
-                        padding: '10px 10px',
-                        borderRadius: 10,
-                        cursor: 'pointer',
-                        color: 'var(--app-text)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 2,
-                      }}
+                      className={s.createMenuItem}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
                       }}
@@ -1009,13 +873,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             {!isMobile && (
               <button
                 onClick={toggleTheme}
-                className="nav-icon-button"
-                style={{
-                  padding: '8px',
-                  position: 'relative',
-                  zIndex: 1000,
-                  pointerEvents: 'auto',
-                }}
+                className={`nav-icon-button ${s.themeBtn}`}
                 title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
                 aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
               >
@@ -1028,51 +886,23 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             <div className="language-menu-container relative">
               <button
                 onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
-                className="nav-icon-button"
-                style={{
-                  padding: '8px 12px',
-                  backgroundColor: 'transparent',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  color: 'var(--app-text)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
+                className={`nav-icon-button ${s.langBtn}`}
                 aria-label="Select language"
               >
                 <AppIcon icon={Globe} size={16} /> {language} <AppIcon icon={languageMenuOpen ? ChevronUp : ChevronDown} size={10} />
               </button>
 
               {languageMenuOpen && (
-                <div style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  marginTop: '4px',
-                  backgroundColor: 'var(--app-surface)',
-                  border: '1px solid var(--app-border)',
-                  borderRadius: '6px',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  minWidth: '120px',
-                  zIndex: 1000,
-                }}>
+                <div className={s.langDropdown}>
                   {(['EN', 'NL', 'DE', 'IT', 'FR'] as const).map(lang => (
                     <button
                       key={lang}
                       onClick={() => handleLanguageChange(lang)}
+                      className={s.langItem}
                       style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: '10px 16px',
-                        textAlign: 'left',
-                        border: 'none',
                         backgroundColor: language === lang ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                         color: language === lang ? 'var(--app-link)' : 'var(--app-text)',
                         fontWeight: language === lang ? 600 : 400,
-                        fontSize: '14px',
-                        cursor: 'pointer',
                         borderBottom: lang !== 'FR' ? '1px solid var(--app-border)' : 'none',
                       }}
                       onMouseEnter={(e) => {
@@ -1103,32 +933,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 setSelectedVariantIdxs(new Set());
                 setQuickReviewOpen(true);
               }}
-              className="nav-right-fixed nav-icon-button"
+              className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
               aria-label="Queue"
-              style={{
-                position: 'relative',
-                padding: '8px',
-                backgroundColor: 'transparent',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '20px',
-                flexShrink: 0,
-              }}
               title="Queue"
             >
               <AppIcon icon={ListChecks} size={20} />
               {(queueBadgeCount > 0) && (
-                <span style={{
-                  position: 'absolute',
-                  top: '4px',
-                  right: '4px',
-                  backgroundColor: queueBadgeColor,
-                  color: 'white',
-                  borderRadius: '10px',
-                  padding: '2px 6px',
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                }}>
+                <span className={s.badge} style={{ backgroundColor: queueBadgeColor }}>
                   {queueBadgeCount}
                 </span>
               )}
@@ -1137,32 +948,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             {/* Notification Icon - always visible */}
             <button
               onClick={() => setNotificationsModalOpen(true)}
-              className="nav-right-fixed nav-icon-button"
+              className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
               aria-label="Notifications"
-              style={{
-                position: 'relative',
-                padding: '8px',
-                backgroundColor: 'transparent',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '20px',
-                flexShrink: 0,
-              }}
               title="Notifications"
             >
               <AppIcon icon={Bell} size={20} />
               {unreadCount > 0 && (
-                <span style={{
-                  position: 'absolute',
-                  top: '4px',
-                  right: '4px',
-                  backgroundColor: '#dc3545',
-                  color: 'white',
-                  borderRadius: '10px',
-                  padding: '2px 6px',
-                  fontSize: '10px',
-                  fontWeight: 'bold'
-                }}>
+                <span className={s.badge} style={{ backgroundColor: '#dc3545' }}>
                   {unreadCount}
                 </span>
               )}
@@ -1171,34 +963,16 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             {/* Credits / Transactions Icon - hidden on mobile */}
             {!isMobile && user ? (
               <button
-                className="nav-credits-button nav-icon-button"
+                className={`nav-credits-button nav-icon-button ${s.creditsBtn}`}
                 onClick={() => setCreditsModalOpen(true)}
-                style={{
-                  position: 'relative',
-                  padding: '8px',
-                  backgroundColor: 'transparent',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '20px',
-                  color: 'var(--app-text)',
-                }}
                 title={creditsTooltip}
                 aria-label="My balance"
               >
                 <AppIcon icon={Coins} size={20} />
                 {formattedCredits != null && (
                   <span
-                    style={{
-                      position: 'absolute',
-                      top: '4px',
-                      right: '4px',
-                      backgroundColor: creditsBadgeColor,
-                      color: 'white',
-                      borderRadius: '10px',
-                      padding: '2px 6px',
-                      fontSize: '10px',
-                      fontWeight: 'bold',
-                    }}
+                    className={s.badge}
+                    style={{ backgroundColor: creditsBadgeColor }}
                   >
                     {formattedCredits}
                   </span>
@@ -1207,7 +981,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             ) : null}
 
             {/* Profile Avatar Dropdown - pass isMobile for expanded menu */}
-            <div className="nav-right-fixed" style={{ flexShrink: 0 }}>
+            <div className={`nav-right-fixed ${s.profileWrap}`}>
               <ProfileAvatarDropdown isMobile={isMobile} onOpenSearch={() => setCommandOpen(true)} />
             </div>
           </div>
@@ -1215,26 +989,13 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             <div className="flex-row gap-12">
               <Link
                 to="/login"
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  color: 'var(--app-text)',
-                  border: '1px solid var(--app-border)',
-                }}
+                className={s.signInLink}
               >
                 Sign in
               </Link>
               <Link
                 to="/register"
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  color: 'white',
-                  backgroundColor: '#2563eb',
-                  border: '1px solid #2563eb',
-                }}
+                className={s.registerLink}
               >
                 Register
               </Link>
@@ -1330,29 +1091,12 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
       {/* Mobile menu overlay */}
       {mobileMenuOpen && (
-        <div style={{
-          position: 'fixed',
-          top: '48px',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'var(--app-surface)',
-          borderTop: '1px solid var(--app-border)',
-          overflowY: 'auto',
-          zIndex: 999,
-          padding: '16px',
-        }}>
+        <div className={s.mobileOverlay}>
           {/* Dashboard */}
           <Link
             to={dashboardItem.path}
+            className={s.mobileDashLink}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '12px',
-              marginBottom: '8px',
-              borderRadius: '6px',
-              textDecoration: 'none',
               color: isItemActive(dashboardItem.path) ? '#2563eb' : 'var(--app-text)',
               backgroundColor: isItemActive(dashboardItem.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
               fontWeight: isItemActive(dashboardItem.path) ? 600 : 500,
@@ -1365,31 +1109,18 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           {/* Groups */}
           {filteredNavGroups.map(group => (
             <div key={group.id} className="mb-16">
-              <div style={{
-                padding: '8px 12px',
-                fontWeight: 600,
-                color: 'var(--app-text)',
-                fontSize: '14px',
-                opacity: 0.7,
-              }}>
+              <div className={s.mobileGroupLabel}>
                 {group.label}
               </div>
               {group.items.map(item => (
                 <Link
                   key={item.path}
                   to={item.path}
+                  className={s.mobileGroupItem}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    marginLeft: '12px',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
                     color: isItemActive(item.path) ? '#2563eb' : 'var(--app-text)',
                     backgroundColor: isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                     fontWeight: isItemActive(item.path) ? 600 : 400,
-                    fontSize: '14px',
                   }}
                 >
                   {item.icon && <AppIcon icon={item.icon} size={16} />}
@@ -1419,41 +1150,41 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           return (
             <div
               onClick={() => setQuickReviewOpen(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+              className={s.modalOverlay}
             >
-              <div onClick={e => e.stopPropagation()} style={{ backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, padding: '24px 32px', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,0.36)', minWidth: 400 }}>
+              <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered}>
                 {/* Tabs */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 20, justifyContent: 'center' }}>
+                <div className={s.tabsRowCenter}>
                   <button
                     onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-                    style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: queueModalTab === 'review' ? '#2563eb' : 'var(--app-border, #334155)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                    className={s.tabBtn} style={{ background: queueModalTab === 'review' ? '#2563eb' : 'var(--app-border, #334155)' }}
                   >
                     Te Reviewen ({pendingReviewJobs.length})
                   </button>
                   <button
                     onClick={() => setQueueModalTab('in-progress')}
-                    style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: queueModalTab === 'in-progress' ? '#f59e0b' : 'var(--app-border, #334155)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                    className={s.tabBtn} style={{ background: queueModalTab === 'in-progress' ? '#f59e0b' : 'var(--app-border, #334155)' }}
                   >
                     In Progress ({inProgressJobs.length})
                   </button>
                 </div>
-                <div className="mb-12" style={{ fontSize: 48 }}>{queueModalTab === 'review' ? '✅' : '⏳'}</div>
-                <div className="mb-8" style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)' }}>
+                <div className={`mb-12 ${s.emptyIcon}`}>{queueModalTab === 'review' ? '✅' : '⏳'}</div>
+                <div className={`mb-8 ${s.modalTitle}`}>
                   {queueModalTab === 'review' ? 'Alles beoordeeld!' : 'Geen actieve jobs'}
                 </div>
-                <div style={{ fontSize: 13, color: 'var(--app-text-secondary, #9ca3af)', marginBottom: 20 }}>
+                <div className={s.textSecondary13} style={{ marginBottom: 20 }}>
                   {queueModalTab === 'review' ? 'Er zijn geen items meer die review nodig hebben.' : 'Er zijn geen jobs in uitvoering.'}
                 </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                <div className={s.actionsRowCenter}>
                   <button
                     onClick={() => { setQuickReviewOpen(false); navigate('/approvals'); }}
-                    style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
+                    className={s.btnSecondary}
                   >
                     Open Queue →
                   </button>
                   <button
                     onClick={() => setQuickReviewOpen(false)}
-                    style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                    className={s.btnPrimary}
                   >
                     Sluiten
                   </button>
@@ -1468,28 +1199,28 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           return (
             <div
               onClick={() => setQuickReviewOpen(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+              className={s.modalOverlay}
             >
               <div
                 onClick={e => e.stopPropagation()}
-                style={{ width: '100%', maxWidth: 560, backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '80vh', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}
+                className={s.modalPanel} style={{ width: '100%', maxWidth: 560, maxHeight: '80vh' }}
               >
                 {/* Header with tabs */}
-                <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)' }}>
+                <div className={s.modalHeader}>
                   <div className="flex-between mb-12">
-                    <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)' }}>Queue</div>
-                    <button onClick={() => setQuickReviewOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>✕</button>
+                    <div className={s.modalTitle}>Queue</div>
+                    <button onClick={() => setQuickReviewOpen(false)} className={s.closeBtn}>✕</button>
                   </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
+                  <div className={s.tabsRow}>
                     <button
                       onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-                      style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: 'var(--app-border, #334155)', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                      className={s.tabBtn} style={{ background: 'var(--app-border, #334155)' }}
                     >
                       Te Reviewen ({pendingReviewJobs.length})
                     </button>
                     <button
                       onClick={() => setQueueModalTab('in-progress')}
-                      style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+                      className={s.tabBtn} style={{ background: '#f59e0b' }}
                     >
                       In Progress ({inProgressJobs.length})
                     </button>
@@ -1500,12 +1231,12 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 <div className="flex-1 overflow-y-auto p-16">
                   {inProgressJobs.map((j, i) => (
                     <div key={j.task_id} className="flex-row gap-12 p-12 rounded-8 mb-8" style={{ background: 'var(--app-background, #0f172a)' }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 6, backgroundColor: j.status === 'processing' ? '#f59e0b' : '#6b7280', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
+                      <div className={s.jobIcon} style={{ backgroundColor: j.status === 'processing' ? '#f59e0b' : '#6b7280' }}>
                         {j.status === 'processing' ? '⚙️' : '⏳'}
                       </div>
                       <div className="flex-1">
                         <div className="fs-13 fw-600 text-primary">{j.label || j.template_id}</div>
-                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)' }}>
+                        <div className={s.textSecondary11}>
                           {j.status === 'processing' ? 'Bezig...' : 'In wachtrij'} · {new Date(j.created_at).toLocaleTimeString()}
                         </div>
                       </div>
@@ -1514,14 +1245,14 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 </div>
 
                 {/* Footer */}
-                <div className="flex-between" style={{ padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)' }}>
+                <div className={`flex-between ${s.modalFooter}`}>
                   <button
                     onClick={() => { setQuickReviewOpen(false); navigate('/approvals?tab=ai_queue'); }}
-                    style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
+                    className={s.btnSecondary}
                   >
                     Open Queue →
                   </button>
-                  <button onClick={() => setQuickReviewOpen(false)} style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Sluiten</button>
+                  <button onClick={() => setQuickReviewOpen(false)} className={s.btnPrimary}>Sluiten</button>
                 </div>
               </div>
             </div>
@@ -1533,15 +1264,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           return (
             <div
               onClick={() => setQuickReviewOpen(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+              className={s.modalOverlay}
             >
-              <div onClick={e => e.stopPropagation()} style={{ backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, padding: '40px 48px', textAlign: 'center', boxShadow: '0 24px 64px rgba(0,0,0,0.36)' }}>
-                <div className="mb-12" style={{ fontSize: 48 }}>✅</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--app-text)', marginBottom: 8 }}>Alles beoordeeld!</div>
-                <div className="fs-13 mb-8" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>Er zijn geen items meer die review nodig hebben.</div>
+              <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge}>
+                <div className={`mb-12 ${s.emptyIcon}`}>✅</div>
+                <div className={s.modalTitle} style={{ marginBottom: 8 }}>Alles beoordeeld!</div>
+                <div className="fs-13 mb-8 text-secondary">Er zijn geen items meer die review nodig hebben.</div>
                 <button
                   onClick={() => setQuickReviewOpen(false)}
-                  style={{ padding: '9px 24px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                  className={s.btnPrimary}
                 >
                   Sluiten
                 </button>
@@ -1598,50 +1329,34 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
         return (
           <div
             onClick={() => setQuickReviewOpen(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+            className={s.modalOverlay}
           >
             <div
               onClick={e => e.stopPropagation()}
-              style={{
-                width: '100%', maxWidth: variants.length > 1 ? 900 : 640,
-                backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden',
-                display: 'flex', flexDirection: 'column', maxHeight: '92vh',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
-              }}
+              className={s.modalPanel} style={{ width: '100%', maxWidth: variants.length > 1 ? 900 : 640, maxHeight: '92vh' }}
             >
               {/* Header with tabs */}
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', flexShrink: 0 }}>
+              <div className={s.modalHeader}>
                 {/* Tab buttons */}
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                <div className={s.tabsRow} style={{ marginBottom: 12 }}>
                   <button
                     onClick={() => setQueueModalTab('review')}
-                    style={{
-                      padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                      backgroundColor: 'var(--app-primary, #3b82f6)',
-                      color: '#fff',
-                      fontSize: 13, fontWeight: 600,
-                    }}
+                    className={s.tabBtnSmall}
+                    style={{ backgroundColor: 'var(--app-primary, #3b82f6)', color: '#fff' }}
                   >
                     Te Reviewen ({pendingReviewJobs.length})
                   </button>
                   <button
                     onClick={() => setQueueModalTab('in-progress')}
-                    style={{
-                      padding: '6px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                      backgroundColor: 'var(--app-surface-elevated, #334155)',
-                      color: 'var(--app-text-secondary, #9ca3af)',
-                      fontSize: 13, fontWeight: 600,
-                    }}
+                    className={s.tabBtnSmall}
+                    style={{ backgroundColor: 'var(--app-surface-elevated, #334155)', color: 'var(--app-text-secondary, #9ca3af)' }}
                   >
                     In Progress ({inProgressJobs.length})
                   </button>
                   <button
                     onClick={() => { setQuickReviewOpen(false); navigate('/queue'); }}
-                    style={{
-                      marginLeft: 'auto', padding: '6px 12px', borderRadius: 8, border: '1px solid var(--app-border, #475569)',
-                      backgroundColor: 'transparent', color: 'var(--app-text-secondary, #9ca3af)',
-                      fontSize: 12, cursor: 'pointer',
-                    }}
+                    className={s.btnGhost}
+                    style={{ marginLeft: 'auto' }}
                   >
                     Volledige Queue →
                   </button>
@@ -1649,34 +1364,36 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 {/* Job info row */}
                 <div className="flex-row gap-12">
                   <div className="flex-1">
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                    <div className={s.modalTitle15}>
                       {job.label || job.template_id}
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+                    <div className={s.modalSubtitle}>
                       {job.output_type} · {new Date(job.created_at).toLocaleString()}
                       {pendingReviewJobs.length > 0 && ` · ${quickReviewIdx + 1} van ${pendingReviewJobs.length}`}
                     </div>
                   </div>
                   {/* Nav arrows */}
-                  <div style={{ display: 'flex', gap: 4 }}>
+                  <div className={s.tabsRow} style={{ gap: 4 }}>
                     <button
                       disabled={quickReviewIdx <= 0}
                       onClick={() => { setQuickReviewIdx(i => Math.max(0, i - 1)); setSelectedVariantIdxs(new Set()); }}
-                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4, fontSize: 14 }}
+                      className={s.navArrow}
+                      style={{ cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4 }}
                     >
                       ‹
                     </button>
                     <button
                       disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
                       onClick={() => { setQuickReviewIdx(i => Math.min(pendingReviewJobs.length - 1, i + 1)); setSelectedVariantIdxs(new Set()); }}
-                      style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text)', cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4, fontSize: 14 }}
+                      className={s.navArrow}
+                      style={{ cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4 }}
                     >
                       ›
                     </button>
                   </div>
                   <button
                     onClick={() => setQuickReviewOpen(false)}
-                    style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+                    className={s.closeBtn}
                   >
                     ✕
                   </button>
@@ -1695,25 +1412,16 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     <div
                       key={v.variant_index}
                       onClick={() => variants.length > 1 ? setSelectedVariantIdxs(prev => { const next = new Set(prev); if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index); return next; }) : undefined}
+                      className={s.variantCard}
                       style={{
                         border: selectedVariantIdxs.has(v.variant_index) ? '3px solid #16a34a' : '1px solid var(--app-border, #334155)',
-                        borderRadius: 12, overflow: 'hidden',
-                        backgroundColor: '#0f172a', maxWidth: variants.length === 1 ? 420 : '100%', width: '100%',
+                        maxWidth: variants.length === 1 ? 420 : '100%',
                         cursor: variants.length > 1 ? 'pointer' : 'default',
                         opacity: variants.length > 1 && selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index) ? 0.5 : 1,
-                        transition: 'all 0.15s ease',
-                        position: 'relative',
                       }}
                     >
                       {variants.length > 1 && (
-                        <div style={{
-                          position: 'absolute', top: 8, right: 8, zIndex: 2,
-                          width: 28, height: 28, borderRadius: '50%',
-                          backgroundColor: selectedVariantIdxs.has(v.variant_index) ? '#16a34a' : 'rgba(0,0,0,0.5)',
-                          border: '2px solid white',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#fff', fontSize: 14, fontWeight: 700,
-                        }}>
+                        <div className={s.variantCheckmark} style={{ backgroundColor: selectedVariantIdxs.has(v.variant_index) ? '#16a34a' : 'rgba(0,0,0,0.5)' }}>
                           {selectedVariantIdxs.has(v.variant_index) ? '✓' : (v.variant_index + 1)}
                         </div>
                       )}
@@ -1725,16 +1433,16 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                           playsInline
                           autoPlay
                           loop
-                          style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }}
+                          className={s.previewMedia}
                         />
                       ) : v.presigned_url ? (
                         <img
                           src={v.presigned_url}
                           alt={`Variant ${v.variant_index + 1}`}
-                          style={{ width: '100%', maxHeight: '60vh', objectFit: 'contain', display: 'block' }}
+                          className={s.previewMedia}
                         />
                       ) : (
-                        <div style={{ padding: 40, textAlign: 'center', color: 'var(--app-text-secondary)' }}>Geen preview</div>
+                        <div className={s.noPreview}>Geen preview</div>
                       )}
                     </div>
                   ))}
@@ -1742,36 +1450,27 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               </div>
 
               {/* Footer — approve / reject */}
-              <div className="flex-between" style={{
-                padding: '14px 20px', borderTop: '1px solid var(--app-border, #334155)',
-                flexShrink: 0,
-              }}>
+              <div className={`flex-between ${s.modalFooter}`}>
                 <button
                   onClick={() => handleQuickReview('reject')}
                   disabled={quickReviewBusy}
-                  style={{
-                    padding: '9px 20px', borderRadius: 8, border: '1px solid #dc2626',
-                    background: 'transparent', color: '#dc2626', fontWeight: 600, fontSize: 13,
-                    cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1,
-                  }}
+                  className={s.rejectBtn}
+                  style={{ cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1 }}
                 >
                   ❌ Afwijzen
                 </button>
                 <div className="flex-row gap-8">
                   <button
                     onClick={() => { setQuickReviewOpen(false); navigate('/approvals?tab=review'); }}
-                    style={{ padding: '9px 16px', borderRadius: 8, border: '1px solid var(--app-border)', background: 'transparent', color: 'var(--app-text-secondary)', fontWeight: 500, fontSize: 12, cursor: 'pointer' }}
+                    className={s.btnSecondary}
                   >
                     Open Queue →
                   </button>
                   <button
                     onClick={() => handleQuickReview('approve')}
                     disabled={quickReviewBusy}
-                    style={{
-                      padding: '9px 24px', borderRadius: 8, border: 'none',
-                      background: '#16a34a', color: '#fff', fontWeight: 600, fontSize: 13,
-                      cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1,
-                    }}
+                    className={s.approveBtn}
+                    style={{ cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1 }}
                   >
                     ✅ {variants.length > 1 && selectedVariantIdxs.size > 0 ? `${selectedVariantIdxs.size === variants.length ? 'Alles' : Array.from(selectedVariantIdxs).map(i => `#${i + 1}`).join(' + ')} Goedkeuren` : 'Goedkeuren'}
                   </button>
@@ -1795,40 +1494,31 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
       {notificationsModalOpen && (
         <div
           onClick={() => setNotificationsModalOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          className={s.modalOverlay}
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 480,
-              backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden',
-              display: 'flex', flexDirection: 'column', maxHeight: '70vh',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
-            }}
+            className={s.modalPanel} style={{ width: '100%', maxWidth: 480, maxHeight: '70vh' }}
           >
             {/* Header */}
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <div className={s.modalHeaderRow}>
               <div className="flex-1">
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                <div className={s.modalTitle15}>
                   Notificaties
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 2 }}>
+                <div className={s.modalSubtitle}>
                   {notificationsList.length} recente notificaties
                 </div>
               </div>
               <button
                 onClick={() => { setNotificationsModalOpen(false); navigate('/notifications'); }}
-                style={{
-                  padding: '6px 12px', borderRadius: 8, border: '1px solid var(--app-border, #475569)',
-                  backgroundColor: 'transparent', color: 'var(--app-text-secondary, #9ca3af)',
-                  fontSize: 12, cursor: 'pointer',
-                }}
+                className={s.btnGhost}
               >
                 Alle Notificaties →
               </button>
               <button
                 onClick={() => setNotificationsModalOpen(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+                className={s.closeBtn}
               >
                 ✕
               </button>
@@ -1836,8 +1526,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-16">
               {notificationsList.length === 0 ? (
-                <div className="text-center p-24" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
-                  <div className="mb-8" style={{ fontSize: 32 }}>📭</div>
+                <div className="text-center p-24 text-secondary">
+                  <div className={`mb-8 ${s.emptyIcon32}`}>📭</div>
                   <div className="fs-14">Geen notificaties</div>
                 </div>
               ) : (
@@ -1851,15 +1541,15 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                         border: notif.read ? '1px solid var(--app-border, #475569)' : '1px solid rgba(59, 130, 246, 0.3)',
                       }}
                     >
-                      <div style={{ fontSize: 13, color: 'var(--app-text)', fontWeight: notif.read ? 400 : 600 }}>
+                      <div className={s.notifMessage} style={{ fontWeight: notif.read ? 400 : 600 }}>
                         {notif.title || notif.message}
                       </div>
                       {notif.message && notif.title && (
-                        <div style={{ fontSize: 11, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 4 }}>
+                        <div className={s.notifDetail}>
                           {notif.message}
                         </div>
                       )}
-                      <div style={{ fontSize: 10, color: 'var(--app-text-secondary, #6b7280)', marginTop: 4 }}>
+                      <div className={s.textSecondary10}>
                         {new Date(notif.created_at).toLocaleString()}
                       </div>
                     </div>
@@ -1875,46 +1565,37 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
       {creditsModalOpen && (
         <div
           onClick={() => setCreditsModalOpen(false)}
-          style={{ position: 'fixed', inset: 0, zIndex: 10000, backgroundColor: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+          className={s.modalOverlay}
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{
-              width: '100%', maxWidth: 400,
-              backgroundColor: 'var(--app-surface, #1e293b)', borderRadius: 16, overflow: 'hidden',
-              display: 'flex', flexDirection: 'column',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.36)',
-            }}
+            className={s.modalPanel} style={{ width: '100%', maxWidth: 400 }}
           >
             {/* Header */}
-            <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--app-border, #334155)', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+            <div className={s.modalHeaderRow}>
               <div className="flex-1">
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--app-text)' }}>
+                <div className={s.modalTitle15}>
                   Credits
                 </div>
               </div>
               <button
                 onClick={() => setCreditsModalOpen(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--app-text-secondary)', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}
+                className={s.closeBtn}
               >
                 ✕
               </button>
             </div>
             {/* Content */}
             <div className="p-24 text-center">
-              <div style={{ fontSize: 48, fontWeight: 700, color: 'var(--app-primary, #3b82f6)' }}>
+              <div className={s.creditsBalance}>
                 {myCreditsBalance}
               </div>
-              <div style={{ fontSize: 14, color: 'var(--app-text-secondary, #9ca3af)', marginTop: 4 }}>
+              <div className={s.creditsLabel}>
                 beschikbare credits
               </div>
               <button
                 onClick={() => { setCreditsModalOpen(false); navigate('/credits'); }}
-                style={{
-                  marginTop: 20, padding: '10px 24px', borderRadius: 8, border: '1px solid var(--app-border, #475569)',
-                  backgroundColor: 'transparent', color: 'var(--app-text)', fontWeight: 600,
-                  fontSize: 13, cursor: 'pointer', width: '100%',
-                }}
+                className={s.creditsLink}
               >
                 Bekijk Credits Overzicht →
               </button>

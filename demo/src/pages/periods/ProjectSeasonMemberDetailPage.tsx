@@ -25,6 +25,7 @@ import { WorkflowPanel } from '../../components/Workflows';
 import { useSeasonContext } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 import { getCsrfToken, unwrapEnvelope as unwrap } from '../../types/season';
+import s from './ProjectSeasonMemberDetailPage.module.css';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -447,14 +448,7 @@ function ProcessingBadge({ value }: { value: AssetVariantRaw | null | undefined 
 
   const { label, color, icon } = getProcessingStateLabel(effectiveState);
   return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '3px',
-      fontSize: '10px',
-      fontWeight: 700,
-      padding: '2px 6px',
-      borderRadius: '4px',
+    <span className={s.processingBadge} style={{
       background: `${color}22`,
       color: color,
       border: `1px solid ${color}44`,
@@ -590,11 +584,11 @@ function IdentityTabContent({
 
   return (
     <Card>
-      <div style={{ padding: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '24px' }}>🪪</span>
-            <div style={{ fontSize: '16px', fontWeight: 800 }}>Identity</div>
+      <div className={s.cardPadding}>
+        <div className={s.flexSpaceBetween}>
+          <div className={s.flexCenterGap8}>
+            <span className={s.tabIcon}>🪪</span>
+            <div className={s.tabTitle}>Identity</div>
           </div>
           {!isEditing && (
             <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
@@ -603,7 +597,7 @@ function IdentityTabContent({
           )}
         </div>
 
-        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+        <div className={s.tabDescription}>
           Profile photo and personal information for this member.
         </div>
 
@@ -621,7 +615,7 @@ function IdentityTabContent({
         <div style={{ marginTop: '20px' }}>
           {/* Profile Photo Section */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Profile Photo</div>
+            <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>Profile Photo</div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
               <div style={{
                 width: '160px',
@@ -638,11 +632,7 @@ function IdentityTabContent({
                   <img
                     src={membership.user.avatar_url}
                     alt={getUserDisplayName(membership)}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
+                    className={s.mediaCoverFill}
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
@@ -653,7 +643,7 @@ function IdentityTabContent({
               </div>
               <div style={{ flex: 1, minWidth: '200px' }}>
                 {membership?.user?.avatar_url ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div className={s.flexCenterGap8}>
                     <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profile photo set</span>
                   </div>
                 ) : (
@@ -668,7 +658,7 @@ function IdentityTabContent({
           {/* Media Profile Photo - If different from user avatar */}
           {profileMediaUrl && profileMediaUrl !== membership?.user?.avatar_url && (
             <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'var(--app-surface-secondary)', borderRadius: '8px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Media Profile Photo</div>
+              <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>Media Profile Photo</div>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
                 <div style={{
                   width: '120px',
@@ -684,18 +674,14 @@ function IdentityTabContent({
                   <img
                     src={profileMediaUrl}
                     alt="Media profile"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
+                    className={s.mediaCoverFill}
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
                     }}
                   />
                 </div>
                 <div style={{ flex: 1, minWidth: '200px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px', opacity: 0.7 }}>
+                  <div className={s.formLabel} style={{ marginBottom: '8px' }}>
                     Photo from media slot (e.g., SoccerWiki import)
                   </div>
                   <div style={{
@@ -725,35 +711,35 @@ function IdentityTabContent({
           )}
 
           {/* User Information Section */}
-          <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '20px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>User Information</div>
+          <div className={s.sectionDivider}>
+            <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>User Information</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Name</div>
-                <div style={{ fontSize: '14px', fontWeight: 500 }}>{getUserDisplayName(membership)}</div>
+                <div className={s.formLabel}>Name</div>
+                <div className={s.fieldValue}>{getUserDisplayName(membership)}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Email</div>
-                <div style={{ fontSize: '14px', fontWeight: 500 }}>{membership?.user?.email || '—'}</div>
+                <div className={s.formLabel}>Email</div>
+                <div className={s.fieldValue}>{membership?.user?.email || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>User ID</div>
-                <div style={{ fontSize: '12px', fontFamily: 'monospace', opacity: 0.8 }}>{membership?.user?.id || '—'}</div>
+                <div className={s.formLabel}>User ID</div>
+                <div className={s.monoId}>{membership?.user?.id || '—'}</div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Membership ID</div>
-                <div style={{ fontSize: '12px', fontFamily: 'monospace', opacity: 0.8 }}>{membership?.id || '—'}</div>
+                <div className={s.formLabel}>Membership ID</div>
+                <div className={s.monoId}>{membership?.id || '—'}</div>
               </div>
             </div>
           </div>
 
           {/* Role/Position Section */}
-          <div style={{ borderTop: '1px solid var(--app-border)', paddingTop: '20px', marginTop: '20px' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Role & Position</div>
+          <div className={s.sectionDivider} style={{ marginTop: '20px' }}>
+            <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>Role & Position</div>
             {isEditing ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Position</div>
+                  <div className={s.formLabel}>Position</div>
                   <Input
                     value={editPosition}
                     onChange={(e) => setEditPosition(e.target.value)}
@@ -761,7 +747,7 @@ function IdentityTabContent({
                   />
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Jersey Number</div>
+                  <div className={s.formLabel}>Jersey Number</div>
                   <Input
                     value={editJerseyNumber}
                     onChange={(e) => setEditJerseyNumber(e.target.value)}
@@ -781,18 +767,18 @@ function IdentityTabContent({
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Role</div>
+                  <div className={s.formLabel}>Role</div>
                   <Badge variant="default">{membership?.role || 'member'}</Badge>
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Position</div>
-                  <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                  <div className={s.formLabel}>Position</div>
+                  <div className={s.fieldValue}>
                     {membership?.metadata?.position || (membership as any)?.position || '—'}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.7, marginBottom: '4px' }}>Jersey Number</div>
-                  <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                  <div className={s.formLabel}>Jersey Number</div>
+                  <div className={s.fieldValue}>
                     {membership?.metadata?.jersey_number || (membership as any)?.jersey_number || '—'}
                   </div>
                 </div>
@@ -1642,16 +1628,7 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {/* Active AI generation jobs banner */}
                 {memberActiveJobs.length > 0 && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '10px 14px',
-                    background: '#1d4ed820',
-                    border: '1px solid #3b82f6',
-                    borderRadius: 8,
-                    fontSize: 13,
-                  }}>
+                  <div className={s.activeJobsBanner}>
                     <span style={{ fontSize: 18 }}>⏳</span>
                     <div style={{ flex: 1 }}>
                       <strong>AI generatie bezig</strong>
@@ -1710,14 +1687,14 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   const renderPhase = (title: string, emoji: string, items: typeof inputItems) => (
                     <div style={{ marginBottom: '20px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                      <div className={s.flexCenterGap8} style={{ marginBottom: '10px' }}>
                         <span style={{ fontSize: '18px' }}>{emoji}</span>
-                        <div style={{ fontSize: '14px', fontWeight: 700 }}>{title}</div>
+                        <div className={s.sectionTitle}>{title}</div>
                         <div style={{ fontSize: '12px', opacity: 0.6 }}>
                           {items.filter(i => i.hasContent).length}/{items.length}
                         </div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' }}>
+                      <div className={s.overviewGrid}>
                         {items.map(item => (
                           <div
                             key={item.key}
@@ -1731,7 +1708,7 @@ export default function ProjectSeasonMemberDetailPage() {
                               transition: 'border-color 0.15s',
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div className={s.flexCenterGap8}>
                               <span style={{ fontSize: '18px' }}>{item.icon}</span>
                               <span style={{ fontWeight: 600, fontSize: '13px' }}>{item.label}</span>
                               <span style={{ marginLeft: 'auto', fontSize: '13px' }}>
@@ -1746,15 +1723,15 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   return (
                   <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ fontSize: '16px', fontWeight: 800 }}>Overzicht</div>
+                    <div className={s.cardPadding}>
+                      <div className={s.flexSpaceBetween}>
+                        <div className={s.tabTitle}>Overzicht</div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                      <div className={s.tabDescription}>
                         Status per fase: welke assets zijn geüpload of gegenereerd.
                       </div>
 
@@ -1764,7 +1741,7 @@ export default function ProjectSeasonMemberDetailPage() {
                         {renderPhase('🎬 Video Content', '🎬', videoItems)}
                       </div>
 
-                      <div style={{ marginTop: '8px', padding: '12px', background: 'var(--app-muted)', borderRadius: '8px' }}>
+                      <div className={s.progressBar}>
                         <div style={{ fontSize: '13px', fontWeight: 600 }}>
                           Voortgang: {completedCount} / {totalCount} assets
                         </div>
@@ -1787,42 +1764,31 @@ export default function ProjectSeasonMemberDetailPage() {
                 {/* Input Photos tab — Profile + Legacy side by side */}
                 {activeTab === 'input' && (
                   <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>📷</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Input Foto's</div>
+                    <div className={s.cardPadding}>
+                      <div className={s.flexSpaceBetween}>
+                        <div className={s.flexCenterGap8}>
+                          <span className={s.tabIcon}>📷</span>
+                          <div className={s.tabTitle}>Input Foto's</div>
                         </div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
-                      <div style={{ marginTop: '4px', opacity: 0.7, fontSize: '12px' }}>
+                      <div className={s.tabDescription}>
                         Upload de bronfotos die als input worden gebruikt voor alle AI-generaties.
                       </div>
 
-                      <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                      <div className={s.inputPhotoGrid}>
                         {/* Profile Photo */}
                         <div>
                           <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>📷 Profielfoto</div>
-                          <div style={{
-                            width: '100%',
-                            aspectRatio: '1/1',
-                            maxWidth: '220px',
-                            borderRadius: '10px',
-                            overflow: 'hidden',
-                            backgroundColor: 'var(--app-surface-secondary)',
-                            border: '2px solid var(--app-border)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginBottom: '12px',
-                          }}>
+                          <div className={s.photoThumbnailSquare}>
                             {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
                               <img
                                 src={profilePreview || form.profile?.url || membership?.user?.avatar_url}
                                 alt={getUserDisplayName(membership)}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: profileUploading ? 0.5 : 1 }}
+                                className={s.mediaCoverFill}
+                                style={{ opacity: profileUploading ? 0.5 : 1 }}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
                             ) : (
@@ -1834,14 +1800,10 @@ export default function ProjectSeasonMemberDetailPage() {
                           )}
                           <div
                             onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
+                            className={s.uploadDropZone}
                             style={{
-                              padding: '16px',
-                              border: '2px dashed var(--app-border)',
-                              borderRadius: '8px',
-                              textAlign: 'center',
                               opacity: userCanEditProject ? 1 : 0.5,
                               cursor: userCanEditProject && !profileUploading ? 'pointer' : 'default',
-                              maxWidth: '220px',
                             }}
                             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                             onDrop={(e) => {
@@ -1877,24 +1839,13 @@ export default function ProjectSeasonMemberDetailPage() {
                         {/* Legacy Photo */}
                         <div>
                           <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>📸 Legacy Foto</div>
-                          <div style={{
-                            width: '100%',
-                            aspectRatio: '1/1',
-                            maxWidth: '220px',
-                            borderRadius: '10px',
-                            overflow: 'hidden',
-                            backgroundColor: 'var(--app-surface-secondary)',
-                            border: '2px solid var(--app-border)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginBottom: '12px',
-                          }}>
+                          <div className={s.photoThumbnailSquare}>
                             {(legacyPhotoPreview || form.legacy_photo?.url) ? (
                               <img
                                 src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url) || undefined}
                                 alt="Legacy Photo"
-                                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: legacyPhotoUploading ? 0.5 : 1 }}
+                                className={s.mediaCoverFill}
+                                style={{ opacity: legacyPhotoUploading ? 0.5 : 1 }}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
                             ) : (
@@ -1906,14 +1857,10 @@ export default function ProjectSeasonMemberDetailPage() {
                           )}
                           <div
                             onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}
+                            className={s.uploadDropZone}
                             style={{
-                              padding: '16px',
-                              border: '2px dashed var(--app-border)',
-                              borderRadius: '8px',
-                              textAlign: 'center',
                               opacity: userCanEditProject ? 1 : 0.5,
                               cursor: userCanEditProject && !legacyPhotoUploading ? 'pointer' : 'default',
-                              maxWidth: '220px',
                             }}
                             onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
                             onDrop={(e) => {
@@ -1948,7 +1895,7 @@ export default function ProjectSeasonMemberDetailPage() {
                       </div>
 
                       {!userCanEditProject && (
-                        <div style={{ marginTop: '16px' }}>
+                        <div className={s.permissionAlert}>
                           <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
                         </div>
                       )}
@@ -1962,18 +1909,18 @@ export default function ProjectSeasonMemberDetailPage() {
                 {/* Short Intro Tab - AI Generated Video Variants */}
                 {activeTab === 'intro' && (
                   <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>🎬</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Short Intro</div>
+                    <div className={s.cardPadding}>
+                      <div className={s.flexSpaceBetween}>
+                        <div className={s.flexCenterGap8}>
+                          <span className={s.tabIcon}>🎬</span>
+                          <div className={s.tabTitle}>Short Intro</div>
                         </div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                      <div className={s.tabDescription}>
                         Korte intro video's van de speler in verschillende poses. Vereist eerst een "Player in Tenue" afbeelding.
                       </div>
 
@@ -1993,19 +1940,19 @@ export default function ProjectSeasonMemberDetailPage() {
                         ];
 
                         return (
-                          <div key={`intro-kit-${kit.id}`} style={{ marginTop: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                          <div key={`intro-kit-${kit.id}`} className={s.kitSectionMargin}>
+                            <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
                               {kit.url ? (
                                 <img
                                   src={kit.url}
                                   alt={kit.label}
-                                  style={{ width: '32px', height: '42px', objectFit: 'contain' }}
+                                  className={s.kitIconImg}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                 />
                               ) : (
                                 <span style={{ fontSize: '20px' }}>{kit.icon}</span>
                               )}
-                              <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                              <div className={s.sectionTitle}>{kit.label}</div>
                               {hasPlayerInTenue && (
                                 <Badge variant="default" style={{ marginLeft: 'auto' }}>✓ Player in Tenue</Badge>
                               )}
@@ -2014,7 +1961,7 @@ export default function ProjectSeasonMemberDetailPage() {
                               )}
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
+                            <div className={s.variantGrid} style={{ opacity: hasPlayerInTenue ? 1 : 0.5 }}>
                               {introVariantDefs.map((variant) => {
                                 const compositeKey = `${kit.id}_${variant.id}`;
                                 const variantRaw = videoVariants.intro[compositeKey];
@@ -2029,24 +1976,16 @@ export default function ProjectSeasonMemberDetailPage() {
                                   normalizedVariant?.processing_state === 'cancelling';
 
                                 return (
-                                  <div key={variant.id} style={{
+                                  <div key={variant.id} className={s.variantCard} style={{
                                     border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                                    borderRadius: '8px',
-                                    overflow: 'hidden',
-                                    background: 'var(--app-surface)',
                                   }}>
                                     <div
                                       onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                      className={s.variantPreview916}
                                       style={{
-                                        aspectRatio: '9/16',
                                         background: (hasVideo && !variantLineupReady)
                                           ? '#000'
                                           : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        minHeight: '180px',
-                                        position: 'relative',
                                         cursor: hasVideo ? 'pointer' : 'default',
                                       }}>
                                       {hasVideo && resolvedUrl ? (
@@ -2054,7 +1993,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                           <video
                                             key={resolvedUrl}
                                             src={resolvedUrl}
-                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                            className={s.mediaCoverContain}
                                             muted
                                             loop
                                             playsInline
@@ -2063,46 +2002,32 @@ export default function ProjectSeasonMemberDetailPage() {
                                               (e.target as HTMLVideoElement).style.display = 'none';
                                             }}
                                           />
-                                          <div style={{
-                                            position: 'absolute',
-                                            top: '6px',
-                                            right: '6px',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '3px',
-                                            alignItems: 'flex-end',
-                                          }}>
-                                            <div style={{
-                                              background: 'rgba(99, 102, 241, 0.85)',
-                                              color: '#fff',
-                                              fontSize: '9px',
-                                              fontWeight: 700,
-                                              padding: '2px 5px',
-                                              borderRadius: '4px',
-                                            }}>
+                                          <div className={s.overlayBadgeContainer}>
+                                            <div className={s.aiBadge}>
                                               AI
                                             </div>
                                             <ProcessingBadge value={variantRaw} />
                                           </div>
                                         </>
                                       ) : (
-                                        <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                        <div className={s.notGeneratedText}>
                                           Niet gegenereerd
                                         </div>
                                       )}
                                     </div>
-                                    <div style={{ padding: '10px' }}>
-                                      <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                    <div className={s.cardFooterPadding}>
+                                      <div className={s.variantLabel}>
                                         {variant.icon} {variant.label}
                                       </div>
-                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                      <div className={s.actionButtonRow}>
                                         {hasVideo ? (
                                           <>
                                             <Button
                                               size="sm"
                                               onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, variant.id)}
                                               disabled={!hasPlayerInTenue}
-                                              style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                              className={s.btnSmall}
+                                              style={{ flex: 1 }}
                                             >
                                               Opnieuw
                                             </Button>
@@ -2131,13 +2056,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                     startProcessingPoll('intro', kit.id, variant.id);
                                                   }
                                                 }}
-                                                style={{
-                                                  fontSize: '10px',
-                                                  padding: '4px 8px',
-                                                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                  border: 'none',
-                                                  color: '#fff',
-                                                }}
+                                                className={s.btnProcess}
                                               >
                                                 {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                               </Button>
@@ -2187,13 +2106,13 @@ export default function ProjectSeasonMemberDetailPage() {
                                                     }
                                                   }
                                                 }}
-                                                style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                                className={s.btnCancelOrange}
                                               >
                                                 {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                               </Button>
                                             )}
                                             {variantLineupReady && (
-                                              <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                              <span className={s.readyIndicator}>✓ Ready</span>
                                             )}
                                             <Button
                                               size="sm"
@@ -2209,7 +2128,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                                 await handleMetadataUpdate(updatedMeta);
                                               }}
-                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                              className={s.btnDelete}
                                             >
                                               🗑️
                                             </Button>
@@ -2219,7 +2138,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                             size="sm"
                                             onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, variant.id)}
                                             disabled={!hasPlayerInTenue}
-                                            style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                            className={s.btnSmall}
+                                            style={{ width: '100%' }}
                                           >
                                             ✨ Genereer
                                           </Button>
@@ -2246,18 +2166,18 @@ export default function ProjectSeasonMemberDetailPage() {
                 {/* Goal Celebration Tab - AI Generated Video Variants */}
                 {activeTab === 'celebration' && (
                   <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>🎉</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Goal Celebration</div>
+                    <div className={s.cardPadding}>
+                      <div className={s.flexSpaceBetween}>
+                        <div className={s.flexCenterGap8}>
+                          <span className={s.tabIcon}>🎉</span>
+                          <div className={s.tabTitle}>Goal Celebration</div>
                         </div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                      <div className={s.tabDescription}>
                         Goal viering animaties van de speler. Vereist eerst een "Player in Tenue" afbeelding.
                       </div>
 
@@ -2277,19 +2197,19 @@ export default function ProjectSeasonMemberDetailPage() {
                         ];
 
                         return (
-                          <div key={`celebration-kit-${kit.id}`} style={{ marginTop: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                          <div key={`celebration-kit-${kit.id}`} className={s.kitSectionMargin}>
+                            <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
                               {kit.url ? (
                                 <img
                                   src={kit.url}
                                   alt={kit.label}
-                                  style={{ width: '32px', height: '42px', objectFit: 'contain' }}
+                                  className={s.kitIconImg}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                                 />
                               ) : (
                                 <span style={{ fontSize: '20px' }}>{kit.icon}</span>
                               )}
-                              <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                              <div className={s.sectionTitle}>{kit.label}</div>
                               {hasPlayerInTenue && (
                                 <Badge variant="default" style={{ marginLeft: 'auto' }}>✓ Player in Tenue</Badge>
                               )}
@@ -2298,7 +2218,7 @@ export default function ProjectSeasonMemberDetailPage() {
                               )}
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasPlayerInTenue ? 1 : 0.5 }}>
+                            <div className={s.variantGrid} style={{ opacity: hasPlayerInTenue ? 1 : 0.5 }}>
                               {celebrationVariantDefs.map((variant) => {
                                 const compositeKey = `${kit.id}_${variant.id}`;
                                 const variantRaw = videoVariants.celebration[compositeKey];
@@ -2313,24 +2233,16 @@ export default function ProjectSeasonMemberDetailPage() {
                                   normalizedVariant?.processing_state === 'cancelling';
 
                                 return (
-                                  <div key={variant.id} style={{
+                                  <div key={variant.id} className={s.variantCard} style={{
                                     border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                                    borderRadius: '8px',
-                                    overflow: 'hidden',
-                                    background: 'var(--app-surface)',
                                   }}>
                                     <div
                                       onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                      className={s.variantPreview916}
                                       style={{
-                                        aspectRatio: '9/16',
                                         background: (hasVideo && !variantLineupReady)
                                           ? '#000'
                                           : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        minHeight: '180px',
-                                        position: 'relative',
                                         cursor: hasVideo ? 'pointer' : 'default',
                                       }}>
                                       {hasVideo && resolvedUrl ? (
@@ -2338,7 +2250,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                           <video
                                             key={resolvedUrl}
                                             src={resolvedUrl}
-                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                            className={s.mediaCoverContain}
                                             muted
                                             loop
                                             playsInline
@@ -2347,46 +2259,32 @@ export default function ProjectSeasonMemberDetailPage() {
                                               (e.target as HTMLVideoElement).style.display = 'none';
                                             }}
                                           />
-                                          <div style={{
-                                            position: 'absolute',
-                                            top: '6px',
-                                            right: '6px',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '3px',
-                                            alignItems: 'flex-end',
-                                          }}>
-                                            <div style={{
-                                              background: 'rgba(99, 102, 241, 0.85)',
-                                              color: '#fff',
-                                              fontSize: '9px',
-                                              fontWeight: 700,
-                                              padding: '2px 5px',
-                                              borderRadius: '4px',
-                                            }}>
+                                          <div className={s.overlayBadgeContainer}>
+                                            <div className={s.aiBadge}>
                                               AI
                                             </div>
                                             <ProcessingBadge value={variantRaw} />
                                           </div>
                                         </>
                                       ) : (
-                                        <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                        <div className={s.notGeneratedText}>
                                           Niet gegenereerd
                                         </div>
                                       )}
                                     </div>
-                                    <div style={{ padding: '10px' }}>
-                                      <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                    <div className={s.cardFooterPadding}>
+                                      <div className={s.variantLabel}>
                                         {variant.icon} {variant.label}
                                       </div>
-                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                      <div className={s.actionButtonRow}>
                                         {hasVideo ? (
                                           <>
                                             <Button
                                               size="sm"
                                               onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)}
                                               disabled={!hasPlayerInTenue}
-                                              style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                              className={s.btnSmall}
+                                              style={{ flex: 1 }}
                                             >
                                               Opnieuw
                                             </Button>
@@ -2415,13 +2313,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                     startProcessingPoll('celebration', kit.id, variant.id);
                                                   }
                                                 }}
-                                                style={{
-                                                  fontSize: '10px',
-                                                  padding: '4px 8px',
-                                                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                  border: 'none',
-                                                  color: '#fff',
-                                                }}
+                                                className={s.btnProcess}
                                               >
                                                 {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                               </Button>
@@ -2471,13 +2363,13 @@ export default function ProjectSeasonMemberDetailPage() {
                                                     }
                                                   }
                                                 }}
-                                                style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                                className={s.btnCancelOrange}
                                               >
                                                 {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                               </Button>
                                             )}
                                             {variantLineupReady && (
-                                              <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                              <span className={s.readyIndicator}>✓ Ready</span>
                                             )}
                                             <Button
                                               size="sm"
@@ -2493,7 +2385,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                                 await handleMetadataUpdate(updatedMeta);
                                               }}
-                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                              className={s.btnDelete}
                                             >
                                               🗑️
                                             </Button>
@@ -2503,7 +2395,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                             size="sm"
                                             onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)}
                                             disabled={!hasPlayerInTenue}
-                                            style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                            className={s.btnSmall}
+                                            style={{ width: '100%' }}
                                           >
                                             ✨ Genereer
                                           </Button>
@@ -2552,55 +2445,47 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   return (
                     <Card>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '24px' }}>⏳</span>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Transformation</div>
+                      <div className={s.cardPadding}>
+                        <div className={s.flexSpaceBetween}>
+                          <div className={s.flexCenterGap8}>
+                            <span className={s.tabIcon}>⏳</span>
+                            <div className={s.tabTitle}>Transformation</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
                           </Badge>
                         </div>
 
-                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        <div className={s.tabDescription}>
                           Vergelijk de speler vroeger en nu. Vereist zowel een &quot;Legacy in Tenue&quot; als een huidige &quot;Player in Tenue&quot; afbeelding.
                         </div>
 
                         {/* Prerequisites check */}
-                        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                          <div style={{
-                            flex: '1 1 200px',
+                        <div className={s.prerequisiteRow}>
+                          <div className={s.prerequisiteCard} style={{
                             border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
                           }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy in Tenue</div>
                             {legacyFullbodyUrl ? (
                               <img
                                 src={legacyFullbodyUrl}
                                 alt="Legacy in Tenue"
-                                style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }}
+                                className={s.prereqThumbnail}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
                             ) : (
                               <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst een Legacy in Tenue</div>
                             )}
                           </div>
-                          <div style={{
-                            flex: '1 1 200px',
+                          <div className={s.prerequisiteCard} style={{
                             border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
                           }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
                             {currentFullbodyUrl ? (
                               <img
                                 src={currentFullbodyUrl}
                                 alt="Current"
-                                style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }}
+                                className={s.prereqThumbnail}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
                             ) : (
@@ -2611,12 +2496,12 @@ export default function ProjectSeasonMemberDetailPage() {
 
                         {/* Transformation variants */}
                         <div style={{ marginTop: '28px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                          <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
                             <span style={{ fontSize: '20px' }}>🔄</span>
-                            <div style={{ fontSize: '14px', fontWeight: 700 }}>Transformatie</div>
+                            <div className={s.sectionTitle}>Transformatie</div>
                             <div style={{ fontSize: '11px', opacity: 0.6, marginLeft: '4px' }}>4 sec — legacy verandert in huidige speler</div>
                           </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
                             {transformationVariantDefs.map((variant) => {
                               const compositeKey = `transformation_${variant.id}`;
                               // Also check legacy key (just "transformation") for backwards compat
@@ -2632,24 +2517,16 @@ export default function ProjectSeasonMemberDetailPage() {
                                 normalizedVariant?.processing_state === 'cancelling';
 
                               return (
-                                <div key={variant.id} style={{
+                                <div key={variant.id} className={s.variantCard} style={{
                                   border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                                  borderRadius: '8px',
-                                  overflow: 'hidden',
-                                  background: 'var(--app-surface)',
                                 }}>
                                   <div
                                     onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
+                                    className={s.variantPreview916}
                                     style={{
-                                      aspectRatio: '9/16',
                                       background: (hasVideo && !variantLineupReady)
                                         ? '#000'
-                                        : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      minHeight: '180px',
-                                      position: 'relative',
+                                        : undefined,
                                       cursor: hasVideo ? 'pointer' : 'default',
                                     }}>
                                     {hasVideo && resolvedUrl ? (
@@ -2657,7 +2534,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                         <video
                                           key={resolvedUrl}
                                           src={resolvedUrl}
-                                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                          className={s.mediaCoverContain}
                                           muted
                                           loop
                                           playsInline
@@ -2666,46 +2543,32 @@ export default function ProjectSeasonMemberDetailPage() {
                                             (e.target as HTMLVideoElement).style.display = 'none';
                                           }}
                                         />
-                                        <div style={{
-                                          position: 'absolute',
-                                          top: '6px',
-                                          right: '6px',
-                                          display: 'flex',
-                                          flexDirection: 'column',
-                                          gap: '3px',
-                                          alignItems: 'flex-end',
-                                        }}>
-                                          <div style={{
-                                            background: 'rgba(99, 102, 241, 0.85)',
-                                            color: '#fff',
-                                            fontSize: '9px',
-                                            fontWeight: 700,
-                                            padding: '2px 5px',
-                                            borderRadius: '4px',
-                                          }}>
+                                        <div className={s.overlayBadgeContainer}>
+                                          <div className={s.aiBadge}>
                                             AI
                                           </div>
                                           <ProcessingBadge value={variantRaw} />
                                         </div>
                                       </>
                                     ) : (
-                                      <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                      <div className={s.notGeneratedText}>
                                         {variant.icon}<br />Niet gegenereerd
                                       </div>
                                     )}
                                   </div>
-                                  <div style={{ padding: '10px' }}>
-                                    <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                  <div className={s.cardFooterPadding}>
+                                    <div className={s.variantLabel}>
                                       {variant.icon} {variant.label}
                                     </div>
-                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                    <div className={s.actionButtonRow}>
                                       {hasVideo ? (
                                         <>
                                           <Button
                                             size="sm"
                                             onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)}
                                             disabled={!hasBothInputs}
-                                            style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                            className={s.btnSmall}
+                                            style={{ flex: 1 }}
                                           >
                                             Opnieuw
                                           </Button>
@@ -2734,13 +2597,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                   startProcessingPoll('then_vs_now', 'transformation', variant.id);
                                                 }
                                               }}
-                                              style={{
-                                                fontSize: '10px',
-                                                padding: '4px 8px',
-                                                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
-                                                border: 'none',
-                                                color: '#fff',
-                                              }}
+                                              className={s.btnProcess}
                                             >
                                               {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                             </Button>
@@ -2785,13 +2642,13 @@ export default function ProjectSeasonMemberDetailPage() {
                                                   }
                                                 }
                                               }}
-                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                              className={s.btnCancelOrange}
                                             >
                                               {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                             </Button>
                                           )}
                                           {variantLineupReady && (
-                                            <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                            <span className={s.readyIndicator}>✓ Ready</span>
                                           )}
                                           <Button
                                             size="sm"
@@ -2807,7 +2664,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                               const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                               await handleMetadataUpdate(updatedMeta);
                                             }}
-                                            style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                            className={s.btnDelete}
                                           >
                                             🗑️
                                           </Button>
@@ -2817,7 +2674,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                           size="sm"
                                           onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)}
                                           disabled={!hasBothInputs}
-                                          style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                          className={s.btnSmall}
+                                          style={{ width: '100%' }}
                                         >
                                           ✨ Genereer
                                         </Button>
@@ -2867,47 +2725,39 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   return (
                     <Card>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '24px' }}>👥</span>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Duo Portret</div>
+                      <div className={s.cardPadding}>
+                        <div className={s.flexSpaceBetween}>
+                          <div className={s.flexCenterGap8}>
+                            <span className={s.tabIcon}>👥</span>
+                            <div className={s.tabTitle}>Duo Portret</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
                           </Badge>
                         </div>
 
-                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        <div className={s.tabDescription}>
                           AI-composiet van twee versies van de speler (legacy + huidig). Vereist halfbody afbeeldingen van beide versies.
                         </div>
 
                         {/* Prerequisites */}
-                        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                          <div style={{
-                            flex: '1 1 200px',
+                        <div className={s.prerequisiteRow}>
+                          <div className={s.prerequisiteCard} style={{
                             border: legacyHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
                           }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy Halfbody</div>
                             {legacyHalfbodyUrl ? (
-                              <img src={legacyHalfbodyUrl} alt="Legacy" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
                               <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy Halfbody</div>
                             )}
                           </div>
-                          <div style={{
-                            flex: '1 1 200px',
+                          <div className={s.prerequisiteCard} style={{
                             border: currentHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
                           }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Halfbody</div>
                             {currentHalfbodyUrl ? (
-                              <img src={currentHalfbodyUrl} alt="Current" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
                               <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Halfbody</div>
                             )}
@@ -2915,47 +2765,39 @@ export default function ProjectSeasonMemberDetailPage() {
                         </div>
 
                         {/* Pipeline steps as card grid (consistent with intro/celebration) */}
-                        <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                        <div className={s.kitSectionMargin}>
+                          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
                             {/* Step 1: Gemini Composite Image */}
-                            <div style={{
+                            <div className={s.variantCard} style={{
                               border: hasCompositeImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
                             }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: hasCompositeImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
+                              <div className={s.variantPreview916} style={{
+                                background: hasCompositeImage ? '#000' : undefined,
                               }}>
                                 {hasCompositeImage && compositeImageUrl ? (
                                   <>
-                                    <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" className={s.mediaCoverContain} />
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                     </div>
                                   </>
                                 ) : (
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  <div className={s.notGeneratedText}>
                                     Niet gegenereerd
                                   </div>
                                 )}
                               </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                              <div className={s.cardFooterPadding}>
+                                <div className={s.variantLabel}>
                                   📸 Gemini Composite
                                 </div>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <div className={s.actionButtonRow}>
                                   <Button
                                     size="sm"
                                     onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)}
                                     disabled={!hasBothInputs}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                    className={s.btnSmall}
+                                    style={{ width: '100%' }}
                                   >
                                     {hasCompositeImage ? '🔄 Opnieuw' : '✨ Genereer'}
                                   </Button>
@@ -2964,51 +2806,44 @@ export default function ProjectSeasonMemberDetailPage() {
                             </div>
 
                             {/* Step 2: MiniMax Video */}
-                            <div style={{
+                            <div className={s.variantCard} style={{
                               border: hasCompositeVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
                               opacity: hasCompositeImage ? 1 : 0.4,
                             }}>
                               <div
                                 onClick={() => { if (compositeVideoUrl) setVideoPreviewUrl(compositeVideoUrl); }}
+                                className={s.variantPreview916}
                                 style={{
-                                  aspectRatio: '9/16',
-                                  background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
+                                  background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : undefined,
                                   cursor: hasCompositeVideo ? 'pointer' : 'default',
                                 }}>
                                 {hasCompositeVideo && compositeVideoUrl ? (
                                   <>
-                                    <video key={compositeVideoUrl} src={compositeVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <video key={compositeVideoUrl} src={compositeVideoUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay />
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                       <ProcessingBadge value={compositeVideoData} />
                                     </div>
                                   </>
                                 ) : (
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  <div className={s.notGeneratedText}>
                                     Niet gegenereerd
                                   </div>
                                 )}
                               </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                              <div className={s.cardFooterPadding}>
+                                <div className={s.variantLabel}>
                                   🎬 MiniMax Video
                                 </div>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <div className={s.actionButtonRow}>
                                   {hasCompositeVideo ? (
                                     <>
                                       <Button
                                         size="sm"
                                         onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }}
                                         disabled={!hasCompositeImage}
-                                        style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                        className={s.btnSmall}
+                                        style={{ flex: 1 }}
                                       >
                                         Opnieuw
                                       </Button>
@@ -3024,7 +2859,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                               startProcessingPoll('photo_composite', 'default');
                                             }
                                           }}
-                                          style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                          className={s.btnProcess}
                                         >
                                           {compositeVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                         </Button>
@@ -3049,13 +2884,13 @@ export default function ProjectSeasonMemberDetailPage() {
                                               }
                                             }
                                           }}
-                                          style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                          className={s.btnCancelOrange}
                                         >
                                           {compositeVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                         </Button>
                                       )}
                                       {compositeVideoLineupReady && (
-                                        <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                        <span className={s.readyIndicator}>✓ Ready</span>
                                       )}
                                     </>
                                   ) : (
@@ -3063,7 +2898,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                       size="sm"
                                       onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }}
                                       disabled={!hasCompositeImage}
-                                      style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                      className={s.btnSmall}
+                                      style={{ width: '100%' }}
                                     >
                                       ✨ Genereer
                                     </Button>
@@ -3116,47 +2952,39 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   return (
                     <Card>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '24px' }}>🚶</span>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Walking Composite</div>
+                      <div className={s.cardPadding}>
+                        <div className={s.flexSpaceBetween}>
+                          <div className={s.flexCenterGap8}>
+                            <span className={s.tabIcon}>🚶</span>
+                            <div className={s.tabTitle}>Walking Composite</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
                           </Badge>
                         </div>
 
-                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        <div className={s.tabDescription}>
                           Full-body walking video: twee Gemini-beelden (ver + dichtbij) en een MiniMax video waarin de spelers naar de camera lopen.
                         </div>
 
                         {/* Prerequisites */}
-                        <div style={{ marginTop: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                          <div style={{
-                            flex: '1 1 200px',
+                        <div className={s.prerequisiteRow}>
+                          <div className={s.prerequisiteCard} style={{
                             border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
                           }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy Fullbody</div>
                             {legacyFullbodyUrl ? (
-                              <img src={legacyFullbodyUrl} alt="Legacy" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
                               <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy Fullbody</div>
                             )}
                           </div>
-                          <div style={{
-                            flex: '1 1 200px',
+                          <div className={s.prerequisiteCard} style={{
                             border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-                            borderRadius: '8px',
-                            padding: '12px',
-                            textAlign: 'center',
                           }}>
                             <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
                             {currentFullbodyUrl ? (
-                              <img src={currentFullbodyUrl} alt="Current" style={{ width: '80px', height: '120px', objectFit: 'contain', borderRadius: '4px' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
                               <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Fullbody</div>
                             )}
@@ -3164,47 +2992,39 @@ export default function ProjectSeasonMemberDetailPage() {
                         </div>
 
                         {/* Pipeline steps as card grid (consistent with intro/celebration) */}
-                        <div style={{ marginTop: '24px' }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px', opacity: hasBothInputs ? 1 : 0.5 }}>
+                        <div className={s.kitSectionMargin}>
+                          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
                             {/* Step 1: Far Image */}
-                            <div style={{
+                            <div className={s.variantCard} style={{
                               border: hasFarImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
                             }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: hasFarImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
+                              <div className={s.variantPreview916} style={{
+                                background: hasFarImage ? '#000' : undefined,
                               }}>
                                 {hasFarImage && farImageUrl ? (
                                   <>
-                                    <img key={farImageUrl} src={farImageUrl} alt="Far composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <img key={farImageUrl} src={farImageUrl} alt="Far composite" className={s.mediaCoverContain} />
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                     </div>
                                   </>
                                 ) : (
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  <div className={s.notGeneratedText}>
                                     Niet gegenereerd
                                   </div>
                                 )}
                               </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                              <div className={s.cardFooterPadding}>
+                                <div className={s.variantLabel}>
                                   📸 Ver Beeld
                                 </div>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <div className={s.actionButtonRow}>
                                   <Button
                                     size="sm"
                                     onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
                                     disabled={!hasBothInputs}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                    className={s.btnSmall}
+                                    style={{ width: '100%' }}
                                   >
                                     {hasFarImage ? '🔄 Opnieuw' : '✨ Genereer'}
                                   </Button>
@@ -3213,44 +3033,36 @@ export default function ProjectSeasonMemberDetailPage() {
                             </div>
 
                             {/* Step 2: Near Image */}
-                            <div style={{
+                            <div className={s.variantCard} style={{
                               border: hasNearImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
                             }}>
-                              <div style={{
-                                aspectRatio: '9/16',
-                                background: hasNearImage ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                minHeight: '180px',
-                                position: 'relative',
+                              <div className={s.variantPreview916} style={{
+                                background: hasNearImage ? '#000' : undefined,
                               }}>
                                 {hasNearImage && nearImageUrl ? (
                                   <>
-                                    <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" className={s.mediaCoverContain} />
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                     </div>
                                   </>
                                 ) : (
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  <div className={s.notGeneratedText}>
                                     Niet gegenereerd
                                   </div>
                                 )}
                               </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                              <div className={s.cardFooterPadding}>
+                                <div className={s.variantLabel}>
                                   📸 Dichtbij Beeld
                                 </div>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <div className={s.actionButtonRow}>
                                   <Button
                                     size="sm"
                                     onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)}
                                     disabled={!hasBothInputs}
-                                    style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                    className={s.btnSmall}
+                                    style={{ width: '100%' }}
                                   >
                                     {hasNearImage ? '🔄 Opnieuw' : '✨ Genereer'}
                                   </Button>
@@ -3259,51 +3071,44 @@ export default function ProjectSeasonMemberDetailPage() {
                             </div>
 
                             {/* Step 3: Walking Video */}
-                            <div style={{
+                            <div className={s.variantCard} style={{
                               border: hasWalkingVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                              borderRadius: '8px',
-                              overflow: 'hidden',
-                              background: 'var(--app-surface)',
                               opacity: (hasFarImage && hasNearImage) ? 1 : 0.4,
                             }}>
                               <div
                                 onClick={() => { if (walkingVideoUrl) setVideoPreviewUrl(walkingVideoUrl); }}
+                                className={s.variantPreview916}
                                 style={{
-                                  aspectRatio: '9/16',
-                                  background: (hasWalkingVideo && !walkingVideoLineupReady) ? '#000' : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  minHeight: '180px',
-                                  position: 'relative',
+                                  background: (hasWalkingVideo && !walkingVideoLineupReady) ? '#000' : undefined,
                                   cursor: hasWalkingVideo ? 'pointer' : 'default',
                                 }}>
                                 {hasWalkingVideo && walkingVideoUrl ? (
                                   <>
-                                    <video key={walkingVideoUrl} src={walkingVideoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} muted loop playsInline autoPlay />
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <video key={walkingVideoUrl} src={walkingVideoUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay />
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                       <ProcessingBadge value={walkingVideoData} />
                                     </div>
                                   </>
                                 ) : (
-                                  <div style={{ color: 'var(--app-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+                                  <div className={s.notGeneratedText}>
                                     Niet gegenereerd
                                   </div>
                                 )}
                               </div>
-                              <div style={{ padding: '10px' }}>
-                                <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                              <div className={s.cardFooterPadding}>
+                                <div className={s.variantLabel}>
                                   🎬 Walking Video
                                 </div>
-                                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                <div className={s.actionButtonRow}>
                                   {hasWalkingVideo ? (
                                     <>
                                       <Button
                                         size="sm"
                                         onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }}
                                         disabled={!(hasFarImage && hasNearImage)}
-                                        style={{ fontSize: '10px', padding: '4px 8px', flex: 1 }}
+                                        className={s.btnSmall}
+                                        style={{ flex: 1 }}
                                       >
                                         Opnieuw
                                       </Button>
@@ -3319,7 +3124,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                               startProcessingPoll('walking_composite', 'default');
                                             }
                                           }}
-                                          style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                          className={s.btnProcess}
                                         >
                                           {walkingVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                         </Button>
@@ -3344,13 +3149,13 @@ export default function ProjectSeasonMemberDetailPage() {
                                               }
                                             }
                                           }}
-                                          style={{ fontSize: '10px', padding: '4px 6px', color: '#f59e0b' }}
+                                          className={s.btnCancelOrange}
                                         >
                                           {walkingVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
                                         </Button>
                                       )}
                                       {walkingVideoLineupReady && (
-                                        <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>
+                                        <span className={s.readyIndicator}>✓ Ready</span>
                                       )}
                                     </>
                                   ) : (
@@ -3358,7 +3163,8 @@ export default function ProjectSeasonMemberDetailPage() {
                                       size="sm"
                                       onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }}
                                       disabled={!(hasFarImage && hasNearImage)}
-                                      style={{ fontSize: '10px', padding: '4px 8px', width: '100%' }}
+                                      className={s.btnSmall}
+                                      style={{ width: '100%' }}
                                     >
                                       ✨ Genereer
                                     </Button>
@@ -3395,18 +3201,18 @@ export default function ProjectSeasonMemberDetailPage() {
 
                   return (
                     <Card>
-                      <div style={{ padding: '16px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '24px' }}>⚡</span>
-                            <div style={{ fontSize: '16px', fontWeight: 800 }}>Actiefoto's</div>
+                      <div className={s.cardPadding}>
+                        <div className={s.flexSpaceBetween}>
+                          <div className={s.flexCenterGap8}>
+                            <span className={s.tabIcon}>⚡</span>
+                            <div className={s.tabTitle}>Actiefoto's</div>
                           </div>
                           <Badge variant={userCanEditProject ? 'default' : 'info'}>
                             {userCanEditProject ? 'Editable' : 'Read-only'}
                           </Badge>
                         </div>
 
-                        <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                        <div className={s.tabDescription}>
                           Dynamische actiebeelden van de speler — dribbelen, schieten, koppen en meer.
                         </div>
 
@@ -3428,19 +3234,20 @@ export default function ProjectSeasonMemberDetailPage() {
                           const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody?.[kit.id]);
 
                           return (
-                            <div key={`action-kit-${kit.id}`} style={{ marginTop: '24px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                            <div key={`action-kit-${kit.id}`} className={s.kitSectionMargin}>
+                              <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
                                 {kit.url ? (
-                                  <img src={kit.url} alt={kit.label} style={{ width: '32px', height: '42px', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                  <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                                 ) : (
                                   <span style={{ fontSize: '20px' }}>{kit.icon}</span>
                                 )}
-                                <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                                <div className={s.sectionTitle}>{kit.label}</div>
                                 {userCanEditProject && fullbodyRef && (
                                   <Button
                                     size="sm"
                                     onClick={() => openAiModal('member_action_photo', kit.id, fullbodyRef, null)}
-                                    style={{ fontSize: '10px', padding: '4px 8px', marginLeft: 'auto' }}
+                                    className={s.btnSmall}
+                                    style={{ marginLeft: 'auto' }}
                                   >
                                     ✨ Genereer
                                   </Button>
@@ -3450,52 +3257,47 @@ export default function ProjectSeasonMemberDetailPage() {
                                 )}
                               </div>
 
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
+                              <div className={s.variantGrid}>
                                 {kitActionPhotos.map(({ style, variantKey, url, state, normalized }) => {
                                   const isProcessing = state === 'processing';
                                   const isProcessed = state === 'processed' && normalized?.processed;
 
                                   return (
-                                    <div key={variantKey} style={{
+                                    <div key={variantKey} className={s.variantCard} style={{
                                       border: isProcessed ? '2px solid var(--vscode-charts-green)' : url ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                                      borderRadius: '8px',
-                                      overflow: 'hidden',
-                                      background: 'var(--app-surface)',
                                     }}>
                                       <div
                                         onClick={() => { if (url) window.open(url, '_blank'); }}
+                                        className={s.variantPreview916}
                                         style={{
-                                          aspectRatio: '9/16',
                                           background: url
                                             ? `url(${url}) center/cover no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
-                                            : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                          position: 'relative',
-                                          minHeight: '180px',
+                                            : undefined,
                                           cursor: url ? 'zoom-in' : 'default',
                                         }}
                                       >
                                         {!url && (
-                                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>
+                                          <div className={s.notGeneratedText} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
                                             Niet gegenereerd
                                           </div>
                                         )}
                                         {url && (
-                                          <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                            <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                          <div className={s.overlayBadgeContainer}>
+                                            <div className={s.aiBadge}>AI</div>
                                             <ProcessingBadge value={normalized} />
                                           </div>
                                         )}
                                         {isProcessing && (
-                                          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>
+                                          <div className={s.processingOverlay}>
                                             ⏳ Bezig...
                                           </div>
                                         )}
                                       </div>
-                                      <div style={{ padding: '10px' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>
+                                      <div className={s.cardFooterPadding}>
+                                        <div className={s.variantLabel}>
                                           {styleLabels[style] || style}
                                         </div>
-                                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                                        <div className={s.actionButtonRow}>
                                           {url && !isProcessing && userCanEditProject && (
                                             <Button
                                               size="sm"
@@ -3503,12 +3305,12 @@ export default function ProjectSeasonMemberDetailPage() {
                                               onClick={async () => {
                                                 await triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null);
                                               }}
-                                              style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}
+                                              className={s.btnProcess}
                                             >
                                               {isProcessed ? '🔄 Opnieuw' : '🔧 Bewerken'}
                                             </Button>
                                           )}
-                                          {isProcessed && <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>}
+                                          {isProcessed && <span className={s.readyIndicator}>✓ Ready</span>}
                                           {url && userCanEditProject && (
                                             <Button
                                               size="sm"
@@ -3521,7 +3323,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                                 const updated = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                                 await handleMetadataUpdate(updated);
                                               }}
-                                              style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}
+                                              className={s.btnDelete}
                                             >
                                               🗑️
                                             </Button>
@@ -3549,18 +3351,18 @@ export default function ProjectSeasonMemberDetailPage() {
                 {/* Assets Tab - Grouped by tenue type */}
                 {activeTab === 'assets' && (
                   <Card>
-                    <div style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontSize: '24px' }}>🎨</span>
-                          <div style={{ fontSize: '16px', fontWeight: 800 }}>Gegenereerde Assets</div>
+                    <div className={s.cardPadding}>
+                      <div className={s.flexSpaceBetween}>
+                        <div className={s.flexCenterGap8}>
+                          <span className={s.tabIcon}>🎨</span>
+                          <div className={s.tabTitle}>Gegenereerde Assets</div>
                         </div>
                         <Badge variant={userCanEditProject ? 'default' : 'info'}>
                           {userCanEditProject ? 'Editable' : 'Read-only'}
                         </Badge>
                       </div>
 
-                      <div style={{ marginTop: '6px', opacity: 0.75, fontSize: '13px' }}>
+                      <div className={s.tabDescription}>
                         AI-gegenereerde afbeeldingen van dit lid per tenue type: fullbody, halfbody en close-up.
                       </div>
 
@@ -3587,48 +3389,43 @@ export default function ProjectSeasonMemberDetailPage() {
                         const fullbodyRef = getVariantDisplayUrl(videoVariants.fullbody[kit.id]);
 
                         return (
-                          <div key={`assets-kit-${kit.id}`} style={{ marginTop: '24px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                          <div key={`assets-kit-${kit.id}`} className={s.kitSectionMargin}>
+                            <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
                               {kit.url ? (
-                                <img src={kit.url} alt={kit.label} style={{ width: '32px', height: '42px', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                               ) : (
                                 <span style={{ fontSize: '20px' }}>{kit.icon}</span>
                               )}
-                              <div style={{ fontSize: '14px', fontWeight: 700 }}>{kit.label}</div>
+                              <div className={s.sectionTitle}>{kit.label}</div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '12px' }}>
+                            <div className={s.variantGrid}>
                               {/* Fullbody Card */}
-                              <div style={{
+                              <div className={s.variantCard} style={{
                                 border: fbLineupReady ? '2px solid var(--vscode-charts-green)' : fbUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
                               }}>
                                 <div
                                   onClick={() => { const url = resolveDisplayUrl(fbUrl); if (url) window.open(url, '_blank'); }}
+                                  className={s.variantPreview34}
                                   style={{
-                                    aspectRatio: '3/4',
                                     background: fbUrl
                                       ? `url(${resolveDisplayUrl(fbUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                    position: 'relative',
-                                    minHeight: '180px',
                                     cursor: fbUrl ? 'zoom-in' : 'default',
                                   }}>
-                                  {!fbUrl && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>Niet gegenereerd</div>}
+                                  {!fbUrl && <div className={s.processingOverlay} style={{ background: 'none', color: 'var(--app-text-muted)', fontSize: '12px', fontWeight: 'normal' }}>Niet gegenereerd</div>}
                                   {fbUrl && (
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                       <ProcessingBadge value={fbVal} />
                                     </div>
                                   )}
-                                  {fbProcessing && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>⏳ Bezig...</div>}
+                                  {fbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
                                 </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👕 Fullbody</div>
-                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                    <Button size="sm" onClick={() => openAiModal('fullbody_in_tenue', kit.id)} style={{ fontSize: '10px', padding: '4px 8px' }}>
+                                <div className={s.cardFooterPadding}>
+                                  <div className={s.variantLabel}>👕 Fullbody</div>
+                                  <div className={s.actionButtonRow}>
+                                    <Button size="sm" onClick={() => openAiModal('fullbody_in_tenue', kit.id)} className={s.btnSmall}>
                                       {fbUrl ? '🔄 Opnieuw' : '✨ Genereer'}
                                     </Button>
                                     {fbUrl && !fbProcessing && (
@@ -3639,11 +3436,11 @@ export default function ProjectSeasonMemberDetailPage() {
                                           setVideoVariants(prev => ({ ...prev, fullbody: { ...prev.fullbody, [kit.id]: { raw: rawUrl || '', processed: null, processing_state: 'processing' as const } } }));
                                           startProcessingPoll('fullbody', kit.id, null);
                                         }
-                                      }} style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}>
+                                      }} className={s.btnProcess}>
                                         {fbLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                       </Button>
                                     )}
-                                    {fbUrl && fbLineupReady && <span style={{ fontSize: '9px', padding: '3px 6px', color: '#10b981', fontWeight: 600 }}>✓ Ready</span>}
+                                    {fbUrl && fbLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
                                     {fbUrl && (
                                       <Button size="sm" variant="ghost" onClick={async () => {
                                         if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
@@ -3654,43 +3451,38 @@ export default function ProjectSeasonMemberDetailPage() {
                                         if (kit.id === 'home') setForm(newForm);
                                         const updated = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVV);
                                         await handleMetadataUpdate(updated);
-                                      }} style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}>🗑️</Button>
+                                      }} className={s.btnDelete}>🗑️</Button>
                                     )}
                                   </div>
                                 </div>
                               </div>
 
                               {/* Halfbody Card */}
-                              <div style={{
+                              <div className={s.variantCard} style={{
                                 border: hbLineupReady ? '2px solid var(--vscode-charts-green)' : hbUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
                               }}>
                                 <div
                                   onClick={() => { const url = resolveDisplayUrl(hbUrl); if (url) window.open(url, '_blank'); }}
+                                  className={s.variantPreview34}
                                   style={{
-                                    aspectRatio: '3/4',
                                     background: hbUrl
                                       ? `url(${resolveDisplayUrl(hbUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                    position: 'relative',
-                                    minHeight: '180px',
                                     cursor: hbUrl ? 'zoom-in' : 'default',
                                   }}>
-                                  {!hbUrl && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>Niet gegenereerd</div>}
+                                  {!hbUrl && <div className={s.processingOverlay} style={{ background: 'none', color: 'var(--app-text-muted)', fontSize: '12px', fontWeight: 'normal' }}>Niet gegenereerd</div>}
                                   {hbUrl && (
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                       <ProcessingBadge value={hbVal} />
                                     </div>
                                   )}
-                                  {hbProcessing && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>⏳ Bezig...</div>}
+                                  {hbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
                                 </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>👤 Halfbody</div>
-                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                    <Button size="sm" onClick={() => cropHalfbodyFromFullbody(kit.id)} disabled={croppingHalfbody[kit.id] || !fullbodyRef} style={{ fontSize: '10px', padding: '4px 8px' }} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
+                                <div className={s.cardFooterPadding}>
+                                  <div className={s.variantLabel}>👤 Halfbody</div>
+                                  <div className={s.actionButtonRow}>
+                                    <Button size="sm" onClick={() => cropHalfbodyFromFullbody(kit.id)} disabled={croppingHalfbody[kit.id] || !fullbodyRef} className={s.btnSmall} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
                                       {croppingHalfbody[kit.id] ? '⏳...' : hbUrl ? '🔄 Opnieuw' : '✂️ Crop'}
                                     </Button>
                                     {hbUrl && (
@@ -3701,43 +3493,40 @@ export default function ProjectSeasonMemberDetailPage() {
                                         setVideoVariants(newVV);
                                         const updated = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                         await handleMetadataUpdate(updated);
-                                      }} style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}>🗑️</Button>
+                                      }} className={s.btnDelete}>🗑️</Button>
                                     )}
                                   </div>
                                 </div>
                               </div>
 
                               {/* Closeup Card */}
-                              <div style={{
+                              <div className={s.variantCard} style={{
                                 border: cuLineupReady ? '2px solid var(--vscode-charts-green)' : cuUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                background: 'var(--app-surface)',
                               }}>
                                 <div
                                   onClick={() => { const url = resolveDisplayUrl(cuUrl); if (url) window.open(url, '_blank'); }}
+                                  className={s.variantPreview34}
                                   style={{
                                     aspectRatio: '1/1',
                                     background: cuUrl
                                       ? `url(${resolveDisplayUrl(cuUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
                                       : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                                    position: 'relative',
                                     minHeight: '150px',
                                     cursor: cuUrl ? 'zoom-in' : 'default',
                                   }}>
-                                  {!cuUrl && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--app-text-muted)', fontSize: '12px' }}>Niet gegenereerd</div>}
+                                  {!cuUrl && <div className={s.processingOverlay} style={{ background: 'none', color: 'var(--app-text-muted)', fontSize: '12px', fontWeight: 'normal' }}>Niet gegenereerd</div>}
                                   {cuUrl && (
-                                    <div style={{ position: 'absolute', top: '6px', right: '6px', display: 'flex', flexDirection: 'column', gap: '3px', alignItems: 'flex-end' }}>
-                                      <div style={{ background: 'rgba(99, 102, 241, 0.85)', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 5px', borderRadius: '4px' }}>AI</div>
+                                    <div className={s.overlayBadgeContainer}>
+                                      <div className={s.aiBadge}>AI</div>
                                       <ProcessingBadge value={cuVal} />
                                     </div>
                                   )}
-                                  {cuProcessing && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '13px', fontWeight: 600 }}>⏳ Bezig...</div>}
+                                  {cuProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
                                 </div>
-                                <div style={{ padding: '10px' }}>
-                                  <div style={{ fontSize: '11px', fontWeight: 600, marginBottom: '8px' }}>📸 Close-up</div>
-                                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                                    <Button size="sm" onClick={() => cropCloseupFromFullbody(kit.id)} disabled={croppingCloseup[kit.id] || !fullbodyRef} style={{ fontSize: '10px', padding: '4px 8px' }} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
+                                <div className={s.cardFooterPadding}>
+                                  <div className={s.variantLabel}>📸 Close-up</div>
+                                  <div className={s.actionButtonRow}>
+                                    <Button size="sm" onClick={() => cropCloseupFromFullbody(kit.id)} disabled={croppingCloseup[kit.id] || !fullbodyRef} className={s.btnSmall} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
                                       {croppingCloseup[kit.id] ? '⏳...' : cuUrl ? '🔄 Opnieuw' : '✂️ Crop'}
                                     </Button>
                                     {cuUrl && !cuProcessing && (
@@ -3748,7 +3537,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                           setVideoVariants(prev => ({ ...prev, closeup: { ...prev.closeup, [kit.id]: { raw: rawUrl || '', processed: null, processing_state: 'processing' as const } } }));
                                           startProcessingPoll('closeup', kit.id, null);
                                         }
-                                      }} style={{ fontSize: '10px', padding: '4px 8px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', border: 'none', color: '#fff' }}>
+                                      }} className={s.btnProcess}>
                                         {cuLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
                                       </Button>
                                     )}
@@ -3762,7 +3551,7 @@ export default function ProjectSeasonMemberDetailPage() {
                                         if (kit.id === 'home') setForm(newForm);
                                         const updated = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVV);
                                         await handleMetadataUpdate(updated);
-                                      }} style={{ fontSize: '10px', padding: '4px 6px', color: '#ef4444' }}>🗑️</Button>
+                                      }} className={s.btnDelete}>🗑️</Button>
                                     )}
                                   </div>
                                 </div>
@@ -3815,8 +3604,8 @@ export default function ProjectSeasonMemberDetailPage() {
 
 
                 <Card>
-                  <div style={{ padding: '16px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '8px' }}>Member</div>
+                  <div className={s.cardPadding}>
+                    <div className={s.sectionTitleLarge}>Member</div>
                     <div style={{ fontSize: '13px' }}>{getUserDisplayName(membership)}</div>
                     <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                       <Badge variant="default">Membership: {String(membership?.id || '').slice(0, 8)}…</Badge>
@@ -4180,27 +3969,11 @@ export default function ProjectSeasonMemberDetailPage() {
       {videoPreviewUrl && (
         <div
           onClick={() => setVideoPreviewUrl(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: 'rgba(0, 0, 0, 0.85)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
+          className={s.videoModalOverlay}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'relative',
-              width: 'min(90vw, 500px)',
-              maxHeight: 'calc(100vh - 80px)',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-            }}
+            className={s.videoModalContent}
           >
             <video
               src={videoPreviewUrl}
@@ -4212,22 +3985,7 @@ export default function ProjectSeasonMemberDetailPage() {
             />
             <button
               onClick={() => setVideoPreviewUrl(null)}
-              style={{
-                position: 'absolute',
-                top: '8px',
-                right: '8px',
-                background: 'rgba(0,0,0,0.7)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '50%',
-                width: '32px',
-                height: '32px',
-                fontSize: '16px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
+              className={s.videoModalClose}
             >
               ✕
             </button>

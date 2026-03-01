@@ -1,0 +1,618 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ApprovalsPage — CSS Module
+   Extracted from inline styles for maintainability (Phase 2b)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Modal System ────────────────────────────────────────────────────────── */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modalOverlayHigh {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modalPanel {
+  width: 100%;
+  background-color: var(--app-surface, #1e293b);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--app-border, #334155);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.modalHeaderSimple {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid var(--app-border, #334155);
+}
+
+.modalFooter {
+  padding: 14px 20px;
+  border-top: 1px solid var(--app-border, #334155);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.modalTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--app-text, #fff);
+}
+
+.modalTitle15 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.modalSubtitle {
+  font-size: 12px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 4px;
+}
+
+.modalSubtitle11 {
+  font-size: 11px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 2px;
+}
+
+.closeBtn {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 10px;
+}
+
+.closeBtnMuted {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+}
+
+/* ─── Body ────────────────────────────────────────────────────────────────── */
+
+.modalBody {
+  padding: 16px 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.previewCenter {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.previewImg {
+  max-height: 200px;
+  max-width: 100%;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.previewArea {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #0f172a;
+}
+
+.previewVideo {
+  width: 100%;
+  max-height: 450px;
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────────── */
+
+.btnPrimary {
+  padding: 9px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnGhost {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #334155);
+  background: transparent;
+  color: var(--app-text-secondary, #9ca3af);
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnApprove {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnReject {
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: 1px solid #fca5a5;
+  background: #fff5f5;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btnRetry {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btnCancel {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #dc2626;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btnBeginReview {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background: #fffbeb;
+  color: #d97706;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btnRefresh {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: var(--app-text);
+  font-weight: 500;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* ─── Select-All Buttons ──────────────────────────────────────────────────── */
+
+.selectAllRow {
+  display: flex;
+  gap: 6px;
+}
+
+.btnSelectAll {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #c6f0d4;
+  background: #f0fdf4;
+  color: #15803d;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.btnRejectAll {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  background: #fff5f5;
+  color: #dc2626;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* ─── Chip / Picker Grid ──────────────────────────────────────────────────── */
+
+.sectionLabel {
+  color: var(--app-text);
+}
+
+.sectionDescription {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.grid3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.grid2col {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.chipLabel {
+  color: var(--app-text);
+}
+
+.chipDescription {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+/* ─── Error Alert ─────────────────────────────────────────────────────────── */
+
+.errorAlert {
+  font-size: 12px;
+  color: #dc2626;
+  background-color: #fee2e2;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.errorBanner {
+  padding: 12px 16px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.errorInline {
+  font-size: 11px;
+  color: #dc2626;
+  background: #fee2e2;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-top: 6px;
+}
+
+.errorBordered {
+  color: #dc2626;
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+/* ─── Toast ───────────────────────────────────────────────────────────────── */
+
+.toastContainer {
+  position: fixed;
+  bottom: 88px;
+  right: 16px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ─── Empty State ─────────────────────────────────────────────────────────── */
+
+.emptyState {
+  padding: 48px;
+  text-align: center;
+  color: var(--app-text-secondary);
+  border: 1px dashed var(--app-border);
+  border-radius: 12px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.emptyGallery {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--app-text-secondary);
+}
+
+/* ─── Loading ─────────────────────────────────────────────────────────────── */
+
+.loadingCenter {
+  padding: 40px;
+  text-align: center;
+}
+
+/* ─── Filter Chips ────────────────────────────────────────────────────────── */
+
+.chipsRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* ─── Provider Info ───────────────────────────────────────────────────────── */
+
+.providerInfo {
+  font-size: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--app-text-secondary);
+}
+
+/* ─── Variant Gallery ─────────────────────────────────────────────────────── */
+
+.variantsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.variantBtnRow {
+  display: flex;
+  gap: 6px;
+  padding: 8px 2px;
+}
+
+.variantBadge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.emptyHint {
+  font-size: 11px;
+  color: #4b5563;
+}
+
+.storagePath {
+  font-size: 10px;
+  color: var(--app-text-secondary);
+  word-break: break-all;
+  padding: 4px 6px;
+  margin-top: 4px;
+}
+
+/* ─── Pill Badge ──────────────────────────────────────────────────────────── */
+
+.pillBadge {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 2px 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ─── Job Card ────────────────────────────────────────────────────────────── */
+
+.jobStatusIcon {
+  flex-shrink: 0;
+}
+
+.jobLabel {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.jobMeta {
+  font-size: 11px;
+  color: var(--app-text-secondary);
+}
+
+.jobShortId {
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.badgesCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.chevron {
+  color: #d1d5db;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────────────────── */
+
+.progressTrack {
+  height: 3px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progressTrackThick {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.progressPercent {
+  font-size: 11px;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ─── Job Meta Row ────────────────────────────────────────────────────────── */
+
+.metaRow {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+/* ─── Review Status Text ──────────────────────────────────────────────────── */
+
+.reviewError {
+  flex: 1;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+.reviewStatus {
+  flex: 1;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.reviewApproved {
+  flex: 1;
+  font-size: 12px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.reviewRejected {
+  flex: 1;
+  font-size: 12px;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* ─── Workflow Info ────────────────────────────────────────────────────────── */
+
+.workflowInfo {
+  font-size: 11px;
+  display: flex;
+  gap: 6px;
+  color: var(--app-text-secondary);
+}
+
+.hintRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.hintText {
+  font-size: 11px;
+  color: var(--app-text-secondary);
+}
+
+.actionsRow {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ─── Workflow Card ───────────────────────────────────────────────────────── */
+
+.workflowCard {
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+}
+
+.workflowCardHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.workflowBadgeRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.entityTypeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--app-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+.entityTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.workflowMeta {
+  font-size: 11px;
+  color: var(--app-text-secondary);
+}
+
+/* ─── Chip count badge ────────────────────────────────────────────────────── */
+
+.chipCountBadge {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 1px 6px;
+  margin-left: 4px;
+}

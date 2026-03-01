@@ -1,0 +1,237 @@
+/* ============================================================================
+   ProjectSeasonDetailPage — CSS Module
+   ============================================================================ */
+
+/* ── Layout ── */
+.contentGrid { display: grid; gap: 16px; }
+.videoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.roleGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.bgSelectorGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+.verticalList { display: flex; flex-direction: column; gap: 10px; }
+.verticalListTight { display: flex; flex-direction: column; gap: 8px; }
+.modalActions { display: flex; gap: 12px; justify-content: flex-end; }
+
+/* ── Typography ── */
+.sectionTitle { margin: 0; font-size: 16px; font-weight: 600; }
+.hierarchyTitle { font-size: 16px; font-weight: 700; }
+.mutedSubtitle { color: var(--app-muted-text); font-size: 13px; }
+.sectionSubtitle { margin-top: 4px; color: var(--app-muted-text); font-size: 13px; }
+.sectionLabel { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-muted-text); margin-bottom: 8px; }
+.appLink { text-decoration: none; background-color: transparent; color: #60a5fa; cursor: pointer; border: none; font: inherit; padding: 0; }
+.competitionLink { text-align: left; font-weight: 800; font-size: 14px; color: #60a5fa; text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
+.matchLink { text-align: left; font-weight: 700; font-size: 13px; color: #60a5fa; text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
+.downloadLink { font-size: 11px; color: #2563eb; font-weight: 600; text-decoration: none; margin-top: 2px; }
+.downloadLink12 { font-size: 12px; color: #2563eb; font-weight: 600; text-decoration: none; }
+.monoId { font-family: monospace; font-size: 10px; }
+.creditsText { font-size: 9px; color: var(--app-muted-text); }
+.dangerText { color: #dc2626; }
+
+/* ── Content Tiles ── */
+.contentTile {
+  width: 100px; padding: 12px 8px; border-radius: 8px; text-align: center; transition: all 0.15s;
+}
+.contentTileIcon { font-size: 20px; margin-bottom: 4px; }
+.contentTileLabel { font-weight: 600; font-size: 11px; line-height: 1.3; text-align: center; }
+.contentTileMeta { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.badgeXs { font-size: 9px; padding: 2px 4px; }
+.noTemplate { font-size: 9px; color: var(--app-muted-text); margin-top: 4px; }
+
+/* ── Video Cards ── */
+.videoCard { border-radius: 10px; overflow: hidden; }
+.videoThumbnail { position: relative; width: 100%; height: 180px; background-color: #0f172a; }
+.videoFill { width: 100%; height: 100%; object-fit: cover; display: block; }
+.videoCardMeta { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.videoCardHeader { display: flex; align-items: center; justify-content: space-between; }
+.videoCardTitle { font-size: 13px; font-weight: 600; color: var(--app-text); }
+.statusPillComplete {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+  color: #059669; background-color: #d1fae5; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.videoCardInfo { font-size: 11px; color: var(--app-muted-text); display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Video Preview Modal ── */
+.modalBackdrop {
+  position: fixed; inset: 0; z-index: 9999; background-color: rgba(0, 0, 0, 0.8);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.previewModalContainer {
+  background-color: var(--app-card-bg, #1e293b); border-radius: 12px; max-width: 900px;
+  width: 100%; max-height: 90vh; overflow: hidden; border: 1px solid var(--app-border, #334155);
+}
+.previewModalHeader {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--app-border, #334155);
+}
+.previewTitle { font-size: 15px; font-weight: 700; color: var(--app-text); }
+.closeButton { background: none; border: none; color: var(--app-muted-text); cursor: pointer; font-size: 20px; }
+.videoPlayerFull { width: 100%; max-height: 85vh; display: block; background-color: #000; }
+
+/* ── Hierarchy ── */
+.hierarchyHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px;
+  border-radius: 999px; font-size: 12px; font-weight: 600;
+}
+.competitionCard { border: 1px solid var(--app-border, #334155); border-radius: 10px; background: var(--app-surface); overflow: hidden; }
+.competitionCardHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; border-bottom: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2); gap: 12px;
+}
+.competitionCardInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sportInfo { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--app-muted-text); }
+.matchRow {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; border-bottom: 1px solid var(--app-border, #1e293b);
+  border-radius: 8px;
+}
+.matchDate { font-size: 12px; color: var(--app-muted-text); }
+
+/* ── Quick Actions ── */
+.quickActionBtn { width: 100%; justify-content: flex-start; }
+
+/* ── Media Matrix ── */
+.mediaColumnHeader { text-align: center; min-width: 60px; height: 80px; vertical-align: bottom; position: relative; }
+.rotatedLabel {
+  display: block; font-size: 9px; font-weight: 500; white-space: nowrap;
+  transform: rotate(-45deg); transform-origin: left bottom;
+  position: absolute; bottom: 4px; left: 50%;
+}
+.slotIcon { font-size: 16px; }
+.guestRow { background: rgba(167, 139, 250, 0.06); }
+.guestLabel { color: #a78bfa; font-weight: 600; }
+.guestIndicator { font-size: 14px; cursor: pointer; }
+.indicatorIcon { font-size: 14px; }
+.indicatorDisabled { font-size: 14px; opacity: 0.3; }
+.legendBox { margin-top: 16px; padding: 12px; background: var(--app-muted); border-radius: 8px; }
+.legendTitle { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 10px; }
+.legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 10px; border-top: 1px solid var(--app-border, #334155); padding-top: 8px; }
+.legendItem { display: flex; align-items: center; gap: 4px; }
+.legendLabel { opacity: 0.8; }
+.mediaHeaderBtn { font-size: 13px; padding: 6px 14px; }
+
+/* ── Edit Member Modal ── */
+.modalOverlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center;
+  justify-content: center; z-index: 9999;
+}
+.editMemberModal {
+  background-color: #1e293b; padding: 32px; border-radius: 8px;
+  max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: #f1f5f9;
+}
+.editMemberTitle { margin-top: 0; margin-bottom: 24px; font-size: 24px; font-weight: 600; color: #f1f5f9; }
+.memberInfoRow { margin-bottom: 16px; color: #e2e8f0; }
+.memberInfoLabel { color: #cbd5e1; }
+.fieldLabel { display: block; margin-bottom: 12px; font-weight: 600; color: #f1f5f9; }
+.radioGroup { display: flex; flex-direction: column; gap: 10px; }
+.radioCard {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+}
+.radioInput { cursor: pointer; accent-color: #3b82f6; }
+.radioCardTitle { font-weight: 600; color: #f1f5f9; font-size: 14px; }
+.radioCardDesc { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.checkboxCard {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+}
+.roleLabel { text-transform: capitalize; color: #f1f5f9; }
+.btnCancel {
+  padding: 10px 20px; border-radius: 6px; border: 1px solid #475569;
+  background-color: #334155; color: #f1f5f9; cursor: pointer;
+}
+.btnSave {
+  padding: 10px 20px; border-radius: 6px; border: none;
+  background-color: #3b82f6; color: white; cursor: pointer; font-weight: 500;
+}
+
+/* ── Then vs Now Modal ── */
+.thenNowBackdrop {
+  position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center;
+  justify-content: center; background-color: rgba(0, 0, 0, 0.75); padding: 20px;
+}
+.thenNowModal {
+  background-color: var(--app-surface, #1a1a2e); border-radius: 12px;
+  max-width: 640px; width: 100%; max-height: 90vh; overflow: hidden;
+  border: 1px solid var(--app-border);
+}
+.thenNowHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; border-bottom: 1px solid var(--app-border);
+}
+.thenNowFooter {
+  display: flex; justify-content: flex-end; padding: 14px 20px;
+  border-top: 1px solid var(--app-border); gap: 8px;
+}
+.modalCloseBtn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--app-muted-text); }
+.selectAllRow { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; border-bottom: 1px solid var(--app-border); }
+.selectionCounter { font-size: 12px; color: var(--app-muted-text); }
+.selectAllBtn { font-size: 12px; color: #60a5fa; background: none; border: none; cursor: pointer; }
+.orderedList { max-height: 260px; overflow-y: auto; }
+.orderedMemberRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; }
+.orderNumber {
+  width: 24px; height: 24px; border-radius: 50%; background: var(--app-surface-2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.memberName { font-size: 13px; font-weight: 600; }
+.memberMeta { font-size: 11px; color: var(--app-muted-text); }
+.variantRow { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.variantPill { padding: 2px 8px; border-radius: 99px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+.arrowBtn { background: none; border: none; font-size: 16px; padding: 4px; }
+.removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, #ef4444); opacity: 0.5; }
+.addIcon { font-size: 18px; color: var(--app-muted-text); }
+.unselectedHeader { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-muted-text); padding: 12px 20px 8px; }
+.unselectedList { max-height: 160px; overflow-y: auto; }
+.emptyState { padding: 16px 20px; font-size: 12px; color: var(--app-muted-text); text-align: center; }
+.clickableRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; cursor: pointer; transition: background 0.15s; }
+.bgPreviewDefault {
+  width: 100%; aspect-ratio: 9 / 16; border-radius: 4px;
+  background: linear-gradient(135deg, #1a1a2e, #2d1b69);
+}
+.bgOptionLabel { font-size: 9px; margin-top: 2px; text-align: center; }
+.checkBadge {
+  position: absolute; top: 4px; right: 4px; width: 18px; height: 18px;
+  border-radius: 50%; background: #10b981; color: #fff; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.statusStep { padding: 40px 20px; text-align: center; }
+.statusEmoji { font-size: 48px; margin-bottom: 16px; }
+.statusTitle { font-weight: 700; font-size: 16px; margin-bottom: 8px; }
+.statusTitleError { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: var(--app-danger, #ef4444); }
+.statusDesc { font-size: 13px; color: var(--app-muted-text); }
+.modalSearchInput {
+  width: 100%; padding: 8px 12px; border-radius: 6px;
+  border: 1px solid var(--app-border); background: var(--app-surface-2);
+  color: var(--app-text); font-size: 12px;
+}
+.modalBtnSecondary {
+  padding: 8px 18px; border-radius: 6px; border: 1px solid var(--app-border);
+  background: transparent; color: var(--app-text); cursor: pointer; font-size: 13px;
+}
+.modalBtnPrimary {
+  padding: 8px 18px; border-radius: 6px; border: none;
+  background: #6366f1; color: #fff; cursor: pointer; font-weight: 600; font-size: 13px;
+}
+
+/* ── Toasts ── */
+.toastContainer {
+  position: fixed; top: 16px; right: 16px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px; max-width: 420px;
+}
+.toast {
+  border-radius: 8px; padding: 12px 16px; color: #fff;
+  display: flex; align-items: flex-start; gap: 10px; font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); animation: slideInRight 0.3s ease-out;
+}
+.toastDismiss {
+  background: none; border: none; color: #fff; cursor: pointer;
+  font-size: 18px; opacity: 0.7; flex-shrink: 0; margin-left: auto;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
