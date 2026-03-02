@@ -23,8 +23,8 @@ Dit document beschrijft alle voltooide en geplande refactoring-fasen van de Team
 
 | Metric | Waarde | Doel |
 |--------|--------|------|
-| Totaal bestanden | 373 | — |
-| Totaal regels | 114.130 | — |
+| Totaal bestanden (demo/src) | 373 | — |
+| Totaal regels (demo/src) | 114.130 | — |
 | Bestanden >1500 regels | **3** | **0** |
 | Bestanden >1000 regels | **23** | **0** |
 | Bestanden >500 regels | **61** | **< 20** |
@@ -35,6 +35,43 @@ Dit document beschrijft alle voltooide en geplande refactoring-fasen van de Team
 | UI Primitives (`components/ui/`) | **0** | 15+ |
 | Custom hooks | 53 | — |
 | Lazy-loaded routes | 30+ | — |
+| **packages/ code (gebouwd, deels ongebruikt)** | **41.164 regels** | **Integreren of archiveren** |
+
+---
+
+## Bestaande Frontend Packages (`packages/`)
+
+Er zijn **9 packages** al gebouwd in `packages/` (samen 41K+ regels code, 321 bestanden). Deze corresponderen met de F-modules uit de roadmap (F01-F10, status: done). **De meeste zijn nauwelijks geïntegreerd in de demo webapp.**
+
+### Integratie-audit (2026-03-02)
+
+| Package | Module | Regels | Bestanden | Imports in demo | Status |
+|---------|--------|--------|-----------|-----------------|--------|
+| `@django-core/design-system` | F01 | 12.354 | 105 | **157** | ✅ Meest gebruikt — tokens, Button, Input, ThemeProvider |
+| `@django-core/page-templates` | F06 | 5.231 | 33 | **56** | ⚠️ Deels gebruikt — layouts, maar niet alle templates |
+| `@django-core/auth-ui` | F02 | 3.855 | 29 | **46** | ⚠️ Deels gebruikt — login/logout, maar niet password reset |
+| `@django-core/context-switcher` | F03 | 2.809 | 21 | **44** | ⚠️ Deels gebruikt — org switcher, maar niet alle features |
+| `@django-core/theme-system` | F07 | 2.241 | 27 | **7** | ❌ Nauwelijks gebruikt — ThemeProvider en ThemeToggle alleen |
+| `@django-core/api-client` | — | 295 | 6 | **6** | ❌ Nauwelijks gebruikt — demo gebruikt eigen fetch wrappers |
+| `@django-core/notifications-hub` | F04 | 8.947 | 56 | **1** | ❌ Niet gebruikt — ToastHost, NotificationPanel, UnreadBadge ongebruikt |
+| `@django-core/permissions` | F08/B08 | 2.822 | 24 | **1** | ❌ Niet gebruikt — PermissionProvider, usePermissions ongebruikt |
+| `@django-core/resource-alerts` | F05 | 2.611 | 20 | **0** | ❌ Niet gebruikt — Alert, Badge, ResourceUsageBar, HealthStatus ongebruikt |
+
+**Totaal ongebruikt potentieel: ~17.000 regels** aan al-gebouwde componenten die niet of nauwelijks in de webapp zitten.
+
+### Beslissing nodig per package
+
+| Package | Aanbeveling | Reden |
+|---------|-------------|-------|
+| `design-system` | **Dieper integreren** | Al meest gebruikt, maar demo heeft eigen Button/Modal/Card patronen die naar DS primitives moeten migreren |
+| `page-templates` | **Dieper integreren** | Dashboard, List-Detail, Wizard, Settings templates — de demo bouwt dit nu zelf per pagina |
+| `auth-ui` | **Dieper integreren** | Password reset, profile management features ongebruikt |
+| `context-switcher` | **Dieper integreren** | Keyboard shortcut (Cmd+K), recent history, zoek-features ongebruikt |
+| `theme-system` | **Integreren of mergen met design-system** | Aparte ThemeProvider terwijl DS er ook een heeft — dedup nodig |
+| `api-client` | **Vervangen of adopteren** | Demo gebruikt eigen fetch wrappers in adapters/ — kies één pad |
+| `notifications-hub` | **Integreren** | 8.9K regels met Toast, NotificationPanel, UnreadBadge — demo mist deze features |
+| `permissions` | **Integreren** | RBAC UI checks (PermissionGate, usePermissions) — demo doet nu geen frontend permissie-checks |
+| `resource-alerts` | **Integreren** | Alert, Badge, ResourceUsageBar — demo herbouwt deze patronen inline |
 
 ---
 
@@ -109,28 +146,119 @@ Dit document beschrijft alle voltooide en geplande refactoring-fasen van de Team
 
 ---
 
-### Track C: UI Primitives Library (NIEUW — start na Phase 26)
+### Track G: Package Integration (NIEUW — start na Phase 26)
+
+**Doel:** De 41K+ regels aan al-gebouwde packages daadwerkelijk integreren in de demo webapp, in plaats van dezelfde functionaliteit opnieuw inline te bouwen.
+
+**Principe:** *Adopt before you build.* Voordat we nieuwe UI primitives maken in Track C, kijken we eerst of het al bestaat in `packages/`.
+
+#### Fase G1: Theme & Token Unificatie
+
+**Focus:** `@django-core/theme-system` (7 imports) + `@django-core/design-system` tokens
+
+| Taak | Wat |
+|------|-----|
+| G1.1 | Audit: vergelijk DS tokens vs theme-system tokens — overlap/conflicten in kaart |
+| G1.2 | Kies één ThemeProvider (DS of theme-system) en migreer |
+| G1.3 | Activeer `ThemeToggle` + `useTheme` vanuit het gekozen package |
+| G1.4 | BrandConfig integreren: clubkleuren → dynamische theme tokens |
+| G1.5 | Verwijder inline kleur-hardcoding in demo die nu door tokens gedekt wordt |
+
+#### Fase G2: API Client Adoptie
+
+**Focus:** `@django-core/api-client` (6 imports) vs `demo/src/adapters/`
+
+| Taak | Wat |
+|------|-----|
+| G2.1 | Vergelijk api-client features vs demo's eigen fetch wrappers |
+| G2.2 | **Keuze:** api-client als basis adopteren OF demo's adapters verrijken en api-client deprecaten |
+| G2.3 | CSRF handling unificeren — `getCsrfToken()` + `normalizeError()` op één plek |
+| G2.4 | Migreer adapters die handmatig `fetch()` doen |
+
+#### Fase G3: Notifications & Feedback
+
+**Focus:** `@django-core/notifications-hub` (1 import — 8.9K regels ongebruikt!)
+
+| Taak | Wat |
+|------|-----|
+| G3.1 | Activeer `ToastHost` in de app root — vervangt inline toast patronen |
+| G3.2 | Activeer `NotificationPanel` + `UnreadBadge` in de sidebar/header |
+| G3.3 | `ErrorBoundary` van notifications-hub integreren als globale error catcher |
+| G3.4 | `NotificationBell` + real-time notificaties indien backend WebSocket/SSE heeft |
+
+#### Fase G4: Permissions & Access Control
+
+**Focus:** `@django-core/permissions` (1 import — 2.8K regels ongebruikt!)
+
+| Taak | Wat |
+|------|-----|
+| G4.1 | `PermissionsProvider` in de app root zetten |
+| G4.2 | `usePermissions` hook adopteren in pages met role-based content |
+| G4.3 | `PermissionGate` component gebruiken voor conditionele UI (buttons, menu items) |
+| G4.4 | Admin/manager/member visibility rules implementeren |
+
+#### Fase G5: Resource Alerts & Status UI
+
+**Focus:** `@django-core/resource-alerts` (0 imports — volledig ongebruikt!)
+
+| Taak | Wat |
+|------|-----|
+| G5.1 | `Alert` component adopteren — vervangt inline waarschuwingsbanners |
+| G5.2 | `Badge` component adopteren — vervangt herhaalde inline badge patronen |
+| G5.3 | `ResourceUsageBar` integreren — credits pagina, storage usage |
+| G5.4 | `HealthStatus` integreren — system status indicators |
+
+#### Fase G6: Deeper Design System Adoption
+
+**Focus:** `@django-core/design-system` (157 imports maar demo heeft ook eigen Button/Input/Card)
+
+| Taak | Wat |
+|------|-----|
+| G6.1 | Audit: welke DS exports worden NIET gebruikt in demo (Button variants, Input sizes, etc.) |
+| G6.2 | Vervang demo's eigen `<button className={s.btnPrimary}>` patronen door DS `<Button>` |
+| G6.3 | Vervang demo's eigen form elements door DS `<Input>`, `<Textarea>`, `<Select>` |
+| G6.4 | DS token export als single source of truth voor alle CSS custom properties |
+
+#### Fase G7: Page Templates Deepening
+
+**Focus:** `@django-core/page-templates` (56 imports maar meer templates beschikbaar)
+
+| Taak | Wat |
+|------|-----|
+| G7.1 | Inventariseer ongebruikte templates (Wizard, Settings, etc.) |
+| G7.2 | Migreer handgemaakte page layouts naar template components |
+| G7.3 | Consistency check: alle pages gebruiken een template |
+
+---
+
+### Track C: UI Primitives Library (na Track G audit)
 
 **Doel:** `demo/src/components/ui/` met herbruikbare atomic components.
 
-De primitives worden niet from-scratch gebouwd maar **geëxtraheerd uit bestaande code** waar dezelfde patronen steeds terugkomen.
+> **⚠️ Adopt before you build!** Na Track G zijn veel primitives al beschikbaar via packages. Track C bouwt alleen wat nog NIET gedekt wordt door packages.
 
-#### Fase C1: Core Primitives
+#### Pre-check per primitive
+
+Voordat een nieuwe primitive gebouwd wordt:
+1. Check of het in `@django-core/design-system` zit → **gebruik het**
+2. Check of het in `@django-core/resource-alerts` of `notifications-hub` zit → **gebruik het**
+3. Check of de demo een patroon >3x herhaalt dat NIET in packages zit → **extract as primitive**
+
+#### Fase C1: Primitives die NIET in packages zitten
 
 | Component | Bron (nu herhaald in) | Props |
 |-----------|----------------------|-------|
-| `Button` | Elke pagina (~50x herhaling van `<button className={s.btnPrimary}>`) | `variant`, `size`, `icon`, `loading`, `disabled` |
 | `IconButton` | History buttons, close buttons, action buttons | `icon`, `variant`, `size`, `tooltip` |
-| `Badge` | Inherited badges, status badges, count badges | `variant`, `color`, `children` |
 | `Card` | AssetCard, MetricCard, UserCard, ContentCard | `padding`, `variant`, `onClick` |
 | `Modal` | 15+ modals met elk eigen overlay/panel/close pattern | `isOpen`, `onClose`, `title`, `size` |
-| `Input` / `Select` / `Textarea` | Forms in elke edit modal | `label`, `error`, `help`, `size` |
 | `Spinner` / `Skeleton` | Loading states overal | `size`, `variant` |
 | `EmptyState` | "Geen resultaten" patronen | `icon`, `title`, `description`, `action` |
 | `Avatar` | User/member foto's met fallback | `src`, `name`, `size` |
 | `Tabs` | Tab navigatie op elke detail page | `items`, `activeId`, `onChange` |
 | `DataTable` | UsersList, ContentLibrary, AuditLog | `columns`, `data`, `sort`, `pagination` |
 | `SearchInput` | Search bars in elke list page | `value`, `onChange`, `placeholder` |
+
+> **Button**, **Badge**, **Alert**, **Input**, **Textarea**, **Toast** → komen uit packages (Track G).
 
 #### Fase C2: Layout Primitives
 
@@ -143,14 +271,12 @@ De primitives worden niet from-scratch gebouwd maar **geëxtraheerd uit bestaand
 | `SplitView` | Desktop: sidebar + main, Mobile: full-width |
 | `ResponsiveGrid` | Auto-responsive grid met breakpoints |
 
-#### Fase C3: Feedback Primitives
+#### Fase C3: Feedback Primitives (aanvulling op G3/G5)
 
-| Component | Doel |
-|-----------|------|
-| `Toast` | Notificaties (success, error, info) |
-| `ConfirmDialog` | Vervangt `window.confirm()` calls |
-| `ProgressBar` | Upload/generation progress |
-| `Alert` | Inline waarschuwingen (⚠️ patronen) |
+| Component | Doel | Package? |
+|-----------|------|----------|
+| `ConfirmDialog` | Vervangt `window.confirm()` calls | Nee — nieuw |
+| `ProgressBar` | Upload/generation progress | Nee — nieuw |
 
 ---
 
@@ -276,16 +402,30 @@ De primitives worden niet from-scratch gebouwd maar **geëxtraheerd uit bestaand
 
 ```
 Fase 24-26:  Track B — Decompose top 3 (UsersList, SeasonDetail, MatchCreateModal)
-Fase 27-28:  Track C1 + D1 — Start UI primitives (Button, Modal, Badge, Card) + Color tokens
-Fase 29-31:  Track B — Decompose tier 1 remaining + gebruik nieuwe primitives
-Fase 32-33:  Track C2 + D2 — Layout primitives + Spacing/Typography tokens
-Fase 34-36:  Track B — Decompose tier 2 bestanden
-Fase 37-38:  Track C3 + D3 — Feedback primitives + Motion/Elevation
-Fase 39-42:  Track B — Remaining decomposition + Track E (inline style sweep)
-Fase 43+:    Track F — Mobile polish
+Fase 27:     Track G1 — Theme & Token unificatie (DS vs theme-system)
+Fase 28:     Track G2 — API Client adoptie (api-client vs adapters/)
+Fase 29:     Track G3 — Notifications-hub integreren (Toast, NotificationPanel, ErrorBoundary)
+Fase 30:     Track G4 — Permissions integreren (PermissionGate, usePermissions)
+Fase 31:     Track G5 — Resource-alerts integreren (Alert, Badge, ResourceUsageBar)
+Fase 32:     Track G6 — Design System deepening (Button, Input, Textarea migratie)
+Fase 33:     Track C1 + D1 — Resterende UI primitives (Modal, Card, DataTable) + Color tokens
+Fase 34-36:  Track B — Decompose Tier 2 bestanden + gebruik nieuwe primitives/packages
+Fase 37-38:  Track C2 + D2 — Layout primitives + Spacing/Typography tokens
+Fase 39-41:  Track B — Decompose remaining + Track E (inline style sweep)
+Fase 42-43:  Track C3 + D3 — Feedback primitives + Motion/Elevation tokens
+Fase 44-46:  Track B — Final decomposition + Track G7 (Page Templates deepening)
+Fase 47+:    Track F — Mobile polish
 ```
 
-**Kruisbestuiving:** Elke decomposition-sessie is ook een kans om herhalende patronen te spotten en naar primitives te promoveren. De tracks zijn niet strikt sequentieel maar verweven.
+**Kruisbestuiving:** Elke decomposition-sessie is ook een kans om herhalende patronen te spotten. Package adoptie (Track G) gaat vóór nieuwe primitives bouwen (Track C) — *adopt before you build*.
+
+**Totale effort schatting:**
+- Track B (decomposition): ~7 sessies
+- Track G (package adoptie): ~6 sessies
+- Track C+D (primitives + tokens): ~4 sessies
+- Track E (inline style sweep): ~3 sessies
+- Track F (mobile polish): ~3 sessies
+- **Totaal: ~23 sessies**
 
 ---
 
@@ -301,6 +441,15 @@ Fase 43+:    Track F — Mobile polish
 
 - [ ] Geen bestand > 500 regels (excl. constants/config)
 - [ ] `components/ui/` bevat 15+ herbruikbare primitives
+- [ ] Alle 9 packages actief geïntegreerd (≥10 imports per package OF bewust gedeprecate)
+- [ ] `@django-core/resource-alerts` geïntegreerd (was: 0 imports)
+- [ ] `@django-core/notifications-hub` geïntegreerd (was: 1 import)
+- [ ] `@django-core/permissions` geïntegreerd (was: 1 import)
+- [ ] Inline `style={{}}` count: 0 (was: ~3300)
+- [ ] 100+ CSS custom properties / design tokens
+- [ ] Eén ThemeProvider (geen dubbele DS + theme-system)
+- [ ] Eén API client layer (geen dubbele api-client + adapters/)
+- [ ] Mobile touch targets ≥ 44x44px op alle interactieve elementen
 - [ ] 100+ design tokens (kleuren, spacing, typography, motion)
 - [ ] 0 inline `style={{}}` statements
 - [ ] 30+ CSS Modules voor component-specifieke styling
