@@ -1,0 +1,452 @@
+/**
+ * ContentGenerationModal — API helper functions
+ *
+ * Pure async functions for all content generation API calls.
+ * No React hooks — just fetch + return.
+ */
+import { getApiBaseUrl } from '../../../utils/apiBase';
+import { getCsrfToken } from '../../../utils/csrf';
+import type { ContentTemplate, GeneratedVariant, GeneratedOutput } from './types';
+import { CONTENT_TYPES, ASSET_TYPE_TO_MEDIA_KEY } from './constants';
+
+/* ================================================================== */
+/*  Shared helpers                                                     */
+/* ================================================================== */
+
+export const resolveProjectId = (
+  matchData: { project?: { id: string } } | null,
+  seasonProjectId?: string | number,
+): string => {
+  const id = matchData?.project?.id || seasonProjectId;
+  if (!id) throw new Error('No project ID available');
+  return String(id);
+};
+
+export const postJson = async (url: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
+  const res = await fetch(url, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCsrfToken(),
+      ...extra,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = typeof err?.error === 'string'
+      ? err.error
+      : err?.error?.message || err?.error?.detail || err?.detail || `API Error: ${res.status}`;
+    throw new Error(msg);
+  }
+  return res.json();
+};
+
+/* ================================================================== */
+/*  Fetch templates                                                    */
+/* ================================================================== */
+
+export interface FetchTemplatesParams {
+  templateType: string;
+  templateSubtype: string;
+  organisationSport?: { id: number | string; name: string; slug?: string } | null;
+}
+
+export const fetchContentTemplates = async ({
+  templateType,
+  templateSubtype,
+  organisationSport,
+}: FetchTemplatesParams): Promise<ContentTemplate[]> => {
+  const params = new URLSearchParams();
+  params.append('is_active', 'true');
+  params.append('template_type', templateType);
+  params.append('template_subtype', templateSubtype);
+
+  const contentTypeConfig = CONTENT_TYPES[templateType as keyof typeof CONTENT_TYPES];
+  const sportRequired = contentTypeConfig?.sportRequired !== false;
+
+  if (organisationSport?.id && sportRequired) {
+    params.append('sport', String(organisationSport.id));
+  }
+
+  const response = await fetch(
+    `${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`,
+    { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+  );
+  if (!response.ok) throw new Error('Failed to fetch templates');
+
+  const data = await response.json();
+  let results = data.results || data || [];
+
+  // Fallback: try without sport filter
+  if (results.length === 0 && organisationSport?.id && sportRequired) {
+    const paramsAll = new URLSearchParams();
+    paramsAll.append('is_active', 'true');
+    paramsAll.append('template_type', templateType);
+    paramsAll.append('template_subtype', templateSubtype);
+
+    const responseAll = await fetch(
+      `${getApiBaseUrl()}/api/v1/content-generation/templates/?${paramsAll.toString()}`,
+      { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+    );
+    if (responseAll.ok) {
+      const dataAll = await responseAll.json();
+      results = dataAll.results || dataAll || [];
+    }
+  }
+
+  return results;
+};
+
+/* ================================================================== */
+/*  Lineup Flyer                                                       */
+/* ================================================================== */
+
+export interface GenerateLineupFlyerParams {
+  matchData: { id: string; project?: { id: string }; metadata?: Record<string, any> } | null;
+  seasonProjectId?: string | number;
+  selectedMembers: Record<string, string[]>;
+  lineupFormation: string;
+  lineupCloseupStyle: string;
+  selectedTemplateId?: number | null;
+  selectedBackgroundUrl?: string | null;
+}
+
+export const generateLineupFlyer = async (p: GenerateLineupFlyerParams): Promise<GeneratedVariant[]> => {
+  const projectId = resolveProjectId(p.matchData, p.seasonProjectId);
+  if (!p.matchData?.id) throw new Error('No match/activity data available for flyer generation');
+
+  const formation = p.lineupFormation || p.matchData?.metadata?.formation || '4-3-3';
+  const data = await postJson(
+    `${getApiBaseUrl()}/api/v1/video/jobs/lineup-flyer/`,
+    {
+      activity_id: p.matchData.id,
+      template_id: p.selectedTemplateId || null,
+      formation,
+      closeup_style: p.lineupCloseupStyle,
+      selected_member_ids: {
+        goalkeeper: p.selectedMembers.goalkeeper?.slice(0, 1) || [],
+        player: p.selectedMembers.player?.slice(0, 10) || [],
+      },
+      ...(p.selectedBackgroundUrl ? { background_url: p.selectedBackgroundUrl } : {}),
+    },
+    { 'X-Project-ID': projectId },
+  );
+
+  const flyerUrl = data.data?.flyer_url || data.flyer_url;
+  if (!flyerUrl) throw new Error('Flyer generated but no URL returned');
+
+  return [{
+    variant_index: 0,
+    image_base64: null,
+    presigned_url: flyerUrl,
+    mime_type: 'image/png',
+    filename: `lineup_flyer_${p.matchData.id}.png`,
+    error: null,
+    storage_info: null,
+    metadata: { type: 'lineup_flyer', formation, activity_id: p.matchData.id },
+  }];
+};
+
+/* ================================================================== */
+/*  Team Poster                                                        */
+/* ================================================================== */
+
+export interface GenerateTeamPosterParams {
+  matchData: { id: string; project?: { id: string }; metadata?: Record<string, any> } | null;
+  seasonProjectId?: string | number;
+  selectedMembers: Record<string, string[]>;
+  lineupFormation: string;
+  selectedTemplateId?: number | null;
+}
+
+export const generateTeamPoster = async (p: GenerateTeamPosterParams): Promise<GeneratedVariant[]> => {
+  const projectId = resolveProjectId(p.matchData, p.seasonProjectId);
+  if (!p.matchData?.id) throw new Error('No match/activity data available for poster generation');
+
+  const formation = p.lineupFormation || p.matchData?.metadata?.formation || '4-3-3';
+  const data = await postJson(
+    `${getApiBaseUrl()}/api/v1/video/jobs/team-poster/`,
+    {
+      activity_id: p.matchData.id,
+      template_id: p.selectedTemplateId || null,
+      formation,
+      selected_member_ids: {
+        goalkeeper: p.selectedMembers.goalkeeper?.slice(0, 1) || [],
+        player: p.selectedMembers.player?.slice(0, 10) || [],
+      },
+    },
+    { 'X-Project-ID': projectId },
+  );
+
+  const posterUrl = data.poster_url || data.data?.poster_url;
+  if (!posterUrl) throw new Error('Poster generated but no URL returned');
+
+  return [{
+    variant_index: 0,
+    image_base64: null,
+    presigned_url: posterUrl,
+    mime_type: 'image/png',
+    filename: `team_poster_${p.matchData.id}.png`,
+    error: null,
+    storage_info: null,
+    metadata: { type: 'poster', formation, activity_id: p.matchData.id },
+  }];
+};
+
+/* ================================================================== */
+/*  Match Flyer                                                        */
+/* ================================================================== */
+
+export interface GenerateMatchFlyerParams {
+  matchData: { id: string; project?: { id: string } } | null;
+  seasonProjectId?: string | number;
+  matchFlyerVariant: string;
+  flyerPhotoLayout: string;
+  flyerPhotoSlots: Array<{ member_id: string | null; style_variant: string }>;
+  flyerMemberId: string | null;
+  flyerActionStyle: string;
+  selectedBackgroundUrl?: string | null;
+}
+
+export const generateMatchFlyer = async (p: GenerateMatchFlyerParams): Promise<GeneratedVariant[]> => {
+  const projectId = resolveProjectId(p.matchData, p.seasonProjectId);
+  if (!p.matchData?.id) throw new Error('No match/activity data available for flyer generation');
+
+  const data = await postJson(
+    `${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`,
+    {
+      activity_id: p.matchData.id,
+      variant: p.matchFlyerVariant,
+      ...(p.matchFlyerVariant === 'action' && p.flyerPhotoLayout !== 'single' ? {
+        photo_slots: p.flyerPhotoSlots.filter(s => s.member_id).length > 0
+          ? p.flyerPhotoSlots.map(s => ({ member_id: s.member_id, style_variant: s.style_variant }))
+          : undefined,
+      } : {}),
+      ...(p.matchFlyerVariant === 'action' && p.flyerPhotoLayout === 'single' && p.flyerMemberId ? {
+        member_id: p.flyerMemberId,
+        style_variant: p.flyerActionStyle,
+      } : {}),
+      ...(p.matchFlyerVariant === 'action' && p.selectedBackgroundUrl ? {
+        background_url: p.selectedBackgroundUrl,
+      } : {}),
+      ...(p.matchFlyerVariant === 'action' ? { photo_layout: p.flyerPhotoLayout } : {}),
+    },
+    { 'X-Project-ID': projectId },
+  );
+
+  const flyerUrl = data.data?.flyer_url || data.flyer_url;
+  if (!flyerUrl) throw new Error('Flyer generated but no URL returned');
+
+  return [{
+    variant_index: 0,
+    image_base64: null,
+    presigned_url: flyerUrl,
+    mime_type: 'image/png',
+    filename: `match_flyer_${p.matchFlyerVariant}_${p.matchData.id}.png`,
+    error: null,
+    storage_info: null,
+    metadata: { type: 'match_flyer', variant: p.matchFlyerVariant, activity_id: p.matchData.id },
+  }];
+};
+
+/* ================================================================== */
+/*  Match Summary                                                      */
+/* ================================================================== */
+
+export interface GenerateMatchSummaryParams {
+  matchData: { id: string; project?: { id: string } } | null;
+  seasonProjectId?: string | number;
+  summaryScoreHome: number;
+  summaryScoreAway: number;
+  summaryGoalScorers: string;
+  selectedBackgroundUrl?: string | null;
+}
+
+export const generateMatchSummary = async (p: GenerateMatchSummaryParams): Promise<GeneratedVariant[]> => {
+  if (!p.matchData?.id) throw new Error('No match data available');
+  const projectId = resolveProjectId(p.matchData, p.seasonProjectId);
+
+  const scorers = p.summaryGoalScorers
+    .split('\n')
+    .map(s => s.trim())
+    .filter(s => s.length > 0);
+
+  const data = await postJson(
+    `${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`,
+    {
+      activity_id: p.matchData.id,
+      variant: 'summary',
+      score_home: p.summaryScoreHome,
+      score_away: p.summaryScoreAway,
+      goal_scorers: scorers.length > 0 ? scorers : undefined,
+      ...(p.selectedBackgroundUrl ? { background_url: p.selectedBackgroundUrl } : {}),
+    },
+    { 'X-Project-ID': projectId },
+  );
+
+  const flyerUrl = data.data?.flyer_url || data.flyer_url;
+  if (!flyerUrl) throw new Error('Summary generated but no URL returned');
+
+  return [{
+    variant_index: 0,
+    image_base64: null,
+    presigned_url: flyerUrl,
+    mime_type: 'image/png',
+    filename: `match_summary_${p.matchData.id}.png`,
+    error: null,
+    storage_info: null,
+    metadata: { type: 'match_summary', activity_id: p.matchData.id },
+  }];
+};
+
+/* ================================================================== */
+/*  Generic AI generation                                              */
+/* ================================================================== */
+
+export interface GenerateGenericAIParams {
+  selectedType?: { type: string; subtype: string } | null;
+  selectedTemplate?: ContentTemplate | null;
+  matchData: { id: string; project?: { id: string; name: string }; opponent_project?: { id: string; name: string } } | null;
+  organisationId?: string | null;
+  assetType?: string | null;
+}
+
+export interface GenericAIResult {
+  variants: GeneratedVariant[];
+  generatedOutput: GeneratedOutput | null;
+}
+
+export const generateGenericAI = async (p: GenerateGenericAIParams): Promise<GenericAIResult> => {
+  const isStandardize = (p.selectedType?.subtype || '').includes('standardize') ||
+    (p.selectedType?.subtype || '').includes('logo') ||
+    (p.selectedType?.subtype || '').includes('sponsor');
+  const variantCount = isStandardize ? 3 : 1;
+
+  const data = await postJson(`${getApiBaseUrl()}/api/v1/generative/assets/generate/`, {
+    template_id: p.selectedTemplate?.id?.toString() || 'default',
+    params: {
+      template_type: p.selectedType?.type || p.selectedTemplate?.template_type,
+      template_subtype: p.selectedType?.subtype || p.selectedTemplate?.template_subtype,
+      style_variant: p.selectedTemplate?.style_variant || 'default',
+      match_id: p.matchData?.id,
+      project_name: p.matchData?.project?.name,
+      opponent_name: p.matchData?.opponent_project?.name,
+    },
+    variant_count: variantCount,
+    input_images: {},
+    input_image_urls: {},
+    project_id: p.matchData?.project?.id || null,
+    organisation_id: p.organisationId || null,
+    activity_id: p.matchData?.id || null,
+    asset_type: p.assetType || p.selectedTemplate?.template_subtype || null,
+    save_to_brand: false,
+    save_to_media_library: false,
+  });
+
+  const responseData = data.data || data;
+  const variants: GeneratedVariant[] = responseData.variants || [];
+
+  const firstError = variants.find((v: GeneratedVariant) => v.error);
+  if (firstError?.error) throw new Error(firstError.error);
+
+  let generatedOutput: GeneratedOutput | null = null;
+  const firstVariant = variants[0];
+
+  if (firstVariant) {
+    generatedOutput = {
+      image_base64: firstVariant.image_base64 || null,
+      presigned_url: firstVariant.presigned_url || null,
+      storage_info: firstVariant.storage_info || null,
+      metadata: firstVariant.metadata || {},
+    };
+  } else if (responseData.image_base64 || responseData.presigned_url) {
+    const singleVariant: GeneratedVariant = {
+      variant_index: 0,
+      image_base64: responseData.image_base64,
+      presigned_url: responseData.presigned_url,
+      mime_type: responseData.mime_type,
+      filename: responseData.filename,
+      error: null,
+      storage_info: responseData.storage_info,
+      metadata: responseData.metadata || {},
+    };
+    variants.push(singleVariant);
+    generatedOutput = {
+      image_base64: singleVariant.image_base64,
+      presigned_url: singleVariant.presigned_url,
+      storage_info: singleVariant.storage_info,
+      metadata: singleVariant.metadata,
+    };
+  }
+
+  return { variants, generatedOutput };
+};
+
+/* ================================================================== */
+/*  Save variant                                                       */
+/* ================================================================== */
+
+export interface SaveVariantParams {
+  variant: GeneratedVariant;
+  variantIdx: number;
+  totalVariants: number;
+  selectedType?: { type: string; subtype: string } | null;
+  selectedTemplate?: ContentTemplate | null;
+  assetType?: string | null;
+  matchData: { id: string; project?: { id: string } } | null;
+  organisationId?: string | null;
+}
+
+export interface SaveVariantResult {
+  file_asset_id?: string;
+  brand_asset_id?: string;
+  media_item_id?: string;
+  storage_path?: string;
+}
+
+export const saveGeneratedVariant = async (p: SaveVariantParams): Promise<SaveVariantResult> => {
+  const templateSubtype = p.selectedType?.subtype || p.selectedTemplate?.template_subtype || '';
+  const isVideo = (p.variant.mime_type || '').startsWith('video/');
+  let brandAssetType = p.assetType;
+
+  if (templateSubtype.includes('logo')) brandAssetType = 'logo';
+  else if (templateSubtype.includes('sponsor')) brandAssetType = 'sponsor_logo';
+  else if (templateSubtype.includes('kit') || templateSubtype.includes('tenue')) {
+    const kitType = (p.selectedTemplate as ContentTemplate & { params?: { kit_type?: string } })?.params?.kit_type || 'home';
+    brandAssetType = `kit_${kitType}`;
+  } else if (templateSubtype === 'lineup_flyer') brandAssetType = `lineup_flyer_${(p.matchData?.id || '').toString().slice(0, 8) || 'unknown'}`;
+  else if (templateSubtype === 'flyer') brandAssetType = `match_flyer_${(p.matchData?.id || '').toString().slice(0, 8) || 'unknown'}`;
+  else if (templateSubtype === 'goal' || templateSubtype === 'goal_celebration') brandAssetType = `goal_${(p.matchData?.id || '').toString().slice(0, 8) || 'unknown'}`;
+  else if (templateSubtype === 'match_intro') brandAssetType = `match_intro_${(p.matchData?.id || '').toString().slice(0, 8) || 'unknown'}`;
+  else if (templateSubtype === 'poster') brandAssetType = `poster_${(p.matchData?.id || '').toString().slice(0, 8) || 'unknown'}`;
+  else if (templateSubtype === 'lineup' || isVideo) brandAssetType = `lineup_${(p.matchData?.id || '').toString().slice(0, 8) || 'unknown'}`;
+
+  if (!brandAssetType) brandAssetType = 'other';
+  if (p.totalVariants > 1) brandAssetType = `${brandAssetType}_v${p.variantIdx + 1}`;
+
+  const filename = p.variant.filename || (isVideo ? 'lineup.mp4' : 'saved_asset.png');
+
+  const data = await postJson(`${getApiBaseUrl()}/api/v1/generative/assets/save/`, {
+    storage_path: p.variant.storage_info?.storage_path,
+    presigned_url: p.variant.presigned_url,
+    video_url: isVideo ? p.variant.presigned_url : null,
+    image_base64: p.variant.image_base64,
+    filename,
+    mime_type: p.variant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
+    file_size_bytes: p.variant.storage_info?.file_size_bytes || 0,
+    organisation_id: p.organisationId,
+    project_id: p.matchData?.project?.id,
+    activity_id: p.matchData?.id || null,
+    asset_type: brandAssetType,
+  });
+
+  const result = data.data || data;
+  return {
+    file_asset_id: result.file_asset_id,
+    brand_asset_id: result.brand_asset_id,
+    media_item_id: result.media_item_id,
+    storage_path: result.storage_path,
+  };
+};

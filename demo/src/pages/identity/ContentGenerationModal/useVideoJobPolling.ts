@@ -1,0 +1,162 @@
+/**
+ * ContentGenerationModal — Video job polling sub-hook
+ *
+ * Manages video job state, polling, and approval actions.
+ */
+import { useState, useEffect, useRef } from 'react';
+import { getApiBaseUrl } from '../../../utils/apiBase';
+import { getCsrfToken } from '../../../utils/csrf';
+
+/* ================================================================== */
+/*  Types                                                              */
+/* ================================================================== */
+
+export interface UseVideoJobPollingParams {
+  isOpen: boolean;
+  step: string;
+  onGenerated?: (message?: string) => void;
+}
+
+export interface UseVideoJobPollingReturn {
+  videoJobId: string | null;
+  setVideoJobId: React.Dispatch<React.SetStateAction<string | null>>;
+  videoJobStatus: string | null;
+  videoJobProgressRaw: number;
+  videoJobMeta: Record<string, unknown>;
+  videoOutputUrl: string | null;
+  videoThumbnailUrl: string | null;
+  videoApprovalStatus: 'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected';
+  videoApprovalError: string | null;
+  resetVideo: () => void;
+  abortActiveVideoJobPoll: () => void;
+  handleVideoApproval: (action: 'approve' | 'reject') => Promise<void>;
+}
+
+/* ================================================================== */
+/*  Hook                                                               */
+/* ================================================================== */
+
+export function useVideoJobPolling({
+  isOpen,
+  step,
+  onGenerated,
+}: UseVideoJobPollingParams): UseVideoJobPollingReturn {
+  const [videoJobId, setVideoJobId] = useState<string | null>(null);
+  const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
+  const [videoJobProgressRaw, setVideoJobProgressRaw] = useState<number>(0);
+  const [videoJobMeta, setVideoJobMeta] = useState<Record<string, unknown>>({});
+  const [videoOutputUrl, setVideoOutputUrl] = useState<string | null>(null);
+  const [videoThumbnailUrl, setVideoThumbnailUrl] = useState<string | null>(null);
+  const [videoApprovalStatus, setVideoApprovalStatus] = useState<'idle' | 'approving' | 'rejecting' | 'approved' | 'rejected'>('idle');
+  const [videoApprovalError, setVideoApprovalError] = useState<string | null>(null);
+
+  const activeVideoJobPollRef = useRef<AbortController | null>(null);
+
+  const abortActiveVideoJobPoll = () => {
+    const ctrl = activeVideoJobPollRef.current;
+    if (ctrl) {
+      ctrl.abort();
+      activeVideoJobPollRef.current = null;
+    }
+  };
+
+  const resetVideo = () => {
+    setVideoJobId(null);
+    setVideoJobStatus(null);
+    setVideoJobProgressRaw(0);
+    setVideoJobMeta({});
+    setVideoOutputUrl(null);
+    setVideoThumbnailUrl(null);
+    setVideoApprovalStatus('idle');
+    setVideoApprovalError(null);
+  };
+
+  // Abort on close
+  useEffect(() => {
+    if (!isOpen) abortActiveVideoJobPoll();
+    return () => abortActiveVideoJobPoll();
+  }, [isOpen]);
+
+  // Poll video job status
+  useEffect(() => {
+    if (step !== 'video_queued' || !videoJobId || !isOpen) return;
+
+    const controller = new AbortController();
+    activeVideoJobPollRef.current = controller;
+
+    let attempts = 0;
+    const maxAttempts = 120;
+
+    const poll = async () => {
+      while (!controller.signal.aborted && attempts < maxAttempts) {
+        attempts++;
+        try {
+          const res = await fetch(
+            `${getApiBaseUrl()}/api/v1/video/jobs/${videoJobId}/`,
+            { credentials: 'include', signal: controller.signal },
+          );
+          if (!res.ok) break;
+          const data = await res.json();
+          const job = data?.data || data;
+
+          setVideoJobStatus(job.status);
+          setVideoJobProgressRaw(job.progress_percent || 0);
+
+          if (job.status === 'completed') {
+            const outUrl = job.output_url || job.output_file?.url;
+            if (outUrl) setVideoOutputUrl(outUrl);
+            if (job.thumbnail_url) setVideoThumbnailUrl(job.thumbnail_url);
+            break;
+          }
+          if (job.status === 'failed') break;
+        } catch (err: any) {
+          if (err?.name === 'AbortError') return;
+          console.warn('Poll error:', err);
+        }
+        await new Promise(r => setTimeout(r, 5000));
+      }
+    };
+
+    poll();
+    return () => controller.abort();
+  }, [step, videoJobId, isOpen]);
+
+  // Approve / reject
+  const handleVideoApproval = async (action: 'approve' | 'reject') => {
+    if (!videoJobId) return;
+    const isApprove = action === 'approve';
+    setVideoApprovalStatus(isApprove ? 'approving' : 'rejecting');
+    setVideoApprovalError(null);
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${videoJobId}/${action}/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-CSRFToken': getCsrfToken() },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error || err?.detail || `${action} failed`);
+      }
+      setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
+      if (isApprove) onGenerated?.('Video goedgekeurd en opgeslagen.');
+    } catch (err) {
+      setVideoApprovalError(err instanceof Error ? err.message : `${action} failed`);
+      setVideoApprovalStatus('idle');
+    }
+  };
+
+  return {
+    videoJobId,
+    setVideoJobId,
+    videoJobStatus,
+    videoJobProgressRaw,
+    videoJobMeta,
+    videoOutputUrl,
+    videoThumbnailUrl,
+    videoApprovalStatus,
+    videoApprovalError,
+    resetVideo,
+    abortActiveVideoJobPoll,
+    handleVideoApproval,
+  };
+}
