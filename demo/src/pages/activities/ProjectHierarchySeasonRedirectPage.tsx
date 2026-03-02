@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import SeasonDetailPage from '../identity/SeasonDetailPage';
 
 type Project = {
@@ -9,8 +10,6 @@ type Project = {
   parent?: { id: string; slug?: string } | null;
   parent_id?: string | null;
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 export default function ProjectHierarchySeasonRedirectPage() {
   const { orgId, projectId, seasonId } = useParams<{

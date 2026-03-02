@@ -1,14 +1,6 @@
-type CreateTeamreelTransactionScope = 'club' | 'team' | 'season' | 'match' | 'user';
+import { getCsrfToken } from './csrf';
 
-const getCsrfToken = (): string => {
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] ||
-    ''
-  );
-};
+type CreateTeamreelTransactionScope = 'club' | 'team' | 'season' | 'match' | 'user';
 
 const safeUuid = (): string => {
   try {

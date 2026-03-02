@@ -6,14 +6,7 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import type { AuditEvent } from '../../types';
 import { getApiBaseUrl } from '../../utils/apiBase';
-
-const unwrap = <T,>(raw: any): T => (raw?.data ?? raw) as T;
-
-const extractList = (data: any): any[] => {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.results)) return data.results;
-  return [];
-};
+import { unwrapEnvelope as unwrap, extractList } from '../../utils/apiEnvelope';
 
 export const OrganisationAuditPage: React.FC = () => {
   const { user } = useAuth();

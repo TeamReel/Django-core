@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { Palette, Image, Type, Circle, Square, Hash } from 'lucide-react';
 
 interface DesignToken {
@@ -59,8 +60,6 @@ const TOKEN_TYPE_LABELS: Record<string, string> = {
 const isColorValue = (value: string): boolean => {
   return /^#[0-9A-Fa-f]{3,8}$/.test(value) || /^rgb/.test(value) || /^hsl/.test(value);
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 export default function BrandProfileCard({
   projectId,

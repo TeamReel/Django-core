@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import {
   getContentType,
@@ -396,16 +397,6 @@ export function useMediaLibData() {
       }
 
       console.log('[MediaLib] Member assets extracted:', memberAssets.length);
-
-      const getCsrfToken = (): string => {
-        if (typeof document === 'undefined') return '';
-        return (
-          document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('csrftoken='))
-            ?.split('=')[1] || ''
-        );
-      };
 
       const pathsToConvert = Array.from(
         new Set(

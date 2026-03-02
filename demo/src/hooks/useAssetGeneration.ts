@@ -12,6 +12,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { getCsrfToken } from '../utils/csrf';
 import { createWorkflowInstance } from './useWorkflows';
 import { resolveContentTypeId, type ContentTypeName } from './useContentTypes';
 
@@ -114,11 +115,6 @@ const VIDEO_MAX_POLLS = 150; // ~12.5 min max wait
 // ============================================================================
 // Hook
 // ============================================================================
-
-function getCsrfToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
-}
 
 export function useAssetGeneration(): UseAssetGenerationReturn {
   const [step, setStep] = useState<GenerationStep>('idle');

@@ -62,38 +62,8 @@ export const KIT_TYPES = [
 
 /* ─── Pure helpers ──────────────────────────────────────────── */
 
-export const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
-
-export const getCsrfToken = (): string => {
-  try {
-    return (
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] || ''
-    );
-  } catch {
-    return '';
-  }
-};
-
-export const extractList = (raw: any): any[] => {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-  if (Array.isArray(raw?.results)) return raw.results;
-  if (Array.isArray(raw?.data)) return raw.data;
-  if (Array.isArray(raw?.data?.data)) return raw.data.data;
-  if (Array.isArray(raw?.data?.results)) return raw.data.results;
-  return [];
-};
-
-export const extractCount = (raw: any): number => {
-  const envelope = raw?.data ?? raw;
-  const countRaw = envelope?.count ?? raw?.count;
-  if (typeof countRaw === 'number') return countRaw;
-  const list = extractList(envelope);
-  return Array.isArray(list) ? list.length : 0;
-};
+export { unwrapEnvelope, extractList, extractCount } from '../../utils/apiEnvelope';
+export { getCsrfToken } from '../../utils/csrf';
 
 export const looksLikeIdentifier = (value: string): boolean => {
   const v = String(value || '').trim();

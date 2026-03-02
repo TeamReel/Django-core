@@ -52,18 +52,7 @@ interface KitsTabProps {
   onKitUploaded?: () => void;
 }
 
-const getCsrfToken = (): string => {
-  try {
-    return (
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] || ''
-    );
-  } catch {
-    return '';
-  }
-};
+import { getCsrfToken } from '../../utils/csrf';
 
 // ============================================================================
 // Component

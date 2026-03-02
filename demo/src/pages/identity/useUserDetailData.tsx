@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 
 /* ------------------------------------------------------------------ */
@@ -215,14 +216,6 @@ export function useUserDetailData(): UserDetailDataReturn {
   };
 
   /* ---------- helpers ------------------------------------------- */
-  const getCsrfToken = (): string => {
-    return (
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] || ''
-    );
-  };
 
   const getPreferredOrganisationId = (): string => {
     const fromStorage = String(localStorage.getItem('django-core:currentOrgId') || '').trim();

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge, Button } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { getAssetUrl as resolveAssetUrl } from '../../hooks/useBrandProfile';
 import { EntityEditModal } from '../EntityEditModal';
 import type { EntityType } from '../EntityEditModal';
@@ -106,8 +107,6 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
 const isColorValue = (value: string): boolean => {
   return /^#[0-9A-Fa-f]{3,8}$/.test(value) || /^rgb/.test(value) || /^hsl/.test(value);
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 const formatTokenKey = (key: string): string => {
   return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());

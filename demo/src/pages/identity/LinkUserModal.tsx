@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 
 type Organisation = {
   id: string | number;
@@ -67,13 +68,6 @@ export default function LinkUserModal({
   const [successNote, setSuccessNote] = useState<string | null>(null);
 
   const apiBaseUrl = getApiBaseUrl();
-
-  const getCsrfToken = () =>
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] ||
-    '';
 
   const userDisplayName = useMemo(() => {
     if (!user) return 'User';

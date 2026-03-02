@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 // import AppShell from '../../components/AppShell';
 import {
   LineChart,
@@ -179,23 +180,6 @@ export const CachePerformancePage: React.FC = () => {
 
   const formatPercentage = (value: number): string => {
     return `${(value * 100).toFixed(1)}%`;
-  };
-
-  // Helper function to get CSRF token from cookies
-  const getCsrfToken = (): string => {
-    const name = 'csrftoken';
-    let cookieValue = '';
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
   };
 
   return (

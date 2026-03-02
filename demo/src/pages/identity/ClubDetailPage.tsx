@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 
 import ClubOrganisationDetailPage from './ClubOrganisationDetailPage';
 
@@ -8,8 +9,6 @@ type Project = {
   id: string;
   slug?: string;
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 const looksLikeIdentifier = (value: string) => {
   const v = String(value || '').trim();

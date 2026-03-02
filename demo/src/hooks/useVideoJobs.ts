@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { getCsrfToken } from '../utils/csrf';
 
 // ============================================================================
 // Types
@@ -75,11 +76,6 @@ export interface CreateVideoJobParams {
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function getCsrfToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
-}
 
 async function videoApiFetch<T>(
   path: string,

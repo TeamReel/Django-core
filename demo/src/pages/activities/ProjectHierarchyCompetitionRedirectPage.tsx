@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import ProjectCompetitionDetailPage from '../periods/ProjectCompetitionDetailPage';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 
 type Project = {
   id: string;
@@ -9,8 +10,6 @@ type Project = {
   parent?: { id: string; slug?: string } | null;
   parent_id?: string | null;
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 export default function ProjectHierarchyCompetitionRedirectPage() {
   const { orgId, projectId, seasonId, competitionId } = useParams<{

@@ -6,6 +6,8 @@ import { BreadcrumbContextSwitcher, PageContent, PageHeader, type BreadcrumbSwit
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 
 import { SeasonsList } from './directory/SeasonsList';
 import { CompetitionsList } from './directory/CompetitionsList';
@@ -21,20 +23,6 @@ import { AssetsTab } from '../../components/AssetsTab';
 import { KitsTab } from '../../components/KitsTab';
 import { MemberMediaMatrix } from '../../components/MemberMediaMatrix';
 import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
-
-const getCsrfToken = (): string => {
-  try {
-    return (
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] ||
-      ''
-    );
-  } catch {
-    return '';
-  }
-};
 
 type Organisation = {
   id: string;
@@ -69,8 +57,6 @@ type OverviewMember = {
   first_name?: string;
   last_name?: string;
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 const looksLikeIdentifier = (value: string) => {
   const v = String(value || '').trim();

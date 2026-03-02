@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from './apiBase';
+import { getCsrfToken } from './csrf';
 
 export type ActiveContextKind =
   | 'organisation'
@@ -17,20 +18,6 @@ export function emitActiveContextChanged() {
     window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
   } catch {
     // ignore
-  }
-}
-
-function getCsrfToken(): string {
-  try {
-    return (
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] ||
-      ''
-    );
-  } catch {
-    return '';
   }
 }
 

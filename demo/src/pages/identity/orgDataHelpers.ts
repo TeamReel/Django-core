@@ -3,7 +3,6 @@
  * Extracted from useOrgData.ts during Phase 21 refactor.
  */
 
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { periodPathKey } from '../../utils/periodPath';
 
 /* ------------------------------------------------------------------ */
@@ -16,16 +15,9 @@ export const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DE
 /*  API helpers                                                        */
 /* ------------------------------------------------------------------ */
 
-export const getApiV1BaseUrl = (): string => {
-  const raw = getApiBaseUrl();
-  return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
-};
+export { getApiV1BaseUrl } from '../../utils/apiFetch';
 
-export const getCsrfToken = (): string =>
-  document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('csrftoken='))
-    ?.split('=')[1] || '';
+export { getCsrfToken } from '../../utils/csrf';
 
 /* ------------------------------------------------------------------ */
 /*  Tab definitions                                                    */

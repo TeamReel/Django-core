@@ -24,6 +24,8 @@ import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages as fetchAllPagesCached, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { getCsrfToken } from '../../utils/csrf';
+import { getApiV1BaseUrl } from '../../utils/apiFetch';
 import ProjectDetailModal from './ProjectDetailModal';
 import ProjectCreateModal from './ProjectCreateModal';
 import ProjectEditModal from './ProjectEditModal';
@@ -549,17 +551,6 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
   const currentOrgSlug = String(resolvedOrg?.slug || orgId || orgSlugOrId || '').trim();
   const currentClubId = String((clubId ? club?.id : project?.id) || '').trim();
   const currentClubSlugOrId = String((clubId ? (club as any)?.slug || club?.id : (project as any)?.slug || project?.id) || '').trim();
-
-  const getApiV1BaseUrl = () => {
-    const raw = String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
-    return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
-  };
-
-  const getCsrfToken = () =>
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] || '';
 
   const getBestMatchDetailPath = (m: any): string => {
     const matchSlugOrId = String((m as any)?.slug || m?.id || '').trim();

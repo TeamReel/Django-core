@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef, type FormEvent } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 
 interface User {
   id: string;
@@ -131,23 +132,6 @@ export default function UserEditModal({
       🔰 {label}
     </span>
   );
-
-  const getCookie = (name: string) => {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === name + '=') {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  };
-
-  const getCsrfToken = () => getCookie('csrftoken') || '';
 
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

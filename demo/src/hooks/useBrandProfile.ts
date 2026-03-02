@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { getCsrfToken } from '../utils/csrf';
 
 // ============================================================================
 // Types
@@ -235,11 +236,6 @@ interface UseBrandProfileReturn {
   fetchHistory: (assetType: string) => Promise<Array<{id: string, url: string, created_at: string, original_name: string}>>;
   /** Restore a previous version */
   restoreAsset: (fileAssetId: string, assetType: string) => Promise<boolean>;
-}
-
-function getCsrfToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
 }
 
 export function useBrandProfile({

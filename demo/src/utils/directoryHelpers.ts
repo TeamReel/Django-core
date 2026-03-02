@@ -43,11 +43,7 @@ export const sortKey = (value: unknown): string => {
 // ────────────────────────────────────────────
 
 /** Read the Django CSRF token from cookies. */
-export const getCsrfToken = (): string | undefined =>
-  document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('csrftoken='))
-    ?.split('=')[1];
+export { getCsrfToken } from './csrf';
 
 // ────────────────────────────────────────────
 // Date helpers

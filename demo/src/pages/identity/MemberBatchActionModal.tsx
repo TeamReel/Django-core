@@ -13,6 +13,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 
 // ============================================================================
 // Types
@@ -58,15 +59,6 @@ interface MemberBatchActionModalProps {
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function getCsrfToken(): string {
-    return (
-        document.cookie
-            .split('; ')
-            .find((r) => r.startsWith('csrftoken='))
-            ?.split('=')[1] || ''
-    );
-}
 
 function getMemberName(m: BatchMemberEntry): string {
     const name = `${m.first_name || ''} ${m.last_name || ''}`.trim();

@@ -3,13 +3,12 @@ import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import TeamOrganisationDetailPage from './TeamOrganisationDetailPage';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope } from '../../utils/apiEnvelope';
 
 type Project = {
   id: string;
   slug?: string;
 };
-
-const unwrapEnvelope = <T,>(raw: any): T => (raw?.data ?? raw) as T;
 
 const looksLikeIdentifier = (value: string) => {
   const v = String(value || '').trim();

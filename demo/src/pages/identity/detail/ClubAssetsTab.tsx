@@ -7,19 +7,7 @@ import {
   canGenerateClubTenue,
 } from '../../../constants/clubAssets';
 import { getApiBaseUrl } from '../../../utils/apiBase';
-
-const getCsrfToken = (): string => {
-  try {
-    return (
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] || ''
-    );
-  } catch {
-    return '';
-  }
-};
+import { getCsrfToken } from '../../../utils/csrf';
 
 interface ClubAssetsTabProps {
   clubId: string;

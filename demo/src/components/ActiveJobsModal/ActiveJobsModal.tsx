@@ -32,14 +32,7 @@ interface ActiveJobsModalProps {
   projectId: string;
 }
 
-function getCsrfToken(): string {
-  return (
-    document.cookie
-      .split('; ')
-      .find((r) => r.startsWith('csrftoken='))
-      ?.split('=')[1] || ''
-  );
-}
+import { getCsrfToken } from '../../utils/csrf';
 
 // ============================================================================
 // Styles

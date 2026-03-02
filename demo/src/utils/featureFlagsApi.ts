@@ -1,5 +1,6 @@
 import { FeatureFlag } from './featureFlagStorage';
 import { getApiBaseUrl } from './apiBase';
+import { getCsrfToken as _getCsrfTokenShared } from './csrf';
 
 const API_BASE = '/api/v1/settings/feature-flags';
 
@@ -462,18 +463,7 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
 }
 
 function getCsrfToken(): string {
-  const name = 'csrftoken';
-  let cookieValue = '';
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  debugLog('[featureFlagsApi] CSRF token:', cookieValue ? `${cookieValue.substring(0, 10)}...` : 'NOT FOUND');
-  return cookieValue;
+  const value = _getCsrfTokenShared();
+  debugLog('[featureFlagsApi] CSRF token:', value ? `${value.substring(0, 10)}...` : 'NOT FOUND');
+  return value;
 }

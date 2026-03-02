@@ -79,13 +79,7 @@ export type ListResponse<T> = {
 
 // ── Utility helpers ────────────────────────────────────────────────────
 
-/** Unwrap the `{ status, data }` envelope returned by most API endpoints. */
-export function unwrapEnvelope<T = any>(raw: any): T {
-  // Handle double-nested: { data: { data: {...} } }
-  const candidate = raw?.data?.data;
-  if (candidate && typeof candidate === 'object' && candidate.id) return candidate as T;
-  return (raw?.data ?? raw) as T;
-}
+export { unwrapEnvelope } from '../utils/apiEnvelope';
 
 /** Unwrap a list response from an API envelope. */
 export function unwrapListResults<T = any>(raw: any): T[] {
@@ -99,11 +93,4 @@ export function unwrapListResults<T = any>(raw: any): T[] {
 }
 
 /** Safe CSRF token reader. */
-export function getCsrfToken(): string {
-  return (
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] ?? ''
-  );
-}
+export { getCsrfToken } from '../utils/csrf';

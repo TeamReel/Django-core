@@ -14,6 +14,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { getCsrfToken } from '../utils/csrf';
 
 // ============================================================================
 // Types
@@ -35,11 +36,6 @@ export interface UserNotification {
 // ============================================================================
 // Helpers
 // ============================================================================
-
-function getCsrfToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
-}
 
 function unwrapNotifications(raw: any): UserNotification[] {
   const data = raw?.data ?? raw;

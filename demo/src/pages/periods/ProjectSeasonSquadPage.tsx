@@ -7,6 +7,7 @@ import AppShell from '../../components/AppShell';
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
@@ -317,12 +318,6 @@ export default function ProjectSeasonSquadPage() {
 
   const [isMembershipEditModalOpen, setIsMembershipEditModalOpen] = useState(false);
   const [selectedMembership, setSelectedMembership] = useState<any | null>(null);
-
-  const getCsrfToken = () =>
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] || '';
 
   const userRole = String((user as any)?.role || '').toLowerCase();
   const isSuperAdmin =

@@ -1,11 +1,7 @@
 import type { OrgOption, ProjectOption, PeriodOption } from './matchCreateTypes';
 
-// ─── API response helpers ────────────────────────────────────────────────────
-
-export const extractList = (raw: any): any[] => {
-  const list = raw?.data?.data || raw?.data?.results || raw?.results || raw?.data || raw;
-  return Array.isArray(list) ? list : [];
-};
+import { extractList } from '../../utils/apiEnvelope';
+export { extractList };
 
 export const getNextUrl = (raw: any): string => {
   const next = raw?.data?.next ?? raw?.next;

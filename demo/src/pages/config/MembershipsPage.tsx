@@ -4,6 +4,7 @@ import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { unwrapEnvelope as unwrap, extractList } from '../../utils/apiEnvelope';
 
 type Period = {
   id: string;
@@ -19,14 +20,6 @@ type Activity = {
   start_datetime?: string;
   start_date?: string;
   metadata?: any;
-};
-
-const unwrap = <T,>(raw: any): T => (raw?.data ?? raw) as T;
-
-const extractList = (data: any): any[] => {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.results)) return data.results;
-  return [];
 };
 
 export const MembershipsPage: React.FC = () => {

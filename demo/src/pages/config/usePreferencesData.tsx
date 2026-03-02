@@ -15,14 +15,8 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-export function getCsrfToken(): string {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'csrftoken') return decodeURIComponent(value);
-  }
-  return '';
-}
+import { getCsrfToken } from '../../utils/csrf';
+export { getCsrfToken };
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

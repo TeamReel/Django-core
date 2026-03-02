@@ -127,22 +127,4 @@ export const getTeamreelRoleDisplay = (user: any, orgMembership: any, projectMem
 
 // ── API response envelope parser ──
 
-export const parseListEnvelope = (raw: any): { results: any[]; count: number } => {
-  const envelope = raw?.data ?? raw;
-  const results =
-    envelope?.results ??
-    envelope?.data ??
-    raw?.results ??
-    raw?.data ??
-    raw ??
-    [];
-
-  const list = Array.isArray(results) ? results : [];
-  const count =
-    typeof envelope?.count === 'number'
-      ? envelope.count
-      : typeof raw?.count === 'number'
-        ? raw.count
-        : list.length;
-  return { results: list, count };
-};
+export { parseListEnvelope } from '../../utils/apiEnvelope';

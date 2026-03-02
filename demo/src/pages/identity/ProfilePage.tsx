@@ -14,15 +14,7 @@ import {
 import { User } from '../../types';
 import AppShell from '../../components/AppShell';
 import { getApiBaseUrl } from '../../utils/apiBase';
-
-function getCsrfToken(): string {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'csrftoken') return decodeURIComponent(value);
-  }
-  return '';
-}
+import { getCsrfToken } from '../../utils/csrf';
 
 /**
  * T011 - Profile Page

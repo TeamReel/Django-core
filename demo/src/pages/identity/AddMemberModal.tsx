@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Input } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
 
 /* ────────────────────────────────────────────────────────── types ── */
 
@@ -29,12 +30,6 @@ interface UserResult {
 }
 
 /* ───────────────────────────────────────────────────────── helpers ── */
-
-const getCsrfToken = (): string =>
-  document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('csrftoken='))
-    ?.split('=')[1] || '';
 
 const apiBase = () => getApiBaseUrl();
 

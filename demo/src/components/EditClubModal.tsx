@@ -1,12 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, Input, Alert } from '@django-core/design-system';
 import { getApiBaseUrl } from '../utils/apiBase';
-
-// Get CSRF token from cookies
-function getCsrfToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
-}
+import { getCsrfToken } from '../utils/csrf';
 
 interface Club {
   id: string;

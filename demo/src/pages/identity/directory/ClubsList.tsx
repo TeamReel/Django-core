@@ -8,6 +8,7 @@ import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import { getCsrfToken } from '../../../utils/csrf';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
@@ -75,12 +76,6 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
   const userCanEditProject = canEditProject(permissionContext);
   const userCanDeleteProject = canDeleteProject(permissionContext);
-
-  const getCsrfToken = () =>
-    document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('csrftoken='))
-      ?.split('=')[1] || '';
 
   useEffect(() => {
     if (orgLocked) return;

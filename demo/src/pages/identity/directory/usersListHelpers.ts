@@ -5,16 +5,13 @@
  * relying on React component closures. Extracted during Phase 24.
  */
 import { ADMIN_LIKE_PROJECT_ROLES, TEAMREEL_ROLE_RANK } from './usersListTypes';
+import { getCsrfToken } from '../../../utils/csrf';
 
 // ────────────────────────────────────────────────────────────
 //  Token / ID helpers
 // ────────────────────────────────────────────────────────────
 
-export const getCsrfToken = (): string =>
-  document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('csrftoken='))
-    ?.split('=')[1] || '';
+export { getCsrfToken };
 
 export const isNumericId = (value: unknown): boolean =>
   /^\d+$/.test(String(value ?? '').trim());
