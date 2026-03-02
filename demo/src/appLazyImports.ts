@@ -66,8 +66,6 @@ export const ApiDocsPage = lazy(() => import('./pages/platform').then(m => ({ de
 export const CachePerformancePage = lazy(() => import('./pages/platform').then(m => ({ default: m.CachePerformancePage })));
 export const WebSocketTestPage = lazy(() => import('./pages/platform/WebSocketTestPage'));
 
-// Integration Status
-export const IntegrationStatusPage = lazy(() => import('./pages/IntegrationStatusPage'));
 
 // Frontend pages
 export const DesignSystemPage = lazy(() => import('./pages/frontend').then(m => ({ default: m.DesignSystemPage })));

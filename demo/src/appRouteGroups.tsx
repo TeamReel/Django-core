@@ -75,7 +75,6 @@ import {
   ApiDocsPage,
   CachePerformancePage,
   WebSocketTestPage,
-  IntegrationStatusPage,
   // Frontend
   DesignSystemPage,
   AuthFlowsPage,
@@ -256,7 +255,6 @@ export function getAdminRoutes(): React.ReactNode[] {
     <Route key="a-api-docs" path="/api-docs" element={<AdminOnlyRoute><ApiDocsPage /></AdminOnlyRoute>} />,
     <Route key="a-demo-ws" path="/demo/websockets" element={<AdminOnlyRoute><WebSocketTestPage /></AdminOnlyRoute>} />,
     <Route key="a-demo-perf" path="/demo/performance" element={<AdminOnlyRoute><CachePerformancePage /></AdminOnlyRoute>} />,
-    <Route key="a-integration-status" path="/integration-status" element={<AdminOnlyRoute><IntegrationStatusPage /></AdminOnlyRoute>} />,
 
     // Frontend resource pages
     <Route key="a-design-system" path="/design-system" element={<AdminOnlyRoute><DesignSystemPage /></AdminOnlyRoute>} />,
