@@ -4,6 +4,7 @@
 **Gestart:** 2025-Q4
 **Laatste update:** 2026-03-02
 **Doel:** Schaalbaar, toekomstbestendig design system voor premium mobile + desktop webapp
+**Fase-bestanden:** [`documents/02-roadmap/frontend-refactoring/`](../../02-roadmap/frontend-refactoring/index.md) — per fase een actionable checklist
 
 ---
 
@@ -111,34 +112,28 @@ Er zijn **9 packages** gebouwd in `packages/` (samen 41K+ regels, 321 bestanden)
 
 **Doel:** Alle bestanden onder 500 regels brengen.
 
+> **Fase-nummering:** Zie [Aanbevolen Volgorde](#aanbevolen-volgorde) voor de interleaved planning.
+> Per fase een checklist in [`phases/todo/`](../../02-roadmap/frontend-refactoring/phases/todo/).
+
 #### Tier 1: >1400 regels (hoge prioriteit)
 
-| Phase | Bestand | Regels | Aanpak |
-|-------|---------|--------|--------|
+| Fase | Bestand | Regels | Aanpak |
+|------|---------|--------|--------|
 | **24** | UsersList.tsx | 1540 | Extract filters hook, user card component, bulk actions |
 | **25** | ProjectSeasonDetailPage.tsx | 1530 | Verder splitsen: tabs die nog inline zijn → eigen bestanden |
 | **26** | MatchCreateModal.tsx | 1510 | Extract wizard steps, validation, API calls |
-| **27** | useContentGeneration.tsx | 1452 | Extract types, step logic, API helpers |
-| **28** | ContentLibraryPage.tsx | 1440 | Extract filter panel, content cards, batch actions |
-| **29** | TeamOrganisationDetailPage.tsx | 1439 | Extract tabs, modals, data hook |
-| **30** | ApprovalsPage.tsx | 1413 | Extract approval card, filter logic, batch actions |
+| **30** | useContentGeneration.tsx | 1452 | Extract types, step logic, API helpers |
+| **31** | ContentLibraryPage.tsx | 1440 | Extract filter panel, content cards, batch actions |
+| **32** | TeamOrganisationDetailPage + ApprovalsPage | 1439 + 1413 | Extract tabs, modals, data hook |
 
 #### Tier 2: 1000-1400 regels
 
-| Phase | Bestand | Regels | Aanpak |
-|-------|---------|--------|--------|
-| **31** | ProjectSeasonMemberDetailPage.tsx | 1375 | Verder splitsen (was 3998, nu 1375) |
-| **32** | UserEditModal.tsx | 1333 | Extract form sections, validation |
-| **33** | Breadcrumbs.tsx | 1264 | Extract route-config, breadcrumb resolvers |
-| **34** | UserDetailPage.tsx | 1232 | Extract detail tabs, data hook |
-| **35** | BatchGenerationModal.tsx | 1216 | Extract steps, preview, queue logic |
-| **36** | CreditsPage.tsx + UsersPage.tsx | 1208 + 1200 | Extract tables, filters, charts |
-| **37** | ProjectCompetitionDetailPage.tsx | 1182 | Verder splitsen (was 2259, nu 1182) |
-| **38** | ConfirmStep.tsx | 1164 | Extract preview sections, parameter forms |
-| **39** | usePreferencesData.tsx | 1082 | Extract types, section configs |
-| **40** | EntityEditModal.tsx + useSidebarData | 1078 + 1058 | Extract form fields, menu builders |
-| **41** | ProjectSeasonSquadPage.tsx | 1020 | Extract squad grid, member cards |
-| **42** | AssetGenerationModal.tsx | 990 | Verder splitsen (was 1532, nu 990) |
+| Fase | Bestand | Regels | Aanpak |
+|------|---------|--------|--------|
+| **35** | MemberDetailPage + UserEditModal + Breadcrumbs | 1375 + 1333 + 1264 | Extract form sections, route config |
+| **36** | UserDetailPage + BatchGenerationModal | 1232 + 1216 | Extract tabs, steps, queue logic |
+| **37** | CreditsPage + UsersPage + CompetitionDetail | 1208 + 1200 + 1182 | Extract tables, filters, charts |
+| **38** | ConfirmStep + PreferencesData + EntityEdit + remaining | 1164 + 1082 + 1078 + 1058 + 1020 + 990 | Final tier 2 sweep |
 
 **Geschatte effort:** ~3 bestanden per sessie = ~7 sessies voor Tier 1+2
 
@@ -351,6 +346,8 @@ De demo herhaalt dezelfde UI patronen op tientallen plekken. Extractie naar prim
 
 ## Aanbevolen Volgorde
 
+Dit is de **single source of truth** voor fase-nummering. Elk fase-nummer heeft een bijbehorend bestand in [`phases/todo/`](../../02-roadmap/frontend-refactoring/phases/todo/).
+
 ```
 Fase 24-26:  Track B  — Decompose top 3 (UsersList, SeasonDetail, MatchCreateModal)
 Fase 27:     Track G  — Package cleanup (getCsrfToken consolidatie + ThemeProvider dedup + archiveer 3 packages)
@@ -360,7 +357,7 @@ Fase 33-34:  Track C2 + D2 — Layout primitives + Spacing/Typography tokens
 Fase 35-38:  Track B  — Decompose Tier 2 bestanden
 Fase 39-40:  Track C3 + D3 — Feedback primitives (Toast, Alert, ConfirmDialog) + Motion/Elevation tokens
 Fase 41-43:  Track E  — Inline style elimination sweep
-Fase 44+:    Track F  — Mobile polish
+Fase 44-46:  Track F  — Mobile polish
 ```
 
 **Kruisbestuiving:** Elke decomposition-sessie is ook een kans om herhalende patronen te spotten en naar primitives te promoveren.
@@ -381,7 +378,7 @@ Fase 44+:    Track F  — Mobile polish
 - [ ] `npx vite build` — productie build slaagt
 - [ ] Geen bestand > target regellimiet
 - [ ] Gecommit + pushed naar `main`
-- [ ] Dit document bijgewerkt met resultaten
+- [ ] Phase file verplaatst van `phases/todo/` → `phases/done/`
 
 ## Definition of Done (gehele refactoring)
 
