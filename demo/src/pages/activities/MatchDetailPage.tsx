@@ -1,1232 +1,39 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Alert, Badge, Button } from '@django-core/design-system';
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { Alert, Button } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
-import AppShell from '../../components/AppShell';
 import { MatchOverviewTab, MatchContentTab, MatchTransactionsTab, MatchLineupTab } from './match-detail';
-import { fetchFlags } from '../../utils/featureFlagsApi';
-import { periodPathKey } from '../../utils/periodPath';
-import { type MatchMediaItem } from '../../components/MediaAssetCard';
-import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
-import { useAuth } from '@django-core/auth-ui';
+import CreateTransactionModal from '../../components/transactions/CreateTransactionModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
-import ContentGenerationModal, { FORMATION_LAYOUTS, type ContentTemplate } from '../identity/ContentGenerationModal';
-import { actionButtonStyle } from '../identity/detail/detailStyles';
+import ContentGenerationModal from '../identity/ContentGenerationModal';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MobileTabBar from '../../components/MobileTabBar';
-import { useBrandProfile, getAssetUrl } from '../../hooks/useBrandProfile';
-import { useSeasonContext } from '../../providers/SeasonProvider';
-import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
-import { getCsrfToken } from '../../types/season';
-
-// Types (Organisation, Project, Period) imported from ../../types/season
-// getCsrfToken imported from ../../types/season
-
-type Participation = {
-  id: string;
-  member?: { id: string; user_name?: string };
-  role?: string;
-  status?: string;
-  data?: {
-    side?: 'home' | 'away';
-    jersey_number?: number;
-    position?: string;
-    is_captain?: boolean;
-    team_name?: string;
-    team_id?: string;
-  };
-};
-
-type ActivityEvent = {
-  id: string;
-  event_type: string;
-  minute?: number;
-  team_project?: { id: string; name: string };
-  member?: { id: string; user_name?: string };
-  related_member?: { id: string; user_name?: string };
-  data?: any;
-};
-
-type OrgMember = {
-  id: string; // organisation membership id (uuid)
-  role?: string; // organisation role (admin/member)
-  user?: {
-    id: string | number;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    full_name?: string;
-  };
-};
-
-type SeasonSquadParticipation = {
-  id: string;
-  member?: { id: string; user_name?: string };
-  period?: { id: string; name?: string };
-  role?: string;
-  status?: string;
-  data?: any;
-};
-
-type ProjectMember = {
-  id: string;
-  role?: string; // viewer/editor/admin
-  organisation_membership_id?: string;
-  user?: {
-    id: string | number;
-    email?: string;
-    first_name?: string;
-    last_name?: string;
-    full_name?: string;
-  };
-  user_id?: string | number;
-};
-
-type MatchDetail = {
-  id: string;
-  title: string;
-  start_time: string;
-  end_time?: string;
-  location?: string;
-  activity_type?: string;
-  project: { id: string; name: string; slug?: string };
-  opponent_project?: { id: string; name: string; slug?: string };
-  period?: { id: string; name: string; parent_period?: { id: string; name: string } | null };
-  metadata?: Record<string, any>;
-  participations?: Participation[];
-  events?: ActivityEvent[];
-};
-
-const looksLikeIdentifier = (value: string) => {
-  const v = String(value || '').trim();
-  if (!v) return false;
-  if (/^\d+$/.test(v)) return true;
-  // Use simple UUID regex since looksLikeUuid was removed from imports
-  if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)) return true;
-  return false;
-};
-
-const getEnvelopeData = <T,>(raw: any): T => {
-  return (raw?.data ?? raw) as T;
-};
-
-const getEnvelopeListResults = <T,>(raw: any): T[] => {
-  const envelope = raw?.data ?? raw;
-  const results = envelope?.results ?? envelope?.data?.results ?? envelope?.data ?? envelope;
-  return Array.isArray(results) ? (results as T[]) : [];
-};
+import { getAssetUrl } from '../../hooks/useBrandProfile';
+import { useMatchDetailData } from './useMatchDetailData';
+import { ContentPreviewModal, SavedAssetPreviewModal, ToastNotifications } from './MatchDetailModals';
 
 export default function HierarchyMatchDetailPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user } = useAuth();
+  const d = useMatchDetailData();
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Shared season-hierarchy context (org, project, club, season, brand, permissions) Ã¢â€â‚¬Ã¢â€â‚¬
-  const {
-    org,
-    project,
-    club,
-    season,
-    resolvedSeasonId,
-    competitions: providerCompetitions,
-    loading: providerLoading,
-    error: providerError,
-    isTeamRoute,
-    orgSlugOrId,
-    clubSlugOrId,
-    projectSlugOrId,
-    effectiveSeasonId,
-    seasonsBasePath,
-    clubBrand,
-    brandLogoUrl,
-    isPlayer,
-    apiBaseUrl,
-  } = useSeasonContext();
+  /* ---- loading / error / redirect guards ---- */
 
-  // Match-specific route params only
-  const { competitionId, matchId } = useParams<{
-    competitionId: string;
-    matchId: string;
-  }>();
-
-  const [opponentClub, setOpponentClub] = useState<Project | null>(null);
-
-  // Own club brand (clubBrand) comes from SeasonProvider
-  // Opponent club brand is match-specific
-  const opponentClubBrand = useBrandProfile({
-    projectId: opponentClub?.id ? String(opponentClub.id) : undefined,
-    organisationId: org?.id ? String(org.id) : undefined,
-    autoFetch: !!opponentClub?.id,
-  });
-
-  const [competition, setCompetition] = useState<Period | null>(null);
-  const [match, setMatch] = useState<MatchDetail | null>(null);
-  const [resolvedCompetitionUuid, setResolvedCompetitionUuid] = useState<string>('');
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { if (!providerLoading && providerError) { setLoading(false); setError(providerError); } }, [providerLoading, providerError]);
-  const [error, setError] = useState<string | null>(null);
-  const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<any | null>(null);
-
-  const [isCreateTxnModalOpen, setIsCreateTxnModalOpen] = useState(false);
-
-  // Load active context on mount
-  useEffect(() => {
-    let cancelled = false;
-    const loadActiveContext = async () => {
-      try {
-        const context = await getActiveContext();
-        if (!cancelled) setActiveContextState(context);
-      } catch (e) {
-        console.error('Failed to load active context:', e);
-      }
-    };
-    void loadActiveContext();
-    return () => { cancelled = true; };
-  }, []);
-
-  const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
-  const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
-
-  // B31 Content Generation
-  const [isContentModalOpen, setIsContentModalOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
-  const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState<string>('');
-  const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
-  const [templatesLoading, setTemplatesLoading] = useState(false);
-  const [templateFlagMap, setTemplateFlagMap] = useState<Record<string, boolean>>({});
-  const [templateFlagsLoading, setTemplateFlagsLoading] = useState(false);
-
-  // Content Items - track generated content for this match
-  type ContentItemStatus = 'queued' | 'generating' | 'completed' | 'failed' | 'approved' | 'rejected';
-  type ContentItem = {
-    id: string;
-    template: { id: number; name: string; template_subtype?: string | null };
-    status: ContentItemStatus;
-    created_at: string;
-    output_file?: { id: string; url: string; file_name?: string } | null;
-    error_message?: string | null;
-  };
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
-  const [contentItemsLoading, setContentItemsLoading] = useState(false);
-  const [selectedContentItem, setSelectedContentItem] = useState<ContentItem | null>(null);
-  const [isContentPreviewOpen, setIsContentPreviewOpen] = useState(false);
-
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Saved media items for this match (media-architecture.md: MediaItem Ã¢â€ â€ Activity) Ã¢â€â‚¬Ã¢â€â‚¬
-  const [matchMedia, setMatchMedia] = useState<MatchMediaItem[]>([]);
-  const [matchMediaLoading, setMatchMediaLoading] = useState(false);
-
-  const fetchMatchMedia = useCallback(async () => {
-    if (!match?.id) return;
-    setMatchMediaLoading(true);
-    try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/media/items/?activity=${match.id}`,
-        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        const items = data?.results || data?.data?.results || [];
-        setMatchMedia(Array.isArray(items) ? items : []);
-      }
-    } catch (err) {
-      console.error('[Media] Error fetching match media:', err);
-    } finally {
-      setMatchMediaLoading(false);
-    }
-  }, [match?.id]);
-
-  useEffect(() => {
-    if (match?.id) fetchMatchMedia();
-  }, [match?.id, fetchMatchMedia]);
-
-  /**
-   * Group media items by asset_type (subtype), ordered newest-first.
-   * Returns { [subtype]: { latest: MatchMediaItem, history: MatchMediaItem[] } }
-   */
-  const mediaBySubtype = useMemo(() => {
-    const grouped: Record<string, { latest: MatchMediaItem; history: MatchMediaItem[] }> = {};
-    // Sort all items newest-first
-    const sorted = [...matchMedia].sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    );
-    for (const item of sorted) {
-      const subtype = (item.extraction_metadata?.asset_type as string) || 'other';
-      // Normalize: "lineup_07df73a6" Ã¢â€ â€™ "lineup", "goal_celebration_07df73a6" Ã¢â€ â€™ "goal"
-      let normalizedSubtype = subtype.replace(/_[a-f0-9]{8}$/i, '');
-      if (normalizedSubtype === 'goal_celebration') normalizedSubtype = 'goal';
-      if (normalizedSubtype === 'match_flyer') normalizedSubtype = 'flyer';
-      if (normalizedSubtype === 'match_intro') normalizedSubtype = 'match_intro';
-      if (!grouped[normalizedSubtype]) {
-        grouped[normalizedSubtype] = { latest: item, history: [] };
-      } else {
-        grouped[normalizedSubtype].history.push(item);
-      }
-    }
-    return grouped;
-  }, [matchMedia]);
-
-  // Get latest media item for a specific subtype
-  const getLatestMediaForSubtype = useCallback((subtype: string): MatchMediaItem | null => {
-    return mediaBySubtype[subtype]?.latest ?? null;
-  }, [mediaBySubtype]);
-
-  // Get history items (excluding latest) for a subtype
-  const getMediaHistoryForSubtype = useCallback((subtype: string): MatchMediaItem[] => {
-    return mediaBySubtype[subtype]?.history ?? [];
-  }, [mediaBySubtype]);
-
-  const refreshMatchMedia = useCallback(async () => {
-    await fetchMatchMedia();
-  }, [fetchMatchMedia]);
-
-  // Delete a MediaItem via API
-  const handleDeleteMediaItem = useCallback(async (item: MatchMediaItem) => {
-    try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/media/items/${item.id}/`,
-        { method: 'DELETE', credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (response.ok || response.status === 204) {
-        await fetchMatchMedia(); // Refresh
-      } else {
-        console.error('[Media] Delete failed:', response.status);
-      }
-    } catch (err) {
-      console.error('[Media] Error deleting media item:', err);
-    }
-  }, [fetchMatchMedia]);
-
-  // Restore a historical version by making it the "latest" (re-save with same file)
-  const handleRestoreMediaItem = useCallback(async (item: MatchMediaItem) => {
-    try {
-      // Restore by calling the save endpoint with the old item's storage path
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/generative/assets/save/`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-          body: JSON.stringify({
-            storage_path: item.storage_path,
-            filename: item.title,
-            mime_type: item.mime_type,
-            activity_id: match?.id,
-            organisation_id: org?.id,
-            project_id: match?.project?.id || project?.id,
-            asset_type: (item.extraction_metadata?.asset_type as string) || 'other',
-          }),
-        }
-      );
-      if (response.ok) {
-        await fetchMatchMedia(); // Refresh to show restored version as latest
-      } else {
-        console.error('[Media] Restore failed:', response.status);
-      }
-    } catch (err) {
-      console.error('[Media] Error restoring media item:', err);
-    }
-  }, [match?.id, org?.id, match?.project?.id, project?.id, fetchMatchMedia]);
-
-  const [savedAssetPreview, setSavedAssetPreview] = useState<{
-    title: string;
-    url: string;
-    isVideo: boolean;
-    subtitle?: string;
-  } | null>(null);
-
-  const normalizeFlagKey = (value: string): string =>
-    String(value || '').trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-
-  const slugify = (value: string): string =>
-    String(value || '')
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/-/g, '_')
-      .replace(/[^a-z0-9_]/g, '');
-
-  const buildTemplateFlagKeys = (template: ContentTemplate): string[] => {
-    const type = slugify(template.template_type);
-    const subtype = slugify(template.template_subtype || template.template_type);
-    const style = slugify(template.style_variant || '');
-    if (!type || !subtype) return [];
-    const keys: string[] = [];
-    if (style) keys.push(`content__${type}__${subtype}__style__${style}`);
-    keys.push(`content__${type}__${subtype}`);
-    keys.push(`content__${type}`);
-    return keys;
-  };
-
-  const isTemplateEnabled = (template: ContentTemplate): boolean => {
-    if (!templateFlagMap || Object.keys(templateFlagMap).length === 0) {
-      console.log('[Content Flags] No flags loaded, allowing template:', template.name);
-      return true;
-    }
-    const keys = buildTemplateFlagKeys(template);
-    for (const key of keys) {
-      const normalized = normalizeFlagKey(key);
-      if (normalized in templateFlagMap) {
-        const enabled = Boolean(templateFlagMap[normalized]);
-        if (!enabled) {
-          console.log('[Content Flags] Template DISABLED by flag:', template.name, 'key:', normalized, 'value:', enabled);
-        }
-        return enabled;
-      }
-    }
-    console.log('[Content Flags] No matching flag for template, allowing:', template.name, 'keys tried:', keys);
-    return true;
-  };
-
-  // Fetch content items for this match
-  const fetchContentItems = useCallback(async () => {
-    if (!match?.id) return;
-    setContentItemsLoading(true);
-    try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/content-generation/items/?activity=${match.id}`,
-        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        const items = data?.data?.results || data?.results || data?.data || [];
-        setContentItems(Array.isArray(items) ? items : []);
-      }
-    } catch (err) {
-      console.error('[Content] Error fetching content items:', err);
-    } finally {
-      setContentItemsLoading(false);
-    }
-  }, [match?.id]);
-
-  // Helper to get content item for a template subtype
-  const getContentItemForSubtype = useCallback((subtype: string): ContentItem | null => {
-    return contentItems.find(item => item.template?.template_subtype === subtype) || null;
-  }, [contentItems]);
-
-  // Fetch content items when match changes
-  useEffect(() => {
-    if (match?.id) {
-      fetchContentItems();
-    }
-  }, [match?.id, fetchContentItems]);
-
-  const openContentModal = (template?: ContentTemplate, label?: string) => {
-    setSelectedTemplate(template || null);
-    setSelectedContentTypeLabel(label || '');
-    setIsContentModalOpen(true);
-  };
-
-  const closeContentModal = () => {
-    setIsContentModalOpen(false);
-    setSelectedTemplate(null);
-    setSelectedContentTypeLabel('');
-    // Refresh content items to show newly generated content
-    fetchContentItems();
-    void refreshMatchMedia();
-  };
-
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Toast notifications Ã¢â€â‚¬Ã¢â€â‚¬
-  const [toasts, setToasts] = useState<{ id: string; message: string; type: 'success' | 'info' | 'warning' | 'error' }[]>([]);
-  const pushToast = useCallback((message: string, type: 'success' | 'info' | 'warning' | 'error' = 'success') => {
-    const id = String(Date.now());
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 6000);
-  }, []);
-  const dismissToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
-
-  const handleContentGenerated = useCallback((message?: string) => {
-    pushToast(message || 'Ã°Å¸â€œâ€¹ Content wordt gegenereerd en komt in de approval queue.', 'success');
-    // Refresh match media so newly approved/saved content appears
-    void refreshMatchMedia();
-  }, [pushToast, refreshMatchMedia]);
-
-  // Open content preview modal
-  const openContentPreview = (item: ContentItem) => {
-    setSelectedContentItem(item);
-    setIsContentPreviewOpen(true);
-  };
-
-  const closeContentPreview = () => {
-    setIsContentPreviewOpen(false);
-    setSelectedContentItem(null);
-  };
-
-  const fetchTemplateAvailabilityFlags = useCallback(async () => {
-    if (!org?.id) return;
-    setTemplateFlagsLoading(true);
-    try {
-      console.log('[Content Flags] Fetching flags for org:', org.id, 'club/project:', club?.id);
-      const flags = await fetchFlags(String(org.id), club?.id ? String(club.id) : undefined);
-      console.log('[Content Flags] Raw flags received:', flags.length, flags.filter(f => f.key.includes('goal')));
-      const map: Record<string, boolean> = {};
-      flags.forEach((flag) => {
-        map[normalizeFlagKey(flag.key)] = Boolean(flag.enabled);
-      });
-      console.log('[Content Flags] Flag map (goal keys):', Object.entries(map).filter(([k]) => k.includes('goal')));
-      setTemplateFlagMap(map);
-    } catch (err) {
-      console.error('[Content] Failed to fetch template availability flags:', err);
-    } finally {
-      setTemplateFlagsLoading(false);
-    }
-  }, [org?.id, club?.id]);
-
-  useEffect(() => {
-    fetchTemplateAvailabilityFlags();
-  }, [fetchTemplateAvailabilityFlags]);
-
-  // Fetch available templates for all content types
-  const fetchAvailableTemplates = useCallback(async () => {
-    setTemplatesLoading(true);
-    try {
-      // Fetch all active templates (global, not filtered by organisation)
-      const params = new URLSearchParams();
-      params.append('is_active', 'true');
-      params.append('page_size', '500');  // Ensure we get all templates, not just first 50
-
-      const response = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      console.log('[Content] API Response status:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error' }));
-        console.error('[Content] API Error:', response.status, errorData);
-        return;
-      }
-
-      const data = await response.json();
-        console.log('[Content] Full API response:', data);
-        console.log('[Content] data.data:', data?.data);
-        console.log('[Content] data.data.data:', data?.data?.data);
-
-        // Handle envelope format: { status: 'success', data: { data: [...] } }
-        const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-        const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
-
-        // Use COMPETITION sport (variant) for filtering, fallback to org sport (category)
-        const competitionSport = competition?.sport;
-        const orgSport = org?.sport;
-        // Convert to number to match template.sport type
-        const sportId = competitionSport?.id ? Number(competitionSport.id) : (orgSport?.id ? Number(orgSport.id) : undefined);
-        const sportName = competitionSport?.name || orgSport?.name;
-
-        console.log('[Content] ======================');
-        console.log('[Content] Competition sport:', competitionSport);
-        console.log('[Content] Org sport:', orgSport);
-        console.log('[Content] Using sportId for filtering:', sportId, '(', sportName, ')');
-        console.log('[Content] All templates fetched:', allTemplates.length);
-
-        if (allTemplates.length > 0) {
-          console.log('[Content] Sample template:', allTemplates[0]);
-        }
-
-        // Filter templates that match the sport (or have no sport = universal)
-        const matchingTemplates = allTemplates.filter(t => {
-          const templateOrg = (t as any).organisation ?? null;
-          const templateProject = (t as any).project ?? null;
-
-          // If template is scoped to a specific organisation, enforce it
-          if (templateOrg && String(templateOrg) !== String(org?.id || '')) {
-            return false;
-          }
-          // If template is scoped to a specific project/club, enforce it
-          if (templateProject && String(templateProject) !== String(club?.id || '')) {
-            return false;
-          }
-          // Template has no sport = universal, include it
-          if (!t.sport) {
-            console.log('[Content] Ã¢Å“â€œ Template', t.name, '- universal (no sport)');
-            return true;
-          }
-          // If no sport available, only include universal templates
-          if (!sportId) {
-            console.log('[Content] Ã¢Å“â€” Template', t.name, '- no sportId to match against');
-            return false;
-          }
-
-          // Log all the checks
-          console.log('[Content] Checking template:', t.name);
-          console.log('  - t.sport:', t.sport, 'vs sportId:', sportId);
-          console.log('  - t.sport_detail:', t.sport_detail);
-          console.log('  - competitionSport?.parent_sport_id:', competitionSport?.parent_sport_id);
-
-          // Convert all IDs to numbers for consistent comparison
-          const templateSport = t.sport ? Number(t.sport) : undefined;
-          const templateDetailId = t.sport_detail?.id ? Number(t.sport_detail.id) : undefined;
-          const templateParentSportId = t.sport_detail?.parent_sport_id ? Number(t.sport_detail.parent_sport_id) : undefined;
-
-          // Template sport matches directly (exact match)
-          if (templateSport === sportId) {
-            console.log('  Ã¢Å“â€œ Exact match: t.sport === sportId');
-            return true;
-          }
-          // Template sport_detail matches by ID
-          if (templateDetailId === sportId) {
-            console.log('  Ã¢Å“â€œ Match: t.sport_detail.id === sportId');
-            return true;
-          }
-
-          // IMPORTANT: Match if template has a sport VARIANT and we have the CATEGORY
-          // Example: Template=Football 11v11 (variant), Sport=Football (category)
-          // Check if template's sport parent matches our sport
-          if (templateParentSportId === sportId) {
-            console.log('  Ã¢Å“â€œ Match: template variant parent matches our sport');
-            return true;
-          }
-
-          // Or if we have a variant and template has the category
-          const competitionParentId = competitionSport?.parent_sport_id ? Number(competitionSport.parent_sport_id) : undefined;
-          const orgParentId = orgSport?.parent_sport_id ? Number(orgSport.parent_sport_id) : undefined;
-
-          if (competitionParentId && templateSport === competitionParentId) {
-            console.log('  Ã¢Å“â€œ Match: we have variant, template has category');
-            return true;
-          }
-          if (!competitionSport && orgParentId && templateSport === orgParentId) {
-            console.log('  Ã¢Å“â€œ Match: org variant, template has category');
-            return true;
-          }
-
-          console.log('  Ã¢Å“â€” No match');
-          return false;
-        });
-
-        // Apply feature flag availability (type/subtype/style)
-        const availabilityFiltered = matchingTemplates.filter((t) => isTemplateEnabled(t));
-
-        console.log('[Content] Matching templates for sport:', availabilityFiltered.length);
-        console.log('[Content] Template details:', availabilityFiltered.map(t => ({
-          name: t.name,
-          type: t.template_type,
-          subtype: t.template_subtype,
-          sport: t.sport_detail?.name || t.sport || 'universal'
-        })));
-
-        // Group templates by subtype
-        const grouped: Record<string, ContentTemplate[]> = {};
-        availabilityFiltered.forEach(t => {
-          const subtype = t.template_subtype || t.template_type;
-          if (!grouped[subtype]) grouped[subtype] = [];
-          grouped[subtype].push(t);
-        });
-        console.log('[Content] Grouped by subtype:', Object.keys(grouped));
-        setAvailableTemplates(grouped);
-    } catch (err) {
-      console.error('[Content] Error fetching templates:', err);
-    } finally {
-      setTemplatesLoading(false);
-    }
-  }, [competition?.sport, org?.sport, org?.id, club?.id, templateFlagMap]);
-
-  // Fetch templates when component mounts or sport changes
-  useEffect(() => {
-    fetchAvailableTemplates();
-  }, [fetchAvailableTemplates]);
-
-  const matchWalletOptions = useMemo<WalletOption[]>(() => {
-    const opts: WalletOption[] = [{ kind: 'default', label: 'Default (recommended)' }];
-    opts.push({ kind: 'organization', label: 'Federation/Organisation wallet' });
-    if (project?.id != null) {
-      opts.push({ kind: 'project', label: 'Team wallet', projectId: String(project.id) });
-    }
-    opts.push({ kind: 'me', label: 'My user wallet' });
-    return opts;
-  }, [project?.id]);
-
-  const detailActionButtonStyle = (tone: 'neutral' | 'primary' | 'warning' | 'danger' | 'success' = 'neutral'): React.CSSProperties => ({
-    ...actionButtonStyle(tone as any),
-    padding: '6px 12px',
-    fontWeight: 500,
-  });
-
-  const [eligibleMembers, setEligibleMembers] = useState<OrgMember[]>([]);
-  const [orgMembersAll, setOrgMembersAll] = useState<OrgMember[]>([]);
-  const [teamProjectMembers, setTeamProjectMembers] = useState<ProjectMember[]>([]);
-  const [clubProjectMembers, setClubProjectMembers] = useState<ProjectMember[]>([]);
-  const [rosterLoading, setRosterLoading] = useState(false);
-  const [rosterError, setRosterError] = useState<string | null>(null);
-  const [addHomeMemberId, setAddHomeMemberId] = useState<string>('');
-  const [addAwayMemberId, setAddAwayMemberId] = useState<string>('');
-
-  const [lineupBulkSubmitting, setLineupBulkSubmitting] = useState(false);
-  const [lineupEligibleSearchHome, setLineupEligibleSearchHome] = useState('');
-  const [lineupEligibleSearchAway, setLineupEligibleSearchAway] = useState('');
-  const [selectedEligibleLineupMemberIdsHome, setSelectedEligibleLineupMemberIdsHome] = useState<Set<string>>(new Set());
-  const [selectedEligibleLineupMemberIdsAway, setSelectedEligibleLineupMemberIdsAway] = useState<Set<string>>(new Set());
-  const [selectedLineupParticipationIdsHome, setSelectedLineupParticipationIdsHome] = useState<Set<string>>(new Set());
-  const [selectedLineupParticipationIdsAway, setSelectedLineupParticipationIdsAway] = useState<Set<string>>(new Set());
-
-  // Formation lineup editor state
-  const [lineupFormation, setLineupFormation] = useState<string>('4-3-3');
-  const [lineupSlots, setLineupSlots] = useState<Record<string, string[]>>({ goalkeeper: [], player: [] });
-  const [lineupSquad, setLineupSquad] = useState<Record<string, any[]>>({ goalkeeper: [], player: [], coach: [], assistant: [] });
-  const [lineupSquadLoading, setLineupSquadLoading] = useState(false);
-  const [lineupSaving, setLineupSaving] = useState(false);
-  const [lineupSaveSuccess, setLineupSaveSuccess] = useState(false);
-  // Bench status: memberId -> 'wissel' | 'afwezig'
-  const [lineupBenchStatus, setLineupBenchStatus] = useState<Record<string, string>>({});
-
-  // Route params + path derivation Ã¢â‚¬â€ shared values from SeasonProvider
-  const seasonKeyOrId = effectiveSeasonId;
-  const effectiveCompetitionId = String(competitionId || '').trim();
-  const effectiveMatchId = String(matchId || '').trim();
-
-  // Club slug resolution now handled by SeasonProvider
-  const pendingClubSlugResolve = false;
-  const clubSlugRedirectTarget: string | null = null;
-
-  const competitionBasePath = useMemo(() => {
-    const seasonKey = String(seasonKeyOrId || '').trim();
-    const compKey = String(effectiveCompetitionId || '').trim();
-    if (!seasonKey || !compKey) return '';
-    return `${seasonsBasePath}/${seasonKey}/${compKey}`;
-  }, [effectiveCompetitionId, seasonKeyOrId, seasonsBasePath]);
-
-  const matchBasePath = useMemo(() => {
-    if (!competitionBasePath || !effectiveMatchId) return '';
-    return `${competitionBasePath}/${effectiveMatchId}`;
-  }, [competitionBasePath, effectiveMatchId]);
-
-  const activeTab = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    const raw = String(params.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = isPlayer
-      ? new Set(['overview', 'lineup'])
-      : new Set(['overview', 'content', 'lineup', 'transactions']);
-    if (allowed.has(raw)) return raw;
-    const legacyMap: Record<string, string> = {
-      hierarchy: 'details',
-      match: 'details',
-      date: 'details',
-    };
-    return legacyMap[raw] || 'overview';
-  }, [location.search, isPlayer]);
-
-  const navigateToTab = (tabId: string) => {
-    const pathname = location.pathname;
-    if (!pathname) return;
-
-    const params = new URLSearchParams(location.search);
-    if (tabId === 'overview') {
-      params.delete('tab');
-    } else {
-      params.set('tab', tabId);
-    }
-
-    const search = params.toString();
-    navigate({ pathname, search: search ? `?${search}` : '' });
-  };
-
-
-
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Fetch competition + match + opponent (org/project/club/season from SeasonProvider) Ã¢â€â‚¬Ã¢â€â‚¬
-  useEffect(() => {
-    const run = async () => {
-      // Wait for provider to load season + competitions before fetching match-specific data
-      if (!resolvedSeasonId || !effectiveCompetitionId || !effectiveMatchId) return;
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Resolve competition UUID from slug using provider's competitions list
-        let competitionUuid = '';
-        const isUuidComp = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(effectiveCompetitionId);
-        if (isUuidComp) {
-          competitionUuid = effectiveCompetitionId;
-        } else {
-          const found = providerCompetitions.find((p: any) => periodPathKey(p) === effectiveCompetitionId);
-          competitionUuid = String(found?.id || '').trim();
-        }
-
-        if (!competitionUuid) throw new Error('Competition not found');
-        setResolvedCompetitionUuid(competitionUuid);
-
-        // Fetch competition detail + match in parallel
-        const [competitionRes, matchRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(competitionUuid)}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(effectiveMatchId)}/`, { credentials: 'include' }),
-        ]);
-
-        if (!competitionRes.ok) throw new Error('Failed to load competition');
-        const competitionJson = getEnvelopeData<Period>(await competitionRes.json());
-        setCompetition(competitionJson);
-
-        // Canonicalize URL to slugs when possible
-        const desiredCompetitionKey = periodPathKey(competitionJson) || '';
-        if (desiredCompetitionKey && String(desiredCompetitionKey) !== String(effectiveCompetitionId)) {
-          const suffix = location.search ? location.search : '';
-          navigate(
-            `${seasonsBasePath}/${seasonKeyOrId}/${desiredCompetitionKey}/${effectiveMatchId}${suffix}`,
-            { replace: true }
-          );
-          return;
-        }
-
-        if (!matchRes.ok) throw new Error(matchRes.status === 404 ? 'Match not found' : 'Failed to load match');
-        const matchJson = getEnvelopeData<MatchDetail>(await matchRes.json());
-        setMatch(matchJson);
-
-        // Fetch opponent club (parent project) for display name
-        const oppClubId = String(matchJson.metadata?.teamreel?.match_context?.opponent_club_id || '').trim();
-        if (oppClubId && orgSlugOrId) {
-          try {
-            const oppClubRes = await fetch(
-              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(oppClubId)}/`,
-              { credentials: 'include' }
-            );
-            if (oppClubRes.ok) setOpponentClub(getEnvelopeData<Project>(await oppClubRes.json()));
-          } catch { /* ignore */ }
-        }
-
-        const desiredMatchKey = String((matchJson as any)?.slug || '').trim();
-        if (desiredMatchKey && desiredMatchKey !== String(effectiveMatchId)) {
-          const suffix = location.search ? location.search : '';
-          const compKey = periodPathKey(competitionJson) || String(effectiveCompetitionId);
-          navigate(
-            `${seasonsBasePath}/${seasonKeyOrId}/${compKey}/${desiredMatchKey}${suffix}`,
-            { replace: true }
-          );
-          return;
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load match');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    run();
-  }, [
-    apiBaseUrl,
-    resolvedSeasonId,
-    providerCompetitions,
-    effectiveCompetitionId,
-    effectiveMatchId,
-    seasonsBasePath,
-    seasonKeyOrId,
-    orgSlugOrId,
-  ]);
-
-  useEffect(() => {
-    const run = async () => {
-      if (!match?.project?.id || !orgSlugOrId) return;
-      try {
-        setRosterLoading(true);
-        setRosterError(null);
-
-        const asArray = (value: any): any[] => (Array.isArray(value) ? value : []);
-        const unwrap = (raw: any): any => raw?.data ?? raw;
-        const extractList = (payload: any): any[] => {
-          const unwrapped = unwrap(payload);
-          if (Array.isArray(unwrapped)) return unwrapped;
-
-          // Common envelope shapes across the API:
-          // - { data: [...] }
-          // - { data: { results: [...] } }
-          // - { data: { data: [...] } }
-          // - { data: { data: { results: [...] } } }
-          if (Array.isArray(unwrapped?.results)) return unwrapped.results;
-          if (Array.isArray(unwrapped?.items)) return unwrapped.items;
-          if (Array.isArray(unwrapped?.data)) return unwrapped.data;
-          if (Array.isArray(unwrapped?.data?.results)) return unwrapped.data.results;
-          if (Array.isArray(unwrapped?.data?.items)) return unwrapped.data.items;
-          if (Array.isArray(unwrapped?.data?.data)) return unwrapped.data.data;
-          if (Array.isArray(unwrapped?.data?.data?.results)) return unwrapped.data.data.results;
-
-          return [];
-        };
-
-        const buildSyntheticMember = (id: string, label: string): OrgMember => {
-          return {
-            id,
-            user: {
-              id,
-              full_name: label,
-            },
-          };
-        };
-
-        // 1) Project members (user ids) Ã¢â‚¬â€ used for persona grouping + fallback roster matching
-        const seasonUuid = String(resolvedSeasonId || '').trim();
-        const baseMembersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/`;
-
-        const fetchMembers = async (withSeasonFilter: boolean) => {
-          const params = new URLSearchParams();
-          params.set('page_size', '500');
-          if (withSeasonFilter && seasonUuid) params.set('period', seasonUuid);
-          const res = await fetch(`${baseMembersUrl}?${params.toString()}`, { credentials: 'include' });
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            return { ok: false, status: res.status, detail, list: [] as any[] };
-          }
-          const raw = await res.json().catch(() => null);
-          return { ok: true, status: res.status, detail: '', list: extractList(raw) };
-        };
-
-        let projectMembers: any[] = [];
-        let lastRosterError: string | null = null;
-        if (seasonUuid) {
-          const seasonAttempt = await fetchMembers(true);
-          if (seasonAttempt.ok) {
-            projectMembers = seasonAttempt.list;
-          } else {
-            lastRosterError = `Failed to load season roster (${seasonAttempt.status}) ${seasonAttempt.detail || ''}`.trim();
-          }
-
-          // Fallback: if season roster is empty (legacy data), use full team roster
-          if (projectMembers.length === 0) {
-            const fallbackAttempt = await fetchMembers(false);
-            if (fallbackAttempt.ok) {
-              projectMembers = fallbackAttempt.list;
-            } else {
-              lastRosterError = `Failed to load team roster (${fallbackAttempt.status}) ${fallbackAttempt.detail || ''}`.trim();
-            }
-          }
-        } else {
-          const fallbackAttempt = await fetchMembers(false);
-          if (fallbackAttempt.ok) {
-            projectMembers = fallbackAttempt.list;
-          } else {
-            lastRosterError = `Failed to load team roster (${fallbackAttempt.status}) ${fallbackAttempt.detail || ''}`.trim();
-          }
-        }
-
-        if (projectMembers.length === 0 && lastRosterError) {
-          throw new Error(lastRosterError);
-        }
-
-        if (!Array.isArray(projectMembers)) projectMembers = [];
-        setTeamProjectMembers(projectMembers as ProjectMember[]);
-        const projectUserIds = new Set(
-          asArray(projectMembers)
-            .map((m: any) => String(m?.user?.id ?? m?.user_id ?? ''))
-            .filter(Boolean)
-        );
-
-        // Prefer using organisation membership IDs directly from the project members endpoint.
-        // This avoids relying on /organisations/:id/members (which may be permission-restricted).
-        const eligibleFromProjectMembers: OrgMember[] = asArray(projectMembers)
-          .map((m: any) => {
-            const memberId = String(m?.organisation_membership_id || '').trim();
-            if (!memberId) return null;
-            return {
-              id: memberId,
-              user: m?.user,
-            } as OrgMember;
-          })
-          .filter(Boolean) as OrgMember[];
-
-        eligibleFromProjectMembers.sort((a: any, b: any) => {
-          const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
-          const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
-          return an.localeCompare(bn);
-        });
-
-        // 2) Organisation memberships (membership ids + user) Ã¢â‚¬â€ best-effort only.
-        // This is expensive for large orgs; only fetch it if we truly need it.
-        // If project members already include organisation_membership_id, we can render rosters without it.
-        let orgMembers: OrgMember[] = [];
-        if (eligibleFromProjectMembers.length === 0) {
-          try {
-            const orgMembersRes = await fetch(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
-              { credentials: 'include' }
-            );
-            if (orgMembersRes.ok) {
-              const orgMembersRaw = await orgMembersRes.json().catch(() => null);
-              orgMembers = extractList(orgMembersRaw) as OrgMember[];
-            } else {
-              const detail = await orgMembersRes.text().catch(() => '');
-              throw new Error(`Failed to load organisation members (${orgMembersRes.status}) ${detail || ''}`.trim());
-            }
-          } catch (e) {
-            throw e;
-          }
-        }
-        setOrgMembersAll(orgMembers);
-
-        const byOrgMembershipId = new Map<string, OrgMember>();
-        for (const m of asArray(orgMembers)) {
-          if (m?.id) byOrgMembershipId.set(String(m.id), m);
-        }
-
-        let preferredEligibleMembers: OrgMember[] | null = null;
-
-        if (eligibleFromProjectMembers.length > 0) {
-          preferredEligibleMembers = eligibleFromProjectMembers;
-        }
-
-        // Prefer season squad as Period participations (TeamReel: squad lives on the season period)
-        // This yields organisation membership IDs directly, which we need for match participations.
-        if ((!preferredEligibleMembers || preferredEligibleMembers.length === 0) && seasonUuid) {
-          const baseSquadParams = new URLSearchParams();
-          baseSquadParams.set('page_size', '500');
-          baseSquadParams.set('period_id', seasonUuid);
-
-          const fetchSquad = async (withRoleFilter: boolean) => {
-            const params = new URLSearchParams(baseSquadParams);
-            if (withRoleFilter) params.set('role', 'squad_member');
-            const res = await fetch(`${apiBaseUrl}/api/v1/participations/?${params.toString()}`, {
-              credentials: 'include',
-            });
-            if (!res.ok) {
-              const detail = await res.text().catch(() => '');
-              return { ok: false, status: res.status, detail, list: [] as any[] };
-            }
-            const raw = await res.json().catch(() => null);
-            return { ok: true, status: res.status, detail: '', list: extractList(raw) };
-          };
-
-          const squadAttempt = await fetchSquad(true);
-          let squadParticipations = squadAttempt.ok ? (squadAttempt.list as SeasonSquadParticipation[]) : [];
-
-          // Fallback: if no explicit squad_member roles exist, list all period participations for the season.
-          if (squadParticipations.length === 0) {
-            const anyRoleAttempt = await fetchSquad(false);
-            if (anyRoleAttempt.ok) squadParticipations = anyRoleAttempt.list as SeasonSquadParticipation[];
-          }
-
-          const squadMembers: OrgMember[] = [];
-          for (const p of squadParticipations) {
-            const mid = String(p?.member?.id || '').trim();
-            if (!mid) continue;
-            const existing = byOrgMembershipId.get(mid);
-            if (existing) {
-              squadMembers.push(existing);
-            } else {
-              const label = String(p?.member?.user_name || 'Ã¢â‚¬â€').trim();
-              squadMembers.push(buildSyntheticMember(mid, label || 'Ã¢â‚¬â€'));
-            }
-          }
-
-          if (squadMembers.length > 0) {
-            const seen = new Set<string>();
-            const deduped = squadMembers.filter((m) => {
-              const key = String(m.id);
-              if (!key || seen.has(key)) return false;
-              seen.add(key);
-              return true;
-            });
-
-            deduped.sort((a: any, b: any) => {
-              const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
-              const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
-              return an.localeCompare(bn);
-            });
-
-            preferredEligibleMembers = deduped;
-          }
-        }
-
-        // Intersection: project members must exist as org membership.
-        if (!preferredEligibleMembers || preferredEligibleMembers.length === 0) {
-          preferredEligibleMembers = asArray(orgMembers)
-            .filter((m: any) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
-            .sort((a: any, b: any) => {
-              const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
-              const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
-              return an.localeCompare(bn);
-            });
-        }
-
-        setEligibleMembers(preferredEligibleMembers || []);
-
-        // Optional: club project members (to detect club admin/supporter personas)
-        if (club?.id) {
-          const clubMembersRes = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/members/?page_size=500`,
-            { credentials: 'include' }
-          );
-          if (clubMembersRes.ok) {
-            const clubMembersRaw = await clubMembersRes.json().catch(() => null);
-            const clubMembers = extractList(clubMembersRaw);
-            setClubProjectMembers(clubMembers as ProjectMember[]);
-          }
-        }
-      } catch (e) {
-        setRosterError(e instanceof Error ? e.message : 'Failed to load roster');
-      } finally {
-        setRosterLoading(false);
-      }
-    };
-
-    run();
-  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonId]);
-
-  // Fetch project members for formation lineup editor (same as ContentGenerationModal)
-  useEffect(() => {
-    const projectIdVal = match?.project?.id;
-    if (!projectIdVal) return;
-
-    const fetchSquad = async () => {
-      setLineupSquadLoading(true);
-      try {
-        const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectIdVal))}/members/?page_size=100`;
-        const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-        if (!res.ok) return;
-        const raw = await res.json();
-        let members: any[] = [];
-        if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
-        else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
-        else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
-        else if (Array.isArray(raw?.data)) members = raw.data;
-        else if (Array.isArray(raw)) members = raw;
-
-        // Paginate
-        let nextUrl = raw?.meta?.pagination?.next;
-        while (nextUrl) {
-          const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-          if (!nr.ok) break;
-          const nd = await nr.json();
-          let nm: any[] = [];
-          if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
-          else if (Array.isArray(nd?.data)) nm = nd.data;
-          else if (Array.isArray(nd)) nm = nd;
-          members = [...members, ...nm];
-          nextUrl = nd?.meta?.pagination?.next;
-        }
-
-        // Group by role (same logic as ContentGenerationModal)
-        const groups: Record<string, any[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
-        members.forEach((p: any) => {
-          let roles: string[] = [];
-          if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) roles = p.functional_roles;
-          else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) roles = p.metadata.functional_roles;
-          else if (p.data?.functional_role) roles = [p.data.functional_role];
-          else if (p.metadata?.team_role) roles = [p.metadata.team_role];
-          else roles = ['player'];
-          roles.forEach(role => {
-            const nr = role.toLowerCase();
-            if (groups[nr]) groups[nr].push(p);
-          });
-        });
-        setLineupSquad(groups);
-      } catch { /* ignore */ } finally {
-        setLineupSquadLoading(false);
-      }
-    };
-
-    fetchSquad();
-  }, [apiBaseUrl, match?.project?.id]);
-
-  // Load saved lineup from match metadata on mount / match change
-  useEffect(() => {
-    const saved = match?.metadata?.lineup;
-    if (saved) {
-      if (saved.formation && FORMATION_LAYOUTS[saved.formation]) {
-        setLineupFormation(saved.formation);
-      }
-      if (saved.goalkeeper || saved.player) {
-        setLineupSlots({
-          goalkeeper: saved.goalkeeper || [],
-          player: saved.player || [],
-        });
-      }
-      if (saved.bench) {
-        setLineupBenchStatus(saved.bench);
-      }
-    } else if (match?.metadata?.formation) {
-      setLineupFormation(match.metadata.formation);
-    }
-  }, [match?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-
-  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
-    const matchIdValue = String(matchToEdit?.id || '').trim();
-    if (!matchIdValue) throw new Error('Missing match id');
-
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(patch || {}),
-    });
-
-    if (!res.ok) throw new Error('Failed to update match');
-    const raw = await res.json().catch(() => null);
-    const updated = getEnvelopeData<MatchDetail>(raw);
-    setMatch(updated);
-  };
-
-  const saveLineup = async () => {
-    if (!match?.id) return;
-    setLineupSaving(true);
-    setLineupSaveSuccess(false);
-    try {
-      const lineupData = {
-        formation: lineupFormation,
-        goalkeeper: lineupSlots.goalkeeper || [],
-        player: lineupSlots.player || [],
-        bench: lineupBenchStatus,
-      };
-      await saveMatchEdits(match, {
-        metadata: {
-          ...(match.metadata || {}),
-          formation: lineupFormation,
-          lineup: lineupData,
-        },
-      });
-      setLineupSaveSuccess(true);
-      setTimeout(() => setLineupSaveSuccess(false), 3000);
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Failed to save lineup');
-    } finally {
-      setLineupSaving(false);
-    }
-  };
-
-  const handleDeleteMatch = async () => {
-    if (!match?.id) return;
-    if (!window.confirm(`Are you sure you want to delete match ${match.title || match.id}?`)) return;
-
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(match.id))}/`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-    });
-
-    if (!res.ok) {
-      alert('Error deleting match');
-      return;
-    }
-
-    // Navigate back to competition matches list.
-    if (competitionBasePath) {
-      navigate(`${competitionBasePath}?tab=matches`);
-    } else {
-      navigate(-1);
-    }
-  };
-
-  if (loading) {
+  if (d.loading) {
     return (
       <div className="p-6">
         <PageContent>
-          <div className="text-center py-8 text-gray-500">Loading matchÃ¢â‚¬Â¦</div>
+          <div className="text-center py-8 text-gray-500">Loading match…</div>
         </PageContent>
       </div>
     );
   }
 
-  if (error || !match) {
+  if (d.error || !d.match) {
     return (
       <div className="p-6">
         <PageContent>
-          <Alert variant="error">{error || 'Match not found'}</Alert>
-          <Button variant="secondary" onClick={() => navigate(-1)} className="mt-4">
+          <Alert variant="error">{d.error || 'Match not found'}</Alert>
+          <Button variant="secondary" onClick={() => d.navigate(-1)} className="mt-4">
             Go Back
           </Button>
         </PageContent>
@@ -1234,232 +41,12 @@ export default function HierarchyMatchDetailPage() {
     );
   }
 
-  const date = match.start_time ? new Date(match.start_time) : null;
-  const status = String(match.metadata?.status || 'scheduled');
+  if (d.pendingClubSlugResolve) return null;
+  if (d.clubSlugRedirectTarget) return <Navigate to={d.clubSlugRedirectTarget} replace />;
 
-  // Determine if this is a home or away game
-  const isHome = match.metadata?.teamreel?.match_context?.is_home
-    ?? match.metadata?.is_home
-    ?? (match.metadata?.teamreel?.match_context?.venue || match.metadata?.venue || 'Home') === 'Home';
+  const { match } = d;
 
-  // Use club name (parent project) for own team, opponent club for opponent
-  const ownTeamName = club?.name || match.project?.name || 'Eigen team';
-  const opponentName = opponentClub?.name || match.opponent_project?.name || 'Tegenstander';
-
-  // When playing away: opponent is home, own team is away
-  const homeTeamName = isHome ? ownTeamName : opponentName;
-  const awayTeamName = isHome ? opponentName : ownTeamName;
-
-  // Own club logo from SeasonProvider
-  const ownLogoUrl = brandLogoUrl;
-  const opponentLogoUrl = opponentClubBrand.getAsset?.('logo_upload')
-    ? getAssetUrl(opponentClubBrand.getAsset('logo_upload')!.url)
-    : opponentClubBrand.getAsset?.('logo')
-      ? getAssetUrl(opponentClubBrand.getAsset('logo')!.url)
-      : null;
-  const homeLogoUrl = isHome ? ownLogoUrl : opponentLogoUrl;
-  const awayLogoUrl = isHome ? opponentLogoUrl : ownLogoUrl;
-
-  const scoreDisplay = status === 'finished'
-    ? `${match.metadata?.home_score ?? 0} - ${match.metadata?.away_score ?? 0}`
-    : 'vs';
-
-  const sortLineup = (a: Participation, b: Participation) => {
-    const isStarterA = String(a.role || '').toLowerCase() === 'starter';
-    const isStarterB = String(b.role || '').toLowerCase() === 'starter';
-    if (isStarterA && !isStarterB) return -1;
-    if (!isStarterA && isStarterB) return 1;
-
-    if (isStarterA) {
-      if (a.data?.position === 'GK') return -1;
-      if (b.data?.position === 'GK') return 1;
-    }
-
-    return (a.data?.jersey_number || 99) - (b.data?.jersey_number || 99);
-  };
-
-  const allParticipations = match.participations || [];
-  const homeParticipations = allParticipations
-    .filter(
-      (p) => p.data?.side === 'home' || String(p.data?.team_id || '') === String(match.project?.id || '')
-    )
-    .sort(sortLineup);
-  const awayParticipations = allParticipations
-    .filter(
-      (p) =>
-        p.data?.side === 'away' ||
-        (match.opponent_project && String(p.data?.team_id || '') === String(match.opponent_project.id))
-    )
-    .sort(sortLineup);
-
-  const matchEvents = (match.events || []).slice().sort((a, b) => (a.minute || 0) - (b.minute || 0));
-
-  const upsertParticipationInState = (p: Participation) => {
-    setMatch((prev) => {
-      if (!prev) return prev;
-      const prevParts = prev.participations || [];
-      const next = [...prevParts.filter((x) => String(x.id) !== String(p.id)), p];
-      return { ...prev, participations: next };
-    });
-  };
-
-  const removeParticipationFromState = (participationId: string) => {
-    setMatch((prev) => {
-      if (!prev) return prev;
-      return { ...prev, participations: (prev.participations || []).filter((p) => String(p.id) !== String(participationId)) };
-    });
-  };
-
-  const refreshMatch = async () => {
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(match.id))}/`, {
-      credentials: 'include',
-    });
-    if (!res.ok) return;
-    const raw = await res.json().catch(() => null);
-    setMatch(getEnvelopeData(raw));
-  };
-
-  const getApiErrorMessage = async (res: Response, fallback: string) => {
-    const raw = await res.json().catch(() => null);
-    return (
-      raw?.error?.message ||
-      raw?.detail ||
-      (typeof raw === 'string' ? raw : null) ||
-      fallback
-    );
-  };
-
-  const createParticipation = async (memberId: string, side: 'home' | 'away') => {
-    if (!memberId) return;
-    const teamId = side === 'home' ? String(match.project.id) : String(match.opponent_project?.id || '');
-    const teamName = side === 'home' ? homeTeamName : awayTeamName;
-    const body: any = {
-      member_id: memberId,
-      activity_id: String(match.id),
-      role: 'starter',
-      status: 'confirmed',
-      data: {
-        side,
-        team_id: teamId || undefined,
-        team_name: teamName,
-      },
-    };
-
-    const res = await fetch(`${apiBaseUrl}/api/v1/participations/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      throw new Error(await getApiErrorMessage(res, 'Failed to add participant'));
-    }
-    const created = await res.json().catch(() => null);
-    upsertParticipationInState(getEnvelopeData(created));
-    await refreshMatch();
-  };
-
-  const updateParticipation = async (p: Participation, patch: any) => {
-    const res = await fetch(`${apiBaseUrl}/api/v1/participations/${encodeURIComponent(String(p.id))}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-    if (!res.ok) {
-      throw new Error(await getApiErrorMessage(res, 'Failed to update participant'));
-    }
-    const updated = await res.json().catch(() => null);
-    upsertParticipationInState(getEnvelopeData(updated));
-    await refreshMatch();
-  };
-
-  const deleteParticipation = async (p: Participation) => {
-    const res = await fetch(`${apiBaseUrl}/api/v1/participations/${encodeURIComponent(String(p.id))}/`, {
-      method: 'DELETE',
-      headers: {
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      throw new Error(await getApiErrorMessage(res, 'Failed to remove participant'));
-    }
-    removeParticipationFromState(String(p.id));
-    await refreshMatch();
-  };
-
-  const bulkCreateParticipations = async (memberIds: string[], side: 'home' | 'away') => {
-    const ids = (memberIds || []).map((x) => String(x || '').trim()).filter(Boolean);
-    if (!ids.length) return;
-
-    // Prefer one bulk request for N adds.
-    if (ids.length > 1) {
-      const teamId = side === 'home' ? String(match?.project?.id || '') : String(match?.opponent_project?.id || '');
-      const teamName = side === 'home' ? homeTeamName : awayTeamName;
-
-      const res = await fetch(`${apiBaseUrl}/api/v1/participations/bulk/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          activity_id: String(match?.id),
-          member_ids: ids,
-          role: 'starter',
-          status: 'confirmed',
-          data: {
-            side,
-            team_id: teamId || undefined,
-            team_name: teamName,
-          },
-        }),
-      });
-      if (!res.ok) {
-        throw new Error(await getApiErrorMessage(res, 'Failed to add participants'));
-      }
-      await refreshMatch();
-      return;
-    }
-
-    await createParticipation(ids[0], side);
-  };
-
-  const bulkDeleteParticipations = async (participationIds: string[]) => {
-    const ids = (participationIds || []).map((x) => String(x || '').trim()).filter(Boolean);
-    if (!ids.length) return;
-
-    if (ids.length > 1) {
-      const res = await fetch(`${apiBaseUrl}/api/v1/participations/bulk-delete/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify({ participation_ids: ids }),
-      });
-      if (!res.ok) {
-        throw new Error(await getApiErrorMessage(res, 'Failed to remove participants'));
-      }
-      await refreshMatch();
-      return;
-    }
-
-    const p = (match?.participations || []).find((x) => String((x as any)?.id || '') === ids[0]);
-    if (p) await deleteParticipation(p);
-  };
-
-  if (pendingClubSlugResolve) return null;
-  if (clubSlugRedirectTarget) return <Navigate to={clubSlugRedirectTarget} replace />;
+  /* ---- render ---- */
 
   return (
     <>
@@ -1469,7 +56,7 @@ export default function HierarchyMatchDetailPage() {
           actions={
             <div className="flex-row gap-8 flex-wrap">
               {(() => {
-                const isActive = !!match && String(activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
+                const isActive = !!match && String(d.activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
                 const headerButtonStyle: React.CSSProperties = {
                   padding: '6px 12px',
                   borderRadius: '4px',
@@ -1486,72 +73,72 @@ export default function HierarchyMatchDetailPage() {
                     onClick={async () => {
                       if (!match || isActive) return;
                       try {
-                        setActivatingContext(true);
+                        d.setActivatingContext(true);
                         await setActiveContext('match', String(match.id));
                         const context = await getActiveContext();
-                        setActiveContextState(context);
+                        d.setActiveContextState(context);
                       } finally {
-                        setActivatingContext(false);
+                        d.setActivatingContext(false);
                       }
                     }}
-                    disabled={activatingContext || isActive}
+                    disabled={d.activatingContext || isActive}
                     style={{
                       ...headerButtonStyle,
                       border: isActive ? '1px solid #10b981' : headerButtonStyle.border,
                       backgroundColor: isActive ? '#dcfce7' : headerButtonStyle.backgroundColor,
                       color: isActive ? '#166534' : headerButtonStyle.color,
                       fontWeight: isActive ? 600 : headerButtonStyle.fontWeight,
-                      opacity: activatingContext || isActive ? 0.8 : 1,
-                      cursor: activatingContext || isActive ? 'not-allowed' : 'pointer',
+                      opacity: d.activatingContext || isActive ? 0.8 : 1,
+                      cursor: d.activatingContext || isActive ? 'not-allowed' : 'pointer',
                     }}
                     title="Set this match as your active context"
                   >
-                    {isActive ? 'Ã¢Å“â€œ Active Context' : 'Make active'}
+                    {isActive ? '\u2713 Active Context' : 'Make active'}
                   </button>
                 );
               })()}
               <button
                 type="button"
-                onClick={() => setIsMatchDetailModalOpen(true)}
+                onClick={() => d.setIsMatchDetailModalOpen(true)}
                 className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
                 style={{ padding: '6px 12px' }}
               >
                 View
               </button>
-              {!isPlayer && (
+              {!d.isPlayer && (
               <button
                 type="button"
-                onClick={() => setIsMatchEditModalOpen(true)}
+                onClick={() => d.setIsMatchEditModalOpen(true)}
                 className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
                 style={{ padding: '6px 12px' }}
               >
                 Edit
               </button>
               )}
-              {!isPlayer && (
+              {!d.isPlayer && (
               <button
                 type="button"
-                onClick={handleDeleteMatch}
+                onClick={d.handleDeleteMatch}
                 className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
                 style={{ padding: '6px 12px' }}
               >
                 Delete
               </button>
               )}
-              {!isPlayer && (
+              {!d.isPlayer && (
               <button
                 type="button"
-                onClick={() => openContentModal()}
+                onClick={() => d.openContentModal()}
                 className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
                 style={{ padding: '6px 12px' }}
               >
                 Generate Content (AI)
               </button>
               )}
-              {!isPlayer && (
+              {!d.isPlayer && (
               <button
                 type="button"
-                onClick={() => setIsCreateTxnModalOpen(true)}
+                onClick={() => d.setIsCreateTxnModalOpen(true)}
                 className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
                 style={{ padding: '6px 12px' }}
               >
@@ -1562,376 +149,108 @@ export default function HierarchyMatchDetailPage() {
           }
         />
 
-        {/* Mobile action bar removed Ã¢â‚¬â€ buttons were too cluttered on mobile */}
-
         <CreateTransactionModal
-          isOpen={isCreateTxnModalOpen}
-          onClose={() => setIsCreateTxnModalOpen(false)}
+          isOpen={d.isCreateTxnModalOpen}
+          onClose={() => d.setIsCreateTxnModalOpen(false)}
           onCreated={() => {
-            navigateToTab('transactions');
+            d.navigateToTab('transactions');
           }}
           title="Create match transaction"
           scope="match"
-          organizationId={String(org?.id || '').trim()}
-          defaultProjectId={match?.project?.id != null ? String(match.project.id) : project?.id != null ? String(project.id) : null}
-          seasonId={String(resolvedSeasonId || '').trim() || null}
+          organizationId={String(d.org?.id || '').trim()}
+          defaultProjectId={match?.project?.id != null ? String(match.project.id) : d.project?.id != null ? String(d.project.id) : null}
+          seasonId={String(d.resolvedSeasonId || '').trim() || null}
           periodId={String(match?.period?.id || '').trim() || null}
           activityId={String(match?.id || '').trim() || null}
-          currentUserId={Number((user as any)?.id)}
-          chargedUserId={Number((user as any)?.id)}
-          walletOptions={matchWalletOptions}
+          currentUserId={Number((d.user as any)?.id)}
+          chargedUserId={Number((d.user as any)?.id)}
+          walletOptions={d.matchWalletOptions}
         />
 
         <MatchDetailModal
-          opened={isMatchDetailModalOpen}
-          onClose={() => setIsMatchDetailModalOpen(false)}
+          opened={d.isMatchDetailModalOpen}
+          onClose={() => d.setIsMatchDetailModalOpen(false)}
           match={match as any}
         />
 
         <MatchEditModal
-          opened={isMatchEditModalOpen}
-          onClose={() => setIsMatchEditModalOpen(false)}
+          opened={d.isMatchEditModalOpen}
+          onClose={() => d.setIsMatchEditModalOpen(false)}
           match={match as any}
           onSave={async (payload) => {
-            await saveMatchEdits(match as any, payload);
+            await d.saveMatchEdits(match as any, payload);
           }}
         />
 
         <ContentGenerationModal
-            isOpen={isContentModalOpen}
-            onClose={closeContentModal}
-            onGenerated={handleContentGenerated}
-            matchData={match}
-            season={season}
-            organisationSport={org?.sport}
-            organisationId={org?.id || orgSlugOrId}
-            template={selectedTemplate}
-            contentTypeLabel={selectedContentTypeLabel}
-            homeLogoUrl={homeLogoUrl}
-            awayLogoUrl={awayLogoUrl}
-            homeTeamName={homeTeamName}
-            awayTeamName={awayTeamName}
+          isOpen={d.isContentModalOpen}
+          onClose={d.closeContentModal}
+          onGenerated={d.handleContentGenerated}
+          matchData={match}
+          season={d.season}
+          organisationSport={d.org?.sport}
+          organisationId={d.org?.id || d.orgSlugOrId}
+          template={d.selectedTemplate}
+          contentTypeLabel={d.selectedContentTypeLabel}
+          homeLogoUrl={d.homeLogoUrl}
+          awayLogoUrl={d.awayLogoUrl}
+          homeTeamName={d.homeTeamName}
+          awayTeamName={d.awayTeamName}
         />
 
-        {/* Content Preview Modal */}
-        {isContentPreviewOpen && selectedContentItem && (
-          <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-            }}
-            onClick={closeContentPreview}
-          >
-            <div
-              style={{
-                backgroundColor: 'var(--app-card-bg)',
-                borderRadius: '12px',
-                maxWidth: '800px',
-                width: '90%',
-                maxHeight: '90vh',
-                overflow: 'auto',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div
-                className="flex-between border-bottom"
-                style={{ padding: '16px 20px' }}
-              >
-                <div>
-                  <h3 className="m-0 fs-18 fw-600">
-                    {selectedContentItem.template?.name || 'Generated Content'}
-                  </h3>
-                  <div className="fs-13 text-muted mt-4">
-                    Generated {new Date(selectedContentItem.created_at).toLocaleString()}
-                  </div>
-                </div>
-                <button
-                  onClick={closeContentPreview}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    color: 'var(--app-muted-text)',
-                    padding: '4px 8px',
-                  }}
-                >
-                  Ãƒâ€”
-                </button>
-              </div>
+        <ContentPreviewModal
+          isOpen={d.isContentPreviewOpen}
+          selectedContentItem={d.selectedContentItem}
+          onClose={d.closeContentPreview}
+        />
 
-              {/* Modal Body */}
-              <div className="p-20">
-                {selectedContentItem.output_file?.url ? (
-                  <div className="text-center">
-                    {/* Check if it's a video or image based on file extension or url */}
-                    {selectedContentItem.output_file.url.match(/\.(mp4|webm|mov)$/i) ? (
-                      <video
-                        src={selectedContentItem.output_file.url}
-                        controls
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '60vh',
-                          borderRadius: '8px',
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src={selectedContentItem.output_file.url}
-                        alt={selectedContentItem.template?.name || 'Generated content'}
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '60vh',
-                          borderRadius: '8px',
-                          objectFit: 'contain',
-                        }}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-400">
-                    <div className="text-3xl mb-2">Ã°Å¸â€“Â¼Ã¯Â¸Â</div>
-                    <p>Preview not available</p>
-                    <p className="text-sm">The generated file is being processed</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Modal Footer */}
-              <div
-                className="flex-between border-top bg-primary"
-                style={{ padding: '16px 20px', borderRadius: '0 0 12px 12px' }}
-              >
-                <Badge
-                  variant={['completed', 'approved'].includes(selectedContentItem.status) ? 'success' : 'warning'}
-                >
-                  {selectedContentItem.status}
-                </Badge>
-                <div className="flex-row gap-8">
-                  {selectedContentItem.output_file?.url && (
-                    <a
-                      href={selectedContentItem.output_file.url}
-                      download={selectedContentItem.output_file.file_name || 'content'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '8px 16px',
-                        backgroundColor: 'var(--app-primary)',
-                        color: 'white',
-                        borderRadius: '6px',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                      }}
-                    >
-                      Ã¢Â¬â€¡Ã¯Â¸Â Download
-                    </a>
-                  )}
-                  <Button variant="secondary" onClick={closeContentPreview}>
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Saved Asset Preview Modal */}
-        {savedAssetPreview && (
-          <div
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 1100,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'rgba(0, 0, 0, 0.7)',
-              padding: '16px 8px 80px',
-            }}
-            onClick={() => setSavedAssetPreview(null)}
-          >
-            <div
-              style={{
-                backgroundColor: 'var(--app-card-bg)',
-                borderRadius: '12px',
-                maxWidth: '900px',
-                width: '92%',
-                maxHeight: 'calc(90vh - 80px)',
-                overflow: 'auto',
-                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div
-                className="flex-between border-bottom"
-                style={{ padding: '16px 20px' }}
-              >
-                <div>
-                  <h3 className="m-0 fs-18 fw-600">{savedAssetPreview.title}</h3>
-                  {savedAssetPreview.subtitle && (
-                    <div className="fs-13 text-muted mt-4">
-                      {savedAssetPreview.subtitle}
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => setSavedAssetPreview(null)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '24px',
-                    cursor: 'pointer',
-                    color: 'var(--app-muted-text)',
-                    padding: '4px 8px',
-                  }}
-                >
-                  Ãƒâ€”
-                </button>
-              </div>
-
-              <div className="p-20">
-                <div className="text-center">
-                  {savedAssetPreview.isVideo ? (
-                    <video
-                      src={savedAssetPreview.url}
-                      controls
-                      style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px' }}
-                    />
-                  ) : (
-                    <img
-                      src={savedAssetPreview.url}
-                      alt={savedAssetPreview.title}
-                      style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', objectFit: 'contain' }}
-                    />
-                  )}
-                </div>
-              </div>
-
-              <div
-                className="flex-row flex-wrap gap-8 border-top bg-primary"
-                style={{
-                  justifyContent: 'flex-end',
-                  padding: '12px 16px',
-                  borderRadius: '0 0 12px 12px',
-                }}
-              >
-                {/* Share (Web Share API Ã¢â‚¬â€ mobile) */}
-                {typeof navigator !== 'undefined' && 'share' in navigator && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      navigator.share({
-                        title: savedAssetPreview.title,
-                        url: savedAssetPreview.url,
-                      }).catch(() => { /* user cancelled */ });
-                    }}
-                  >
-                    Ã¢Â¤Â´ Delen
-                  </Button>
-                )}
-                {/* Download */}
-                <a
-                  href={savedAssetPreview.url}
-                  download
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 16px',
-                    backgroundColor: 'var(--app-surface-secondary)',
-                    color: 'var(--app-text)',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    border: '1px solid var(--app-border)',
-                  }}
-                >
-                  Ã¢â€ â€œ Download
-                </a>
-                {/* Open in new tab */}
-                <a
-                  href={savedAssetPreview.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 16px',
-                    backgroundColor: 'var(--app-primary)',
-                    color: 'white',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                  }}
-                >
-                  Ã¢â€ â€” Openen
-                </a>
-                <Button variant="secondary" onClick={() => setSavedAssetPreview(null)}>
-                  Sluiten
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <SavedAssetPreviewModal
+          preview={d.savedAssetPreview}
+          onClose={() => d.setSavedAssetPreview(null)}
+        />
 
         {/* Mobile Tab Bar */}
         <MobileTabBar
           variant="inline"
           tabs={[
             { id: 'overview', label: 'Overview' },
-            ...(!isPlayer ? [{ id: 'content', label: 'Content' }] : []),
+            ...(!d.isPlayer ? [{ id: 'content', label: 'Content' }] : []),
             { id: 'lineup', label: 'Lineup' },
-            ...(!isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!d.isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
           ]}
-          activeTab={activeTab}
+          activeTab={d.activeTab}
         />
 
         <PageContent>
-          {activeTab === 'overview' && (
+          {d.activeTab === 'overview' && (
             <MatchOverviewTab
               match={match}
-              org={org as any}
-              competition={competition as any}
-              isHome={!!isHome}
-              homeTeamName={homeTeamName}
-              awayTeamName={awayTeamName}
-              homeLogoUrl={homeLogoUrl}
-              awayLogoUrl={awayLogoUrl}
-              scoreDisplay={scoreDisplay}
-              status={status}
-              date={date}
-              homeParticipations={homeParticipations}
-              awayParticipations={awayParticipations}
-              matchEvents={matchEvents}
-              getLatestMediaForSubtype={getLatestMediaForSubtype}
-              getContentItemForSubtype={getContentItemForSubtype}
+              org={d.org as any}
+              competition={d.competition as any}
+              isHome={d.isHome}
+              homeTeamName={d.homeTeamName}
+              awayTeamName={d.awayTeamName}
+              homeLogoUrl={d.homeLogoUrl}
+              awayLogoUrl={d.awayLogoUrl}
+              scoreDisplay={d.scoreDisplay}
+              status={d.status}
+              date={d.date}
+              homeParticipations={d.homeParticipations}
+              awayParticipations={d.awayParticipations}
+              matchEvents={d.matchEvents}
+              getLatestMediaForSubtype={d.getLatestMediaForSubtype}
+              getContentItemForSubtype={d.getContentItemForSubtype}
               onContentAction={(subtype, label) => {
-                const latestMedia = getLatestMediaForSubtype(subtype);
+                const latestMedia = d.getLatestMediaForSubtype(subtype);
                 if (latestMedia) {
-                  // Open preview
                   const previewUrl = latestMedia.file_url || getAssetUrl(latestMedia.storage_path);
                   if (previewUrl) {
                     const isVid = Boolean(latestMedia.mime_type?.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(previewUrl));
-                    setSavedAssetPreview({ title: label, subtitle: 'Match media', url: previewUrl, isVideo: isVid });
+                    d.setSavedAssetPreview({ title: label, subtitle: 'Match media', url: previewUrl, isVideo: isVid });
                   }
                 } else {
-                  // Open content generation modal
-                  const templates = availableTemplates[subtype] || [];
-                  let matched: ContentTemplate | undefined;
+                  const templates = d.availableTemplates[subtype] || [];
+                  let matched: import('../identity/ContentGenerationModal').ContentTemplate | undefined;
                   if ((subtype === 'lineup' || subtype === 'lineup_flyer') && templates.length > 0) {
                     const formation = match?.metadata?.formation;
                     if (formation) {
@@ -1944,88 +263,57 @@ export default function HierarchyMatchDetailPage() {
                   } else {
                     matched = templates[0];
                   }
-                  openContentModal(matched, label);
+                  d.openContentModal(matched, label);
                 }
               }}
             />
           )}
 
-
-          {activeTab === 'content' && (
+          {d.activeTab === 'content' && (
             <MatchContentTab
               match={match}
-              org={org as any}
-              competition={competition as any}
-              templatesLoading={templatesLoading}
-              matchMediaLoading={matchMediaLoading}
-              availableTemplates={availableTemplates}
-              getLatestMediaForSubtype={getLatestMediaForSubtype}
-              getMediaHistoryForSubtype={getMediaHistoryForSubtype}
-              getContentItemForSubtype={getContentItemForSubtype}
-              openContentModal={openContentModal}
-              setSavedAssetPreview={setSavedAssetPreview}
-              handleDeleteMediaItem={handleDeleteMediaItem}
-              handleRestoreMediaItem={handleRestoreMediaItem}
+              org={d.org as any}
+              competition={d.competition as any}
+              templatesLoading={d.templatesLoading}
+              matchMediaLoading={d.matchMediaLoading}
+              availableTemplates={d.availableTemplates}
+              getLatestMediaForSubtype={d.getLatestMediaForSubtype}
+              getMediaHistoryForSubtype={d.getMediaHistoryForSubtype}
+              getContentItemForSubtype={d.getContentItemForSubtype}
+              openContentModal={d.openContentModal}
+              setSavedAssetPreview={d.setSavedAssetPreview}
+              handleDeleteMediaItem={d.handleDeleteMediaItem}
+              handleRestoreMediaItem={d.handleRestoreMediaItem}
             />
           )}
 
-          {activeTab === 'transactions' && (
+          {d.activeTab === 'transactions' && (
             <MatchTransactionsTab
-              org={org as any}
+              org={d.org as any}
               match={match}
-              project={project}
+              project={d.project}
             />
           )}
 
-          {activeTab === 'lineup' && (
+          {d.activeTab === 'lineup' && (
             <MatchLineupTab
-              lineupFormation={lineupFormation}
-              setLineupFormation={setLineupFormation}
-              lineupSlots={lineupSlots}
-              setLineupSlots={setLineupSlots}
-              lineupSquad={lineupSquad}
-              lineupSquadLoading={lineupSquadLoading}
-              lineupBenchStatus={lineupBenchStatus}
-              setLineupBenchStatus={setLineupBenchStatus}
-              lineupSaving={lineupSaving}
-              lineupSaveSuccess={lineupSaveSuccess}
-              saveLineup={saveLineup}
+              lineupFormation={d.lineupFormation}
+              setLineupFormation={d.setLineupFormation}
+              lineupSlots={d.lineupSlots}
+              setLineupSlots={d.setLineupSlots}
+              lineupSquad={d.lineupSquad}
+              lineupSquadLoading={d.lineupSquadLoading}
+              lineupBenchStatus={d.lineupBenchStatus}
+              setLineupBenchStatus={d.setLineupBenchStatus}
+              lineupSaving={d.lineupSaving}
+              lineupSaveSuccess={d.lineupSaveSuccess}
+              saveLineup={d.saveLineup}
             />
           )}
         </PageContent>
       </div>
 
-      {/* Toast notifications */}
-      {toasts.length > 0 && (
-        <div className="flex-col gap-8" style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, maxWidth: 420 }}>
-          {toasts.map(toast => (
-            <div
-              key={toast.id}
-              style={{
-                padding: '12px 16px',
-                borderRadius: 8,
-                background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
-                color: '#fff',
-                fontSize: 14,
-                fontWeight: 500,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                animation: 'slideInRight 0.3s ease-out',
-              }}
-            >
-              <span className="flex-1">{toast.message}</span>
-              <button
-                onClick={() => dismissToast(toast.id)}
-                style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, opacity: 0.7 }}
-              >
-                Ãƒâ€”
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <ToastNotifications toasts={d.toasts} onDismiss={d.dismissToast} />
     </>
   );
 }
