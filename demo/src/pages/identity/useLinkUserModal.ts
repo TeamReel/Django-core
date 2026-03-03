@@ -1,0 +1,406 @@
+import { useEffect, useMemo, useState } from 'react';
+import { fetchAllPages } from '../../utils/fetchAllPages';
+import { getApiBaseUrl } from '../../utils/apiBase';
+import { getCsrfToken } from '../../utils/csrf';
+import type { Organisation, ProjectOption, User, PeriodOption, LinkUserModalProps } from './linkUserModalTypes';
+
+type HookProps = Pick<LinkUserModalProps, 'opened' | 'user' | 'organisations' | 'clubs' | 'teams' | 'initialOrganisationSlugOrId' | 'onSuccess' | 'onClose'>;
+
+export function useLinkUserModal({
+  opened,
+  user,
+  organisations,
+  clubs,
+  teams,
+  initialOrganisationSlugOrId,
+  onSuccess,
+  onClose,
+}: HookProps) {
+  // ── state ──────────────────────────────────────────────────
+  const [organisationId, setOrganisationId] = useState('');
+  const [orgRole, setOrgRole] = useState<'admin' | 'member'>('member');
+  const [clubId, setClubId] = useState('');
+  const [teamId, setTeamId] = useState('');
+  const [accessRole, setAccessRole] = useState<'viewer' | 'editor' | 'admin'>('viewer');
+  const [functionalRoles, setFunctionalRoles] = useState<string[]>([]);
+  const [seasonId, setSeasonId] = useState('');
+  const [seasonOptions, setSeasonOptions] = useState<PeriodOption[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successNote, setSuccessNote] = useState<string | null>(null);
+
+  const apiBaseUrl = getApiBaseUrl();
+
+  // ── derived / memos ────────────────────────────────────────
+  const userDisplayName = useMemo(() => {
+    if (!user) return 'User';
+    const full = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    return full || String(user.email || 'User');
+  }, [user]);
+
+  const orgById = useMemo(() => {
+    const map = new Map<string, Organisation>();
+    for (const o of organisations || []) map.set(String(o.id), o);
+    return map;
+  }, [organisations]);
+
+  const initialOrgIdFromSlugOrId = useMemo(() => {
+    const raw = String(initialOrganisationSlugOrId || '').trim();
+    if (!raw) return '';
+    const direct = orgById.get(raw);
+    if (direct) return String(direct.id);
+    const found = (organisations || []).find((o) => String(o.slug || '').toLowerCase() === raw.toLowerCase());
+    return found ? String(found.id) : '';
+  }, [initialOrganisationSlugOrId, orgById, organisations]);
+
+  const resolvedOrg = useMemo(() => {
+    if (!organisationId) return null;
+    return orgById.get(String(organisationId)) || null;
+  }, [orgById, organisationId]);
+
+  const getProjectOrgId = (p: ProjectOption): string => {
+    const org = (p as any)?.organisation;
+    if (!org) return '';
+    if (typeof org === 'string' || typeof org === 'number') return String(org);
+    return String((org as any)?.id || '');
+  };
+
+  const filteredClubs = useMemo(() => {
+    const oid = String(organisationId || '').trim();
+    const list = Array.isArray(clubs) ? clubs : [];
+    if (!oid) return list;
+    return list.filter((c) => String(getProjectOrgId(c)) === oid);
+  }, [clubs, organisationId]);
+
+  const filteredTeams = useMemo(() => {
+    const oid = String(organisationId || '').trim();
+    const cid = String(clubId || '').trim();
+    const list = Array.isArray(teams) ? teams : [];
+    return list.filter((t) => {
+      if (oid && String(getProjectOrgId(t)) !== oid) return false;
+      if (cid && String((t as any)?.parent_id || '') !== cid) return false;
+      return true;
+    });
+  }, [clubId, organisationId, teams]);
+
+  const existingOrgIds = useMemo(() => {
+    const orgs = Array.isArray(user?.organisations) ? user?.organisations : [];
+    return new Set(orgs.map((o: any) => String(o?.id ?? '')));
+  }, [user]);
+
+  const existingProjectIds = useMemo(() => {
+    const projects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    return new Set(projects.map((p: any) => String(p?.id ?? p?.slug ?? '')).filter(Boolean));
+  }, [user]);
+
+  const projectMembershipIdByProjectId = useMemo(() => {
+    const map = new Map<string, string>();
+    const projects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    for (const p of projects) {
+      const projectId = String(p?.id ?? '').trim();
+      const membershipId = String(p?.membership_id ?? '').trim();
+      if (projectId && membershipId) map.set(projectId, membershipId);
+    }
+    return map;
+  }, [user]);
+
+  const canSubmit = Boolean(user) && Boolean(organisationId || clubId || teamId);
+
+  // ── effects ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!opened) return;
+    setError(null);
+    setSuccessNote(null);
+    setOrgRole('member');
+    setAccessRole('viewer');
+    setFunctionalRoles([]);
+    setClubId('');
+    setTeamId('');
+    setSeasonId('');
+    setSeasonOptions([]);
+    setOrganisationId(initialOrgIdFromSlugOrId || '');
+  }, [initialOrgIdFromSlugOrId, opened]);
+
+  useEffect(() => {
+    if (!opened) return;
+    setFunctionalRoles([]);
+  }, [opened, teamId]);
+
+  useEffect(() => {
+    if (!opened) return;
+    if (!teamId) return;
+    const t = (teams || []).find((x) => String(x.id) === String(teamId));
+    const parent = String((t as any)?.parent_id || '').trim();
+    if (parent && !clubId) setClubId(parent);
+  }, [clubId, opened, teamId, teams]);
+
+  useEffect(() => {
+    if (!opened) return;
+    const tid = String(teamId || '').trim();
+    if (!tid) {
+      setSeasonOptions([]);
+      setSeasonId('');
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const url = `${apiBaseUrl}/api/v1/periods/?page_size=250&project_id=${encodeURIComponent(tid)}&type=season`;
+        const results = await fetchAllPages<PeriodOption>(
+          url,
+          { credentials: 'include' },
+          { ttlMs: 15_000, cacheKey: `periods:seasons:link-user:${tid}`, maxPages: 10, maxItems: 2000 },
+        );
+        if (cancelled) return;
+        const seasons = (results || []).filter((p: any) => !p?.parent_period);
+        setSeasonOptions(seasons);
+      } catch {
+        if (cancelled) return;
+        setSeasonOptions([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [apiBaseUrl, opened, teamId]);
+
+  // ── API mutations ──────────────────────────────────────────
+  const resolveOrgSlugOrIdForApi = (): string => {
+    const org = resolvedOrg;
+    const fromResolved = String((org as any)?.slug || (org as any)?.id || '').trim();
+    if (fromResolved) return fromResolved;
+    return String(initialOrganisationSlugOrId || '').trim();
+  };
+
+  const createOrganisationMembership = async () => {
+    if (!user) return;
+    const org = resolvedOrg;
+    if (!org) return;
+    if (existingOrgIds.has(String(org.id))) return;
+
+    const orgSlugOrId = String((org as any)?.slug || (org as any)?.id || '').trim();
+    if (!orgSlugOrId) throw new Error('Organisation slug/id missing');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      credentials: 'include',
+      body: JSON.stringify({ email: user.email, role: orgRole }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      if (/already|exists|duplicate/i.test(text)) return;
+      throw new Error(text || 'Failed to assign user to federation');
+    }
+  };
+
+  const createProjectMembership = async (projectId: string, periodId?: string) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) return;
+    if (!periodId && existingProjectIds.has(pid)) return;
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      credentials: 'include',
+      body: JSON.stringify({
+        user_id: Number(user.id),
+        role: accessRole,
+        period_id: String(periodId || '').trim() || undefined,
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      if (/already|exists|duplicate/i.test(text)) return;
+      throw new Error(text || 'Failed to assign user to project');
+    }
+  };
+
+  const assignFunctionalRoles = async (projectId: string, roles: string[]) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) return;
+    const cleaned = (Array.isArray(roles) ? roles : []).map((r) => String(r || '').trim()).filter(Boolean);
+    if (cleaned.length === 0) return;
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/functional-roles/assign/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+      credentials: 'include',
+      body: JSON.stringify({ user_id: Number(user.id), roles: cleaned }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to assign functional roles');
+    }
+  };
+
+  const findOrganisationMembershipId = async (): Promise<string> => {
+    if (!user) throw new Error('User missing');
+    const orgIdValue = String(organisationId || '').trim();
+    if (!orgIdValue) throw new Error('Select a federation first');
+
+    const orgs = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+    const direct = orgs.find((o: any) => String(o?.id ?? '') === orgIdValue);
+    const directMembershipId = String(direct?.membership_id ?? '').trim();
+    if (directMembershipId) return directMembershipId;
+
+    const orgSlugOrId = resolveOrgSlugOrIdForApi();
+    if (!orgSlugOrId) throw new Error('Federation slug/id missing');
+
+    const members = await fetchAllPages<any>(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/?page_size=500`,
+      { credentials: 'include' },
+      { ttlMs: 5_000, cacheKey: `org:${orgSlugOrId}:members:lookup:${String(user.id)}`, maxPages: 50, maxItems: 10_000 },
+    );
+
+    const email = String(user.email || '').trim().toLowerCase();
+    const uid = String(user.id);
+    const found = (members || []).find((m: any) => {
+      const memberId = String(m?.id ?? '').trim();
+      if (!memberId) return false;
+      const mu = m?.user || m;
+      const mid = String(mu?.id ?? '').trim();
+      const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
+      return (uid && mid && uid === mid) || (email && memail && email === memail);
+    });
+    const membershipId = String(found?.id ?? '').trim();
+    if (!membershipId) throw new Error('Could not find federation membership for this user');
+    return membershipId;
+  };
+
+  const unlinkOrganisationMembership = async () => {
+    if (!user) return;
+    const orgSlugOrId = resolveOrgSlugOrIdForApi();
+    if (!orgSlugOrId) throw new Error('Federation slug/id missing');
+    const membershipId = await findOrganisationMembershipId();
+
+    const res = await fetch(
+      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/${encodeURIComponent(membershipId)}/`,
+      {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+        credentials: 'include',
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to unlink user from federation');
+    }
+  };
+
+  const findProjectMembershipId = async (pid: string): Promise<string> => {
+    if (!user) throw new Error('User missing');
+    const direct = String(projectMembershipIdByProjectId.get(pid) || '').trim();
+    if (direct) return direct;
+
+    const members = await fetchAllPages<any>(
+      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/?page_size=500`,
+      { credentials: 'include' },
+      { ttlMs: 5_000, cacheKey: `project:${pid}:members:lookup:${String(user.id)}`, maxPages: 50, maxItems: 10_000 },
+    );
+
+    const email = String(user.email || '').trim().toLowerCase();
+    const uid = String(user.id);
+    const found = (members || []).find((m: any) => {
+      const memberId = String(m?.id ?? '').trim();
+      if (!memberId) return false;
+      const mu = m?.user || m;
+      const mid = String(mu?.id ?? '').trim();
+      const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
+      return (uid && mid && uid === mid) || (email && memail && email === memail);
+    });
+    const membershipId = String(found?.id ?? '').trim();
+    if (!membershipId) throw new Error('Could not find project membership for this user');
+    return membershipId;
+  };
+
+  const unlinkProjectMembership = async (projectId: string) => {
+    if (!user) return;
+    const pid = String(projectId || '').trim();
+    if (!pid) throw new Error('Select a club/team first');
+    const membershipId = await findProjectMembershipId(pid);
+
+    const res = await fetch(
+      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
+      {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+        credentials: 'include',
+      },
+    );
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(text || 'Failed to unlink user from project');
+    }
+  };
+
+  // ── submit ─────────────────────────────────────────────────
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !canSubmit) return;
+
+    setSaving(true);
+    setError(null);
+    setSuccessNote(null);
+
+    try {
+      if (organisationId) await createOrganisationMembership();
+      if (clubId) await createProjectMembership(String(clubId));
+      if (teamId) {
+        await createProjectMembership(String(teamId), seasonId || undefined);
+        await assignFunctionalRoles(String(teamId), functionalRoles);
+      }
+      setSuccessNote('Linked successfully.');
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to link user');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // ── unlink handler (DRY helper for the 3 unlink buttons) ──
+  const handleUnlink = async (kind: 'federation' | 'club' | 'team', projectId?: string) => {
+    const confirmMsg = `Unlink this user from the selected ${kind}?`;
+    if (!window.confirm(confirmMsg)) return;
+    setSaving(true);
+    setError(null);
+    setSuccessNote(null);
+    try {
+      if (kind === 'federation') {
+        await unlinkOrganisationMembership();
+      } else {
+        await unlinkProjectMembership(String(projectId));
+      }
+      setSuccessNote(`Unlinked ${kind} successfully.`);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Failed to unlink ${kind}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return {
+    // state
+    organisationId, setOrganisationId,
+    orgRole, setOrgRole,
+    clubId, setClubId,
+    teamId, setTeamId,
+    accessRole, setAccessRole,
+    functionalRoles, setFunctionalRoles,
+    seasonId, setSeasonId,
+    seasonOptions,
+    saving, error, successNote,
+    // derived
+    userDisplayName,
+    filteredClubs, filteredTeams,
+    existingOrgIds, existingProjectIds,
+    canSubmit,
+    // actions
+    onSubmit,
+    handleUnlink,
+  };
+}
