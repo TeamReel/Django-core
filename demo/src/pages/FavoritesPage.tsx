@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Trash2, X } from 'lucide-react';
 import { AppIcon } from '../components/AppIcon';
+import { PageHeader } from '../components/ui/PageHeader';
 import { useNavFavorites } from '../hooks/useNavItems';
 import { clearFavorites, removeFavorite } from '../utils/navStorage';
 
@@ -14,67 +15,36 @@ export default function FavoritesPage() {
 
   return (
     <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
-        <div>
-          <h1 style={{ margin: 0, color: 'var(--app-text)' }}>Favorites</h1>
-          <div style={{ fontSize: 13, color: 'var(--app-muted-text)', marginTop: 4 }}>
-            Your pinned shortcuts.
+      <PageHeader
+        title="Favorites"
+        subtitle="Your pinned shortcuts."
+        className="mb-16"
+        actions={
+          <div className="flex-row gap-8">
+            <Link
+              to="/recents"
+              className="inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600"
+              style={{ padding: '8px 10px', color: 'var(--app-text)', textDecoration: 'none' }}
+            >
+              Back to Recents
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => clearFavorites()}
+              className="inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600 cursor-pointer"
+              style={{ padding: '8px 10px', color: 'var(--app-text)' }}
+              title="Clear favorites"
+            >
+              <AppIcon icon={Trash2} size={16} /> Clear
+            </button>
           </div>
-        </div>
+        }
+      />
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Link
-            to="/recents"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '8px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--app-border)',
-              background: 'var(--app-surface)',
-              color: 'var(--app-text)',
-              textDecoration: 'none',
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-          >
-            Back to Recents
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => clearFavorites()}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '8px 10px',
-              borderRadius: 8,
-              border: '1px solid var(--app-border)',
-              background: 'var(--app-surface)',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-            }}
-            title="Clear favorites"
-          >
-            <AppIcon icon={Trash2} size={16} /> Clear
-          </button>
-        </div>
-      </div>
-
-      <div
-        style={{
-          background: 'var(--app-surface)',
-          border: '1px solid var(--app-border)',
-          borderRadius: 12,
-          overflow: 'hidden',
-        }}
-      >
+      <div className="bg-surface border rounded-12 overflow-hidden">
         {sorted.length === 0 ? (
-          <div style={{ padding: 16, color: 'var(--app-muted-text)' }}>
+          <div className="p-16 text-muted">
             No favorites yet. Open Recents and click “Save”.
           </div>
         ) : (
@@ -102,28 +72,17 @@ export default function FavoritesPage() {
                 }}
               >
                 <AppIcon icon={Star} size={16} />
-                <span style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span className="fw-600 fs-14 truncate">
                   {item.label}
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{item.kind}</span>
+                <span className="fs-12 text-muted">{item.kind}</span>
               </Link>
 
               <button
                 type="button"
                 onClick={() => removeFavorite(item.path)}
-                style={{
-                  border: '1px solid var(--app-border)',
-                  background: 'var(--app-surface-2)',
-                  borderRadius: 8,
-                  padding: '6px 8px',
-                  cursor: 'pointer',
-                  color: 'var(--app-text)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  fontSize: 12,
-                  fontWeight: 600,
-                }}
+                className="inline-flex gap-6 rounded-8 border bg-surface-2 cursor-pointer fs-12 fw-600"
+                style={{ padding: '6px 8px', color: 'var(--app-text)' }}
                 title="Remove"
               >
                 <AppIcon icon={X} size={14} />

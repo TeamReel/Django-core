@@ -78,6 +78,57 @@
 }
 
 /* ======================================================================
+   SPACING TOKENS — 4px base unit
+   ====================================================================== */
+:root {
+  --space-0:  0px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
+
+/* ======================================================================
+   TYPOGRAPHY TOKENS — Modular scale
+   ====================================================================== */
+:root {
+  /* Font size scale */
+  --text-2xs: 0.625rem;   /* 10px */
+  --text-xs:  0.6875rem;  /* 11px */
+  --text-sm:  0.75rem;    /* 12px */
+  --text-md:  0.8125rem;  /* 13px */
+  --text-base: 0.875rem;  /* 14px */
+  --text-lg:  1rem;       /* 16px */
+  --text-xl:  1.125rem;   /* 18px */
+  --text-2xl: 1.25rem;    /* 20px */
+  --text-3xl: 1.5rem;     /* 24px */
+
+  /* Font weight scale */
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+  --font-extrabold: 800;
+
+  /* Line height */
+  --leading-tight:  1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:  12px;
+  --radius-full: 9999px;
+}
+
+/* ======================================================================
    SEMANTIC TOKENS — Light Theme
    ====================================================================== */
 :root {
