@@ -25,13 +25,8 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="flex-center p-24"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        zIndex: 9999,
-      }}
+      className="modal-backdrop p-24"
+      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
@@ -56,8 +51,7 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
             {item.linkHref && (
               <Link
                 to={item.linkHref}
-                className="fs-12 text-link"
-                style={{ textDecoration: 'none' }}
+                className="fs-12 text-link text-decoration-none"
               >
                 Open asset pagina
               </Link>
@@ -80,15 +74,15 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
                 controls
                 autoPlay
                 playsInline
-                className="w-full"
-                style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                className="w-full object-contain"
+                style={{ maxHeight: '70vh' }}
               />
             ) : (
               <img
                 src={item.url}
                 alt={item.title}
-                className="w-full"
-                style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                className="w-full object-contain"
+                style={{ maxHeight: '70vh' }}
               />
             )
           ) : (
@@ -134,7 +128,7 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
           isVideo ? (
             <video
               src={asset.url}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              className="object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }}
               muted
               playsInline
               preload="metadata"
@@ -143,8 +137,8 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
             <img
               src={asset.url}
               alt={asset.alt_text || friendlyAssetLabel(asset)}
-              className="p-8"
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              className="p-8 object-contain"
+              style={{ maxWidth: '100%', maxHeight: '100%' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
@@ -154,18 +148,16 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
           </span>
         )}
         {/* Level badge overlay */}
-        <span className="absolute fw-700" style={{
+        <span className="badge-overlay" style={{
           top: 8, left: 8,
-          fontSize: 10, padding: '2px 8px', borderRadius: 10,
-          backgroundColor: levelColor(level), color: '#fff',
+          backgroundColor: levelColor(level),
         }}>
           {levelLabel(level)}
         </span>
         {isVideo && (
-          <span className="absolute fw-700" style={{
+          <span className="badge-overlay" style={{
             top: 8, right: 8,
-            fontSize: 10, padding: '2px 8px', borderRadius: 10,
-            backgroundColor: '#dc2626', color: '#fff',
+            backgroundColor: '#dc2626',
           }}>
             🎬 Video
           </span>
@@ -183,7 +175,7 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
         <div className="flex-row flex-wrap gap-4">
           <Badge size="sm" variant="default">{CONTENT_TYPE_LABELS[contentType] || contentType}</Badge>
           {tags.map((t) => (
-            <Badge key={t} size="sm" variant="default" style={{ opacity: 0.85 }}>{t}</Badge>
+            <Badge key={t} size="sm" variant="default" className="opacity-80">{t}</Badge>
           ))}
           {asset.file_details?.content_type && (
             <Badge size="sm" variant="default" className="opacity-70">
@@ -195,14 +187,13 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
           <Link
             to={linkHref}
             onClick={(e) => e.stopPropagation()}
-            className="fs-12 text-link"
-            style={{ textDecoration: 'none', marginTop: 2 }}
+            className="fs-12 text-link text-decoration-none mt-4"
           >
             Open asset pagina
           </Link>
         )}
         {asset.file_details && (
-          <Text size="xs" color="secondary" style={{ marginTop: 2 }}>
+            <Text size="xs" color="secondary" className="mt-4">
             {asset.file_details.name?.length > 30 ? asset.file_details.name.slice(0, 27) + '...' : asset.file_details.name}
             {asset.file_details.size > 0 && <> &middot; {formatFileSize(asset.file_details.size)}</>}
           </Text>
@@ -296,7 +287,7 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
           isVideo ? (
             <video
               src={item.url}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              className="object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }}
               muted
               playsInline
               preload="metadata"
@@ -305,26 +296,24 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
             <img
               src={item.url}
               alt={item.name}
-              className="p-8"
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              className="p-8 object-contain"
+              style={{ maxWidth: '100%', maxHeight: '100%' }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
         ) : (
           <span style={{ fontSize: 40, opacity: 0.3 }}>👤</span>
         )}
-        <span className="absolute fw-700" style={{
+        <span className="badge-overlay" style={{
           top: 8, left: 8,
-          fontSize: 10, padding: '2px 8px', borderRadius: 10,
-          backgroundColor: '#059669', color: '#fff',
+          backgroundColor: '#059669',
         }}>
           Member
         </span>
         {isVideo && (
-          <span className="absolute fw-700" style={{
+          <span className="badge-overlay" style={{
             top: 8, right: 8,
-            fontSize: 10, padding: '2px 8px', borderRadius: 10,
-            backgroundColor: '#dc2626', color: '#fff',
+            backgroundColor: '#dc2626',
           }}>
             🎬 Video
           </span>
@@ -341,15 +330,14 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
         <div className="flex-row flex-wrap gap-4">
           <Badge size="sm" variant="default">{friendlyType}</Badge>
           {tags.map((t) => (
-            <Badge key={t} size="sm" variant="default" style={{ opacity: 0.85 }}>{t}</Badge>
+            <Badge key={t} size="sm" variant="default" className="opacity-80">{t}</Badge>
           ))}
         </div>
         {linkHref && (
           <Link
             to={linkHref}
             onClick={(e) => e.stopPropagation()}
-            className="fs-12 text-link"
-            style={{ textDecoration: 'none', marginTop: 2 }}
+            className="fs-12 text-link text-decoration-none mt-4"
           >
             Open asset pagina
           </Link>

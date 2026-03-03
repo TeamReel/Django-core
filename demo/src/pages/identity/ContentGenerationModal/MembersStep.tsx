@@ -51,8 +51,8 @@ export function MembersStep({
       {(selectedType?.subtype === 'lineup' || selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup' || selectedTemplate?.template_subtype === 'lineup_flyer') && (
         <div className="border rounded-12 overflow-hidden bg-surface">
           {/* Section header */}
-          <div className="border-bottom bg-surface-2" style={{ padding: '14px 20px' }}>
-            <h4 className="fw-700 m-0 text-primary" style={{ fontSize: 15 }}>
+          <div className="border-bottom bg-surface-2 py-12 px-16">
+            <h4 className="fw-700 m-0 text-primary fs-14">
               Lineup opties
             </h4>
           </div>
@@ -69,8 +69,8 @@ export function MembersStep({
             {/* Closeup style selector — not for poster */}
             {!(selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
-                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Weergave Stijl</label>
-                <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <label className="form-label-upper">Weergave Stijl</label>
+                <div className="grid-cols-2 gap-8">
                   {[
                     { value: 'popout' as const, label: 'Popout', desc: 'Speler los van achtergrond', icon: 'P' },
                     { value: 'badge' as const, label: 'Badge', desc: 'Ronde spelersfoto', icon: 'B' },
@@ -114,7 +114,7 @@ export function MembersStep({
             {/* Animation style selector — only for video */}
             {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
-                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Animatie Stijl</label>
+                <label className="form-label-upper">Animatie Stijl</label>
                 <div className="flex-wrap gap-8">
                   {[
                     { value: 'slide_up', label: 'Omhoog' },
@@ -158,8 +158,8 @@ export function MembersStep({
             {/* Intro style selector — per line vs per player — only for video */}
             {!(selectedType?.subtype === 'lineup_flyer' || selectedTemplate?.template_subtype === 'lineup_flyer' || selectedType?.subtype === 'poster' || selectedTemplate?.template_subtype === 'poster') && (
               <div>
-                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Introductie Stijl</label>
-                <div style={{ display: 'flex', gap: 8 }}>
+                <label className="form-label-upper">Introductie Stijl</label>
+                <div className="flex-row gap-8">
                   {[
                     { value: 'per_line', label: 'Per linie', icon: 'L', desc: 'Hele linie tegelijk' },
                     { value: 'per_player', label: 'Per speler', icon: 'S', desc: 'Eén voor één, groot in beeld' },
@@ -204,7 +204,7 @@ export function MembersStep({
             {/* Background / Location selector */}
             {appBackgrounds.length > 0 && (
               <div>
-                <label className="block fs-12 fw-600 text-muted" style={{ marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Achtergrond / Locatie</label>
+                <label className="form-label-upper">Achtergrond / Locatie</label>
                 <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
                   {/* Default option */}
                   <button
@@ -323,7 +323,7 @@ export function MembersStep({
                 const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                 return (
-                  <div key={idx} className="grid gap-12" style={{ gridTemplateColumns: '100px 1fr', alignItems: 'center' }}>
+                    <div key={idx} className="grid gap-12" style={{ gridTemplateColumns: '100px 1fr', alignItems: 'center' }}>
                     <label className="fs-14 text-secondary fw-500 truncate" title={positionLabel}>
                       {positionLabel}
                     </label>
@@ -397,7 +397,7 @@ export function MembersStep({
 
               {/* Eligible vs total summary */}
               {assetTypes.length > 0 && (
-                <div className="mt-12 border-top fs-12 text-muted" style={{ paddingTop: '12px' }}>
+                <div className="mt-12 border-top fs-12 text-muted pt-12">
                   {(() => {
                     const eligible = available.filter(p => memberHasRequiredAssets(p, assetTypes, role)).length;
                     const total = available.length;

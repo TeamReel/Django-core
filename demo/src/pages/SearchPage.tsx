@@ -108,7 +108,7 @@ export default function SearchPage() {
       <div className="page-container">
         <div className="mb-24">
           <div className="flex-between mb-8 flex-wrap gap-12">
-            <h1 className="fw-700" style={{ fontSize: '28px', color: 'var(--color-text-primary)' }}>
+            <h1 className="fw-700 text-primary" style={{ fontSize: '28px' }}>
               Search Results
             </h1>
             <div className="flex-row gap-8">
@@ -121,7 +121,7 @@ export default function SearchPage() {
               >
                 🔍 Filters
                 {isFiltered && (
-                  <span className="flex-center fs-11 rounded-full" style={{ background: 'var(--color-primary)', color: 'white', width: '18px', height: '18px' }}>
+                  <span className="flex-center fs-11 rounded-full text-white" style={{ background: 'var(--color-primary)', width: '18px', height: '18px' }}>
                     {types.length}
                   </span>
                 )}
@@ -143,7 +143,7 @@ export default function SearchPage() {
             )}
             </div>
           </div>
-          <p className="fs-16" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className="fs-16 text-secondary">
             {query ? (
               <>
                 Showing results for <strong>"{query}"</strong>
@@ -173,7 +173,7 @@ export default function SearchPage() {
         </div>
 
         {isSearching && (
-          <div className="text-center" style={{ padding: '40px', color: 'var(--color-text-secondary)' }}>
+          <div className="text-center p-32 text-secondary">
             <div className="spinner mb-16"></div>
             Searching...
           </div>
@@ -186,9 +186,9 @@ export default function SearchPage() {
         )}
 
         {!isSearching && !error && totalResults === 0 && query && (
-          <div className="text-center rounded-8" style={{ padding: '40px', color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)' }}>
+          <div className="text-center rounded-8 p-32 text-secondary bg-surface-2">
             <div className="mb-16" style={{ fontSize: '48px' }}>🔍</div>
-            <h3 className="fs-20 mb-8" style={{ color: 'var(--color-text-primary)' }}>No results found</h3>
+            <h3 className="fs-20 mb-8 text-primary">No results found</h3>
             <p>We couldn't find anything matching "{query}". Try different keywords or check for typos.</p>
           </div>
         )}
@@ -209,10 +209,10 @@ export default function SearchPage() {
               return (
                 <div key={category}>
                   <div className="flex-between mb-16">
-                    <h2 className="fs-20 fw-600 flex-row gap-8" style={{ color: 'var(--color-text-primary)' }}>
+                    <h2 className="fs-20 fw-600 flex-row gap-8 text-primary">
                       <span>{getCategoryIcon(category)}</span>
                       {getCategoryLabel(category)}
-                      <span className="fs-14 fw-400 rounded-12" style={{ color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)', padding: '2px 8px' }}>
+                      <span className="fs-14 fw-400 rounded-12 text-secondary bg-surface-2" style={{ padding: '2px 8px' }}>
                         {results.length}
                       </span>
                     </h2>
@@ -239,11 +239,11 @@ export default function SearchPage() {
                         }}
                         className="search-result-card block p-16 rounded-8"
                       >
-                        <h3 className="fs-16 fw-600 mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                        <h3 className="fs-16 fw-600 mb-4 text-primary">
                           {result.title}
                         </h3>
                         {result.description && (
-                          <p className="fs-14 mb-8" style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                          <p className="fs-14 mb-8 text-secondary" style={{ lineHeight: '1.5' }}>
                             {result.description}
                           </p>
                         )}
@@ -277,11 +277,11 @@ export default function SearchPage() {
                   }}
                   className="search-result-card block p-16 rounded-8"
                 >
-                  <h3 className="fs-16 fw-600 mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                  <h3 className="fs-16 fw-600 mb-4 text-primary">
                     {result.title}
                   </h3>
                   {result.description && (
-                    <p className="fs-14 mb-8" style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5' }}>
+                    <p className="fs-14 mb-8 text-secondary" style={{ lineHeight: '1.5' }}>
                       {result.description}
                     </p>
                   )}
@@ -297,7 +297,7 @@ export default function SearchPage() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="gap-12 mt-32" style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="flex-center gap-12 mt-32">
               <button
                 disabled={!paginatedResults.previous}
                 onClick={() => handlePageChange(page - 1)}
@@ -311,7 +311,7 @@ export default function SearchPage() {
               >
                 Previous
               </button>
-              <span className="flex-row" style={{ color: 'var(--color-text-secondary)' }}>
+              <span className="flex-row text-secondary">
                 Page {page}
               </span>
               <button
@@ -366,7 +366,7 @@ export default function SearchPage() {
               }}
             >
               <span className="fs-20">{getCategoryIcon(category)}</span>
-              <span style={{ fontWeight: types.includes(category) ? '600' : '400', color: 'var(--color-text-primary)' }}>
+              <span className="fw-500" style={{ color: types.includes(category) ? 'var(--color-primary)' : 'var(--color-text-primary)' }}>
                 {getCategoryLabel(category)}
               </span>
               {types.includes(category) && (

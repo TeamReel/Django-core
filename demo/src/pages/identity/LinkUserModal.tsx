@@ -19,16 +19,8 @@ function UnlinkButton({
         type="button"
         disabled={saving}
         onClick={onClick}
-        style={{
-          padding: '6px 10px',
-          borderRadius: '4px',
-          border: '1px solid #dc3545',
-          backgroundColor: 'var(--app-surface)',
-          color: 'var(--app-error)',
-          cursor: saving ? 'not-allowed' : 'pointer',
-          fontSize: '12px',
-          fontWeight: 600,
-        }}
+        className="btn-danger-sm"
+        style={{ cursor: saving ? 'not-allowed' : 'pointer' }}
       >
         {label}
       </button>
@@ -45,24 +37,18 @@ export default function LinkUserModal(props: LinkUserModalProps) {
 
   return (
     <div
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className="modal-backdrop"
       onClick={onClose}
     >
       <div
+        className="bg-surface p-24 rounded-8 border shadow-lg"
         style={{
-          backgroundColor: 'var(--app-surface)', padding: '24px', borderRadius: '8px',
           width: '560px', maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)', border: '1px solid var(--app-border)',
+          color: 'var(--app-text)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>
+        <h2 className="mb-12 text-primary m-0">
           Link {d.userDisplayName}
         </h2>
         <div className="mb-16 text-muted fs-13">
@@ -70,27 +56,26 @@ export default function LinkUserModal(props: LinkUserModalProps) {
         </div>
 
         <form onSubmit={d.onSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="flex-col gap-12">
             {d.error && (
-              <div style={{ padding: '12px', backgroundColor: 'rgba(220,53,69,0.1)', color: 'var(--app-error)', border: '1px solid rgba(220,53,69,0.2)', borderRadius: '4px', fontSize: '14px' }}>
+              <div className="callout-error fs-14">
                 {d.error}
               </div>
             )}
             {d.successNote && (
-              <div style={{ padding: '12px', backgroundColor: 'rgba(40,167,69,0.1)', color: '#1e7e34', border: '1px solid rgba(40,167,69,0.2)', borderRadius: '4px', fontSize: '14px' }}>
+              <div className="callout-success fs-14">
                 {d.successNote}
               </div>
             )}
 
             {/* ── Federation + Role ─────────────────────── */}
-            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid-cols-2 gap-12">
               <div>
-                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Federation</label>
+                <label className="form-label-upper">Federation</label>
                 <select
                   value={d.organisationId}
                   onChange={(e) => d.setOrganisationId(e.target.value)}
-                  className="w-full p-8 rounded-4 border text-primary fs-14"
-                  style={{ backgroundColor: 'var(--app-input-bg)' }}
+                  className="form-input fs-14"
                 >
                   <option value="">(optional) Select Federation…</option>
                   {(props.organisations || []).map((org) => (
@@ -104,12 +89,11 @@ export default function LinkUserModal(props: LinkUserModalProps) {
                 )}
               </div>
               <div>
-                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Federation Role</label>
+                <label className="form-label-upper">Federation Role</label>
                 <select
                   value={d.orgRole}
                   onChange={(e) => d.setOrgRole(e.target.value as any)}
-                  className="w-full p-8 rounded-4 border text-primary fs-14"
-                  style={{ backgroundColor: 'var(--app-input-bg)' }}
+                  className="form-input fs-14"
                   disabled={!d.organisationId}
                 >
                   <option value="member">Member</option>
@@ -119,14 +103,13 @@ export default function LinkUserModal(props: LinkUserModalProps) {
             </div>
 
             {/* ── Club + Team ───────────────────────────── */}
-            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid-cols-2 gap-12">
               <div>
-                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Club</label>
+                <label className="form-label-upper">Club</label>
                 <select
                   value={d.clubId}
                   onChange={(e) => { d.setClubId(e.target.value); d.setTeamId(''); d.setSeasonId(''); }}
-                  className="w-full p-8 rounded-4 border text-primary fs-14"
-                  style={{ backgroundColor: 'var(--app-input-bg)' }}
+                  className="form-input fs-14"
                 >
                   <option value="">(optional) Select Club…</option>
                   {d.filteredClubs.map((c) => (
@@ -140,12 +123,11 @@ export default function LinkUserModal(props: LinkUserModalProps) {
                 )}
               </div>
               <div>
-                <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Team</label>
+                <label className="form-label-upper">Team</label>
                 <select
                   value={d.teamId}
                   onChange={(e) => { d.setTeamId(e.target.value); d.setSeasonId(''); }}
-                  className="w-full p-8 rounded-4 border text-primary fs-14"
-                  style={{ backgroundColor: 'var(--app-input-bg)' }}
+                  className="form-input fs-14"
                 >
                   <option value="">(optional) Select Team…</option>
                   {d.filteredTeams.map((t) => (
@@ -162,26 +144,25 @@ export default function LinkUserModal(props: LinkUserModalProps) {
 
             {/* ── Access Role ───────────────────────────── */}
             <div>
-              <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Access Role (permissions)</label>
+              <label className="form-label-upper">Access Role (permissions)</label>
               <select
                 value={d.accessRole}
                 onChange={(e) => d.setAccessRole((e.target.value as any) || 'viewer')}
-                className="w-full p-8 rounded-4 border text-primary fs-14"
-                style={{ backgroundColor: 'var(--app-input-bg)' }}
+                className="form-input fs-14"
                 disabled={!d.clubId && !d.teamId}
               >
                 {accessRoleOptions.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
-              <div className="text-muted fs-12" style={{ marginTop: '6px', lineHeight: 1.35 }}>
+              <div className="text-muted fs-12 mt-4 leading-snug">
                 This controls backend access for the Club/Team (viewer/editor/admin). Team-level functional roles are managed separately and can be multi-valued.
               </div>
             </div>
 
             {/* ── Functional Roles ──────────────────────── */}
             <div>
-              <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Functional Roles (team only)</label>
+              <label className="form-label-upper">Functional Roles (team only)</label>
               <div
                 style={{
                   display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
@@ -213,19 +194,18 @@ export default function LinkUserModal(props: LinkUserModalProps) {
                   );
                 })}
               </div>
-              <div className="text-muted fs-12" style={{ marginTop: '6px', lineHeight: 1.35 }}>
+              <div className="text-muted fs-12 mt-4 leading-snug">
                 Tip: Team Admins automatically show as &quot;Coach&quot; in the API.
               </div>
             </div>
 
-            {/* ── Season ────────────────────────────────── */}
+            {/* ── Season ────────────────────────────── */}
             <div>
-              <label className="block fw-600 fs-13" style={{ marginBottom: '6px' }}>Season (optional)</label>
+              <label className="form-label-upper">Season (optional)</label>
               <select
                 value={d.seasonId}
                 onChange={(e) => d.setSeasonId(e.target.value)}
-                className="w-full p-8 rounded-4 border text-primary fs-14"
-                style={{ backgroundColor: 'var(--app-input-bg)' }}
+                className="form-input fs-14"
                 disabled={!d.teamId || d.seasonOptions.length === 0}
               >
                 <option value="">{!d.teamId ? 'Select a team first…' : '(optional) Select Season…'}</option>
@@ -233,35 +213,28 @@ export default function LinkUserModal(props: LinkUserModalProps) {
                   <option key={String(p.id)} value={String(p.id)}>{p.name}</option>
                 ))}
               </select>
-              <div className="text-muted fs-12" style={{ marginTop: '6px', lineHeight: 1.35 }}>
+              <div className="text-muted fs-12 mt-4 leading-snug">
                 If set, the team membership will be scoped to this season via `period_id`.
               </div>
             </div>
 
-            {/* ── Actions ───────────────────────────────── */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+            {/* ── Actions ───────────────────────────── */}
+            <div className="flex-row justify-end gap-12 mt-8">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={d.saving}
-                style={{
-                  padding: '8px 16px', borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)',
-                  cursor: d.saving ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: 600,
-                }}
+                className="btn-modal btn-modal-secondary fs-14"
+                style={{ cursor: d.saving ? 'not-allowed' : 'pointer' }}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={d.saving || !d.canSubmit}
+                className="btn-modal btn-modal-primary fs-14"
                 style={{
-                  padding: '8px 16px', borderRadius: '4px', border: 'none',
-                  backgroundColor: d.saving || !d.canSubmit ? '#cccccc' : '#0066cc',
-                  color: 'white',
                   cursor: d.saving || !d.canSubmit ? 'not-allowed' : 'pointer',
-                  fontSize: '14px', fontWeight: 600,
                   opacity: d.saving || !d.canSubmit ? 0.65 : 1,
                 }}
               >

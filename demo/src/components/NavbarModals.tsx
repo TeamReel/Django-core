@@ -98,7 +98,7 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
         )}
 
         {/* Footer */}
-        <div className={s.followUpFooter} style={{ justifyContent: submitted ? 'center' : 'space-between' }}>
+          <div className={s.followUpFooter} style={{ justifyContent: submitted ? 'center' : undefined }}>
           {submitted ? (
             <button
               onClick={() => { onSubmitted(); onClose(); }}

@@ -160,28 +160,25 @@ export function MediaAssetCard({
               onLoadedMetadata={(e) => {
                 try { e.currentTarget.currentTime = 0.1; } catch { /* ignore */ }
               }}
-              className="w-full h-full"
-              style={{ objectFit: 'cover' }}
+              className="w-full h-full object-cover"
             />
           ) : url ? (
             <img
               src={url}
               alt={label}
-              className="w-full h-full"
-              style={{ objectFit: 'cover' }}
+              className="w-full h-full object-cover"
             />
           ) : null}
 
           {/* Play overlay for video */}
           {url && isVideo && (
             <div
-              className="absolute flex-center"
+              className="absolute flex-center pointer-events-none"
               style={{
                 inset: 0,
                 color: 'rgba(255,255,255,0.9)',
                 fontSize: 28,
                 textShadow: '0 2px 12px rgba(0,0,0,0.7)',
-                pointerEvents: 'none',
               }}
             >
               ▶
@@ -207,12 +204,11 @@ export function MediaAssetCard({
           {/* Status badge */}
           {badgeText && (
             <span
-              className="absolute fw-600 rounded-4"
+              className="absolute fw-600 rounded-4 text-white"
               style={{
                 top: 6,
                 right: 6,
                 background: badgeColor,
-                color: '#fff',
                 fontSize: 10,
                 padding: '2px 6px',
               }}
@@ -226,7 +222,7 @@ export function MediaAssetCard({
             const ws = getStateDisplay(workflowStatus);
             return (
               <span
-                className="absolute fw-600 rounded-4"
+                className="absolute fw-600 rounded-4 text-white"
                 style={{
                   top: badgeText ? 28 : 6,
                   right: 6,
@@ -245,12 +241,11 @@ export function MediaAssetCard({
           {mediaItem && historyItems.length > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
-              className="absolute border-none rounded-4 fs-12 cursor-pointer"
+              className="absolute border-none rounded-4 fs-12 cursor-pointer text-white"
               style={{
                 top: 6,
                 left: 6,
                 background: 'rgba(0,0,0,0.6)',
-                color: '#fff',
                 padding: '2px 6px',
               }}
               title={`${historyItems.length} eerdere versie(s)`}
@@ -333,13 +328,8 @@ export function MediaAssetCard({
       {/* History Modal */}
       {showHistory && (
         <div
-          className="flex-center"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            zIndex: 1100,
-          }}
+          className="modal-backdrop"
+          style={{ background: 'rgba(0,0,0,0.6)', zIndex: 1100 }}
           onClick={() => setShowHistory(false)}
         >
           <div
@@ -401,15 +391,13 @@ export function MediaAssetCard({
                             onLoadedMetadata={(e) => {
                               try { e.currentTarget.currentTime = 0.1; } catch { /* ignore */ }
                             }}
-                            className="w-full h-full"
-                            style={{ objectFit: 'cover' }}
-                          />
+                            className="w-full h-full object-cover"
+            />
                         ) : histUrl ? (
                           <img
                             src={histUrl}
                             alt={item.title}
-                            className="w-full h-full"
-                            style={{ objectFit: 'cover' }}
+                            className="w-full h-full object-cover"
                           />
                         ) : (
                           <div className="flex-center h-full" style={{ color: '#888', fontSize: 10 }}>
@@ -463,9 +451,7 @@ export function MediaAssetGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="media-asset-grid grid gap-12"
-      style={{
-        gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-      }}
+      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}
     >
       {children}
     </div>

@@ -41,7 +41,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
 
   return (
     <div>
-      <div className="mb-16" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div className="mb-16 flex-row justify-end">
         <Button
           variant="secondary"
           size="sm"
@@ -89,7 +89,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <div className="fs-12 opacity-60 uppercase" style={{ letterSpacing: '1px' }}>
                     Your Credits Balance
                   </div>
                   <div
@@ -106,7 +106,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     {formatCredits(userBalance?.current_balance)}
                   </div>
                   <div className="fs-16 opacity-70 mb-8">credits</div>
-                  <div className="fs-12" style={{ opacity: 0.55 }}>Charged to your account</div>
+                  <div className="fs-12 opacity-50">Charged to your account</div>
                 </Card>
 
                 <Card
@@ -115,7 +115,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+                  <div className="fs-12 opacity-60 uppercase" style={{ letterSpacing: '1px' }}>
                     {(walletLabel || 'Team')} Credits Balance
                   </div>
                   <div
@@ -129,7 +129,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     {formatCredits(balance?.current_balance)}
                   </div>
                   <div className="fs-16 opacity-70 mb-8">credits</div>
-                  <div className="fs-12" style={{ opacity: 0.55 }}>
+                  <div className="fs-12 opacity-50">
                     {projectName || balance?.project_name || 'Team'}
                     {balance?.updated_at ? ` • Last updated ${formatDateTime(balance.updated_at)}` : ''}
                   </div>
@@ -139,7 +139,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
               {/* Transaction Timeline + Recent Activity */}
               <div className="mt-16">
                 <Card className="p-24 mb-12">
-                  <h3 style={{ margin: '0 0 20px 0', fontSize: '18px' }}>📊 Transaction Timeline</h3>
+                  <h3 className="m-0 mb-16 fs-18">📊 Transaction Timeline</h3>
                   {transactionsLoading ? (
                     <div className="text-center p-20 opacity-60">Loading transactions…</div>
                   ) : transactions.length === 0 ? (
@@ -180,8 +180,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                                   }}
                                 >
                                   <span
-                                    className="fs-12 fw-700 whitespace-nowrap"
-                                    style={{ color: 'white' }}
+                                    className="fs-12 fw-700 whitespace-nowrap text-white"
                                   >
                                     {isPositive ? '+' : ''}
                                     {Number.isFinite(amount) ? amount.toLocaleString() : String(txn.amount)}
@@ -210,7 +209,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                 </Card>
 
                 <Card className="p-24">
-                  <div className="flex-between" style={{ marginBottom: '20px' }}>
+                  <div className="flex-between mb-16">
                     <h3 className="m-0 fs-18">📋 Recent Activity</h3>
                   </div>
 
@@ -226,11 +225,10 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                         return (
                           <div
                             key={txn.id}
-                            className="flex-between p-16 rounded-8 bg-surface-2 border"
-                            style={{ transition: 'all 0.2s ease' }}
+                            className="flex-between p-16 rounded-8 bg-surface-2 border transition"
                           >
                             <div className="flex-1-min">
-                              <div style={{ fontSize: '15px', fontWeight: 500, marginBottom: '6px' }}>
+                              <div className="fs-14 fw-500 mb-4">
                                 {txn.notes || sourceTypeLabel(txn.source_type)}
                               </div>
                               <div className="fs-13 opacity-60">
@@ -289,19 +287,19 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                 }}
               >
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase' }}>➕ Total Added</div>
+                  <div className="fs-12 opacity-60 uppercase">➕ Total Added</div>
                   <div className="fw-800 text-success" style={{ fontSize: '26px' }}>
                     +{formatCredits(totals.added)}
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase' }}>➖ Total Used</div>
+                  <div className="fs-12 opacity-60 uppercase">➖ Total Used</div>
                   <div className="fw-800 text-error" style={{ fontSize: '26px' }}>
                     {formatCredits(totals.used)}
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60" style={{ textTransform: 'uppercase' }}>📊 Net</div>
+                  <div className="fs-12 opacity-60 uppercase">📊 Net</div>
                   <div
                     style={{
                       fontSize: '26px',
@@ -319,7 +317,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
               </div>
 
               <Card className="p-0 overflow-hidden">
-                <div className="border-bottom" style={{ padding: '14px 16px' }}>
+                <div className="border-bottom py-12 px-16">
                   <div className="fs-14 fw-700">Team Transactions</div>
                   <div className="fs-12 opacity-60">
                     Showing {transactions.length} most recent entries

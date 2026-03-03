@@ -80,8 +80,8 @@ export default function MatchOverviewTab({
       <img
         src={url}
         alt=""
-        className="rounded-6"
-        style={{ width: size, height: size, objectFit: 'contain' }}
+        className="rounded-6 object-contain"
+        style={{ width: size, height: size }}
       />
     ) : (
       <div
@@ -105,9 +105,9 @@ export default function MatchOverviewTab({
       >
         <div className="flex-center gap-12">
           {/* Home */}
-          <div className="flex-col gap-4 flex-1" style={{ alignItems: 'center' }}>
+          <div className="flex-col gap-4 flex-1 items-center">
             <TeamLogo url={homeLogoUrl} fallback="🏠" size={44} />
-            <span className="fs-13 fw-700 text-center" style={{ lineHeight: 1.2 }}>
+            <span className="fs-13 fw-700 text-center leading-tight">
               {homeTeamName}
             </span>
           </div>
@@ -132,9 +132,9 @@ export default function MatchOverviewTab({
           </div>
 
           {/* Away */}
-          <div className="flex-col gap-4 flex-1" style={{ alignItems: 'center' }}>
+          <div className="flex-col gap-4 flex-1 items-center">
             <TeamLogo url={awayLogoUrl} fallback="⚽" size={44} />
-            <span className="fs-13 fw-700 text-center" style={{ lineHeight: 1.2 }}>
+            <span className="fs-13 fw-700 text-center leading-tight">
               {awayTeamName}
             </span>
           </div>
@@ -142,10 +142,7 @@ export default function MatchOverviewTab({
 
         {/* Venue + competition */}
         <div
-          className="text-center border-top mt-12 fs-12 text-muted"
-          style={{
-            paddingTop: 8,
-          }}
+          className="text-center border-top mt-12 fs-12 text-muted pt-8"
         >
           📍 {match.location || match.metadata?.venue || 'Onbekend'} • 🏆{' '}
           {competition?.name || match.period?.name || 'Competitie'}
@@ -153,7 +150,7 @@ export default function MatchOverviewTab({
       </div>
 
       {/* ── Quick status cards ────────────────────────────────────────── */}
-      <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 1fr' }}>
+      <div className="grid-cols-2 gap-8">
         {/* Lineup status */}
         <div
           className="border bg-surface p-12"
@@ -215,16 +212,10 @@ export default function MatchOverviewTab({
 
         return (
           <div key={categoryKey}>
-            <div className="fs-11 fw-700 text-muted" style={{
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              marginBottom: 6, paddingLeft: 2,
-            }}>
+            <div className="status-label" style={{ paddingLeft: 2 }}>
               {category.label}
             </div>
-            <div className="border overflow-hidden bg-surface" style={{
-              borderRadius: 10,
-            }}>
+            <div className="border overflow-hidden bg-surface rounded-8">
               {category.items.map((item, idx) => {
                 const latestMedia = getLatestMediaForSubtype(item.subtype);
                 const existingItem = getContentItemForSubtype(item.subtype);
@@ -273,16 +264,10 @@ export default function MatchOverviewTab({
       {/* ── Match Events (compact) ────────────────────────────────────── */}
       {matchEvents.length > 0 && (
         <div>
-          <div className="fs-11 fw-700 text-muted" style={{
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            marginBottom: 6, paddingLeft: 2,
-          }}>
+          <div className="status-label" style={{ paddingLeft: 2 }}>
             Wedstrijdverloop
           </div>
-          <div className="border overflow-hidden bg-surface" style={{
-            borderRadius: 10,
-          }}>
+          <div className="border overflow-hidden bg-surface rounded-8">
             {matchEvents.map((evt, idx) => {
               const isHome = String(evt.team_project?.id || '') === String(match.project?.id || '');
               const icon = (() => {

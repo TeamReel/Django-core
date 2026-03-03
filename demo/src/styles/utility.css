@@ -71,6 +71,11 @@
 .py-12 { padding-top: var(--space-3); padding-bottom: var(--space-3); }
 .py-16 { padding-top: var(--space-4); padding-bottom: var(--space-4); }
 .py-24 { padding-top: var(--space-6); padding-bottom: var(--space-6); }
+.py-32 { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+
+.pt-8  { padding-top: var(--space-2); }
+.pt-12 { padding-top: var(--space-3); }
+.pb-12 { padding-bottom: var(--space-3); }
 
 /* ---------------------------------------------------------------------------
    Margin — wired to --space-* tokens
@@ -421,6 +426,83 @@
   border-radius: var(--radius-md);
   background: rgba(40, 167, 69, 0.1);
   color: var(--app-text);
+}
+
+/* ---------------------------------------------------------------------------
+   Object-fit
+   --------------------------------------------------------------------------- */
+.object-contain { object-fit: contain; }
+.object-cover   { object-fit: cover; }
+
+/* ---------------------------------------------------------------------------
+   Flex alignment extras
+   --------------------------------------------------------------------------- */
+.justify-end   { justify-content: flex-end; }
+.items-start   { align-items: flex-start; }
+.items-center  { align-items: center; }
+.self-center   { align-self: center; }
+
+/* ---------------------------------------------------------------------------
+   Extra text / decoration
+   --------------------------------------------------------------------------- */
+.text-white             { color: #fff; }
+.text-decoration-none   { text-decoration: none; }
+.leading-tight          { line-height: 1.2; }
+.leading-snug           { line-height: 1.35; }
+.pointer-events-none    { pointer-events: none; }
+
+/* ---------------------------------------------------------------------------
+   Composites — modal backdrop (reusable overlay)
+   --------------------------------------------------------------------------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+/* ---------------------------------------------------------------------------
+   Composites — status label (uppercase category header)
+   --------------------------------------------------------------------------- */
+.status-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+/* ---------------------------------------------------------------------------
+   Composites — overlay badge (absolute pill on thumbnails)
+   --------------------------------------------------------------------------- */
+.badge-overlay {
+  position: absolute;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  padding: 2px 8px;
+  border-radius: 10px;
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------------
+   Composites — small danger button
+   --------------------------------------------------------------------------- */
+.btn-danger-sm {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--app-error, #dc3545);
+  background-color: var(--app-surface);
+  color: var(--app-error);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+}
+.btn-danger-sm:disabled {
+  cursor: not-allowed;
 }
 
 /* ---------------------------------------------------------------------------

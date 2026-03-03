@@ -38,7 +38,7 @@ export function SuccessStep({
   onClose,
 }: SuccessStepProps) {
   return (
-    <div className="flex-col flex-center h-full text-center overflow-y-auto" style={{ paddingTop: '32px', paddingBottom: '32px' }}>
+    <div className="flex-col flex-center h-full text-center overflow-y-auto py-32">
       <div className="mb-8" style={{ fontSize: '36px' }}>✓</div>
       <h3 className="fs-20 fw-700 mb-4">
         {generatedVariants.length > 1
@@ -55,7 +55,7 @@ export function SuccessStep({
       {/* Multiple variants grid — converted Tailwind className to inline styles */}
       {generatedVariants.length > 1 ? (
         <div className="w-full mb-16" style={{ maxWidth: '672px' }}>
-          <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+          <div className="grid-cols-2 gap-12">
             {generatedVariants.map((variant, index) => {
               const isSelected = selectedVariantIndex === index;
               const isSaved = savedVariantIndices.has(index);
@@ -87,16 +87,16 @@ export function SuccessStep({
                   {mimeType?.startsWith('video/') ? (
                     <video
                       src={variant.presigned_url || ''}
-                      className="w-full bg-surface-2"
-                      style={{ height: '128px', objectFit: 'contain' }}
+                      className="w-full bg-surface-2 object-contain"
+                      style={{ height: '128px' }}
                       muted
                     />
                   ) : imageSrc ? (
                     <img
                       src={imageSrc}
                       alt={`Variant ${index + 1}`}
-                      className="w-full bg-surface-2"
-                      style={{ height: '128px', objectFit: 'contain' }}
+                      className="w-full bg-surface-2 object-contain"
+                      style={{ height: '128px' }}
                     />
                   ) : (
                     <div className="w-full bg-surface-2 flex-center text-muted fs-14" style={{ height: '128px' }}>
@@ -117,7 +117,7 @@ export function SuccessStep({
                     </div>
                   )}
                   {/* Per-tile save button */}
-                  <div className="absolute fs-12 px-8 flex-between" style={{ bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', color: '#ffffff', paddingTop: '6px', paddingBottom: '6px' }}>
+                  <div className="absolute fs-12 px-8 flex-between text-white" style={{ bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', paddingTop: '6px', paddingBottom: '6px' }}>
                     <span>{variant.storage_info ? `${(variant.storage_info.file_size_bytes / 1024).toFixed(0)} KB` : `Variant ${index + 1}`}</span>
                     {isSaved ? (
                       <span className="fw-700" style={{ color: '#34d399' }}>Opgeslagen</span>
@@ -144,7 +144,7 @@ export function SuccessStep({
         // Single variant display — tile-based card
         <>
           {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
-            <div className="mb-16" style={{ width: '280px', maxWidth: '92vw', alignSelf: 'center' }}>
+            <div className="mb-16 self-center" style={{ width: '280px', maxWidth: '92vw' }}>
               <div
                 className="rounded-12 overflow-hidden"
                 style={{
@@ -168,16 +168,16 @@ export function SuccessStep({
                     controls
                     autoPlay
                     playsInline
-                    className="w-full block"
-                    style={{ height: '160px', maxHeight: '160px', objectFit: 'contain', background: '#000' }}
+                    className="w-full block object-contain"
+                    style={{ height: '160px', maxHeight: '160px', background: '#000' }}
                   >
                     Je browser ondersteunt geen video.
                   </video>
-                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)', color: 'white' }}>
+                  <div className="absolute rounded-12 fs-11 fw-600 text-white" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)' }}>
                     {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                   </div>
                   {generatedVariants[0].storage_info && (
-                    <div className="absolute rounded-8 fs-11" style={{ bottom: 8, left: 8, padding: '2px 8px', background: 'rgba(0,0,0,0.6)', color: 'white' }}>
+                    <div className="absolute rounded-8 fs-11 text-white" style={{ bottom: 8, left: 8, padding: '2px 8px', background: 'rgba(0,0,0,0.6)' }}>
                       {((generatedVariants[0].storage_info.file_size_bytes || 0) / (1024 * 1024)).toFixed(1)} MB
                     </div>
                   )}
@@ -185,10 +185,10 @@ export function SuccessStep({
 
                 {/* Tile footer */}
                 <div className="py-12 px-16 bg-surface" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div className="fw-600 fs-14 text-primary" style={{ marginBottom: '6px' }}>
+                  <div className="fw-600 fs-14 text-primary mb-4">
                     Lineup Video
                   </div>
-                  <div className="fs-12 mb-8" style={{ color: '#9ca3af' }}>
+                  <div className="fs-12 mb-8 text-muted">
                     {matchData?.title || 'Match'} — {new Date().toLocaleDateString('nl-NL')}
                   </div>
 
@@ -197,8 +197,8 @@ export function SuccessStep({
                     <div className="flex-row gap-8">
                       <button
                         onClick={(e) => { e.stopPropagation(); handleGenerateInternal(); }}
-                        className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer"
-                        style={{ padding: '6px 12px', border: '1px solid #3b82f6', color: 'var(--color-blue-500)' }}
+                        className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer border"
+                        style={{ padding: '6px 12px', borderColor: '#3b82f6', color: 'var(--color-blue-500)' }}
                       >
                         Opnieuw
                       </button>
@@ -208,8 +208,8 @@ export function SuccessStep({
                           const url = generatedVariants[0]?.presigned_url;
                           if (url) window.open(url, '_blank');
                         }}
-                        className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer"
-                        style={{ padding: '6px 12px', border: '1px solid #6b7280', color: 'var(--app-muted-text)' }}
+                        className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer text-muted border"
+                        style={{ padding: '6px 12px', borderColor: '#6b7280' }}
                       >
                         Download
                       </button>
@@ -238,8 +238,8 @@ export function SuccessStep({
                           const url = generatedVariants[0]?.presigned_url;
                           if (url) window.open(url, '_blank');
                         }}
-                        className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer"
-                        style={{ padding: '6px 12px', border: '1px solid #6b7280', color: 'var(--app-muted-text)' }}
+                        className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer text-muted border"
+                        style={{ padding: '6px 12px', borderColor: '#6b7280' }}
                       >
                         Groot bekijken
                       </button>
@@ -249,7 +249,7 @@ export function SuccessStep({
               </div>
             </div>
           ) : generatedOutput?.image_base64 ? (
-            <div className="mb-16" style={{ width: '220px', maxWidth: '92vw', alignSelf: 'center' }}>
+            <div className="mb-16 self-center" style={{ width: '220px', maxWidth: '92vw' }}>
               <div className="rounded-12 overflow-hidden"
                 style={{
                   border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
@@ -264,17 +264,17 @@ export function SuccessStep({
                   <img
                     src={`data:${getSecureMimeType(generatedOutput.image_base64, generatedOutput.storage_info?.mime_type || 'image/png')};base64,${generatedOutput.image_base64}`}
                     alt="Generated content"
-                    className="w-full block"
-                    style={{ maxHeight: '280px', objectFit: 'contain' }}
+                    className="w-full block object-contain"
+                    style={{ maxHeight: '280px' }}
                   />
-                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)', color: 'white' }}>
+                  <div className="absolute rounded-12 fs-11 fw-600 text-white" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)' }}>
                     {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                   </div>
                 </div>
               </div>
             </div>
           ) : (generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url) ? (
-            <div className="mb-16" style={{ width: '220px', maxWidth: '92vw', alignSelf: 'center' }}>
+            <div className="mb-16 self-center" style={{ width: '220px', maxWidth: '92vw' }}>
               <div className="rounded-12 overflow-hidden"
                 style={{
                   border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
@@ -289,18 +289,18 @@ export function SuccessStep({
                   <img
                     src={generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url || ''}
                     alt="Generated content"
-                    className="w-full block"
-                    style={{ maxHeight: '280px', objectFit: 'contain' }}
+                    className="w-full block object-contain"
+                    style={{ maxHeight: '280px' }}
                   />
-                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)', color: 'white' }}>
+                  <div className="absolute rounded-12 fs-11 fw-600 text-white" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)' }}>
                     {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                   </div>
                 </div>
-                <div className="bg-surface" style={{ padding: '10px 14px', borderTop: '1px solid #e5e7eb' }}>
+                <div className="bg-surface border-top" style={{ padding: '10px 14px' }}>
                   <div className="fw-600 fs-13 text-primary mb-4">
                     {selectedType?.label || 'Content'}
                   </div>
-                  <div className="fs-11" style={{ color: '#9ca3af' }}>
+                  <div className="fs-11 text-muted">
                     {matchData?.title || 'Match'} — {new Date().toLocaleDateString('nl-NL')}
                   </div>
                 </div>
@@ -316,7 +316,7 @@ export function SuccessStep({
 
       {/* Save success message */}
       {saveSuccess && (
-        <div className="p-12 rounded-8 fs-14 mb-16" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', maxWidth: '448px' }}>
+        <div className="p-12 rounded-8 fs-14 mb-16 callout-success" style={{ maxWidth: '448px' }}>
           <strong>Opgeslagen!</strong> De variant is opgeslagen als brand asset.
         </div>
       )}
