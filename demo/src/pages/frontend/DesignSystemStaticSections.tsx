@@ -4,49 +4,43 @@ import { Button, Card, Badge, Input } from '@django-core/design-system';
 
 export function FormComponentsSection() {
   return (
-    <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Form Components</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-        <Card variant="filled" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📝 Form Controls</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <Card className="ds-section">
+      <h2 className="ds-section-title">Form Components</h2>
+      <div className="grid-cols-2 gap-16 mb-16">
+        <Card variant="filled" className="p-16">
+          <h3 className="ds-subsection-title">📝 Form Controls</h3>
+          <div className="flex-col gap-12">
             <Input type="text" placeholder="Text input" className="glow-input" />
             <Input type="email" placeholder="Email input" className="glow-input" />
             <Input type="password" placeholder="Password input" className="glow-input" />
-            <select style={{
-              padding: '8px 12px',
-              border: '1px solid var(--app-border)',
-              borderRadius: '6px',
-              fontSize: '14px',
-              backgroundColor: 'var(--app-bg)'
-            }}>
+            <select className="form-input fs-14">
               <option>Select option</option>
               <option>Option 1</option>
               <option>Option 2</option>
             </select>
           </div>
         </Card>
-        <Card variant="filled" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>☑️ Selection Controls</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+        <Card variant="filled" className="p-16">
+          <h3 className="ds-subsection-title">☑️ Selection Controls</h3>
+          <div className="flex-col gap-12">
+            <label className="flex-row gap-8 fs-14">
               <input type="checkbox" /> Checkbox option
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+            <label className="flex-row gap-8 fs-14">
               <input type="checkbox" checked readOnly /> Checked option
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+            <label className="flex-row gap-8 fs-14">
               <input type="radio" name="radio-group" /> Radio option 1
             </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+            <label className="flex-row gap-8 fs-14">
               <input type="radio" name="radio-group" /> Radio option 2
             </label>
           </div>
         </Card>
       </div>
-      <Card variant="filled" style={{ padding: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🚨 Form Validation States</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+      <Card variant="filled" className="p-16">
+        <h3 className="ds-subsection-title">🚨 Form Validation States</h3>
+        <div className="grid-cols-3 gap-16">
           <div>
             <Input
               type="text"
@@ -61,7 +55,7 @@ export function FormComponentsSection() {
               placeholder="Success state"
               style={{ borderColor: 'var(--color-green-400)', backgroundColor: '#f0fdf4' }}
             />
-            <p style={{ fontSize: '12px', color: 'var(--color-green-400)', margin: '4px 0 0 0' }}>✓ Valid input</p>
+            <p className="fs-12 mt-4 m-0" style={{ color: 'var(--color-green-400)' }}>✓ Valid input</p>
           </div>
           <div>
             <Input
@@ -69,7 +63,7 @@ export function FormComponentsSection() {
               placeholder="Error state"
               style={{ borderColor: 'var(--color-red-500)', backgroundColor: '#fef2f2' }}
             />
-            <p style={{ fontSize: '12px', color: 'var(--color-red-500)', margin: '4px 0 0 0' }}>✗ Invalid input</p>
+            <p className="fs-12 mt-4 m-0" style={{ color: 'var(--color-red-500)' }}>✗ Invalid input</p>
           </div>
         </div>
       </Card>
@@ -81,67 +75,51 @@ export function FormComponentsSection() {
 
 export function LayoutComponentsSection() {
   return (
-    <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Layout Components</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-        <Card variant="filled" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📊 Organization Layout</h3>
-          <div style={{
-            border: '1px solid var(--app-border)',
-            borderRadius: '8px',
-            padding: '12px',
-            backgroundColor: 'var(--app-surface)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: 'var(--color-blue-500)',
-                borderRadius: '6px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: '600'
-              }}>
+    <Card className="ds-section">
+      <h2 className="ds-section-title">Layout Components</h2>
+      <div className="grid-cols-2 gap-16 mb-16">
+        <Card variant="filled" className="p-16">
+          <h3 className="ds-subsection-title">📊 Organization Layout</h3>
+          <div className="border rounded-8 p-12 bg-surface">
+            <div className="flex-row gap-12 mb-8">
+              <div className="flex-center rounded-6 fs-14 fw-600" style={{ width: '32px', height: '32px', backgroundColor: 'var(--color-blue-500)', color: 'white' }}>
                 DL
               </div>
               <div>
-                <p style={{ fontSize: '14px', fontWeight: 600, margin: 0 }}>DataLab Enterprises</p>
-                <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>3 projects • 12 members</p>
+                <p className="fs-14 fw-600 m-0">DataLab Enterprises</p>
+                <p className="ds-caption">3 projects • 12 members</p>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="flex-row gap-8">
               <Badge variant="primary">Owner</Badge>
               <Badge variant="success">Active</Badge>
             </div>
           </div>
         </Card>
-        <Card variant="filled" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🎨 Card Variations</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <Card variant="filled" className="p-16">
+          <h3 className="ds-subsection-title">🎨 Card Variations</h3>
+          <div className="flex-col gap-8">
             <Card variant="outlined" padding="sm">
-              <p style={{ fontSize: '12px', margin: 0 }}>Outlined (Default)</p>
+              <p className="fs-12 m-0">Outlined (Default)</p>
             </Card>
             <Card variant="elevated" padding="sm">
-              <p style={{ fontSize: '12px', margin: 0 }}>Elevated</p>
+              <p className="fs-12 m-0">Elevated</p>
             </Card>
             <Card variant="filled" padding="sm">
-              <p style={{ fontSize: '12px', margin: 0 }}>Filled</p>
+              <p className="fs-12 m-0">Filled</p>
             </Card>
           </div>
         </Card>
       </div>
-      <Card variant="filled" style={{ padding: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>📏 Typography Scale</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 700, margin: 0 }}>Heading 1 - 32px</h1>
-          <h2 style={{ fontSize: '24px', fontWeight: 600, margin: 0 }}>Heading 2 - 24px</h2>
-          <h3 style={{ fontSize: '20px', fontWeight: 600, margin: 0 }}>Heading 3 - 20px</h3>
-          <h4 style={{ fontSize: '16px', fontWeight: 600, margin: 0 }}>Heading 4 - 16px</h4>
-          <p style={{ fontSize: '14px', margin: 0 }}>Body text - 14px</p>
-          <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: 0 }}>Small text - 12px</p>
+      <Card variant="filled" className="p-16">
+        <h3 className="ds-subsection-title">📏 Typography Scale</h3>
+        <div className="flex-col gap-8">
+          <h1 className="fw-700 m-0" style={{ fontSize: '32px' }}>Heading 1 - 32px</h1>
+          <h2 className="fs-24 fw-600 m-0">Heading 2 - 24px</h2>
+          <h3 className="fs-20 fw-600 m-0">Heading 3 - 20px</h3>
+          <h4 className="fs-16 fw-600 m-0">Heading 4 - 16px</h4>
+          <p className="fs-14 m-0">Body text - 14px</p>
+          <p className="ds-caption">Small text - 12px</p>
         </div>
       </Card>
     </Card>
@@ -152,12 +130,12 @@ export function LayoutComponentsSection() {
 
 export function InteractiveComponentsSection() {
   return (
-    <Card style={{ padding: '24px', marginBottom: '24px', backgroundColor: 'var(--app-surface)', border: '1px solid var(--app-border)' }}>
-      <h2 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '16px' }}>Interactive Components</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '16px' }}>
-        <Card variant="filled" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>💬 Tooltips & Dropdowns</h3>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
+    <Card className="ds-section">
+      <h2 className="ds-section-title">Interactive Components</h2>
+      <div className="grid-cols-2 gap-16 mb-16">
+        <Card variant="filled" className="p-16">
+          <h3 className="ds-subsection-title">💬 Tooltips & Dropdowns</h3>
+          <div className="flex-row gap-12 mb-12">
             <Button
               variant="secondary"
               size="sm"
@@ -166,7 +144,7 @@ export function InteractiveComponentsSection() {
             >
               Hover for tooltip
             </Button>
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <Button
                 variant="secondary"
                 size="sm"
@@ -182,30 +160,18 @@ export function InteractiveComponentsSection() {
               </Button>
               <div
                 id="demo-dropdown"
-                style={{
-                  position: 'absolute',
-                  top: '100%',
-                  left: 0,
-                  marginTop: '4px',
-                  backgroundColor: 'var(--app-bg)',
-                  border: '1px solid var(--app-border)',
-                  borderRadius: '6px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                  padding: '8px',
-                  minWidth: '120px',
-                  display: 'none',
-                  zIndex: 10
-                }}
+                className="absolute mt-4 bg-primary border rounded-6 shadow-md p-8 z-10"
+                style={{ top: '100%', left: 0, minWidth: '120px', display: 'none' }}
               >
-                <div style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}>Option 1</div>
-                <div style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}>Option 2</div>
-                <div style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}>Option 3</div>
+                <div className="px-8 py-4 fs-12 cursor-pointer">Option 1</div>
+                <div className="px-8 py-4 fs-12 cursor-pointer">Option 2</div>
+                <div className="px-8 py-4 fs-12 cursor-pointer">Option 3</div>
               </div>
             </div>
           </div>
         </Card>
-        <Card variant="filled" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>🎭 Modal Dialog</h3>
+        <Card variant="filled" className="p-16">
+          <h3 className="ds-subsection-title">🎭 Modal Dialog</h3>
           <Button
             variant="primary"
             onClick={() => {
@@ -220,37 +186,20 @@ export function InteractiveComponentsSection() {
           </Button>
           <div
             id="demo-modal"
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              display: 'none',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000
-            }}
+            className="fixed inset-0 flex-center z-1000"
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'none' }}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 (e.target as HTMLElement).style.display = 'none';
               }
             }}
           >
-            <div style={{
-              backgroundColor: 'var(--app-bg)',
-              borderRadius: '8px',
-              padding: '24px',
-              maxWidth: '400px',
-              width: '90%',
-              boxShadow: '0 20px 25px rgba(0, 0, 0, 0.1)'
-            }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 600, margin: '0 0 12px 0' }}>Demo Modal</h3>
-              <p style={{ fontSize: '14px', color: 'var(--app-muted-text)', margin: '0 0 16px 0' }}>
+            <div className="bg-primary rounded-8 p-24 max-w-400 shadow-xl" style={{ width: '90%' }}>
+              <h3 className="fs-18 fw-600 m-0 mb-12">Demo Modal</h3>
+              <p className="fs-14 text-muted m-0 mb-16">
                 This is a simple modal dialog demonstration. Click outside or the close button to dismiss.
               </p>
-              <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+              <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -281,9 +230,9 @@ export function InteractiveComponentsSection() {
           </div>
         </Card>
       </div>
-      <Card variant="filled" style={{ padding: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>⚡ Animations & Transitions</h3>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <Card variant="filled" className="p-16">
+        <h3 className="ds-subsection-title">⚡ Animations & Transitions</h3>
+        <div className="flex-row gap-12 flex-wrap">
           <Button
             variant="secondary"
             size="sm"
@@ -302,12 +251,8 @@ export function InteractiveComponentsSection() {
           </Button>
           <div
             id="bounce-demo"
-            style={{
-              width: '24px',
-              height: '24px',
-              backgroundColor: 'var(--color-blue-500)',
-              borderRadius: '50%'
-            }}
+            className="rounded-full"
+            style={{ width: '24px', height: '24px', backgroundColor: 'var(--color-blue-500)' }}
           ></div>
           <Button
             variant="secondary"
@@ -324,13 +269,8 @@ export function InteractiveComponentsSection() {
           </Button>
           <div
             id="fade-demo"
-            style={{
-              width: '24px',
-              height: '24px',
-              backgroundColor: 'var(--color-green-400)',
-              borderRadius: '4px',
-              transition: 'opacity 0.3s ease'
-            }}
+            className="rounded-4 transition"
+            style={{ width: '24px', height: '24px', backgroundColor: 'var(--color-green-400)' }}
           ></div>
         </div>
       </Card>

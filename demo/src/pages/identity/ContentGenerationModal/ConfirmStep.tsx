@@ -73,19 +73,18 @@ export function ConfirmStep({
   homeTeamName, awayTeamName, homeLogoUrl, awayLogoUrl,
 }: ConfirmStepProps) {
   return (
-    <div className="flex-col flex-center" style={{ padding: '32px 16px' }}>
+    <div className="flex-col flex-center py-32 px-16">
       {/* Icon */}
-      <div style={{
-        width: '64px', height: '64px', borderRadius: '16px', marginBottom: '20px',
+      <div className="flex-center rounded-12 mb-20 fs-24 fw-700" style={{
+        width: '64px', height: '64px',
         backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.1))',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'var(--app-primary, #3B8EA5)', fontSize: '28px', fontWeight: 700,
+        color: 'var(--app-primary, #3B8EA5)',
       }}>
         {(selectedType?.label || contentTypeLabel || '?').charAt(0).toUpperCase()}
       </div>
 
       {/* Title */}
-      <h3 className="fs-20 fw-700 mb-8" style={{ color: 'var(--app-text, #111)' }}>
+      <h3 className="fs-20 fw-700 mb-8 text-primary">
         {selectedType?.subtype === 'goal' ? 'Doelpunt Viering Video'
           : selectedType?.subtype === 'flyer' ? 'Match Flyer'
           : selectedType?.subtype === 'match_intro' ? 'Wedstrijd Intro Video'
@@ -93,7 +92,7 @@ export function ConfirmStep({
       </h3>
 
       {/* Description */}
-      <p className="fs-14 text-center mb-24" style={{ color: 'var(--app-text-muted, #6b7280)', maxWidth: '400px' }}>
+      <p className="fs-14 text-center mb-24 text-muted max-w-400">
         {selectedType?.subtype === 'goal'
           ? 'Vul de doelpuntgegevens in en kies een speler.'
           : selectedType?.subtype === 'flyer'
@@ -106,16 +105,12 @@ export function ConfirmStep({
 
       {/* Match info card */}
       {matchData && (
-        <div style={{
-          width: '100%', maxWidth: 480, padding: '14px 18px', borderRadius: 10,
-          border: '1px solid var(--app-border, #e5e7eb)',
-          background: 'var(--app-surface-2, #f3f4f6)',
-        }}>
-          <div className="fs-13" style={{ color: 'var(--app-text, #111)' }}>
+        <div className="w-full max-w-480 rounded-8 border bg-surface-2" style={{ padding: '14px 18px' }}>
+          <div className="fs-13 text-primary">
             <strong>Wedstrijd:</strong> {matchData.title || `${matchData.project?.name} vs ${matchData.opponent_project?.name || 'Opponent'}`}
           </div>
           {matchData.start_time && (
-            <div className="fs-13 mt-4" style={{ color: 'var(--app-text-muted, #6b7280)' }}>
+            <div className="fs-13 mt-4 text-muted">
               {new Date(matchData.start_time).toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
           )}
@@ -138,18 +133,9 @@ export function ConfirmStep({
 
       {/* === Match Summary (inline — ~100 lines) === */}
       {selectedType?.subtype === 'match_summary' && (
-        <div style={{
-          width: '100%', maxWidth: 480, marginTop: 20,
-          border: '1px solid var(--app-border, #e5e7eb)',
-          borderRadius: 12, overflow: 'hidden',
-          background: 'var(--app-surface, white)',
-        }}>
-          <div style={{
-            padding: '14px 20px',
-            borderBottom: '1px solid var(--app-border, #e5e7eb)',
-            background: 'var(--app-surface-2, #f3f4f6)',
-          }}>
-            <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--app-text, #111)' }}>
+        <div className="w-full max-w-480 mt-16 border rounded-12 overflow-hidden bg-surface">
+          <div className="border-bottom bg-surface-2" style={{ padding: '14px 20px' }}>
+            <h4 className="fs-14 fw-700 m-0 text-primary">
               Wedstrijd Samenvatting
             </h4>
           </div>
@@ -157,13 +143,10 @@ export function ConfirmStep({
           <div className="p-16 flex-col gap-16">
             {/* Score input */}
             <div>
-              <label className="block fs-11 fw-600 mb-8" style={{
-                color: 'var(--app-text-muted, #6b7280)',
-                textTransform: 'uppercase', letterSpacing: '0.05em',
-              }}>Eindstand</label>
+              <label className="form-label-upper mb-8">Eindstand</label>
               <div className="flex-center gap-12">
                 <div className="text-center">
-                  <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginBottom: 4 }}>{homeTeamName}</div>
+                  <div className="fs-11 text-muted mb-4">{homeTeamName}</div>
                   <input type="number" min={0} max={99} value={summaryScoreHome}
                     onChange={(e) => setSummaryScoreHome(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{
@@ -172,9 +155,9 @@ export function ConfirmStep({
                       background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text, #111)',
                     }} />
                 </div>
-                <span className="fw-700" style={{ fontSize: 28, color: 'var(--app-text, #111)' }}>-</span>
+                <span className="fw-700 fs-24 text-primary">-</span>
                 <div className="text-center">
-                  <div style={{ fontSize: 11, color: 'var(--app-text-muted, #6b7280)', marginBottom: 4 }}>{awayTeamName}</div>
+                  <div className="fs-11 text-muted mb-4">{awayTeamName}</div>
                   <input type="number" min={0} max={99} value={summaryScoreAway}
                     onChange={(e) => setSummaryScoreAway(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{
@@ -188,21 +171,13 @@ export function ConfirmStep({
 
             {/* Goal scorers textarea */}
             <div>
-              <label className="block fs-11 fw-600" style={{
-                marginBottom: 6, color: 'var(--app-text-muted, #6b7280)',
-                textTransform: 'uppercase', letterSpacing: '0.05em',
-              }}>Doelpuntenmakers (1 per regel)</label>
+              <label className="form-label-upper">Doelpuntenmakers (1 per regel)</label>
               <textarea
                 value={summaryGoalScorers}
                 onChange={(e) => setSummaryGoalScorers(e.target.value)}
                 placeholder={"De Jong 23'\nBerghuis 67'\nKluivert 89'"}
                 rows={5}
-                style={{
-                  width: '100%', padding: '10px', fontSize: 13, borderRadius: 8, resize: 'vertical',
-                  border: '1px solid var(--app-border, #e5e7eb)',
-                  background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text, #111)',
-                  fontFamily: 'inherit',
-                }}
+                className="form-textarea"
               />
             </div>
 

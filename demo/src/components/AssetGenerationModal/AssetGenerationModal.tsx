@@ -70,18 +70,14 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
       {/* Backdrop */}
       <div
         onClick={handleClose}
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0, 0, 0, 0.6)',
-          zIndex: 1000,
-        }}
+        className="fixed inset-0 z-1000"
+        style={{ background: 'rgba(0, 0, 0, 0.6)' }}
       />
 
       {/* Modal */}
       <div
+        className="fixed flex-col overflow-hidden z-1001 rounded-12"
         style={{
-          position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -90,11 +86,6 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
           maxHeight: '92vh',
           background: 'var(--vscode-editor-background, #1e1e1e)',
           border: '1px solid var(--vscode-widget-border, #333)',
-          borderRadius: 12,
-          zIndex: 1001,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
         }}
       >
         {/* Header */}
@@ -106,29 +97,17 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
           }}
         >
           <div>
-            <h2 className="fs-16 fw-700" style={{ margin: 0 }}>
+            <h2 className="fs-16 fw-700 m-0">
               🎨 AI Asset Genereren
             </h2>
-            <p
-              style={{
-                fontSize: 12,
-                color: 'var(--vscode-descriptionForeground, #888)',
-                margin: '4px 0 0',
-              }}
-            >
+            <p className="fs-12 mt-4 m-0" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
               {stepTitle}
             </p>
           </div>
           <button
             onClick={handleClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--vscode-foreground, #ccc)',
-              fontSize: 20,
-              cursor: 'pointer',
-              padding: '4px 8px',
-            }}
+            className="bg-transparent border-none cursor-pointer fs-20"
+            style={{ color: 'var(--vscode-foreground, #ccc)', padding: '4px 8px' }}
           >
             ✕
           </button>
@@ -138,13 +117,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
         <div className="flex-1 overflow-auto" style={{ padding: '16px 20px' }}>
           {/* ── STEP 1: Template Selection ── */}
           {modalStep === 'template' && (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                gap: 12,
-              }}
-            >
+            <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
               {templates.map((t) => (
                 <TemplateCard
                   key={t.id}
@@ -171,11 +144,9 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                 <div>
                   <div className="fw-600 fs-14">{selectedTemplate.name}</div>
                   <div
-                    style={{
-                      fontSize: 12,
-                      color: 'var(--vscode-descriptionForeground, #888)',
-                    }}
-                  >
+                  className="fs-12"
+                  style={{ color: 'var(--vscode-descriptionForeground, #888)' }}
+                >
                     {selectedTemplate.description}
                   </div>
                 </div>
@@ -266,8 +237,8 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                   ))}
                 </div>
                 <div
+                  className="fs-11"
                   style={{
-                    fontSize: 11,
                     color: 'var(--vscode-descriptionForeground, #888)',
                     marginTop: 4,
                   }}
