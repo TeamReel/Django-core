@@ -1,287 +1,42 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@django-core/auth-ui';
-import { useSports } from '../../../hooks/useSports';
-import { useContextSwitcher } from '@django-core/context-switcher';
+import React from 'react';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { Table } from '@/shims/design-system';
-import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
-import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
-import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import {
-    compactTableStyle,
-    compactThStyle,
-    compactTdStyle,
-    compactTextTdStyle,
-    compactActionsStyle,
-    actionButtonStyle
+  compactTableStyle,
+  compactThStyle,
+  compactTdStyle,
+  compactTextTdStyle,
+  compactActionsStyle,
+  actionButtonStyle,
 } from '../../../utils/directoryStyles';
+import { useClubsData } from './useClubsData';
 
 interface ClubsListProps {
   preselectedOrgId?: string;
 }
 
 export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { user } = useAuth();
-  const { context, organisations: myOrganisations } = useContextSwitcher();
-
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
-
-  const [detailProject, setDetailProject] = useState<any | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-
-  const [editProject, setEditProject] = useState<any | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  const orgLocked = Boolean(preselectedOrgId);
-  const [selectedOrgId, setSelectedOrgId] = useState<string>(preselectedOrgId || '');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sportFilter, setSportFilter] = useState<string>('all');
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
-
-  const { categories } = useSports();
-
-  const permissionContext = useMemo(
-    () => ({
-      currentOrganisation: context.organisation as any,
-      isSuperAdmin,
-    }),
-    [context.organisation, isSuperAdmin]
-  );
-
-  useEffect(() => {
-    if (preselectedOrgId) {
-      setSelectedOrgId(preselectedOrgId);
-    }
-  }, [preselectedOrgId]);
-
-  const userCanEditProject = canEditProject(permissionContext);
-  const userCanDeleteProject = canDeleteProject(permissionContext);
-
-  useEffect(() => {
-    if (orgLocked) return;
-    if (!isSuperAdmin && context.organisation?.id) {
-      setSelectedOrgId(String(context.organisation.id));
-    }
-  }, [context.organisation?.id, isSuperAdmin, orgLocked]);
-
-  useEffect(() => {
-    const orgId = searchParams.get('org_id');
-    if (orgLocked) return;
-    if (orgId && isSuperAdmin) {
-      setSelectedOrgId(String(orgId));
-    }
-  }, [isSuperAdmin, searchParams, orgLocked]);
-
-  useEffect(() => {
-    if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
-      return;
-    }
-
-    const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
-      try {
-        const orgs = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
-          { credentials: 'include' },
-          { ttlMs: 120_000, bypass: refreshKey > 0 },
-        );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
-      } catch {
-        // ignore
-      }
-    };
-
-    load();
-  }, [isSuperAdmin, myOrganisations, refreshKey]);
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      setError(null);
-      const apiBaseUrl = getApiBaseUrl();
-
-      // Resolve org slug for API call
-      const selectedOrg = selectedOrgId
-        ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-        : null;
-
-      // If user selected an org but we can't find it yet, wait
-      if (selectedOrgId && !selectedOrg) {
-        setClubs([]);
-        setTeams([]);
-        setIsLoading(false);
-        return;
-      }
-
-      const orgSlugForApi = selectedOrg?.slug || (!selectedOrgId ? context.organisation?.slug : '') || '';
-
-      try {
-        if (orgSlugForApi) {
-          // Org-scoped fetch
-          const [allClubs, allTeams] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-          ]);
-          setClubs(allClubs);
-          setTeams(allTeams);
-        } else {
-          // Global fetch only when no org is selected (superadmin view)
-          const [allClubs, allTeams] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-          ]);
-          setClubs(allClubs);
-          setTeams(allTeams);
-        }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load clubs');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    load();
-  }, [refreshKey, selectedOrgId, organisations, context.organisation?.slug]);
-
-  const filteredClubs = useMemo(() => {
-    let list = [...clubs];
-
-    const sortKey = (value: unknown) => {
-      const s = String(value ?? '').trim();
-      return s ? s.toLocaleLowerCase() : '\uffff';
-    };
-
-    const getFederationName = (club: any) => {
-      const org = club?.organisation;
-      if (typeof org === 'object' && org?.name) return org.name;
-      const orgId = typeof org === 'string' ? org : org?.id;
-      const fromList = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-      return fromList?.name || '';
-    };
-
-    const selectedOrg = selectedOrgId
-      ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-      : null;
-    const selectedOrgIdResolved = selectedOrg?.id ? String(selectedOrg.id) : selectedOrgId;
-
-    if (selectedOrgId) {
-      list = list.filter((club) => {
-        const clubOrg = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
-        return String(clubOrg) === String(selectedOrgIdResolved);
-      });
-    }
-
-    if (statusFilter === 'active') {
-      list = list.filter((c: any) => c.is_active !== false);
-    } else if (statusFilter === 'inactive') {
-      list = list.filter((c: any) => c.is_active === false);
-    }
-
-    if (sportFilter !== 'all') {
-      list = list.filter((club) => {
-        const nestedOrg = (club as any)?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
-        if (nestedSportId) return String(nestedSportId) === String(sportFilter);
-
-        const orgId =
-          (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
-          (club as any)?.organisation_id;
-        const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        return String((org as any)?.sport?.id || '') === String(sportFilter);
-      });
-    }
-
-    if (selectedClubId) {
-      list = list.filter((c) => String(c.id) === String(selectedClubId));
-    }
-
-    // Alphabetical: Federation, then Club
-    list.sort((a: any, b: any) => {
-      const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
-      if (byFederation !== 0) return byFederation;
-      return sortKey(a?.name).localeCompare(sortKey(b?.name));
-    });
-
-    return list;
-  }, [clubs, organisations, selectedOrgId, statusFilter, sportFilter, selectedClubId]);
-
-  const handleDeleteProject = async (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => {
-    if (!window.confirm(`Are you sure you want to delete ${projectName}?`)) return;
-    const apiBaseUrl = getApiBaseUrl();
-    try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        alert('Failed to delete club');
-        return;
-      }
-
-      setClubs((prev) => prev.filter((p: any) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
-      if (String(selectedClubId) === String(projectSlugOrId)) setSelectedClubId('');
-    } catch (e) {
-      console.error(e);
-      alert('Error deleting club');
-    }
-  };
+  const d = useClubsData(preselectedOrgId);
 
   return (
     <div>
+      {/* Filter bar */}
       <div className="flex-row gap-12 mb-16 flex-wrap">
-        {isSuperAdmin && !orgLocked && (
+        {d.isSuperAdmin && !d.orgLocked && (
           <select
-            value={selectedOrgId}
+            value={d.selectedOrgId}
             onChange={(e) => {
-              setSelectedOrgId(e.target.value);
-              setSelectedClubId('');
+              d.setSelectedOrgId(e.target.value);
+              d.setSelectedClubId('');
             }}
             className="py-8 px-12 border rounded-4 fs-14 bg-surface"
           >
             <option value="">Federation: All</option>
-            {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
+            {[...d.organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
               <option key={org.id} value={org.id}>
                 {org.name}
               </option>
@@ -289,8 +44,8 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
           </select>
         )}
         <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          value={d.statusFilter}
+          onChange={(e) => d.setStatusFilter(e.target.value)}
           className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Status: All</option>
@@ -298,57 +53,42 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
           <option value="inactive">Status: Inactive</option>
         </select>
         <select
-          value={sportFilter}
-          onChange={(e) => setSportFilter(e.target.value)}
+          value={d.sportFilter}
+          onChange={(e) => d.setSportFilter(e.target.value)}
           className="py-8 px-12 border rounded-4 fs-14 bg-surface"
         >
           <option value="all">Sport: All</option>
-          {categories.map((sport) => (
+          {d.categories.map((sport) => (
             <option key={sport.id} value={sport.id}>
               {sport.sport_icon} {sport.name}
             </option>
           ))}
         </select>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={() => {
-            setStatusFilter('all');
-            setSportFilter('all');
-            setSelectedClubId('');
-            if (isSuperAdmin) setSelectedOrgId('');
-          }}
-          className="ml-auto"
-        >
+        <Button variant="secondary" size="md" onClick={d.handleClearFilters} className="ml-auto">
           Clear
         </Button>
-        {userCanEditProject && (
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => {
-              setIsCreateModalOpen(true);
-            }}
-          >
+        {d.userCanEditProject && (
+          <Button variant="primary" size="md" onClick={() => d.setIsCreateModalOpen(true)}>
             Create Club
           </Button>
         )}
       </div>
 
-      {isLoading && <LoadingState message="Loading clubs..." />}
-      {error && <Alert variant="error">{error}</Alert>}
-
-      {!isLoading && !error && filteredClubs.length === 0 && (
+      {/* Loading / Error / Empty */}
+      {d.isLoading && <LoadingState message="Loading clubs..." />}
+      {d.error && <Alert variant="error">{d.error}</Alert>}
+      {!d.isLoading && !d.error && d.filteredClubs.length === 0 && (
         <Alert variant="info">No clubs match the current filters.</Alert>
       )}
 
-      {!isLoading && !error && filteredClubs.length > 0 && (
+      {/* Table */}
+      {!d.isLoading && !d.error && d.filteredClubs.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
             <Table style={compactTableStyle}>
               <thead>
                 <tr>
-                  {!orgLocked && (
+                  {!d.orgLocked && (
                     <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
                   )}
                   <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
@@ -364,254 +104,175 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                 </tr>
               </thead>
               <tbody>
-                {filteredClubs.map((club: any) => {
-                  const orgIdFromProject = club.organisation?.id || (typeof club.organisation === 'string' ? club.organisation : undefined);
-                  const orgSlugFromProject = club.organisation?.slug;
-                  const orgFromList = orgIdFromProject
-                    ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
-                    : undefined;
-                  const selectedOrg = selectedOrgId
-                    ? organisations.find((o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId))
-                    : undefined;
-                  const orgSlugOrId =
-                    orgSlugFromProject ||
-                    orgFromList?.slug ||
-                    selectedOrg?.slug ||
-                    orgIdFromProject ||
-                    selectedOrg?.id ||
-                    selectedOrgId;
-                  const clubSlugOrId = club.slug || club.id;
-
-                  const orgSport = (club.organisation as any)?.sport || (orgFromList as any)?.sport;
-
-                  // Calculate teams count for this club from teams data
-                  const teamsForClub = teams.filter((t: any) => {
-                    const parent =
-                      t.parent_id ??
-                      t.parent_project_id ??
-                      (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
-                    const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
-                    return parentId && parentId === String(club.id);
-                  });
-                  const teamsCount = teamsForClub.length;
-
-                  return (
-                    <tr key={club.id}>
-                      {!orgLocked && (
-                        <td style={compactTextTdStyle}>
-                          {orgSlugOrId ? (
-                            <a
-                              href={`/organisations/${orgSlugOrId}`}
-                              className="text-blue-600 hover:underline"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                navigate(`/organisations/${orgSlugOrId}`);
-                              }}
-                            >
-                              {club.organisation?.name || 'Federation'}
-                            </a>
-                          ) : (
-                            club.organisation?.name || '-'
-                          )}
-                        </td>
-                      )}
-                      <td style={compactTextTdStyle}>
-                        <a
-                          href={`/${orgSlugOrId}/${clubSlugOrId}`}
-                          className="text-blue-600 hover:underline"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
-                          }}
-                        >
-                          {club.name}
-                        </a>
-                      </td>
-                      <td style={compactTdStyle}>
-                        {orgSport ? (
-                          <span className="flex-row gap-4">
-                            <span>{orgSport.sport_icon}</span>
-                            <span className="fs-12">{orgSport.name}</span>
-                          </span>
-                        ) : (
-                          <span className="text-muted">—</span>
-                        )}
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">{(club as any).sport_variants_count || 0}</Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">{teamsCount}</Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">
-                          {(club as any).seasons_count || 0}
-                        </Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">
-                          {(club as any).competitions_count || 0}
-                        </Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">
-                          {(club as any).matches_count || 0}
-                        </Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant="default">
-                          {(club as any).member_count || 0}
-                        </Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <Badge variant={club.is_active === false ? 'warning' : 'success'}>
-                            {club.is_active === false ? 'Inactive' : 'Active'}
-                        </Badge>
-                      </td>
-                      <td style={compactTdStyle}>
-                        <div style={compactActionsStyle}>
-                          <button
-                            onClick={() => {
-                              setDetailProject(club);
-                              setIsDetailModalOpen(true);
-                            }}
-                            style={actionButtonStyle('primary')}
-                          >
-                            View
-                          </button>
-                          {userCanEditProject && (
-                            <button
-                              onClick={() => {
-                                setEditProject(club);
-                                setIsEditModalOpen(true);
-                              }}
-                              style={actionButtonStyle('warning')}
-                            >
-                              Edit
-                            </button>
-                          )}
-                          {userCanDeleteProject && (
-                            <button
-                              onClick={() => handleDeleteProject(String(orgSlugOrId), String(clubSlugOrId), String(club.name))}
-                              style={actionButtonStyle('danger')}
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {d.filteredClubs.map((club: any) => (
+                  <ClubRow
+                    key={club.id}
+                    club={club}
+                    d={d}
+                  />
+                ))}
               </tbody>
             </Table>
           </div>
         </Card>
       )}
 
+      {/* Modals */}
       <ProjectDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        project={detailProject}
+        opened={d.isDetailModalOpen}
+        onClose={() => d.setIsDetailModalOpen(false)}
+        project={d.detailProject}
       />
 
       <ProjectEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        project={editProject}
-        onSave={async (projectData) => {
-            if (!editProject) return;
-            const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-            const baseUrl = getApiBaseUrl();
-            const projectSlugOrId = (editProject as any).slug || editProject.id;
-            const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/?include_archived=true`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken || '',
-                },
-                credentials: 'include',
-                body: JSON.stringify(projectData),
-            });
-
-            if (!response.ok) {
-              let message = 'Failed to update project';
-              try {
-                const json: any = await response.json();
-                message = json?.error?.message || json?.detail || json?.message || message;
-              } catch {
-                const text = await response.text().catch(() => '');
-                if (text) message = text;
-              }
-              throw new Error(message);
-            }
-            // Avoid full refetch: update local state from the API response.
-            const payload: any = await response.json().catch(() => null);
-            const updated = payload?.data?.data || payload?.data || payload;
-
-            setClubs((prev) =>
-              prev.map((p: any) => {
-                const match = String(p?.slug || p?.id) === String(projectSlugOrId);
-                return match ? { ...p, ...(updated || projectData) } : p;
-              })
-            );
-            setEditProject((prev: any) => (prev ? { ...prev, ...(updated || projectData) } : prev));
-
-            // Ensure any later fetches don't serve stale cached lists.
-            invalidateFetchAllPagesCache();
-        }}
+        opened={d.isEditModalOpen}
+        onClose={() => d.setIsEditModalOpen(false)}
+        project={d.editProject}
+        onSave={d.handleSaveProject}
       />
 
       <ProjectCreateModal
-        opened={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        opened={d.isCreateModalOpen}
+        onClose={() => d.setIsCreateModalOpen(false)}
         title="Create Club"
-        organisations={organisations}
+        organisations={d.organisations}
         requireOrganisation
-        initialOrganisationId={selectedOrgId}
-        onCreate={async (projectData) => {
-          const orgId = String(projectData.organisation_id || selectedOrgId || '');
-          if (!orgId) throw new Error('Select a federation first');
-
-          const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
-          const apiBaseUrl = getApiBaseUrl();
-
-          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-              name: projectData.name,
-              description: projectData.description || '',
-            }),
-          });
-
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            throw new Error(detail || 'Failed to create club');
-          }
-
-          // Update UI immediately so the club appears without waiting on any refetch.
-          const payload: any = await res.json().catch(() => null);
-          const created: any = payload?.data?.data || payload?.data || payload;
-          if (created && typeof created === 'object') {
-            const createdKey = String(created?.slug || created?.id || '');
-            if (createdKey) {
-              setClubs((prev) => {
-                if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
-                return [created, ...prev];
-              });
-            }
-          }
-
-          // Prevent stale caches on any later navigations.
-          invalidateFetchAllPagesCache();
-        }}
+        initialOrganisationId={d.selectedOrgId}
+        onCreate={d.handleCreateProject}
       />
     </div>
   );
 };
+
+/* ── ClubRow sub-component ──────────────────────────────────── */
+
+type HookData = ReturnType<typeof useClubsData>;
+
+function ClubRow({ club, d }: { club: any; d: HookData }) {
+  const orgIdFromProject = club.organisation?.id || (typeof club.organisation === 'string' ? club.organisation : undefined);
+  const orgSlugFromProject = club.organisation?.slug;
+  const orgFromList = orgIdFromProject
+    ? d.organisations.find((o) => String(o.id) === String(orgIdFromProject))
+    : undefined;
+  const selectedOrg = d.selectedOrgId
+    ? d.organisations.find((o) => String(o.id) === String(d.selectedOrgId) || String(o.slug) === String(d.selectedOrgId))
+    : undefined;
+  const orgSlugOrId =
+    orgSlugFromProject ||
+    orgFromList?.slug ||
+    selectedOrg?.slug ||
+    orgIdFromProject ||
+    selectedOrg?.id ||
+    d.selectedOrgId;
+  const clubSlugOrId = club.slug || club.id;
+  const orgSport = (club.organisation as any)?.sport || (orgFromList as any)?.sport;
+
+  const teamsForClub = d.teams.filter((t: any) => {
+    const parent =
+      t.parent_id ??
+      t.parent_project_id ??
+      (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
+    const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+    return parentId && parentId === String(club.id);
+  });
+
+  return (
+    <tr>
+      {!d.orgLocked && (
+        <td style={compactTextTdStyle}>
+          {orgSlugOrId ? (
+            <a
+              href={`/organisations/${orgSlugOrId}`}
+              className="text-blue-600 hover:underline"
+              onClick={(e) => {
+                e.preventDefault();
+                d.navigate(`/organisations/${orgSlugOrId}`);
+              }}
+            >
+              {club.organisation?.name || 'Federation'}
+            </a>
+          ) : (
+            club.organisation?.name || '-'
+          )}
+        </td>
+      )}
+      <td style={compactTextTdStyle}>
+        <a
+          href={`/${orgSlugOrId}/${clubSlugOrId}`}
+          className="text-blue-600 hover:underline"
+          onClick={(e) => {
+            e.preventDefault();
+            d.navigate(`/${orgSlugOrId}/${clubSlugOrId}`);
+          }}
+        >
+          {club.name}
+        </a>
+      </td>
+      <td style={compactTdStyle}>
+        {orgSport ? (
+          <span className="flex-row gap-4">
+            <span>{orgSport.sport_icon}</span>
+            <span className="fs-12">{orgSport.name}</span>
+          </span>
+        ) : (
+          <span className="text-muted">—</span>
+        )}
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant="default">{club.sport_variants_count || 0}</Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant="default">{teamsForClub.length}</Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant="default">{club.seasons_count || 0}</Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant="default">{club.competitions_count || 0}</Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant="default">{club.matches_count || 0}</Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant="default">{club.member_count || 0}</Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <Badge variant={club.is_active === false ? 'warning' : 'success'}>
+          {club.is_active === false ? 'Inactive' : 'Active'}
+        </Badge>
+      </td>
+      <td style={compactTdStyle}>
+        <div style={compactActionsStyle}>
+          <button
+            onClick={() => {
+              d.setDetailProject(club);
+              d.setIsDetailModalOpen(true);
+            }}
+            style={actionButtonStyle('primary')}
+          >
+            View
+          </button>
+          {d.userCanEditProject && (
+            <button
+              onClick={() => {
+                d.setEditProject(club);
+                d.setIsEditModalOpen(true);
+              }}
+              style={actionButtonStyle('warning')}
+            >
+              Edit
+            </button>
+          )}
+          {d.userCanDeleteProject && (
+            <button
+              onClick={() => d.handleDeleteProject(String(orgSlugOrId), String(clubSlugOrId), String(club.name))}
+              style={actionButtonStyle('danger')}
+            >
+              Delete
+            </button>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+}
