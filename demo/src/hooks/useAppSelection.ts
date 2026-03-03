@@ -5,196 +5,13 @@ import { useAuth } from '@django-core/auth-ui';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
 import { getApiBaseUrl } from '../utils/apiBase';
-
-type AppProjectRow = {
-  id: string | number;
-  name: string;
-  slug: string;
-  updated_at?: string;
-  parent_id?: string | number | null;
-  parent_name?: string | null;
-};
-
-type AppPeriodRow = {
-  id: string;
-  name?: string;
-  start_date?: string | null;
-  end_date?: string | null;
-};
-
-type AppSelection = {
-  orgSlug: string;
-  clubSlugOrId: string | null;
-  clubName: string | null;
-  teamSlugOrId: string | null;
-  teamName: string | null;
-  teamIdForApi: string | null;
-  seasonSlugOrId: string | null;
-  seasonName: string | null;
-  seasonIdForApi: string | null;
-  competitionSlugOrId: string | null;
-  competitionName: string | null;
-  competitionIdForApi: string | null;
-  matchId: string | null;
-};
-
-const APP_LAST_CTX_KEY = 'demo_app_last_context_v1';
-
-// Pre-compiled Regexes
-const RESERVED_ROOT_SEGMENTS = new Set([
-  '', 'dashboard', 'login', 'register', 'directory', 'organisations',
-  'projects', 'matches', 'health', 'studio', 'content', 'notifications',
-  'usage-events', 'settings', 'users'
-]);
-
-const REGEX = {
-  vanityMatch: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
-  vanityCompetition: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
-  vanitySeason: /^\/([^/]+)\/([^/]+)\/([^/]+)\/([^/]+)$/,
-  vanityTeam: /^\/([^/]+)\/([^/]+)\/([^/]+)$/,
-  vanityClub: /^\/([^/]+)\/([^/]+)$/,
-  hierarchyMatchTeam: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/,
-  hierarchyMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)\/matches\/([^/]+)/,
-  legacyMatch: /^\/matches\/([^/]+)/,
-  competitionTeamMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/,
-  competitionMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)\/competitions\/([^/]+)/,
-  seasonTeamMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)\/seasons\/([^/]+)/,
-  seasonMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/seasons\/([^/]+)/,
-  teamMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)\/teams\/([^/]+)/,
-  clubMatch: /^\/organisations\/([^/]+)\/projects\/([^/]+)/,
-};
-
-function parseAppPath(path: string) {
-  const isVanity = (m: RegExpMatchArray | null) => Boolean(m && !RESERVED_ROOT_SEGMENTS.has(String(m[1] || '')));
-
-  const vanityMatch = path.match(REGEX.vanityMatch);
-  if (isVanity(vanityMatch)) return {
-    type: 'vanityMatch',
-    orgSlug: vanityMatch![1],
-    clubSlugOrId: vanityMatch![2],
-    teamSlugOrId: vanityMatch![3],
-    seasonSlugOrId: vanityMatch![4],
-    competitionSlugOrId: vanityMatch![5],
-    matchId: vanityMatch![6],
-  };
-
-  const vanityCompetition = path.match(REGEX.vanityCompetition);
-  if (isVanity(vanityCompetition)) return {
-    type: 'vanityCompetition',
-    orgSlug: vanityCompetition![1],
-    clubSlugOrId: vanityCompetition![2],
-    teamSlugOrId: vanityCompetition![3],
-    seasonSlugOrId: vanityCompetition![4],
-    competitionSlugOrId: vanityCompetition![5],
-  };
-
-  const vanitySeason = path.match(REGEX.vanitySeason);
-  if (isVanity(vanitySeason)) return {
-    type: 'vanitySeason',
-    orgSlug: vanitySeason![1],
-    clubSlugOrId: vanitySeason![2],
-    teamSlugOrId: vanitySeason![3],
-    seasonSlugOrId: vanitySeason![4],
-  };
-
-  const vanityTeam = path.match(REGEX.vanityTeam);
-  if (isVanity(vanityTeam)) return {
-    type: 'vanityTeam',
-    orgSlug: vanityTeam![1],
-    clubSlugOrId: vanityTeam![2],
-    teamSlugOrId: vanityTeam![3],
-  };
-
-  const vanityClub = path.match(REGEX.vanityClub);
-  if (isVanity(vanityClub)) return {
-    type: 'vanityClub',
-    orgSlug: vanityClub![1],
-    clubSlugOrId: vanityClub![2],
-  };
-
-  const hierarchyMatchTeam = path.match(REGEX.hierarchyMatchTeam);
-  if (hierarchyMatchTeam) return {
-    type: 'hierarchyMatchTeam',
-    orgSlug: hierarchyMatchTeam[1],
-    clubSlugOrId: hierarchyMatchTeam[2],
-    teamSlugOrId: hierarchyMatchTeam[3],
-    seasonSlugOrId: hierarchyMatchTeam[4],
-    competitionSlugOrId: hierarchyMatchTeam[5],
-    matchId: hierarchyMatchTeam[6],
-  };
-
-  const hierarchyMatch = path.match(REGEX.hierarchyMatch);
-  if (hierarchyMatch) return {
-    type: 'hierarchyMatch',
-    orgSlug: hierarchyMatch[1],
-    teamSlugOrId: hierarchyMatch[2],
-    seasonSlugOrId: hierarchyMatch[3],
-    competitionSlugOrId: hierarchyMatch[4],
-    matchId: hierarchyMatch[5],
-  };
-
-  const competitionTeamMatch = path.match(REGEX.competitionTeamMatch);
-  if (competitionTeamMatch) return {
-    type: 'competitionTeamMatch',
-    orgSlug: competitionTeamMatch[1],
-    clubSlugOrId: competitionTeamMatch[2],
-    teamSlugOrId: competitionTeamMatch[3],
-    seasonSlugOrId: competitionTeamMatch[4],
-    competitionSlugOrId: competitionTeamMatch[5],
-  };
-
-  const competitionMatch = path.match(REGEX.competitionMatch);
-  if (competitionMatch) return {
-    type: 'competitionMatch',
-    orgSlug: competitionMatch[1],
-    teamSlugOrId: competitionMatch[2],
-    seasonSlugOrId: competitionMatch[3],
-    competitionSlugOrId: competitionMatch[4],
-  };
-
-  const legacyMatch = path.match(REGEX.legacyMatch);
-  if (legacyMatch) return {
-    type: 'legacyMatch',
-    matchId: legacyMatch[1],
-  };
-
-  const seasonTeamMatch = path.match(REGEX.seasonTeamMatch);
-  if (seasonTeamMatch) return {
-    type: 'seasonTeamMatch',
-    orgSlug: seasonTeamMatch[1],
-    clubSlugOrId: seasonTeamMatch[2],
-    teamSlugOrId: seasonTeamMatch[3],
-    seasonSlugOrId: seasonTeamMatch[4],
-  };
-
-  const seasonMatch = path.match(REGEX.seasonMatch);
-  if (seasonMatch) return {
-    type: 'seasonMatch',
-    orgSlug: seasonMatch[1],
-    // seasonMatch doesn't have club/teams specific in the same way? Check original code.
-    // Original code: /organisations/([^/]+)/projects/([^/]+)/seasons/([^/]+)
-    // Group 1: Org, Group 2: Project (Club), Group 3: Season
-    clubSlugOrId: seasonMatch[2],
-    seasonSlugOrId: seasonMatch[3],
-  };
-
-  const teamMatch = path.match(REGEX.teamMatch);
-  if (teamMatch) return {
-    type: 'teamMatch',
-    orgSlug: teamMatch[1],
-    clubSlugOrId: teamMatch[2],
-    teamSlugOrId: teamMatch[3],
-  };
-
-  const clubMatch = path.match(REGEX.clubMatch);
-  if (clubMatch) return {
-    type: 'clubMatch',
-    orgSlug: clubMatch[1],
-    clubSlugOrId: clubMatch[2],
-  };
-
-  return null;
-}
+import {
+  type AppProjectRow,
+  type AppPeriodRow,
+  type AppSelection,
+  APP_LAST_CTX_KEY,
+  parseAppPath,
+} from './appSelectionParser';
 
 export function useAppSelection() {
   const location = useLocation();
@@ -427,11 +244,7 @@ export function useAppSelection() {
         // 1. Try URL Match for Team
         if (urlTeamSlug) {
             selectedTeam = teamsBySlug.get(urlTeamSlug) || (teams || []).find(t => String(t.id) === urlTeamSlug) || null;
-            // If we have a slug but no object, create a dummy one so we at least return the slug?
-            // Better to rely on what we found. If not found, selectedTeam is null.
-            // But if we are ON the page, we probably want to show "Something".
             if (!selectedTeam) {
-                // Fallback: create object with just slug if we can't find it
                 selectedTeam = { id: urlTeamSlug, slug: urlTeamSlug, name: urlTeamSlug, parent_id: null };
             }
         }
@@ -441,8 +254,7 @@ export function useAppSelection() {
           selectedTeam = (teams || []).find((t) => String(t.slug) === String(last.teamSlugOrId)) || null;
         }
 
-        // 3. Fallback to best guess (including listing pages):
-        // If user effectively has a single team, or no URL context, pick a stable default.
+        // 3. Fallback to best guess
         if (!selectedTeam) {
           if ((teams || []).length === 1) {
             selectedTeam = (teams || [])[0] || null;
@@ -471,7 +283,7 @@ export function useAppSelection() {
             selectedClub = clubsBySlug.get(String(last.clubSlugOrId)) || null;
         }
 
-        // 4. Fallback (including listing pages): prefer the only club, otherwise stable alphabetical.
+        // 4. Fallback
         if (!selectedClub) {
           if ((clubs || []).length === 1) {
             selectedClub = (clubs || [])[0] || null;
@@ -541,14 +353,10 @@ export function useAppSelection() {
           }
         }
 
-        // Resolve a best match (omitted for brevity, keep logic mostly same but just get ID)
-        // ... (Skipping strict match resolution for sidebar "names" since we mainly need season/team/club names)
-
         let selectedMatchId: string | null = null;
         if (last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.matchId) {
           selectedMatchId = String(last.matchId);
         }
-        // ... (existing match fetch logic could go here if needed)
 
         let selectedCompetitionSlugOrId: string | null = null;
         if (last?.orgSlug && String(last.orgSlug) === String(orgSlug) && last.competitionSlugOrId) {
