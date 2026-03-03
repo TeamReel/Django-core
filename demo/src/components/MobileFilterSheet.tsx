@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useHapticFeedback } from '../hooks/useHapticFeedback';
 
 interface MobileFilterSheetProps {
   /** Number of currently active filters (shown as badge) */
@@ -25,6 +26,7 @@ export default function MobileFilterSheet({ activeFilterCount = 0, children, onC
   const [dragY, setDragY] = useState(0);
   const dragStartY = useRef(0);
   const isDragging = useRef(false);
+  const haptic = useHapticFeedback();
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -56,11 +58,12 @@ export default function MobileFilterSheet({ activeFilterCount = 0, children, onC
   const handleDragEnd = useCallback(() => {
     isDragging.current = false;
     if (dragY > 100) {
+      haptic.medium();
       close();
     } else {
       setDragY(0);
     }
-  }, [dragY, close]);
+  }, [dragY, close, haptic]);
 
   // Close on Escape
   useEffect(() => {

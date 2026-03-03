@@ -119,3 +119,69 @@ export async function apiDelete(url: string): Promise<Response> {
   if (!res.ok) throw new Error(`DELETE ${url} failed (${res.status})`);
   return res;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Retry wrapper                                                      */
+/* ------------------------------------------------------------------ */
+
+export interface RetryOptions {
+  /** Number of retries (excluding the initial attempt). Default: 2. */
+  retries?: number;
+  /** Initial delay in ms — doubled on each attempt. Default: 500. */
+  delay?: number;
+  /** HTTP methods to retry on network error. Default: GET only. */
+  retryMethods?: string[];
+  /** HTTP status codes that trigger a retry. Default: 502,503,504. */
+  retryStatuses?: number[];
+}
+
+/**
+ * `apiFetch` with automatic retry on transient network / server errors.
+ *
+ * Only **idempotent** methods (GET by default) are retried automatically.
+ * Non-idempotent methods are only retried when the error is a network failure
+ * (no response received at all), since the request never reached the server.
+ */
+export async function apiFetchWithRetry(
+  url: string,
+  init?: RequestInit,
+  opts?: RetryOptions,
+): Promise<Response> {
+  const {
+    retries = 2,
+    delay = 500,
+    retryMethods = ['GET', 'HEAD', 'OPTIONS'],
+    retryStatuses = [502, 503, 504],
+  } = opts ?? {};
+
+  const method = (init?.method ?? 'GET').toUpperCase();
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await apiFetch(url, init);
+
+      // Only retry retriable status codes for idempotent methods
+      if (retryStatuses.includes(res.status) && retryMethods.includes(method) && attempt < retries) {
+        await sleep(delay * 2 ** attempt);
+        continue;
+      }
+
+      return res;
+    } catch (err) {
+      lastError = err;
+
+      // Network failure (no response) — safe to retry any method
+      if (attempt < retries) {
+        await sleep(delay * 2 ** attempt);
+        continue;
+      }
+    }
+  }
+
+  throw lastError;
+}
+
+function sleep(ms: number) {
+  return new Promise<void>(resolve => setTimeout(resolve, ms));
+}

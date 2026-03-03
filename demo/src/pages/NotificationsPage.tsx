@@ -106,6 +106,13 @@ export default function NotificationsPage() {
   }, [apiBaseUrl]);
 
   const markAsRead = async (notificationId: string) => {
+    // Optimistic update: mark as read in local state immediately
+    const previousNotifications = [...notifications];
+    setNotifications(prev =>
+      prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+    );
+    window.dispatchEvent(new Event('notificationChanged'));
+
     try {
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
@@ -126,19 +133,24 @@ export default function NotificationsPage() {
       const raw = await response.json();
       const updatedNotification = unwrapResponseData<Notification>(raw);
 
-      // Update local state
+      // Reconcile with server response
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? updatedNotification : n)
       );
-
-      // Trigger event for badge update
-      window.dispatchEvent(new Event('notificationChanged'));
     } catch (err) {
+      // Rollback on failure
       console.error('Error marking notification as read:', err);
+      setNotifications(previousNotifications);
+      window.dispatchEvent(new Event('notificationChanged'));
     }
   };
 
   const markAllAsRead = async () => {
+    // Optimistic: mark all as read immediately
+    const previousNotifications = [...notifications];
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    window.dispatchEvent(new Event('notificationChanged'));
+
     try {
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
@@ -155,13 +167,13 @@ export default function NotificationsPage() {
         throw new Error('Failed to mark all as read');
       }
 
-      // Refetch notifications
+      // Reconcile with server
       await fetchNotifications();
-
-      // Trigger event for badge update
-      window.dispatchEvent(new Event('notificationChanged'));
     } catch (err) {
+      // Rollback on failure
       console.error('Error marking all as read:', err);
+      setNotifications(previousNotifications);
+      window.dispatchEvent(new Event('notificationChanged'));
     }
   };
 

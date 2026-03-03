@@ -15,11 +15,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, CalendarDays, Plus, Swords, Clapperboard } from 'lucide-react';
 import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { useAppSelection } from '../hooks/useAppSelection';
+import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import MatchWizard from './MatchWizard';
 
 export default function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const haptic = useHapticFeedback();
   const { orgSlug, clubSlugOrId, teamSlugOrId, matchId: urlMatchId } = useAppSelection();
 
   const [activeMatchSlug, setActiveMatchSlug] = useState<string | null>(null);
@@ -115,7 +117,7 @@ export default function MobileBottomNav() {
     return (
       <button
         key={tab.id}
-        onClick={() => tab.path && navigate(tab.path)}
+        onClick={() => { haptic.light(); tab.path && navigate(tab.path); }}
         aria-label={tab.label}
         aria-current={active ? 'page' : undefined}
         className="flex-1 flex-col flex-center cursor-pointer transition"
