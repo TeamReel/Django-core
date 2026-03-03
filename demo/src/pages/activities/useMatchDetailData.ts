@@ -243,7 +243,6 @@ export function useMatchDetailData(): MatchDetailDataReturn {
     homeParticipations: derived.homeParticipations,
     awayParticipations: derived.awayParticipations,
     matchEvents: derived.matchEvents,
-    detailActionButtonStyle: derived.detailActionButtonStyle,
     saveMatchEdits: actions.saveMatchEdits,
     handleDeleteMatch: actions.handleDeleteMatch,
     createParticipation: actions.createParticipation,

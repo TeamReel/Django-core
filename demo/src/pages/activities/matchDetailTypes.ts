@@ -320,9 +320,6 @@ export interface MatchDetailDataReturn {
   awayParticipations: Participation[];
   matchEvents: ActivityEvent[];
 
-  /* style */
-  detailActionButtonStyle: (tone?: 'neutral' | 'primary' | 'warning' | 'danger' | 'success') => React.CSSProperties;
-
   /* CRUD */
   saveMatchEdits: (matchToEdit: any, patch: any) => Promise<void>;
   handleDeleteMatch: () => Promise<void>;

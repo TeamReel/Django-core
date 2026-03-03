@@ -2,10 +2,7 @@ import React, { useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { periodPathKey } from '../../utils/periodPath';
-import {
-  actionButtonStyle,
-  type ActionTone,
-} from '../identity/detail/detailStyles';
+
 import { useSeasonContext, isSeasonPeriod } from '../../providers/SeasonProvider';
 import { useSeasonFormState } from './useSeasonFormState';
 import { useSeasonDataFetching } from './useSeasonDataFetching';
@@ -35,11 +32,6 @@ export function useSeasonDetailPageData() {
     clubBrand, teamBrand, batchBrandKits, brandLogoUrl, brandSponsorUrl,
     apiBaseUrl, userCanEditProject, userCanDeleteProject, isPlayer,
   } = ctx;
-
-  // ── Style helpers (defined locally, not exposed) ──
-  const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
-    ...actionButtonStyle(tone),
-  });
 
   const backButtonStyle: React.CSSProperties = {
     padding: '6px 12px',

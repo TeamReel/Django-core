@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
-import { actionButtonStyle } from '../identity/detail/detailStyles';
+
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import type { Participation, ActivityEvent, MatchDetail } from './matchDetailTypes';
 
@@ -65,13 +65,6 @@ export function useMatchDerived(params: UseMatchDerivedParams) {
     return opts;
   }, [project?.id]);
 
-  // ── Action button style ──
-  const detailActionButtonStyle = (tone: 'neutral' | 'primary' | 'warning' | 'danger' | 'success' = 'neutral'): React.CSSProperties => ({
-    ...actionButtonStyle(tone as any),
-    padding: '6px 12px',
-    fontWeight: 500,
-  });
-
   // ── Display values ──
   const date = match?.start_time ? new Date(match.start_time) : null;
   const status = String(match?.metadata?.status || 'scheduled');
@@ -126,7 +119,7 @@ export function useMatchDerived(params: UseMatchDerivedParams) {
 
   return {
     competitionBasePath, matchBasePath, activeTab,
-    matchWalletOptions, detailActionButtonStyle,
+    matchWalletOptions,
     date, status, isHome: !!isHome,
     ownTeamName, opponentName, homeTeamName, awayTeamName,
     ownLogoUrl, opponentLogoUrl, homeLogoUrl, awayLogoUrl,
