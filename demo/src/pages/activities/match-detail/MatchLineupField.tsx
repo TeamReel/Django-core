@@ -66,16 +66,11 @@ export function FieldVisualization({
   return (
     <div className="flex-col gap-16">
       <div
+        className="relative w-full overflow-hidden rounded-12 mx-auto border"
         style={{
-          position: 'relative',
-          width: '100%',
           maxWidth: 500,
           aspectRatio: '3 / 4',
-          margin: '0 auto',
           background: 'linear-gradient(to bottom, #16a34a, #15803d)',
-          borderRadius: 12,
-          overflow: 'hidden',
-          border: '1px solid var(--app-border, #333)',
         }}
       >
         {/* Field markings */}
@@ -322,11 +317,11 @@ export function FieldVisualization({
           <button
             onClick={saveLineup}
             disabled={lineupSaving}
-            className="fs-13 fw-600 border-none rounded-6 text-white"
+            className="fs-13 fw-600 border-none rounded-6 text-white cursor-pointer"
             style={{
               padding: '8px 20px',
               background: '#16a34a',
-              cursor: lineupSaving ? 'not-allowed' : 'pointer',
+              cursor: lineupSaving ? 'not-allowed' : undefined,
               opacity: lineupSaving ? 0.7 : 1,
             }}
           >

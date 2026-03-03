@@ -63,10 +63,9 @@ export function VideoQueuedStep({
                 <button
                   onClick={() => handleVideoApproval('approve')}
                   disabled={videoApprovalStatus !== 'idle'}
-                  className="inline-flex gap-8 fs-14 fw-600 rounded-8"
+                  className="inline-flex gap-8 fs-14 fw-600 rounded-8 px-20 transition"
                   style={{
-                    paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px',
-                    transition: 'all 150ms ease',
+                    paddingTop: '10px', paddingBottom: '10px',
                     background: videoApprovalStatus === 'approving' ? 'rgba(34,197,94,0.3)' : 'rgba(34,197,94,0.15)',
                     color: '#22c55e',
                     border: '1px solid rgba(34,197,94,0.3)',
@@ -79,10 +78,9 @@ export function VideoQueuedStep({
                 <button
                   onClick={() => handleVideoApproval('reject')}
                   disabled={videoApprovalStatus !== 'idle'}
-                  className="inline-flex gap-8 fs-14 fw-600 rounded-8"
+                  className="inline-flex gap-8 fs-14 fw-600 rounded-8 px-20 transition"
                   style={{
-                    paddingLeft: '20px', paddingRight: '20px', paddingTop: '10px', paddingBottom: '10px',
-                    transition: 'all 150ms ease',
+                    paddingTop: '10px', paddingBottom: '10px',
                     background: videoApprovalStatus === 'rejecting' ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.1)',
                     color: '#f87171',
                     border: '1px solid rgba(239,68,68,0.25)',
@@ -144,10 +142,9 @@ export function VideoQueuedStep({
             {/* Progress bar — merged duplicate style= */}
             <div className="w-full rounded-full mb-4" style={{ background: 'rgba(255,255,255,0.08)', height: '8px' }}>
               <div
-                className="rounded-full"
+                className="rounded-full transition"
                 style={{
                   height: '8px',
-                  transition: 'all 150ms ease',
                   width: `${Math.max(videoJobProgressRaw, videoJobStatus === 'processing' ? 5 : 0)}%`,
                   background: 'linear-gradient(90deg, #3b82f6, #60a5fa)',
                 }}
@@ -161,9 +158,8 @@ export function VideoQueuedStep({
               {/* Merged duplicate style= on link */}
               <a
                 href="/approvals"
-                className="inline-flex gap-8 px-16 py-8 fs-14 fw-500 rounded-8"
+                className="inline-flex gap-8 px-16 py-8 fs-14 fw-500 rounded-8 transition"
                 style={{
-                  transition: 'color 150ms, background 150ms',
                   color: '#60a5fa', background: 'rgba(59,130,246,0.12)',
                 }}
               >

@@ -85,10 +85,11 @@ export function ApprovalsJobList({
             <div
               key={`ai-${job.task_id}`}
               onClick={() => job.status === 'completed' && openModal(job)}
+              className="rounded-10 transition"
               style={{
-                padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
+                padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)',
                 border: `1px solid ${job.status === 'failed' ? '#fca5a5' : isReviewable ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
-                transition: 'box-shadow 0.15s', cursor: job.status === 'completed' ? 'pointer' : 'default',
+                cursor: job.status === 'completed' ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', gap: 14,
               }}
               onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
@@ -114,14 +115,14 @@ export function ApprovalsJobList({
                 )}
               </div>
               <div className={s.badgesCol}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: typeBadgeColor, backgroundColor: `${typeBadgeColor}18`, borderRadius: 99, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                <span className="fw-700 rounded-full" style={{ fontSize: 10, color: typeBadgeColor, backgroundColor: `${typeBadgeColor}18`, padding: '2px 8px', letterSpacing: '0.04em' }}>
                   {typeBadgeLabel}
                 </span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, borderRadius: 99, padding: '2px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                <span className="fw-700 rounded-full uppercase" style={{ fontSize: 10, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, padding: '2px 8px', letterSpacing: '0.04em' }}>
                   {job.status}
                 </span>
                 {approvalBadge && (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, borderRadius: 99, padding: '2px 8px' }}>
+                  <span className="fw-700 rounded-full" style={{ fontSize: 10, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, padding: '2px 8px' }}>
                     {approvalBadge.label}
                   </span>
                 )}
@@ -140,12 +141,12 @@ export function ApprovalsJobList({
             <div
               key={`video-${vJob.id}`}
               onClick={() => isClickable && openVideoModal(vJob)}
+              className="flex-col rounded-10 transition"
               style={{
-                padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)', borderRadius: 10,
+                padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)',
                 border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : isActive ? '#93c5fd' : isClickable && vJob.workflow_instance?.current_state === 'ready_for_review' ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
-                display: 'flex', flexDirection: 'column', gap: 10,
+                gap: 10,
                 cursor: isClickable ? 'pointer' : 'default',
-                transition: 'box-shadow 0.15s',
               }}
               onMouseEnter={e => { if (isClickable) e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
               onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
@@ -160,7 +161,7 @@ export function ApprovalsJobList({
                   <span className={s.pillBadge} style={{ color: '#0891b2', background: '#0891b218' }}>
                     {vJob.job_type === 'lineup' ? 'LINEUP' : vJob.job_type === 'goal_celebration' ? 'GOAL' : 'VIDEO'}
                   </span>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <span className="fw-700 rounded-full uppercase" style={{ fontSize: 10, padding: '2px 8px', color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, letterSpacing: '0.04em' }}>
                     {statusDisplay.icon} {statusDisplay.label}
                   </span>
                 </div>

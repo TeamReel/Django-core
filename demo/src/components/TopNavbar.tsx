@@ -96,8 +96,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                       className={s.megaPanel}
                     >
                       <div className={s.megaPanelInner}>
-                        <div style={{
-                          display: 'grid',
+                        <div className="grid" style={{
                           gridTemplateColumns: `repeat(${getColumnCount(group.items.length)}, minmax(0, 1fr))`,
                           columnGap: 40, rowGap: 10,
                         }}>

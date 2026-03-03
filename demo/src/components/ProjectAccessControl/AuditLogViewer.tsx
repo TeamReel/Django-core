@@ -59,13 +59,12 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
 
   return (
     <div className="audit-log-viewer p-20">
-      <div className="flex-between" style={{ marginBottom: '20px' }}>
+      <div className="flex-between mb-20">
         <h3>Project Activity</h3>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="p-8 rounded-4"
-          style={{ border: '1px solid #ddd' }}
+          className="p-8 rounded-4 border"
         >
           <option value="all">All Events</option>
           <option value="member_added">Member Added</option>
@@ -74,22 +73,22 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
         </select>
       </div>
 
-      <div className="rounded-8 overflow-hidden" style={{ border: '1px solid #eee' }}>
+      <div className="rounded-8 overflow-hidden border">
         {filteredEvents.length === 0 ? (
-          <div className="p-20 text-center" style={{ color: '#666' }}>No events found.</div>
+          <div className="p-20 text-center text-muted">No events found.</div>
         ) : (
           <table className="w-full" style={{ borderCollapse: 'collapse' }}>
-            <thead style={{ backgroundColor: '#f9f9f9' }}>
+            <thead className="bg-surface-2">
               <tr className="text-left">
-                <th style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Action</th>
-                <th style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>User</th>
-                <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Details</th>
-                <th className="hide-mobile" style={{ padding: '10px 8px', borderBottom: '1px solid #eee' }}>Time</th>
+                <th className="border-bottom" style={{ padding: '10px 8px' }}>Action</th>
+                <th className="border-bottom" style={{ padding: '10px 8px' }}>User</th>
+                <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Details</th>
+                <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Time</th>
               </tr>
             </thead>
             <tbody>
               {filteredEvents.map((event) => (
-                <tr key={event.id} style={{ borderBottom: '1px solid #eee' }}>
+                <tr key={event.id} className="border-bottom">
                   <td style={{ padding: '10px 8px' }}>
                     <span className="rounded-4 fs-11" style={{
                       padding: '2px 6px',
@@ -104,9 +103,9 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
                   </td>
                   <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
                     <div>{event.details}</div>
-                    <div className="fs-11" style={{ color: '#666' }}>Target: {event.target.name}</div>
+                    <div className="fs-11 text-muted">Target: {event.target.name}</div>
                   </td>
-                  <td className="hide-mobile fs-12" style={{ padding: '10px 8px', color: '#666' }}>
+                  <td className="hide-mobile fs-12 text-muted" style={{ padding: '10px 8px' }}>
                     {event.timestamp}
                   </td>
                 </tr>

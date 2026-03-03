@@ -82,11 +82,11 @@ export function MemberAssetsTab({
 
           return (
             <div key={`assets-kit-${kit.id}`} className={s.kitSectionMargin}>
-              <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
+              <div className={`${s.flexCenterGap8} mb-12`}>
                 {kit.url ? (
                   <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
-                  <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                  <span className="fs-20">{kit.icon}</span>
                 )}
                 <div className={s.sectionTitle}>{kit.label}</div>
               </div>
@@ -105,7 +105,7 @@ export function MemberAssetsTab({
                         : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                       cursor: fbUrl ? 'zoom-in' : 'default',
                     }}>
-                    {!fbUrl && <div className={s.processingOverlay} style={{ background: 'none', color: 'var(--app-text-muted)', fontSize: '12px', fontWeight: 'normal' }}>Niet gegenereerd</div>}
+                    {!fbUrl && <div className={`${s.processingOverlay} bg-transparent text-muted fs-12 fw-400`}>Niet gegenereerd</div>}
                     {fbUrl && (
                       <div className={s.overlayBadgeContainer}>
                         <div className={s.aiBadge}>AI</div>
@@ -162,7 +162,7 @@ export function MemberAssetsTab({
                         : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
                       cursor: hbUrl ? 'zoom-in' : 'default',
                     }}>
-                    {!hbUrl && <div className={s.processingOverlay} style={{ background: 'none', color: 'var(--app-text-muted)', fontSize: '12px', fontWeight: 'normal' }}>Niet gegenereerd</div>}
+                    {!hbUrl && <div className={`${s.processingOverlay} bg-transparent text-muted fs-12 fw-400`}>Niet gegenereerd</div>}
                     {hbUrl && (
                       <div className={s.overlayBadgeContainer}>
                         <div className={s.aiBadge}>AI</div>
@@ -206,7 +206,7 @@ export function MemberAssetsTab({
                       minHeight: '150px',
                       cursor: cuUrl ? 'zoom-in' : 'default',
                     }}>
-                    {!cuUrl && <div className={s.processingOverlay} style={{ background: 'none', color: 'var(--app-text-muted)', fontSize: '12px', fontWeight: 'normal' }}>Niet gegenereerd</div>}
+                    {!cuUrl && <div className={`${s.processingOverlay} bg-transparent text-muted fs-12 fw-400`}>Niet gegenereerd</div>}
                     {cuUrl && (
                       <div className={s.overlayBadgeContainer}>
                         <div className={s.aiBadge}>AI</div>
@@ -254,9 +254,9 @@ export function MemberAssetsTab({
         })}
 
         {/* Team/Club Assets Section */}
-        <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--vscode-widget-border)' }}>
-          <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>🏟️ Geërfde Team Assets</h4>
-          <p style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)', marginBottom: '16px' }}>
+        <div className="pt-24 border-top" style={{ marginTop: '32px' }}>
+          <h4 className="fs-14 fw-600 mb-8">🏟️ Geërfde Team Assets</h4>
+          <p className="fs-12 mb-16" style={{ color: 'var(--vscode-descriptionForeground)' }}>
             Deze assets worden geërfd van het team/seizoen en worden gebruikt als basis voor generatie.
           </p>
           <AssetsTab
@@ -270,7 +270,7 @@ export function MemberAssetsTab({
         </div>
 
         {!userCanEditProject && (
-          <div style={{ marginTop: '16px' }}>
+          <div className="mt-16">
             <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
           </div>
         )}

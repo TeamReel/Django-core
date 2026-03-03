@@ -31,12 +31,13 @@ export function ProfileHeader({
               <img
                 src={logoUrl}
                 alt={logoAsset?.alt_text || `${entityName} logo`}
-                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                className="object-contain"
+                style={{ maxWidth: '100%', maxHeight: '100%' }}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             </div>
           ) : (
-            <div className="rounded-12 flex-center" style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark, var(--app-primary)) 100%)', color: 'white' }}>
+            <div className="rounded-12 flex-center text-white" style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark, var(--app-primary)) 100%)' }}>
               <Sparkles size={28} />
             </div>
           )}
@@ -69,17 +70,17 @@ export function ProfileHeader({
         )}
       </div>
 
-      <div className="flex-row gap-32 mt-24 border-top" style={{ paddingTop: '24px' }}>
+      <div className="flex-row gap-32 mt-24 border-top pt-24">
         <div>
-          <Text size="xs" color="secondary" weight="bold" style={{ textTransform: 'uppercase' }}>Design Tokens</Text>
+          <Text size="xs" color="secondary" weight="bold" className="uppercase">Design Tokens</Text>
           <Text weight="bold" size="xl" className="mt-4">{profile.token_count || profile.tokens?.length || 0}</Text>
         </div>
         <div>
-          <Text size="xs" color="secondary" weight="bold" style={{ textTransform: 'uppercase' }}>Brand Assets</Text>
+          <Text size="xs" color="secondary" weight="bold" className="uppercase">Brand Assets</Text>
           <Text weight="bold" size="xl" className="mt-4">{profile.asset_count || profile.assets?.length || 0}</Text>
         </div>
         <div>
-          <Text size="xs" color="secondary" weight="bold" style={{ textTransform: 'uppercase' }}>Created</Text>
+          <Text size="xs" color="secondary" weight="bold" className="uppercase">Created</Text>
           <Text weight="bold" size="sm" className="mt-8">
             {new Date(profile.created_at).toLocaleDateString('nl-NL', { year: 'numeric', month: 'short', day: 'numeric' })}
           </Text>
@@ -101,7 +102,7 @@ export function EmptyState({
 }) {
   return (
     <Card className="text-center" style={{ padding: '48px' }}>
-      <div className="rounded-full flex-center" style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, var(--app-surface-alt) 0%, var(--app-border) 100%)', margin: '0 auto 24px' }}>
+      <div className="rounded-full flex-center mx-auto mb-24" style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, var(--app-surface-alt) 0%, var(--app-border) 100%)' }}>
         <Palette size={36} style={{ opacity: 0.4 }} />
       </div>
       <Text weight="bold" size="lg">No Brand Profile</Text>

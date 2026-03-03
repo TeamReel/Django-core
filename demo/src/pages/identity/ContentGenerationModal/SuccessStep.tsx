@@ -73,14 +73,13 @@ export function SuccessStep({
                 <div
                   key={variant.variant_index}
                   onClick={() => setSelectedVariantIndex(index)}
-                  className="relative cursor-pointer rounded-8 overflow-hidden"
+                  className="relative cursor-pointer rounded-8 overflow-hidden transition"
                   style={{
                     border: isSaved
                       ? '2px solid #22c55e'
                       : isSelected
                         ? '2px solid #3b82f6'
                         : '2px solid var(--app-border, #e5e7eb)',
-                    transition: 'all 150ms ease',
                     boxShadow: isSaved || isSelected ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
                   }}
                 >
@@ -128,8 +127,8 @@ export function SuccessStep({
                           handleSaveVariantByIndex(index, { skipAutoClose: true });
                         }}
                         disabled={savingAsset}
-                        className="px-8 rounded-6 fs-12 fw-600 border-none cursor-pointer text-white"
-                        style={{ paddingTop: '2px', paddingBottom: '2px', background: 'var(--app-primary, #3B8EA5)', transition: 'color 150ms, background 150ms' }}
+                        className="px-8 rounded-6 fs-12 fw-600 border-none cursor-pointer text-white transition"
+                        style={{ paddingTop: '2px', paddingBottom: '2px', background: 'var(--app-primary, #3B8EA5)' }}
                       >
                         {savingAsset && selectedVariantIndex === index ? '' : 'Opslaan'}
                       </button>
@@ -146,12 +145,11 @@ export function SuccessStep({
           {generatedVariants[0]?.mime_type?.startsWith('video/') ? (
             <div className="mb-16 self-center" style={{ width: '280px', maxWidth: '92vw' }}>
               <div
-                className="rounded-12 overflow-hidden"
+                className="rounded-12 overflow-hidden transition"
                 style={{
                   border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
                   background: '#000',
                   cursor: !saveSuccess ? 'pointer' : 'default',
-                  transition: 'all 0.2s ease',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                 }}
                 onClick={() => {
@@ -250,12 +248,12 @@ export function SuccessStep({
             </div>
           ) : generatedOutput?.image_base64 ? (
             <div className="mb-16 self-center" style={{ width: '220px', maxWidth: '92vw' }}>
-              <div className="rounded-12 overflow-hidden"
+              <div className="rounded-12 overflow-hidden transition"
                 style={{
                   border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
                   background: '#f9fafb',
                   cursor: !saveSuccess ? 'pointer' : 'default',
-                  transition: 'all 0.2s ease', boxShadow: '0 4px 12px rgba(0,0,0,0.10)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.10)',
                 }}
                 onClick={() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); }}
                 title={!saveSuccess ? 'Klik om op te slaan' : ''}
@@ -275,12 +273,12 @@ export function SuccessStep({
             </div>
           ) : (generatedOutput?.presigned_url || generatedVariants[0]?.presigned_url) ? (
             <div className="mb-16 self-center" style={{ width: '220px', maxWidth: '92vw' }}>
-              <div className="rounded-12 overflow-hidden"
+              <div className="rounded-12 overflow-hidden transition"
                 style={{
                   border: saveSuccess ? '2px solid #22c55e' : '2px solid #e5e7eb',
                   background: '#f9fafb',
                   cursor: !saveSuccess ? 'pointer' : 'default',
-                  transition: 'all 0.2s ease', boxShadow: '0 4px 12px rgba(0,0,0,0.10)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.10)',
                 }}
                 onClick={() => { if (!saveSuccess && !savingAsset) handleSaveAsAsset(); }}
                 title={!saveSuccess ? 'Klik om op te slaan' : ''}

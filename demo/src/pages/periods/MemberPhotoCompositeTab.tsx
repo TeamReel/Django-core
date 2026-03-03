@@ -73,21 +73,21 @@ export function MemberPhotoCompositeTab({
           <div className={s.prerequisiteCard} style={{
             border: legacyHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
           }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy Halfbody</div>
+            <div className="fs-12 fw-600 mb-8">🏆 Legacy Halfbody</div>
             {legacyHalfbodyUrl ? (
               <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy Halfbody</div>
+              <div className="text-muted fs-11">⚠️ Genereer eerst Legacy Halfbody</div>
             )}
           </div>
           <div className={s.prerequisiteCard} style={{
             border: currentHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
           }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Halfbody</div>
+            <div className="fs-12 fw-600 mb-8">👕 Huidige Halfbody</div>
             {currentHalfbodyUrl ? (
               <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Halfbody</div>
+              <div className="text-muted fs-11">⚠️ Genereer eerst Halfbody</div>
             )}
           </div>
         </div>
@@ -112,7 +112,7 @@ export function MemberPhotoCompositeTab({
               <div className={s.cardFooterPadding}>
                 <div className={s.variantLabel}>📸 Gemini Composite</div>
                 <div className={s.actionButtonRow}>
-                  <Button size="sm" onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)} disabled={!hasBothInputs} className={s.btnSmall} style={{ width: '100%' }}>
+                  <Button size="sm" onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} w-full`}>
                     {hasCompositeImage ? '🔄 Opnieuw' : '✨ Genereer'}
                   </Button>
                 </div>
@@ -148,7 +148,7 @@ export function MemberPhotoCompositeTab({
                 <div className={s.actionButtonRow}>
                   {hasCompositeVideo ? (
                     <>
-                      <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={s.btnSmall} style={{ flex: 1 }}>
+                      <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={`${s.btnSmall} flex-1`}>
                         Opnieuw
                       </Button>
                       {!compositeVideoProcessing && (
@@ -186,7 +186,7 @@ export function MemberPhotoCompositeTab({
                       {compositeVideoLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
                     </>
                   ) : (
-                    <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={s.btnSmall} style={{ width: '100%' }}>
+                    <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={`${s.btnSmall} w-full`}>
                       ✨ Genereer
                     </Button>
                   )}
@@ -197,7 +197,7 @@ export function MemberPhotoCompositeTab({
         </div>
 
         {!userCanEditProject && (
-          <div style={{ marginTop: '16px' }}>
+          <div className="mt-16">
             <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
           </div>
         )}

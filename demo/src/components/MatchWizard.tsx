@@ -40,13 +40,13 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         <div className="flex-row gap-12 border-bottom" style={{ padding: '4px 16px 12px', flexShrink: 0 }}>
           {currentStep !== 'match' ? (
             <button onClick={handleBack} aria-label="Terug"
-              className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20"
-              style={{ width: '40px', height: '40px', borderRadius: '10px', lineHeight: 1 }}>←</button>
+              className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10"
+              style={{ width: '40px', height: '40px', lineHeight: 1 }}>←</button>
           ) : <div style={{ width: '40px' }} />}
           <span className="flex-1 text-center fw-600 fs-16 text-primary">{getStepTitle()}</span>
           <button onClick={handleClose} aria-label="Sluiten"
-            className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20"
-            style={{ width: '40px', height: '40px', borderRadius: '10px', lineHeight: 1 }}>×</button>
+            className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10"
+            style={{ width: '40px', height: '40px', lineHeight: 1 }}>×</button>
         </div>
 
         {/* ── Step content (scrollable) ────────────────────────────── */}
@@ -80,7 +80,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         color: 'white',
                       }}>{date.getDate()}</div>
                       <div className="flex-1-min">
-                        <div className="fw-600 text-primary truncate" style={{ fontSize: '15px' }}>{match.title}</div>
+                        <div className="fw-600 text-primary truncate fs-15">{match.title}</div>
                         <div className="fs-13 text-muted">
                           {relativeTime} &middot; {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                         </div>
@@ -99,7 +99,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {currentStep === 'content' && (
             <div className="flex-col gap-16">
               {/* Phase tabs */}
-              <div className="flex-row gap-4 bg-surface-2" style={{ padding: '3px', borderRadius: '10px' }}>
+              <div className="flex-row gap-4 bg-surface-2 rounded-10" style={{ padding: '3px' }}>
                 {([
                   { key: 'pre', label: 'Voor', icon: Clock },
                   { key: 'during', label: 'Tijdens', icon: Play },
@@ -107,13 +107,12 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 ] as const).map(({ key, label, icon: Icon }) => (
                   <button key={key}
                     onClick={() => setSelectedContentPhase(key)}
-                    className="flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer"
+                    className="flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer transition"
                     style={{
                       padding: '10px 8px',
                       backgroundColor: selectedContentPhase === key ? 'var(--app-primary)' : 'transparent',
                       color: selectedContentPhase === key ? 'white' : 'var(--app-text-muted)',
                       fontWeight: selectedContentPhase === key ? 600 : 400,
-                      transition: 'background-color 0.15s ease, color 0.15s ease',
                     }}>
                     <Icon size={14} />{label}
                   </button>
@@ -136,7 +135,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         <Icon size={22} style={{ color: 'var(--app-primary)' }} />
                       </div>
                       <div className="flex-1-min">
-                        <div className="fw-600 text-primary" style={{ fontSize: '15px' }}>{content.label}</div>
+                        <div className="fw-600 text-primary fs-15">{content.label}</div>
                         <div className="fs-13 text-muted">
                           {content.description}{needsLineup && ' (opstelling nodig)'}
                         </div>
@@ -157,8 +156,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         {currentStep === 'match' && selectedMatch && (
           <div className="border-top" style={{ padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
             <button onClick={() => setCurrentStep('content')}
-              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white"
-              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', fontSize: '15px' }}>
+              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15"
+              style={{ padding: '14px', backgroundColor: 'var(--app-primary)' }}>
               Verder<ChevronRight size={18} />
             </button>
           </div>
@@ -166,8 +165,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         {currentStep === 'lineup' && (
           <div className="border-top" style={{ padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
             <button onClick={handleLineupConfirm} disabled={lineupSaving}
-              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white"
-              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', fontSize: '15px', opacity: lineupSaving ? 0.7 : 1 }}>
+              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15"
+              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', opacity: lineupSaving ? 0.7 : 1 }}>
               <Zap size={18} />{lineupSaving ? 'Opslaan...' : 'Genereer content'}
             </button>
           </div>

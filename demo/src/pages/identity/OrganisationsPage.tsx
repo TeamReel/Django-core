@@ -181,12 +181,13 @@ export const OrganisationsPage: React.FC = () => {
           { label: 'Federations', current: true },
         ]}
         actions={
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
+          <div className="flex-row flex-wrap" style={{ gap: '10px', alignItems: 'center' }}>
+            <label className="fs-14 fw-500">Status:</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className="p-8 rounded-4"
+              style={{ border: '1px solid #ccc' }}
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -244,16 +245,16 @@ export const OrganisationsPage: React.FC = () => {
               <Table>
             <thead>
               <tr>
-                <th onClick={() => handleSort('name')} style={{ cursor: 'pointer', minWidth: '150px' }}>
+                <th onClick={() => handleSort('name')} className="cursor-pointer" style={{ minWidth: '150px' }}>
                   Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('member_count')} style={{ cursor: 'pointer', minWidth: '100px' }}>
+                <th onClick={() => handleSort('member_count')} className="cursor-pointer" style={{ minWidth: '100px' }}>
                   Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('project_count')} style={{ cursor: 'pointer', minWidth: '100px' }}>
+                <th onClick={() => handleSort('project_count')} className="cursor-pointer" style={{ minWidth: '100px' }}>
                   Projects {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('credit_balance')} style={{ cursor: 'pointer', minWidth: '100px' }}>
+                <th onClick={() => handleSort('credit_balance')} className="cursor-pointer" style={{ minWidth: '100px' }}>
                   Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
                 </th>
                 <th style={{ minWidth: '100px' }}>Status</th>
@@ -275,9 +276,9 @@ export const OrganisationsPage: React.FC = () => {
                   <tr key={org.id}>
                     <td>
                       <span
+                        className="cursor-pointer"
                         style={{
                           color: 'var(--color-blue-600)',
-                          cursor: 'pointer',
                           textDecoration: 'underline',
                           fontSize: '0.85rem'
                         }}
@@ -318,21 +319,18 @@ export const OrganisationsPage: React.FC = () => {
                       </Badge>
                     </td>
                     <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
+                      <div className="flex-row gap-8">
                         <button
                           onClick={() => {
                             setDetailOrganisation(org);
                             setIsDetailModalOpen(true);
                           }}
+                          className="rounded-4 cursor-pointer fs-12 fw-500"
                           style={{
                               padding: '6px 12px',
-                              borderRadius: '4px',
                               border: '1px solid var(--app-border)',
                               backgroundColor: 'var(--app-surface-2)',
                               color: 'var(--app-text)',
-                              cursor: 'pointer',
-                              fontSize: '12px',
-                              fontWeight: 500
                           }}
                         >
                           View
@@ -343,15 +341,12 @@ export const OrganisationsPage: React.FC = () => {
                               setEditOrganisation(org);
                               setIsEditModalOpen(true);
                             }}
+                            className="rounded-4 cursor-pointer fs-12 fw-500"
                             style={{
                                 padding: '6px 12px',
-                                borderRadius: '4px',
                                 border: '1px solid var(--app-warning)',
                                 backgroundColor: 'var(--app-surface)',
                                 color: 'var(--app-warning)',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500
                             }}
                           >
                             Edit
@@ -360,15 +355,12 @@ export const OrganisationsPage: React.FC = () => {
                         {userCanDelete && (
                           <button
                             onClick={() => handleDelete(org.slug || org.id)}
+                            className="rounded-4 cursor-pointer fs-12 fw-500"
                             style={{
                                 padding: '6px 12px',
-                                borderRadius: '4px',
                                 border: '1px solid #bd2130',
                                 backgroundColor: 'var(--app-surface)',
                                 color: 'var(--app-error)',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500
                             }}
                           >
                             Delete

@@ -80,15 +80,14 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupCloseupStyle(opt.value)}
-                        className="relative flex-row gap-12 py-12 px-16 rounded-12 cursor-pointer text-left text-primary"
+                        className="relative flex-row gap-12 py-12 px-16 rounded-12 cursor-pointer text-left text-primary transition"
                         style={{
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          transition: 'all 0.15s ease',
                         }}
                       >
-                        <div className="flex-center fs-14 fw-700" style={{
-                          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                        <div className="flex-center fs-14 fw-700 rounded-10" style={{
+                          width: 36, height: 36, flexShrink: 0,
                           backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
                           color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                         }}>{opt.icon}</div>
@@ -128,7 +127,7 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
-                        className="relative flex-col gap-4 cursor-pointer text-primary"
+                        className="relative flex-col gap-4 cursor-pointer text-primary transition"
                         style={{
                           flex: '1 1 calc(33% - 8px)', minWidth: 80,
                           alignItems: 'center',
@@ -136,7 +135,6 @@ export function MembersStep({
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                           borderRadius: 10,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          transition: 'all 0.15s ease',
                         }}
                       >
                         <span className="fs-13 fw-600">{opt.label}</span>
@@ -169,18 +167,17 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupIntroStyle(opt.value as typeof lineupIntroStyle)}
-                        className="relative flex-col flex-1 gap-6 cursor-pointer text-primary"
+                        className="relative flex-col flex-1 gap-6 cursor-pointer text-primary transition"
                         style={{
                           alignItems: 'center',
                           padding: '12px 8px',
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                           borderRadius: 10,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          transition: 'all 0.15s ease',
                         }}
                       >
-                        <div className="flex-center fs-14 fw-700" style={{
-                          width: 36, height: 36, borderRadius: 10,
+                        <div className="flex-center fs-14 fw-700 rounded-10" style={{
+                          width: 36, height: 36,
                           backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
                           color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
                         }}>{opt.icon}</div>
@@ -209,12 +206,10 @@ export function MembersStep({
                   {/* Default option */}
                   <button
                     onClick={() => setSelectedBackgroundUrl(null)}
-                    className="relative overflow-hidden cursor-pointer p-0"
+                    className="relative overflow-hidden cursor-pointer p-0 rounded-10 transition"
                     style={{
                       border: !selectedBackgroundUrl ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                      borderRadius: 10,
                       background: !selectedBackgroundUrl ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                      transition: 'all 0.15s ease',
                     }}
                   >
                     <div className="w-full flex-center" style={{ aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)' }}>
@@ -244,12 +239,10 @@ export function MembersStep({
                       <button
                         key={bg.id}
                         onClick={() => setSelectedBackgroundUrl(bg.url)}
-                        className="relative overflow-hidden cursor-pointer p-0"
+                        className="relative overflow-hidden cursor-pointer p-0 rounded-10 transition"
                         style={{
                           border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          borderRadius: 10,
                           background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                          transition: 'all 0.15s ease',
                         }}
                       >
                         <div className="w-full" style={{ aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />

@@ -79,15 +79,15 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             <div className="text-center" style={{ marginBottom: '40px' }}>
               <div className="mb-24" style={{ fontSize: '72px' }}>⚠️</div>
 
-              <h1 className="mb-16" style={{ fontSize: '48px', color: 'var(--app-error)' }}>
+              <h1 className="mb-16 text-error" style={{ fontSize: '48px' }}>
                 500
               </h1>
 
-              <h2 className="fs-24 mb-24" style={{ color: '#333' }}>
+              <h2 className="fs-24 mb-24 text-primary">
                 Something went wrong
               </h2>
 
-              <p className="fs-16 mb-32" style={{ color: '#666' }}>
+              <p className="fs-16 mb-32 text-secondary">
                 We're sorry, but something unexpected happened.
                 The error has been logged and we'll look into it.
               </p>
@@ -95,23 +95,16 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               <div className="flex-center gap-12">
                 <button
                   onClick={this.handleReset}
-                  className="py-12 px-24 border-none rounded-4 fs-16 cursor-pointer"
-                  style={{
-                    backgroundColor: 'var(--app-primary)',
-                    color: 'white',
-                  }}
+                  className="py-12 px-24 border-none rounded-4 fs-16 cursor-pointer text-white"
+                  style={{ backgroundColor: 'var(--app-primary)' }}
                 >
                   Try Again
                 </button>
 
                 <Link
                   to="/dashboard"
-                  className="inline-block py-12 px-24 rounded-4 fs-16"
-                  style={{
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    textDecoration: 'none',
-                  }}
+                  className="inline-block py-12 px-24 rounded-4 fs-16 text-white text-decoration-none"
+                  style={{ backgroundColor: '#6c757d' }}
                 >
                   Go to Dashboard
                 </Link>
@@ -124,21 +117,19 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                 marginTop: '48px',
                 backgroundColor: '#f8f9fa',
               }}>
-                <h3 className="fs-18" style={{ marginTop: 0, color: 'var(--app-error)' }}>
+                <h3 className="fs-18 mt-0 text-error">
                   Error Details (Development Only)
                 </h3>
 
-                <div className="mt-16 p-16 rounded-4 fs-14 overflow-x-auto" style={{
+                <div className="mt-16 p-16 rounded-4 fs-14 overflow-x-auto border" style={{
                   backgroundColor: '#fff',
-                  border: '1px solid #dee2e6',
                   fontFamily: 'monospace',
                 }}>
                   <div className="mb-12">
                     <strong>Error:</strong>
-                    <pre style={{
+                      <pre className="text-error" style={{
                       margin: '8px 0 0 0',
                       whiteSpace: 'pre-wrap',
-                      color: 'var(--app-error)'
                     }}>
                       {this.state.error.toString()}
                     </pre>
@@ -147,10 +138,9 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                   {this.state.errorInfo && (
                     <div>
                       <strong>Component Stack:</strong>
-                      <pre className="fs-12" style={{
+                        <pre className="fs-12 text-secondary" style={{
                         margin: '8px 0 0 0',
                         whiteSpace: 'pre-wrap',
-                        color: '#666',
                       }}>
                         {this.state.errorInfo.componentStack}
                       </pre>
@@ -165,8 +155,8 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               backgroundColor: '#fff3cd',
               border: '1px solid #ffc107',
             }}>
-              <h3 className="fs-18" style={{ marginTop: 0 }}>What to do:</h3>
-              <ul style={{ color: '#666', lineHeight: '1.8' }}>
+              <h3 className="fs-18 mt-0">What to do:</h3>
+              <ul className="text-secondary" style={{ lineHeight: '1.8' }}>
                 <li>Click "Try Again" to reload the page</li>
                 <li>Return to the dashboard and try a different action</li>
                 <li>If the problem persists, contact support</li>

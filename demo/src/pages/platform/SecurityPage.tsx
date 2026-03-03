@@ -222,7 +222,7 @@ export const SecurityPage: React.FC = () => {
         />
         <PageContent>
           <Card>
-            <div className="text-center text-muted" style={{ padding: '32px 0' }}>
+            <div className="text-center text-muted py-32">
               Loading security data...
             </div>
           </Card>
@@ -294,7 +294,7 @@ export const SecurityPage: React.FC = () => {
               </div>
               <div className="p-16 border rounded-8 bg-surface">
                 <div className="fs-14 text-muted">Unresolved</div>
-                <div className="fw-700 text-warning" style={{ fontSize: '30px' }}>{unresolvedEvents}</div>
+                <div className="fw-700" style={{ fontSize: '30px', color: 'var(--color-warning)' }}>{unresolvedEvents}</div>
               </div>
               <div className="p-16 border rounded-8 bg-surface">
                 <div className="fs-14 text-muted">Critical</div>
@@ -339,7 +339,7 @@ export const SecurityPage: React.FC = () => {
         {security && (
           <Card data-testid="security-events">
             <div className="p-24">
-              <div style={{ marginBottom: '20px' }}>
+              <div className="mb-20">
                 <h3 className="fs-18 fw-600 m-0 mb-16">Recent Security Events</h3>
 
                 <div className="flex-col gap-12 p-16 bg-surface-2 rounded-8 border">
@@ -409,7 +409,7 @@ export const SecurityPage: React.FC = () => {
                         )}
                       </div>
                       <p className="fs-14 text-muted m-0">{event.description}</p>
-                      <p className="fs-12 text-muted mt-4" style={{ marginBottom: 0 }}>
+                      <p className="fs-12 text-muted mt-4 mb-0">
                         {new Date(event.timestamp).toLocaleString()}
                       </p>
                     </div>

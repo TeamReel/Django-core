@@ -89,7 +89,7 @@ export default function OrganisationListPage() {
                 boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}
             >
-              <h3 className="text-primary" style={{ marginTop: 0 }}>{org.name}</h3>
+              <h3 className="text-primary mt-0">{org.name}</h3>
               {org.description && (
                 <p className="text-muted fs-14">{org.description}</p>
               )}
@@ -101,50 +101,46 @@ export default function OrganisationListPage() {
                 backgroundColor: 'var(--app-bg-subtle, rgba(0,0,0,0.03))'
               }}>
                  <div title="Root Projects (Clubs)">
-                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Clubs</div>
+                   <div className="text-muted fs-11 uppercase tracking-wide">Clubs</div>
                    <div className="fs-18 fw-600 text-primary">{org.clubs_count ?? '-'}</div>
                  </div>
                  <div title="Sub Projects (Teams)">
-                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Teams</div>
+                   <div className="text-muted fs-11 uppercase tracking-wide">Teams</div>
                    <div className="fs-18 fw-600 text-primary">{org.teams_count ?? '-'}</div>
                  </div>
                  <div title="Active Player Memberships">
-                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Players</div>
+                   <div className="text-muted fs-11 uppercase tracking-wide">Players</div>
                    <div className="fs-18 fw-600 text-primary">{org.total_players_count ?? '-'}</div>
                  </div>
                  <div title="Total Matches">
-                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Matches</div>
+                   <div className="text-muted fs-11 uppercase tracking-wide">Matches</div>
                    <div className="fs-18 fw-600 text-primary">{org.matches_count ?? '-'}</div>
                  </div>
                  <div title="Seasons">
-                   <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Seasons</div>
+                   <div className="text-muted fs-11 uppercase tracking-wide">Seasons</div>
                    <div className="fs-18 fw-600 text-primary">{org.seasons_count ?? '-'}</div>
                  </div>
                  <div title="Org Admins">
-                    <div className="text-muted fs-11" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>Admins</div>
+                    <div className="text-muted fs-11 uppercase tracking-wide">Admins</div>
                     <div className="fs-18 fw-600 text-primary">{org.member_count ?? '-'}</div>
                  </div>
               </div>
 
-              <div className="gap-8 mt-16" style={{ display: 'flex' }}>
+              <div className="flex-row gap-8 mt-16">
                 <Link
                   to={`/organisations/${org.slug}`}
-                  className="py-8 px-16 rounded-4 fs-14"
+                  className="py-8 px-16 rounded-4 fs-14 text-white text-decoration-none"
                   style={{
                     backgroundColor: 'var(--app-primary)',
-                    color: 'white',
-                    textDecoration: 'none'
                   }}
                 >
                   View Details
                 </Link>
                 <Link
                   to={`/organisations/${org.slug}/projects`}
-                  className="py-8 px-16 rounded-4 fs-14"
+                  className="py-8 px-16 rounded-4 fs-14 text-white text-decoration-none"
                   style={{
                     backgroundColor: '#6c757d',
-                    color: 'white',
-                    textDecoration: 'none'
                   }}
                 >
                   View Projects

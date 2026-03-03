@@ -152,9 +152,8 @@ export default function CommandPalette({
     <div
       role="dialog"
       aria-modal="true"
+      className="fixed inset-0"
       style={{
-        position: 'fixed',
-        inset: 0,
         zIndex: 2000,
       }}
       onMouseDown={(e) => {
@@ -162,31 +161,27 @@ export default function CommandPalette({
       }}
     >
       <div
+        className="absolute inset-0"
         style={{
-          position: 'absolute',
-          inset: 0,
           background: 'rgba(0,0,0,0.35)',
           backdropFilter: 'blur(2px)',
         }}
       />
 
       <div
+        className="relative overflow-hidden"
         style={{
-          position: 'relative',
           maxWidth: 720,
           margin: '10vh auto 0',
           background: 'var(--app-surface)',
           border: '1px solid var(--app-border)',
           borderRadius: 14,
           boxShadow: 'var(--shadow-xl)',
-          overflow: 'hidden',
         }}
       >
         <div
+          className="p-12 flex-row border-bottom"
           style={{
-            padding: 12,
-            borderBottom: '1px solid var(--app-border)',
-            display: 'flex',
             alignItems: 'center',
             gap: 10,
           }}
@@ -200,13 +195,10 @@ export default function CommandPalette({
               setActiveIndex(0);
             }}
             placeholder="Search pages, recents, favorites…"
+            className="flex-1 border-none bg-transparent fs-14"
             style={{
-              flex: 1,
-              border: 'none',
               outline: 'none',
-              background: 'transparent',
               color: 'var(--app-text)',
-              fontSize: 14,
             }}
           />
           {active?.path && (
@@ -234,7 +226,7 @@ export default function CommandPalette({
           )}
         </div>
 
-        <div style={{ maxHeight: 420, overflowY: 'auto' }}>
+        <div className="overflow-y-auto" style={{ maxHeight: 420 }}>
           {filtered.length === 0 ? (
             <div style={{ padding: 14, color: 'var(--app-muted-text)' }}>No results.</div>
           ) : (
@@ -249,30 +241,25 @@ export default function CommandPalette({
                     onClose();
                     navigate(item.path);
                   }}
+                  className="w-full text-left cursor-pointer flex-between"
                   style={{
-                    width: '100%',
-                    textAlign: 'left',
                     border: 'none',
                     background: selected ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
                     color: 'var(--app-text)',
                     padding: '12px 14px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
                     gap: 12,
                     borderTop: '1px solid var(--app-border)',
                   }}
                 >
                   <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                     <AppIcon icon={iconFor(item)} size={16} />
-                    <span style={{ fontWeight: 650, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <span className="fs-14 truncate" style={{ fontWeight: 650 }}>
                       {item.label}
                     </span>
-                    <span style={{ fontSize: 12, color: 'var(--app-muted-text)' }}>{item.kind}</span>
+                    <span className="fs-12" style={{ color: 'var(--app-muted-text)' }}>{item.kind}</span>
                   </span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--app-muted-text)' }}>
-                    <span style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{item.path}</span>
+                    <span className="fs-12 whitespace-nowrap">{item.path}</span>
                     <AppIcon icon={ArrowRight} size={14} />
                   </span>
                 </button>
@@ -282,13 +269,10 @@ export default function CommandPalette({
         </div>
 
         <div
+          className="flex-between border-top fs-12"
           style={{
             padding: 10,
-            borderTop: '1px solid var(--app-border)',
             color: 'var(--app-muted-text)',
-            fontSize: 12,
-            display: 'flex',
-            justifyContent: 'space-between',
             gap: 10,
           }}
         >

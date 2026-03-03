@@ -253,11 +253,11 @@ export function AssetCompletionMatrix({
           </div>
           <div className="rounded-4 overflow-hidden" style={{ height: 8, background: '#e5e7eb' }}>
             <div
+              className="transition"
               style={{
                 height: '100%',
                 width: `${totalCells > 0 ? (filledCells / totalCells) * 100 : 0}%`,
                 background: filledCells === totalCells ? 'var(--color-green-400)' : 'var(--color-amber-400)',
-                transition: 'width 0.3s ease',
               }}
             />
           </div>

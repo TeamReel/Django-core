@@ -95,25 +95,17 @@ export default function OnboardingWizard({ forceShow = false, onComplete }: Onbo
       isOpen={isOpen}
       onClose={handleClose}
     >
-      <div style={{
-        padding: '24px',
-        display: 'flex',
-        flexDirection: 'column',
+      <div className="p-24 flex-col text-center" style={{
         alignItems: 'center',
-        textAlign: 'center',
         minHeight: '400px',
       }}>
         {/* Close button */}
         <button
           onClick={handleSkip}
+          className="absolute cursor-pointer p-8 bg-transparent border-none"
           style={{
-            position: 'absolute',
             top: '16px',
             right: '16px',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '8px',
             color: 'var(--color-text-muted)',
           }}
           aria-label="Sluiten"
@@ -122,40 +114,32 @@ export default function OnboardingWizard({ forceShow = false, onComplete }: Onbo
         </button>
 
         {/* Step indicator */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '24px',
-        }}>
+        <div className="flex-row gap-8 mb-24">
           {steps.map((_, index) => (
             <div
               key={index}
+              className="rounded-full transition"
               style={{
                 width: '8px',
                 height: '8px',
-                borderRadius: '50%',
                 backgroundColor: index === currentStep
                   ? 'var(--color-primary)'
                   : 'var(--color-border)',
-                transition: 'background-color 0.2s ease',
               }}
             />
           ))}
         </div>
 
         {/* Icon */}
-        <div style={{
-          marginBottom: '24px',
+        <div className="mb-24" style={{
           animation: 'pulse 2s infinite',
         }}>
           {step.icon}
         </div>
 
         {/* Title */}
-        <h2 style={{
+        <h2 className="fw-600 mb-16" style={{
           fontSize: '1.5rem',
-          fontWeight: 600,
-          marginBottom: '16px',
           color: 'var(--color-text)',
         }}>
           {step.title}
@@ -173,10 +157,7 @@ export default function OnboardingWizard({ forceShow = false, onComplete }: Onbo
         </p>
 
         {/* Navigation */}
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          width: '100%',
+        <div className="flex-row gap-12 w-full" style={{
           maxWidth: '300px',
           marginTop: 'auto',
         }}>
@@ -184,7 +165,7 @@ export default function OnboardingWizard({ forceShow = false, onComplete }: Onbo
             <Button
               variant="secondary"
               onClick={handlePrev}
-              style={{ flex: 1 }}
+              className="flex-1"
             >
               <ChevronLeft size={18} />
               Terug
@@ -205,13 +186,10 @@ export default function OnboardingWizard({ forceShow = false, onComplete }: Onbo
         {!isLastStep && (
           <button
             onClick={handleSkip}
+            className="mt-16 bg-transparent border-none cursor-pointer"
             style={{
-              marginTop: '16px',
-              background: 'none',
-              border: 'none',
               color: 'var(--color-text-muted)',
               fontSize: '0.875rem',
-              cursor: 'pointer',
               textDecoration: 'underline',
             }}
           >

@@ -83,21 +83,21 @@ export function TasksPage() {
           {error && <Alert variant="warning" className="mb-16">{error}</Alert>}
 
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}><Spinner /></div>
+            <div className="flex-center" style={{ padding: '48px' }}><Spinner /></div>
           ) : (
             <>
               <div className="grid gap-16 mb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Total</div><div className="fs-24 fw-700">{tasks.length}</div></Card>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Running</div><div className="fs-24 fw-700">{statusCounts.running || 0}</div></Card>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Pending</div><div className="fs-24 fw-700">{statusCounts.pending || 0}</div></Card>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Scheduled</div><div className="fs-24 fw-700">{statusCounts.scheduled || 0}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4 text-muted">Total</div><div className="fs-24 fw-700">{tasks.length}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4 text-muted">Running</div><div className="fs-24 fw-700">{statusCounts.running || 0}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4 text-muted">Pending</div><div className="fs-24 fw-700">{statusCounts.pending || 0}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4 text-muted">Scheduled</div><div className="fs-24 fw-700">{statusCounts.scheduled || 0}</div></Card>
               </div>
 
               <Card className="p-0 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
+                      <tr className="bg-surface-2 border-bottom">
                         <th className="p-12 text-left fs-12 fw-600">Task Name</th>
                         <th className="p-12 text-left fs-12 fw-600">Status</th>
                         <th className="p-12 text-left fs-12 fw-600">Worker</th>
@@ -106,13 +106,13 @@ export function TasksPage() {
                     </thead>
                     <tbody>
                       {tasks.length === 0 ? (
-                        <tr><td colSpan={4} className="p-24 text-center" style={{ color: 'var(--app-muted-text)' }}>No tasks currently running or queued</td></tr>
+                        <tr><td colSpan={4} className="p-24 text-center text-muted">No tasks currently running or queued</td></tr>
                       ) : tasks.map(task => (
-                        <tr key={task.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                        <tr key={task.id} className="border-bottom">
                           <td className="p-12">{task.name}</td>
                           <td className="p-12">{getStatusBadge(task.status)}</td>
-                          <td className="p-12 fs-14" style={{ color: 'var(--app-muted-text)' }}>{task.worker || '-'}</td>
-                          <td className="p-12 fs-14" style={{ color: 'var(--app-muted-text)' }}>{task.time_start ? new Date(task.time_start * 1000).toLocaleString() : '-'}</td>
+                          <td className="p-12 fs-14 text-muted">{task.worker || '-'}</td>
+                          <td className="p-12 fs-14 text-muted">{task.time_start ? new Date(task.time_start * 1000).toLocaleString() : '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -127,7 +127,7 @@ export function TasksPage() {
                     <div className="overflow-x-auto">
                       <table className="w-full" style={{ borderCollapse: 'collapse' }}>
                         <thead>
-                          <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
+                          <tr className="bg-surface-2 border-bottom">
                             <th className="p-12 text-left fs-12 fw-600">Task Name</th>
                             <th className="p-12 text-left fs-12 fw-600">Schedule</th>
                             <th className="p-12 text-left fs-12 fw-600">Status</th>
@@ -135,9 +135,9 @@ export function TasksPage() {
                         </thead>
                         <tbody>
                           {beatSchedule.map((task, index) => (
-                            <tr key={index} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                            <tr key={index} className="border-bottom">
                               <td className="p-12 fs-14" style={{ fontFamily: 'monospace' }}>{task.name}</td>
-                              <td className="p-12 fs-14" style={{ color: 'var(--app-muted-text)' }}>{task.schedule || 'N/A'}</td>
+                              <td className="p-12 fs-14 text-muted">{task.schedule || 'N/A'}</td>
                               <td className="p-12"><Badge variant="success">Enabled</Badge></td>
                             </tr>
                           ))}

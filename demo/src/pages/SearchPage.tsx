@@ -152,13 +152,8 @@ export default function SearchPage() {
                     in <strong>{getCategoryLabel(types[0])}</strong>
                     <button
                       onClick={handleClearFilter}
-                      className="fs-14 rounded-4 cursor-pointer py-4 px-12"
-                      style={{
-                        marginLeft: '12px',
-                        background: 'none',
-                        border: '1px solid var(--color-border)',
-                        color: 'var(--color-text-secondary)',
-                      }}
+                      className="fs-14 rounded-4 cursor-pointer py-4 px-12 bg-transparent border text-secondary"
+                      style={{ marginLeft: '12px' }}
                     >
                       Clear Filter
                     </button>
@@ -179,7 +174,7 @@ export default function SearchPage() {
         )}
 
         {error && (
-          <div className="p-16 rounded-8 mb-24" style={{ background: 'var(--color-error-bg)', color: 'var(--color-error-text)' }}>
+          <div className="p-16 rounded-8 mb-24 callout-error">
             {error}
           </div>
         )}
@@ -218,8 +213,8 @@ export default function SearchPage() {
                     {results.length >= 5 && (
                       <button
                         onClick={() => handleCategoryClick(category)}
-                        className="fw-500 cursor-pointer border-none"
-                        style={{ color: 'var(--color-primary)', background: 'none' }}
+                        className="fw-500 cursor-pointer border-none bg-transparent"
+                        style={{ color: 'var(--color-primary)' }}
                       >
                         View All
                       </button>
@@ -230,12 +225,7 @@ export default function SearchPage() {
                       <Link
                         key={result.id}
                         to={result.url}
-                        style={{
-                          background: 'var(--color-bg-surface)',
-                          border: '1px solid var(--color-border)',
-                          transition: 'transform 0.1s, box-shadow 0.1s',
-                        }}
-                        className="search-result-card block p-16 rounded-8 text-decoration-none"
+                        className="search-result-card block p-16 rounded-8 text-decoration-none bg-surface border transition"
                       >
                         <h3 className="fs-16 fw-600 mb-4 text-primary">
                           {result.title}
@@ -268,11 +258,7 @@ export default function SearchPage() {
                 <Link
                   key={result.id}
                   to={result.url}
-                  style={{
-                    background: 'var(--color-bg-surface)',
-                    border: '1px solid var(--color-border)',
-                  }}
-                  className="search-result-card block p-16 rounded-8 text-decoration-none"
+                  className="search-result-card block p-16 rounded-8 text-decoration-none bg-surface border"
                 >
                   <h3 className="fs-16 fw-600 mb-4 text-primary">
                     {result.title}
@@ -298,10 +284,8 @@ export default function SearchPage() {
               <button
                 disabled={!paginatedResults.previous}
                 onClick={() => handlePageChange(page - 1)}
-                className="py-8 px-16 rounded-4"
+                className="py-8 px-16 rounded-4 bg-surface border"
                 style={{
-                  background: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
                   cursor: paginatedResults.previous ? 'pointer' : 'not-allowed',
                   opacity: paginatedResults.previous ? 1 : 0.5,
                 }}
@@ -314,10 +298,8 @@ export default function SearchPage() {
               <button
                 disabled={!paginatedResults.next}
                 onClick={() => handlePageChange(page + 1)}
-                className="py-8 px-16 rounded-4"
+                className="py-8 px-16 rounded-4 bg-surface border"
                 style={{
-                  background: 'var(--color-bg-surface)',
-                  border: '1px solid var(--color-border)',
                   cursor: paginatedResults.next ? 'pointer' : 'not-allowed',
                   opacity: paginatedResults.next ? 1 : 0.5,
                 }}

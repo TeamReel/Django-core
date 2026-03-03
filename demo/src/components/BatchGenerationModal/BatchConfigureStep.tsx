@@ -168,7 +168,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
               {member.profilePhotoUrl ? (
                 <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" style={avatarStyle} />
               ) : (
-                <div style={{ ...avatarStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>
+                <div className="flex-center" style={{ ...avatarStyle, fontSize: '16px' }}>
                   👤
                 </div>
               )}
@@ -184,7 +184,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                   <div className="fs-11" style={{ color: 'var(--color-blue-500)' }}>Aangepaste instellingen</div>
                 )}
               </div>
-              <span className="fs-12 text-muted" style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+              <span className="fs-12 text-muted transition" style={{ transform: isExpanded ? 'rotate(90deg)' : 'none' }}>
                 ▶
               </span>
             </div>

@@ -46,12 +46,10 @@ export function LineupSquadStep({
   return (
     <div className="flex-col gap-16">
       {/* Field */}
-      <div style={{
-        position: 'relative', width: '100%', aspectRatio: '3 / 4',
-        maxHeight: 'calc(100vh - 340px)', margin: '0 auto',
+      <div className="relative w-full overflow-hidden rounded-12 mx-auto border" style={{
+        aspectRatio: '3 / 4',
+        maxHeight: 'calc(100vh - 340px)',
         background: 'linear-gradient(to bottom, #16a34a, #15803d)',
-        borderRadius: 12, overflow: 'hidden',
-        border: '1px solid var(--app-border, #e5e7eb)',
       }}>
         {/* Field markings */}
         <div style={{ position: 'absolute', left: 16, right: 16, top: '15%', height: 1, background: 'rgba(255,255,255,0.2)' }} />
