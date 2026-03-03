@@ -1,24 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
-import {
-  Button,
-  Badge,
-  Alert,
-  Card,
-} from '@django-core/design-system';
-import { Table } from '../../shims/design-system';
-import { PageHeader, PageContent, BreadcrumbContextSwitcher, useBreadcrumbContextSwitcher } from '@django-core/page-templates';
-import { useContextSwitcher } from '@django-core/context-switcher';
-import { useAuth } from '@django-core/auth-ui';
-import { useQueryParams } from '../../hooks/useQueryParams';
-import { Project, ListResponse } from '../../types';
-import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/permissions';
+import React from 'react';
+import { Button, Alert, Card } from '@django-core/design-system';
+import { PageHeader, PageContent } from '@django-core/page-templates';
+import LoadingState from '../../components/LoadingState';
+import WorkFilterBar from '../work/WorkFilterBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import LoadingState from '../../components/LoadingState';
-import { fetchAllPages } from '../../utils/fetchAllPages';
-import WorkFilterBar, { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { useProjectsPageData } from './useProjectsPageData';
+import { ProjectsTable, filterProjects } from './ProjectsTable';
 
 /**
  * T008 - Projects List Page
@@ -29,503 +17,26 @@ import { getApiBaseUrl } from '../../utils/apiBase';
  * - Shows project metadata and member counts
  */
 export const ProjectsPage: React.FC = () => {
-  const { orgId } = useParams<{ orgId: string }>();
-  const navigate = useNavigate();
-  const { context, organisations, switchContext } = useContextSwitcher();
-  const { user } = useAuth();
-
-  // Use orgId from URL if available.
-  // Do NOT fallback to context for the top-level /projects route.
-  const resolvedOrg = orgId
-    ? organisations.find(o => o.slug === orgId || o.id === orgId)
-    : undefined;
-
-  const currentOrgSlug = resolvedOrg?.slug; // Use slug for API calls (no fallback to orgId)
-  const currentOrgId = resolvedOrg?.id; // Keep ID for headers if needed
-
-  const [orgName, setOrgName] = useState<string>('');
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Filters (aligned with UsersPage / Work pages)
-  const [statusFilter, setStatusFilter] = useState<string>('active'); // Default to 'active'
-  const [selectedOrgId, setSelectedOrgId] = useState<string>(''); // '' = All Organisations
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [selectedTeamId, setSelectedTeamId] = useState<string>('');
-
-  const [filterOrganisationOptions, setFilterOrganisationOptions] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
-  const [teams, setTeams] = useState<ProjectOption[]>([]);
-
-  const [orgNavigationIndex, setOrgNavigationIndex] = useState<Array<{ id: string; slug?: string }>>([]);
-
-  // Edit modal state
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-
-  // Detail modal state
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [detailProject, setDetailProject] = useState<Project | null>(null);
-
-  // Org selection modal state (for creating project without org context)
-  const [isOrgSelectionModalOpen, setIsOrgSelectionModalOpen] = useState(false);
-
-  // Success notification state
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
+  const d = useProjectsPageData();
   const {
-    organisationOptions,
-    handleOrganisationSwitch,
-  } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
-    projects: [],
-    users: [],
-    context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
-    basePath: ''
-  });
+    orgId, navigate, organisations, resolvedOrg, currentOrgSlug, currentOrgId,
+    displayOrgName, context, loading, error, successMessage,
+    statusFilter, setStatusFilter, selectedOrgId, setSelectedOrgId,
+    selectedClubId, setSelectedClubId, selectedTeamId, setSelectedTeamId,
+    filterOrganisationOptions, clubs, teams, orgNavigationIndex,
+    isSuperAdmin, userCanCreateProject,
+    isEditModalOpen, setIsEditModalOpen, selectedProject,
+    isDetailModalOpen, setIsDetailModalOpen, detailProject,
+    isOrgSelectionModalOpen, setIsOrgSelectionModalOpen,
+    handleSaveProject, breadcrumbItems, projects,
+  } = d;
 
-  // Fix: Only show org name in title if we are actually in an org context
-  const displayOrgName = currentOrgSlug ? orgName : '';
-
-  // For API calls, ONLY use organisation from URL params.
-  // On /projects (no orgId param), apiOrgSlug MUST be undefined for global fetch.
-  const apiOrgSlug = orgId ? currentOrgSlug : undefined;
-
-  // Permission checks using centralized helper
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
-  const permissionContext = {
-    currentOrganisation: resolvedOrg,
-    isSuperAdmin,
-  };
-  const userCanCreateProject = canCreateProject(permissionContext);
-  const userCanEditProject = canEditProject(permissionContext);
-  const userCanDeleteProject = canDeleteProject(permissionContext);
-
-  // Initialize org filter:
-  // - Org-scoped route: lock selection to resolved org
-  // - Global route: default to context org for non-superadmins
-  useEffect(() => {
-    if (resolvedOrg?.id) {
-      setSelectedOrgId(String(resolvedOrg.id));
-      return;
-    }
-
-    if (!isSuperAdmin && context.organisation?.id) {
-      setSelectedOrgId(String(context.organisation.id));
-    }
-  }, [resolvedOrg?.id, context.organisation?.id, isSuperAdmin]);
-
-  // Organisation options for filter dropdown
-  useEffect(() => {
-    if (!isSuperAdmin) {
-      const opts = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
-      setFilterOrganisationOptions(opts);
-      setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
-      return;
-    }
-
-    const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
-      try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
-        if (!res.ok) {
-          // Fallback to context switcher orgs if the list endpoint is restricted
-          const fallback = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
-          setFilterOrganisationOptions(fallback);
-          setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
-          return;
-        }
-        const data = await res.json();
-        const orgs = data.data?.results || data.results || [];
-        setFilterOrganisationOptions(orgs.map((o: any) => ({ id: String(o.id), name: o.name })));
-        setOrgNavigationIndex(orgs.map((o: any) => ({ id: String(o.id), slug: o.slug })));
-      } catch {
-        const fallback = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
-        setFilterOrganisationOptions(fallback);
-        setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
-      }
-    };
-
-    load();
-  }, [isSuperAdmin, organisations]);
-
-  // Club/Team options for filter dropdowns
-  useEffect(() => {
-    const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
-      try {
-        const [allClubs, allTeams] = await Promise.all([
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
-            { credentials: 'include' },
-          ),
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
-            { credentials: 'include' },
-          ),
-        ]);
-        setClubs(allClubs);
-        setTeams(allTeams);
-      } catch {
-        // Non-blocking: filters will still work for status/org without club/team options.
-        setClubs([]);
-        setTeams([]);
-      }
-    };
-
-    load();
-  }, []);
-
-  // Query params for sort and filter
-  const sort = searchParams.get('sort') || 'name';
-  const order = searchParams.get('order') || 'asc';
-  const search = searchParams.get('search') || '';
-
-  // Extract fetchProjects so it can be reused
-  const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const apiBaseUrl = getApiBaseUrl();
-
-      // Fetch org name if we have orgId from URL
-      if (resolvedOrg) {
-        setOrgName(resolvedOrg.name);
-      } else if (orgId) {
-        // Fallback: try to fetch org details directly (if backend supports slug lookup)
-        const orgResponse = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-        if (orgResponse.ok) {
-          const orgData = await orgResponse.json();
-          setOrgName(orgData.name);
-        }
-      } else {
-        setOrgName(context.organisation?.name || '');
-      }
-
-      const params = new URLSearchParams();
-      params.append('sort', sort);
-      params.append('order', order);
-      if (search) {
-        params.append('search', search);
-      }
-
-      // Determine endpoint: Global vs Org-scoped
-      const isGlobalRoute = !apiOrgSlug;
-      const endpoint = apiOrgSlug
-          ? `${apiBaseUrl}/api/v1/organisations/${apiOrgSlug}/projects/?${params.toString()}`
-          : `${apiBaseUrl}/api/v1/projects/?${params.toString()}`;
-
-      console.log('[ProjectsPage] Fetch:', {
-        route: isGlobalRoute ? 'GLOBAL' : 'ORG-SCOPED',
-        orgId,
-        apiOrgSlug,
-        endpoint
-      });
-
-      const response = await fetch(endpoint, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data: any = await response.json();
-
-      // Debug: log full response
-      console.log('[ProjectsPage] Full API response:', JSON.stringify(data, null, 2));
-      console.log('[ProjectsPage] Response keys:', Object.keys(data));
-
-      // Handle B13 envelope or direct DRF response
-      const results = data.data?.results || data.results || [];
-
-      console.log('[ProjectsPage] Has results?', results.length > 0);
-      console.log('[ProjectsPage] Results value:', results);
-
-      // Enforce array invariant
-      if (!Array.isArray(results)) {
-        console.warn('[ProjectsPage] Results is not an array, using empty array');
-        setProjects([]);
-      } else {
-        console.log(`[ProjectsPage] Loaded ${results.length} projects`);
-        setProjects(results);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch projects');
-      console.error('Projects fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch projects - ONLY depend on values that should trigger a refetch
-  // orgId is from URL params and is the source of truth for org-scoped routes
-  useEffect(() => {
-    fetchProjects();
-  }, [sort, order, search, orgId]);
-
-  // Guard: If we are in an org context (URL param) but context switcher hasn't loaded orgs yet, wait.
-  // This prevents "undefined" org context errors during navigation.
+  // Guard: wait for context switcher to load org
   if (orgId && context.isLoading) {
-    return (
-        <LoadingState message="Loading organisation context..." />
-    );
+    return <LoadingState message="Loading organisation context..." />;
   }
 
-  const handleSaveProject = async (projectData: Partial<Project>) => {
-    if (!selectedProject) return;
-
-    try {
-      const apiBaseUrl = getApiBaseUrl();
-
-      // Get CSRF token
-      const getCookie = (name: string) => {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      };
-      const csrfToken = getCookie('csrftoken');
-
-      // Find project's organisation slug - check multiple possible locations
-      const project = projects.find(p => p.id === selectedProject.id);
-
-      // Try multiple ways to get the org slug
-      let projectOrgSlug: string | undefined;
-
-      // 1. From project.organisation.slug (nested object)
-      if ((project as any)?.organisation?.slug) {
-        projectOrgSlug = (project as any).organisation.slug;
-      }
-      // 2. From organisations array using organisation_id
-      else if (project?.organisation_id) {
-        projectOrgSlug = organisations.find(o => o.id === project.organisation_id)?.slug;
-      }
-      // 3. From selectedProject if it has the nested organisation
-      else if ((selectedProject as any)?.organisation?.slug) {
-        projectOrgSlug = (selectedProject as any).organisation.slug;
-      }
-      // 4. Use current org from URL/context
-      else if (currentOrgSlug) {
-        projectOrgSlug = currentOrgSlug;
-      }
-
-      if (!projectOrgSlug) {
-        console.error('Project data:', { project, selectedProject, organisations });
-        throw new Error('Could not determine project organisation');
-      }
-
-      // Get the project slug (backend expects slug, not id)
-      const projectSlug = selectedProject.slug;
-      if (!projectSlug) {
-        throw new Error('Could not determine project slug');
-      }
-
-      console.log('Updating project:', { orgSlug: projectOrgSlug, projectSlug, projectId: selectedProject.id });
-
-      // Try org-nested endpoint first (expects slug)
-      let response = await fetch(
-        `${apiBaseUrl}/api/v1/organisations/${projectOrgSlug}/projects/${projectSlug}/`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken || '',
-          },
-          credentials: 'include',
-          body: JSON.stringify(projectData),
-        }
-      );
-
-      // If nested route fails, try direct projects endpoint (also expects slug)
-      if (!response.ok && (response.status === 404 || response.status === 403)) {
-        console.log(`Nested route failed (${response.status}), trying direct endpoint...`);
-        response = await fetch(
-          `${apiBaseUrl}/api/v1/projects/projects/${projectSlug}/`,
-          {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken || '',
-            },
-            credentials: 'include',
-            body: JSON.stringify(projectData),
-          }
-        );
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to update project (${response.status})`);
-      }
-
-      const updatedProject = await response.json();
-
-      // Close modal first
-      setIsEditModalOpen(false);
-      setSelectedProject(null);
-
-      // Show success message
-      setSuccessMessage('Project updated successfully');
-      setTimeout(() => setSuccessMessage(null), 3000);
-
-      // Refresh projects list from API to get latest data
-      await fetchProjects();
-    } catch (err) {
-      console.error('Update project error:', err);
-      alert(err instanceof Error ? err.message : 'Failed to update project');
-    }
-  };
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newSearch = e.target.value;
-    if (newSearch) {
-      searchParams.set('search', newSearch);
-    } else {
-      searchParams.delete('search');
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handleSort = (column: string) => {
-    if (sort === column) {
-      searchParams.set('order', order === 'asc' ? 'desc' : 'asc');
-    } else {
-      searchParams.set('sort', column);
-      searchParams.set('order', 'asc');
-    }
-    setSearchParams(searchParams);
-  };
-
-  const handleDelete = async (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) return;
-    try {
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      // Find project to get its slug and org
-      const projectToDelete = projects.find(p => p.id === projectId);
-      const projectSlug = projectToDelete?.slug || projectId;
-
-      // Get organisation slug - try multiple sources
-      let orgSlug: string | undefined;
-      if ((projectToDelete as any)?.organisation?.slug) {
-        orgSlug = (projectToDelete as any).organisation.slug;
-      } else if (resolvedOrg) {
-        orgSlug = resolvedOrg.slug;
-      }
-
-      if (!orgSlug) {
-        console.error('Cannot delete: missing organisation context', projectToDelete);
-        alert('Failed to delete project: missing organisation context');
-        return;
-      }
-
-      const apiBaseUrl = getApiBaseUrl();
-      // Always use nested route for delete (required for permissions)
-      const endpoint = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/${projectSlug}/`;
-
-      const response = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-      });
-      if (response.ok) {
-        setProjects(projects.filter(p => p.id !== projectId));
-      } else {
-        const errorText = await response.text();
-        console.error('Delete failed:', response.status, errorText);
-        alert('Failed to delete project');
-      }
-    } catch (err) {
-      console.error('Delete error:', err);
-      alert('Error deleting project');
-    }
-  };
-
-  // Always show breadcrumbs with current org info
-  const breadcrumbItems = currentOrgId ? [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Federations', onClick: () => navigate('/federations') },
-    { label: orgName || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`) },
-    { label: 'Clubs & Teams', current: true },
-  ] : [
-    { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-    { label: 'Clubs & Teams', current: true },
-  ];
-
-  console.log('ProjectsPage render:', { orgId, currentOrgId, orgName, contextOrgId: context.organisation?.id, breadcrumbItems });
-
-  // Define columns based on context
-  const columns = [
-    {
-      key: 'name',
-      label: 'Project Name',
-      sortable: true,
-      sorted: sort === 'name' ? order : undefined,
-      onSort: () => handleSort('name'),
-    },
-    // Add Organisation column if in global view
-    ...(!currentOrgSlug ? [{
-      key: 'organisation',
-      label: 'Organisation',
-    }] : []),
-    {
-      key: 'description',
-      label: 'Description',
-    },
-    {
-      key: 'member_count',
-      label: 'Team Members',
-      sortable: true,
-      sorted: sort === 'member_count' ? order : undefined,
-      onSort: () => handleSort('member_count'),
-    },
-    {
-      key: 'created_at',
-      label: 'Created',
-      sortable: true,
-      sorted: sort === 'created_at' ? order : undefined,
-      onSort: () => handleSort('created_at'),
-    },
-    {
-      key: 'status',
-      label: 'Status',
-    },
-    {
-      key: 'actions',
-      label: 'Actions',
-    },
-  ];
+  const filtered = filterProjects(d);
 
   return (
     <>
@@ -535,15 +46,11 @@ export const ProjectsPage: React.FC = () => {
         actions={
           <div className="flex-row gap-10 flex-wrap">
             {currentOrgSlug && (
-              <Button
-                variant="secondary"
-                onClick={() => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`)}
-              >
+              <Button variant="secondary" onClick={() => navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}`)}>
                 Back to Organisation
               </Button>
             )}
 
-            {/* Filters (same UX as Users/Work) */}
             <WorkFilterBar
               showOrganisation
               organisations={filterOrganisationOptions}
@@ -556,29 +63,16 @@ export const ProjectsPage: React.FC = () => {
                 setSelectedOrgId(value);
                 setSelectedClubId('');
                 setSelectedTeamId('');
-
-                // If we're on an org-scoped route, switch route when org changes.
                 if (currentOrgSlug) {
-                  if (!value) {
-                    navigate('/projects');
-                    return;
-                  }
-
-                  const match = orgNavigationIndex.find((o) => String(o.id) === String(value));
-                  if (match?.slug) {
-                    navigate(`/organisations/${match.slug}/projects`);
-                  }
+                  if (!value) { navigate('/projects'); return; }
+                  const match = orgNavigationIndex.find(o => String(o.id) === String(value));
+                  if (match?.slug) navigate(`/organisations/${match.slug}/projects`);
                 }
               }}
               selectedClubId={selectedClubId}
-              onClubChange={(value) => {
-                setSelectedClubId(value);
-                setSelectedTeamId('');
-              }}
+              onClubChange={(v) => { setSelectedClubId(v); setSelectedTeamId(''); }}
               selectedTeamId={selectedTeamId}
-              onTeamChange={(value) => {
-                setSelectedTeamId(value);
-              }}
+              onTeamChange={setSelectedTeamId}
               onClear={() => {
                 setStatusFilter('active');
                 setSelectedClubId('');
@@ -587,335 +81,77 @@ export const ProjectsPage: React.FC = () => {
               }}
             />
 
-            {/* Create Project button - show on global view or org-scoped with permission */}
             {(!currentOrgSlug || (currentOrgSlug && userCanCreateProject)) && (
-              <Button
-                variant="primary"
-                size="md"
+              <Button variant="primary" size="md"
                 onClick={() => {
-                  if (currentOrgSlug) {
-                    navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}/projects/create`);
-                  } else {
-                    // No org context: show org selection modal
-                    setIsOrgSelectionModalOpen(true);
-                  }
-                }}
-              >
+                  if (currentOrgSlug) navigate(`/organisations/${resolvedOrg?.slug || currentOrgId}/projects/create`);
+                  else setIsOrgSelectionModalOpen(true);
+                }}>
                 Create Project
               </Button>
             )}
           </div>
         }
       />
+
       <PageContent>
-        {/* Success message */}
         {successMessage && (
-          <Alert variant="success" className="mb-4" data-testid="project-success-alert">
-            {successMessage}
-          </Alert>
+          <Alert variant="success" className="mb-4" data-testid="project-success-alert">{successMessage}</Alert>
         )}
-
-        {/* Error state */}
         {error && (
-          <Alert variant="error" className="mb-4" data-testid="project-error-alert">
-            {error}
-          </Alert>
+          <Alert variant="error" className="mb-4" data-testid="project-error-alert">{error}</Alert>
         )}
 
-        {/* Empty state */}
         {!loading && projects.length === 0 && (
           <Alert variant="info" data-testid="project-empty-state">
             No projects found. {currentOrgSlug ? 'Create a new project to get started.' : 'No accessible projects.'}
           </Alert>
         )}
 
-        {/* Projects table */}
-        {!loading && projects.length > 0 && (() => {
-          // Defensive guard: ensure projects is always an array before .map()
-          const safeProjects = Array.isArray(projects) ? projects : [];
-          if (safeProjects.length === 0) return null;
-          // Apply client-side filters (like UsersPage)
-          let filteredProjects = safeProjects;
-
-          // Status filter
-          if (statusFilter === 'active') {
-            filteredProjects = filteredProjects.filter(p => p.is_active !== false);
-          } else if (statusFilter === 'inactive') {
-            filteredProjects = filteredProjects.filter(p => p.is_active === false);
-          }
-
-          // Organisation filter
-          if (!currentOrgSlug && selectedOrgId) {
-            filteredProjects = filteredProjects.filter((p: any) => {
-              const projOrgId = p.organisation?.id || p.organisation_id;
-              return String(projOrgId) === String(selectedOrgId);
-            });
-          }
-
-          // Club/team filters
-          if (selectedTeamId) {
-            filteredProjects = filteredProjects.filter((p: any) => String(p.id) === String(selectedTeamId));
-          } else if (selectedClubId) {
-            const selectedClub = clubs.find((c) => String(c.id) === String(selectedClubId));
-            const selectedClubName = selectedClub?.name;
-
-            filteredProjects = filteredProjects.filter((p: any) => {
-              const projectId = String(p.id);
-              if (projectId === String(selectedClubId)) return true;
-
-              const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
-              const parentName = p.parent_name ?? p.parent_project_name ?? null;
-
-              const matchesById = parentId !== null && String(parentId) === String(selectedClubId);
-              const matchesByName = selectedClubName && parentName && String(parentName) === String(selectedClubName);
-              return matchesById || matchesByName;
-            });
-          }
-
-          if (filteredProjects.length === 0) {
-            return (
-              <Alert variant="info" data-testid="project-filtered-empty">
-                No projects match the current filters.
-              </Alert>
-            );
-          }
-
-          return (
-          <Card>
-            <div className="overflow-x-auto">
-              <Table>
-            <thead>
-              <tr>
-                <th onClick={() => handleSort('name')} className="cursor-pointer">
-                  Project Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
-                </th>
-                {!currentOrgSlug && <th>Organisation</th>}
-                <th>Description</th>
-                <th onClick={() => handleSort('member_count')} className="cursor-pointer">
-                  Team Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
-                </th>
-                <th onClick={() => handleSort('created_at')} className="cursor-pointer">
-                  Created {sort === 'created_at' && (order === 'asc' ? '↑' : '↓')}
-                </th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjects.map((project) => {
-                const projectOrgSlug = (project as any).organisation?.slug || resolvedOrg?.slug || currentOrgId;
-
-                // For global view: check permissions per-project based on project's org
-                const projectOrg = (project as any).organisation;
-                const projectPermissionContext = {
-                  currentOrganisation: projectOrg ? {
-                    ...projectOrg,
-                    user_role: projectOrg.user_role
-                  } : resolvedOrg,
-                  isSuperAdmin,
-                };
-                const canEdit = canEditProject(projectPermissionContext);
-                const canDelete = canDeleteProject(projectPermissionContext);
-
-                return (
-                  <tr key={project.id}>
-                    <td>
-                      <a
-                        href={`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`}
-                        className="text-blue-600 hover:underline fs-sm"
-                        data-testid={`project-name-${project.id}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          navigate(`/organisations/${projectOrgSlug}/projects/${project.slug || project.id}`);
-                        }}
-                      >
-                        {project.name}
-                      </a>
-                    </td>
-                    {!currentOrgSlug && (
-                      <td className="fs-sm">
-                        {(project as any).organisation?.name || '-'}
-                      </td>
-                    )}
-                    <td className="fs-sm" data-testid={`project-desc-${project.id}`}>
-                      {project.description || '-'}
-                    </td>
-                    <td>
-                      <Badge variant="default" data-testid={`project-members-${project.id}`}>
-                        {project.member_count || 0}
-                      </Badge>
-                    </td>
-                    <td className="fs-sm" data-testid={`project-created-${project.id}`}>
-                      {new Date(project.created_at || '').toLocaleDateString()}
-                    </td>
-                    <td>
-                      <Badge
-                        variant={project.is_active ? 'success' : 'warning'}
-                        data-testid={`project-status-${project.id}`}
-                      >
-                        {project.is_active ? 'Active' : 'Inactive'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div className="flex-row gap-8">
-                        <button
-                          onClick={() => {
-                            setDetailProject(project);
-                            setIsDetailModalOpen(true);
-                          }}
-                          className="py-4 px-12 rounded-4 cursor-pointer fs-12 fw-500"
-                          style={{
-                              border: '1px solid var(--app-border)',
-                              backgroundColor: 'var(--app-surface-2)',
-                              color: 'var(--app-text)',
-                          }}
-                        >
-                          View
-                        </button>
-                        {canEdit && (
-                          <button
-                            onClick={() => {
-                              setSelectedProject(project);
-                              setIsEditModalOpen(true);
-                            }}
-                            className="p-4 px-8 rounded-4 cursor-pointer fs-12"
-                            style={{
-                                border: '1px solid var(--app-warning)',
-                                backgroundColor: 'var(--app-surface)',
-                                color: 'var(--app-warning)',
-                            }}
-                          >
-                            Edit
-                          </button>
-                        )}
-                        {canDelete && (
-                          <button
-                            onClick={() => handleDelete(project.id)}
-                            className="p-4 px-8 rounded-4 cursor-pointer fs-12"
-                            style={{
-                                border: '1px solid #dc3545',
-                                backgroundColor: 'var(--app-surface)',
-                                color: '#dc3545',
-                            }}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-            </div>
-          </Card>
-          );
-        })()}
-
-        {/* Loading state */}
-        {loading && (
-          <div className="text-center py-8 text-gray-500">
-            Loading projects...
-          </div>
+        {!loading && projects.length > 0 && filtered.length === 0 && (
+          <Alert variant="info" data-testid="project-filtered-empty">No projects match the current filters.</Alert>
         )}
+
+        {!loading && filtered.length > 0 && (
+          <Card><ProjectsTable d={d} /></Card>
+        )}
+
+        {loading && <div className="text-center py-8 text-gray-500">Loading projects...</div>}
       </PageContent>
 
       {/* Detail Modal */}
-      <ProjectDetailModal
-        opened={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        project={detailProject}
-      />
+      <ProjectDetailModal opened={isDetailModalOpen} onClose={() => setIsDetailModalOpen(false)} project={detailProject} />
 
       {/* Org Selection Modal */}
       {isOrgSelectionModalOpen && (
         <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-          onClick={() => setIsOrgSelectionModalOpen(false)}
-        >
-          <div
-            style={{
-              backgroundColor: 'var(--app-surface)',
-              borderRadius: '8px',
-              padding: '24px',
-              minWidth: '400px',
-              maxWidth: '500px',
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+          onClick={() => setIsOrgSelectionModalOpen(false)}>
+          <div style={{ backgroundColor: 'var(--app-surface)', borderRadius: 8, padding: 24, minWidth: 400, maxWidth: 500, boxShadow: '0 4px 6px rgba(0,0,0,.1)' }}
+            onClick={e => e.stopPropagation()}>
             <h2 className="mb-16" style={{ marginTop: 0, color: 'var(--app-text)' }}>Select Organisation</h2>
-            <p className="text-muted mb-24">
-              Choose an organisation to create the project in:
-            </p>
+            <p className="text-muted mb-24">Choose an organisation to create the project in:</p>
             <div className="flex-col gap-8">
-              {organisations.map((org) => (
-                <button
-                  key={org.id}
-                  onClick={() => {
-                    setIsOrgSelectionModalOpen(false);
-                    navigate(`/organisations/${org.slug}/projects/create`);
-                  }}
-                  style={{
-                    padding: '12px 16px',
-                    border: '1px solid var(--app-border)',
-                    borderRadius: '4px',
-                    backgroundColor: 'var(--app-surface-2)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.2s',
-                    color: 'var(--app-text)',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--app-table-row-hover-bg)';
-                    e.currentTarget.style.borderColor = '#2196f3';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'var(--app-surface-2)';
-                    e.currentTarget.style.borderColor = 'var(--app-border)';
-                  }}
-                >
+              {organisations.map(org => (
+                <button key={org.id}
+                  onClick={() => { setIsOrgSelectionModalOpen(false); navigate(`/organisations/${org.slug}/projects/create`); }}
+                  style={{ padding: '12px 16px', border: '1px solid var(--app-border)', borderRadius: 4, backgroundColor: 'var(--app-surface-2)', cursor: 'pointer', textAlign: 'left', transition: 'all .2s', color: 'var(--app-text)' }}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--app-table-row-hover-bg)'; e.currentTarget.style.borderColor = '#2196f3'; }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2)'; e.currentTarget.style.borderColor = 'var(--app-border)'; }}>
                   <div className="fw-500">{org.name}</div>
-                  {org.description && (
-                    <div className="fs-12 mt-4" style={{ color: '#666' }}>
-                      {org.description}
-                    </div>
-                  )}
+                  {org.description && <div className="fs-12 mt-4" style={{ color: '#666' }}>{org.description}</div>}
                 </button>
               ))}
             </div>
             <div className="mt-16 text-right">
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => setIsOrgSelectionModalOpen(false)}
-              >
-                Cancel
-              </Button>
+              <Button variant="outline" size="md" onClick={() => setIsOrgSelectionModalOpen(false)}>Cancel</Button>
             </div>
           </div>
         </div>
       )}
 
       {/* Edit Modal */}
-      <ProjectEditModal
-        opened={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        project={selectedProject}
-        onSave={handleSaveProject}
-      />
+      <ProjectEditModal opened={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} project={selectedProject} onSave={handleSaveProject} />
     </>
   );
 };
