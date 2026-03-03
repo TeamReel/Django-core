@@ -79,14 +79,13 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
     fetchMatches();
   }, [projectId, apiBaseUrl]);
 
-  if (isLoading) return <div className="p-20" style={{ color: '#666' }}>Loading matches...</div>;
-  if (error) return <div className="p-20" style={{ color: '#d32f2f' }}>{error}</div>;
+  if (isLoading) return <div className="p-20 text-muted">Loading matches...</div>;
+  if (error) return <div className="p-20 text-error">{error}</div>;
 
   if (matches.length === 0) {
     return (
-      <div className="text-center rounded-8" style={{
+      <div className="text-center rounded-8 text-muted" style={{
         padding: '40px',
-        color: '#666',
         backgroundColor: 'rgba(0,0,0,0.02)',
         border: '1px dashed #ccc'
       }}>
@@ -127,7 +126,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                   <div className="fw-500">
                     {date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
                   </div>
-                  <div className="fs-11" style={{ color: '#888' }}>
+                  <div className="fs-11 text-muted">
                     {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </td>
@@ -137,7 +136,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                 <td>
                   <div className="flex-col">
                      <span className="fw-600">{match.title}</span>
-                     <span className="fs-11" style={{ color: '#666' }}>
+                     <span className="fs-11 text-muted">
                         vs {opponentName} • {match.metadata.venue || 'Home'}
                      </span>
                   </div>

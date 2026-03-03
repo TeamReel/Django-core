@@ -224,10 +224,10 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
         {/* Header */}
         <div className={s.thenNowHeader}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>
+            <h3 className="m-0 fs-16 fw-700">
               Compilatie — {VIDEO_TYPE_LABELS[videoType]}
             </h3>
-            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '2px' }}>
+            <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>
               {STEP_SUBTITLES[step]}
             </div>
           </div>
@@ -260,7 +260,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
 
             {/* Selected members — ordered list */}
             {selectedOrdered.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
+              <div className="mb-16">
                 <div className={s.sectionLabel}>Volgorde in video</div>
                 <div className={s.orderedList}>
                   {selectedOrdered.map((m, idx) => (
@@ -272,7 +272,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                       }}
                     >
                       <span className={s.orderNumber}>{idx + 1}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="flex-1-min">
                         <div className={s.memberName}>{m.name}</div>
                         <div className={s.memberMeta}>
                           {m.shirtNumber && <span>#{m.shirtNumber}</span>}
@@ -313,7 +313,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
             {/* Unselected members */}
             {unselected.length > 0 && (
               <div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                <div className="flex-row gap-8" style={{ marginBottom: '6px' }}>
                   <div className={s.unselectedHeader}>Beschikbare spelers</div>
                   <input
                     type="text"
@@ -323,7 +323,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                     style={{ flex: 1, padding: '4px 8px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '12px', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
                   />
                 </div>
-                <div style={{ border: '1px solid var(--app-border)', borderRadius: '8px', overflow: 'hidden', maxHeight: '160px', overflowY: 'auto' }}>
+                <div className="border rounded-8 overflow-hidden" style={{ maxHeight: '160px', overflowY: 'auto' }}>
                   {filteredUnselected.length === 0 ? (
                     <div className={s.emptyState}>Geen spelers gevonden</div>
                   ) : filteredUnselected.map((m) => (
@@ -335,7 +335,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                       onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                     >
                       <span className={s.addIcon}>+</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="flex-1-min">
                         <div className={s.memberName}>{m.name}</div>
                         <div className={s.memberMeta}>
                           {m.shirtNumber && <span>#{m.shirtNumber}</span>}
@@ -350,7 +350,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
 
             {/* Background selector */}
             {backgrounds.length > 0 && videoType !== 'duo_portret_cover' && videoType !== 'sidebyside_cover' && (
-              <div style={{ marginTop: '16px' }}>
+              <div className="mt-16">
                 <div className={s.sectionLabel}>Achtergrond / Locatie</div>
                 <div className={s.bgSelectorGrid}>
                   <button

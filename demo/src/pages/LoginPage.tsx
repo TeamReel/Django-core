@@ -22,19 +22,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
+    <div className="mx-auto p-20" style={{ maxWidth: '400px', marginTop: '100px' }}>
       <h1>Django Core-App Demo</h1>
       <p>Log in to access the demo shell</p>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '30px' }}>
+        <form onSubmit={handleSubmit} className="flex-col" style={{ gap: '15px', marginTop: '30px' }}>
         {error && (
-          <div style={{ padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc', borderRadius: '4px', color: '#c00' }}>
+          <div className="rounded-4" style={{ padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc', color: '#c00' }}>
             {error.formErrors[0] || 'Login failed. Please try again.'}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+          <label htmlFor="email" className="block fw-500" style={{ marginBottom: '5px' }}>
             Email
           </label>
           <input
@@ -45,12 +45,12 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+            className="form-input"
           />
         </div>
 
         <div>
-          <label htmlFor="password" style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+          <label htmlFor="password" className="block fw-500" style={{ marginBottom: '5px' }}>
             Password
           </label>
           <input
@@ -61,21 +61,18 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="current-password"
-            style={{ width: '100%', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', fontSize: '16px' }}
+            className="form-input"
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
+          className="text-white rounded-4 fs-16 fw-500"
           style={{
             padding: '12px',
             backgroundColor: isLoading ? '#ccc' : 'var(--app-primary)',
-            color: 'white',
             border: 'none',
-            borderRadius: '4px',
-            fontSize: '16px',
-            fontWeight: '500',
             cursor: isLoading ? 'not-allowed' : 'pointer'
           }}
         >
@@ -83,8 +80,8 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p style={{ marginTop: '15px', fontSize: '14px', color: '#666', textAlign: 'center' }}>
-        Don't have an account? <Link to="/register" style={{ color: 'var(--app-primary)', textDecoration: 'none' }}>Create one here</Link>
+      <p className="fs-14 text-muted text-center" style={{ marginTop: '15px' }}>
+        Don't have an account? <Link to="/register" className="text-decoration-none" style={{ color: 'var(--app-primary)' }}>Create one here</Link>
       </p>
     </div>
   );

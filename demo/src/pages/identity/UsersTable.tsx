@@ -316,7 +316,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   };
 
   return (
-    <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
       {/* View */}
       {((isMembership && (orgIdParam || context.organisation)) || !isMembership) && (
         <button

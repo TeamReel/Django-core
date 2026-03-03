@@ -165,7 +165,7 @@ export default function BrandProfileCard({
 
   if (loading) {
     return (
-      <Card style={{ padding: '24px' }}>
+      <Card className="p-24">
         <Stack direction="column" gap="3">
           <div className="flex-row gap-8">
             <Palette size={20} />
@@ -179,7 +179,7 @@ export default function BrandProfileCard({
 
   if (error) {
     return (
-      <Card style={{ padding: '24px' }}>
+      <Card className="p-24">
         <Stack direction="column" gap="3">
           <div className="flex-row gap-8">
             <Palette size={20} />
@@ -193,7 +193,7 @@ export default function BrandProfileCard({
 
   if (!profile) {
     return (
-      <Card style={{ padding: '24px' }}>
+      <Card className="p-24">
         <Stack direction="column" gap="3">
           <div className="flex-row gap-8">
             <Palette size={20} />
@@ -213,7 +213,7 @@ export default function BrandProfileCard({
   }
 
   return (
-    <Card style={{ padding: '24px' }}>
+    <Card className="p-24">
       <Stack direction="column" gap="4">
         {/* Header */}
         <div className="flex-between">
@@ -246,8 +246,8 @@ export default function BrandProfileCard({
 
         {/* Design Tokens by Type */}
         {tokensByType.size > 0 && (
-          <div className="border-top" style={{ paddingTop: '16px' }}>
-            <Text weight="bold" size="sm" style={{ marginBottom: '12px' }}>Design Tokens</Text>
+          <div className="border-top pt-16">
+            <Text weight="bold" size="sm" className="mb-12">Design Tokens</Text>
 
             <Stack direction="column" gap="3">
               {Array.from(tokensByType.entries())
@@ -260,7 +260,7 @@ export default function BrandProfileCard({
                     <div key={type}>
                       <div className="flex-row gap-6 mb-8">
                         <Icon size={14} style={{ opacity: 0.6 }} />
-                        <Text size="xs" weight="bold" color="secondary" style={{ textTransform: 'uppercase' }}>
+                        <Text size="xs" weight="bold" color="secondary" className="uppercase">
                           {label}
                         </Text>
                       </div>
@@ -308,7 +308,7 @@ export default function BrandProfileCard({
 
         {/* Brand Assets */}
         {profile.assets && profile.assets.length > 0 && (
-          <div className="border-top" style={{ paddingTop: '16px' }}>
+          <div className="border-top pt-16">
             <div className="flex-row gap-6 mb-12">
               <Image size={14} style={{ opacity: 0.6 }} />
               <Text weight="bold" size="sm">Brand Assets</Text>
@@ -360,7 +360,7 @@ export default function BrandProfileCard({
                   )}
                   <div>
                     <Text size="sm" weight="medium">{asset.name}</Text>
-                    <Text size="xs" color="secondary" style={{ textTransform: 'capitalize' }}>
+                    <Text size="xs" color="secondary" className="capitalize">
                       {asset.asset_type.replace(/_/g, ' ')}
                     </Text>
                   </div>
@@ -371,7 +371,7 @@ export default function BrandProfileCard({
         )}
 
         {/* Last Updated */}
-        <div className="border-top" style={{ paddingTop: '12px' }}>
+        <div className="border-top pt-12">
           <Text size="xs" color="secondary">
             Last updated: {new Date(profile.updated_at).toLocaleDateString('nl-NL', {
               year: 'numeric',

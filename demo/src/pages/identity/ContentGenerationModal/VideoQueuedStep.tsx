@@ -153,7 +153,7 @@ export function VideoQueuedStep({
                 }}
               />
             </div>
-            <p className="fs-12 mb-20" style={{ color: 'var(--app-muted)' }}>
+            <p className="fs-12 mb-20 text-muted">
               {videoJobProgressRaw > 0 ? `${videoJobProgressRaw}%` : 'Wachten op verwerking…'}
             </p>
 

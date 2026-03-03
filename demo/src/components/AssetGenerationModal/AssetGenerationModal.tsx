@@ -100,7 +100,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
             <h2 className="fs-16 fw-700 m-0">
               🎨 AI Asset Genereren
             </h2>
-            <p className="fs-12 mt-4 m-0" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
+            <p className="fs-12 mt-4 m-0 text-muted">
               {stepTitle}
             </p>
           </div>
@@ -143,10 +143,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                 <span style={{ fontSize: 32 }}>{selectedTemplate.icon}</span>
                 <div>
                   <div className="fw-600 fs-14">{selectedTemplate.name}</div>
-                  <div
-                  className="fs-12"
-                  style={{ color: 'var(--vscode-descriptionForeground, #888)' }}
-                >
+                  <div className="fs-12 text-muted">
                     {selectedTemplate.description}
                   </div>
                 </div>
@@ -236,13 +233,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                     </button>
                   ))}
                 </div>
-                <div
-                  className="fs-11"
-                  style={{
-                    color: 'var(--vscode-descriptionForeground, #888)',
-                    marginTop: 4,
-                  }}
-                >
+                <div className="fs-11 text-muted mt-4">
                   Kosten: {variantCount * selectedTemplate.creditsCost} credits
                 </div>
               </div>

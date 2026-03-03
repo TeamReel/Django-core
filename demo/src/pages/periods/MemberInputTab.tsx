@@ -48,7 +48,7 @@ export function MemberInputTab({
         <div className={s.inputPhotoGrid}>
           {/* Profile Photo */}
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>📷 Profielfoto</div>
+            <div className="fs-13 fw-700" style={{ marginBottom: '10px' }}>📷 Profielfoto</div>
             <div className={s.photoThumbnailSquare}>
               {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
                 <img
@@ -63,7 +63,7 @@ export function MemberInputTab({
               )}
             </div>
             {(profilePreview || form.profile?.url || membership?.user?.avatar_url) && (
-              <div style={{ fontSize: '11px', color: 'var(--app-success)', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
+              <div className="fs-11 text-success fw-600 mb-8">✓ Ingesteld</div>
             )}
             <div
               onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
@@ -85,7 +85,7 @@ export function MemberInputTab({
                 ref={profileInputRef}
                 type="file"
                 accept="image/*"
-                style={{ display: 'none' }}
+                className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleProfilePhotoUpload(file);
@@ -93,11 +93,11 @@ export function MemberInputTab({
                 }}
               />
               {profileUploading ? (
-                <div style={{ fontSize: '12px', fontWeight: 600 }}>⏳ Uploaden...</div>
+                <div className="fs-12 fw-600">⏳ Uploaden...</div>
               ) : (
                 <>
-                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>📤</div>
-                  <div style={{ fontSize: '11px', fontWeight: 600 }}>Upload / Vervang</div>
+                  <div className="fs-24 mb-4">📤</div>
+                  <div className="fs-11 fw-600">Upload / Vervang</div>
                 </>
               )}
             </div>
@@ -105,7 +105,7 @@ export function MemberInputTab({
 
           {/* Legacy Photo */}
           <div>
-            <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '10px' }}>📸 Legacy Foto</div>
+            <div className="fs-13 fw-700" style={{ marginBottom: '10px' }}>📸 Legacy Foto</div>
             <div className={s.photoThumbnailSquare}>
               {(legacyPhotoPreview || form.legacy_photo?.url) ? (
                 <img
@@ -120,7 +120,7 @@ export function MemberInputTab({
               )}
             </div>
             {(legacyPhotoPreview || form.legacy_photo?.url) && (
-              <div style={{ fontSize: '11px', color: 'var(--app-success)', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
+              <div className="fs-11 text-success fw-600 mb-8">✓ Ingesteld</div>
             )}
             <div
               onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}
@@ -142,7 +142,7 @@ export function MemberInputTab({
                 ref={legacyPhotoInputRef}
                 type="file"
                 accept="image/*"
-                style={{ display: 'none' }}
+                className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) handleLegacyPhotoUpload(file);
@@ -150,11 +150,11 @@ export function MemberInputTab({
                 }}
               />
               {legacyPhotoUploading ? (
-                <div style={{ fontSize: '12px', fontWeight: 600 }}>⏳ Uploaden...</div>
+                <div className="fs-12 fw-600">⏳ Uploaden...</div>
               ) : (
                 <>
-                  <div style={{ fontSize: '24px', marginBottom: '4px' }}>📤</div>
-                  <div style={{ fontSize: '11px', fontWeight: 600 }}>Upload / Vervang</div>
+                  <div className="fs-24 mb-4">📤</div>
+                  <div className="fs-11 fw-600">Upload / Vervang</div>
                 </>
               )}
             </div>

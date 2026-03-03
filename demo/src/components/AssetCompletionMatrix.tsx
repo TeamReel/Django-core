@@ -166,7 +166,7 @@ export function AssetCompletionMatrix({
 
   return (
     <Card>
-      <div style={{ padding: '16px 16px 0 16px' }}>
+      <div className="px-16 pt-16">
         <div className="flex-row gap-12 flex-wrap">
           <h3 className="m-0 fs-16 fw-600">{title}</h3>
           <Badge variant={filledCells === totalCells ? 'success' : filledCells > 0 ? 'warning' : 'default'}>
@@ -187,14 +187,12 @@ export function AssetCompletionMatrix({
               {PHASE_COLUMNS.map((col) => (
                 <th key={col.key} style={thStyle}>
                   <span
+                    className="text-white fw-600 rounded-4"
                     style={{
                       display: 'inline-block',
                       padding: '2px 8px',
-                      borderRadius: 4,
                       background: col.color,
-                      color: '#fff',
                       fontSize: 10,
-                      fontWeight: 600,
                     }}
                   >
                     {col.label}

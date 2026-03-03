@@ -25,7 +25,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     } = useSidebarData();
 
     return (
-        <div className="h-full" style={{ display: 'flex', zIndex: 90, flexShrink: 0 }}>
+        <div className="h-full flex-row" style={{ zIndex: 90, flexShrink: 0 }}>
 
             {/* ── PANEL A: PRIMARY SIDEBAR ── */}
             <aside
@@ -221,7 +221,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             };
                                         }}
                                     >
-                                        <span style={{ minWidth: 24, display: 'flex', justifyContent: 'center' }}>
+<span className="flex-center" style={{ minWidth: 24 }}>
                                             <AppIcon icon={item.icon} size={18} />
                                         </span>
                                         {isOpen && <span className="fs-14 fw-500" style={{ marginLeft: 12 }}>{item.label}</span>}
@@ -295,22 +295,19 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             {/* ── PANEL B: SECONDARY CONTEXT SIDEBAR ── */}
             {panelBConfig && (
                 <aside
-                    className="sidebar-panel-b flex-col"
+                    className="sidebar-panel-b flex-col z-10"
                     style={{
                         width: 220,
                         backgroundColor: 'var(--sidebar-b-bg)',
                         borderRight: '1px solid var(--sidebar-b-border)',
                         flexShrink: 0,
-                        zIndex: 10,
                         paddingTop: 57,
                     }}
                 >
                     {/* Header */}
-                    <div className="flex-row fw-600 fs-11" style={{
+                    <div className="flex-row fw-600 fs-11 uppercase tracking-wide" style={{
                         padding: '12px 16px 8px',
                         color: 'var(--sidebar-b-muted-text)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
                     }}>
                         {panelBConfig.title}
                     </div>
@@ -325,8 +322,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         if (hasTabItems) {
                             return (
                                 <div
-                                    className="flex-col gap-6 py-16 px-12 border-bottom"
-                                    style={{ marginBottom: 0 }}
+                                    className="flex-col gap-6 py-16 px-12 border-bottom mb-0"
                                 >
                                     {panelBConfig.items.map(item => {
                                         const [itemPathname, itemQuery = ''] = String(item.path || '').split('?');

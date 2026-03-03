@@ -201,7 +201,7 @@ export const ObservabilityPage: React.FC = () => {
         {isEmptyState && (
           <Card className="p-24 bg-surface border">
             <div className="mb-16">
-              <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--app-text)', margin: '0 0 8px 0' }}>
+              <h3 className="fs-18 fw-600 m-0 mb-8 text-primary">
                 Status
               </h3>
               <Alert variant="info">
@@ -226,9 +226,9 @@ export const ObservabilityPage: React.FC = () => {
                       {backendMetrics.timestamp ? new Date(backendMetrics.timestamp).toLocaleTimeString() : 'N/A'}
                     </span>
                   </p>
-                  {loading && <p style={{ fontSize: '14px', color: 'var(--app-primary)', marginTop: '4px', margin: 0 }}>Updating...</p>}
+                  {loading && <p className="fs-14 m-0" style={{ color: 'var(--app-primary)', marginTop: '4px' }}>Updating...</p>}
                   {backendMetrics.message && (
-                    <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px', margin: '4px 0 0 0' }}>
+                    <p className="fs-12 text-muted m-0 mt-4">
                       {backendMetrics.message}
                     </p>
                   )}

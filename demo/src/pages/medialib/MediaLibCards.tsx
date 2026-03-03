@@ -108,9 +108,9 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
   return (
     <Card className="p-0 overflow-hidden flex-col">
       {/* Thumbnail */}
-      <div className="flex-center overflow-hidden relative" style={{
+      <div className="flex-center overflow-hidden relative border-bottom" style={{
         height: 180,
-        backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+        backgroundColor: 'var(--app-bg)',
         cursor: asset.url ? 'pointer' : 'default',
       }}
       onClick={() => {
@@ -210,9 +210,9 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
 export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: string) => void }) {
   return (
     <Card className="p-0 overflow-hidden flex-col">
-      <div className="flex-center" style={{
+      <div className="flex-center border-bottom" style={{
         height: 120,
-        backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+        backgroundColor: 'var(--app-bg)',
       }}>
         <span style={{ fontSize: 40 }}>{getFileIcon(file.mime_type)}</span>
       </div>
@@ -230,11 +230,9 @@ export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (i
         </Text>
         <button
           onClick={() => onDownload(file.id)}
-          className="mt-4 fs-11 rounded-6 bg-transparent cursor-pointer"
+          className="mt-4 fs-11 rounded-6 bg-transparent cursor-pointer border text-primary"
           style={{
             alignSelf: 'flex-start', padding: '4px 10px',
-            border: '1px solid var(--app-border)',
-            color: 'var(--app-text)',
           }}
         >
           ⬇ Download
@@ -268,9 +266,9 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
 
   return (
     <Card className="p-0 overflow-hidden flex-col">
-      <div className="flex-center overflow-hidden relative" style={{
+      <div className="flex-center overflow-hidden relative border-bottom" style={{
         height: 180,
-        backgroundColor: 'var(--app-bg)', borderBottom: '1px solid var(--app-border)',
+        backgroundColor: 'var(--app-bg)',
         cursor: item.url ? 'pointer' : 'default',
       }}
       onClick={() => {
@@ -357,14 +355,13 @@ export function FilterChip({ active, onClick, label, count }: {
   return (
     <button
       onClick={onClick}
-      className="inline-flex gap-4 fs-12 cursor-pointer"
+      className="inline-flex gap-4 fs-12 cursor-pointer rounded-16 transition"
       style={{
         alignItems: 'center',
-        padding: '5px 12px', borderRadius: 16, fontWeight: active ? 600 : 400,
+        padding: '5px 12px', fontWeight: active ? 600 : 400,
         border: `1px solid ${active ? 'var(--color-primary, #2563eb)' : 'var(--app-border)'}`,
         backgroundColor: active ? 'var(--color-primary-light, #dbeafe)' : 'transparent',
         color: active ? 'var(--color-primary, #2563eb)' : 'var(--app-text-secondary)',
-        transition: 'all 0.15s',
       }}
     >
       {label}

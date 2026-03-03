@@ -92,7 +92,7 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
               </div>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 6 }}>
+          <div className="flex-row gap-6">
             <button disabled={!hasPrev} onClick={() => onReviewed('__prev__', 'approve')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 16 }}>&#8249;</button>
             <button disabled={!hasNext} onClick={() => onReviewed('__next__', 'reject')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasNext ? 'pointer' : 'default', opacity: hasNext ? 1 : 0.3, fontSize: 16 }}>&#8250;</button>
           </div>
@@ -100,7 +100,7 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
         </div>
 
         {/* Variants gallery */}
-        <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#0f172a', padding: variants.length > 1 ? 12 : 0 }}>
+        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#0f172a', padding: variants.length > 1 ? 12 : 0 }}>
           {variants.length === 0 && (
             <div className={s.emptyGallery}>
               <div className={s.emptyIcon}>&#128679;</div>
@@ -115,16 +115,16 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
                 const sel = selections[v.variant_index];
                 const borderColor = sel === true ? '#16a34a' : sel === false ? '#dc2626' : '#334155';
                 return (
-                  <div key={v.variant_index} style={{ display: 'flex', flexDirection: 'column', width: variants.length === 1 ? '100%' : 'calc(50% - 8px)', minWidth: 260, maxWidth: 460 }}>
-                    <div style={{ position: 'relative', backgroundColor: '#1e293b', borderRadius: 8, overflow: 'hidden', border: `2px solid ${borderColor}`, transition: 'border-color 0.15s' }}>
+                  <div key={v.variant_index} className="flex-col" style={{ width: variants.length === 1 ? '100%' : 'calc(50% - 8px)', minWidth: 260, maxWidth: 460 }}>
+                    <div className="relative rounded-8 overflow-hidden transition" style={{ backgroundColor: '#1e293b', border: `2px solid ${borderColor}` }}>
                       {url ? (
                         isVideo(v) ? (
-                          <video src={url} controls autoPlay={variants.length === 1} loop style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260, display: 'block' }} />
+                          <video src={url} controls autoPlay={variants.length === 1} loop className="block" style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260 }} />
                         ) : (
-                          <img src={url} alt={`Variant ${v.variant_index + 1}`} style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260, objectFit: 'contain', display: 'block' }} />
+                          <img src={url} alt={`Variant ${v.variant_index + 1}`} className="block object-contain" style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260 }} />
                         )
                       ) : (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: variants.length === 1 ? 280 : 160, color: '#475569', fontSize: 12, flexDirection: 'column', gap: 6 }}>
+                        <div className="flex-col flex-center gap-6 fs-12" style={{ minHeight: variants.length === 1 ? 280 : 160, color: '#475569' }}>
                           <div style={{ fontSize: 28 }}>&#128679;</div>
                           <div>Geen preview</div>
                           {v.storage_path && <div className={s.storagePath}>{v.storage_path}</div>}

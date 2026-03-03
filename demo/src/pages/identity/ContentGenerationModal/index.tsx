@@ -113,14 +113,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
         }}
       >
         {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '16px',
-          borderBottom: '1px solid var(--app-border, #e5e7eb)',
-          flexShrink: 0,
-        }}>
+        <div className="flex-row gap-12 p-16 border-bottom" style={{ flexShrink: 0 }}>
           {(step !== 'type' || props.template) ? (
             <button
               onClick={handleBack}
@@ -138,8 +131,8 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
           ) : (
             <div style={{ width: '40px', flexShrink: 0 }} />
           )}
-          <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
-            <div style={{ fontWeight: 600, fontSize: '16px', color: 'var(--app-text, #111)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div className="flex-1-min text-center">
+            <div className="fw-600 fs-16 truncate" style={{ color: 'var(--app-text, #111)' }}>
               {step === 'type' && 'Content aanmaken'}
               {step === 'template' && `${selectedType?.label || 'Template'} kiezen`}
               {step === 'members' && (isLineupFlow ? 'Lineup opties' : `${contentTypeLabel || selectedType?.label || 'Content'} instellen`)}
@@ -151,7 +144,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
               {step === 'error' && 'Fout opgetreden'}
             </div>
             {matchData && (
-              <div style={{ fontSize: '13px', color: 'var(--app-text-muted, #6b7280)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div className="fs-13 text-muted truncate" style={{ marginTop: '2px' }}>
                 {matchData.project?.name} vs {matchData.opponent_project?.name || 'Tegenstander'}
               </div>
             )}
@@ -172,7 +165,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
         </div>
 
         {/* Content area */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+        <div className="flex-1 overflow-y-auto p-16">
           {step === 'type' && (
             <TypeStep onSelectType={handleSelectType} />
           )}
@@ -317,10 +310,8 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
         </div>
 
         {/* Footer */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        <div className="flex-between border-top" style={{
           padding: '12px 16px',
-          borderTop: '1px solid var(--app-border, #e5e7eb)',
           flexShrink: 0,
         }}>
           <div>

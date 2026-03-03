@@ -57,10 +57,10 @@ export function MemberOverviewTab({
 
   const renderPhase = (title: string, emoji: string, items: typeof inputItems) => (
     <div style={{ marginBottom: '20px' }}>
-      <div className={s.flexCenterGap8} style={{ marginBottom: '10px' }}>
-        <span style={{ fontSize: '18px' }}>{emoji}</span>
+      <div className={`${s.flexCenterGap8}`} style={{ marginBottom: '10px' }}>
+        <span className="fs-18">{emoji}</span>
         <div className={s.sectionTitle}>{title}</div>
-        <div style={{ fontSize: '12px', opacity: 0.6 }}>
+        <div className="fs-12" style={{ opacity: 0.6 }}>
           {items.filter(i => i.hasContent).length}/{items.length}
         </div>
       </div>
@@ -69,19 +69,16 @@ export function MemberOverviewTab({
           <div
             key={item.key}
             onClick={() => navigateToTab(item.tab)}
+            className="p-12 rounded-8 cursor-pointer transition"
             style={{
-              padding: '12px',
-              borderRadius: '8px',
               border: `1px solid ${item.hasContent ? 'var(--color-green-400)' : 'var(--app-border)'}`,
               background: item.hasContent ? 'rgba(16, 185, 129, 0.08)' : 'var(--app-surface)',
-              cursor: 'pointer',
-              transition: 'border-color 0.15s',
             }}
           >
             <div className={s.flexCenterGap8}>
-              <span style={{ fontSize: '18px' }}>{item.icon}</span>
-              <span style={{ fontWeight: 600, fontSize: '13px' }}>{item.label}</span>
-              <span style={{ marginLeft: 'auto', fontSize: '13px' }}>
+              <span className="fs-18">{item.icon}</span>
+              <span className="fw-600 fs-13">{item.label}</span>
+              <span className="ml-auto fs-13">
                 {item.hasContent ? '✅' : '⬜'}
               </span>
             </div>
@@ -105,17 +102,17 @@ export function MemberOverviewTab({
           Status per fase: welke assets zijn geüpload of gegenereerd.
         </div>
 
-        <div style={{ marginTop: '16px' }}>
+        <div className="mt-16">
           {renderPhase('📥 Input Foto\'s', '📥', inputItems)}
           {renderPhase('🖼️ Gegenereerde Assets', '🖼️', assetItems)}
           {renderPhase('🎬 Video Content', '🎬', videoItems)}
         </div>
 
         <div className={s.progressBar}>
-          <div style={{ fontSize: '13px', fontWeight: 600 }}>
+          <div className="fs-13 fw-600">
             Voortgang: {completedCount} / {totalCount} assets
           </div>
-          <div style={{ marginTop: '8px', height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
+          <div className="mt-8 rounded-4 overflow-hidden" style={{ height: '8px', background: '#e5e7eb' }}>
             <div
               style={{
                 height: '100%',

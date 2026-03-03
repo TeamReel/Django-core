@@ -82,7 +82,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       {balance < 500 && (
         <Alert variant="warning" className="mb-24">
           <strong>⚠️ Low Credit Balance</strong>
-          <p className="fs-14" style={{ margin: '8px 0 0 0' }}>
+          <p className="fs-14 m-0 mt-8">
             Your balance is {credits.current_balance} credits. Consider adding more credits to avoid service interruption.
           </p>
         </Alert>
@@ -92,7 +92,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       <Card className="p-32 mb-24 text-center" style={{
         background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
       }}>
-        <div className="fs-14 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '1px' }}>
+        <div className="fs-14 opacity-60 mb-8 uppercase tracking-wide">
           Current Balance
         </div>
         <div className="fw-700" style={{
@@ -114,7 +114,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
       }}>
         <Card className="p-20 text-center">
-          <div className="fs-12 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
             ➕ Total Added
           </div>
           <div className="fw-700 text-success" style={{ fontSize: '32px' }}>
@@ -124,7 +124,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
         </Card>
 
         <Card className="p-20 text-center">
-          <div className="fs-12 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
             ➖ Total Used
           </div>
           <div className="fw-700 text-error" style={{ fontSize: '32px' }}>
@@ -134,7 +134,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
         </Card>
 
         <Card className="p-20 text-center">
-          <div className="fs-12 opacity-60 mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
             📊 Net Total
           </div>
           <div className="fw-700" style={{
@@ -149,7 +149,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
 
       {/* Transaction Timeline Chart */}
       <Card className="p-24 mb-24">
-        <h3 className="fs-18" style={{ margin: '0 0 20px 0' }}>📊 Transaction Timeline</h3>
+        <h3 className="fs-18 m-0 mb-20">📊 Transaction Timeline</h3>
         {allTransactions.length === 0 ? (
           <div className="text-center p-20 opacity-60">No transactions recorded yet.</div>
         ) : (
@@ -205,7 +205,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
 
       {/* Recent Transactions List */}
       <Card className="p-24">
-        <div className="flex-between" style={{ marginBottom: '20px' }}>
+        <div className="flex-between mb-20">
           <h3 className="m-0 fs-18">📋 Recent Activity</h3>
           <Button variant="ghost" size="sm" onClick={onViewAllTransactions}>
             View All Transactions →
@@ -218,8 +218,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
             {recentTransactions.map((txn) => (
               <div
                 key={txn.id}
-                className="flex-between p-16 rounded-8 bg-surface-2 border"
-                style={{ transition: 'all 0.2s ease' }}
+                className="flex-between p-16 rounded-8 bg-surface-2 border transition"
               >
                 <div className="flex-1">
                   <div className="fw-500" style={{ fontSize: '15px', marginBottom: '6px' }}>

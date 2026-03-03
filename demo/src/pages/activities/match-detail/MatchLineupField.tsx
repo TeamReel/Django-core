@@ -322,11 +322,10 @@ export function FieldVisualization({
           <button
             onClick={saveLineup}
             disabled={lineupSaving}
-            className="fs-13 fw-600 border-none rounded-6"
+            className="fs-13 fw-600 border-none rounded-6 text-white"
             style={{
               padding: '8px 20px',
               background: '#16a34a',
-              color: 'white',
               cursor: lineupSaving ? 'not-allowed' : 'pointer',
               opacity: lineupSaving ? 0.7 : 1,
             }}

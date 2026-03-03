@@ -19,16 +19,6 @@ interface ContentTemplateModalProps {
   onClose: () => void;
 }
 
-const selectStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '8px 12px',
-  borderRadius: '6px',
-  border: '1px solid var(--app-border)',
-  backgroundColor: 'var(--app-bg)',
-  color: 'var(--app-text)',
-  fontSize: '14px',
-};
-
 export function ContentTemplateModal({
   editingTemplate,
   editForm,
@@ -45,15 +35,7 @@ export function ContentTemplateModal({
 }: ContentTemplateModalProps) {
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className="modal-backdrop"
       onClick={onClose}
     >
       <Card
@@ -65,25 +47,27 @@ export function ContentTemplateModal({
         </h2>
 
         {/* Modal Tabs */}
-        <div className="flex-row" style={{ gap: '4px', marginBottom: '20px', borderBottom: '1px solid var(--app-border)' }}>
+        <div className="flex-row gap-4 mb-20 border-bottom">
           <button
             onClick={() => setModalTab('basic')}
+            className="cursor-pointer fw-500"
             style={{
               padding: '10px 20px', border: 'none',
               background: modalTab === 'basic' ? 'var(--app-primary)' : 'transparent',
               color: modalTab === 'basic' ? 'white' : 'var(--app-text)',
-              borderRadius: '6px 6px 0 0', cursor: 'pointer', fontWeight: 500,
+              borderRadius: '6px 6px 0 0',
             }}
           >
             Basic Info
           </button>
           <button
             onClick={() => setModalTab('requirements')}
+            className="cursor-pointer fw-500"
             style={{
               padding: '10px 20px', border: 'none',
               background: modalTab === 'requirements' ? 'var(--app-primary)' : 'transparent',
               color: modalTab === 'requirements' ? 'white' : 'var(--app-text)',
-              borderRadius: '6px 6px 0 0', cursor: 'pointer', fontWeight: 500,
+              borderRadius: '6px 6px 0 0',
             }}
           >
             Input Requirements
@@ -109,16 +93,13 @@ export function ContentTemplateModal({
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 placeholder="Template description..."
                 rows={2}
-                style={{
-                  width: '100%', padding: '8px 12px', borderRadius: '6px',
-                  border: '1px solid var(--app-border)', backgroundColor: 'var(--app-bg)',
-                  color: 'var(--app-text)', fontSize: '14px', resize: 'vertical',
-                }}
+                className="form-textarea"
+                style={{ resize: 'vertical' }}
               />
             </div>
 
             {/* Template Type & Subtype */}
-            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid gap-12 grid-cols-2">
               <div>
                 <label className="field-label">Type *</label>
                 <select
@@ -133,7 +114,7 @@ export function ContentTemplateModal({
                       template_subtype: subtypeStillValid ? editForm.template_subtype : '',
                     });
                   }}
-                  style={selectStyle}
+                  className="form-input"
                 >
                   <option value="pre_match">Pre Match</option>
                   <option value="during_match">During Match</option>
@@ -149,7 +130,7 @@ export function ContentTemplateModal({
                 <select
                   value={editForm.template_subtype}
                   onChange={(e) => setEditForm({ ...editForm, template_subtype: e.target.value })}
-                  style={selectStyle}
+                  className="form-input"
                 >
                   <option value="">-- None --</option>
                   {getSubtypesForType(editForm.template_type).map(st => (
@@ -160,7 +141,7 @@ export function ContentTemplateModal({
             </div>
 
             {/* Sport Category & Variant */}
-            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid gap-12 grid-cols-2">
               <div>
                 <label className="field-label">Sport Category</label>
                 <select
@@ -174,7 +155,7 @@ export function ContentTemplateModal({
                       formation_code: '',
                     });
                   }}
-                  style={selectStyle}
+                  className="form-input"
                 >
                   <option value="">-- Select Sport --</option>
                   {sportCategories.categories.map(cat => (
@@ -193,8 +174,8 @@ export function ContentTemplateModal({
                     formation_code: '',
                   })}
                   disabled={!editForm.sport_category}
+                  className="form-input"
                   style={{
-                    ...selectStyle,
                     backgroundColor: !editForm.sport_category ? 'var(--app-bg-muted)' : 'var(--app-bg)',
                     opacity: !editForm.sport_category ? 0.6 : 1,
                   }}
@@ -208,7 +189,7 @@ export function ContentTemplateModal({
             </div>
 
             {/* Formation & Style */}
-            <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+            <div className="grid gap-12 grid-cols-2">
               <div>
                 <label className="field-label">Formation Code</label>
                 <Input
@@ -217,7 +198,7 @@ export function ContentTemplateModal({
                   placeholder="e.g., 4-3-3, 4-4-2, 3-5-2"
                 />
                 {editForm.formation_code && formationsForSelectedSport.length > 0 && (
-                  <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+                  <div className="fs-12 text-muted mt-4">
                     {formationsForSelectedSport.some(f => f.code.toLowerCase() === editForm.formation_code.toLowerCase())
                       ? 'Matches existing formation'
                       : 'New formation code (will be created)'}
@@ -268,7 +249,7 @@ export function ContentTemplateModal({
                 placeholder="1"
                 style={{ width: '100px' }}
               />
-              <p style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '4px' }}>
+              <p className="fs-12 text-muted mt-4">
                 Number of credits consumed per generation
               </p>
             </div>
@@ -281,7 +262,7 @@ export function ContentTemplateModal({
         )}
 
         {/* Actions */}
-        <div className="flex-row gap-8" style={{ justifyContent: 'flex-end', marginTop: '24px' }}>
+        <div className="flex-row gap-8 mt-24" style={{ justifyContent: 'flex-end' }}>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

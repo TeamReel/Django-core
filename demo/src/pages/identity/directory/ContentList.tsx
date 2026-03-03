@@ -222,7 +222,7 @@ export const ContentList: React.FC = () => {
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={16} className="text-center dir-td text-muted" style={{ padding: 24 }}>No content items found</td></tr>
+                <tr><td colSpan={16} className="text-center dir-td text-muted p-24">No content items found</td></tr>
               )}
               {filtered.map((job) => (
                 <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>

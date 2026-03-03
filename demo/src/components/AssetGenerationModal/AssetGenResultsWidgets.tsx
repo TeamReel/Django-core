@@ -43,13 +43,7 @@ export function ResultsStep({
               : 'Afbeelding aanmelden...'}
           </div>
           <ProgressBar progress={generation.progress} />
-          <div
-            style={{
-              fontSize: 12,
-              color: 'var(--vscode-descriptionForeground, #888)',
-              marginTop: 8,
-            }}
-          >
+          <div className="fs-12 text-muted mt-8">
             Wordt toegevoegd aan de AI wachtrij...
           </div>
         </div>
@@ -62,12 +56,9 @@ export function ResultsStep({
           <div className="fs-14 fw-600 mb-8">Video wordt gegenereerd...</div>
           <ProgressBar progress={generation.progress} />
           <div
+            className="fs-12 text-muted mt-8 mx-auto"
             style={{
-              fontSize: 12,
-              color: 'var(--vscode-descriptionForeground, #888)',
-              marginTop: 8,
               maxWidth: 320,
-              margin: '8px auto 0',
             }}
           >
             Dit duurt 2–5 minuten. Je kunt dit venster open laten — het resultaat
@@ -84,12 +75,9 @@ export function ResultsStep({
             {requireApproval ? 'In Approvals Wachtrij!' : 'Toegevoegd aan de AI Queue!'}
           </div>
           <div
+            className="fs-13 text-muted mx-auto mb-24"
             style={{
-              fontSize: 13,
-              color: 'var(--vscode-descriptionForeground, #888)',
-              marginBottom: 24,
               maxWidth: 320,
-              margin: '0 auto 24px',
             }}
           >
             {requireApproval
@@ -170,13 +158,9 @@ export function ResultsStep({
                       href={fullSrc}
                       target="_blank"
                       rel="noreferrer"
+                      className="block mt-4 text-center fs-11 text-decoration-none"
                       style={{
-                        display: 'block',
-                        marginTop: 4,
-                        textAlign: 'center',
-                        fontSize: 11,
                         color: 'var(--vscode-textLink-foreground, #60a5fa)',
-                        textDecoration: 'none',
                         opacity: 0.8,
                       }}
                     >
@@ -217,20 +201,13 @@ export function FeedbackRefinement({
     { id: 'collar', label: 'Kraag/Mouwen' },
   ];
   return (
-    <div
-      style={{
-        marginTop: 20,
-        borderTop: '1px solid var(--vscode-widget-border, #333)',
-        paddingTop: 16,
-      }}
-    >
+    <div className="mt-20 border-top pt-16">
       <div className="fs-13 fw-600 mb-12">Combineer & Verbeter Varianten:</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div className="grid grid-cols-2 gap-12">
         {fields.map((field) => (
           <div key={field.id}>
             <label
-              className="block fs-11 mb-4"
-              style={{ color: 'var(--vscode-descriptionForeground, #888)' }}
+              className="block fs-11 mb-4 text-muted"
             >
               {field.label}
             </label>
@@ -256,8 +233,7 @@ export function FeedbackRefinement({
       </div>
       <div className="mt-12">
         <label
-          className="block fs-11 mb-4"
-          style={{ color: 'var(--vscode-descriptionForeground, #888)' }}
+          className="block fs-11 mb-4 text-muted"
         >
           Overig / Specifiek
         </label>

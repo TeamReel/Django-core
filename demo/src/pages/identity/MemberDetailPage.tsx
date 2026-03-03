@@ -275,16 +275,7 @@ export const MemberDetailPage: React.FC = () => {
                     if (value === 'clubs') navigate('/clubs');
                     else if (value === 'users') navigate('/users');
                   }}
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface)',
-                    color: 'var(--app-text)',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500
-                  }}
+                  className="py-4 px-8 rounded-4 border bg-surface text-primary cursor-pointer fs-14 fw-500"
                 >
                   <option value="organisations">Organisations</option>
                   <option value="clubs">Clubs</option>
@@ -298,16 +289,7 @@ export const MemberDetailPage: React.FC = () => {
                 <select
                   value={member.organisation.slug || member.organisation.id}
                   onChange={(e) => handleOrganisationSwitch({ id: e.target.value, label: '', slug: e.target.value })}
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface)',
-                    color: 'var(--app-text)',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500
-                  }}
+                  className="py-4 px-8 rounded-4 border bg-surface text-primary cursor-pointer fs-14 fw-500"
                 >
                   {organisationOptions.map(org => (
                     <option key={org.id} value={org.slug || org.id}>{org.label}</option>
@@ -323,16 +305,7 @@ export const MemberDetailPage: React.FC = () => {
                   onChange={(e) => {
                     navigate(`/organisations/${orgSlug}/members/${e.target.value}`);
                   }}
-                  style={{
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid var(--app-border)',
-                    backgroundColor: 'var(--app-surface)',
-                    color: 'var(--app-text)',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500
-                  }}
+                  className="py-4 px-8 rounded-4 border bg-surface text-primary cursor-pointer fs-14 fw-500"
                 >
                   {userOptions.map(u => (
                     <option key={u.id} value={u.slug || u.id}>{u.label}</option>

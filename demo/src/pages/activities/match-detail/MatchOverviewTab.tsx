@@ -158,7 +158,7 @@ export default function MatchOverviewTab({
             borderRadius: 10,
           }}
         >
-          <div className="fs-11 fw-600 text-muted" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+          <div className="fs-11 fw-600 text-muted uppercase tracking-wide" style={{ marginBottom: 6 }}>
             Opstelling
           </div>
           {lineupFilledCount > 0 ? (
@@ -188,7 +188,7 @@ export default function MatchOverviewTab({
             borderRadius: 10,
           }}
         >
-          <div className="fs-11 fw-600 text-muted" style={{ textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+          <div className="fs-11 fw-600 text-muted uppercase tracking-wide" style={{ marginBottom: 6 }}>
             Content
           </div>
           <div className="flex-row gap-6">
@@ -240,7 +240,7 @@ export default function MatchOverviewTab({
                     }}
                   >
                     <span className="fs-14">{statusIcon}</span>
-                    <span style={{ fontSize: 15 }}>{item.icon}</span>
+                    <span className="fs-15">{item.icon}</span>
                     <span className="flex-1 fw-500 text-primary">
                       {item.label}
                     </span>
@@ -283,9 +283,8 @@ export default function MatchOverviewTab({
               return (
                 <div
                   key={evt.id}
-                  className="flex-row gap-8 fs-13"
+                  className="flex-row gap-8 fs-13 px-12 py-6"
                   style={{
-                    padding: '6px 12px',
                     borderBottom: idx < matchEvents.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
                   }}
                 >
@@ -301,7 +300,7 @@ export default function MatchOverviewTab({
                       </span>
                     )}
                   </span>
-                  <span style={{ fontSize: 10, color: 'var(--app-muted-text, #666)' }}>
+                  <span className="text-muted" style={{ fontSize: 10 }}>
                     {isHome ? homeTeamName : awayTeamName}
                   </span>
                 </div>

@@ -72,7 +72,7 @@ export default function ProjectListPage() {
   return (
     <>
       <div>
-        <nav className="mb-24 fs-14" style={{ color: '#666' }}>
+        <nav className="mb-24 fs-14 text-muted">
           <Link to="/federations">Organisations</Link>
           {orgId && orgName && (
             <>
@@ -85,7 +85,7 @@ export default function ProjectListPage() {
         </nav>
 
         <h1>Projects</h1>
-        <p className="mb-24" style={{ color: '#666' }}>
+        <p className="mb-24 text-muted">
           Select a project to view its details and resources.
         </p>
 
@@ -130,29 +130,26 @@ export default function ProjectListPage() {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                   }}
                 >
-                  <div className="mb-16" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div className="mb-16 flex-between" style={{ alignItems: 'flex-start' }}>
                     <div>
                         <div className="flex-row gap-12">
                         <h3 className="m-0 text-primary fs-20">{club.name}</h3>
-                        <span className="fs-11 fw-600 rounded-4" style={{
+                        <span className="fs-11 fw-600 rounded-4 uppercase" style={{
                           color: '#666',
                           backgroundColor: '#eee',
                           padding: '2px 6px',
-                          textTransform: 'uppercase'
                         }}>CLUB</span>
                       </div>
                       {club.description && (
-                        <p className="text-muted fs-14 mt-8" style={{ marginBottom: '0' }}>{club.description}</p>
+                        <p className="text-muted fs-14 mt-8" style={{ marginBottom: 0 }}>{club.description}</p>
                       )}
                     </div>
                     <div>
                        <Link
                         to={`/organisations/${orgId}/projects/${club.slug || club.id}`}
-                        className="py-8 px-16 rounded-4 fs-14 fw-500"
+                        className="py-8 px-16 rounded-4 fs-14 fw-500 text-white text-decoration-none"
                         style={{
                           backgroundColor: 'var(--app-primary, #007bff)',
-                          color: 'white',
-                          textDecoration: 'none'
                         }}
                       >
                         Manage Club
@@ -161,7 +158,7 @@ export default function ProjectListPage() {
                   </div>
 
                   {/* Club Stats */}
-                  <div className="gap-24 fs-14" style={{ display: 'flex', color: '#555', paddingBottom: '16px', borderBottom: '1px solid #eee' }}>
+                  <div className="flex-row gap-24 fs-14 text-secondary" style={{ paddingBottom: '16px', borderBottom: '1px solid #eee' }}>
                      <div><strong>{teams.length}</strong> Teams</div>
                      <div><strong>{club.member_count ?? 0}</strong> Direct Members</div>
                   </div>
@@ -169,7 +166,7 @@ export default function ProjectListPage() {
                   {/* Teams Grid */}
                   {teams.length > 0 ? (
                     <div className="mt-16">
-                      <h4 className="fs-13" style={{ textTransform: 'uppercase', color: '#888', margin: '0 0 12px 0', letterSpacing: '0.5px' }}>Active Teams</h4>
+                      <h4 className="fs-13 uppercase tracking-wide text-muted mt-0 mb-12">Active Teams</h4>
                       <div className="grid gap-12" style={{
                         gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'
                       }}>
@@ -184,11 +181,11 @@ export default function ProjectListPage() {
                             <div>
                                <Link
                                  to={`/organisations/${orgId}/projects/${team.slug || team.id}`}
-                                 className="fw-600 text-primary block" style={{ textDecoration: 'none' }}
+                                 className="fw-600 text-primary block text-decoration-none"
                                >
                                  {team.name}
                                </Link>
-                               <div className="fs-12 mt-4" style={{ color: '#666' }}>
+                               <div className="fs-12 mt-4 text-muted">
                                  {team.seasons_count ?? 0} Seasons • {team.matches_count ?? 0} Matches
                                </div>
                             </div>
@@ -201,7 +198,7 @@ export default function ProjectListPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-16 fs-14" style={{ fontStyle: 'italic', color: '#888' }}>
+                    <div className="mt-16 fs-14 text-muted" style={{ fontStyle: 'italic' }}>
                       No teams created for this club yet.
                     </div>
                   )}

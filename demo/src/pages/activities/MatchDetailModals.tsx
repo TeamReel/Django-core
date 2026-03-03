@@ -17,25 +17,19 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
 
   return (
     <div
+      className="fixed inset-0 z-1000 flex-center"
       style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
       }}
       onClick={onClose}
     >
       <div
+        className="rounded-12 overflow-auto shadow-lg"
         style={{
           backgroundColor: 'var(--app-card-bg)',
-          borderRadius: '12px',
           maxWidth: '800px',
           width: '90%',
           maxHeight: '90vh',
-          overflow: 'auto',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -55,12 +49,8 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
           </div>
           <button
             onClick={onClose}
+            className="bg-transparent border-none fs-24 cursor-pointer text-muted"
             style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: 'var(--app-muted-text)',
               padding: '4px 8px',
             }}
           >
@@ -161,26 +151,21 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
 
   return (
     <div
+      className="fixed inset-0 flex-center"
       style={{
-        position: 'fixed',
-        inset: 0,
         zIndex: 1100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         padding: '16px 8px 80px',
       }}
       onClick={onClose}
     >
       <div
+        className="rounded-12 overflow-auto shadow-lg"
         style={{
           backgroundColor: 'var(--app-card-bg)',
-          borderRadius: '12px',
           maxWidth: '900px',
           width: '92%',
           maxHeight: 'calc(90vh - 80px)',
-          overflow: 'auto',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -199,12 +184,8 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
           </div>
           <button
             onClick={onClose}
+            className="bg-transparent border-none fs-24 cursor-pointer text-muted"
             style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '24px',
-              cursor: 'pointer',
-              color: 'var(--app-muted-text)',
               padding: '4px 8px',
             }}
           >
@@ -314,28 +295,22 @@ export function ToastNotifications({ toasts, onDismiss }: ToastNotificationsProp
   if (toasts.length === 0) return null;
 
   return (
-    <div className="flex-col gap-8" style={{ position: 'fixed', top: 16, right: 16, zIndex: 9999, maxWidth: 420 }}>
+    <div className="flex-col gap-8 fixed" style={{ top: 16, right: 16, zIndex: 9999, maxWidth: 420 }}>
       {toasts.map(toast => (
         <div
           key={toast.id}
+          className="flex-row gap-12 rounded-8 text-white fs-14 fw-500 shadow-lg"
           style={{
             padding: '12px 16px',
-            borderRadius: 8,
             background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
-            color: '#fff',
-            fontSize: 14,
-            fontWeight: 500,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
             animation: 'slideInRight 0.3s ease-out',
           }}
         >
           <span className="flex-1">{toast.message}</span>
           <button
             onClick={() => onDismiss(toast.id)}
-            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: 0, opacity: 0.7 }}
+            className="bg-transparent border-none text-white cursor-pointer fs-18 p-0"
+            style={{ lineHeight: 1, opacity: 0.7 }}
           >
             {'\u00d7'}
           </button>

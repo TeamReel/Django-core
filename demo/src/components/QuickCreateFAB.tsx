@@ -33,23 +33,15 @@ export default function QuickCreateFAB({ initialMatchId }: QuickCreateFABProps) 
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Wedstrijd wizard"
+        className="fixed rounded-full text-white shadow-lg cursor-pointer flex-center transition"
         style={{
-          position: 'fixed',
-          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))', // Above bottom nav
+          bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           right: '16px',
           width: '56px',
           height: '56px',
-          borderRadius: '50%',
           backgroundColor: 'var(--app-primary, #3B8EA5)',
-          color: 'white',
           border: 'none',
-          boxShadow: 'var(--shadow-lg)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           zIndex: 999,
-          transition: 'transform 0.2s, box-shadow 0.2s',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.05)';

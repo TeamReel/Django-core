@@ -78,7 +78,7 @@ export function MemberWalkingCompositeTab({
           <div className={s.prerequisiteCard} style={{
             border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
           }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy Fullbody</div>
+            <div className="fs-12 fw-600 mb-8">🏆 Legacy Fullbody</div>
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -88,7 +88,7 @@ export function MemberWalkingCompositeTab({
           <div className={s.prerequisiteCard} style={{
             border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
           }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
+            <div className="fs-12 fw-600 mb-8">👕 Huidige Fullbody</div>
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
@@ -226,7 +226,7 @@ export function MemberWalkingCompositeTab({
         </div>
 
         {!userCanEditProject && (
-          <div style={{ marginTop: '16px' }}>
+          <div className="mt-16">
             <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
           </div>
         )}

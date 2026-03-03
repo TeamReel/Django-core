@@ -128,7 +128,7 @@ export const MemberList: React.FC<MemberListProps> = ({
        <div className="flex-between mb-16">
          <div>
             <h3 className="m-0">Team Roster</h3>
-            <p className="fs-13 text-muted" style={{ margin: '4px 0 0' }}>
+            <p className="fs-13 text-muted m-0 mt-4">
                Players and Staff for the selected season.
             </p>
          </div>

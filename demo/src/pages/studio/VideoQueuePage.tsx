@@ -125,9 +125,7 @@ function JobCard({
       )}
 
       {/* Meta row */}
-      <div className="flex-wrap gap-16 fs-12 text-secondary" style={{
-        display: 'flex',
-      }}>
+      <div className="flex-row flex-wrap gap-16 fs-12 text-secondary">
         <span>Created: {formatTime(job.created_at)}</span>
         {job.started_at && (
           <span>Duration: {formatDuration(job.started_at, job.completed_at)}</span>
@@ -155,7 +153,7 @@ function JobCard({
       )}
 
       {/* Actions */}
-      <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="gap-8 flex-row" style={{ justifyContent: 'flex-end' }}>
         {(job.status === 'queued' || job.status === 'processing') && (
           <button
             onClick={() => onCancel(job.id)}
@@ -172,12 +170,11 @@ function JobCard({
         {job.status === 'failed' && (
           <button
             onClick={() => onRetry(job.id)}
-            className="fs-12 rounded-6 cursor-pointer"
+            className="fs-12 rounded-6 cursor-pointer text-white"
             style={{
               padding: '5px 12px',
               border: '1px solid #2563eb',
               backgroundColor: 'var(--color-blue-600)',
-              color: '#fff',
             }}
           >
             Retry
@@ -248,7 +245,7 @@ export default function VideoQueuePage() {
 
       <PageContent>
         {/* Filter bar */}
-        <div className="flex-wrap gap-6 mb-16" style={{ display: 'flex' }}>
+        <div className="flex-wrap gap-6 mb-16 flex-row">
           {STATUS_FILTERS.map(opt => (
             <button
               key={opt.value}

@@ -111,7 +111,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
     : 0;
 
   return (
-    <div ref={searchRef} className={`search-bar ${className}`} style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
+    <div ref={searchRef} className={`search-bar ${className} relative`} style={{ width: '100%', maxWidth: '600px' }}>
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
         <input
           type="text"
@@ -144,13 +144,11 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
           }}
         />
         <span
+          className="absolute fs-16 text-secondary"
           style={{
-            position: 'absolute',
             left: '12px',
             top: '50%',
             transform: 'translateY(-50%)',
-            fontSize: '16px',
-            color: 'var(--color-text-secondary)',
           }}
         >
           🔍
@@ -159,28 +157,24 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
       {isOpen && query.trim().length >= 2 && (
         <div
+          className="absolute rounded-8 shadow-lg overflow-y-auto z-1000"
           style={{
-            position: 'absolute',
             top: 'calc(100% + 8px)',
             left: 0,
             right: 0,
             backgroundColor: 'var(--app-surface, var(--color-background-primary))',
             border: '1px solid var(--app-border, var(--color-border))',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-lg)',
             maxHeight: '70vh',
-            overflowY: 'auto',
-            zIndex: 1000,
           }}
         >
           {isSearching && (
-            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+            <div className="p-16 text-center text-secondary">
               Searching...
             </div>
           )}
 
           {!isSearching && totalResults === 0 && (
-            <div style={{ padding: '16px', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
+            <div className="p-16 text-center text-secondary">
               No results found for "{query}"
             </div>
           )}
@@ -194,30 +188,21 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                 if (!categoryResults || categoryResults.length === 0) return null;
 
                 return (
-                  <div key={category} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  <div key={category} className="border-bottom">
                     <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '12px 16px',
-                        backgroundColor: 'var(--color-background-secondary)',
-                        fontWeight: '600',
-                        fontSize: '13px',
-                        color: 'var(--color-text-primary)',
-                      }}
+                      className="flex-between py-12 px-16 fw-600 fs-13 text-primary"
+                      style={{ backgroundColor: 'var(--color-background-secondary)' }}
                     >
                       <span>
                         {getCategoryIcon(category)} {getCategoryLabel(category)}
                       </span>
                       <button
                         onClick={() => handleViewAll(category)}
+                        className="fs-12 cursor-pointer"
                         style={{
                           background: 'none',
                           border: 'none',
                           color: 'var(--color-primary)',
-                          fontSize: '12px',
-                          cursor: 'pointer',
                           padding: '4px 8px',
                         }}
                       >
@@ -228,14 +213,12 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                       <button
                         key={result.id}
                         onClick={() => handleResultClick(result)}
+                        className="text-left cursor-pointer transition"
                         style={{
                           width: '100%',
                           padding: '12px 16px',
                           border: 'none',
                           background: 'none',
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.2s',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.backgroundColor = 'var(--color-background-secondary)';
@@ -244,16 +227,13 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                           e.currentTarget.style.backgroundColor = 'transparent';
                         }}
                       >
-                        <div style={{ fontWeight: '500', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                        <div className="fw-500 text-primary mb-4">
                           {result.title}
                         </div>
                         {result.highlight && (
                           <div
-                            style={{
-                              fontSize: '13px',
-                              color: 'var(--color-text-secondary)',
-                              lineHeight: '1.4',
-                            }}
+                            className="fs-13 text-secondary"
+                            style={{ lineHeight: '1.4' }}
                             dangerouslySetInnerHTML={{ __html: result.highlight }}
                           />
                         )}

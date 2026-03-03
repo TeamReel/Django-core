@@ -100,8 +100,7 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => d.setIsMatchDetailModalOpen(true)}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
-                style={{ padding: '6px 12px' }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
               >
                 View
               </button>
@@ -109,8 +108,7 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => d.setIsMatchEditModalOpen(true)}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
-                style={{ padding: '6px 12px' }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
               >
                 Edit
               </button>
@@ -119,8 +117,7 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={d.handleDeleteMatch}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
-                style={{ padding: '6px 12px' }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
               >
                 Delete
               </button>
@@ -129,8 +126,7 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => d.openContentModal()}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
-                style={{ padding: '6px 12px' }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
               >
                 Generate Content (AI)
               </button>
@@ -139,8 +135,7 @@ export default function HierarchyMatchDetailPage() {
               <button
                 type="button"
                 onClick={() => d.setIsCreateTxnModalOpen(true)}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
-                style={{ padding: '6px 12px' }}
+                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
               >
                 Create transaction
               </button>

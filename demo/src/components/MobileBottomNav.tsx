@@ -118,32 +118,23 @@ export default function MobileBottomNav() {
         onClick={() => tab.path && navigate(tab.path)}
         aria-label={tab.label}
         aria-current={active ? 'page' : undefined}
+        className="flex-1 flex-col flex-center cursor-pointer transition"
         style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
           gap: '2px',
           minWidth: '44px',
           minHeight: '44px',
           padding: '6px 4px',
           backgroundColor: 'transparent',
           border: 'none',
-          cursor: 'pointer',
           color: active ? 'var(--app-primary)' : 'var(--app-muted-text)',
-          transition: 'color 0.2s ease',
         }}
       >
         {/* Icon with filled pill background when active */}
         <span
+          className="flex-center rounded-12"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
             width: '32px',
             height: '24px',
-            borderRadius: '12px',
             backgroundColor: active ? 'var(--app-primary)' : 'transparent',
             transition: 'background-color 0.2s ease',
           }}
@@ -170,46 +161,35 @@ export default function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mobile-bottom-nav"
+        className="mobile-bottom-nav fixed bg-surface border-top z-1000"
         style={{
-          position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
           height: '64px',
-          backgroundColor: 'var(--app-surface)',
-          borderTop: '1px solid var(--app-border)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-around',
           padding: '0 4px',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          zIndex: 1000,
         }}
       >
         {/* Left tabs: Home, Season */}
         {tabs.slice(0, 2).map(renderTab)}
 
         {/* Center: raised + Create button */}
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+        <div className="flex-1 flex-center relative">
           <button
             onClick={() => setWizardOpen(true)}
             aria-label="Create content"
+            className="absolute rounded-full text-white cursor-pointer flex-center transition"
             style={{
-              position: 'absolute',
               bottom: '8px',
               width: '52px',
               height: '52px',
-              borderRadius: '50%',
               backgroundColor: 'var(--app-primary, #3B8EA5)',
-              color: 'white',
               border: '3px solid var(--app-surface)',
               boxShadow: '0 2px 12px rgba(0, 0, 0, 0.2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
             }}
             onTouchStart={(e) => {
               e.currentTarget.style.transform = 'scale(0.93)';

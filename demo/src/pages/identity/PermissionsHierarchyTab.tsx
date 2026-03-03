@@ -16,10 +16,10 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
   return (
     <>
       <Card className="mb-6 p-20">
-        <div className="gap-16 flex-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className="flex-between gap-16 flex-wrap" style={{ alignItems: 'flex-start' }}>
           <div>
             <h3 className="m-0 fs-18 fw-700">Role Hierarchy</h3>
-            <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
+            <p className="text-muted" style={{ margin: '6px 0 0', fontSize: '0.9rem' }}>
               Higher roles generally include all permissions of the roles below.
             </p>
           </div>
@@ -48,8 +48,8 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
                     padding: '14px',
                     boxShadow: isCurrent ? '0 0 0 2px rgba(0,0,0,0)' : 'none',
                   }}>
-                  <div className="gap-12" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                    <div className="gap-12" style={{ display: 'flex', alignItems: 'flex-start' }}>
+                  <div className="flex-between gap-12" style={{ alignItems: 'flex-start' }}>
+                    <div className="flex-row gap-12" style={{ alignItems: 'flex-start' }}>
                       <div className="flex-center fw-800"
                         style={{ width: '34px', height: '34px', borderRadius: '10px', backgroundColor: 'var(--app-table-header-bg)', border: '1px solid var(--app-border)' }}
                         aria-label={`Role level ${roleInfo.level}`}>{roleInfo.level}</div>
@@ -67,7 +67,7 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
                   {roleHighlights[roleKey]?.length ? (
                     <div className="grid gap-6" style={{ marginTop: '10px' }}>
                       {roleHighlights[roleKey].map(line => (
-                        <div key={line} className="gap-8" style={{ display: 'flex', color: 'var(--app-muted-text)', fontSize: '0.85rem' }}>
+                        <div key={line} className="flex-row gap-8 text-muted" style={{ fontSize: '0.85rem' }}>
                           <span aria-hidden="true">•</span><span>{line}</span>
                         </div>
                       ))}
@@ -82,7 +82,7 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
       {/* Hierarchy Ladder */}
       <Card className="p-20">
         <h3 className="m-0 fs-18 fw-700">Hierarchy Ladder</h3>
-        <p style={{ margin: '6px 0 0', fontSize: '0.9rem', color: 'var(--app-muted-text)' }}>
+        <p className="text-muted" style={{ margin: '6px 0 0', fontSize: '0.9rem' }}>
           Scopes flow from org → club → team, with increasing restrictions.
         </p>
         <div className="rounded-12" style={{ marginTop: '14px', padding: '14px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
@@ -92,7 +92,7 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
               const isCurrent = currentRoleKey === roleKey;
               const isLast = idx === arr.length - 1;
               return (
-                <div key={roleKey} className="gap-12" style={{ display: 'flex' }}>
+                <div key={roleKey} className="flex-row gap-12">
                   <div className="flex-col" style={{ width: '18px', alignItems: 'center' }}>
                     <div className="rounded-full mt-4"
                       style={{ width: '10px', height: '10px', backgroundColor: isCurrent ? 'var(--app-focus-ring)' : 'var(--app-border)' }} />
