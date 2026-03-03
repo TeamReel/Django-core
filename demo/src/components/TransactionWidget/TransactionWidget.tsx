@@ -40,7 +40,7 @@ const TransactionItem: React.FC<{ transaction: Transaction }> = ({ transaction }
       <div style={{
         fontSize: '16px',
         fontWeight: 700,
-        color: isCredit ? '#10b981' : '#ef4444',
+        color: isCredit ? 'var(--color-green-400)' : 'var(--color-red-500)',
         minWidth: '80px',
         textAlign: 'right'
       }}>

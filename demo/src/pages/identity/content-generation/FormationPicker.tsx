@@ -91,7 +91,7 @@ export function FormationPicker({
                   <div style={{
                     position: 'absolute', top: 2, right: 2,
                     width: 12, height: 12, borderRadius: '50%',
-                    background: '#10b981', display: 'flex',
+                    background: 'var(--color-green-400)', display: 'flex',
                     alignItems: 'center', justifyContent: 'center',
                     fontSize: 7, color: '#fff', fontWeight: 700,
                   }}>✓</div>

@@ -230,7 +230,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
               style={{
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: '#ef4444',
+                color: 'var(--color-red-500)',
               }}
             >
               {error}
@@ -279,7 +279,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
                           className="h-full"
                           style={{
                             width: `${progress}%`,
-                            background: isCancelling ? '#f59e0b' : '#3b82f6',
+                            background: isCancelling ? 'var(--color-amber-400)' : 'var(--color-blue-500)',
                             transition: 'width 0.3s ease',
                           }}
                         />

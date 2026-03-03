@@ -407,7 +407,7 @@ export default function MatchCreateModal({
                 padding: '8px 12px',
                 borderRadius: '6px',
                 border: '1px solid #1e5aa5',
-                backgroundColor: '#2563eb',
+                backgroundColor: 'var(--color-blue-600)',
                 color: '#fff',
                 cursor: d.isSaving ? 'not-allowed' : 'pointer',
                 fontWeight: 600,

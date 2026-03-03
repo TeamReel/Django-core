@@ -64,7 +64,7 @@ export function ContentCard({
           ) : (
             <span style={{ fontSize: 40, opacity: 0.3 }}>{getAssetTypeIcon(normalizedType)}</span>
           )}
-          <span className="absolute fw-700" style={{ top: 8, left: 8, fontSize: 10, padding: '2px 8px', borderRadius: 10, backgroundColor: '#2563eb', color: '#fff' }}>
+          <span className="absolute fw-700" style={{ top: 8, left: 8, fontSize: 10, padding: '2px 8px', borderRadius: 10, backgroundColor: 'var(--color-blue-600)', color: '#fff' }}>
             {getAssetTypeLabel(normalizedType)}
           </span>
           {isVideo && (

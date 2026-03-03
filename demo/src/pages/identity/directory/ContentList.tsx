@@ -50,7 +50,7 @@ const statusColors: Record<string, { bg: string; fg: string }> = {
   queued: { bg: '#fef9c3', fg: '#854d0e' },
   waiting: { bg: '#fef9c3', fg: '#854d0e' },
   failed: { bg: '#fde2e2', fg: '#991b1b' },
-  cancelled: { bg: '#f3f4f6', fg: '#6b7280' },
+  cancelled: { bg: '#f3f4f6', fg: 'var(--app-muted-text)' },
 };
 
 const approvalColors: Record<string, { bg: string; fg: string }> = {
@@ -234,7 +234,7 @@ export const ContentList: React.FC = () => {
                 <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                   <td style={compactTdStyle}>
                     <span style={{ fontSize: 15, marginRight: 3 }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
-                    <span className="fs-11" style={{ color: '#6b7280' }}>{job.output_asset_type || job.output_type}</span>
+                    <span className="fs-11" style={{ color: 'var(--app-muted-text)' }}>{job.output_asset_type || job.output_type}</span>
                   </td>
                   <td style={compactTextTdStyle}>{job.label || '—'}</td>
                   <td style={compactTextTdStyle}>{job.membership_name || '—'}</td>

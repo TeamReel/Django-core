@@ -122,7 +122,7 @@ export function ProjectsTable({ d }: { d: Data }) {
                     {canDel && (
                       <button onClick={() => handleDelete(project.id)}
                         className="p-4 px-8 rounded-4 cursor-pointer fs-12"
-                        style={{ border: '1px solid #dc3545', backgroundColor: 'var(--app-surface)', color: '#dc3545' }}>
+                        style={{ border: '1px solid #dc3545', backgroundColor: 'var(--app-surface)', color: 'var(--app-error)' }}>
                         Delete
                       </button>
                     )}

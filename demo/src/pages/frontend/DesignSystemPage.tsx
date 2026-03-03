@@ -273,15 +273,15 @@ export function DesignSystemPage() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Button Clicks</p>
-                  <p style={{ fontSize: '24px', fontWeight: 700, color: '#3b82f6' }}>{clickCount}</p>
+                  <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-blue-500)' }}>{clickCount}</p>
                 </div>
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Input Length</p>
-                  <p style={{ fontSize: '24px', fontWeight: 700, color: '#10b981' }}>{inputValue.length}</p>
+                  <p style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-green-400)' }}>{inputValue.length}</p>
                 </div>
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--app-muted-text)' }}>Loading State</p>
-                  <p style={{ fontSize: '24px', fontWeight: 700, color: isLoading ? '#f59e0b' : 'var(--app-muted-text)' }}>
+                  <p style={{ fontSize: '24px', fontWeight: 700, color: isLoading ? 'var(--color-amber-400)' : 'var(--app-muted-text)' }}>
                     {isLoading ? 'ON' : 'OFF'}
                   </p>
                 </div>

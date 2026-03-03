@@ -143,7 +143,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
                             type="radio"
                             checked={d.selectedAction === action.key}
                             onChange={() => d.setSelectedAction(action.key)}
-                            style={{ marginTop: '2px', accentColor: '#3b82f6' }}
+                            style={{ marginTop: '2px', accentColor: 'var(--color-blue-500)' }}
                         />
                         <div className="flex-1">
                             <div className="fw-500 fs-14">{action.icon} {action.label}</div>
@@ -169,7 +169,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
                                 type="radio"
                                 checked={d.selectedRole === opt.value}
                                 onChange={() => d.setSelectedRole(opt.value)}
-                                style={{ marginTop: '2px', accentColor: '#3b82f6' }}
+                                style={{ marginTop: '2px', accentColor: 'var(--color-blue-500)' }}
                             />
                             <div className="flex-1">
                                 <div className="flex-row gap-8">
@@ -214,7 +214,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
                 <div className="gap-10" style={{ display: 'flex', alignItems: 'flex-start' }}>
                     <span className="fs-20">⚠️</span>
                     <div>
-                        <div className="fw-600 fs-14" style={{ color: '#ef4444' }}>
+                        <div className="fw-600 fs-14" style={{ color: 'var(--color-red-500)' }}>
                             Let op: deze actie kan niet ongedaan worden
                         </div>
                         <div className="fs-13 text-muted mt-4">
@@ -232,7 +232,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
         {d.canProceed && (
             <div style={{ ...cardStyle, marginTop: '16px', borderColor: '#3b82f644' }}>
                 <div className="flex-row gap-8 fs-13">
-                    <span className="fw-600" style={{ color: '#3b82f6' }}>Samenvatting:</span>
+                    <span className="fw-600" style={{ color: 'var(--color-blue-500)' }}>Samenvatting:</span>
                     <span className="text-primary">{d.getSummaryText()}</span>
                 </div>
             </div>
@@ -249,13 +249,13 @@ const RunningStep: React.FC<{ progress: HookData['progress']; progressPercent: n
             <div style={progressBarBg}>
                 <div style={{
                     width: `${progressPercent}%`, height: '100%', borderRadius: '3px',
-                    background: '#3b82f6', transition: 'width 0.3s ease',
+                    background: 'var(--color-blue-500)', transition: 'width 0.3s ease',
                 }} />
             </div>
         </div>
         <div className="flex-center gap-16 fs-13">
-            <span style={{ color: '#10b981' }}>✓ {progress.success} geslaagd</span>
-            {progress.failed > 0 && <span style={{ color: '#ef4444' }}>✗ {progress.failed} mislukt</span>}
+            <span style={{ color: 'var(--color-green-400)' }}>✓ {progress.success} geslaagd</span>
+            {progress.failed > 0 && <span style={{ color: 'var(--color-red-500)' }}>✗ {progress.failed} mislukt</span>}
         </div>
     </div>
 );
@@ -273,7 +273,7 @@ const DoneStep: React.FC<{ progress: HookData['progress']; errors: string[] }> =
         </div>
         {errors.length > 0 && (
             <div style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)', marginTop: '12px' }}>
-                <div className="fs-13 fw-600" style={{ color: '#ef4444', marginBottom: '6px' }}>Fouten:</div>
+                <div className="fs-13 fw-600" style={{ color: 'var(--color-red-500)', marginBottom: '6px' }}>Fouten:</div>
                 <ul className="m-0 fs-12 text-muted" style={{ paddingLeft: '18px' }}>
                     {errors.slice(0, 10).map((err, i) => <li key={i}>{err}</li>)}
                     {errors.length > 10 && <li>...en {errors.length - 10} meer</li>}

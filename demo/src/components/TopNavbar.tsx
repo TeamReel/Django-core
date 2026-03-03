@@ -77,7 +77,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     aria-controls="mega-menu-panel"
                     className={s.groupTrigger}
                     style={{
-                      color: isActive ? '#2563eb' : 'var(--app-text)',
+                      color: isActive ? 'var(--color-blue-600)' : 'var(--app-text)',
                       backgroundColor: isActive || isOpen ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                       fontWeight: isActive ? 600 : 500,
                     }}
@@ -109,7 +109,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                               onClick={() => d.setOpenDropdown(null)}
                               className={s.megaItem}
                               style={{
-                                color: d.isItemActive(item.path) ? '#2563eb' : 'var(--app-text)',
+                                color: d.isItemActive(item.path) ? 'var(--color-blue-600)' : 'var(--app-text)',
                                 backgroundColor: d.isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                               }}
                               onMouseEnter={(e) => { if (!d.isItemActive(item.path)) e.currentTarget.style.backgroundColor = 'var(--app-surface-2)'; }}
@@ -266,7 +266,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               >
                 <AppIcon icon={Bell} size={20} />
                 {d.unreadCount > 0 && (
-                  <span className={s.badge} style={{ backgroundColor: '#dc3545' }}>{d.unreadCount}</span>
+                  <span className={s.badge} style={{ backgroundColor: 'var(--app-error)' }}>{d.unreadCount}</span>
                 )}
               </button>
 
@@ -364,7 +364,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             to={d.dashboardItem.path}
             className={s.mobileDashLink}
             style={{
-              color: d.isItemActive(d.dashboardItem.path) ? '#2563eb' : 'var(--app-text)',
+              color: d.isItemActive(d.dashboardItem.path) ? 'var(--color-blue-600)' : 'var(--app-text)',
               backgroundColor: d.isItemActive(d.dashboardItem.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
               fontWeight: d.isItemActive(d.dashboardItem.path) ? 600 : 500,
             }}
@@ -381,7 +381,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                   to={item.path}
                   className={s.mobileGroupItem}
                   style={{
-                    color: d.isItemActive(item.path) ? '#2563eb' : 'var(--app-text)',
+                    color: d.isItemActive(item.path) ? 'var(--color-blue-600)' : 'var(--app-text)',
                     backgroundColor: d.isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
                     fontWeight: d.isItemActive(item.path) ? 600 : 400,
                   }}

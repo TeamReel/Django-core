@@ -210,7 +210,7 @@ export function VariantCard({
           style={{
             aspectRatio: isVideoContent ? '9 / 16' : '3 / 4',
             background: 'var(--vscode-input-background, #3c3c3c)',
-            color: '#ef4444',
+            color: 'var(--color-red-500)',
           }}
         >
           {variant.error || (isVideoContent ? 'Geen video' : 'Geen afbeelding')}
@@ -222,7 +222,7 @@ export function VariantCard({
             position: 'absolute',
             top: 6,
             right: 6,
-            background: '#10b981',
+            background: 'var(--color-green-400)',
             color: '#fff',
             width: 24,
             height: 24,

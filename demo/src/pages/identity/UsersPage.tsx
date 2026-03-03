@@ -71,7 +71,7 @@ export default function UsersPage() {
       />
 
       {d.error && (
-        <div className="p-12 rounded-4 mb-24" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)', color: '#dc3545', border: '1px solid rgba(220, 53, 69, 0.3)' }}>
+        <div className="p-12 rounded-4 mb-24" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)', color: 'var(--app-error)', border: '1px solid rgba(220, 53, 69, 0.3)' }}>
           {d.error}
         </div>
       )}

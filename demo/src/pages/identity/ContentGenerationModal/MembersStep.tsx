@@ -100,7 +100,7 @@ export function MembersStep({
                           <div className="absolute rounded-full flex-center fw-700" style={{
                             top: 6, right: 6,
                             width: 18, height: 18,
-                            background: '#10b981',
+                            background: 'var(--color-green-400)',
                             fontSize: 10, color: '#fff',
                           }}>✓</div>
                         )}
@@ -144,7 +144,7 @@ export function MembersStep({
                           <div className="absolute rounded-full flex-center fw-700" style={{
                             top: 4, right: 4,
                             width: 18, height: 18,
-                            background: '#10b981',
+                            background: 'var(--color-green-400)',
                             fontSize: 10, color: '#fff',
                           }}>✓</div>
                         )}
@@ -190,7 +190,7 @@ export function MembersStep({
                           <div className="absolute rounded-full flex-center fw-700" style={{
                             top: 4, right: 4,
                             width: 18, height: 18,
-                            background: '#10b981',
+                            background: 'var(--color-green-400)',
                             fontSize: 10, color: '#fff',
                           }}>✓</div>
                         )}
@@ -231,7 +231,7 @@ export function MembersStep({
                       <div className="absolute rounded-full flex-center fw-700" style={{
                         top: 3, right: 3,
                         width: 16, height: 16,
-                        background: '#10b981',
+                        background: 'var(--color-green-400)',
                         fontSize: 9, color: '#fff',
                       }}>✓</div>
                     )}
@@ -264,7 +264,7 @@ export function MembersStep({
                           <div className="absolute rounded-full flex-center fw-700" style={{
                             top: 3, right: 3,
                             width: 16, height: 16,
-                            background: '#10b981',
+                            background: 'var(--color-green-400)',
                             fontSize: 9, color: '#fff',
                           }}>✓</div>
                         )}

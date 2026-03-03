@@ -14,7 +14,7 @@ export default function SettingsLandingPage() {
       label: 'Preferences',
       description: 'Manage your personal settings and notifications',
       icon: Settings,
-      color: '#6b7280',
+      color: 'var(--app-muted-text)',
     },
   ];
 
@@ -34,7 +34,7 @@ export default function SettingsLandingPage() {
       label: 'Organisation',
       description: 'Manage members, roles, and permissions',
       icon: Users,
-      color: '#3b82f6',
+      color: 'var(--color-blue-500)',
     });
   }
 
@@ -44,7 +44,7 @@ export default function SettingsLandingPage() {
       label: 'Platform',
       description: 'System health, integrations, and diagnostics',
       icon: Activity,
-      color: '#10b981',
+      color: 'var(--color-green-400)',
     });
 
     tiles.push({
@@ -52,7 +52,7 @@ export default function SettingsLandingPage() {
       label: 'Feature Flags',
       description: 'Control feature availability across the platform',
       icon: Shield,
-      color: '#f59e0b',
+      color: 'var(--color-amber-400)',
     });
   }
 

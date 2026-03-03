@@ -227,7 +227,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
               {/* Demo Helper: Show current mode */}
               <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
                 padding: '4px 10px',
-                backgroundColor: isSuperAdmin ? '#3b82f6' : '#a855f7',
+                backgroundColor: isSuperAdmin ? 'var(--color-blue-500)' : '#a855f7',
                 color: 'white',
                 letterSpacing: '0.5px',
               }}>
@@ -247,7 +247,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
                       className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
                       style={{
                         transition: 'all 0.2s',
-                        backgroundColor: editMode === 'global' ? '#3b82f6' : 'transparent',
+                        backgroundColor: editMode === 'global' ? 'var(--color-blue-500)' : 'transparent',
                         color: editMode === 'global' ? 'white' : 'var(--app-text)',
                       }}
                       onClick={() => setEditMode('global')}

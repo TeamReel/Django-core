@@ -24,7 +24,7 @@ function UnlinkButton({
           borderRadius: '4px',
           border: '1px solid #dc3545',
           backgroundColor: 'var(--app-surface)',
-          color: '#dc3545',
+          color: 'var(--app-error)',
           cursor: saving ? 'not-allowed' : 'pointer',
           fontSize: '12px',
           fontWeight: 600,
@@ -72,7 +72,7 @@ export default function LinkUserModal(props: LinkUserModalProps) {
         <form onSubmit={d.onSubmit}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {d.error && (
-              <div style={{ padding: '12px', backgroundColor: 'rgba(220,53,69,0.1)', color: '#dc3545', border: '1px solid rgba(220,53,69,0.2)', borderRadius: '4px', fontSize: '14px' }}>
+              <div style={{ padding: '12px', backgroundColor: 'rgba(220,53,69,0.1)', color: 'var(--app-error)', border: '1px solid rgba(220,53,69,0.2)', borderRadius: '4px', fontSize: '14px' }}>
                 {d.error}
               </div>
             )}

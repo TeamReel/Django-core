@@ -63,7 +63,7 @@ function ProgressBar({ percent }: { percent: number }) {
       <div className="h-full" style={{
         width: `${Math.min(percent, 100)}%`,
         borderRadius: 3,
-        backgroundColor: percent >= 100 ? '#059669' : '#2563eb',
+        backgroundColor: percent >= 100 ? '#059669' : 'var(--color-blue-600)',
         transition: 'width 0.5s ease-out',
       }} />
     </div>
@@ -176,7 +176,7 @@ function JobCard({
             style={{
               padding: '5px 12px',
               border: '1px solid #2563eb',
-              backgroundColor: '#2563eb',
+              backgroundColor: 'var(--color-blue-600)',
               color: '#fff',
             }}
           >
@@ -257,9 +257,9 @@ export default function VideoQueuePage() {
               style={{
                 padding: '5px 12px',
                 borderRadius: 16,
-                border: `1px solid ${filter === opt.value ? '#2563eb' : 'var(--app-border, #e5e7eb)'}`,
+                border: `1px solid ${filter === opt.value ? 'var(--color-blue-600)' : 'var(--app-border, #e5e7eb)'}`,
                 backgroundColor: filter === opt.value ? '#dbeafe' : 'transparent',
-                color: filter === opt.value ? '#2563eb' : 'var(--app-text-secondary, #6b7280)',
+                color: filter === opt.value ? 'var(--color-blue-600)' : 'var(--app-text-secondary, #6b7280)',
                 fontWeight: filter === opt.value ? 600 : 400,
               }}
             >

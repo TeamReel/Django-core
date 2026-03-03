@@ -367,7 +367,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
               border: 'none',
               textAlign: 'left',
               fontSize: '14px',
-              color: signOutLoading ? 'var(--app-muted-text)' : '#dc3545',
+              color: signOutLoading ? 'var(--app-muted-text)' : 'var(--app-error)',
               cursor: signOutLoading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',

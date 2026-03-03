@@ -16,7 +16,7 @@ export type TabId = 'overview' | 'modules' | 'roadmap' | 'architecture' | 'visio
 
 export const getStatusColor = (status: ModuleInfo['status']): string => {
   switch (status) {
-    case 'complete': return '#28a745';
+    case 'complete': return 'var(--app-success)';
     case 'in-progress': return '#fd7e14';
     case 'planned': return '#6c757d';
     default: return '#6c757d';

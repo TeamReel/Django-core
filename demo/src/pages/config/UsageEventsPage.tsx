@@ -41,7 +41,7 @@ export const UsageEventsPage: React.FC = () => {
             {/* Role badge */}
             <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
               padding: '4px 10px',
-              backgroundColor: d.isSuperadmin ? '#3b82f6' : '#a855f7',
+              backgroundColor: d.isSuperadmin ? 'var(--color-blue-500)' : '#a855f7',
               color: 'white',
               letterSpacing: '0.5px',
             }}>
@@ -154,7 +154,7 @@ export const UsageEventsPage: React.FC = () => {
                       <button
                         onClick={() => d.setSelectedEvent(event)}
                         className="px-8 py-4 fs-12 border-none cursor-pointer bg-transparent"
-                        style={{ color: '#007bff', textDecoration: 'underline' }}
+                        style={{ color: 'var(--app-primary)', textDecoration: 'underline' }}
                       >
                         Details
                       </button>
@@ -225,7 +225,7 @@ const ScopeToggle: React.FC<{
         style={{
           transition: 'all 0.2s',
           backgroundColor: editMode === mode
-            ? (mode === 'global' ? '#3b82f6' : '#a855f7')
+            ? (mode === 'global' ? 'var(--color-blue-500)' : '#a855f7')
             : 'transparent',
           color: editMode === mode ? 'white' : 'var(--app-text)',
         }}

@@ -107,7 +107,7 @@ export function SuccessStep({
                   <div className="absolute rounded-full flex-center fs-12 fw-700" style={{
                     top: '8px', left: '8px',
                     width: '24px', height: '24px',
-                    background: isSaved ? '#22c55e' : isSelected ? '#3b82f6' : 'var(--app-surface-2, #e5e7eb)',
+                    background: isSaved ? '#22c55e' : isSelected ? 'var(--color-blue-500)' : 'var(--app-surface-2, #e5e7eb)',
                     color: isSaved || isSelected ? '#ffffff' : 'var(--app-text-muted, #6b7280)',
                   }}>
                     {isSaved ? '\u2713' : index + 1}
@@ -173,7 +173,7 @@ export function SuccessStep({
                   >
                     Je browser ondersteunt geen video.
                   </video>
-                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white' }}>
+                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)', color: 'white' }}>
                     {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                   </div>
                   {generatedVariants[0].storage_info && (
@@ -198,7 +198,7 @@ export function SuccessStep({
                       <button
                         onClick={(e) => { e.stopPropagation(); handleGenerateInternal(); }}
                         className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer"
-                        style={{ padding: '6px 12px', border: '1px solid #3b82f6', color: '#3b82f6' }}
+                        style={{ padding: '6px 12px', border: '1px solid #3b82f6', color: 'var(--color-blue-500)' }}
                       >
                         Opnieuw
                       </button>
@@ -209,7 +209,7 @@ export function SuccessStep({
                           if (url) window.open(url, '_blank');
                         }}
                         className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer"
-                        style={{ padding: '6px 12px', border: '1px solid #6b7280', color: '#6b7280' }}
+                        style={{ padding: '6px 12px', border: '1px solid #6b7280', color: 'var(--app-muted-text)' }}
                       >
                         Download
                       </button>
@@ -239,7 +239,7 @@ export function SuccessStep({
                           if (url) window.open(url, '_blank');
                         }}
                         className="flex-1 rounded-6 bg-transparent fs-12 fw-600 cursor-pointer"
-                        style={{ padding: '6px 12px', border: '1px solid #6b7280', color: '#6b7280' }}
+                        style={{ padding: '6px 12px', border: '1px solid #6b7280', color: 'var(--app-muted-text)' }}
                       >
                         Groot bekijken
                       </button>
@@ -267,7 +267,7 @@ export function SuccessStep({
                     className="w-full block"
                     style={{ maxHeight: '280px', objectFit: 'contain' }}
                   />
-                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white' }}>
+                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)', color: 'white' }}>
                     {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export function SuccessStep({
                     className="w-full block"
                     style={{ maxHeight: '280px', objectFit: 'contain' }}
                   />
-                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : '#3b82f6', color: 'white' }}>
+                  <div className="absolute rounded-12 fs-11 fw-600" style={{ top: 8, right: 8, padding: '4px 10px', background: saveSuccess ? '#22c55e' : 'var(--color-blue-500)', color: 'white' }}>
                     {savingAsset ? 'Opslaan...' : saveSuccess ? 'Opgeslagen' : 'Klik om op te slaan'}
                   </div>
                 </div>

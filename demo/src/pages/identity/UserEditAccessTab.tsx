@@ -56,7 +56,7 @@ export function UserEditAccessTab({
 }: UserEditAccessTabProps) {
   const selectStyle: React.CSSProperties = { width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)' };
   const btnPrimary = (disabled: boolean): React.CSSProperties => ({
-    padding: '10px 12px', borderRadius: '6px', border: '1px solid #007bff', backgroundColor: '#007bff',
+    padding: '10px 12px', borderRadius: '6px', border: '1px solid #007bff', backgroundColor: 'var(--app-primary)',
     color: '#fff', cursor: disabled ? 'not-allowed' : 'pointer', fontWeight: 800,
   });
 

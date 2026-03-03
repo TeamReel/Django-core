@@ -39,16 +39,16 @@ export function AssetCard({
   const isProcessed = !isUploadType && !assetType.endsWith('_combined');
   const isCombined = assetType.endsWith('_combined');
 
-  let badgeColor = '#6b7280'; // gray
+  let badgeColor = 'var(--app-muted-text)'; // gray
   let badgeText = '';
   if (isUploadType) {
-    badgeColor = '#3b82f6'; // blue
+    badgeColor = 'var(--color-blue-500)'; // blue
     badgeText = 'Upload';
   } else if (isCombined) {
     badgeColor = '#8b5cf6'; // purple
     badgeText = 'AI Combined';
   } else if (isProcessed && !['watermark', 'favicon', 'font_file', 'location_photo', 'other'].includes(assetType)) {
-    badgeColor = '#10b981'; // green
+    badgeColor = 'var(--color-green-400)'; // green
     badgeText = 'AI Bewerkt';
   }
 
@@ -99,7 +99,7 @@ export function AssetCard({
               position: 'absolute',
               top: 6,
               left: 6,
-              background: '#f59e0b',
+              background: 'var(--color-amber-400)',
               color: '#000',
               fontSize: 10,
               padding: '2px 6px',

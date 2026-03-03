@@ -143,10 +143,10 @@ export function getMemberContentType(assetType: string): string {
 /** Badge color per hierarchy level */
 export function levelColor(level: HierarchyLevel): string {
   switch (level) {
-    case 'club': return '#2563eb';
+    case 'club': return 'var(--color-blue-600)';
     case 'team': return '#7c3aed';
     case 'member': return '#059669';
-    default: return '#6b7280';
+    default: return 'var(--app-muted-text)';
   }
 }
 

@@ -1,29 +1,108 @@
 /* Global styles for Django Core-App Demo Shell */
 
-/* Theme bridge: minimal app-level variables driven by data-theme */
+/* ======================================================================
+   COLOR SCALE — Systematic palette (50–900)
+   ====================================================================== */
+:root {
+  /* Primary (Ocean Teal) */
+  --color-primary-50:  #e6f4f7;
+  --color-primary-100: #b3dfe8;
+  --color-primary-200: #80c9d9;
+  --color-primary-300: #4db3ca;
+  --color-primary-400: #3B8EA5;
+  --color-primary-500: #2e7a8f;
+  --color-primary-600: #266879;
+  --color-primary-700: #1e5563;
+  --color-primary-800: #16424d;
+  --color-primary-900: #0e2f37;
+
+  /* Neutral (Navy → Ice) */
+  --color-neutral-50:  #EDF6FF;
+  --color-neutral-100: #D6EAFF;
+  --color-neutral-200: #b8d4f0;
+  --color-neutral-300: #94a3b8;
+  --color-neutral-400: #6b7280;
+  --color-neutral-500: #475569;
+  --color-neutral-600: #334155;
+  --color-neutral-700: #2e4a6d;
+  --color-neutral-800: #1C355E;
+  --color-neutral-900: #0A192F;
+
+  /* Green (Success) */
+  --color-green-50:  #e6fbf4;
+  --color-green-100: #b3f3de;
+  --color-green-200: #80ebc8;
+  --color-green-300: #4de3b2;
+  --color-green-400: #10b981;
+  --color-green-500: #06D6A0;
+  --color-green-600: #059c75;
+  --color-green-700: #04785a;
+  --color-green-800: #035540;
+  --color-green-900: #023226;
+
+  /* Red (Error / Danger) */
+  --color-red-50:  #fde8ea;
+  --color-red-100: #f9bcc2;
+  --color-red-200: #f4909a;
+  --color-red-300: #ef6472;
+  --color-red-400: #E63946;
+  --color-red-500: #dc2626;
+  --color-red-600: #b91c1c;
+  --color-red-700: #991b1b;
+  --color-red-800: #7f1d1d;
+  --color-red-900: #651a1a;
+
+  /* Amber (Warning) */
+  --color-amber-50:  #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #FFD166;
+  --color-amber-400: #f59e0b;
+  --color-amber-500: #d97706;
+  --color-amber-600: #b45309;
+  --color-amber-700: #92400e;
+  --color-amber-800: #78350f;
+  --color-amber-900: #5c2c06;
+
+  /* Blue (Info / Actions) */
+  --color-blue-50:  #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+}
+
+/* ======================================================================
+   SEMANTIC TOKENS — Light Theme
+   ====================================================================== */
 :root {
   /* Brand: Light Theme */
-  --app-bg: #EDF6FF;         /* Neutral Light (Ice White) */
-  --app-text: #1C355E;       /* Primary Dark (Deep Navy) */
-  --app-muted-text: #6b7280; /* Neutral gray (unchanged) */
-  --app-surface: #ffffff;    /* White standard for cards */
-  --app-surface-2: #F0F4F8;  /* Safe secondary surface */
+  --app-bg: var(--color-neutral-50);         /* Ice White */
+  --app-text: var(--color-neutral-800);      /* Deep Navy */
+  --app-muted-text: var(--color-neutral-400); /* Neutral gray */
+  --app-surface: #ffffff;
+  --app-surface-2: #F0F4F8;
   --app-surface-secondary: #f8f9fa;
   --app-border: #e5e5e5;
-  --app-link: #3B8EA5;       /* Primary Base (Ocean Teal) */
+  --app-link: var(--color-primary-400);      /* Ocean Teal */
   --app-table-header-bg: #ffffff;
   --app-table-row-bg: #ffffff;
-  --app-table-row-hover-bg: #EDF6FF; /* Use Ice White for hover */
+  --app-table-row-hover-bg: var(--color-neutral-50);
   --app-input-bg: #ffffff;
-  --app-input-text: #1C355E;
+  --app-input-text: var(--color-neutral-800);
   --app-input-border: #d1d5db;
-  --app-focus-ring: #4CA1FF; /* Primary Light (Sky Blue) */
-  --app-success: #06D6A0;    /* Success (Team Green) */
-  --app-warning: #FFD166;    /* Warning (Focus Amber) */
-  --app-error: #E63946;      /* Error (Signal Red) */
-  --app-info: #3B8EA5;       /* Ocean Teal */
-  --app-text-muted: #6b7280;
-  --app-surface-active: #D6EAFF; /* Stronger Ice White tint */
+  --app-focus-ring: #4CA1FF;
+  --app-success: var(--color-green-500);     /* Team Green */
+  --app-warning: var(--color-amber-300);     /* Focus Amber */
+  --app-error: var(--color-red-400);         /* Signal Red */
+  --app-info: var(--color-primary-400);      /* Ocean Teal */
+  --app-text-muted: var(--color-neutral-400);
+  --app-surface-active: var(--color-neutral-100);
 
   /* Derived aliases — referenced in code but previously undefined */
   --app-primary: var(--app-link);               /* Ocean Teal — alias for link/action color */
@@ -47,27 +126,27 @@
 
 [data-theme="dark"] {
   /* Brand: Dark Theme */
-  --app-bg: #0A192F;         /* Neutral Dark (Midnight Navy) */
-  --app-text: #EDF6FF;       /* Neutral Light (Ice White) for text */
-  --app-muted-text: #9ca3af;
-  --app-surface: #1C355E;    /* Primary Dark (Deep Navy) as surface */
-  --app-surface-2: #243f6e;  /* Slightly lighter Navy */
+  --app-bg: var(--color-neutral-900);        /* Midnight Navy */
+  --app-text: var(--color-neutral-50);       /* Ice White */
+  --app-muted-text: var(--color-neutral-300);
+  --app-surface: var(--color-neutral-800);   /* Deep Navy surface */
+  --app-surface-2: #243f6e;
   --app-surface-secondary: #243f6e;
-  --app-border: #3B8EA5;     /* Ocean Teal as border (subtle) or dark gray #404040? Keeping border subtle. */
-  --app-link: #4CA1FF;       /* Sky Blue */
-  --app-table-header-bg: #1C355E;
-  --app-table-row-bg: #0A192F;
-  --app-table-row-hover-bg: #1C355E;
-  --app-input-bg: #1C355E;
-  --app-input-text: #EDF6FF;
-  --app-input-border: #3B8EA5;
-  --app-focus-ring: #FF8C42; /* Accent Warm (Amber Momentum) */
-  --app-success: #06D6A0;
-  --app-warning: #FFD166;
-  --app-error: #E63946;
-  --app-info: #4CA1FF;
-  --app-text-muted: #9ca3af;
-  --app-surface-active: #1e3a8a;
+  --app-border: var(--color-neutral-700);
+  --app-link: var(--color-blue-400);         /* Sky Blue */
+  --app-table-header-bg: var(--color-neutral-800);
+  --app-table-row-bg: var(--color-neutral-900);
+  --app-table-row-hover-bg: var(--color-neutral-800);
+  --app-input-bg: var(--color-neutral-800);
+  --app-input-text: var(--color-neutral-50);
+  --app-input-border: var(--color-primary-400);
+  --app-focus-ring: #FF8C42;
+  --app-success: var(--color-green-500);
+  --app-warning: var(--color-amber-300);
+  --app-error: var(--color-red-400);
+  --app-info: var(--color-blue-400);
+  --app-text-muted: var(--color-neutral-300);
+  --app-surface-active: var(--color-blue-900);
 
   /* Derived aliases — dark mode */
   --app-primary: var(--app-link);               /* Sky Blue in dark mode */

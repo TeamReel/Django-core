@@ -119,7 +119,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   checked={allSelected}
                   onChange={handleSelectAll}
                   className="cursor-pointer"
-                  style={{ accentColor: '#3b82f6' }}
+                  style={{ accentColor: 'var(--color-blue-500)' }}
                   title={allSelected ? 'Deselecteer alles' : 'Selecteer alles'}
                 />
               </th>
@@ -217,7 +217,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                       checked={selectedIds.has(String(u.id))}
                       onChange={() => handleSelectOne(String(u.id))}
                       className="cursor-pointer"
-                      style={{ accentColor: '#3b82f6' }}
+                      style={{ accentColor: 'var(--color-blue-500)' }}
                     />
                   </td>
 

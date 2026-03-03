@@ -47,7 +47,7 @@ export default function UserEditModal({
     border: '1px solid var(--app-border)', background: 'var(--app-input-bg)', color: 'var(--app-text)',
   };
 
-  const btnPrimary = (disabled: boolean, bg = '#007bff'): React.CSSProperties => ({
+  const btnPrimary = (disabled: boolean, bg = 'var(--app-primary)'): React.CSSProperties => ({
     padding: '10px 16px', borderRadius: '6px', border: `1px solid ${bg}`,
     backgroundColor: bg, color: '#fff', cursor: disabled ? 'not-allowed' : 'pointer', fontWeight: 800,
   });
@@ -153,7 +153,7 @@ export default function UserEditModal({
                 {!organisationSlug && <div className="text-muted fs-12">Open this from a federation context so we can list clubs/teams.</div>}
 
                 {d.orgProjectsError && (
-                  <div style={{ padding: '10px', border: '1px solid rgba(220, 53, 69, 0.3)', background: 'rgba(220, 53, 69, 0.08)', color: '#dc3545', borderRadius: '6px' }}>{d.orgProjectsError}</div>
+                  <div style={{ padding: '10px', border: '1px solid rgba(220, 53, 69, 0.3)', background: 'rgba(220, 53, 69, 0.08)', color: 'var(--app-error)', borderRadius: '6px' }}>{d.orgProjectsError}</div>
                 )}
 
                 {/* Federation section */}
@@ -222,14 +222,14 @@ export default function UserEditModal({
             ) : null}
 
             {d.extraError && (
-              <div style={{ marginTop: '14px', padding: '10px', border: '1px solid rgba(220, 53, 69, 0.3)', background: 'rgba(220, 53, 69, 0.08)', color: '#dc3545', borderRadius: '6px' }}>{d.extraError}</div>
+              <div style={{ marginTop: '14px', padding: '10px', border: '1px solid rgba(220, 53, 69, 0.3)', background: 'rgba(220, 53, 69, 0.08)', color: 'var(--app-error)', borderRadius: '6px' }}>{d.extraError}</div>
             )}
           </div>
 
           {/* Footer */}
           <div className="border-top" style={{ padding: '12px 18px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
             <button type="button" onClick={onClose} disabled={isBusy} style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', cursor: isBusy ? 'not-allowed' : 'pointer', fontWeight: 800 }}>Cancel</button>
-            <button type="submit" disabled={isBusy} style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #007bff', backgroundColor: '#007bff', color: '#fff', cursor: isBusy ? 'not-allowed' : 'pointer', opacity: isBusy ? 0.7 : 1, fontWeight: 800 }}>
+            <button type="submit" disabled={isBusy} style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid #007bff', backgroundColor: 'var(--app-primary)', color: '#fff', cursor: isBusy ? 'not-allowed' : 'pointer', opacity: isBusy ? 0.7 : 1, fontWeight: 800 }}>
               {d.saving ? 'Saving…' : 'Save changes'}
             </button>
           </div>

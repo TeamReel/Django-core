@@ -57,7 +57,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
             style={{
               padding: '8px 14px',
               borderRadius: '8px',
-              border: `2px solid ${selectedTemplateId === t.id ? '#3b82f6' : 'var(--app-border, #444)'}`,
+              border: `2px solid ${selectedTemplateId === t.id ? 'var(--color-blue-500)' : 'var(--app-border, #444)'}`,
               background: selectedTemplateId === t.id ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
               color: 'var(--app-text)',
               cursor: 'pointer',
@@ -177,7 +177,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                 ...memberRowStyle,
                 cursor: 'pointer',
                 opacity: missingPerson ? 0.5 : 1,
-                borderColor: hasOverrides ? '#3b82f6' : 'var(--app-border, #333)',
+                borderColor: hasOverrides ? 'var(--color-blue-500)' : 'var(--app-border, #333)',
               }}
             >
               {member.profilePhotoUrl ? (
@@ -190,13 +190,13 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
               <div className="flex-1-min">
                 <div className="fs-14 fw-500">{member.name}</div>
                 {missingPerson && (
-                  <div className="fs-11" style={{ color: '#ef4444' }}>⚠️ Geen input foto beschikbaar</div>
+                  <div className="fs-11" style={{ color: 'var(--color-red-500)' }}>⚠️ Geen input foto beschikbaar</div>
                 )}
                 {existingVideoVariant && (
                   <div className="fs-11" style={{ color: '#22c55e' }}>✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
                 )}
                 {hasOverrides && (
-                  <div className="fs-11" style={{ color: '#3b82f6' }}>Aangepaste instellingen</div>
+                  <div className="fs-11" style={{ color: 'var(--color-blue-500)' }}>Aangepaste instellingen</div>
                 )}
               </div>
               <span style={{ fontSize: '12px', color: 'var(--app-muted-text)', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
@@ -222,7 +222,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                         <label style={{
                           display: 'block',
                           fontSize: '11px',
-                          color: hasOverride ? '#3b82f6' : 'var(--app-muted-text)',
+                          color: hasOverride ? 'var(--color-blue-500)' : 'var(--app-muted-text)',
                           marginBottom: '3px',
                           fontWeight: hasOverride ? 600 : 400,
                         }}>
@@ -233,7 +233,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                           onChange={(e) => setMemberParam(member.id, key, e.target.value)}
                           style={{
                             ...selectStyle,
-                            borderColor: hasOverride ? '#3b82f6' : 'var(--app-border, #555)',
+                            borderColor: hasOverride ? 'var(--color-blue-500)' : 'var(--app-border, #555)',
                           }}
                         >
                           {param.options.map((opt) => (

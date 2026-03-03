@@ -115,7 +115,7 @@ export default function ProjectSeasonSquadPage() {
               {d.userCanDeleteProject && d.season && (
                 <button
                   onClick={d.deleteSeason}
-                  style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #dc3545', backgroundColor: 'var(--app-surface)', color: '#dc3545', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                  style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #dc3545', backgroundColor: 'var(--app-surface)', color: 'var(--app-error)', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
                 >
                   Delete
                 </button>

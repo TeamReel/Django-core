@@ -138,7 +138,7 @@ export function ProjectMembershipEditModal({
               style={{
                 padding: '8px 12px',
                 border: '1px solid #007bff',
-                backgroundColor: '#007bff',
+                backgroundColor: 'var(--app-primary)',
                 color: '#fff',
                 cursor: saving ? 'not-allowed' : 'pointer',
               }}

@@ -253,7 +253,7 @@ export default function EditClubModal({
                     }}
                     className="mt-8 py-4 px-8 fs-11 bg-transparent border-none cursor-pointer"
                     style={{
-                      color: '#dc3545',
+                      color: 'var(--app-error)',
                       textDecoration: 'underline',
                     }}
                   >

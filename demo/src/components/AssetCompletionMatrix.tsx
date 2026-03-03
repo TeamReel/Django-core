@@ -72,8 +72,8 @@ const ASSET_ROWS: AssetRow[] = [
 
 // Phase column definitions
 const PHASE_COLUMNS = [
-  { key: 'upload' as const, label: 'Upload', color: '#3b82f6' },
-  { key: 'processed' as const, label: 'AI Bewerkt', color: '#10b981' },
+  { key: 'upload' as const, label: 'Upload', color: 'var(--color-blue-500)' },
+  { key: 'processed' as const, label: 'AI Bewerkt', color: 'var(--color-green-400)' },
 ];
 
 // ============================================================================
@@ -258,7 +258,7 @@ export function AssetCompletionMatrix({
               style={{
                 height: '100%',
                 width: `${totalCells > 0 ? (filledCells / totalCells) * 100 : 0}%`,
-                background: filledCells === totalCells ? '#10b981' : '#f59e0b',
+                background: filledCells === totalCells ? 'var(--color-green-400)' : 'var(--color-amber-400)',
                 transition: 'width 0.3s ease',
               }}
             />

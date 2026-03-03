@@ -87,10 +87,10 @@ export function TasksPage() {
           ) : (
             <>
               <div className="grid gap-16 mb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Total</div><div className="fs-24 fw-700">{tasks.length}</div></Card>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Running</div><div className="fs-24 fw-700">{statusCounts.running || 0}</div></Card>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Pending</div><div className="fs-24 fw-700">{statusCounts.pending || 0}</div></Card>
-                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: '#6b7280' }}>Scheduled</div><div className="fs-24 fw-700">{statusCounts.scheduled || 0}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Total</div><div className="fs-24 fw-700">{tasks.length}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Running</div><div className="fs-24 fw-700">{statusCounts.running || 0}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Pending</div><div className="fs-24 fw-700">{statusCounts.pending || 0}</div></Card>
+                <Card className="p-16"><div className="fs-12 mb-4" style={{ color: 'var(--app-muted-text)' }}>Scheduled</div><div className="fs-24 fw-700">{statusCounts.scheduled || 0}</div></Card>
               </div>
 
               <Card className="p-0 overflow-hidden">
@@ -106,13 +106,13 @@ export function TasksPage() {
                     </thead>
                     <tbody>
                       {tasks.length === 0 ? (
-                        <tr><td colSpan={4} className="p-24 text-center" style={{ color: '#6b7280' }}>No tasks currently running or queued</td></tr>
+                        <tr><td colSpan={4} className="p-24 text-center" style={{ color: 'var(--app-muted-text)' }}>No tasks currently running or queued</td></tr>
                       ) : tasks.map(task => (
                         <tr key={task.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
                           <td className="p-12">{task.name}</td>
                           <td className="p-12">{getStatusBadge(task.status)}</td>
-                          <td className="p-12 fs-14" style={{ color: '#6b7280' }}>{task.worker || '-'}</td>
-                          <td className="p-12 fs-14" style={{ color: '#6b7280' }}>{task.time_start ? new Date(task.time_start * 1000).toLocaleString() : '-'}</td>
+                          <td className="p-12 fs-14" style={{ color: 'var(--app-muted-text)' }}>{task.worker || '-'}</td>
+                          <td className="p-12 fs-14" style={{ color: 'var(--app-muted-text)' }}>{task.time_start ? new Date(task.time_start * 1000).toLocaleString() : '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -137,7 +137,7 @@ export function TasksPage() {
                           {beatSchedule.map((task, index) => (
                             <tr key={index} style={{ borderBottom: '1px solid #e5e5e5' }}>
                               <td className="p-12 fs-14" style={{ fontFamily: 'monospace' }}>{task.name}</td>
-                              <td className="p-12 fs-14" style={{ color: '#6b7280' }}>{task.schedule || 'N/A'}</td>
+                              <td className="p-12 fs-14" style={{ color: 'var(--app-muted-text)' }}>{task.schedule || 'N/A'}</td>
                               <td className="p-12"><Badge variant="success">Enabled</Badge></td>
                             </tr>
                           ))}

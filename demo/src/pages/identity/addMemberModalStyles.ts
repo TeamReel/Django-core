@@ -77,7 +77,7 @@ export const fieldWrapStyle: CSSProperties = {
 export const errorBoxStyle: CSSProperties = {
   padding: '8px 12px',
   backgroundColor: 'rgba(220, 53, 69, 0.1)',
-  color: '#dc3545',
+  color: 'var(--app-error)',
   border: '1px solid rgba(220, 53, 69, 0.3)',
   borderRadius: '6px',
   marginBottom: '16px',

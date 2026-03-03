@@ -63,7 +63,7 @@ export function MemberInputTab({
               )}
             </div>
             {(profilePreview || form.profile?.url || membership?.user?.avatar_url) && (
-              <div style={{ fontSize: '11px', color: '#28a745', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
+              <div style={{ fontSize: '11px', color: 'var(--app-success)', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
             )}
             <div
               onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
@@ -120,7 +120,7 @@ export function MemberInputTab({
               )}
             </div>
             {(legacyPhotoPreview || form.legacy_photo?.url) && (
-              <div style={{ fontSize: '11px', color: '#28a745', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
+              <div style={{ fontSize: '11px', color: 'var(--app-success)', fontWeight: 600, marginBottom: '8px' }}>✓ Ingesteld</div>
             )}
             <div
               onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}

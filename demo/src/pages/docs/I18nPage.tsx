@@ -72,7 +72,7 @@ export function I18nPage() {
         <div className="page-container" data-testid="i18n-page">
           <Card className="p-24 mb-24">
             <h2 style={{ margin: '0 0 8px 0' }}>{t.welcome}</h2>
-            <p className="m-0 fs-14" style={{ color: '#6b7280' }}>{t.description}</p>
+            <p className="m-0 fs-14" style={{ color: 'var(--app-muted-text)' }}>{t.description}</p>
           </Card>
 
           {savedMessage && <Alert variant="success" className="mb-24">{savedMessage}</Alert>}
@@ -83,7 +83,7 @@ export function I18nPage() {
               <span style={{ fontSize: '32px' }}>{currentLangInfo?.flag}</span>
               <div>
                 <div className="fw-600 fs-18">{currentLangInfo?.name}</div>
-                <div className="fs-14" style={{ color: '#6b7280' }}>Code: {language.toUpperCase()}</div>
+                <div className="fs-14" style={{ color: 'var(--app-muted-text)' }}>Code: {language.toUpperCase()}</div>
               </div>
             </div>
           </Card>
@@ -107,7 +107,7 @@ export function I18nPage() {
                 >
                   <div className="fs-24 mb-8">{lang.flag}</div>
                   <div className="fw-600">{lang.name}</div>
-                  <div className="fs-12" style={{ color: '#6b7280' }}>{lang.code.toUpperCase()}</div>
+                  <div className="fs-12" style={{ color: 'var(--app-muted-text)' }}>{lang.code.toUpperCase()}</div>
                 </button>
               ))}
             </div>
@@ -118,7 +118,7 @@ export function I18nPage() {
             <div style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
               <p className="m-0 fs-16">{t.greeting}</p>
             </div>
-            <div className="mt-16 fs-14" style={{ color: '#6b7280' }}>
+            <div className="mt-16 fs-14" style={{ color: 'var(--app-muted-text)' }}>
               <p className="m-0">
                 <strong>Note:</strong> In production, this would integrate with B04 gettext utilities for comprehensive translation
                 management and B12 preferences API for persistent language storage across sessions.

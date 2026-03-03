@@ -131,7 +131,7 @@ export default function OrganisationListPage() {
                   to={`/organisations/${org.slug}`}
                   className="py-8 px-16 rounded-4 fs-14"
                   style={{
-                    backgroundColor: '#007bff',
+                    backgroundColor: 'var(--app-primary)',
                     color: 'white',
                     textDecoration: 'none'
                   }}

@@ -64,7 +64,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
         <div style={{
           height: '100%',
           width: `${members.length > 0 ? (completedCount / members.length) * 100 : 0}%`,
-          background: errorCount > 0 ? '#f59e0b' : '#22c55e',
+          background: errorCount > 0 ? 'var(--color-amber-400)' : '#22c55e',
           transition: 'width 0.3s ease',
         }} />
       </div>
@@ -92,7 +92,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
           <div className="flex-1-min">
             <div className="fs-14 fw-500">{member.name}</div>
             {job?.error && (
-              <div className="fs-11" style={{ color: '#ef4444' }}>{job.error}</div>
+              <div className="fs-11" style={{ color: 'var(--color-red-500)' }}>{job.error}</div>
             )}
             {job?.status === 'running' && (
               <div className="fs-11" style={{ color: '#60a5fa' }}>

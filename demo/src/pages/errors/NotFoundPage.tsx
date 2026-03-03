@@ -30,7 +30,7 @@ export default function NotFoundPage() {
             style={{
               display: 'inline-block',
               padding: '12px 24px',
-              backgroundColor: '#007bff',
+              backgroundColor: 'var(--app-primary)',
               color: 'white',
               textDecoration: 'none',
               borderRadius: '4px',

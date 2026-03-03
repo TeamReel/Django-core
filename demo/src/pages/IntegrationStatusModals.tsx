@@ -55,7 +55,7 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
               <span style={{
                 display: 'inline-block',
                 padding: '4px 12px',
-                backgroundColor: '#007bff',
+                backgroundColor: 'var(--app-primary)',
                 color: 'white',
                 borderRadius: '4px',
                 fontSize: '14px',
@@ -169,7 +169,7 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
                 style={{
                   display: 'inline-block',
                   padding: '10px 20px',
-                  backgroundColor: '#007bff',
+                  backgroundColor: 'var(--app-primary)',
                   color: 'white',
                   textDecoration: 'none',
                   borderRadius: '6px',

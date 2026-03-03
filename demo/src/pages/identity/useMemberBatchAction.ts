@@ -90,13 +90,13 @@ export function useMemberBatchAction({
     const roleOptions = useMemo(() => {
         if (isTeamContext) {
             return [
-                { value: 'admin', label: 'Team Admin', badge: '🛡️', color: '#f59e0b', description: 'Volledige toegang tot team content, wedstrijden en opstellingen' },
-                { value: 'viewer', label: 'Team Member', badge: '⚽', color: '#3b82f6', description: 'Kan content bekijken en eigen content maken/bewerken' },
+                { value: 'admin', label: 'Team Admin', badge: '🛡️', color: 'var(--color-amber-400)', description: 'Volledige toegang tot team content, wedstrijden en opstellingen' },
+                { value: 'viewer', label: 'Team Member', badge: '⚽', color: 'var(--color-blue-500)', description: 'Kan content bekijken en eigen content maken/bewerken' },
             ];
         }
         return [
             { value: 'admin', label: 'Club Admin', badge: '🏟️', color: '#8b5cf6', description: 'Volledige toegang tot alle teams, content en instellingen van de club' },
-            { value: 'viewer', label: 'Supporter', badge: '📣', color: '#10b981', description: 'Kan wedstrijden bekijken (read-only)' },
+            { value: 'viewer', label: 'Supporter', badge: '📣', color: 'var(--color-green-400)', description: 'Kan wedstrijden bekijken (read-only)' },
         ];
     }, [isTeamContext]);
 

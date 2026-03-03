@@ -169,7 +169,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                   className={s.checkboxCard}
                   style={{
                     backgroundColor: isChecked ? '#1e40af' : '#334155',
-                    borderColor: isChecked ? '#3b82f6' : '#475569',
+                    borderColor: isChecked ? 'var(--color-blue-500)' : '#475569',
                   }}
                 >
                   <input

@@ -229,7 +229,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         {/* Queue badge (open) */}
                                         {isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
                                             <span className="ml-auto fw-700 text-center" style={{
-                                                backgroundColor: queueCounts.review > 0 ? '#dc3545' : '#f59e0b',
+                                                backgroundColor: queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)',
                                                 color: '#fff',
                                                 borderRadius: 10,
                                                 padding: '1px 6px',
@@ -246,7 +246,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             <span className="absolute fw-700 text-center" style={{
                                                 top: 4,
                                                 right: 4,
-                                                backgroundColor: queueCounts.review > 0 ? '#dc3545' : '#f59e0b',
+                                                backgroundColor: queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)',
                                                 color: '#fff',
                                                 borderRadius: 10,
                                                 padding: '1px 5px',
@@ -387,7 +387,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                                             fontWeight: 600,
                                                             opacity: count > 0 ? 0.9 : 0.4,
                                                             color: tabKey === 'review' && count > 0
-                                                                ? '#dc3545'
+                                                                ? 'var(--app-error)'
                                                                 : isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-muted-text)',
                                                         }}>
                                                             ({count})

@@ -32,7 +32,7 @@ export function PersonalisationTab({ d }: { d: Data }) {
               <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontWeight: 600 }}>Light Theme</h4>
               <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
                 <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#6b7280' }}>Text: #1F2937</p>
+                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--app-muted-text)' }}>Text: #1F2937</p>
               </div>
               {preferences?.theme === 'light' && <Badge variant="success">Selected</Badge>}
             </div>

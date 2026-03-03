@@ -91,7 +91,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
   const chipStyle = (selected: boolean): React.CSSProperties => ({
     display: 'flex', flexDirection: 'column', gap: 4,
     padding: '12px 16px', borderRadius: 10, cursor: 'pointer',
-    border: `2px solid ${selected ? '#2563eb' : 'var(--app-border, #e5e7eb)'}`,
+    border: `2px solid ${selected ? 'var(--color-blue-600)' : 'var(--app-border, #e5e7eb)'}`,
     backgroundColor: selected ? '#eff6ff' : 'var(--app-surface, #fff)',
     transition: 'all 0.15s',
   });
@@ -161,7 +161,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
             style={{
               cursor: submitting ? 'wait' : submitCount > 0 ? 'pointer' : 'not-allowed',
               opacity: submitting ? 0.7 : 1,
-              background: submitCount > 0 ? '#2563eb' : '#94a3b8',
+              background: submitCount > 0 ? 'var(--color-blue-600)' : '#94a3b8',
             }}
           >
             {submitting ? 'Bezig...' : submitCount > 0 ? `🚀 Genereer ${submitCount} video${submitCount > 1 ? "'s" : ''}` : 'Selecteer een optie'}

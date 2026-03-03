@@ -78,13 +78,13 @@ export function DeploymentPage() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
                       <div>
                         <h4 className="m-0">{service.name}</h4>
-                        <div className="fs-12 mt-4" style={{ color: '#6b7280' }}>{service.type} • v{service.version}</div>
+                        <div className="fs-12 mt-4" style={{ color: 'var(--app-muted-text)' }}>{service.type} • v{service.version}</div>
                       </div>
                       {getStatusBadge(service.status)}
                     </div>
                     <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '12px', fontSize: '14px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: '#6b7280' }}>Status Detail:</span>
+                        <span style={{ color: 'var(--app-muted-text)' }}>Status Detail:</span>
                         <span>{service.detail || 'Running'}</span>
                       </div>
                     </div>

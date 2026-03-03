@@ -54,7 +54,7 @@ export function UserDetailIdentityTab({ data }: Props) {
             {(user as any).avatar_url && (
               <div className="mt-8 fs-12 text-muted">
                 <strong>URL:</strong>{' '}
-                <a href={(user as any).avatar_url} target="_blank" rel="noopener noreferrer" className="word-break-all" style={{ color: '#007bff' }}>
+                <a href={(user as any).avatar_url} target="_blank" rel="noopener noreferrer" className="word-break-all" style={{ color: 'var(--app-primary)' }}>
                   {(user as any).avatar_url}
                 </a>
               </div>

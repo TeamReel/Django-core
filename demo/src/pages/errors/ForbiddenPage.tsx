@@ -12,7 +12,7 @@ export default function ForbiddenPage() {
       }}>
         <div style={{ fontSize: '72px', marginBottom: '24px' }}>🚫</div>
 
-        <h1 style={{ fontSize: '48px', marginBottom: '16px', color: '#dc3545' }}>
+        <h1 style={{ fontSize: '48px', marginBottom: '16px', color: 'var(--app-error)' }}>
           403
         </h1>
 
@@ -31,7 +31,7 @@ export default function ForbiddenPage() {
             style={{
               display: 'inline-block',
               padding: '12px 24px',
-              backgroundColor: '#007bff',
+              backgroundColor: 'var(--app-primary)',
               color: 'white',
               textDecoration: 'none',
               borderRadius: '4px',

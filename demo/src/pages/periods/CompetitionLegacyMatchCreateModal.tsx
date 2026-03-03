@@ -337,7 +337,7 @@ export function CompetitionLegacyMatchCreateModal({
                 padding: '8px 12px',
                 borderRadius: '6px',
                 border: '1px solid #1e5aa5',
-                backgroundColor: '#2563eb',
+                backgroundColor: 'var(--color-blue-600)',
                 color: '#fff',
                 cursor: 'pointer',
                 fontWeight: 600,

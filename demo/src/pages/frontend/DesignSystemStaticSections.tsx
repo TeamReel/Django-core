@@ -59,17 +59,17 @@ export function FormComponentsSection() {
             <Input
               type="text"
               placeholder="Success state"
-              style={{ borderColor: '#10b981', backgroundColor: '#f0fdf4' }}
+              style={{ borderColor: 'var(--color-green-400)', backgroundColor: '#f0fdf4' }}
             />
-            <p style={{ fontSize: '12px', color: '#10b981', margin: '4px 0 0 0' }}>✓ Valid input</p>
+            <p style={{ fontSize: '12px', color: 'var(--color-green-400)', margin: '4px 0 0 0' }}>✓ Valid input</p>
           </div>
           <div>
             <Input
               type="text"
               placeholder="Error state"
-              style={{ borderColor: '#ef4444', backgroundColor: '#fef2f2' }}
+              style={{ borderColor: 'var(--color-red-500)', backgroundColor: '#fef2f2' }}
             />
-            <p style={{ fontSize: '12px', color: '#ef4444', margin: '4px 0 0 0' }}>✗ Invalid input</p>
+            <p style={{ fontSize: '12px', color: 'var(--color-red-500)', margin: '4px 0 0 0' }}>✗ Invalid input</p>
           </div>
         </div>
       </Card>
@@ -96,7 +96,7 @@ export function LayoutComponentsSection() {
               <div style={{
                 width: '32px',
                 height: '32px',
-                backgroundColor: '#3b82f6',
+                backgroundColor: 'var(--color-blue-500)',
                 borderRadius: '6px',
                 display: 'flex',
                 alignItems: 'center',
@@ -305,7 +305,7 @@ export function InteractiveComponentsSection() {
             style={{
               width: '24px',
               height: '24px',
-              backgroundColor: '#3b82f6',
+              backgroundColor: 'var(--color-blue-500)',
               borderRadius: '50%'
             }}
           ></div>
@@ -327,7 +327,7 @@ export function InteractiveComponentsSection() {
             style={{
               width: '24px',
               height: '24px',
-              backgroundColor: '#10b981',
+              backgroundColor: 'var(--color-green-400)',
               borderRadius: '4px',
               transition: 'opacity 0.3s ease'
             }}

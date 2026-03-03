@@ -164,7 +164,7 @@ export default function RegisterPage() {
           disabled={isLoading}
           className="p-12 border-none rounded-4 fs-16 fw-500"
           style={{
-            backgroundColor: isLoading ? '#ccc' : '#28a745',
+            backgroundColor: isLoading ? '#ccc' : 'var(--app-success)',
             color: 'white',
             cursor: isLoading ? 'not-allowed' : 'pointer'
           }}
@@ -174,7 +174,7 @@ export default function RegisterPage() {
       </form>
 
       <p className="fs-14 text-center" style={{ marginTop: '20px', color: '#666' }}>
-        Already have an account? <Link to="/login" style={{ color: '#007bff', textDecoration: 'none' }}>Sign in here</Link>
+        Already have an account? <Link to="/login" style={{ color: 'var(--app-primary)', textDecoration: 'none' }}>Sign in here</Link>
       </p>
     </div>
   );

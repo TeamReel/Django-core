@@ -347,7 +347,7 @@ const UserActions: React.FC<UserActionsProps> = ({
 
       {/* Delete */}
       {canManageUsers && (
-        <button onClick={handleDelete} className={actionBtn} style={{ border: '1px solid #dc3545', color: '#dc3545' }}>
+        <button onClick={handleDelete} className={actionBtn} style={{ border: '1px solid #dc3545', color: 'var(--app-error)' }}>
           Delete
         </button>
       )}
@@ -357,7 +357,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         <button
           onClick={() => { setLinkUser(user); setIsLinkModalOpen(true); }}
           className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
-          style={{ padding: '6px 12px', border: '1px solid #007bff', color: '#007bff' }}
+          style={{ padding: '6px 12px', border: '1px solid #007bff', color: 'var(--app-primary)' }}
         >
           Link
         </button>
@@ -365,7 +365,7 @@ const UserActions: React.FC<UserActionsProps> = ({
 
       {/* Assign / Unassign */}
       {canManageUsers && effectiveOrgSlug && isInOrg && orgMembershipId && (
-        <button onClick={handleUnassign} className={actionBtn} style={{ border: '1px solid #dc3545', color: '#dc3545' }}>
+        <button onClick={handleUnassign} className={actionBtn} style={{ border: '1px solid #dc3545', color: 'var(--app-error)' }}>
           Unassign
         </button>
       )}
@@ -373,7 +373,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         <button
           onClick={() => { setAssignUser(user); setIsAssignModalOpen(true); }}
           className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
-          style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: '#28a745' }}
+          style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: 'var(--app-success)' }}
         >
           Assign
         </button>
@@ -382,7 +382,7 @@ const UserActions: React.FC<UserActionsProps> = ({
         <button
           onClick={() => { setAssignUser(user); setIsAssignModalOpen(true); }}
           className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
-          style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: '#28a745' }}
+          style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: 'var(--app-success)' }}
         >
           Assign
         </button>

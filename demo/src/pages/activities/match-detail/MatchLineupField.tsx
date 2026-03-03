@@ -300,7 +300,7 @@ export function FieldVisualization({
             ).length;
             const total = formationLayout.positions.length;
             return filled === total ? (
-              <span style={{ color: '#10b981' }}>
+              <span style={{ color: 'var(--color-green-400)' }}>
                 ✓ Alle {total} posities ingevuld
               </span>
             ) : (
@@ -314,7 +314,7 @@ export function FieldVisualization({
           {lineupSaveSuccess && (
             <span
               className="fs-12 fw-600"
-              style={{ color: '#10b981' }}
+              style={{ color: 'var(--color-green-400)' }}
             >
               ✓ Opgeslagen!
             </span>
@@ -409,7 +409,7 @@ export function FieldVisualization({
                               : 'transparent',
                           color:
                             status === 'wissel'
-                              ? '#f59e0b'
+                              ? 'var(--color-amber-400)'
                               : 'var(--app-text-secondary, #999)',
                           cursor: 'pointer',
                         }}
@@ -443,7 +443,7 @@ export function FieldVisualization({
                               : 'transparent',
                           color:
                             status === 'afwezig'
-                              ? '#ef4444'
+                              ? 'var(--color-red-500)'
                               : 'var(--app-text-secondary, #999)',
                           cursor: 'pointer',
                         }}

@@ -447,7 +447,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                 className={s.modalBtnPrimary}
                 style={{
                   cursor: selected.length > 0 ? 'pointer' : 'not-allowed',
-                  background: selected.length > 0 ? '#6366f1' : '#6b7280',
+                  background: selected.length > 0 ? '#6366f1' : 'var(--app-muted-text)',
                   opacity: selected.length > 0 ? 1 : 0.5,
                 }}
               >{"\uD83C\uDFAC"} Genereer Video ({selected.length})</button>

@@ -189,7 +189,7 @@ export function MemberIdentityTab({
               <div style={{ flex: 1, minWidth: '200px' }}>
                 {membership?.user?.avatar_url ? (
                   <div className={s.flexCenterGap8}>
-                    <span style={{ fontSize: 13, color: '#28a745', fontWeight: 600 }}>✓ Profile photo set</span>
+                    <span style={{ fontSize: 13, color: 'var(--app-success)', fontWeight: 600 }}>✓ Profile photo set</span>
                   </div>
                 ) : (
                   <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>

@@ -112,7 +112,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
           <div style={{
             padding: '8px',
             backgroundColor: 'rgba(220, 53, 69, 0.1)',
-            color: '#dc3545',
+            color: 'var(--app-error)',
             border: '1px solid rgba(220, 53, 69, 0.3)',
             borderRadius: '4px',
             marginBottom: '16px',

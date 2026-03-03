@@ -62,7 +62,7 @@ export const FeatureFlagsPage: React.FC = () => {
           <div className="flex-row gap-12">
             <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
               padding: '4px 10px',
-              backgroundColor: '#3b82f6',
+              backgroundColor: 'var(--color-blue-500)',
               color: 'white',
               letterSpacing: '0.5px',
             }}>

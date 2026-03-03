@@ -134,7 +134,7 @@ export function useUserDetailData(): UserDetailDataReturn {
                 href={href}
                 onClick={(e: any) => { e.preventDefault(); navigate(href); }}
                 className="fw-600"
-                style={{ color: '#007bff', textDecoration: 'none' }}
+                style={{ color: 'var(--app-primary)', textDecoration: 'none' }}
             >
                 {safe || '—'}
             </a>

@@ -68,7 +68,7 @@ export function getNotificationLevelDisplay(level: string): {
     case 'error':
       return { color: '#dc2626', bgColor: '#fee2e2', icon: '❌' };
     default: // 'info'
-      return { color: '#2563eb', bgColor: '#dbeafe', icon: 'ℹ️' };
+      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: 'ℹ️' };
   }
 }
 

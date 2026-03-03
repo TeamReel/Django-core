@@ -21,9 +21,9 @@ const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ 
   const urgency = getDateUrgency(startDate);
 
   // Urgency color for relative time badge
-  const urgencyColor = urgency === 'urgent' ? '#ef4444' :
-                       urgency === 'soon' ? '#f59e0b' :
-                       urgency === 'upcoming' ? '#3b82f6' :
+  const urgencyColor = urgency === 'urgent' ? 'var(--color-red-500)' :
+                       urgency === 'soon' ? 'var(--color-amber-400)' :
+                       urgency === 'upcoming' ? 'var(--color-blue-500)' :
                        'var(--app-text-muted)';
 
   // Format date: "Mon, Jan 6 • 14:00"
@@ -210,7 +210,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               className="fs-12 fw-600 border rounded-4 cursor-pointer"
               style={{
                 padding: '6px 12px',
-                backgroundColor: filter === 'league' ? '#3b82f6' : 'var(--app-surface-2)',
+                backgroundColor: filter === 'league' ? 'var(--color-blue-500)' : 'var(--app-surface-2)',
                 color: filter === 'league' ? 'white' : 'var(--app-text)',
                 transition: 'all 0.2s'
               }}
@@ -222,7 +222,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               className="fs-12 fw-600 border rounded-4 cursor-pointer"
               style={{
                 padding: '6px 12px',
-                backgroundColor: filter === 'cup' ? '#f59e0b' : 'var(--app-surface-2)',
+                backgroundColor: filter === 'cup' ? 'var(--color-amber-400)' : 'var(--app-surface-2)',
                 color: filter === 'cup' ? 'white' : 'var(--app-text)',
                 transition: 'all 0.2s'
               }}

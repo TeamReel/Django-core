@@ -118,7 +118,7 @@ export function BackgroundSelector({
                   position: 'absolute',
                   bottom: 2,
                   right: 2,
-                  background: '#10b981',
+                  background: 'var(--color-green-400)',
                   color: '#fff',
                   borderRadius: '50%',
                   width: '18px',

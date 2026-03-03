@@ -51,10 +51,10 @@ export function AssetCard({
   const isUploadType = assetType.endsWith('_upload');
   const isProcessed = !isUploadType;
 
-  let badgeColor = '#6b7280'; // gray
+  let badgeColor = 'var(--app-muted-text)'; // gray
   let badgeText = '';
   if (isUploadType) {
-    badgeColor = '#3b82f6'; // blue
+    badgeColor = 'var(--color-blue-500)'; // blue
     badgeText = 'Upload';
   } else if (
     isProcessed &&
@@ -67,7 +67,7 @@ export function AssetCard({
       'other',
     ].includes(assetType)
   ) {
-    badgeColor = '#10b981'; // green
+    badgeColor = 'var(--color-green-400)'; // green
     badgeText = 'AI Bewerkt';
   }
 

@@ -71,7 +71,7 @@ export const CreditsChart: React.FC<CreditsChartProps> = ({
 
       // Get theme colors
       const style = getComputedStyle(document.documentElement);
-      const primaryColor = style.getPropertyValue('--color-accent-500') || '#3b82f6';
+      const primaryColor = style.getPropertyValue('--color-accent-500') || 'var(--color-blue-500)';
       const backgroundColor = primaryColor + '20'; // Add transparency
 
       const data: ChartData = {

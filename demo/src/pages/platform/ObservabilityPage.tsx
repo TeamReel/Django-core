@@ -226,7 +226,7 @@ export const ObservabilityPage: React.FC = () => {
                       {backendMetrics.timestamp ? new Date(backendMetrics.timestamp).toLocaleTimeString() : 'N/A'}
                     </span>
                   </p>
-                  {loading && <p style={{ fontSize: '14px', color: '#007bff', marginTop: '4px', margin: 0 }}>Updating...</p>}
+                  {loading && <p style={{ fontSize: '14px', color: 'var(--app-primary)', marginTop: '4px', margin: 0 }}>Updating...</p>}
                   {backendMetrics.message && (
                     <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px', margin: '4px 0 0 0' }}>
                       {backendMetrics.message}
@@ -258,7 +258,7 @@ export const ObservabilityPage: React.FC = () => {
               <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">p99 Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: '#dc3545' }}>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-error)' }}>
                     {backendMetrics.response_time_p99 != null ? backendMetrics.response_time_p99.toFixed(0) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
@@ -272,7 +272,7 @@ export const ObservabilityPage: React.FC = () => {
                 </div>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Median Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: '#28a745' }}>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-success)' }}>
                     {backendMetrics.response_time_median != null ? backendMetrics.response_time_median.toFixed(0) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
@@ -297,7 +297,7 @@ export const ObservabilityPage: React.FC = () => {
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">5xx Error Rate</div>
                   <div className="flex-row gap-8 mt-8">
-                    <div className="fs-24 fw-700" style={{ color: '#dc3545' }}>
+                    <div className="fs-24 fw-700" style={{ color: 'var(--app-error)' }}>
                       {backendMetrics.error_rate_5xx != null ? backendMetrics.error_rate_5xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_5xx != null && backendMetrics.error_rate_5xx > 1 && (
@@ -313,13 +313,13 @@ export const ObservabilityPage: React.FC = () => {
               <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Active Connections</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: '#007bff' }}>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-primary)' }}>
                     {backendMetrics.active_connections != null ? backendMetrics.active_connections : 'N/A'}
                   </div>
                 </div>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Database Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: '#28a745' }}>
+                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-success)' }}>
                     {backendMetrics.database_latency != null ? backendMetrics.database_latency.toFixed(1) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>

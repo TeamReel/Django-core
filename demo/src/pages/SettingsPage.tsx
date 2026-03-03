@@ -86,10 +86,10 @@ export default function SettingsPage() {
                     style={{
                       padding: '10px 20px',
                       backgroundColor:
-                        profileSaveStatus === 'success' ? '#28a745' :
-                        profileSaveStatus === 'error' ? '#dc3545' :
+                        profileSaveStatus === 'success' ? 'var(--app-success)' :
+                        profileSaveStatus === 'error' ? 'var(--app-error)' :
                         profileSaveStatus === 'saving' ? '#6c757d' :
-                        '#007bff',
+                        'var(--app-primary)',
                       color: 'white',
                       cursor: profileSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
                       transition: 'background-color 0.2s'
@@ -142,7 +142,7 @@ export default function SettingsPage() {
                       style={{
                         borderRadius: '16px',
                         backgroundColor: '#dc354520',
-                        color: '#dc3545'
+                        color: 'var(--app-error)'
                       }}
                     >
                       Not Enabled
@@ -151,7 +151,7 @@ export default function SettingsPage() {
                       onClick={handleEnable2FA}
                       className="py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600"
                       style={{
-                        backgroundColor: '#28a745',
+                        backgroundColor: 'var(--app-success)',
                         color: 'white'
                       }}
                     >
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                         style={{
                           borderRadius: '16px',
                           backgroundColor: '#28a74520',
-                          color: '#28a745'
+                          color: 'var(--app-success)'
                         }}
                       >
                         Current
@@ -235,10 +235,10 @@ export default function SettingsPage() {
                   style={{
                     padding: '10px 20px',
                     backgroundColor:
-                      notificationsSaveStatus === 'success' ? '#28a745' :
-                      notificationsSaveStatus === 'error' ? '#dc3545' :
+                      notificationsSaveStatus === 'success' ? 'var(--app-success)' :
+                      notificationsSaveStatus === 'error' ? 'var(--app-error)' :
                       notificationsSaveStatus === 'saving' ? '#6c757d' :
-                      '#007bff',
+                      'var(--app-primary)',
                     color: 'white',
                     cursor: notificationsSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
                     transition: 'background-color 0.2s'
@@ -322,10 +322,10 @@ export default function SettingsPage() {
                     style={{
                       padding: '10px 20px',
                       backgroundColor:
-                        saveStatus === 'success' ? '#28a745' :
-                        saveStatus === 'error' ? '#dc3545' :
+                        saveStatus === 'success' ? 'var(--app-success)' :
+                        saveStatus === 'error' ? 'var(--app-error)' :
                         saveStatus === 'saving' ? '#6c757d' :
-                        '#007bff',
+                        'var(--app-primary)',
                       color: 'white',
                       cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer',
                       transition: 'background-color 0.2s'

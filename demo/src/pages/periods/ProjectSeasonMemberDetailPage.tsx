@@ -205,7 +205,7 @@ export default function ProjectSeasonMemberDetailPage() {
                       {memberActiveJobs.map(j => j.label || j.template_id).join(', ')}
                       {'. Je krijgt een melding zodra het klaar is.'}
                     </div>
-                    <a href="/approvals?tab=ai_queue" style={{ color: '#3b82f6', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 12 }}>
+                    <a href="/approvals?tab=ai_queue" style={{ color: 'var(--color-blue-500)', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 12 }}>
                       Bekijk queue →
                     </a>
                   </div>

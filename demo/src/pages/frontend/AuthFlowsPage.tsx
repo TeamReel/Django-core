@@ -35,8 +35,8 @@ export function AuthFlowsPage() {
                 style={{
                   padding: '6px 12px',
                   borderRadius: '4px',
-                  border: `1px solid ${activeFlow === flow ? '#007bff' : '#6c757d'}`,
-                  backgroundColor: activeFlow === flow ? '#007bff' : 'var(--app-surface)',
+                  border: `1px solid ${activeFlow === flow ? 'var(--app-primary)' : '#6c757d'}`,
+                  backgroundColor: activeFlow === flow ? 'var(--app-primary)' : 'var(--app-surface)',
                   color: activeFlow === flow ? '#ffffff' : '#6c757d',
                   cursor: 'pointer',
                   fontSize: '14px',

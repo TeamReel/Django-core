@@ -477,7 +477,7 @@ function ModalFooter({
                 fontWeight: 600,
                 background:
                   selectedVariantIdx !== null
-                    ? '#10b981'
+                    ? 'var(--color-green-400)'
                     : 'var(--vscode-disabledForeground, #555)',
                 color: '#fff',
                 border: 'none',

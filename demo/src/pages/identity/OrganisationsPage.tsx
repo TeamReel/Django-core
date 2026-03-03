@@ -270,14 +270,14 @@ export const OrganisationsPage: React.FC = () => {
                     <td>
                       <span
                         style={{
-                          color: '#2563eb',
+                          color: 'var(--color-blue-600)',
                           cursor: 'pointer',
                           textDecoration: 'underline',
                           fontSize: '0.85rem'
                         }}
                         onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
                         onMouseEnter={(e) => e.currentTarget.style.color = '#1d4ed8'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = '#2563eb'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-blue-600)'}
                       >
                         {org.name}
                       </span>
@@ -359,7 +359,7 @@ export const OrganisationsPage: React.FC = () => {
                                 borderRadius: '4px',
                                 border: '1px solid #bd2130',
                                 backgroundColor: 'var(--app-surface)',
-                                color: '#dc3545',
+                                color: 'var(--app-error)',
                                 cursor: 'pointer',
                                 fontSize: '12px',
                                 fontWeight: 500

@@ -29,7 +29,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     const { context } = useContextSwitcher();
     const queueCounts = useQueueCounts(30000);
     const queueBadgeCount = queueCounts.review > 0 ? queueCounts.review : queueCounts.active;
-    const queueBadgeColor = queueCounts.review > 0 ? '#dc3545' : '#f59e0b';
+    const queueBadgeColor = queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)';
 
     const debugLog = (...args: unknown[]) => {
         if (import.meta.env.DEV) console.log(...args);
@@ -103,9 +103,9 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     }, [myCreditsBalance]);
 
     const creditsBadgeColor = useMemo(() => {
-        if (myCreditsNumber == null) return '#6b7280';
-        if (myCreditsNumber < 0) return '#dc3545';
-        if (myCreditsNumber === 0) return '#2563eb';
+        if (myCreditsNumber == null) return 'var(--app-muted-text)';
+        if (myCreditsNumber < 0) return 'var(--app-error)';
+        if (myCreditsNumber === 0) return 'var(--color-blue-600)';
         return '#16a34a';
     }, [myCreditsNumber]);
 

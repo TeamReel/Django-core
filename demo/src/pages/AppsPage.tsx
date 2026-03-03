@@ -25,21 +25,21 @@ export default function AppsPage() {
       label: 'Federation',
       description: 'Manage federation structure, clubs, and competitions',
       icon: Globe,
-      color: '#3b82f6',
+      color: 'var(--color-blue-500)',
     },
     {
       path: clubPath,
       label: 'Clubs',
       description: 'Browse and manage clubs in your organisation',
       icon: Shirt,
-      color: '#10b981',
+      color: 'var(--color-green-400)',
     },
     {
       path: seasonPath,
       label: 'Seasons',
       description: 'View current and past seasons',
       icon: CalendarDays,
-      color: '#f59e0b',
+      color: 'var(--color-amber-400)',
     },
     {
       path: competitionPath,
@@ -53,7 +53,7 @@ export default function AppsPage() {
       label: 'Matches',
       description: 'Schedule and results for all matches',
       icon: Timer,
-      color: '#ef4444',
+      color: 'var(--color-red-500)',
     },
   ];
 

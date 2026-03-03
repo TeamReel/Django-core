@@ -64,7 +64,7 @@ export function DocsPage() {
               <Card className="p-24 mb-24 bg-surface border">
                 <h3 className="fs-18 fw-600 text-primary" style={{ margin: '0 0 16px 0' }}>Documentation Resources</h3>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <button onClick={() => window.open('http://localhost:8001/docs', '_blank')} style={{ ...linkBtnStyle, borderColor: '#007bff', color: '#007bff' }}>
+                  <button onClick={() => window.open('http://localhost:8001/docs', '_blank')} style={{ ...linkBtnStyle, borderColor: 'var(--app-primary)', color: 'var(--app-primary)' }}>
                     📚 MkDocs Site
                   </button>
                   <button onClick={() => window.location.href = '/api-docs'} style={linkBtnStyle}>📖 API Documentation</button>
@@ -90,7 +90,7 @@ export function DocsPage() {
                           <td className="p-12 fw-600">{module.id}</td>
                           <td className="p-12">{module.name}</td>
                           <td className="p-12">{getStatusBadge(module.status)}</td>
-                          <td className="p-12">{module.docs ? <span style={{ color: '#10b981' }}>✓</span> : <span style={{ color: '#ef4444' }}>✗</span>}</td>
+                          <td className="p-12">{module.docs ? <span style={{ color: 'var(--color-green-400)' }}>✓</span> : <span style={{ color: 'var(--color-red-500)' }}>✗</span>}</td>
                         </tr>
                       ))}
                     </tbody>

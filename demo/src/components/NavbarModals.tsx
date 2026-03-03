@@ -176,13 +176,13 @@ export function NavbarQuickReviewModal({
           <div className={s.tabsRowCenter}>
             <button
               onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-              className={s.tabBtn} style={{ background: queueModalTab === 'review' ? '#2563eb' : 'var(--app-border, #334155)' }}
+              className={s.tabBtn} style={{ background: queueModalTab === 'review' ? 'var(--color-blue-600)' : 'var(--app-border, #334155)' }}
             >
               Te Reviewen ({pendingReviewJobs.length})
             </button>
             <button
               onClick={() => setQueueModalTab('in-progress')}
-              className={s.tabBtn} style={{ background: queueModalTab === 'in-progress' ? '#f59e0b' : 'var(--app-border, #334155)' }}
+              className={s.tabBtn} style={{ background: queueModalTab === 'in-progress' ? 'var(--color-amber-400)' : 'var(--app-border, #334155)' }}
             >
               In Progress ({inProgressJobs.length})
             </button>
@@ -224,7 +224,7 @@ export function NavbarQuickReviewModal({
               </button>
               <button
                 onClick={() => setQueueModalTab('in-progress')}
-                className={s.tabBtn} style={{ background: '#f59e0b' }}
+                className={s.tabBtn} style={{ background: 'var(--color-amber-400)' }}
               >
                 In Progress ({inProgressJobs.length})
               </button>
@@ -233,7 +233,7 @@ export function NavbarQuickReviewModal({
           <div className="flex-1 overflow-y-auto p-16">
             {inProgressJobs.map((j) => (
               <div key={j.task_id} className="flex-row gap-12 p-12 rounded-8 mb-8" style={{ background: 'var(--app-background, #0f172a)' }}>
-                <div className={s.jobIcon} style={{ backgroundColor: j.status === 'processing' ? '#f59e0b' : '#6b7280' }}>
+                <div className={s.jobIcon} style={{ backgroundColor: j.status === 'processing' ? 'var(--color-amber-400)' : 'var(--app-muted-text)' }}>
                   {j.status === 'processing' ? '\u2699\ufe0f' : '\u23f3'}
                 </div>
                 <div className="flex-1">

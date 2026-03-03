@@ -49,7 +49,7 @@ export const CreditsPage: React.FC = () => {
               className="fs-11 rounded-6 fw-600 cursor-default text-inverse"
               style={{
                 padding: '4px 10px',
-                backgroundColor: data.isSuperAdmin ? '#3b82f6' : '#a855f7',
+                backgroundColor: data.isSuperAdmin ? 'var(--color-blue-500)' : '#a855f7',
                 letterSpacing: '0.5px',
               }}
             >

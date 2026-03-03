@@ -255,7 +255,7 @@ export const FederationsList: React.FC = () => {
                           <span
                             className="cursor-pointer"
                             style={{
-                              color: '#2563eb',
+                              color: 'var(--color-blue-600)',
                               textDecoration: 'underline',
                             }}
                             onClick={() => navigate(`/organisations/${org.slug || org.id}`)}

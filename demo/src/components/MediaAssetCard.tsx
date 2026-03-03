@@ -100,22 +100,22 @@ export function MediaAssetCard({
 
   // Determine status badge
   let badgeText = '';
-  let badgeColor = '#6b7280';
+  let badgeColor = 'var(--app-muted-text)';
   if (isGenerating) {
     badgeText = '⏳ Bezig';
-    badgeColor = '#f59e0b';
+    badgeColor = 'var(--color-amber-400)';
   } else if (isFailed) {
     badgeText = '✕ Mislukt';
-    badgeColor = '#ef4444';
+    badgeColor = 'var(--color-red-500)';
   } else if (mediaItem) {
     badgeText = '✓ Opgeslagen';
-    badgeColor = '#10b981';
+    badgeColor = 'var(--color-green-400)';
   }
 
   // Border color based on status
   let borderColor = 'var(--vscode-widget-border, #333)';
-  if (isGenerating) borderColor = '#f59e0b';
-  else if (isFailed) borderColor = '#ef4444';
+  if (isGenerating) borderColor = 'var(--color-amber-400)';
+  else if (isFailed) borderColor = 'var(--color-red-500)';
   else if (mediaItem) borderColor = '#22c55e';
 
   return (
@@ -198,7 +198,7 @@ export function MediaAssetCard({
 
           {/* Generating state */}
           {isGenerating && !url && (
-            <div className="text-center fs-12" style={{ color: '#f59e0b' }}>
+            <div className="text-center fs-12" style={{ color: 'var(--color-amber-400)' }}>
               <div className="mb-4 fs-24">⏳</div>
               <div>Bezig met genereren...</div>
             </div>
@@ -266,7 +266,7 @@ export function MediaAssetCard({
 
           {/* Error message */}
           {isFailed && errorMessage && (
-            <div className="mb-4" style={{ fontSize: 10, color: '#ef4444', lineHeight: 1.3 }}>
+            <div className="mb-4" style={{ fontSize: 10, color: 'var(--color-red-500)', lineHeight: 1.3 }}>
               {errorMessage}
             </div>
           )}
@@ -313,7 +313,7 @@ export function MediaAssetCard({
               className="w-full fs-11 cursor-pointer rounded-4 mt-4 bg-transparent"
               style={{
                 padding: '4px 8px',
-                color: '#ef4444',
+                color: 'var(--color-red-500)',
                 border: '1px solid #ef4444',
               }}
             >

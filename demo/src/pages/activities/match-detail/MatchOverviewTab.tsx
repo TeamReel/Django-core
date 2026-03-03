@@ -168,7 +168,7 @@ export default function MatchOverviewTab({
             <div className="flex-row gap-6">
               <span className="fs-20">✅</span>
               <div>
-                <div className="fs-14 fw-700" style={{ color: '#10b981' }}>Ingevuld</div>
+                <div className="fs-14 fw-700" style={{ color: 'var(--color-green-400)' }}>Ingevuld</div>
                 <div className="fs-11 text-muted">
                   {lineupFilledCount} spelers{lineupFormation ? ` • ${lineupFormation}` : ''}
                 </div>
@@ -197,7 +197,7 @@ export default function MatchOverviewTab({
           <div className="flex-row gap-6">
             <span className="fs-20">{contentDone > 0 ? '🟢' : '⬜'}</span>
             <div>
-              <div className="fs-14 fw-700" style={{ color: contentDone > 0 ? '#10b981' : 'var(--app-muted-text, #888)' }}>
+              <div className="fs-14 fw-700" style={{ color: contentDone > 0 ? 'var(--color-green-400)' : 'var(--app-muted-text, #888)' }}>
                 {contentDone}/{contentTotal}
               </div>
               <div className="fs-11 text-muted">
@@ -234,9 +234,9 @@ export default function MatchOverviewTab({
 
                 let statusIcon = '⬜';
                 let statusColor = 'var(--app-muted-text, #666)';
-                if (isGenerating) { statusIcon = '⏳'; statusColor = '#f59e0b'; }
-                else if (isFailed) { statusIcon = '❌'; statusColor = '#ef4444'; }
-                else if (hasMedia) { statusIcon = '✅'; statusColor = '#10b981'; }
+                if (isGenerating) { statusIcon = '⏳'; statusColor = 'var(--color-amber-400)'; }
+                else if (isFailed) { statusIcon = '❌'; statusColor = 'var(--color-red-500)'; }
+                else if (hasMedia) { statusIcon = '✅'; statusColor = 'var(--color-green-400)'; }
 
                 return (
                   <div
@@ -254,11 +254,11 @@ export default function MatchOverviewTab({
                       {item.label}
                     </span>
                     {hasMedia && !isGenerating ? (
-                      <span className="fs-11 fw-600" style={{ color: '#10b981' }}>Bekijk ↗</span>
+                      <span className="fs-11 fw-600" style={{ color: 'var(--color-green-400)' }}>Bekijk ↗</span>
                     ) : isGenerating ? (
-                      <span className="fs-11 fw-600" style={{ color: '#f59e0b' }}>⏳ Bezig</span>
+                      <span className="fs-11 fw-600" style={{ color: 'var(--color-amber-400)' }}>⏳ Bezig</span>
                     ) : isFailed ? (
-                      <span className="fs-11 fw-600" style={{ color: '#ef4444' }}>Opnieuw ↻</span>
+                      <span className="fs-11 fw-600" style={{ color: 'var(--color-red-500)' }}>Opnieuw ↻</span>
                     ) : (
                       <span className="fs-11 fw-600" style={{ color: 'var(--app-primary, #3b82f6)' }}>Maak →</span>
                     )}

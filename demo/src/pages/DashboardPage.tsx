@@ -144,7 +144,7 @@ export default function DashboardPage() {
                        to={`/organisations/${context.organisation.slug}/projects`}
                        style={{
                          padding: '10px 16px',
-                         backgroundColor: '#007bff',
+                         backgroundColor: 'var(--app-primary)',
                          color: 'white',
                          textDecoration: 'none',
                          borderRadius: '4px',

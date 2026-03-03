@@ -90,7 +90,7 @@ export default function RecentsPage() {
                     className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600"
                     style={{
                       padding: '6px 8px',
-                      color: isFav ? '#f59e0b' : 'var(--app-text)',
+                      color: isFav ? 'var(--color-amber-400)' : 'var(--app-text)',
                     }}
                     title={isFav ? 'Unfavorite' : 'Add to favorites'}
                   >

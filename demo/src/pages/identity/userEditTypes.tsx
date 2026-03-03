@@ -58,12 +58,12 @@ export const getRbacLabel = (accessRole: string, isTeam: boolean): string => {
 
 export const getRbacColor = (label: string): string => {
   switch (label) {
-    case 'Club Admin': return '#f59e0b';
-    case 'Team Admin': return '#3b82f6';
-    case 'Team Member': return '#10b981';
+    case 'Club Admin': return 'var(--color-amber-400)';
+    case 'Team Admin': return 'var(--color-blue-500)';
+    case 'Team Member': return 'var(--color-green-400)';
     case 'Supporter': return '#8b5cf6';
-    case 'Land Admin': return '#ef4444';
-    default: return '#6b7280';
+    case 'Land Admin': return 'var(--color-red-500)';
+    default: return 'var(--app-muted-text)';
   }
 };
 

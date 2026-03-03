@@ -114,7 +114,7 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
               <div style={{
                 padding: '12px',
                 backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                color: '#dc3545',
+                color: 'var(--app-error)',
                 border: '1px solid rgba(220, 53, 69, 0.2)',
                 borderRadius: '4px',
                 fontSize: '14px'

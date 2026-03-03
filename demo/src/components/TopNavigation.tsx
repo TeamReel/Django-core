@@ -186,7 +186,7 @@ export default function TopNavigation() {
                       textAlign: 'left',
                       border: 'none',
                       backgroundColor: language === lang ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                      color: language === lang ? '#2563eb' : 'var(--app-text)',
+                      color: language === lang ? 'var(--color-blue-600)' : 'var(--app-text)',
                       fontWeight: language === lang ? 600 : 400,
                       fontSize: '14px',
                       cursor: 'pointer',
@@ -231,7 +231,7 @@ export default function TopNavigation() {
                 position: 'absolute',
                 top: '4px',
                 right: '4px',
-                backgroundColor: '#dc3545',
+                backgroundColor: 'var(--app-error)',
                 color: 'white',
                 borderRadius: '10px',
                 padding: '2px 6px',
@@ -249,7 +249,7 @@ export default function TopNavigation() {
             disabled={loading}
             style={{
               padding: '8px 16px',
-              backgroundColor: loading ? '#6c757d' : '#dc3545',
+              backgroundColor: loading ? '#6c757d' : 'var(--app-error)',
               color: 'white',
               border: 'none',
               borderRadius: '4px',

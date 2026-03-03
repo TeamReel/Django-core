@@ -72,7 +72,7 @@ export function MemberOverviewTab({
             style={{
               padding: '12px',
               borderRadius: '8px',
-              border: `1px solid ${item.hasContent ? '#10b981' : 'var(--app-border)'}`,
+              border: `1px solid ${item.hasContent ? 'var(--color-green-400)' : 'var(--app-border)'}`,
               background: item.hasContent ? 'rgba(16, 185, 129, 0.08)' : 'var(--app-surface)',
               cursor: 'pointer',
               transition: 'border-color 0.15s',
@@ -120,7 +120,7 @@ export function MemberOverviewTab({
               style={{
                 height: '100%',
                 width: `${(completedCount / totalCount) * 100}%`,
-                background: completedCount === totalCount ? '#10b981' : '#3b82f6',
+                background: completedCount === totalCount ? 'var(--color-green-400)' : 'var(--color-blue-500)',
                 transition: 'width 0.3s',
               }}
             />

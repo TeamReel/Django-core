@@ -313,9 +313,9 @@ export function getStateDisplay(stateName: string): { color: string; bgColor: st
 
   switch (category) {
     case 'initial':
-      return { color: '#6b7280', bgColor: '#f3f4f6', icon: '📝', label };
+      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: '📝', label };
     case 'active':
-      return { color: '#2563eb', bgColor: '#dbeafe', icon: '🔄', label };
+      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: '🔄', label };
     case 'review':
       return { color: '#d97706', bgColor: '#fef3c7', icon: '👀', label };
     case 'terminal_success':
@@ -337,11 +337,11 @@ export function getActionDisplay(action: string): { color: string; bgColor: stri
     return { color: '#fff', bgColor: '#dc2626', hoverBgColor: '#b91c1c', icon: '❌', label };
   }
   if (a === 'submit' || a === 'request_review') {
-    return { color: '#fff', bgColor: '#2563eb', hoverBgColor: '#1d4ed8', icon: '📤', label };
+    return { color: '#fff', bgColor: 'var(--color-blue-600)', hoverBgColor: '#1d4ed8', icon: '📤', label };
   }
   if (a === 'revise' || a === 'reopen' || a === 'resubmit') {
     return { color: '#fff', bgColor: '#d97706', hoverBgColor: '#b45309', icon: '🔄', label };
   }
   // Default
-  return { color: '#fff', bgColor: '#6b7280', hoverBgColor: '#4b5563', icon: '▶️', label };
+  return { color: '#fff', bgColor: 'var(--app-muted-text)', hoverBgColor: '#4b5563', icon: '▶️', label };
 }

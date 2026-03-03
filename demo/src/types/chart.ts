@@ -71,12 +71,12 @@ export const getThemeColors = () => {
   const style = getComputedStyle(document.documentElement);
 
   return {
-    primary: style.getPropertyValue('--color-accent-500') || '#3b82f6',
-    success: style.getPropertyValue('--color-success-500') || '#10b981',
-    warning: style.getPropertyValue('--color-warning-500') || '#f59e0b',
-    error: style.getPropertyValue('--color-error-500') || '#ef4444',
+    primary: style.getPropertyValue('--color-accent-500') || 'var(--color-blue-500)',
+    success: style.getPropertyValue('--color-success-500') || 'var(--color-green-400)',
+    warning: style.getPropertyValue('--color-warning-500') || 'var(--color-amber-400)',
+    error: style.getPropertyValue('--color-error-500') || 'var(--color-red-500)',
     text: style.getPropertyValue('--color-text-primary') || '#1f2937',
-    textSecondary: style.getPropertyValue('--color-text-secondary') || '#6b7280',
+    textSecondary: style.getPropertyValue('--color-text-secondary') || 'var(--app-muted-text)',
     border: style.getPropertyValue('--color-border-subtle') || '#e5e7eb',
     background: style.getPropertyValue('--color-background-surface') || '#ffffff',
   };

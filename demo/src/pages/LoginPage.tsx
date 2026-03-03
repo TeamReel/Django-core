@@ -70,7 +70,7 @@ export default function LoginPage() {
           disabled={isLoading}
           style={{
             padding: '12px',
-            backgroundColor: isLoading ? '#ccc' : '#007bff',
+            backgroundColor: isLoading ? '#ccc' : 'var(--app-primary)',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -84,7 +84,7 @@ export default function LoginPage() {
       </form>
 
       <p style={{ marginTop: '15px', fontSize: '14px', color: '#666', textAlign: 'center' }}>
-        Don't have an account? <Link to="/register" style={{ color: '#007bff', textDecoration: 'none' }}>Create one here</Link>
+        Don't have an account? <Link to="/register" style={{ color: 'var(--app-primary)', textDecoration: 'none' }}>Create one here</Link>
       </p>
     </div>
   );

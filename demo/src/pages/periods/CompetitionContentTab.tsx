@@ -124,7 +124,7 @@ export function CompetitionContentTab({
                           </td>
                         );
                       })}
-                      <td style={{ textAlign: 'center', padding: '6px 6px', fontSize: 11, fontWeight: 600, color: done > 0 ? '#10b981' : 'var(--app-text-secondary, #999)' }}>
+                      <td style={{ textAlign: 'center', padding: '6px 6px', fontSize: 11, fontWeight: 600, color: done > 0 ? 'var(--color-green-400)' : 'var(--app-text-secondary, #999)' }}>
                         {done}/{matchContentTypes.length}
                       </td>
                     </tr>

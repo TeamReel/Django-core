@@ -55,7 +55,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       const role = next.trim().toLowerCase();
                       if (!role) return;
                       try { await updateOrganisationMembershipRole(orgSlugOrId, role); } catch (e) { alert(e instanceof Error ? e.message : 'Failed to update role'); }
-                    }} className="border-none bg-transparent p-0 fw-700" style={{ color: orgSlugOrId ? '#007bff' : 'var(--app-muted-text)', cursor: orgSlugOrId ? 'pointer' : 'not-allowed', textDecoration: orgSlugOrId ? 'underline' : 'none' }} title={orgSlugOrId ? 'Click to edit role' : 'Missing federation id'}>
+                    }} className="border-none bg-transparent p-0 fw-700" style={{ color: orgSlugOrId ? 'var(--app-primary)' : 'var(--app-muted-text)', cursor: orgSlugOrId ? 'pointer' : 'not-allowed', textDecoration: orgSlugOrId ? 'underline' : 'none' }} title={orgSlugOrId ? 'Click to edit role' : 'Missing federation id'}>
                       {currentRole}
                     </button>
                   </td>
@@ -117,7 +117,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                         if (!projectId) return;
                         setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String((direct as any)?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
-                      }} className="border-none bg-transparent p-0 fw-700" style={{ color: projectId ? '#007bff' : 'var(--app-muted-text)', cursor: projectId ? 'pointer' : 'not-allowed', textDecoration: projectId ? 'underline' : 'none' }} title={projectId ? 'Click to edit role' : 'Missing project id'}>
+                      }} className="border-none bg-transparent p-0 fw-700" style={{ color: projectId ? 'var(--app-primary)' : 'var(--app-muted-text)', cursor: projectId ? 'pointer' : 'not-allowed', textDecoration: projectId ? 'underline' : 'none' }} title={projectId ? 'Click to edit role' : 'Missing project id'}>
                         {String((direct as any)?.role || '') || '—'}
                       </button>
                     ) : (
@@ -183,7 +183,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       if (!projectId) return;
                       setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
                       setIsEditMembershipModalOpen(true);
-                    }} className="border-none bg-transparent p-0 fw-700" style={{ color: projectId ? '#007bff' : 'var(--app-muted-text)', cursor: projectId ? 'pointer' : 'not-allowed', textDecoration: projectId ? 'underline' : 'none' }} title={projectId ? 'Click to edit role' : 'Missing project id'}>
+                    }} className="border-none bg-transparent p-0 fw-700" style={{ color: projectId ? 'var(--app-primary)' : 'var(--app-muted-text)', cursor: projectId ? 'pointer' : 'not-allowed', textDecoration: projectId ? 'underline' : 'none' }} title={projectId ? 'Click to edit role' : 'Missing project id'}>
                       {String(t?.role || '') || '—'}
                     </button>
                   </td>

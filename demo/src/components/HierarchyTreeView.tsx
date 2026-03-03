@@ -40,12 +40,12 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
       organisation: '#9333ea',
       federation: '#9333ea',
       club: '#dc2626',
-      team: '#2563eb',
+      team: 'var(--color-blue-600)',
       season: '#059669',
       competition: '#d97706',
       match: '#0891b2',
     };
-    return colors[type.toLowerCase()] || '#6b7280';
+    return colors[type.toLowerCase()] || 'var(--app-muted-text)';
   };
 
   // Determine styling based on anchor status

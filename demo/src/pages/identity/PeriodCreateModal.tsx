@@ -466,7 +466,7 @@ export default function PeriodCreateModal({
               className="py-8 px-12 rounded-6 fw-600"
               style={{
                 border: '1px solid #1e5aa5',
-                backgroundColor: '#2563eb',
+                backgroundColor: 'var(--color-blue-600)',
                 color: '#fff',
                 cursor: saving ? 'not-allowed' : 'pointer',
                 opacity: saving ? 0.7 : 1,

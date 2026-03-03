@@ -134,9 +134,9 @@ export function getJobStatusDisplay(status: VideoJobStatus): {
 } {
   switch (status) {
     case 'queued':
-      return { color: '#6b7280', bgColor: '#f3f4f6', icon: '⏳', label: 'Queued' };
+      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: '⏳', label: 'Queued' };
     case 'processing':
-      return { color: '#2563eb', bgColor: '#dbeafe', icon: '🔄', label: 'Processing' };
+      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: '🔄', label: 'Processing' };
     case 'completed':
       return { color: '#059669', bgColor: '#d1fae5', icon: '✅', label: 'Completed' };
     case 'failed':
@@ -144,7 +144,7 @@ export function getJobStatusDisplay(status: VideoJobStatus): {
     case 'cancelled':
       return { color: '#9ca3af', bgColor: '#f3f4f6', icon: '🚫', label: 'Cancelled' };
     default:
-      return { color: '#6b7280', bgColor: '#f3f4f6', icon: '❓', label: status || 'Unknown' };
+      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: '❓', label: status || 'Unknown' };
   }
 }
 

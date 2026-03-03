@@ -187,7 +187,7 @@ export function LineupSquadStep({
             const filled = [...gkSelected, ...playerSelected].filter(Boolean).length;
             const total = formationLayout.positions.length;
             return filled === total
-              ? <span style={{ color: '#10b981' }}>✓ Alle {total} posities ingevuld</span>
+              ? <span style={{ color: 'var(--color-green-400)' }}>✓ Alle {total} posities ingevuld</span>
               : <span>{filled} / {total} posities ingevuld</span>;
           })()}
         </span>

@@ -17,7 +17,7 @@ export default function ContentPage() {
       label: 'Media Library',
       description: 'Search and manage your media assets with AI-powered tagging',
       icon: Library,
-      color: '#3b82f6',
+      color: 'var(--color-blue-500)',
     },
     {
       path: '/studio',
@@ -31,14 +31,14 @@ export default function ContentPage() {
       label: 'Video Projects',
       description: 'Edit and render video content',
       icon: Film,
-      color: '#10b981',
+      color: 'var(--color-green-400)',
     },
     {
       path: '/studio/images',
       label: 'Image Projects',
       description: 'Create and edit graphics and thumbnails',
       icon: Image,
-      color: '#f59e0b',
+      color: 'var(--color-amber-400)',
     },
   ];
 

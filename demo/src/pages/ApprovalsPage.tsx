@@ -336,8 +336,8 @@ export default function ApprovalsPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 5,
                     padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    border: `1.5px solid ${isActive ? '#2563eb' : 'var(--app-border, #e5e7eb)'}`,
-                    backgroundColor: isActive ? '#2563eb' : 'var(--app-surface, #fff)',
+                    border: `1.5px solid ${isActive ? 'var(--color-blue-600)' : 'var(--app-border, #e5e7eb)'}`,
+                    backgroundColor: isActive ? 'var(--color-blue-600)' : 'var(--app-surface, #fff)',
                     color: isActive ? '#fff' : 'var(--app-text-secondary, #6b7280)',
                     cursor: count > 0 || chip.key === 'all' ? 'pointer' : 'default',
                     opacity: count > 0 || chip.key === 'all' ? 1 : 0.4,

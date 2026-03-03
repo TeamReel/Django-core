@@ -63,10 +63,10 @@ export const ObservabilityCharts: React.FC<ObservabilityChartsProps> = ({
     const generateChartData = () => {
       // Get theme colors
       const style = getComputedStyle(document.documentElement);
-      const primaryColor = style.getPropertyValue('--color-accent-500') || '#3b82f6';
-      const successColor = style.getPropertyValue('--color-success-500') || '#10b981';
-      const warningColor = style.getPropertyValue('--color-warning-500') || '#f59e0b';
-      const errorColor = style.getPropertyValue('--color-error-500') || '#ef4444';
+      const primaryColor = style.getPropertyValue('--color-accent-500') || 'var(--color-blue-500)';
+      const successColor = style.getPropertyValue('--color-success-500') || 'var(--color-green-400)';
+      const warningColor = style.getPropertyValue('--color-warning-500') || 'var(--color-amber-400)';
+      const errorColor = style.getPropertyValue('--color-error-500') || 'var(--color-red-500)';
 
       // Prepare time labels from the last 10 data points
       const labels = metricsHistory.slice(-10).map((_, index) => {

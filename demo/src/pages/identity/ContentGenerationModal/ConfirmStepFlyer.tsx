@@ -146,7 +146,7 @@ export function ConfirmStepFlyer({
               {isSelected && (
                 <div style={{
                   position: 'absolute', top: 6, right: 6, width: 18, height: 18,
-                  borderRadius: '50%', background: '#10b981',
+                  borderRadius: '50%', background: 'var(--color-green-400)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 10, color: '#fff', fontWeight: 700,
                 }}>✓</div>
@@ -296,7 +296,7 @@ function SingleMemberSelector({
       </select>
 
       {flyerMemberId && selectedMemberStyles.length === 0 && (
-        <div className="fs-11 mt-8" style={{ color: '#f59e0b' }}>
+        <div className="fs-11 mt-8" style={{ color: 'var(--color-amber-400)' }}>
            Deze speler heeft nog geen bewerkte actiefoto's
         </div>
       )}

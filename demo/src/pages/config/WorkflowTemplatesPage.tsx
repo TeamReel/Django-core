@@ -76,7 +76,7 @@ export default function WorkflowTemplatesPage() {
                           style={{
                             fontSize: 10,
                             fontWeight: 600,
-                            color: '#6b7280',
+                            color: 'var(--app-muted-text)',
                             backgroundColor: '#f3f4f6',
                             borderRadius: 4,
                             padding: '2px 6px',
@@ -120,7 +120,7 @@ export default function WorkflowTemplatesPage() {
                             <div key={state.name} className="flex-row gap-4">
                               <WorkflowStatusBadge state={state.name} size="sm" />
                               {state.is_initial && (
-                                <span style={{ fontSize: 9, color: '#6b7280' }}>(initial)</span>
+                                <span style={{ fontSize: 9, color: 'var(--app-muted-text)' }}>(initial)</span>
                               )}
                             </div>
                           ))}

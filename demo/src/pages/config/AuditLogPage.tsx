@@ -254,7 +254,7 @@ const AuditRow: React.FC<{ event: AuditEvent; onSelect: () => void }> = ({ event
       <td>
         <button
           onClick={onSelect}
-          style={{ padding: '4px 8px', fontSize: '12px', color: '#007bff', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--app-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           data-testid={`audit-details-${event.id}`}
         >
           Details

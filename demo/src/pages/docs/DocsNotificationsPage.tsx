@@ -89,7 +89,7 @@ export function DocsNotificationsPage() {
     padding: '6px 12px', borderRadius: '4px',
     border: active ? '1px solid #007bff' : '1px solid #6c757d',
     backgroundColor: 'var(--app-surface)',
-    color: active ? '#007bff' : '#6c757d',
+    color: active ? 'var(--app-primary)' : '#6c757d',
     cursor: 'pointer', fontSize: '14px', fontWeight: 500,
   });
 
@@ -102,7 +102,7 @@ export function DocsNotificationsPage() {
             <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}><Spinner /></div>
           ) : error ? (
             <Card className="p-24 text-center bg-surface border">
-              <p className="mb-16" style={{ color: '#ef4444' }}>{error}</p>
+              <p className="mb-16" style={{ color: 'var(--color-red-500)' }}>{error}</p>
               <button onClick={fetchNotifications} style={filterBtnStyle(true)}>Retry</button>
             </Card>
           ) : (

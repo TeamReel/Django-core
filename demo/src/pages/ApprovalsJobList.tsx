@@ -22,7 +22,7 @@ const statusIcon: Record<GenJobStatus, string> = {
   queued: '⏳', waiting: '⏳', processing: '', completed: '✅', failed: '❌', cancelled: '',
 };
 const statusColor: Record<GenJobStatus, string> = {
-  queued: '#6b7280', waiting: '#6b7280', processing: '#2563eb', completed: '#16a34a', failed: '#dc2626', cancelled: '#9ca3af',
+  queued: 'var(--app-muted-text)', waiting: 'var(--app-muted-text)', processing: 'var(--color-blue-600)', completed: '#16a34a', failed: '#dc2626', cancelled: '#9ca3af',
 };
 
 interface ApprovalsJobListProps {
@@ -106,7 +106,7 @@ export function ApprovalsJobList({
                 </div>
                 {isActive && (
                   <div className={s.progressTrack} style={{ marginTop: 6 }}>
-                    <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: '#2563eb', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
+                    <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: 'var(--color-blue-600)', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
                   </div>
                 )}
                 {job.status === 'failed' && job.error_message && (
@@ -169,7 +169,7 @@ export function ApprovalsJobList({
               {isActive && (
                 <div className="flex-row gap-8">
                   <div className={s.progressTrackThick}>
-                    <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : '#2563eb', transition: 'width 0.5s ease-out' }} />
+                    <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : 'var(--color-blue-600)', transition: 'width 0.5s ease-out' }} />
                   </div>
                   <span className={s.progressPercent}>{vJob.progress_percent}%</span>
                 </div>

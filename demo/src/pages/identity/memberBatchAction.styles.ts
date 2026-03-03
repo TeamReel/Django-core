@@ -92,7 +92,7 @@ export const radioOptionStyle = (selected: boolean): React.CSSProperties => ({
     gap: '10px',
     padding: '12px 14px',
     borderRadius: '8px',
-    border: `1px solid ${selected ? '#3b82f6' : 'var(--app-border, #333)'}`,
+    border: `1px solid ${selected ? 'var(--color-blue-500)' : 'var(--app-border, #333)'}`,
     background: selected ? 'rgba(59,130,246,0.08)' : 'transparent',
     cursor: 'pointer',
     transition: 'all 0.15s ease',

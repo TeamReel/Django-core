@@ -220,7 +220,7 @@ export default function CommandPalette({
                 borderRadius: 10,
                 padding: '6px 10px',
                 cursor: 'pointer',
-                color: isFavorite(active.path) ? '#f59e0b' : 'var(--app-text)',
+                color: isFavorite(active.path) ? 'var(--color-amber-400)' : 'var(--app-text)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,

@@ -79,7 +79,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             <div className="text-center" style={{ marginBottom: '40px' }}>
               <div className="mb-24" style={{ fontSize: '72px' }}>⚠️</div>
 
-              <h1 className="mb-16" style={{ fontSize: '48px', color: '#dc3545' }}>
+              <h1 className="mb-16" style={{ fontSize: '48px', color: 'var(--app-error)' }}>
                 500
               </h1>
 
@@ -97,7 +97,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                   onClick={this.handleReset}
                   className="py-12 px-24 border-none rounded-4 fs-16 cursor-pointer"
                   style={{
-                    backgroundColor: '#007bff',
+                    backgroundColor: 'var(--app-primary)',
                     color: 'white',
                   }}
                 >
@@ -124,7 +124,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                 marginTop: '48px',
                 backgroundColor: '#f8f9fa',
               }}>
-                <h3 className="fs-18" style={{ marginTop: 0, color: '#dc3545' }}>
+                <h3 className="fs-18" style={{ marginTop: 0, color: 'var(--app-error)' }}>
                   Error Details (Development Only)
                 </h3>
 
@@ -138,7 +138,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
                     <pre style={{
                       margin: '8px 0 0 0',
                       whiteSpace: 'pre-wrap',
-                      color: '#dc3545'
+                      color: 'var(--app-error)'
                     }}>
                       {this.state.error.toString()}
                     </pre>
