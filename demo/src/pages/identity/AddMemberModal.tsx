@@ -3,9 +3,8 @@ import { Button, Input } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import {
-  overlayStyle, panelStyle, tabStyle,
-  labelStyle, fieldWrapStyle, errorBoxStyle,
-  successBoxStyle, userRowStyle, LEVEL_LABEL,
+  tabStyle,
+  LEVEL_LABEL,
 } from './addMemberModalStyles';
 import type { ContextLevel, UserResult } from './addMemberModalStyles';
 
@@ -260,8 +259,8 @@ export default function AddMemberModal({
   const levelLabel = LEVEL_LABEL[contextLevel];
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={panelStyle}>
+    <div className="modal-backdrop overflow-y-auto p-16" style={{ zIndex: 1100, WebkitOverflowScrolling: 'touch' }} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-surface p-24 rounded-12 text-primary flex-col" style={{ width: '700px', maxWidth: '100%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: 'calc(100vh - 32px)', margin: 'auto' }}>
         {/* ── Header ── */}
         <div className="flex-between mb-4">
           <h2 className="m-0 fs-20 fw-700">
@@ -277,7 +276,7 @@ export default function AddMemberModal({
           </button>
         </div>
 
-        <p className="fs-13 text-muted" style={{ margin: '0 0 16px' }}>
+        <p className="fs-13 text-muted m-0 mb-16">
           {contextLevel === 'team' && 'Member will also be added to the parent club and federation.'}
           {contextLevel === 'club' && 'Member will also be added to the parent federation.'}
           {contextLevel === 'organisation' && 'Member will be added to this federation.'}
@@ -294,8 +293,8 @@ export default function AddMemberModal({
         </div>
 
         {/* ── Messages ── */}
-        {error && <div style={errorBoxStyle}>{error}</div>}
-        {successMsg && <div style={successBoxStyle}>{successMsg}</div>}
+        {error && <div className="callout-error mb-16">{error}</div>}
+        {successMsg && <div className="callout-success mb-16">{successMsg}</div>}
 
         {/* ═══════════════════════ TAB: Existing User ═══════════════════════ */}
         {tab === 'existing' && (
@@ -303,7 +302,7 @@ export default function AddMemberModal({
             {/* Role selector */}
             <div className="mb-16 flex-row gap-16">
               <div className="flex-1">
-                <label style={labelStyle}>Search Users</label>
+                <label className="block mb-4 fs-14 fw-500">Search Users</label>
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -312,19 +311,11 @@ export default function AddMemberModal({
                 />
               </div>
               <div style={{ width: '160px' }}>
-                <label style={labelStyle}>Role</label>
+                <label className="block mb-4 fs-14 fw-500">Role</label>
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--app-border, #ccc)',
-                    backgroundColor: 'var(--app-surface, white)',
-                    color: 'var(--app-text)',
-                    fontSize: '14px',
-                  }}
+                  className="form-input"
                 >
                   <option value="member">Member</option>
                   <option value="admin">Admin</option>
@@ -350,7 +341,8 @@ export default function AddMemberModal({
                 {searchResults.map((u) => (
                   <div
                     key={u.id}
-                    style={userRowStyle}
+                    className="flex-between rounded-8 border mb-8 cursor-pointer"
+                    style={{ padding: '10px 12px', transition: 'background .1s' }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--app-hover-bg, #f5f5f5)';
                     }}
@@ -392,7 +384,7 @@ export default function AddMemberModal({
           <form onSubmit={createNewUser} className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
             <div className="flex-row gap-12 mb-16">
               <div className="flex-1">
-                <label style={labelStyle}>First Name</label>
+                <label className="block mb-4 fs-14 fw-500">First Name</label>
                 <Input
                   value={newUser.first_name}
                   onChange={(e) => updateNewUserName('first_name', e.target.value)}
@@ -400,7 +392,7 @@ export default function AddMemberModal({
                 />
               </div>
               <div className="flex-1">
-                <label style={labelStyle}>Last Name</label>
+                <label className="block mb-4 fs-14 fw-500">Last Name</label>
                 <Input
                   value={newUser.last_name}
                   onChange={(e) => updateNewUserName('last_name', e.target.value)}
@@ -409,8 +401,8 @@ export default function AddMemberModal({
               </div>
             </div>
 
-            <div style={fieldWrapStyle}>
-              <label style={labelStyle}>Email Address *</label>
+            <div className="mb-16">
+              <label className="block mb-4 fs-14 fw-500">Email Address *</label>
               <Input
                 value={newUser.email}
                 onChange={(e) => {
@@ -423,8 +415,8 @@ export default function AddMemberModal({
               />
             </div>
 
-            <div style={fieldWrapStyle}>
-              <label style={labelStyle}>Password *</label>
+            <div className="mb-16">
+              <label className="block mb-4 fs-14 fw-500">Password *</label>
               <Input
                 value={newUser.password}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
@@ -434,27 +426,19 @@ export default function AddMemberModal({
               />
             </div>
 
-            <div style={fieldWrapStyle}>
-              <label style={labelStyle}>Role</label>
+            <div className="mb-16">
+              <label className="block mb-4 fs-14 fw-500">Role</label>
               <select
                 value={selectedRole}
                 onChange={(e) => setSelectedRole(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--app-border, #ccc)',
-                  backgroundColor: 'var(--app-surface, white)',
-                  color: 'var(--app-text)',
-                  fontSize: '14px',
-                }}
+                className="form-input"
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
 
-            <div className="gap-8 border-top" style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '8px' }}>
+            <div className="gap-8 border-top flex-row justify-end pt-8">
               <Button variant="secondary" onClick={onClose} type="button">
                 Cancel
               </Button>
@@ -467,7 +451,7 @@ export default function AddMemberModal({
 
         {/* ── Footer for existing tab ── */}
         {tab === 'existing' && (
-          <div className="border-top mt-8" style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '12px' }}>
+          <div className="border-top mt-8 flex-row justify-end pt-12">
             <Button variant="secondary" onClick={onClose}>
               Close
             </Button>

@@ -15,48 +15,23 @@ export default function MatchCreateModal({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1100,
-      }}
+      className="modal-backdrop"
+      style={{ zIndex: 1100 }}
       onClick={() => { if (!d.isSaving) onClose(); }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
-          width: '640px',
-          maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
-        }}
+        className="bg-surface p-24 rounded-8 text-primary border"
+        style={{ width: '640px', maxWidth: '95%', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
       >
         <div className="flex-between gap-12">
-          <h2 className="mb-12" style={{ marginTop: 0, color: 'var(--app-text)' }}>{headerText || 'Create Match'}</h2>
+          <h2 className="mb-12 mt-0">{headerText || 'Create Match'}</h2>
           <button
             type="button"
             onClick={onClose}
             disabled={d.isSaving}
-            style={{
-              padding: '6px 10px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              cursor: d.isSaving ? 'not-allowed' : 'pointer',
-              height: 'fit-content',
-            }}
+            className="btn-modal btn-modal-secondary"
+            style={{ cursor: d.isSaving ? 'not-allowed' : 'pointer', height: 'fit-content' }}
           >
             Close
           </button>
@@ -397,22 +372,13 @@ export default function MatchCreateModal({
             )}
           </div>
 
-          {d.error && <div className="mt-12" style={{ color: 'var(--app-danger, #d32f2f)' }}>{d.error}</div>}
+          {d.error && <div className="mt-12 text-danger">{d.error}</div>}
 
-          <div className="mt-16 gap-10" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className="mt-16 gap-10 flex-row justify-end">
             <button
               type="submit"
               disabled={d.isSaving}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid #1e5aa5',
-                backgroundColor: 'var(--color-blue-600)',
-                color: '#fff',
-                cursor: d.isSaving ? 'not-allowed' : 'pointer',
-                fontWeight: 600,
-                opacity: d.isSaving ? 0.7 : 1,
-              }}
+              className="btn-modal btn-modal-primary"
             >
               {d.isSaving ? (submitText ? `${submitText}…` : 'Creating…') : submitText || 'Create'}
             </button>

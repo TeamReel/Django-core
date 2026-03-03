@@ -11,62 +11,37 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
   return (
     <div
       onClick={onClose}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '20px'
-      }}
+      className="modal-backdrop p-20"
     >
       <div
         onClick={(e) => e.stopPropagation()}
+        className="rounded-12 w-full overflow-auto"
         style={{
           backgroundColor: 'var(--app-bg)',
-          borderRadius: '12px',
           maxWidth: '700px',
-          width: '100%',
           maxHeight: '90vh',
-          overflow: 'auto',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           border: '2px solid var(--app-border)'
         }}
       >
         {/* Modal Header */}
-        <div style={{
-          padding: '24px',
+        <div className="p-24 flex-between items-start sticky" style={{
           borderBottom: '2px solid var(--app-border)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'start',
-          position: 'sticky',
           top: 0,
           backgroundColor: 'var(--app-bg)',
           zIndex: 1
         }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{
-                display: 'inline-block',
-                padding: '4px 12px',
+          <div className="flex-1">
+            <div className="flex-row gap-8 mb-8">
+              <span className="inline-block py-4 px-12 rounded-4 fs-14 fw-600 text-white" style={{
                 backgroundColor: 'var(--app-primary)',
-                color: 'white',
-                borderRadius: '4px',
-                fontSize: '14px',
-                fontWeight: 600
               }}>
                 {module.code}
               </span>
-              <span style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+              <span className="fs-13 text-muted">
                 Module #{module.number.toString().padStart(3, '0')}
               </span>
-              <span style={{ fontSize: '13px', color: 'var(--app-muted-text)' }}>
+              <span className="fs-13 text-muted">
                 • Fase {module.phase}
               </span>
               <span style={{
@@ -81,57 +56,44 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
                 {getStatusLabel(module.status)}
               </span>
             </div>
-            <h2 style={{ margin: '0 0 8px 0', fontSize: '24px' }}>
+            <h2 className="m-0 mb-8 fs-24">
               {module.name}
             </h2>
-            <p style={{ margin: 0, fontSize: '15px', color: 'var(--app-muted-text)' }}>
+            <p className="m-0 text-muted" style={{ fontSize: '15px' }}>
               {module.description}
             </p>
           </div>
           <button
             onClick={onClose}
-            style={{
-              marginLeft: '16px',
-              padding: '8px 12px',
-              backgroundColor: 'transparent',
-              border: '1px solid var(--app-border)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '20px',
-              lineHeight: '1'
-            }}
+            className="py-8 px-12 bg-transparent border rounded-4 cursor-pointer fs-20"
+            style={{ marginLeft: '16px', lineHeight: '1' }}
           >
             ×
           </button>
         </div>
 
         {/* Modal Body */}
-        <div style={{ padding: '24px' }}>
+        <div className="p-24">
           {/* Category */}
-          <div style={{ marginBottom: '20px' }}>
-            <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+          <div className="mb-20">
+            <h4 className="mt-0 mb-8 fs-14 text-muted">
               CATEGORY
             </h4>
-            <span style={{
+            <span className="bg-surface border rounded-6 fs-14 fw-600" style={{
               padding: '6px 14px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)',
-              borderRadius: '6px',
-              fontSize: '14px',
-              fontWeight: 600
             }}>
               {module.category}
             </span>
           </div>
 
           {/* Features */}
-          <div style={{ marginBottom: '20px' }}>
-            <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+          <div className="mb-20">
+            <h4 className="mt-0 mb-12 fs-14 text-muted">
               KEY FEATURES
             </h4>
-            <ul style={{ margin: 0, padding: '0 0 0 20px' }}>
+            <ul className="m-0" style={{ padding: '0 0 0 20px' }}>
               {module.features.map((feature, idx) => (
-                <li key={idx} style={{ marginBottom: '8px', fontSize: '14px', lineHeight: '1.5' }}>
+                <li key={idx} className="mb-8 fs-14" style={{ lineHeight: '1.5' }}>
                   {feature}
                 </li>
               ))}
@@ -140,11 +102,11 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
 
           {/* Notes */}
           {module.notes && (
-            <div style={{ marginBottom: '20px' }}>
-              <h4 style={{ marginTop: 0, marginBottom: '8px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+            <div className="mb-20">
+              <h4 className="mt-0 mb-8 fs-14 text-muted">
                 NOTES
               </h4>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: '1.6', color: 'var(--app-text)' }}>
+              <p className="m-0 fs-14 text-primary" style={{ lineHeight: '1.6' }}>
                 {module.notes}
               </p>
             </div>
@@ -152,29 +114,18 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
 
           {/* Test URL */}
           {module.testUrl && (
-            <div style={{
-              marginTop: '24px',
-              padding: '16px',
-              backgroundColor: 'var(--app-surface)',
-              border: '1px solid var(--app-border)',
-              borderRadius: '8px'
-            }}>
-              <h4 style={{ marginTop: 0, marginBottom: '12px', fontSize: '14px', color: 'var(--app-muted-text)' }}>
+            <div className="mt-24 p-16 bg-surface border rounded-8">
+              <h4 className="mt-0 mb-12 fs-14 text-muted">
                 TEST THIS MODULE
               </h4>
               <a
                 href={module.testUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="inline-block rounded-6 fs-14 fw-600 text-white text-decoration-none"
                 style={{
-                  display: 'inline-block',
                   padding: '10px 20px',
                   backgroundColor: 'var(--app-primary)',
-                  color: 'white',
-                  textDecoration: 'none',
-                  borderRadius: '6px',
-                  fontSize: '14px',
-                  fontWeight: 600
                 }}
               >
                 → Open Demo Page

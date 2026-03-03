@@ -148,13 +148,13 @@ export default function ContentTemplatesPage() {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--app-text-muted)' }}>
+            <div className="text-center text-muted" style={{ padding: '40px' }}>
               Loading templates...
             </div>
           ) : error ? (
             <Alert variant="error">{error}</Alert>
           ) : filteredTemplates.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--app-text-muted)' }}>
+            <div className="text-center text-muted" style={{ padding: '40px' }}>
               No templates found
               {selectedCategory !== 'all' && (
                 <div className="mt-8">
@@ -198,7 +198,7 @@ export default function ContentTemplatesPage() {
                             )}
                           </div>
                           {template.description && (
-                            <div style={{ fontSize: '12px', color: 'var(--app-text-muted)', marginTop: '2px' }}>
+                            <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>
                               {template.description.substring(0, 40)}
                               {template.description.length > 40 && '...'}
                             </div>
@@ -255,8 +255,8 @@ export default function ContentTemplatesPage() {
                           {template.is_active ? 'Active' : 'Inactive'}
                         </Badge>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
+                      <td className="text-right">
+                        <div className="flex-row gap-8 justify-end">
                           <Button variant="secondary" size="sm" onClick={() => setEditingTemplate(template)}>
                             Edit
                           </Button>
@@ -267,7 +267,7 @@ export default function ContentTemplatesPage() {
                             variant="secondary"
                             size="sm"
                             onClick={() => handleDelete(template)}
-                            style={{ color: 'var(--app-error)' }}
+                            className="text-error"
                           >
                             Delete
                           </Button>

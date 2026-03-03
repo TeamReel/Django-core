@@ -81,10 +81,12 @@
    Margin — wired to --space-* tokens
    --------------------------------------------------------------------------- */
 .m-0    { margin: 0; }
+.mt-0   { margin-top: 0; }
 .mt-4   { margin-top: var(--space-1); }
 .mt-8   { margin-top: var(--space-2); }
 .mt-12  { margin-top: var(--space-3); }
 .mt-16  { margin-top: var(--space-4); }
+.mt-20  { margin-top: var(--space-5); }
 .mt-24  { margin-top: var(--space-6); }
 .mt-32  { margin-top: var(--space-8); }
 
@@ -100,6 +102,7 @@
 .ml-auto { margin-left: auto; }
 .mr-4   { margin-right: var(--space-1); }
 .mr-8   { margin-right: var(--space-2); }
+.mr-12  { margin-right: var(--space-3); }
 
 .mx-auto { margin-left: auto; margin-right: auto; }
 

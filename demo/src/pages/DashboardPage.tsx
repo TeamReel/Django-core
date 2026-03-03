@@ -78,8 +78,8 @@ export default function DashboardPage() {
             </div>
             <Link
               to="/recents"
-              className="fw-600 fs-13 bg-surface-2 text-primary border rounded-6"
-              style={{ padding: '8px 12px', textDecoration: 'none' }}
+              className="fw-600 fs-13 bg-surface-2 text-primary border rounded-6 text-decoration-none"
+              style={{ padding: '8px 12px' }}
             >
               View all
             </Link>
@@ -95,8 +95,8 @@ export default function DashboardPage() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="fw-600 fs-13 bg-surface-2 text-primary border rounded-full truncate"
-                  style={{ padding: '8px 10px', textDecoration: 'none', maxWidth: 260 }}
+                  className="fw-600 fs-13 bg-surface-2 text-primary border rounded-full truncate text-decoration-none"
+                  style={{ padding: '8px 10px', maxWidth: 260 }}
                   title={item.label}
                 >
                   {item.label}
@@ -111,7 +111,7 @@ export default function DashboardPage() {
           {/* Main Welcome Card */}
           <div className="dashboard-main">
             <div className="p-24 bg-surface rounded-8 border text-primary">
-              <h2 className="fs-20" style={{ marginTop: 0 }}>
+              <h2 className="fs-20 mt-0">
                 {context.organisation ? context.organisation.name : 'Select an Organisation'}
               </h2>
               {context.organisation ? (
@@ -121,35 +121,31 @@ export default function DashboardPage() {
                    </p>
 
                    {/* Stats Row - 2x2 on mobile */}
-                   <div className="stats-grid grid gap-12 mt-16" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+                   <div className="stats-grid grid gap-12 mt-16 grid-cols-2">
                       <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
+                          <div className="fs-20 fw-700">{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
                           <div className="fs-12 opacity-70">Clubs</div>
                       </div>
                       <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).teams_count || 0}</div>
+                          <div className="fs-20 fw-700">{(context.organisation as any).teams_count || 0}</div>
                           <div className="fs-12 opacity-70">Teams</div>
                       </div>
                       <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).matches_count || 0}</div>
+                          <div className="fs-20 fw-700">{(context.organisation as any).matches_count || 0}</div>
                           <div className="fs-12 opacity-70">Matches</div>
                       </div>
                       <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20" style={{ fontWeight: 'bold' }}>{(context.organisation as any).member_count || 0}</div>
+                          <div className="fs-20 fw-700">{(context.organisation as any).member_count || 0}</div>
                           <div className="fs-12 opacity-70">Members</div>
                       </div>
                    </div>
                    <div className="flex-row flex-wrap gap-8 mt-16">
                      <Link
                        to={`/organisations/${context.organisation.slug}/projects`}
+                       className="fw-500 fs-14 text-white text-decoration-none rounded-4"
                        style={{
                          padding: '10px 16px',
                          backgroundColor: 'var(--app-primary)',
-                         color: 'white',
-                         textDecoration: 'none',
-                         borderRadius: '4px',
-                         fontWeight: 500,
-                         fontSize: '14px',
                          flex: '1 1 auto'
                        }}
                      >
@@ -157,15 +153,9 @@ export default function DashboardPage() {
                      </Link>
                      <Link
                        to={`/organisations/${context.organisation.slug}`}
+                       className="fw-500 fs-14 text-primary bg-surface-2 border text-decoration-none rounded-4"
                        style={{
                          padding: '10px 16px',
-                         backgroundColor: 'var(--app-surface-2)',
-                         color: 'var(--app-text)',
-                         border: '1px solid var(--app-border)',
-                         textDecoration: 'none',
-                         borderRadius: '4px',
-                         fontWeight: 500,
-                         fontSize: '14px',
                          flex: '1 1 auto'
                        }}
                      >
@@ -191,8 +181,7 @@ export default function DashboardPage() {
                     {matchId && (
                       <Link
                         to={`/matches/${matchId}?tab=content`}
-                        className="fs-12 fw-600 text-link"
-                        style={{ textDecoration: 'none' }}
+                        className="fs-12 fw-600 text-link text-decoration-none"
                       >
                         View all &rarr;
                       </Link>
@@ -224,15 +213,15 @@ export default function DashboardPage() {
               <div className="p-12 bg-surface-2 rounded-8 border text-primary">
                 <div className="flex-row flex-wrap gap-16">
                    <div>
-                     <div className="fs-11 opacity-60" style={{ textTransform: 'uppercase' }}>Name</div>
+                     <div className="fs-11 opacity-60 uppercase">Name</div>
                      <div className="fw-500 fs-14">{user?.first_name || 'Not set'}</div>
                    </div>
                    <div>
-                     <div className="fs-11 opacity-60" style={{ textTransform: 'uppercase' }}>Email</div>
+                     <div className="fs-11 opacity-60 uppercase">Email</div>
                      <div className="fw-500 fs-14">{user?.email}</div>
                    </div>
                    <div className="hide-mobile">
-                     <div className="fs-11 opacity-60" style={{ textTransform: 'uppercase' }}>Role</div>
+                     <div className="fs-11 opacity-60 uppercase">Role</div>
                      <div className="fw-500 fs-14">{(user as any)?.role || 'Member'}</div>
                    </div>
                 </div>

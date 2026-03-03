@@ -52,11 +52,11 @@ export default function RegisterPage() {
   const lastNameError = error?.fieldErrors?.last_name?.[0] || '';
 
   return (
-    <div className="p-20" style={{ maxWidth: '400px', margin: '100px auto' }}>
+    <div className="p-20 max-w-400 mx-auto" style={{ marginTop: '100px' }}>
       <h1>Create Account</h1>
       <p>Sign up for a new Django Core-App account</p>
 
-      <form onSubmit={handleSubmit} className="flex-col" style={{ gap: '15px', marginTop: '30px' }}>
+      <form onSubmit={handleSubmit} className="flex-col mt-32" style={{ gap: '15px' }}>
         {displayError && (
           <div className="p-10 rounded-4" style={{ backgroundColor: '#fee', border: '1px solid #fcc', color: '#c00' }}>
             {displayError}
@@ -162,10 +162,9 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="p-12 border-none rounded-4 fs-16 fw-500"
+          className="p-12 border-none rounded-4 fs-16 fw-500 text-white"
           style={{
             backgroundColor: isLoading ? '#ccc' : 'var(--app-success)',
-            color: 'white',
             cursor: isLoading ? 'not-allowed' : 'pointer'
           }}
         >
@@ -173,8 +172,8 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <p className="fs-14 text-center" style={{ marginTop: '20px', color: '#666' }}>
-        Already have an account? <Link to="/login" style={{ color: 'var(--app-primary)', textDecoration: 'none' }}>Sign in here</Link>
+      <p className="fs-14 text-center mt-20" style={{ color: '#666' }}>
+        Already have an account? <Link to="/login" className="text-decoration-none" style={{ color: 'var(--app-primary)' }}>Sign in here</Link>
       </p>
     </div>
   );

@@ -56,9 +56,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {currentStep === 'match' && (
             <div className="flex-col gap-10">
               {matchesLoading ? (
-                <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>Laden...</div>
+                <div className="text-center p-32 text-muted">Laden...</div>
               ) : upcomingMatches.length === 0 ? (
-                <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>Geen komende wedstrijden gevonden</div>
+                <div className="text-center p-32 text-muted">Geen komende wedstrijden gevonden</div>
               ) : (
                 upcomingMatches.map((match) => {
                   const isSelected = selectedMatch?.id === match.id;
@@ -81,7 +81,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       }}>{date.getDate()}</div>
                       <div className="flex-1-min">
                         <div className="fw-600 text-primary truncate" style={{ fontSize: '15px' }}>{match.title}</div>
-                        <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
+                        <div className="fs-13 text-muted">
                           {relativeTime} &middot; {date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                         </div>
                       </div>
@@ -99,7 +99,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {currentStep === 'content' && (
             <div className="flex-col gap-16">
               {/* Phase tabs */}
-              <div className="gap-4 bg-surface-2" style={{ display: 'flex', padding: '3px', borderRadius: '10px' }}>
+              <div className="flex-row gap-4 bg-surface-2" style={{ padding: '3px', borderRadius: '10px' }}>
                 {([
                   { key: 'pre', label: 'Voor', icon: Clock },
                   { key: 'during', label: 'Tijdens', icon: Play },
@@ -137,7 +137,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       </div>
                       <div className="flex-1-min">
                         <div className="fw-600 text-primary" style={{ fontSize: '15px' }}>{content.label}</div>
-                        <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
+                        <div className="fs-13 text-muted">
                           {content.description}{needsLineup && ' (opstelling nodig)'}
                         </div>
                       </div>
@@ -157,8 +157,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         {currentStep === 'match' && selectedMatch && (
           <div className="border-top" style={{ padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
             <button onClick={() => setCurrentStep('content')}
-              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8"
-              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', color: 'white', fontSize: '15px' }}>
+              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white"
+              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', fontSize: '15px' }}>
               Verder<ChevronRight size={18} />
             </button>
           </div>
@@ -166,8 +166,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         {currentStep === 'lineup' && (
           <div className="border-top" style={{ padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
             <button onClick={handleLineupConfirm} disabled={lineupSaving}
-              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8"
-              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', color: 'white', fontSize: '15px', opacity: lineupSaving ? 0.7 : 1 }}>
+              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white"
+              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', fontSize: '15px', opacity: lineupSaving ? 0.7 : 1 }}>
               <Zap size={18} />{lineupSaving ? 'Opslaan...' : 'Genereer content'}
             </button>
           </div>

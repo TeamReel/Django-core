@@ -54,17 +54,11 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
           <button
             key={t.id}
             onClick={() => setSelectedTemplateId(t.id)}
+            className="rounded-8 text-primary cursor-pointer fs-13 flex-row items-center gap-6"
             style={{
               padding: '8px 14px',
-              borderRadius: '8px',
               border: `2px solid ${selectedTemplateId === t.id ? 'var(--color-blue-500)' : 'var(--app-border, #444)'}`,
               background: selectedTemplateId === t.id ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              fontSize: '13px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
             }}
           >
             <span>{t.icon}</span>
@@ -83,20 +77,12 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
         <label className="block fs-13 fw-600" style={{ marginBottom: '6px' }}>
           Standaard Instellingen (voor alle members)
         </label>
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          flexWrap: 'wrap',
-          padding: '12px',
-          borderRadius: '8px',
-          background: 'var(--app-surface-2, #252540)',
-          border: '1px solid var(--app-border, #333)',
-        }}>
+        <div className="flex-row flex-wrap gap-12 p-12 rounded-8 bg-surface-2 border">
           {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
             if (!isParamVisible(param, defaultParams)) return null;
             return (
               <div key={key} style={{ minWidth: '120px' }}>
-                <label style={{ display: 'block', fontSize: '11px', color: 'var(--app-muted-text)', marginBottom: '3px' }}>
+                <label className="block fs-11 text-muted" style={{ marginBottom: '3px' }}>
                   {param.label}
                 </label>
                 <select
@@ -126,10 +112,9 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
 
     {/* Info box for video templates */}
     {selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
-      <div className="mb-16 p-12 rounded-8 fs-13" style={{
+      <div className="mb-16 p-12 rounded-8 fs-13 text-primary" style={{
         background: 'rgba(34, 197, 94, 0.1)',
         border: '1px solid rgba(34, 197, 94, 0.3)',
-        color: 'var(--app-text)',
       }}>
         <div className="fw-600 mb-4">🔄 Slimme video verwerking</div>
         <div className="fs-12" style={{ opacity: 0.9 }}>
@@ -199,29 +184,20 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                   <div className="fs-11" style={{ color: 'var(--color-blue-500)' }}>Aangepaste instellingen</div>
                 )}
               </div>
-              <span style={{ fontSize: '12px', color: 'var(--app-muted-text)', transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+              <span className="fs-12 text-muted" style={{ transform: isExpanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
                 ▶
               </span>
             </div>
 
             {isExpanded && selectedTemplate && (
-              <div style={{
-                marginLeft: '52px',
-                marginBottom: '8px',
-                padding: '10px 12px',
-                borderRadius: '8px',
-                background: 'var(--app-surface-2, #252540)',
-                border: '1px solid var(--app-border, #333)',
-              }}>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <div className="mb-8 rounded-8 bg-surface-2 border" style={{ marginLeft: '52px', padding: '10px 12px' }}>
+                <div className="flex-row flex-wrap gap-10" style={{ alignItems: 'flex-end' }}>
                   {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
                     if (!isParamVisible(param, effectiveParams)) return null;
                     const hasOverride = memberOverrides[member.id]?.[key] !== undefined;
                     return (
                       <div key={key} style={{ minWidth: '110px' }}>
-                        <label style={{
-                          display: 'block',
-                          fontSize: '11px',
+                        <label className="block fs-11" style={{
                           color: hasOverride ? 'var(--color-blue-500)' : 'var(--app-muted-text)',
                           marginBottom: '3px',
                           fontWeight: hasOverride ? 600 : 400,
@@ -246,17 +222,8 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                   {hasOverrides && (
                     <button
                       onClick={(e) => { e.stopPropagation(); resetMemberOverrides(member.id); }}
-                      style={{
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        border: '1px solid var(--app-border)',
-                        background: 'transparent',
-                        color: 'var(--app-muted-text)',
-                        fontSize: '11px',
-                        cursor: 'pointer',
-                        alignSelf: 'flex-end',
-                        marginBottom: '2px',
-                      }}
+                      className="rounded-4 border bg-transparent text-muted fs-11 cursor-pointer"
+                      style={{ padding: '4px 8px', alignSelf: 'flex-end', marginBottom: '2px' }}
                     >
                       Reset
                     </button>

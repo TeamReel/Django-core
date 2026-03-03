@@ -72,26 +72,21 @@ export default function WorkflowTemplatesPage() {
                         <span className="fw-600" style={{ fontSize: 15, color: 'var(--app-text, #111)' }}>
                           {template.name}
                         </span>
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 600,
-                            color: 'var(--app-muted-text)',
+                        <span className="fs-11 fw-600 text-muted rounded-4" style={{
                             backgroundColor: '#f3f4f6',
-                            borderRadius: 4,
                             padding: '2px 6px',
                           }}
                         >
                           v{template.version}
                         </span>
                         {template.is_active && (
-                          <span style={{ fontSize: 10, fontWeight: 600, color: '#059669', backgroundColor: '#d1fae5', borderRadius: 4, padding: '2px 6px' }}>
+                          <span className="fs-11 fw-600 rounded-4" style={{ color: '#059669', backgroundColor: '#d1fae5', padding: '2px 6px' }}>
                             Active
                           </span>
                         )}
                       </div>
                       {template.description && (
-                        <div className="fs-12 text-secondary" style={{ marginTop: 2 }}>
+                        <div className="fs-12 text-secondary mt-4">
                           {template.description}
                         </div>
                       )}
@@ -112,7 +107,7 @@ export default function WorkflowTemplatesPage() {
                     >
                       {/* States */}
                       <div className="mt-16">
-                        <div className="fs-12 fw-600 text-secondary mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div className="fs-12 fw-600 text-secondary mb-8 uppercase tracking-wide">
                           States
                         </div>
                         <div className="flex-row gap-8 flex-wrap">
@@ -120,7 +115,7 @@ export default function WorkflowTemplatesPage() {
                             <div key={state.name} className="flex-row gap-4">
                               <WorkflowStatusBadge state={state.name} size="sm" />
                               {state.is_initial && (
-                                <span style={{ fontSize: 9, color: 'var(--app-muted-text)' }}>(initial)</span>
+                                <span className="fs-11 text-muted">(initial)</span>
                               )}
                             </div>
                           ))}
@@ -129,7 +124,7 @@ export default function WorkflowTemplatesPage() {
 
                       {/* Transitions */}
                       <div className="mt-16">
-                        <div className="fs-12 fw-600 text-secondary mb-8" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div className="fs-12 fw-600 text-secondary mb-8 uppercase tracking-wide">
                           Transitions
                         </div>
                         <div
@@ -146,7 +141,7 @@ export default function WorkflowTemplatesPage() {
                                 key={idx}
                                 className="p-10 bg-surface-2 rounded-6 fs-12"
                               >
-                                <div className="flex-row gap-6" style={{ marginBottom: 6 }}>
+                                <div className="flex-row gap-6 mb-6">
                                   <span
                                     style={{
                                       fontWeight: 600,
@@ -181,12 +176,12 @@ export default function WorkflowTemplatesPage() {
                                   </span>
                                 </div>
                                 {t.required_permission && (
-                                  <div className="mt-4" style={{ fontSize: 10, color: '#9ca3af' }}>
+                                  <div className="mt-4 fs-11" style={{ color: '#9ca3af' }}>
                                     🔒 Requires: {t.required_permission}
                                   </div>
                                 )}
                                 {t.validators && t.validators.length > 0 && (
-                                  <div style={{ fontSize: 10, color: '#9ca3af', marginTop: 2 }}>
+                                  <div className="fs-11 mt-4" style={{ color: '#9ca3af' }}>
                                     ✓ Validators: {t.validators.join(', ')}
                                   </div>
                                 )}

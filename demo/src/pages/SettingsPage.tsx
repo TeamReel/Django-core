@@ -26,7 +26,7 @@ export default function SettingsPage() {
           {/* Profile Section */}
           <Settings.Section sectionId="profile">
             <div className="max-w-600">
-              <h2 className="mb-8" style={{ marginTop: 0 }}>Profile Settings</h2>
+              <h2 className="mb-8 mt-0">Profile Settings</h2>
               <p className="text-muted mb-32">
                 Manage your personal information and public profile
               </p>
@@ -69,10 +69,9 @@ export default function SettingsPage() {
                     value={profile.bio}
                     onChange={(e) => handleProfileChange('bio', e.target.value)}
                     rows={4}
-                    className="w-full border rounded-4 fs-14"
+                    className="w-full border rounded-4 fs-14 font-inherit"
                     style={{
                       padding: '10px 12px',
-                      fontFamily: 'inherit',
                       resize: 'vertical'
                     }}
                   />
@@ -82,7 +81,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={profileSaveStatus === 'saving'}
-                    className="border-none rounded-4 fs-14 fw-600"
+                    className="border-none rounded-4 fs-14 fw-600 text-white"
                     style={{
                       padding: '10px 20px',
                       backgroundColor:
@@ -90,7 +89,6 @@ export default function SettingsPage() {
                         profileSaveStatus === 'error' ? 'var(--app-error)' :
                         profileSaveStatus === 'saving' ? '#6c757d' :
                         'var(--app-primary)',
-                      color: 'white',
                       cursor: profileSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
                       transition: 'background-color 0.2s'
                     }}
@@ -108,14 +106,14 @@ export default function SettingsPage() {
           {/* Security Section */}
           <Settings.Section sectionId="security">
             <div className="max-w-600">
-              <h2 className="mb-8" style={{ marginTop: 0 }}>Security Settings</h2>
+              <h2 className="mb-8 mt-0">Security Settings</h2>
               <p className="text-muted mb-32">
                 Manage your password, two-factor authentication, and security preferences
               </p>
 
               <div className="flex-col gap-24">
-                <div className="border rounded-8 p-20" style={{ backgroundColor: '#f8f9fa' }}>
-                  <h3 className="mb-8 fs-16" style={{ marginTop: 0 }}>Password</h3>
+                <div className="border rounded-8 p-20 bg-surface">
+                  <h3 className="mb-8 fs-16 mt-0">Password</h3>
                   <p className="text-muted fs-14 mb-16">
                     Last changed 3 months ago
                   </p>
@@ -131,37 +129,30 @@ export default function SettingsPage() {
                   </button>
                 </div>
 
-                <div className="border rounded-8 p-20" style={{ backgroundColor: '#f8f9fa' }}>
-                  <h3 className="mb-8 fs-16" style={{ marginTop: 0 }}>Two-Factor Authentication</h3>
+                <div className="border rounded-8 p-20 bg-surface">
+                  <h3 className="mb-8 fs-16 mt-0">Two-Factor Authentication</h3>
                   <p className="text-muted fs-14 mb-16">
                     Add an extra layer of security to your account
                   </p>
                   <div className="flex-row gap-12">
                     <span
-                      className="inline-block py-4 px-12 fs-12 fw-600"
-                      style={{
-                        borderRadius: '16px',
-                        backgroundColor: '#dc354520',
-                        color: 'var(--app-error)'
-                      }}
+                      className="inline-block py-4 px-12 fs-12 fw-600 rounded-full text-error"
+                      style={{ backgroundColor: '#dc354520' }}
                     >
                       Not Enabled
                     </span>
                     <button
                       onClick={handleEnable2FA}
-                      className="py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600"
-                      style={{
-                        backgroundColor: 'var(--app-success)',
-                        color: 'white'
-                      }}
+                      className="py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600 text-white"
+                      style={{ backgroundColor: 'var(--app-success)' }}
                     >
                       Enable 2FA
                     </button>
                   </div>
                 </div>
 
-                <div className="border rounded-8 p-20" style={{ backgroundColor: '#f8f9fa' }}>
-                  <h3 className="mb-8 fs-16" style={{ marginTop: 0 }}>Active Sessions</h3>
+                <div className="border rounded-8 p-20 bg-surface">
+                  <h3 className="mb-8 fs-16 mt-0">Active Sessions</h3>
                   <p className="text-muted fs-14 mb-16">
                     Manage devices where you're currently logged in
                   </p>
@@ -172,12 +163,8 @@ export default function SettingsPage() {
                         <div className="fs-12 text-muted">Last active: Just now</div>
                       </div>
                       <span
-                        className="py-4 px-12 fs-12 fw-600"
-                        style={{
-                          borderRadius: '16px',
-                          backgroundColor: '#28a74520',
-                          color: 'var(--app-success)'
-                        }}
+                        className="py-4 px-12 fs-12 fw-600 rounded-full text-success"
+                        style={{ backgroundColor: '#28a74520' }}
                       >
                         Current
                       </span>
@@ -191,7 +178,7 @@ export default function SettingsPage() {
           {/* Notifications Section */}
           <Settings.Section sectionId="notifications">
             <div className="max-w-600">
-              <h2 className="mb-8" style={{ marginTop: 0 }}>Notification Preferences</h2>
+              <h2 className="mb-8 mt-0">Notification Preferences</h2>
               <p className="text-muted mb-32">
                 Choose what notifications you want to receive
               </p>
@@ -205,19 +192,13 @@ export default function SettingsPage() {
                 ].map((item) => (
                   <div
                     key={item.key}
-                    className="p-16 border rounded-8"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      backgroundColor: '#f8f9fa'
-                    }}
+                    className="p-16 border rounded-8 flex-row items-start bg-surface"
                   >
                     <input
                       type="checkbox"
                       checked={notifications[item.key as keyof typeof notifications]}
                       onChange={(e) => handleNotificationChange(item.key, e.target.checked)}
-                      className="mt-4"
-                      style={{ marginRight: '12px' }}
+                      className="mt-4 mr-12"
                     />
                     <div className="flex-1">
                       <div className="fw-600 mb-4">{item.label}</div>
@@ -227,11 +208,11 @@ export default function SettingsPage() {
                 ))}
               </div>
 
-              <div style={{ marginTop: '20px' }}>
+              <div className="mt-20">
                 <button
                   onClick={handleSaveNotifications}
                   disabled={notificationsSaveStatus === 'saving'}
-                  className="border-none rounded-4 fs-14 fw-600"
+                  className="border-none rounded-4 fs-14 fw-600 text-white"
                   style={{
                     padding: '10px 20px',
                     backgroundColor:
@@ -239,7 +220,6 @@ export default function SettingsPage() {
                       notificationsSaveStatus === 'error' ? 'var(--app-error)' :
                       notificationsSaveStatus === 'saving' ? '#6c757d' :
                       'var(--app-primary)',
-                    color: 'white',
                     cursor: notificationsSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
                     transition: 'background-color 0.2s'
                   }}
@@ -256,7 +236,7 @@ export default function SettingsPage() {
           {/* Preferences Section */}
           <Settings.Section sectionId="preferences">
             <div className="max-w-600">
-              <h2 className="mb-8" style={{ marginTop: 0 }}>Application Preferences</h2>
+              <h2 className="mb-8 mt-0">Application Preferences</h2>
               <p className="text-muted mb-32">
                 Customize your application experience
               </p>
@@ -318,7 +298,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSavePreferences}
                     disabled={saveStatus === 'saving'}
-                    className="border-none rounded-4 fs-14 fw-600"
+                    className="border-none rounded-4 fs-14 fw-600 text-white"
                     style={{
                       padding: '10px 20px',
                       backgroundColor:
@@ -326,7 +306,6 @@ export default function SettingsPage() {
                         saveStatus === 'error' ? 'var(--app-error)' :
                         saveStatus === 'saving' ? '#6c757d' :
                         'var(--app-primary)',
-                      color: 'white',
                       cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer',
                       transition: 'background-color 0.2s'
                     }}

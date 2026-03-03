@@ -60,8 +60,8 @@ export function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
         </ResponsiveGrid>
 
         <div className="mt-8">
-          <Text size="xs" weight="bold" color="secondary" className="mb-8" style={{ textTransform: 'uppercase' }}>Combined Preview</Text>
-          <div className="rounded-8 overflow-hidden border" style={{ display: 'flex', height: '48px' }}>
+          <Text weight="bold" size="xs" color="secondary" className="mb-8 uppercase">Combined Preview</Text>
+          <div className="rounded-8 overflow-hidden border flex-row" style={{ height: '48px' }}>
             {colors.map((token) => (
               <div key={token.id} className="flex-1" style={{ backgroundColor: token.value }} title={`${formatTokenKey(token.key)}: ${token.value}`} />
             ))}
@@ -121,7 +121,7 @@ export function OtherTokensSection({ tokens }: { tokens: Map<string, DesignToken
               <div key={type}>
                 <div className="flex-row gap-8 mb-12">
                   <Icon size={16} className="opacity-60" />
-                  <Text weight="bold" size="sm" style={{ textTransform: 'uppercase' }}>{label}</Text>
+                  <Text weight="bold" size="sm" className="uppercase">{label}</Text>
                   <Badge variant="default">{typeTokens.length}</Badge>
                 </div>
                 <ResponsiveGrid minWidth="200px" gap={12}>
@@ -169,7 +169,8 @@ export function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
                     <img
                       src={asset.url}
                       alt={asset.alt_text || asset.asset_type}
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                      className="object-contain"
+                      style={{ maxWidth: '100%', maxHeight: '100%' }}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         ((e.target as HTMLImageElement).parentNode as HTMLElement).innerHTML = `

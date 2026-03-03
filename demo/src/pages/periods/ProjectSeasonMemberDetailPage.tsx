@@ -88,15 +88,14 @@ export default function ProjectSeasonMemberDetailPage() {
   if (isPlayer && !loading && membership && !isOwnProfile) {
     return (
       <AppShell>
-        <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔒</div>
-          <h2 style={{ margin: '0 0 8px', color: 'var(--app-text)' }}>Geen toegang</h2>
-          <p style={{ color: 'var(--app-text-secondary)', margin: '0 0 24px' }}>
+        <div className="text-center" style={{ padding: '48px 24px' }}>
+          <div className="mb-16" style={{ fontSize: '48px' }}>🔒</div>
+          <h2 className="text-primary" style={{ margin: '0 0 8px' }}>Geen toegang</h2>
+          <p className="text-secondary" style={{ margin: '0 0 24px' }}>
             Je kunt alleen je eigen profiel bekijken.
           </p>
-          <button type="button" onClick={() => navigate(-1)} style={{
-            padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--app-border)',
-            backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', cursor: 'pointer', fontSize: '14px',
+          <button type="button" onClick={() => navigate(-1)} className="rounded-6 border bg-surface-2 text-primary cursor-pointer fs-14" style={{
+            padding: '8px 16px',
           }}>
             Ga terug
           </button>
@@ -132,7 +131,7 @@ export default function ProjectSeasonMemberDetailPage() {
         title={title}
         breadcrumbs={breadcrumbs as any}
         actions={
-          <div className="hide-mobile" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="hide-mobile flex-row gap-8 flex-wrap">
             {(() => {
               const isActive = !!membership && String(activeContext?.membership?.id ?? '') === String((membership as any)?.id ?? '');
               const canMakeActive = !!membership && String((membership as any)?.user?.id ?? '') && String((user as any)?.id ?? '') &&
@@ -198,14 +197,14 @@ export default function ProjectSeasonMemberDetailPage() {
 
                 {memberActiveJobs.length > 0 && (
                   <div className={s.activeJobsBanner}>
-                    <span style={{ fontSize: 18 }}>⏳</span>
-                    <div style={{ flex: 1 }}>
+                    <span className="fs-18">⏳</span>
+                    <div className="flex-1">
                       <strong>AI generatie bezig</strong>
                       {' — '}
                       {memberActiveJobs.map(j => j.label || j.template_id).join(', ')}
                       {'. Je krijgt een melding zodra het klaar is.'}
                     </div>
-                    <a href="/approvals?tab=ai_queue" style={{ color: 'var(--color-blue-500)', textDecoration: 'none', fontWeight: 600, whiteSpace: 'nowrap', fontSize: 12 }}>
+                    <a href="/approvals?tab=ai_queue" className="text-decoration-none fw-600 whitespace-nowrap fs-12" style={{ color: 'var(--color-blue-500)' }}>
                       Bekijk queue →
                     </a>
                   </div>
@@ -250,20 +249,20 @@ export default function ProjectSeasonMemberDetailPage() {
                 <Card>
                   <div className={s.cardPadding}>
                     <div className={s.sectionTitleLarge}>Member</div>
-                    <div style={{ fontSize: '13px' }}>{getUserDisplayName(membership)}</div>
-                    <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <div className="fs-13">{getUserDisplayName(membership)}</div>
+                    <div className="flex-row gap-8 flex-wrap" style={{ marginTop: '10px' }}>
                       <Badge variant="default">Membership: {String(membership?.id || '').slice(0, 8)}…</Badge>
                       {season && <Badge variant="default">Season: {season.name}</Badge>}
                     </div>
                     <div style={{ marginTop: '14px' }}>
-                      <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>Quick links</div>
+                      <div className="fs-12 fw-700" style={{ marginBottom: '6px' }}>Quick links</div>
                       {seasonKeyForLinks ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`} style={{ textDecoration: 'none' }} className="text-blue-600 hover:underline">Season squad</Link>
-                          <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=content`} style={{ textDecoration: 'none' }} className="text-blue-600 hover:underline">Season content</Link>
+                        <div className="flex-col gap-6">
+                          <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`} className="text-blue-600 hover:underline text-decoration-none">Season squad</Link>
+                          <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=content`} className="text-blue-600 hover:underline text-decoration-none">Season content</Link>
                         </div>
                       ) : (
-                        <div style={{ opacity: 0.7, fontSize: '13px' }}>Season link unavailable.</div>
+                        <div className="opacity-70 fs-13">Season link unavailable.</div>
                       )}
                     </div>
                   </div>

@@ -147,31 +147,26 @@ export function MemberIdentityTab({
         </div>
 
         {error && (
-          <Alert variant="error" style={{ marginTop: '12px' }}>
+          <Alert variant="error" className="mt-12">
             {error}
           </Alert>
         )}
         {success && (
-          <Alert variant="success" style={{ marginTop: '12px' }}>
+          <Alert variant="success" className="mt-12">
             {success}
           </Alert>
         )}
 
-        <div style={{ marginTop: '20px' }}>
+        <div className="mt-20">
           {/* Profile Photo Section */}
-          <div style={{ marginBottom: '24px' }}>
-            <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>Profile Photo</div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
-              <div style={{
+          <div className="mb-24">
+            <div className={`${s.sectionTitle} mb-12`}>Profile Photo</div>
+            <div className="flex-row items-start gap-20 flex-wrap">
+              <div className="rounded-12 overflow-hidden flex-center" style={{
                 width: '160px',
                 height: '160px',
-                borderRadius: '12px',
-                overflow: 'hidden',
                 backgroundColor: 'var(--app-surface-secondary)',
                 border: '2px solid var(--app-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}>
                 {membership?.user?.avatar_url ? (
                   <img
@@ -186,13 +181,13 @@ export function MemberIdentityTab({
                   <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
                 )}
               </div>
-              <div style={{ flex: 1, minWidth: '200px' }}>
+              <div className="flex-1" style={{ minWidth: '200px' }}>
                 {membership?.user?.avatar_url ? (
                   <div className={s.flexCenterGap8}>
-                    <span style={{ fontSize: 13, color: 'var(--app-success)', fontWeight: 600 }}>✓ Profile photo set</span>
+                    <span className="fs-13 text-success fw-600">✓ Profile photo set</span>
                   </div>
                 ) : (
-                  <div style={{ fontSize: 13, color: 'var(--app-muted-text)', fontStyle: 'italic' }}>
+                  <div className="fs-13 text-muted" style={{ fontStyle: 'italic' }}>
                     No profile photo set
                   </div>
                 )}
@@ -202,19 +197,13 @@ export function MemberIdentityTab({
 
           {/* Media Profile Photo - If different from user avatar */}
           {profileMediaUrl && profileMediaUrl !== membership?.user?.avatar_url && (
-            <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: 'var(--app-surface-secondary)', borderRadius: '8px' }}>
-              <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>Media Profile Photo</div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', flexWrap: 'wrap' }}>
-                <div style={{
+            <div className="mb-24 p-16 rounded-8" style={{ backgroundColor: 'var(--app-surface-secondary)' }}>
+              <div className={`${s.sectionTitle} mb-12`}>Media Profile Photo</div>
+              <div className="flex-row items-start gap-20 flex-wrap">
+                <div className="rounded-8 overflow-hidden flex-center bg-surface" style={{
                   width: '120px',
                   height: '120px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  backgroundColor: 'var(--app-surface)',
                   border: '2px solid var(--app-border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
                 }}>
                   <img
                     src={profileMediaUrl}
@@ -225,18 +214,12 @@ export function MemberIdentityTab({
                     }}
                   />
                 </div>
-                <div style={{ flex: 1, minWidth: '200px' }}>
-                  <div className={s.formLabel} style={{ marginBottom: '8px' }}>
+                <div className="flex-1" style={{ minWidth: '200px' }}>
+                  <div className={`${s.formLabel} mb-8`}>
                     Photo from media slot (e.g., SoccerWiki import)
                   </div>
-                  <div style={{
-                    padding: '8px 12px',
-                    background: 'var(--app-surface)',
-                    borderRadius: '6px',
-                    fontSize: '11px',
+                  <div className="py-8 px-12 bg-surface rounded-6 fs-11 word-break-all mb-12" style={{
                     fontFamily: 'monospace',
-                    wordBreak: 'break-all',
-                    marginBottom: '12px',
                   }}>
                     {profileMediaUrl}
                   </div>
@@ -247,7 +230,7 @@ export function MemberIdentityTab({
                   >
                     {settingAsProfilePhoto ? 'Setting...' : '→ Use as User Profile Photo'}
                   </Button>
-                  <div style={{ fontSize: '11px', opacity: 0.6, marginTop: '8px' }}>
+                  <div className="fs-11 opacity-60 mt-8">
                     This will set your user account avatar to this photo.
                   </div>
                 </div>
@@ -257,8 +240,8 @@ export function MemberIdentityTab({
 
           {/* User Information Section */}
           <div className={s.sectionDivider}>
-            <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>User Information</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <div className={`${s.sectionTitle} mb-12`}>User Information</div>
+            <div className="grid-auto-fit gap-16">
               <div>
                 <div className={s.formLabel}>Name</div>
                 <div className={s.fieldValue}>{getUserDisplayName(membership)}</div>
@@ -279,10 +262,10 @@ export function MemberIdentityTab({
           </div>
 
           {/* Role/Position Section */}
-          <div className={s.sectionDivider} style={{ marginTop: '20px' }}>
-            <div className={s.sectionTitle} style={{ marginBottom: '12px' }}>Role & Position</div>
+          <div className={`${s.sectionDivider} mt-20`}>
+            <div className={`${s.sectionTitle} mb-12`}>Role & Position</div>
             {isEditing ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="flex-col gap-16">
                 <div>
                   <div className={s.formLabel}>Position</div>
                   <Input
@@ -300,7 +283,7 @@ export function MemberIdentityTab({
                     style={{ maxWidth: '100px' }}
                   />
                 </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <div className="flex-row gap-8 mt-8">
                   <Button size="sm" onClick={handleSave} disabled={saving}>
                     {saving ? 'Saving...' : 'Save'}
                   </Button>
@@ -310,7 +293,7 @@ export function MemberIdentityTab({
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+              <div className="grid-auto-fit gap-16">
                 <div>
                   <div className={s.formLabel}>Role</div>
                   <Badge variant="default">{membership?.role || 'member'}</Badge>

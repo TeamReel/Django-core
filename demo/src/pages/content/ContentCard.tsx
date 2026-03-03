@@ -57,23 +57,23 @@ export function ContentCard({
         <div className="gallery-card-thumb flex-center overflow-hidden relative border-bottom" style={{ height: 180, backgroundColor: 'var(--app-bg)', flexShrink: 0 }}>
           {url ? (
             isVideo ? (
-              <video src={url} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} muted playsInline preload="metadata" />
+              <video src={url} className="object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }} muted playsInline preload="metadata" />
             ) : (
-              <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className="p-8" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className="p-8 object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )
           ) : (
             <span style={{ fontSize: 40, opacity: 0.3 }}>{getAssetTypeIcon(normalizedType)}</span>
           )}
-          <span className="absolute fw-700" style={{ top: 8, left: 8, fontSize: 10, padding: '2px 8px', borderRadius: 10, backgroundColor: 'var(--color-blue-600)', color: '#fff' }}>
+          <span className="absolute fw-700 badge-overlay" style={{ top: 8, left: 8, backgroundColor: 'var(--color-blue-600)' }}>
             {getAssetTypeLabel(normalizedType)}
           </span>
           {isVideo && (
-            <span className="absolute fw-700" style={{ top: 8, right: 8, fontSize: 10, padding: '2px 8px', borderRadius: 10, backgroundColor: '#dc2626', color: '#fff' }}>
+            <span className="absolute fw-700 badge-overlay" style={{ top: 8, right: 8, backgroundColor: '#dc2626' }}>
               🎬 Video
             </span>
           )}
           {sportType && (
-            <span className="absolute fw-600" style={{ bottom: 8, left: 8, fontSize: 10, padding: '2px 8px', borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff' }}>
+            <span className="absolute fw-600 badge-overlay" style={{ bottom: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.7)' }}>
               ⚽ {sportType}
             </span>
           )}
@@ -94,7 +94,7 @@ export function ContentCard({
           {activityTitle && <Text size="xs" color="secondary" className="truncate">{activityTitle}</Text>}
 
           {(opponent || activityDate || scoreHome !== undefined) && (
-            <div className="flex-row flex-wrap gap-6 text-secondary" style={{ fontSize: 10 }}>
+            <div className="flex-row flex-wrap gap-6 text-secondary fs-11">
               {opponent && <span className="flex-row gap-2">{homeAway === 'away' ? '📍' : '🏠'} vs {opponent}</span>}
               {activityDate && <span>📅 {new Date(activityDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>}
               {scoreHome !== undefined && scoreAway !== undefined && <span className="fw-700 text-primary">{scoreHome} - {scoreAway}</span>}
@@ -104,9 +104,9 @@ export function ContentCard({
           {tags.length > 0 && (
             <div className="gallery-card-verbose flex-row flex-wrap gap-4">
               {tags.slice(0, 3).map((tag, i) => (
-                <span key={i} className="rounded-6 text-secondary" style={{ fontSize: 10, padding: '1px 6px', backgroundColor: 'var(--app-surface-2, #f3f4f6)' }}>#{tag}</span>
+                <span key={i} className="rounded-6 text-secondary fs-11" style={{ padding: '1px 6px', backgroundColor: 'var(--app-surface-2, #f3f4f6)' }}>#{tag}</span>
               ))}
-              {tags.length > 3 && <span className="text-secondary" style={{ fontSize: 10 }}>+{tags.length - 3}</span>}
+              {tags.length > 3 && <span className="text-secondary fs-11">+{tags.length - 3}</span>}
             </div>
           )}
 
@@ -115,15 +115,15 @@ export function ContentCard({
             {seasonKey && <Badge size="sm" variant="default">📅 {seasonKey}</Badge>}
           </div>
 
-          <Text size="xs" color="secondary" style={{ marginTop: 2 }}>
+          <Text size="xs" color="secondary" className="mt-4">
             {new Date(item.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
             {item.file_size_bytes && item.file_size_bytes > 0 && <> &middot; {formatFileSize(item.file_size_bytes)}</>}
           </Text>
 
           <div className="mt-8 gap-4 border-top flex-row" style={{ paddingTop: 8 }}>
-            <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface" style={{ padding: '6px 8px' }}>⬇️</button>
-            <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface" style={{ padding: '6px 8px' }}>📤</button>
-            <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface" style={{ padding: '6px 8px' }}>🗑️</button>
+            <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">⬇️</button>
+            <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">📤</button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">🗑️</button>
           </div>
         </div>
       </div>
@@ -190,10 +190,9 @@ export function ContentPreviewModal({ item, onClose }: { item: ContentItem; onCl
 
   return (
     <div
-      className="flex-center"
+      className="flex-center fixed inset-0 z-1000"
       style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)', zIndex: 1000,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
       }}
       onClick={onClose}
     >
@@ -213,7 +212,7 @@ export function ContentPreviewModal({ item, onClose }: { item: ContentItem; onCl
             <img src={url} alt={item.title} style={{ maxWidth: '100%', maxHeight: '70vh' }} />
           )
         )}
-        <div className="mt-16 gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="mt-16 flex-row justify-end gap-8">
           <Button variant="primary" size="sm" onClick={() => { if (url) window.open(url, '_blank'); }}>
             Download
           </Button>

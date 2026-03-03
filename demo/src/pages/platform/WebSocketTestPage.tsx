@@ -145,45 +145,36 @@ export const WebSocketTestPage: React.FC = () => {
           <nav className="flex-row gap-32">
             <button
               onClick={() => setActiveTab('notifications')}
+              className="border-none bg-transparent cursor-pointer fs-14"
               style={{
                 padding: '16px 4px',
                 borderBottom: activeTab === 'notifications' ? '2px solid var(--app-primary)' : '2px solid transparent',
                 fontWeight: activeTab === 'notifications' ? 600 : 400,
                 color: activeTab === 'notifications' ? 'var(--app-primary)' : 'var(--app-text-muted)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px'
               }}
             >
               Notifications
             </button>
             <button
               onClick={() => setActiveTab('presence')}
+              className="border-none bg-transparent cursor-pointer fs-14"
               style={{
                 padding: '16px 4px',
                 borderBottom: activeTab === 'presence' ? '2px solid var(--app-primary)' : '2px solid transparent',
                 fontWeight: activeTab === 'presence' ? 600 : 400,
                 color: activeTab === 'presence' ? 'var(--app-primary)' : 'var(--app-text-muted)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px'
               }}
             >
               Presence
             </button>
             <button
               onClick={() => setActiveTab('activity')}
+              className="border-none bg-transparent cursor-pointer fs-14"
               style={{
                 padding: '16px 4px',
                 borderBottom: activeTab === 'activity' ? '2px solid var(--app-primary)' : '2px solid transparent',
                 fontWeight: activeTab === 'activity' ? 600 : 400,
                 color: activeTab === 'activity' ? 'var(--app-primary)' : 'var(--app-text-muted)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '14px'
               }}
             >
               Activity
@@ -193,11 +184,11 @@ export const WebSocketTestPage: React.FC = () => {
 
         {/* Notifications Tab */}
         {activeTab === 'notifications' && (
-        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="grid gap-24 grid-cols-2">
           <div className="flex-col gap-24">
             <Card>
               <div className="p-24">
-                <h3 className="mb-16" style={{ marginTop: 0 }}>Connection Status</h3>
+                <h3 className="mb-16 mt-0">Connection Status</h3>
 
                 <div className="mb-16">
                   <label className="block mb-8 fs-14 fw-500">WebSocket URL</label>
@@ -239,7 +230,7 @@ export const WebSocketTestPage: React.FC = () => {
 
             <Card>
               <div className="p-24">
-                <h3 className="mb-16" style={{ marginTop: 0 }}>Send Message</h3>
+                <h3 className="mb-16 mt-0">Send Message</h3>
                 <div className="flex-row gap-12">
                   <Input
                     value={messageInput}
@@ -278,11 +269,10 @@ export const WebSocketTestPage: React.FC = () => {
                   </div>
                 ) : (
                   logs.map((log, i) => (
-                    <div key={i} style={{ marginBottom: '8px', borderBottom: '1px solid var(--app-border)', paddingBottom: '8px' }}>
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ color: 'var(--app-text-muted)' }}>[{log.timestamp}]</span>
-                        <span style={{
-                          fontWeight: 'bold',
+                    <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
+                      <div className="flex-row gap-8 mb-4">
+                        <span className="text-muted">[{log.timestamp}]</span>
+                        <span className="fw-700" style={{
                           color: log.type === 'sent' ? 'var(--app-info)' :
                                  log.type === 'received' ? 'var(--app-success)' :
                                  log.type === 'error' ? 'var(--app-error)' : 'var(--app-text)'
@@ -304,11 +294,11 @@ export const WebSocketTestPage: React.FC = () => {
 
         {/* Presence Tab */}
         {activeTab === 'presence' && (
-        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="grid gap-24 grid-cols-2">
           <div>
             <Card>
               <div className="p-24">
-                <h3 className="mb-16" style={{ marginTop: 0 }}>Presence Status</h3>
+                <h3 className="mb-16 mt-0">Presence Status</h3>
                 <p className="fs-14 text-muted mb-16">
                   Emit presence events to indicate user online/offline status.
                 </p>
@@ -347,8 +337,7 @@ export const WebSocketTestPage: React.FC = () => {
                     <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
-                        <span style={{
-                          fontWeight: 'bold',
+                        <span className="fw-700" style={{
                           color: log.type === 'sent' ? 'var(--app-info)' : 'var(--app-success)'
                         }}>
                           {log.type.toUpperCase()}
@@ -368,11 +357,11 @@ export const WebSocketTestPage: React.FC = () => {
 
         {/* Activity Tab */}
         {activeTab === 'activity' && (
-        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="grid gap-24 grid-cols-2">
           <div>
             <Card>
               <div className="p-24">
-                <h3 className="mb-16" style={{ marginTop: 0 }}>Activity Tracking</h3>
+                <h3 className="mb-16 mt-0">Activity Tracking</h3>
                 <p className="fs-14 text-muted mb-16">
                   Emit activity events to track user actions and page views.
                 </p>
@@ -408,11 +397,10 @@ export const WebSocketTestPage: React.FC = () => {
                   </div>
                 ) : (
                   logs.filter(l => l.data.includes('activity') || l.data.includes('"type":"activity"')).map((log, i) => (
-                    <div key={i} style={{ marginBottom: '8px', borderBottom: '1px solid var(--app-border)', paddingBottom: '8px' }}>
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ color: 'var(--app-text-muted)' }}>[{log.timestamp}]</span>
-                        <span style={{
-                          fontWeight: 'bold',
+                    <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
+                      <div className="flex-row gap-8 mb-4">
+                        <span className="text-muted">[{log.timestamp}]</span>
+                        <span className="fw-700" style={{
                           color: log.type === 'sent' ? 'var(--app-info)' : 'var(--app-success)'
                         }}>
                           {log.type.toUpperCase()}
