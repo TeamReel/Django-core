@@ -209,7 +209,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                                             return {
                                                 position: 'relative' as const,
-                                                height: 40,
+                                                minHeight: 44,
                                                 textDecoration: 'none',
                                                 padding: isOpen ? '0 12px' : '0',
                                                 display: 'flex',

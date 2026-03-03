@@ -984,6 +984,11 @@ header [role="alert"] {
     border-radius: 0 !important;
     max-height: 100vh !important;
     height: 100vh !important;
+    /* Safe areas for notch/dynamic‑island devices */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 }
 
@@ -994,9 +999,20 @@ header [role="alert"] {
     min-height: 44px; /* Touch-friendly size */
   }
 
-  button {
+  /* Standalone buttons (not inside tables / compact UIs) */
+  button:not(.action-btn):not(.sidebar-panel-a button) {
     min-height: 44px; /* Touch-friendly size */
-    padding: 12px 16px !important;
+  }
+
+  /* Sidebar nav links on mobile drawer */
+  .sidebar-panel-a a {
+    min-height: 44px !important;
+  }
+
+  /* Landscape: protect left/right for camera housing */
+  body {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 }
 

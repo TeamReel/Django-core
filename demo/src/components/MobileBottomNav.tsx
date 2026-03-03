@@ -161,7 +161,7 @@ export default function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mobile-bottom-nav fixed bg-surface border-top z-1000"
+        className="mobile-bottom-nav fixed bg-surface border-top z-1000 safe-bottom"
         style={{
           bottom: 0,
           left: 0,
@@ -171,7 +171,6 @@ export default function MobileBottomNav() {
           alignItems: 'center',
           justifyContent: 'space-around',
           padding: '0 4px',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
         {/* Left tabs: Home, Season */}

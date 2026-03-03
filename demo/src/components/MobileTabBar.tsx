@@ -92,7 +92,8 @@ export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 't
               onClick={() => handleTabClick(tab.id)}
               style={{
                 flexShrink: 0,
-                padding: '7px 14px',
+                padding: '10px 14px',
+                minHeight: '44px',
                 borderRadius: '20px',
                 border: isActive ? '1.5px solid rgba(99, 160, 255, 0.7)' : '1px solid var(--app-border)',
                 background: isActive ? 'rgba(59, 130, 246, 0.22)' : 'transparent',

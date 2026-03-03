@@ -680,3 +680,22 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ---------------------------------------------------------------------------
+   Touch-target & Safe-area helpers
+   --------------------------------------------------------------------------- */
+/* Minimum 44×44 px interactive area (WCAG 2.5.8 / Apple HIG) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Pad bottom for safe area (bottom nav / home indicator) */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Pad bottom for safe area + bottom‑nav height */
+.safe-bottom-nav {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
