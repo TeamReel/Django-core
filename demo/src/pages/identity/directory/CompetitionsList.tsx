@@ -2,13 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { periodPathKey } from '../../../utils/periodPath';
-import {
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-  actionButtonStyle,
-} from '../../../utils/directoryStyles';
+
 import {
   isPeriodActive,
   resolveRowContext,
@@ -85,20 +79,20 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
               <thead>
                 <tr>
                     {!orgLocked && (
-                      <th style={{ ...compactThStyle, width: '12%' }}>Federation</th>
+                      <th className="dir-th" style={{ width: '12%' }}>Federation</th>
                     )}
                     {!clubLocked && (
-                      <th style={{ ...compactThStyle, width: '12%' }}>Club</th>
+                      <th className="dir-th" style={{ width: '12%' }}>Club</th>
                     )}
-                    {!teamLocked && <th style={{ ...compactThStyle, width: '12%' }}>Team</th>}
-                    <th style={{ ...compactThStyle, width: '12%' }}>Season</th>
-                    <th style={{ ...compactThStyle, width: '20%' }}>Competition</th>
-                  <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
-                  <th style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Squad</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
-                  <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+                    {!teamLocked && <th className="dir-th" style={{ width: '12%' }}>Team</th>}
+                    <th className="dir-th" style={{ width: '12%' }}>Season</th>
+                    <th className="dir-th" style={{ width: '20%' }}>Competition</th>
+                  <th className="dir-th" style={{ width: '12%' }}>Sport</th>
+                  <th className="dir-th" style={{ width: '12%' }}>Sport Variant</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Match</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Squad</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Status</th>
+                  <th className="dir-th" style={{ width: '12%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -129,7 +123,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                     return (
                         <tr key={comp.id}>
                         {!orgLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="dir-td-text">
                             {row.orgId ? (
                               <a
                                 href={`/organisations/${row.orgSlug}`}
@@ -145,7 +139,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                           </td>
                         )}
                         {!clubLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="dir-td-text">
                             {row.clubId ? (
                               <a
                                 href={`/${row.orgSlug}/${row.clubSlug}`}
@@ -161,7 +155,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                           </td>
                         )}
                         {!teamLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="dir-td-text">
                             {row.teamId ? (
                               <a
                                 href={row.teamBasePath}
@@ -176,7 +170,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                             ) : row.teamName}
                           </td>
                         )}
-                        <td style={compactTextTdStyle}>
+                        <td className="dir-td-text">
                             {seasonId ? (
                                 <a
                             href={`${row.teamBasePath}/${seasonSlugOrId}`}
@@ -194,7 +188,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                                 comp.parent_period?.name || '-'
                             )}
                         </td>
-                        <td style={compactTextTdStyle}>
+                        <td className="dir-td-text">
                             <a
                           href={`${row.teamBasePath}/${seasonSlugOrId}/${compSlugOrId}`}
                             className="text-blue-600 hover:underline"
@@ -208,14 +202,14 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                             {comp.name}
                             </a>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           {sportDisplay?.category_name ? (
                             <span className="fs-12">{sportDisplay.category_name}</span>
                           ) : (
                             <span className="text-muted">—</span>
                           )}
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           {sportDisplay ? (
                             <span className="flex-row gap-4">
                               <span>{sportDisplay.sport_icon}</span>
@@ -225,13 +219,13 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                             <span className="text-muted">—</span>
                           )}
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                             <Badge variant="default">
                                 {matchesCount}
                             </Badge>
                         </td>
-                        <td style={compactTdStyle}>-</td>
-                         <td style={compactTdStyle}>
+                        <td className="dir-td">-</td>
+                         <td className="dir-td">
                            {(() => {
                              const isActive = isPeriodActive(comp);
                              return (
@@ -241,14 +235,14 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                              );
                            })()}
                          </td>
-                        <td style={compactTdStyle}>
-                            <div style={compactActionsStyle}>
+                        <td className="dir-td">
+                            <div className="dir-actions">
                                 <button
                                     onClick={() => {
                                  setDetailCompetition(comp);
                                  setIsDetailModalOpen(true);
                                     }}
-                                    style={actionButtonStyle('primary')}
+                                    className="action-btn action-btn-primary"
                                 >
                                     View
                                 </button>
@@ -257,13 +251,13 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                                 setEditCompetition(comp);
                                 setIsEditModalOpen(true);
                               }}
-                                    style={actionButtonStyle('warning')}
+                                    className="action-btn action-btn-warning"
                                 >
                                     Edit
                                 </button>
                                 <button
                                     onClick={() => handleDeleteCompetition(String(row.orgId), comp.id, comp.name)}
-                                    style={actionButtonStyle('danger')}
+                                    className="action-btn action-btn-danger"
                                 >
                                     Delete
                                 </button>

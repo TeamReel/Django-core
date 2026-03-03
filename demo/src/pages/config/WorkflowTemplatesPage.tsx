@@ -40,7 +40,7 @@ export default function WorkflowTemplatesPage() {
             style={{ padding: 48, border: '1px dashed var(--app-border, #e5e7eb)' }}
           >
             <div className="mb-8" style={{ fontSize: 32 }}>📋</div>
-            <div className="fw-600 mb-4" style={{ fontSize: 15 }}>No workflow templates</div>
+                        <div className="fw-600 mb-4 fs-15">No workflow templates</div>
             <div className="fs-12">Create workflow templates via the API to define approval flows.</div>
           </div>
         )}
@@ -55,12 +55,7 @@ export default function WorkflowTemplatesPage() {
               return (
                 <div
                   key={template.id}
-                  style={{
-                    backgroundColor: 'var(--app-surface, #fff)',
-                    borderRadius: 10,
-                    border: '1px solid var(--app-border, #e5e7eb)',
-                    overflow: 'hidden',
-                  }}
+                  className="bg-surface border rounded-10 overflow-hidden"
                 >
                   {/* Header — clickable to expand */}
                   <button
@@ -69,7 +64,7 @@ export default function WorkflowTemplatesPage() {
                   >
                     <div>
                         <div className="flex-row gap-8">
-                        <span className="fw-600" style={{ fontSize: 15, color: 'var(--app-text, #111)' }}>
+                        <span className="fw-600 fs-15" style={{ color: 'var(--app-text, #111)' }}>
                           {template.name}
                         </span>
                         <span className="fs-11 fw-600 text-muted rounded-4" style={{
@@ -92,18 +87,17 @@ export default function WorkflowTemplatesPage() {
                       )}
                     </div>
                     <div className="flex-row gap-12">
-                      <span className="fs-11" style={{ color: '#9ca3af' }}>
+                      <span className="fs-11 text-muted">
                         {states.length} states · {transitions.length} transitions
                       </span>
-                      <span style={{ fontSize: 16, color: '#9ca3af', transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'none' }}>▾</span>
+                      <span className="fs-16 text-muted transition" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none' }}>▾</span>
                     </div>
                   </button>
 
                   {/* Expanded detail */}
                   {isExpanded && (
                     <div
-                      className="border-top"
-                      style={{ padding: '0 16px 16px' }}
+                      className="border-top pt-0 px-16 pb-16"
                     >
                       {/* States */}
                       <div className="mt-16">
@@ -143,45 +137,40 @@ export default function WorkflowTemplatesPage() {
                               >
                                 <div className="flex-row gap-6 mb-6">
                                   <span
+                                    className="fw-600 fs-11"
                                     style={{
-                                      fontWeight: 600,
                                       color: actionStyle.bgColor,
-                                      fontSize: 11,
                                     }}
                                   >
                                     {actionStyle.icon} {t.action.replace(/_/g, ' ').toUpperCase()}
                                   </span>
                                 </div>
                                 <div className="flex-row gap-6">
-                                  <span style={{
+                                  <span className="rounded-4 fw-600" style={{
                                     padding: '1px 6px',
-                                    borderRadius: 4,
                                     backgroundColor: fromStyle.bgColor,
                                     color: fromStyle.color,
                                     fontSize: 10,
-                                    fontWeight: 600,
                                   }}>
                                     {t.from_state}
                                   </span>
-                                  <span style={{ color: '#9ca3af' }}>→</span>
-                                  <span style={{
+                                  <span className="text-muted">→</span>
+                                  <span className="rounded-4 fw-600" style={{
                                     padding: '1px 6px',
-                                    borderRadius: 4,
                                     backgroundColor: toStyle.bgColor,
                                     color: toStyle.color,
                                     fontSize: 10,
-                                    fontWeight: 600,
                                   }}>
                                     {t.to_state}
                                   </span>
                                 </div>
                                 {t.required_permission && (
-                                  <div className="mt-4 fs-11" style={{ color: '#9ca3af' }}>
+                                  <div className="mt-4 fs-11 text-muted">
                                     🔒 Requires: {t.required_permission}
                                   </div>
                                 )}
                                 {t.validators && t.validators.length > 0 && (
-                                  <div className="fs-11 mt-4" style={{ color: '#9ca3af' }}>
+                                  <div className="fs-11 mt-4 text-muted">
                                     ✓ Validators: {t.validators.join(', ')}
                                   </div>
                                 )}
@@ -192,7 +181,7 @@ export default function WorkflowTemplatesPage() {
                       </div>
 
                       {/* Metadata */}
-                      <div className="mt-12 fs-11" style={{ color: '#9ca3af' }}>
+                      <div className="mt-12 fs-11 text-muted">
                         Created {new Date(template.created_at).toLocaleDateString()} · Last updated {new Date(template.updated_at).toLocaleDateString()}
                       </div>
                     </div>

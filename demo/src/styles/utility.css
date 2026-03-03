@@ -63,6 +63,7 @@
 .px-8  { padding-left: var(--space-2);  padding-right: var(--space-2); }
 .px-12 { padding-left: var(--space-3); padding-right: var(--space-3); }
 .px-16 { padding-left: var(--space-4); padding-right: var(--space-4); }
+.px-20 { padding-left: var(--space-5); padding-right: var(--space-5); }
 .px-24 { padding-left: var(--space-6); padding-right: var(--space-6); }
 .px-32 { padding-left: var(--space-8); padding-right: var(--space-8); }
 
@@ -73,9 +74,11 @@
 .py-24 { padding-top: var(--space-6); padding-bottom: var(--space-6); }
 .py-32 { padding-top: var(--space-8); padding-bottom: var(--space-8); }
 
+.pt-0  { padding-top: 0; }
 .pt-8  { padding-top: var(--space-2); }
 .pt-12 { padding-top: var(--space-3); }
 .pb-12 { padding-bottom: var(--space-3); }
+.pb-16 { padding-bottom: var(--space-4); }
 
 /* ---------------------------------------------------------------------------
    Margin — wired to --space-* tokens
@@ -84,6 +87,7 @@
 .mt-0   { margin-top: 0; }
 .mt-4   { margin-top: var(--space-1); }
 .mt-8   { margin-top: var(--space-2); }
+.mt-10  { margin-top: 10px; }
 .mt-12  { margin-top: var(--space-3); }
 .mt-16  { margin-top: var(--space-4); }
 .mt-20  { margin-top: var(--space-5); }
@@ -92,6 +96,7 @@
 
 .mb-4   { margin-bottom: var(--space-1); }
 .mb-8   { margin-bottom: var(--space-2); }
+.mb-10  { margin-bottom: 10px; }
 .mb-12  { margin-bottom: var(--space-3); }
 .mb-16  { margin-bottom: var(--space-4); }
 .mb-24  { margin-bottom: var(--space-6); }
@@ -113,6 +118,7 @@
 .fs-12  { font-size: var(--text-sm); }
 .fs-13  { font-size: var(--text-md); }
 .fs-14  { font-size: var(--text-base); }
+.fs-15  { font-size: 15px; }
 .fs-16  { font-size: var(--text-lg); }
 .fs-18  { font-size: var(--text-xl); }
 .fs-20  { font-size: var(--text-2xl); }
@@ -167,6 +173,7 @@
 .rounded-4     { border-radius: var(--radius-sm); }
 .rounded-6     { border-radius: 6px; }
 .rounded-8     { border-radius: var(--radius-md); }
+.rounded-10    { border-radius: 10px; }
 .rounded-12    { border-radius: var(--radius-lg); }
 .rounded-full  { border-radius: var(--radius-full); }
 

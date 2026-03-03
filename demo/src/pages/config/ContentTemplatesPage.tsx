@@ -61,7 +61,7 @@ export default function ContentTemplatesPage() {
         <Card>
           {/* Search & Filters */}
           <div className="flex-row gap-12 flex-wrap mb-16">
-            <div style={{ flex: 1, minWidth: '200px' }}>
+            <div className="flex-1" style={{ minWidth: '200px' }}>
               <Input
                 placeholder="Search templates..."
                 value={searchQuery}
@@ -177,7 +177,7 @@ export default function ContentTemplatesPage() {
                   <th style={{ width: '6%' }}>Style</th>
                   <th style={{ width: '6%' }}>Credits</th>
                   <th style={{ width: '6%' }}>Status</th>
-                  <th style={{ width: '18%', textAlign: 'right' }}>Actions</th>
+                  <th className="text-right" style={{ width: '18%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>

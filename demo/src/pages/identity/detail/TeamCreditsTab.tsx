@@ -83,13 +83,13 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  <div className="fs-12 opacity-60 uppercase" style={{ letterSpacing: '1px' }}>
+                  <div className="fs-12 opacity-60 uppercase tracking-wide">
                     Your Credits Balance
                   </div>
                   <div
+                    className="fw-800"
                     style={{
                       fontSize: '48px',
-                      fontWeight: 800,
                       margin: '8px 0',
                       color:
                         numericUserBalance !== null && numericUserBalance < 500
@@ -109,13 +109,13 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                     background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
                   }}
                 >
-                  <div className="fs-12 opacity-60 uppercase" style={{ letterSpacing: '1px' }}>
+                  <div className="fs-12 opacity-60 uppercase tracking-wide">
                     {(walletLabel || 'Team')} Credits Balance
                   </div>
                   <div
+                    className="fw-800"
                     style={{
                       fontSize: '48px',
-                      fontWeight: 800,
                       margin: '8px 0',
                       color: numericBalance !== null && numericBalance < 500 ? 'var(--app-warning)' : 'var(--app-success)',
                     }}
@@ -159,17 +159,13 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
 
                               <div className="flex-row flex-1 relative" style={{ height: '32px' }}>
                                 <div
+                                  className="rounded-4 transition flex-row px-8"
                                   style={{
                                     width: `${barWidth}%`,
                                     height: '24px',
                                     backgroundColor: isPositive ? 'var(--app-success)' : 'var(--app-error)',
-                                    borderRadius: '4px',
                                     opacity: 0.8,
-                                    transition: 'all 0.3s ease',
-                                    display: 'flex',
                                     alignItems: 'center',
-                                    paddingLeft: '8px',
-                                    paddingRight: '8px',
                                     minWidth: '60px',
                                   }}
                                 >
@@ -295,9 +291,9 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                 <Card className="p-16 text-center">
                   <div className="fs-12 opacity-60 uppercase">📊 Net</div>
                   <div
+                    className="fw-800"
                     style={{
                       fontSize: '26px',
-                      fontWeight: 800,
                       color: totals.net >= 0 ? 'var(--app-success)' : 'var(--app-error)',
                     }}
                   >
@@ -338,7 +334,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                             <td className="detail-td-text">
                               <Badge variant="default">{sourceTypeLabel(t.source_type)}</Badge>
                             </td>
-                            <td className="detail-td" style={{ color: amountColor(amountNum), fontWeight: 700 }}>
+                            <td className="detail-td fw-700" style={{ color: amountColor(amountNum) }}>
                               {showPlus ? '+' : ''}
                               {formatCredits(t.amount)}
                             </td>

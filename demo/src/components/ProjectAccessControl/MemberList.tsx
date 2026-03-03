@@ -90,7 +90,7 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
   return (
     <div className="member-list-container p-16">
       <h3>Project Members</h3>
-      <table className="w-full" style={{ borderCollapse: 'collapse', marginTop: '10px' }}>
+      <table className="w-full mt-10" style={{ borderCollapse: 'collapse' }}>
         <thead>
           <tr className="border-bottom text-left">
             <th style={{ padding: '8px 6px' }}>User</th>
@@ -138,21 +138,15 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
       </table>
 
       {isRemoveModalOpen && memberToRemove && (
-        <div className="flex-center" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+        <div className="flex-center fixed inset-0 z-1000" style={{
           backgroundColor: 'rgba(0,0,0,0.5)',
-          zIndex: 1000
         }}>
           <div className="p-24 rounded-8" style={{
             backgroundColor: 'white',
             width: '400px',
             maxWidth: '90%'
           }}>
-            <h4 style={{ marginTop: 0 }}>Remove Member?</h4>
+            <h4 className="mt-0">Remove Member?</h4>
             <p>
               Are you sure you want to remove <strong>{memberToRemove.user.name}</strong> from this project?
               They will lose all access immediately.
@@ -175,7 +169,7 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
               </button>
               <button
                 onClick={confirmRemove}
-                className="py-8 px-16 border-none rounded-4 cursor-pointer" style={{ background: '#d32f2f', color: 'white' }}
+                className="py-8 px-16 border-none rounded-4 cursor-pointer text-white" style={{ background: '#d32f2f' }}
               >
                 Remove Member
               </button>

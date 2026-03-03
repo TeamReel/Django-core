@@ -87,7 +87,7 @@ export default function RegisterPage() {
               className="w-full p-10 rounded-4 fs-16"
               style={{ border: firstNameError ? '1px solid #f00' : '1px solid #ccc' }}
             />
-            {firstNameError && <div className="fs-12" style={{ color: '#f00' }}>{firstNameError}</div>}
+            {firstNameError && <div className="fs-12 text-error">{firstNameError}</div>}
           </div>
           <div className="flex-1">
             <label htmlFor="lastName" className="block fw-500" style={{ marginBottom: '5px' }}>
@@ -102,7 +102,7 @@ export default function RegisterPage() {
               className="w-full p-10 rounded-4 fs-16"
               style={{ border: lastNameError ? '1px solid #f00' : '1px solid #ccc' }}
             />
-            {lastNameError && <div className="fs-12" style={{ color: '#f00' }}>{lastNameError}</div>}
+            {lastNameError && <div className="fs-12 text-error">{lastNameError}</div>}
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function RegisterPage() {
             className="w-full p-10 rounded-4 fs-16"
             style={{ border: emailError ? '1px solid #f00' : '1px solid #ccc' }}
           />
-          {emailError && <div className="fs-12" style={{ color: '#f00' }}>{emailError}</div>}
+          {emailError && <div className="fs-12 text-error">{emailError}</div>}
         </div>
 
         <div>
@@ -139,7 +139,7 @@ export default function RegisterPage() {
             className="w-full p-10 rounded-4 fs-16"
             style={{ border: passwordError ? '1px solid #f00' : '1px solid #ccc' }}
           />
-          {passwordError && <div className="fs-12" style={{ color: '#f00' }}>{passwordError}</div>}
+          {passwordError && <div className="fs-12 text-error">{passwordError}</div>}
         </div>
 
         <div>

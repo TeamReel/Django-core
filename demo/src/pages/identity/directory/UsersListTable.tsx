@@ -59,15 +59,13 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
       {/* ── Batch action bar ────────────────────────────── */}
       {someSelected && (
         <div
-          className="flex-row flex-wrap gap-8 py-8 px-12 mb-4 rounded-6"
+          className="flex-row flex-wrap gap-8 py-8 px-12 mb-4 rounded-6 border"
           style={{
             background: 'var(--app-surface-alt, rgba(59,130,246,0.08))',
-            border: '1px solid var(--app-border, #333)',
           }}
         >
           <span
-            className="fs-13 fw-500"
-            style={{ color: 'var(--app-text, #fff)' }}
+            className="fs-13 fw-500 text-primary"
           >
             {selectedIds.size} geselecteerd
           </span>
@@ -79,11 +77,9 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
             ⚡ Batch Actie ({selectedIds.size})
           </Button>
           <button
-            className="ml-auto border-none cursor-pointer fs-13"
+            className="ml-auto border-none cursor-pointer fs-13 bg-transparent text-muted"
             onClick={() => setSelectedIds(new Set())}
             style={{
-              background: 'none',
-              color: 'var(--app-muted-text, #888)',
               textDecoration: 'underline',
             }}
           >

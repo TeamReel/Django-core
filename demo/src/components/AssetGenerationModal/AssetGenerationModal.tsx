@@ -90,9 +90,8 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
       >
         {/* Header */}
         <div
-          className="flex-between"
+          className="flex-between py-16 px-20"
           style={{
-            padding: '16px 20px',
             borderBottom: '1px solid var(--vscode-widget-border, #333)',
           }}
         >
@@ -106,15 +105,15 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
           </div>
           <button
             onClick={handleClose}
-            className="bg-transparent border-none cursor-pointer fs-20"
-            style={{ color: 'var(--vscode-foreground, #ccc)', padding: '4px 8px' }}
+            className="bg-transparent border-none cursor-pointer fs-20 py-4 px-8"
+            style={{ color: 'var(--vscode-foreground, #ccc)' }}
           >
             ✕
           </button>
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-auto" style={{ padding: '16px 20px' }}>
+        <div className="flex-1 overflow-auto py-16 px-20">
           {/* ── STEP 1: Template Selection ── */}
           {modalStep === 'template' && (
             <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
@@ -211,10 +210,10 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                     <button
                       key={n}
                       onClick={() => setVariantCount(n)}
+                      className="rounded-8 fs-16 fw-700 cursor-pointer"
                       style={{
                         width: 40,
                         height: 40,
-                        borderRadius: 8,
                         border:
                           variantCount === n
                             ? '2px solid var(--vscode-focusBorder, #007fd4)'
@@ -224,9 +223,6 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                             ? 'var(--vscode-list-activeSelectionBackground, #094771)'
                             : 'transparent',
                         color: 'var(--vscode-foreground, #ccc)',
-                        fontSize: 16,
-                        fontWeight: 700,
-                        cursor: 'pointer',
                       }}
                     >
                       {n}
@@ -260,14 +256,12 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                   value={extraInstructions}
                   onChange={(e) => setExtraInstructions(e.target.value)}
                   placeholder="Bijv. 'Gebruik felle kleuren', 'Geen strepen op mouwen', 'Witte sponsortekst'..."
+                  className="w-full fs-13 rounded-4"
                   style={{
-                    width: '100%',
                     padding: '8px 10px',
-                    fontSize: 13,
                     background: 'var(--vscode-input-background, #3c3c3c)',
                     color: 'var(--vscode-input-foreground, #ccc)',
                     border: '1px solid var(--vscode-input-border, #3c3c3c)',
-                    borderRadius: 4,
                     outline: 'none',
                     minHeight: 60,
                     fontFamily: 'inherit',
@@ -341,7 +335,7 @@ function ModalFooter({
   handleAccept: () => void;
 }) {
   return (
-    <div className="flex-between border-top" style={{ padding: '12px 20px' }}>
+    <div className="flex-between border-top py-12 px-20">
       <div>
         {modalStep !== 'template' &&
           generation.step !== 'submitting' &&
@@ -352,14 +346,11 @@ function ModalFooter({
                 if (modalStep === 'configure') setModalStep('template');
                 else if (modalStep === 'results') handleRegenerate();
               }}
+              className="fs-12 bg-transparent rounded-4 cursor-pointer"
               style={{
                 padding: '6px 14px',
-                fontSize: 12,
-                background: 'transparent',
                 color: 'var(--vscode-foreground, #ccc)',
                 border: '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 4,
-                cursor: 'pointer',
               }}
             >
               \u2190 Terug
@@ -370,9 +361,9 @@ function ModalFooter({
       <div className="flex-row gap-8">
         <button
           onClick={handleClose}
+          className="fs-12 rounded-4 cursor-pointer"
           style={{
             padding: '6px 14px',
-            fontSize: 12,
             background:
               generation.step === 'queued'
                 ? 'var(--vscode-button-background, #0078d4)'
@@ -385,8 +376,6 @@ function ModalFooter({
               generation.step === 'queued'
                 ? 'none'
                 : '1px solid var(--vscode-widget-border, #333)',
-            borderRadius: 4,
-            cursor: 'pointer',
             fontWeight: generation.step === 'queued' ? 600 : 400,
           }}
         >
@@ -397,14 +386,11 @@ function ModalFooter({
           <button
             onClick={handleGenerate}
             disabled={!selectedTemplate}
+            className="fs-12 fw-600 rounded-4 border-none"
             style={{
               padding: '6px 16px',
-              fontSize: 12,
-              fontWeight: 600,
               background: 'var(--vscode-button-background, #0078d4)',
               color: 'var(--vscode-button-foreground, #fff)',
-              border: 'none',
-              borderRadius: 4,
               cursor: selectedTemplate ? 'pointer' : 'not-allowed',
               opacity: selectedTemplate ? 1 : 0.5,
             }}
@@ -418,14 +404,11 @@ function ModalFooter({
           <>
             <button
               onClick={handleRegenerate}
+              className="fs-12 bg-transparent rounded-4 cursor-pointer"
               style={{
                 padding: '6px 14px',
-                fontSize: 12,
-                background: 'transparent',
                 color: 'var(--vscode-foreground, #ccc)',
                 border: '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 4,
-                cursor: 'pointer',
               }}
             >
               🔄 Opnieuw
@@ -433,17 +416,13 @@ function ModalFooter({
             <button
               onClick={handleAccept}
               disabled={selectedVariantIdx === null || saving}
+              className="fs-12 fw-600 rounded-4 border-none text-white"
               style={{
                 padding: '6px 16px',
-                fontSize: 12,
-                fontWeight: 600,
                 background:
                   selectedVariantIdx !== null
                     ? 'var(--color-green-400)'
                     : 'var(--vscode-disabledForeground, #555)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 4,
                 cursor: selectedVariantIdx !== null ? 'pointer' : 'not-allowed',
                 opacity: selectedVariantIdx !== null ? 1 : 0.5,
               }}

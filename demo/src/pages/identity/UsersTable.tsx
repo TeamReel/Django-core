@@ -347,7 +347,7 @@ const UserActions: React.FC<UserActionsProps> = ({
 
       {/* Delete */}
       {canManageUsers && (
-        <button onClick={handleDelete} className={actionBtn} style={{ border: '1px solid #dc3545', color: 'var(--app-error)' }}>
+        <button onClick={handleDelete} className={`${actionBtn} text-error`} style={{ border: '1px solid #dc3545' }}>
           Delete
         </button>
       )}
@@ -356,8 +356,8 @@ const UserActions: React.FC<UserActionsProps> = ({
       {canManageUsers && (
         <button
           onClick={() => { setLinkUser(user); setIsLinkModalOpen(true); }}
-          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
-          style={{ padding: '6px 12px', border: '1px solid #007bff', color: 'var(--app-primary)' }}
+          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-primary"
+          style={{ padding: '6px 12px', border: '1px solid #007bff' }}
         >
           Link
         </button>
@@ -365,15 +365,15 @@ const UserActions: React.FC<UserActionsProps> = ({
 
       {/* Assign / Unassign */}
       {canManageUsers && effectiveOrgSlug && isInOrg && orgMembershipId && (
-        <button onClick={handleUnassign} className={actionBtn} style={{ border: '1px solid #dc3545', color: 'var(--app-error)' }}>
+        <button onClick={handleUnassign} className={`${actionBtn} text-error`} style={{ border: '1px solid #dc3545' }}>
           Unassign
         </button>
       )}
       {canManageUsers && effectiveOrgSlug && !isInOrg && (
         <button
           onClick={() => { setAssignUser(user); setIsAssignModalOpen(true); }}
-          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
-          style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: 'var(--app-success)' }}
+          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-success"
+          style={{ padding: '6px 12px', border: '1px solid #1e7e34' }}
         >
           Assign
         </button>
@@ -381,8 +381,8 @@ const UserActions: React.FC<UserActionsProps> = ({
       {canManageUsers && !effectiveOrgSlug && isSuperAdmin && !isMembership && (
         <button
           onClick={() => { setAssignUser(user); setIsAssignModalOpen(true); }}
-          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500"
-          style={{ padding: '6px 12px', border: '1px solid #1e7e34', color: 'var(--app-success)' }}
+          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-success"
+          style={{ padding: '6px 12px', border: '1px solid #1e7e34' }}
         >
           Assign
         </button>

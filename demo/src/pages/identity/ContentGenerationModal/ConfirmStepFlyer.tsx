@@ -98,7 +98,7 @@ export function ConfirmStepFlyer({
   return (
     <div className="w-full max-w-480 mt-20">
       {/* Variant picker */}
-      <label className="block fs-12 fw-600 text-muted uppercase tracking-wide" style={{ marginBottom: 10 }}>Ontwerpstijl</label>
+      <label className="block fs-12 fw-600 text-muted uppercase tracking-wide mb-10">Ontwerpstijl</label>
       <div className="flex-col gap-8">
         {VARIANT_OPTIONS.map((opt) => {
           const isSelected = matchFlyerVariant === opt.key;
@@ -116,16 +116,14 @@ export function ConfirmStepFlyer({
                   }
                 }
               }}
-              className="relative flex-row items-center gap-12 rounded-12 cursor-pointer text-left w-full text-primary"
+              className="relative flex-row items-center gap-12 rounded-12 cursor-pointer text-left w-full text-primary py-12 px-16 transition"
               style={{
-                padding: '12px 16px',
                 border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                 background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                transition: 'all 0.15s ease',
               }}
             >
-              <div className="flex-center fs-16 fw-700" style={{
-                width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+              <div className="flex-center fs-16 fw-700 rounded-10" style={{
+                width: 40, height: 40, flexShrink: 0,
                 backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
                 color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
               }}>{opt.icon}</div>
@@ -134,10 +132,10 @@ export function ConfirmStepFlyer({
                 <div className="fs-12 text-muted" style={{ marginTop: 1 }}>{opt.desc}</div>
               </div>
               {isSelected && (
-                <div className="absolute rounded-full flex-center fw-700" style={{
+                <div className="absolute rounded-full flex-center fw-700 text-white" style={{
                   top: 6, right: 6, width: 18, height: 18,
                   background: 'var(--color-green-400)',
-                  fontSize: 10, color: '#fff',
+                  fontSize: 10,
                 }}>✓</div>
               )}
             </button>
@@ -147,7 +145,7 @@ export function ConfirmStepFlyer({
 
       {/* Action variant settings */}
       {matchFlyerVariant === 'action' && (
-        <div className="mt-16 p-16 border bg-surface-2" style={{ borderRadius: 10 }}>
+        <div className="mt-16 p-16 border bg-surface-2 rounded-10">
           <div className="fs-13 fw-700 mb-12 text-primary">
             Actiefoto instellingen
           </div>
@@ -182,8 +180,7 @@ export function ConfirmStepFlyer({
               ] as const).map((opt) => {
                 const isActive = flyerPhotoLayout === opt.key;
                 return (
-                  <button key={opt.key} onClick={() => setFlyerPhotoLayout(opt.key)} className="flex-1 rounded-8 cursor-pointer text-center fs-11" style={{
-                    padding: '8px 4px',
+                  <button key={opt.key} onClick={() => setFlyerPhotoLayout(opt.key)} className="flex-1 rounded-8 cursor-pointer text-center fs-11 py-8 px-4" style={{
                     border: isActive ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
                     background: isActive ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface-2, #f3f4f6)',
                     color: isActive ? '#fff' : 'var(--app-text, #111)',
@@ -302,9 +299,9 @@ function MultiSlotSelector({
             marginBottom: slotIdx < slotCount - 1 ? 8 : 0,
           }}>
             <div className="fs-12 fw-700 mb-8 text-primary flex-row items-center gap-6">
-              <span className="inline-flex flex-center rounded-full fs-11 fw-700" style={{
+              <span className="inline-flex flex-center rounded-full fs-11 fw-700 text-white" style={{
                 width: 22, height: 22,
-                background: 'var(--app-primary, #3B8EA5)', color: '#fff',
+                background: 'var(--app-primary, #3B8EA5)',
                 flexShrink: 0,
               }}>{slotIdx + 1}</span>
               {slotLabels[slotIdx]}

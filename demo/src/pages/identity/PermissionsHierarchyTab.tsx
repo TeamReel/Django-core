@@ -50,8 +50,8 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
                   }}>
                   <div className="flex-between gap-12" style={{ alignItems: 'flex-start' }}>
                     <div className="flex-row gap-12" style={{ alignItems: 'flex-start' }}>
-                      <div className="flex-center fw-800"
-                        style={{ width: '34px', height: '34px', borderRadius: '10px', backgroundColor: 'var(--app-table-header-bg)', border: '1px solid var(--app-border)' }}
+                      <div className="flex-center fw-800 border rounded-10"
+                        style={{ width: '34px', height: '34px', backgroundColor: 'var(--app-table-header-bg)' }}
                         aria-label={`Role level ${roleInfo.level}`}>{roleInfo.level}</div>
                       <div>
                         <div className="flex-row gap-8 flex-wrap">
@@ -59,7 +59,7 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
                           {isCurrent && <Badge variant="success">You</Badge>}
                           {granted != null && <Badge variant="default">{granted}/{total}</Badge>}
                         </div>
-                        <div style={{ marginTop: '2px', fontSize: '0.8rem', color: 'var(--app-muted-text)' }}>{roleInfo.scope}</div>
+                        <div className="text-muted" style={{ marginTop: '2px', fontSize: '0.8rem' }}>{roleInfo.scope}</div>
                       </div>
                     </div>
                   </div>
@@ -85,7 +85,7 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
         <p className="text-muted" style={{ margin: '6px 0 0', fontSize: '0.9rem' }}>
           Scopes flow from org → club → team, with increasing restrictions.
         </p>
-        <div className="rounded-12" style={{ marginTop: '14px', padding: '14px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface)' }}>
+        <div className="rounded-12 border bg-surface" style={{ marginTop: '14px', padding: '14px' }}>
           {Object.entries(roleDescriptions)
             .sort(([, a], [, b]) => a.level - b.level)
             .map(([roleKey, roleInfo], idx, arr) => {
@@ -101,7 +101,7 @@ export function PermissionsHierarchyTab({ currentRoleKey }: Props) {
                   <div style={{ paddingBottom: isLast ? 0 : '12px' }}>
                     <div className="flex-row gap-8 flex-wrap">
                       <div className="fw-800">{roleInfo.title}</div>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--app-muted-text)' }}>({roleInfo.scope})</span>
+                      <span className="text-muted" style={{ fontSize: '0.8rem' }}>({roleInfo.scope})</span>
                       {isCurrent && <Badge variant="success">You</Badge>}
                     </div>
                     <div className="mt-4 text-muted" style={{ fontSize: '0.9rem' }}>{roleInfo.description}</div>

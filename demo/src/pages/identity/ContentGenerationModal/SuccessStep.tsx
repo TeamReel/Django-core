@@ -120,7 +120,7 @@ export function SuccessStep({
                   <div className="absolute fs-12 px-8 flex-between text-white" style={{ bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.6)', paddingTop: '6px', paddingBottom: '6px' }}>
                     <span>{variant.storage_info ? `${(variant.storage_info.file_size_bytes / 1024).toFixed(0)} KB` : `Variant ${index + 1}`}</span>
                     {isSaved ? (
-                      <span className="fw-700" style={{ color: '#34d399' }}>Opgeslagen</span>
+                      <span className="fw-700 text-success">Opgeslagen</span>
                     ) : (
                       <button
                         onClick={(e) => {
@@ -128,8 +128,8 @@ export function SuccessStep({
                           handleSaveVariantByIndex(index, { skipAutoClose: true });
                         }}
                         disabled={savingAsset}
-                        className="px-8 rounded-6 fs-12 fw-600 border-none cursor-pointer"
-                        style={{ paddingTop: '2px', paddingBottom: '2px', background: 'var(--app-primary, #3B8EA5)', color: '#ffffff', transition: 'color 150ms, background 150ms' }}
+                        className="px-8 rounded-6 fs-12 fw-600 border-none cursor-pointer text-white"
+                        style={{ paddingTop: '2px', paddingBottom: '2px', background: 'var(--app-primary, #3B8EA5)', transition: 'color 150ms, background 150ms' }}
                       >
                         {savingAsset && selectedVariantIndex === index ? '' : 'Opslaan'}
                       </button>
@@ -307,7 +307,7 @@ export function SuccessStep({
               </div>
             </div>
           ) : (
-            <div className="rounded-8 flex-center text-muted mb-16" style={{ background: 'linear-gradient(to bottom right, var(--app-surface-2, #f3f4f6), var(--app-border, #e5e5e5))', aspectRatio: '16 / 9', width: '256px', border: '1px solid var(--app-border, #e5e5e5)' }}>
+            <div className="rounded-8 flex-center text-muted mb-16 border" style={{ background: 'linear-gradient(to bottom right, var(--app-surface-2, #f3f4f6), var(--app-border, #e5e5e5))', aspectRatio: '16 / 9', width: '256px' }}>
               [Geen voorbeeld beschikbaar]
             </div>
           )}
@@ -323,7 +323,7 @@ export function SuccessStep({
 
       {/* Selected variant info */}
       {generatedVariants[selectedVariantIndex]?.storage_info && (
-        <details className="p-12 rounded-8 fs-14 mb-16 text-left bg-surface-2" style={{ border: '1px solid var(--app-border, #e5e5e5)', maxWidth: '448px' }}>
+        <details className="p-12 rounded-8 fs-14 mb-16 text-left bg-surface-2 border" style={{ maxWidth: '448px' }}>
           <summary className="cursor-pointer fw-500">Opslag info (Variant {selectedVariantIndex + 1})</summary>
           <div className="flex-col mt-8 fs-12 gap-4">
             <div><strong>Backend:</strong> {generatedVariants[selectedVariantIndex].storage_info?.storage_backend}</div>

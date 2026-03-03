@@ -175,7 +175,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
     <div className="grid grid-cols-1 gap-6">
       <Card>
         <div style={{ padding: '16px 16px 0 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="flex-row gap-12 flex-wrap">
             <h3 className={s.sectionTitle}> Media Completion Matrix</h3>
             <Badge variant="default">
               {members.filter((m) => countProcessedMediaSlots(m) === MEDIA_SLOTS.length).length} / {members.length} Complete
@@ -203,7 +203,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
           </div>
         </div>
 
-        <div style={{ padding: '16px' }}>
+        <div className="p-16">
           {membersLoading ? (
             <Alert variant="info">Loading squad media status…</Alert>
           ) : members.length === 0 ? (
@@ -213,7 +213,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
               <Table className="detail-table">
                 <thead>
                   <tr>
-                    <th className="detail-th" style={{ width: '36px', textAlign: 'center' }}>
+                    <th className="detail-th text-center" style={{ width: '36px' }}>
                       <input
                         type="checkbox"
                         checked={batchSelectedMemberIds.size === members.length && members.length > 0}
@@ -225,36 +225,31 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             setBatchSelectedMemberIds(new Set());
                           }
                         }}
-                        style={{ cursor: 'pointer' }}
+                        className="cursor-pointer"
                         title="Selecteer alles"
                       />
                     </th>
                     <th className="detail-th" style={{ position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
                     {MEDIA_SLOTS.map((slot) => (
-                      <th key={slot.id} className="detail-th" style={{ textAlign: 'center', minWidth: '60px', height: '80px', verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                          <span style={{
-                            display: 'block',
+                      <th key={slot.id} className="detail-th text-center relative" style={{ minWidth: '60px', height: '80px', verticalAlign: 'bottom' }} title={slot.label}>
+                        <div className="flex-col items-center gap-2">
+                          <span className="block whitespace-nowrap fw-500 opacity-80 mb-4" style={{
                             fontSize: '9px',
-                            fontWeight: 500,
-                            whiteSpace: 'nowrap',
                             transform: 'rotate(-45deg)',
                             transformOrigin: 'center center',
-                            marginBottom: '4px',
-                            opacity: 0.8,
                             letterSpacing: '0.02em',
                           }}>{slot.label}</span>
                           <span className={s.slotIcon}>{slot.icon}</span>
                         </div>
                       </th>
                     ))}
-                    <th className="detail-th" style={{ textAlign: 'center' }}>Score</th>
+                    <th className="detail-th text-center">Score</th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Guest Player row */}
                   <tr className={s.guestRow}>
-                    <td className="detail-td" style={{ textAlign: 'center' }}>
+                    <td className="detail-td text-center">
                       {/* No batch checkbox for guest */}
                     </td>
                     <td className="detail-td-text" style={{ position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
@@ -273,7 +268,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           ? () => cropGuestCloseup('home')
                           : () => openGuestAiModal(guestSlot.templateId);
                         return (
-                          <td key={slot.id} className="detail-td" style={{ textAlign: 'center' }}>
+                          <td key={slot.id} className="detail-td text-center">
                             <span
                               className={s.guestIndicator}
                               title={guestSlot.has ? `${guestSlot.label}: Beschikbaar \u2014 klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
@@ -285,12 +280,12 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         );
                       }
                       return (
-                        <td key={slot.id} className="detail-td" style={{ textAlign: 'center' }}>
+                        <td key={slot.id} className="detail-td text-center">
                           <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}>\u2014</span>
                         </td>
                       );
                     })}
-                    <td className="detail-td" style={{ textAlign: 'center' }}>
+                    <td className="detail-td text-center">
                       {(() => {
                         const guestFilledCount = [
                           guestPlayer?.has_avatar,
@@ -321,7 +316,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
 
                     return (
                       <tr key={String(m.id)} style={{ background: isBatchSelected ? 'rgba(59,130,246,0.06)' : undefined }}>
-                        <td className="detail-td" style={{ textAlign: 'center' }}>
+                        <td className="detail-td text-center">
                           <input
                             type="checkbox"
                             checked={isBatchSelected}
@@ -333,7 +328,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                                 return next;
                               });
                             }}
-                            style={{ cursor: 'pointer' }}
+                            className="cursor-pointer"
                           />
                         </td>
                         <td className="detail-td-text" style={{ position: 'sticky', left: 0, background: isBatchSelected ? 'rgba(59,130,246,0.06)' : 'var(--app-surface)', zIndex: 1 }}>
@@ -367,11 +362,11 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           };
                           const tabId = slotTabMap[slot.id] || slot.id;
                           return (
-                            <td key={slot.id} className="detail-td" style={{ textAlign: 'center' }}>
+                            <td key={slot.id} className="detail-td text-center">
                               {href ? (
                                 <Link
                                   to={`${href}?tab=${tabId}`}
-                                  style={{ textDecoration: 'none' }}
+                                  className="text-decoration-none"
                                   title={title}
                                 >
                                   <span className={s.indicatorIcon}>{indicator}</span>
@@ -382,7 +377,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             </td>
                           );
                         })}
-                        <td className="detail-td" style={{ textAlign: 'center' }}>
+                        <td className="detail-td text-center">
                           <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
                             {filledCount}/{MEDIA_SLOTS.length}
                           </Badge>

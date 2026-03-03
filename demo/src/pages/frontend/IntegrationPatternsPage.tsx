@@ -17,11 +17,9 @@ const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?:
 
   return (
     <div className="relative mt-16 mb-16">
-      <div style={{
-        position: 'absolute',
+      <div className="absolute z-10" style={{
         top: '8px',
         right: '8px',
-        zIndex: 10
       }}>
         <Button
           variant="secondary"
@@ -62,19 +60,19 @@ const PatternSection = ({
   pitfalls?: string[];
 }) => (
   <section id={id} style={{ marginBottom: '48px', scrollMarginTop: '100px' }}>
-    <h2 className="fs-24 fw-700 mb-16" style={{ color: 'var(--app-text-primary)' }}>{title}</h2>
-    <p className="fs-16 mb-24" style={{ lineHeight: '1.6', color: 'var(--app-text-secondary)' }}>
+    <h2 className="fs-24 fw-700 mb-16 text-primary">{title}</h2>
+    <p className="fs-16 mb-24 text-secondary" style={{ lineHeight: '1.6' }}>
       {description}
     </p>
 
     <CodeBlock code={code} />
 
-    <div className="grid gap-24 mt-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
-      <Card style={{ padding: '20px', backgroundColor: 'var(--app-surface-subtle)' }}>
-        <h3 className="fs-16 fw-600 mb-12" style={{ color: 'var(--app-success)' }}>
+    <div className="grid gap-24 mt-24 grid-cols-2">
+      <Card className="p-20" style={{ backgroundColor: 'var(--app-surface-subtle)' }}>
+        <h3 className="fs-16 fw-600 mb-12 text-success">
           ✅ Best Practices
         </h3>
-        <ul className="m-0" style={{ paddingLeft: '20px', color: 'var(--app-text-secondary)' }}>
+        <ul className="m-0 text-secondary" style={{ paddingLeft: '20px' }}>
           {bestPractices.map((practice, index) => (
             <li key={index} className="mb-8">{practice}</li>
           ))}
@@ -82,11 +80,11 @@ const PatternSection = ({
       </Card>
 
       {pitfalls && (
-        <Card style={{ padding: '20px', backgroundColor: 'var(--app-surface-subtle)' }}>
-          <h3 className="fs-16 fw-600 mb-12" style={{ color: 'var(--app-error)' }}>
+        <Card className="p-20" style={{ backgroundColor: 'var(--app-surface-subtle)' }}>
+          <h3 className="fs-16 fw-600 mb-12 text-error">
             ⚠️ Common Pitfalls
           </h3>
-          <ul className="m-0" style={{ paddingLeft: '20px', color: 'var(--app-text-secondary)' }}>
+          <ul className="m-0 text-secondary" style={{ paddingLeft: '20px' }}>
             {pitfalls.map((pitfall, index) => (
               <li key={index} className="mb-8">{pitfall}</li>
             ))}
@@ -382,7 +380,7 @@ export function ResilientComponent() {
 
   return (
     <AppShell>
-      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
+      <div className="flex-row" style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
         {/* Sidebar Navigation */}
         <div
           className="sticky overflow-y-auto bg-surface p-24"
@@ -393,7 +391,7 @@ export function ResilientComponent() {
             borderRight: '1px solid var(--app-border)',
           }}
         >
-          <h3 className="fs-18 fw-700 mb-16" style={{ color: 'var(--app-text-primary)' }}>
+          <h3 className="fs-18 fw-700 mb-16 text-primary">
             Patterns
           </h3>
           <nav>
@@ -402,13 +400,12 @@ export function ResilientComponent() {
                 <li key={pattern.id} className="mb-8">
                   <button
                     onClick={() => scrollToSection(pattern.id)}
-                    className="w-full text-left rounded-6 border-none cursor-pointer"
+                    className="w-full text-left rounded-6 border-none cursor-pointer transition"
                     style={{
                       padding: '8px 12px',
                       backgroundColor: activeSection === pattern.id ? 'var(--app-primary-subtle)' : 'transparent',
                       color: activeSection === pattern.id ? 'var(--app-primary)' : 'var(--app-text-secondary)',
                       fontWeight: activeSection === pattern.id ? 600 : 400,
-                      transition: 'all 0.2s'
                     }}
                   >
                     {pattern.title}
@@ -422,10 +419,10 @@ export function ResilientComponent() {
         {/* Main Content */}
         <div className="flex-1" style={{ padding: '48px', maxWidth: '1000px' }}>
           <div style={{ marginBottom: '48px' }}>
-            <h1 className="fw-800 mb-16" style={{ fontSize: '36px', color: 'var(--app-text-primary)' }}>
+            <h1 className="fw-800 mb-16 text-primary" style={{ fontSize: '36px' }}>
               Integration Patterns
             </h1>
-            <p className="fs-18" style={{ color: 'var(--app-text-secondary)', lineHeight: '1.6' }}>
+            <p className="fs-18 text-secondary" style={{ lineHeight: '1.6' }}>
               Reference guide for integrating frontend components with backend services.
               Follow these patterns to ensure consistency, security, and reliability across the application.
             </p>

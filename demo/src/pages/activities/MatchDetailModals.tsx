@@ -36,8 +36,7 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
       >
         {/* Modal Header */}
         <div
-          className="flex-between border-bottom"
-          style={{ padding: '16px 20px' }}
+          className="flex-between border-bottom py-16 px-20"
         >
           <div>
             <h3 className="m-0 fs-18 fw-600">
@@ -49,10 +48,7 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
           </div>
           <button
             onClick={onClose}
-            className="bg-transparent border-none fs-24 cursor-pointer text-muted"
-            style={{
-              padding: '4px 8px',
-            }}
+            className="bg-transparent border-none fs-24 cursor-pointer text-muted py-4 px-8"
           >
             {'\u00d7'}
           </button>
@@ -66,21 +62,20 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
                 <video
                   src={selectedContentItem.output_file.url}
                   controls
+                  className="rounded-8"
                   style={{
                     maxWidth: '100%',
                     maxHeight: '60vh',
-                    borderRadius: '8px',
                   }}
                 />
               ) : (
                 <img
                   src={selectedContentItem.output_file.url}
                   alt={selectedContentItem.template?.name || 'Generated content'}
+                  className="rounded-8 object-contain"
                   style={{
                     maxWidth: '100%',
                     maxHeight: '60vh',
-                    borderRadius: '8px',
-                    objectFit: 'contain',
                   }}
                 />
               )}
@@ -96,8 +91,8 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
 
         {/* Modal Footer */}
         <div
-          className="flex-between border-top bg-primary"
-          style={{ padding: '16px 20px', borderRadius: '0 0 12px 12px' }}
+          className="flex-between border-top bg-primary py-16 px-20"
+          style={{ borderRadius: '0 0 12px 12px' }}
         >
           <Badge
             variant={['completed', 'approved'].includes(selectedContentItem.status) ? 'success' : 'warning'}
@@ -111,17 +106,10 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
                 download={selectedContentItem.output_file.file_name || 'content'}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 text-white"
                 style={{
-                  display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 16px',
                   backgroundColor: 'var(--app-primary)',
-                  color: 'white',
-                  borderRadius: '6px',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: 500,
                 }}
               >
                 {'\u2b07\ufe0f'} Download
@@ -171,8 +159,7 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="flex-between border-bottom"
-          style={{ padding: '16px 20px' }}
+          className="flex-between border-bottom py-16 px-20"
         >
           <div>
             <h3 className="m-0 fs-18 fw-600">{preview.title}</h3>
@@ -184,10 +171,7 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
           </div>
           <button
             onClick={onClose}
-            className="bg-transparent border-none fs-24 cursor-pointer text-muted"
-            style={{
-              padding: '4px 8px',
-            }}
+            className="bg-transparent border-none fs-24 cursor-pointer text-muted py-4 px-8"
           >
             {'\u00d7'}
           </button>
@@ -199,23 +183,24 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
               <video
                 src={preview.url}
                 controls
-                style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px' }}
+                className="rounded-8"
+                style={{ maxWidth: '100%', maxHeight: '65vh' }}
               />
             ) : (
               <img
                 src={preview.url}
                 alt={preview.title}
-                style={{ maxWidth: '100%', maxHeight: '65vh', borderRadius: '8px', objectFit: 'contain' }}
+                className="rounded-8 object-contain"
+                style={{ maxWidth: '100%', maxHeight: '65vh' }}
               />
             )}
           </div>
         </div>
 
         <div
-          className="flex-row flex-wrap gap-8 border-top bg-primary"
+          className="flex-row flex-wrap gap-8 border-top bg-primary py-12 px-16"
           style={{
             justifyContent: 'flex-end',
-            padding: '12px 16px',
             borderRadius: '0 0 12px 12px',
           }}
         >
@@ -237,18 +222,11 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
           <a
             href={preview.url}
             download
+            className="inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 border"
             style={{
-              display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
               backgroundColor: 'var(--app-surface-secondary)',
               color: 'var(--app-text)',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontSize: '14px',
-              fontWeight: 500,
-              border: '1px solid var(--app-border)',
             }}
           >
             {'\u2913'} Download
@@ -258,17 +236,10 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
             href={preview.url}
             target="_blank"
             rel="noopener noreferrer"
+            className="inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 text-white"
             style={{
-              display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
               backgroundColor: 'var(--app-primary)',
-              color: 'white',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontSize: '14px',
-              fontWeight: 500,
             }}
           >
             {'\u2917'} Openen
@@ -299,9 +270,8 @@ export function ToastNotifications({ toasts, onDismiss }: ToastNotificationsProp
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className="flex-row gap-12 rounded-8 text-white fs-14 fw-500 shadow-lg"
+          className="flex-row gap-12 rounded-8 text-white fs-14 fw-500 shadow-lg py-12 px-16"
           style={{
-            padding: '12px 16px',
             background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
             animation: 'slideInRight 0.3s ease-out',
           }}

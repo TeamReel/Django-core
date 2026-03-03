@@ -130,12 +130,11 @@ export default function SearchPage() {
               {query && !isFiltered && (
                 <button
                 onClick={handleHierarchyToggle}
-                className="flex-row gap-8 py-8 px-16 fs-14 fw-500 rounded-8 cursor-pointer"
+                className="flex-row gap-8 py-8 px-16 fs-14 fw-500 rounded-8 cursor-pointer transition"
                 style={{
                   background: showHierarchy ? 'var(--color-primary, #3b82f6)' : 'var(--color-bg-surface)',
                   color: showHierarchy ? '#fff' : 'var(--color-text-primary)',
                   border: showHierarchy ? 'none' : '1px solid var(--color-border)',
-                  transition: 'all var(--duration-normal)',
                 }}
               >
                 🌳 {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}
@@ -234,10 +233,9 @@ export default function SearchPage() {
                         style={{
                           background: 'var(--color-bg-surface)',
                           border: '1px solid var(--color-border)',
-                          textDecoration: 'none',
                           transition: 'transform 0.1s, box-shadow 0.1s',
                         }}
-                        className="search-result-card block p-16 rounded-8"
+                        className="search-result-card block p-16 rounded-8 text-decoration-none"
                       >
                         <h3 className="fs-16 fw-600 mb-4 text-primary">
                           {result.title}
@@ -273,9 +271,8 @@ export default function SearchPage() {
                   style={{
                     background: 'var(--color-bg-surface)',
                     border: '1px solid var(--color-border)',
-                    textDecoration: 'none',
                   }}
-                  className="search-result-card block p-16 rounded-8"
+                  className="search-result-card block p-16 rounded-8 text-decoration-none"
                 >
                   <h3 className="fs-16 fw-600 mb-4 text-primary">
                     {result.title}

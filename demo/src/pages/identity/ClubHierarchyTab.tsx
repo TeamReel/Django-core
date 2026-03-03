@@ -154,7 +154,7 @@ export function ClubHierarchyTab({
               <div className="flex-col gap-2 min-w-0">
                 <div className="fw-800 fs-14 text-primary">{club?.name || 'Club'}</div>
               </div>
-              <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
+              <div className="flex-row gap-8 flex-wrap justify-end">
                 <span style={pillStyle}>Teams: {hierarchyTotals.teamsCount}</span>
                 <span style={pillStyle}>Members: {hierarchyTotals.membersCount}</span>
                 <span style={pillStyle}>Seasons: {hierarchyTotals.seasonsCount}</span>
@@ -200,7 +200,7 @@ export function ClubHierarchyTab({
                     )}
                   </div>
 
-                  <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
+                  <div className="flex-row gap-8 flex-wrap justify-end">
                     <span style={pillStyle}>Members: {membersCount}</span>
                     <span style={pillStyle}>Seasons: {seasonsAll.length}</span>
                     <span style={pillStyle}>Competitions: {competitionsCount}</span>
@@ -252,7 +252,7 @@ export function ClubHierarchyTab({
                               )}
                             </div>
 
-                            <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
+                            <div className="flex-row gap-8 flex-wrap justify-end">
                               <span style={pillStyle}>Competitions: {seasonCompetitions}</span>
                               <span style={pillStyle}>Matches: {seasonMatches}</span>
                             </div>

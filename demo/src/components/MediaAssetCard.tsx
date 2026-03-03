@@ -173,9 +173,8 @@ export function MediaAssetCard({
           {/* Play overlay for video */}
           {url && isVideo && (
             <div
-              className="absolute flex-center pointer-events-none"
+              className="absolute flex-center pointer-events-none inset-0"
               style={{
-                inset: 0,
                 color: 'rgba(255,255,255,0.9)',
                 fontSize: 28,
                 textShadow: '0 2px 12px rgba(0,0,0,0.7)',
@@ -187,7 +186,7 @@ export function MediaAssetCard({
 
           {/* Empty state */}
           {!url && !isGenerating && (
-            <div className="text-center fs-12" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
+            <div className="text-center fs-12 text-muted">
               {icon && <div className="mb-4 fs-24">{icon}</div>}
               <div>Niet ingesteld</div>
             </div>
@@ -261,7 +260,7 @@ export function MediaAssetCard({
 
           {/* Error message */}
           {isFailed && errorMessage && (
-            <div className="mb-4" style={{ fontSize: 10, color: 'var(--color-red-500)', lineHeight: 1.3 }}>
+            <div className="mb-4 text-error" style={{ fontSize: 10, lineHeight: 1.3 }}>
               {errorMessage}
             </div>
           )}
@@ -284,11 +283,10 @@ export function MediaAssetCard({
             {mediaItem && onReplace && (
               <button
                 onClick={(e) => { e.stopPropagation(); onReplace(subtype); }}
-                className="w-full fs-11 cursor-pointer border-none rounded-4"
+                className="w-full fs-11 cursor-pointer border-none rounded-4 text-white"
                 style={{
                   padding: '4px 8px',
                   background: '#8b5cf6',
-                  color: '#fff',
                 }}
               >
                 Verbeter
@@ -305,10 +303,9 @@ export function MediaAssetCard({
                   onDelete(mediaItem);
                 }
               }}
-              className="w-full fs-11 cursor-pointer rounded-4 mt-4 bg-transparent"
+              className="w-full fs-11 cursor-pointer rounded-4 mt-4 bg-transparent text-error"
               style={{
                 padding: '4px 8px',
-                color: 'var(--color-red-500)',
                 border: '1px solid #ef4444',
               }}
             >
@@ -318,7 +315,7 @@ export function MediaAssetCard({
 
           {/* Updated date */}
           {mediaItem && (
-            <div className="mt-4" style={{ fontSize: 10, color: 'var(--vscode-descriptionForeground, #888)' }}>
+            <div className="mt-4 text-muted" style={{ fontSize: 10 }}>
               {new Date(mediaItem.updated_at).toLocaleDateString('nl-NL')}
             </div>
           )}
@@ -346,15 +343,15 @@ export function MediaAssetCard({
               <h3 className="m-0 fs-16">Versiegeschiedenis — {label}</h3>
               <button
                 onClick={() => setShowHistory(false)}
-                className="border-none cursor-pointer fs-16"
-                style={{ background: 'none', color: '#ccc' }}
+                className="border-none cursor-pointer fs-16 bg-transparent"
+                style={{ color: '#ccc' }}
               >
                 ✕
               </button>
             </div>
 
             {historyItems.length === 0 ? (
-              <div className="p-20 text-center" style={{ color: '#888' }}>
+              <div className="p-20 text-center text-muted">
                 Geen eerdere versies gevonden.
               </div>
             ) : (
@@ -400,7 +397,7 @@ export function MediaAssetCard({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="flex-center h-full" style={{ color: '#888', fontSize: 10 }}>
+                          <div className="flex-center h-full text-muted" style={{ fontSize: 10 }}>
                             —
                           </div>
                         )}
@@ -409,7 +406,7 @@ export function MediaAssetCard({
                         <div className="fs-12 fw-600">
                           {new Date(item.created_at).toLocaleString('nl-NL')}
                         </div>
-                        <div className="fs-11" style={{ color: '#888' }}>
+                        <div className="fs-11 text-muted">
                           {item.title}
                         </div>
                       </div>
@@ -421,11 +418,10 @@ export function MediaAssetCard({
                               setShowHistory(false);
                             }
                           }}
-                          className="border-none rounded-4 fs-12 cursor-pointer"
+                          className="border-none rounded-4 fs-12 cursor-pointer text-white"
                           style={{
                             padding: '6px 12px',
                             background: '#094771',
-                            color: '#fff',
                           }}
                         >
                           Herstellen

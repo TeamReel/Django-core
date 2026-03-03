@@ -21,8 +21,8 @@ export default function MatchCreateModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-surface p-24 rounded-8 text-primary border"
-        style={{ width: '640px', maxWidth: '95%', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+        className="bg-surface p-24 rounded-8 text-primary border shadow-lg"
+        style={{ width: '640px', maxWidth: '95%' }}
       >
         <div className="flex-between gap-12">
           <h2 className="mb-12 mt-0">{headerText || 'Create Match'}</h2>
@@ -38,7 +38,7 @@ export default function MatchCreateModal({
         </div>
 
         <form onSubmit={d.handleCreate}>
-          <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+          <div className="grid" style={{ gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
             <label className="fw-600" htmlFor="match-create-title">
               Title
             </label>

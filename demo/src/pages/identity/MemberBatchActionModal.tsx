@@ -14,9 +14,9 @@ import { getMemberName } from './memberBatchAction.types';
 import type { MemberBatchActionModalProps } from './memberBatchAction.types';
 import { useMemberBatchAction } from './useMemberBatchAction';
 import {
-    overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle,
-    selectStyle, sectionStyle, sectionTitleStyle, cardStyle,
-    radioGroupStyle, radioOptionStyle, memberChipStyle, progressBarBg,
+    overlayStyle, modalStyle,
+    cardStyle,
+    radioOptionStyle, memberChipStyle, progressBarBg,
 } from './memberBatchAction.styles';
 
 export type { BatchMemberEntry } from './memberBatchAction.types';
@@ -39,10 +39,10 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div style={overlayStyle} onClick={() => d.step !== 'running' && onClose()}>
-            <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 flex-center p-20" style={overlayStyle} onClick={() => d.step !== 'running' && onClose()}>
+            <div className="w-full flex-col rounded-12 border" style={modalStyle} onClick={(e) => e.stopPropagation()}>
                 {/* ── Header ── */}
-                <div style={headerStyle}>
+                <div className="flex-between border-bottom py-20 px-24">
                     <div className="flex-row gap-12">
                         <h2 className="m-0 fs-18 fw-600">
                             {d.step === 'configure' && '⚡ Batch Actie'}
@@ -64,7 +64,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                 </div>
 
                 {/* ── Body ── */}
-                <div style={bodyStyle}>
+                <div className="p-24 overflow-y-auto flex-1">
                     {d.step === 'configure' && (
                         <ConfigureStep d={d} members={members} />
                     )}
@@ -79,7 +79,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                 </div>
 
                 {/* ── Footer ── */}
-                <div style={footerStyle}>
+                <div className="flex-between border-top gap-12 py-16 px-24">
                     {d.step === 'configure' && (
                         <>
                             <Button variant="secondary" onClick={onClose}>Annuleren</Button>
@@ -115,8 +115,8 @@ type HookData = ReturnType<typeof useMemberBatchAction>;
 const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProps['members'] }> = ({ d, members }) => (
     <>
         {/* Selected members preview */}
-        <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Geselecteerde members</div>
+        <div className="mb-20">
+            <div className="fs-14 fw-600 mb-8 text-primary">Geselecteerde members</div>
             <div className="flex-row flex-wrap gap-6">
                 {members.slice(0, 12).map((m) => (
                     <span key={m.id} style={memberChipStyle}>{getMemberName(m)}</span>
@@ -130,9 +130,9 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
         </div>
 
         {/* Action selection */}
-        <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Actie kiezen</div>
-            <div style={radioGroupStyle}>
+        <div className="mb-20">
+            <div className="fs-14 fw-600 mb-8 text-primary">Actie kiezen</div>
+            <div className="flex-col gap-8">
                 {d.actions.map((action) => (
                     <div
                         key={action.key}
@@ -156,9 +156,9 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
 
         {/* Role settings */}
         {d.selectedAction === 'role' && (
-            <div style={sectionStyle}>
-                <div style={sectionTitleStyle}>Nieuwe rol</div>
-                <div style={radioGroupStyle}>
+            <div className="mb-20">
+                <div className="fs-14 fw-600 mb-8 text-primary">Nieuwe rol</div>
+                <div className="flex-col gap-8">
                     {d.roleOptions.map((opt) => (
                         <div
                             key={opt.value}
@@ -192,9 +192,9 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
 
         {/* Team select */}
         {d.selectedAction === 'assign_team' && (
-            <div style={sectionStyle}>
-                <div style={sectionTitleStyle}>Team selecteren</div>
-                <select value={d.selectedTeamId} onChange={(e) => d.setSelectedTeamId(e.target.value)} style={selectStyle}>
+            <div className="mb-20">
+                <div className="fs-14 fw-600 mb-8 text-primary">Team selecteren</div>
+                <select value={d.selectedTeamId} onChange={(e) => d.setSelectedTeamId(e.target.value)} className="form-input w-full">
                     <option value="">— Kies een team —</option>
                     {d.filteredTeams.map((t) => (
                         <option key={t.id} value={String(t.id)}>{t.name}</option>
@@ -214,7 +214,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
                     <div className="gap-10 flex-row" style={{ alignItems: 'flex-start' }}>
                     <span className="fs-20">⚠️</span>
                     <div>
-                        <div className="fw-600 fs-14" style={{ color: 'var(--color-red-500)' }}>
+                        <div className="fw-600 fs-14 text-error">
                             Let op: deze actie kan niet ongedaan worden
                         </div>
                         <div className="fs-13 text-muted mt-4">
@@ -246,7 +246,7 @@ const RunningStep: React.FC<{ progress: HookData['progress']; progressPercent: n
     <div>
         <div className="text-center mb-16">
             <div className="fs-14 fw-500">{progress.current} / {progress.total} verwerkt</div>
-            <div style={progressBarBg}>
+            <div className="w-full overflow-hidden mt-12" style={progressBarBg}>
                 <div style={{
                     width: `${progressPercent}%`, height: '100%', borderRadius: '3px',
                     background: 'var(--color-blue-500)', transition: 'width 0.3s ease',
@@ -254,8 +254,8 @@ const RunningStep: React.FC<{ progress: HookData['progress']; progressPercent: n
             </div>
         </div>
         <div className="flex-center gap-16 fs-13">
-            <span style={{ color: 'var(--color-green-400)' }}>✓ {progress.success} geslaagd</span>
-            {progress.failed > 0 && <span style={{ color: 'var(--color-red-500)' }}>✗ {progress.failed} mislukt</span>}
+            <span className="text-success">✓ {progress.success} geslaagd</span>
+            {progress.failed > 0 && <span className="text-error">✗ {progress.failed} mislukt</span>}
         </div>
     </div>
 );
@@ -273,7 +273,7 @@ const DoneStep: React.FC<{ progress: HookData['progress']; errors: string[] }> =
         </div>
         {errors.length > 0 && (
             <div className="mt-12" style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)' }}>
-                <div className="fs-13 fw-600" style={{ color: 'var(--color-red-500)', marginBottom: '6px' }}>Fouten:</div>
+                <div className="fs-13 fw-600 text-error" style={{ marginBottom: '6px' }}>Fouten:</div>
                 <ul className="m-0 fs-12 text-muted" style={{ paddingLeft: '18px' }}>
                     {errors.slice(0, 10).map((err, i) => <li key={i}>{err}</li>)}
                     {errors.length > 10 && <li>...en {errors.length - 10} meer</li>}

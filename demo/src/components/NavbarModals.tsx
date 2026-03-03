@@ -191,7 +191,7 @@ export function NavbarQuickReviewModal({
           <div className={`mb-8 ${s.modalTitle}`}>
             {queueModalTab === 'review' ? 'Alles beoordeeld!' : 'Geen actieve jobs'}
           </div>
-          <div className={s.textSecondary13} style={{ marginBottom: 20 }}>
+          <div className={`mb-20 ${s.textSecondary13}`}>
             {queueModalTab === 'review' ? 'Er zijn geen items meer die review nodig hebben.' : 'Er zijn geen jobs in uitvoering.'}
           </div>
           <div className={s.actionsRowCenter}>
@@ -209,7 +209,7 @@ export function NavbarQuickReviewModal({
   if (queueModalTab === 'in-progress') {
     return (
       <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={s.modalPanel} style={{ width: '100%', maxWidth: 560, maxHeight: '80vh' }}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel}`} style={{ maxWidth: 560, maxHeight: '80vh' }}>
           <div className={s.modalHeader}>
             <div className="flex-between mb-12">
               <div className={s.modalTitle}>Queue</div>
@@ -262,7 +262,7 @@ export function NavbarQuickReviewModal({
       <div onClick={onClose} className={s.modalOverlay}>
         <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge}>
           <div className={`mb-12 ${s.emptyIcon}`}>{'\u2705'}</div>
-          <div className={s.modalTitle} style={{ marginBottom: 8 }}>Alles beoordeeld!</div>
+          <div className={`mb-8 ${s.modalTitle}`}>Alles beoordeeld!</div>
           <div className="fs-13 mb-8 text-secondary">Er zijn geen items meer die review nodig hebben.</div>
           <button onClick={onClose} className={s.btnPrimary}>Sluiten</button>
         </div>
@@ -284,11 +284,11 @@ export function NavbarQuickReviewModal({
     <div onClick={onClose} className={s.modalOverlay}>
       <div
         onClick={e => e.stopPropagation()}
-        className={s.modalPanel} style={{ width: '100%', maxWidth: variants.length > 1 ? 900 : 640, maxHeight: '92vh' }}
+        className={`w-full ${s.modalPanel}`} style={{ maxWidth: variants.length > 1 ? 900 : 640, maxHeight: '92vh' }}
       >
         {/* Header with tabs */}
         <div className={s.modalHeader}>
-          <div className={s.tabsRow} style={{ marginBottom: 12 }}>
+          <div className={`mb-12 ${s.tabsRow}`}>
             <button
               onClick={() => setQueueModalTab('review')}
               className={s.tabBtnSmall}
@@ -305,8 +305,7 @@ export function NavbarQuickReviewModal({
             </button>
             <button
               onClick={() => { onClose(); onNavigate('/queue'); }}
-              className={s.btnGhost}
-              style={{ marginLeft: 'auto' }}
+              className={`ml-auto ${s.btnGhost}`}
             >
               Volledige Queue {'\u2192'}
             </button>
@@ -319,7 +318,7 @@ export function NavbarQuickReviewModal({
                 {pendingReviewJobs.length > 0 && ` \u00b7 ${quickReviewIdx + 1} van ${pendingReviewJobs.length}`}
               </div>
             </div>
-            <div className={s.tabsRow} style={{ gap: 4 }}>
+            <div className={`gap-4 ${s.tabsRow}`}>
               <button
                 disabled={quickReviewIdx <= 0}
                 onClick={() => { setQuickReviewIdx((i: number) => Math.max(0, i - 1)); setSelectedVariantIdxs(new Set()); }}
@@ -343,10 +342,8 @@ export function NavbarQuickReviewModal({
 
         {/* Variants */}
         <div className="flex-1 overflow-y-auto p-16">
-          <div style={{
-            display: 'grid',
+          <div className="grid gap-12" style={{
             gridTemplateColumns: variants.length > 1 ? `repeat(${Math.min(variants.length, 4)}, 1fr)` : '1fr',
-            gap: 12,
             justifyItems: 'center',
           }}>
             {variants.map((v) => (
@@ -420,7 +417,7 @@ export interface NotificationsModalProps {
 export function NavbarNotificationsModal({ notificationsList, onClose, onNavigate }: NotificationsModalProps) {
   return (
     <div onClick={onClose} className={s.modalOverlay}>
-      <div onClick={e => e.stopPropagation()} className={s.modalPanel} style={{ width: '100%', maxWidth: 480, maxHeight: '70vh' }}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel}`} style={{ maxWidth: 480, maxHeight: '70vh' }}>
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Notificaties</div>
@@ -442,8 +439,8 @@ export function NavbarNotificationsModal({ notificationsList, onClose, onNavigat
               {notificationsList.slice(0, 10).map((notif: any) => (
                 <div
                   key={notif.id}
+                  className="p-12 rounded-8"
                   style={{
-                    padding: 12, borderRadius: 8,
                     backgroundColor: notif.read ? 'var(--app-surface-elevated, #334155)' : 'rgba(59, 130, 246, 0.15)',
                     border: notif.read ? '1px solid var(--app-border, #475569)' : '1px solid rgba(59, 130, 246, 0.3)',
                   }}
@@ -478,7 +475,7 @@ export interface CreditsModalProps {
 export function NavbarCreditsModal({ myCreditsBalance, onClose, onNavigate }: CreditsModalProps) {
   return (
     <div onClick={onClose} className={s.modalOverlay}>
-      <div onClick={e => e.stopPropagation()} className={s.modalPanel} style={{ width: '100%', maxWidth: 400 }}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel}`} style={{ maxWidth: 400 }}>
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Credits</div>

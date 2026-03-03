@@ -165,7 +165,7 @@ export default function MatchOverviewTab({
             <div className="flex-row gap-6">
               <span className="fs-20">✅</span>
               <div>
-                <div className="fs-14 fw-700" style={{ color: 'var(--color-green-400)' }}>Ingevuld</div>
+                <div className="fs-14 fw-700 text-success">Ingevuld</div>
                 <div className="fs-11 text-muted">
                   {lineupFilledCount} spelers{lineupFormation ? ` • ${lineupFormation}` : ''}
                 </div>
@@ -245,11 +245,11 @@ export default function MatchOverviewTab({
                       {item.label}
                     </span>
                     {hasMedia && !isGenerating ? (
-                      <span className="fs-11 fw-600" style={{ color: 'var(--color-green-400)' }}>Bekijk ↗</span>
+                      <span className="fs-11 fw-600 text-success">Bekijk ↗</span>
                     ) : isGenerating ? (
-                      <span className="fs-11 fw-600" style={{ color: 'var(--color-amber-400)' }}>⏳ Bezig</span>
+                      <span className="fs-11 fw-600 text-warning">⏳ Bezig</span>
                     ) : isFailed ? (
-                      <span className="fs-11 fw-600" style={{ color: 'var(--color-red-500)' }}>Opnieuw ↻</span>
+                      <span className="fs-11 fw-600 text-error">Opnieuw ↻</span>
                     ) : (
                       <span className="fs-11 fw-600" style={{ color: 'var(--app-primary, #3b82f6)' }}>Maak →</span>
                     )}

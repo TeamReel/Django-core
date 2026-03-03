@@ -175,10 +175,10 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
               <div className="flex-1-min">
                 <div className="fs-14 fw-500">{member.name}</div>
                 {missingPerson && (
-                  <div className="fs-11" style={{ color: 'var(--color-red-500)' }}>⚠️ Geen input foto beschikbaar</div>
+                  <div className="fs-11 text-error">⚠️ Geen input foto beschikbaar</div>
                 )}
                 {existingVideoVariant && (
-                  <div className="fs-11" style={{ color: '#22c55e' }}>✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
+                  <div className="fs-11 text-success">✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
                 )}
                 {hasOverrides && (
                   <div className="fs-11" style={{ color: 'var(--color-blue-500)' }}>Aangepaste instellingen</div>

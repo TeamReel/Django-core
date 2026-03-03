@@ -93,7 +93,7 @@ export function TypographySection({ fonts }: { fonts: DesignToken[] }) {
               <div style={{ fontFamily: token.value, lineHeight: 1.4 }}>
                 <Text size="xs" color="secondary" className="mb-4">Preview:</Text>
                 <div style={{ fontSize: '28px', fontWeight: token.key.includes('heading') ? 700 : 400 }}>The quick brown fox jumps</div>
-                <div style={{ fontSize: '16px', marginTop: '8px', fontWeight: token.key.includes('heading') ? 700 : 400 }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
+                <div className="fs-16 mt-8" style={{ fontWeight: token.key.includes('heading') ? 700 : 400 }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
                 <div className="fs-14 mt-4 text-secondary">abcdefghijklmnopqrstuvwxyz 0123456789</div>
               </div>
             </div>

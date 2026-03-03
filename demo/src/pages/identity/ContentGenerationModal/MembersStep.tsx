@@ -294,7 +294,7 @@ export function MembersStep({
 
         return (
           <div key={role} className="border rounded-8 p-16" style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-            <div className="mb-12 border-bottom" style={{ paddingBottom: '12px' }}>
+            <div className="mb-12 border-bottom pb-12">
               <span className="fw-600 fs-16 text-primary">{renderRoleLabel(role)}</span>
             </div>
 
@@ -323,7 +323,7 @@ export function MembersStep({
                 const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                 return (
-                    <div key={idx} className="grid gap-12" style={{ gridTemplateColumns: '100px 1fr', alignItems: 'center' }}>
+                    <div key={idx} className="grid gap-12 items-center" style={{ gridTemplateColumns: '100px 1fr' }}>
                     <label className="fs-14 text-secondary fw-500 truncate" title={positionLabel}>
                       {positionLabel}
                     </label>
