@@ -5,15 +5,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import {
-  actionButtonStyle,
-  type ActionTone,
-  compactActionsStyle,
-  compactTableStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactThStyle,
-} from '../identity/detail/detailStyles';
 import { getCsrfToken } from '../../utils/csrf';
 
 export interface CompetitionMatchesTableProps {
@@ -28,8 +19,6 @@ export interface CompetitionMatchesTableProps {
   setSelectedEditMatch: (m: any) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
 }
-
-const taBtnStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => actionButtonStyle(tone);
 
 export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = ({
   rows,
@@ -52,20 +41,20 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
 
   return (
     <div className="overflow-x-auto">
-      <Table style={compactTableStyle}>
+      <Table className="detail-table">
         <thead>
           <tr>
-            <th style={compactThStyle}>Match</th>
-            <th style={compactThStyle}>Date</th>
-            <th className="hide-mobile" style={compactThStyle}>Location</th>
-            <th className="hide-mobile" style={compactThStyle}>Participants</th>
-            <th className="hide-mobile text-right" style={compactThStyle}></th>
+            <th className="detail-th">Match</th>
+            <th className="detail-th">Date</th>
+            <th className="hide-mobile detail-th">Location</th>
+            <th className="hide-mobile detail-th">Participants</th>
+            <th className="hide-mobile text-right detail-th"></th>
           </tr>
         </thead>
         <tbody>
           {rows.map((m: any) => (
             <tr key={String(m.id)}>
-              <td style={compactTextTdStyle}>
+              <td className="detail-td-text">
                 <Link
                   to={matchDetailPath(String(m.id))}
                   className="hover:underline"
@@ -74,36 +63,34 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                   {matchDisplayTitle(m)}
                 </Link>
               </td>
-              <td style={compactTdStyle}>
+              <td className="detail-td">
                 {m.start_time ? <Badge variant="default">{new Date(m.start_time).toLocaleString()}</Badge> : '—'}
               </td>
-              <td className="hide-mobile" style={compactTdStyle}>
+              <td className="hide-mobile detail-td">
                 {m.location ? <Badge variant="default">{m.location}</Badge> : '—'}
               </td>
-              <td className="hide-mobile" style={compactTdStyle}>
+              <td className="hide-mobile detail-td">
                 {m.participations_count !== undefined ? <Badge variant="default">{m.participations_count}</Badge> : '—'}
               </td>
-              <td className="hide-mobile" style={compactTdStyle}>
-                <div style={compactActionsStyle}>
+              <td className="hide-mobile detail-td">
+                <div className="detail-actions">
                   <button
                     type="button"
-                    className="app-action-button"
+                    className="app-action-button action-btn action-btn-primary"
                     onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }}
-                    style={taBtnStyle('primary')}
                   >
                     View
                   </button>
                   <button
                     type="button"
-                    className="app-action-button"
+                    className="app-action-button action-btn action-btn-warning"
                     onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }}
-                    style={taBtnStyle('warning')}
                   >
                     Edit
                   </button>
                   <button
                     type="button"
-                    className="app-action-button"
+                    className="app-action-button action-btn action-btn-danger"
                     onClick={async () => {
                       if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
                       try {
@@ -116,7 +103,6 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                         else alert('Error deleting match');
                       } catch (e) { console.error(e); alert('Error deleting match'); }
                     }}
-                    style={taBtnStyle('danger')}
                   >
                     Delete
                   </button>

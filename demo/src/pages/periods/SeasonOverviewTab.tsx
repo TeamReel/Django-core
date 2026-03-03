@@ -5,15 +5,6 @@ import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
-import {
-  actionButtonStyle,
-  type ActionTone,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from '../identity/detail/detailStyles';
 import s from './ProjectSeasonDetailPage.module.css';
 
 export interface SeasonOverviewTabProps {
@@ -36,10 +27,6 @@ export interface SeasonOverviewTabProps {
   setIsPeriodEditModalOpen: (v: boolean) => void;
   setCompetitions: React.Dispatch<React.SetStateAction<Period[]>>;
 }
-
-const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
-  ...actionButtonStyle(tone),
-});
 
 const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   season,
@@ -101,19 +88,19 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
             <div className="text-sm text-gray-500 py-4 text-center">No competitions in this season.</div>
           ) : (
             <div className="overflow-x-auto">
-              <Table style={compactTableStyle}>
+              <Table className="detail-table">
                 <thead>
                   <tr>
-                    <th style={compactThStyle}>Competition</th>
-                    <th style={compactThStyle}>Sport Variant</th>
-                    <th style={compactThStyle}>Matches</th>
-                    <th style={compactThStyle} className="text-right"></th>
+                    <th className="detail-th">Competition</th>
+                    <th className="detail-th">Sport Variant</th>
+                    <th className="detail-th">Matches</th>
+                    <th className="detail-th text-right"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {competitions.slice(0, 5).map((competition) => (
                     <tr key={competition.id}>
-                      <td style={compactTextTdStyle}>
+                      <td className="detail-td-text">
                         <Link
                           to={
                             isTeamRoute
@@ -126,7 +113,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
                           {competition.name}
                         </Link>
                       </td>
-                      <td style={compactTdStyle}>
+                      <td className="detail-td">
                         {competition.sport ? (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <span>{competition.sport.sport_icon}</span>
@@ -136,31 +123,29 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
                           <span style={{ color: 'var(--app-muted-text)' }}>\u2014</span>
                         )}
                       </td>
-                      <td style={compactTdStyle}>
+                      <td className="detail-td">
                         <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
                       </td>
-                      <td style={compactTdStyle}>
-                        <div style={compactActionsStyle}>
+                      <td className="detail-td">
+                        <div className="detail-actions">
                           <button
                             type="button"
-                            className="app-action-button"
+                            className="app-action-button action-btn action-btn-primary"
                             onClick={() => {
                               setSelectedDetailPeriod(competition);
                               setIsPeriodDetailModalOpen(true);
                             }}
-                            style={tableActionButtonStyle('primary')}
                           >
                             View
                           </button>
                           {userCanEditProject && (
                             <button
                               type="button"
-                              className="app-action-button"
+                              className="app-action-button action-btn action-btn-warning"
                               onClick={() => {
                                 setSelectedEditPeriod(competition);
                                 setIsPeriodEditModalOpen(true);
                               }}
-                              style={tableActionButtonStyle('warning')}
                             >
                               Edit
                             </button>
@@ -168,7 +153,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
                           {userCanDeleteProject && (
                             <button
                               type="button"
-                              className="app-action-button"
+                              className="app-action-button action-btn action-btn-danger"
                               onClick={async () => {
                                 if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                                 try {
@@ -191,7 +176,6 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
                                   alert('Error deleting competition');
                                 }
                               }}
-                              style={tableActionButtonStyle('danger')}
                             >
                               Delete
                             </button>

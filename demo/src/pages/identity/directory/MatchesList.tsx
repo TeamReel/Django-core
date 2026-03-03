@@ -9,13 +9,6 @@ import { periodPathKey } from '../../../utils/periodPath';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
 import MatchCreateModal from '../MatchCreateModal';
-import {
-    compactThStyle,
-    compactTdStyle,
-    compactTextTdStyle,
-    compactActionsStyle,
-    actionButtonStyle,
-} from '../../../utils/directoryStyles';
 import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
 import { useMatchesData } from '../../../hooks/useMatchesData';
 import { resolveRowContext } from '../../../utils/directoryHelpers';
@@ -80,7 +73,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
   return (
     <tr>
       {!orgLocked && (
-        <td className="hide-mobile" style={compactTextTdStyle}>
+        <td className="hide-mobile dir-td-text">
           {row.orgId ? (
             <a
               href={`/organisations/${row.orgSlug}`}
@@ -93,7 +86,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
         </td>
       )}
       {!clubLocked && (
-        <td className="hide-mobile" style={compactTextTdStyle}>
+        <td className="hide-mobile dir-td-text">
           {row.clubId ? (
             <a
               href={`/${row.orgSlug}/${row.clubSlug}`}
@@ -106,7 +99,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
         </td>
       )}
       {!teamLocked && (
-        <td className="hide-mobile" style={compactTextTdStyle}>
+        <td className="hide-mobile dir-td-text">
           {row.teamId ? (
             <a
               href={row.teamBasePath}
@@ -118,7 +111,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           ) : row.teamName}
         </td>
       )}
-      <td style={compactTextTdStyle}>
+      <td className="dir-td-text">
         {season ? (
           <a
             href={`${row.teamBasePath}/${seasonTarget}`}
@@ -132,7 +125,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </a>
         ) : seasonName}
       </td>
-      <td style={compactTextTdStyle}>
+      <td className="dir-td-text">
         {competition ? (
           <a
             href={`${row.teamBasePath}/${seasonTarget}/${compTarget}`}
@@ -146,14 +139,14 @@ const MatchRow: React.FC<MatchRowProps> = ({
           </a>
         ) : compName}
       </td>
-      <td className="hide-mobile" style={compactTdStyle}>
+      <td className="hide-mobile dir-td">
         {(m as any).period?.sport?.category_name ? (
           <span className="fs-11">{(m as any).period.sport.category_name}</span>
         ) : (
           <span className="text-muted">—</span>
         )}
       </td>
-      <td className="hide-mobile" style={compactTdStyle}>
+      <td className="hide-mobile dir-td">
         {(m as any).period?.sport ? (
           <span className="flex-row gap-4">
             <span>{(m as any).period.sport.sport_icon}</span>
@@ -163,7 +156,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
           <span className="text-muted">—</span>
         )}
       </td>
-      <td style={compactTextTdStyle}>
+      <td className="dir-td-text">
         <a
           href={matchPath}
           className="text-blue-600 hover:underline"
@@ -172,23 +165,23 @@ const MatchRow: React.FC<MatchRowProps> = ({
           {m.title}
         </a>
       </td>
-      <td className="hide-mobile" style={compactTdStyle}>-</td>
-      <td style={compactTdStyle}>
+      <td className="hide-mobile dir-td">-</td>
+      <td className="dir-td">
         <Badge variant={isActive ? 'success' : 'warning'}>
           {isActive ? 'Active' : 'Inactive'}
         </Badge>
       </td>
-      <td className="hide-mobile" style={compactTdStyle}>
-        <div style={compactActionsStyle}>
+      <td className="hide-mobile dir-td">
+        <div className="dir-actions">
           <button
             onClick={(e) => { e.preventDefault(); onView(m); }}
-            style={actionButtonStyle('primary')}
+            className="action-btn action-btn-primary"
           >
             View
           </button>
           <button
             onClick={(e) => { e.preventDefault(); onEdit(m); }}
-            style={actionButtonStyle('warning')}
+            className="action-btn action-btn-warning"
           >
             Edit
           </button>
@@ -199,7 +192,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
                 alert('Delete functionality not yet implemented');
               }
             }}
-            style={actionButtonStyle('danger')}
+            className="action-btn action-btn-danger"
           >
             Delete
           </button>
@@ -391,17 +384,17 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
       >
         <thead>
           <tr>
-            {!orgLocked && <th className="hide-mobile" style={{ ...compactThStyle, width: '15%' }}>Federation</th>}
-            {!clubLocked && <th className="hide-mobile" style={{ ...compactThStyle, width: '15%' }}>Club</th>}
-            {!teamLocked && <th className="hide-mobile" style={{ ...compactThStyle, width: '15%' }}>Team</th>}
-            <th style={{ ...compactThStyle, width: '15%' }}>Season</th>
-            <th style={{ ...compactThStyle, width: '18%' }}>Competition</th>
-            <th className="hide-mobile" style={{ ...compactThStyle, width: '10%' }}>Sport</th>
-            <th className="hide-mobile" style={{ ...compactThStyle, width: '12%' }}>Sport Variant</th>
-            <th style={{ ...compactThStyle, width: '15%' }}>Match</th>
-            <th className="hide-mobile" style={{ ...compactThStyle, width: '8%' }}>Squad</th>
-            <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-            <th className="hide-mobile" style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+            {!orgLocked && <th className="hide-mobile dir-th" style={{ width: '15%' }}>Federation</th>}
+            {!clubLocked && <th className="hide-mobile dir-th" style={{ width: '15%' }}>Club</th>}
+            {!teamLocked && <th className="hide-mobile dir-th" style={{ width: '15%' }}>Team</th>}
+            <th className="dir-th" style={{ width: '15%' }}>Season</th>
+            <th className="dir-th" style={{ width: '18%' }}>Competition</th>
+            <th className="hide-mobile dir-th" style={{ width: '10%' }}>Sport</th>
+            <th className="hide-mobile dir-th" style={{ width: '12%' }}>Sport Variant</th>
+            <th className="dir-th" style={{ width: '15%' }}>Match</th>
+            <th className="hide-mobile dir-th" style={{ width: '8%' }}>Squad</th>
+            <th className="dir-th" style={{ width: '10%' }}>Status</th>
+            <th className="hide-mobile dir-th" style={{ width: '12%' }}>Actions</th>
           </tr>
         </thead>
         <tbody>

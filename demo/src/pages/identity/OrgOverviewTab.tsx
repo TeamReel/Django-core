@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button, Card } from '@django-core/design-system';
 import { Organisation } from '../../types';
-import { actionButtonStyle } from '../../utils/directoryStyles';
 import { canEditOrganisation } from '../../utils/permissions';
 
 export interface OrgOverviewTabProps {
@@ -189,7 +188,7 @@ export function OrgOverviewTab({
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Organisation Details</h3>
           {canEditOrganisation(permissionContext) && (
-            <button type="button" onClick={() => setIsOrgEditModalOpen(true)} style={actionButtonStyle('warning')}>
+            <button type="button" className="action-btn action-btn-warning" onClick={() => setIsOrgEditModalOpen(true)}>
               Edit
             </button>
           )}

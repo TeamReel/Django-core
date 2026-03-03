@@ -15,12 +15,6 @@ import {
   Button,
 } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  actionButtonStyle,
-} from '../../utils/directoryStyles';
 import { useFeatureFlagsData } from './useFeatureFlagsData';
 
 export const FeatureFlagsPage: React.FC = () => {
@@ -180,10 +174,10 @@ export const FeatureFlagsPage: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table style={compactTableStyle}>
+              <table className="dir-table">
                 <thead>
                   <tr>
-                    <th style={{ ...compactThStyle, width: '40px' }}>
+                    <th className="dir-th" style={{ width: '40px' }}>
                       <input
                         type="checkbox"
                         checked={d.allSelected}
@@ -191,12 +185,12 @@ export const FeatureFlagsPage: React.FC = () => {
                         className="cursor-pointer"
                       />
                     </th>
-                    <th style={{ ...compactThStyle, width: '12%' }}>Type</th>
-                    <th style={{ ...compactThStyle, width: '15%' }}>Subtype</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Style</th>
-                    <th style={{ ...compactThStyle, width: '30%' }}>Description</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Global</th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Actions</th>
+                    <th className="dir-th" style={{ width: '12%' }}>Type</th>
+                    <th className="dir-th" style={{ width: '15%' }}>Subtype</th>
+                    <th className="dir-th" style={{ width: '10%' }}>Style</th>
+                    <th className="dir-th" style={{ width: '30%' }}>Description</th>
+                    <th className="dir-th" style={{ width: '10%' }}>Global</th>
+                    <th className="dir-th" style={{ width: '10%' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -211,7 +205,7 @@ export const FeatureFlagsPage: React.FC = () => {
 
                     return (
                       <tr key={flag.id}>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <input
                             type="checkbox"
                             checked={isSelected}
@@ -219,20 +213,20 @@ export const FeatureFlagsPage: React.FC = () => {
                             className="cursor-pointer"
                           />
                         </td>
-                        <td style={compactTdStyle}>{type || '—'}</td>
-                        <td style={compactTdStyle}>{subtype || '—'}</td>
-                        <td style={compactTdStyle}>{style || '—'}</td>
-                        <td style={{ ...compactTdStyle, maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <td className="dir-td">{type || '—'}</td>
+                        <td className="dir-td">{subtype || '—'}</td>
+                        <td className="dir-td">{style || '—'}</td>
+                        <td className="dir-td" style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {flag.description || '—'}
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant={displayEnabled ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                             {displayEnabled ? 'On' : 'Off'}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <button
-                            style={actionButtonStyle(displayEnabled ? 'neutral' : 'primary')}
+                            className={`action-btn${displayEnabled ? '' : ' action-btn-primary'}`}
                             title={displayEnabled ? 'Disable globally' : 'Enable globally'}
                             onClick={(e) => {
                               e.preventDefault();

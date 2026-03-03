@@ -9,7 +9,6 @@ import React from 'react';
 import { Alert, Card } from '@django-core/design-system';
 import LoadingState from './LoadingState';
 import { Table } from '@/shims/design-system';
-import { compactTableStyle } from '../utils/directoryStyles';
 
 export interface DirectoryTableShellProps {
   /** Global options loading (orgs/clubs/teams from the hook). */
@@ -52,7 +51,7 @@ export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
     {!isLoading && !error && !domainLoading && itemCount > 0 && (
       <Card>
         <div className="overflow-x-auto">
-          <Table style={compactTableStyle}>{children}</Table>
+          <Table className="dir-table">{children}</Table>
         </div>
       </Card>
     )}

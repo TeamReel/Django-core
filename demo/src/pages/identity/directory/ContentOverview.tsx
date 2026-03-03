@@ -3,11 +3,7 @@ import { Card } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-} from '../../../utils/directoryStyles';
+
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,8 +20,7 @@ function fmtCost(eur: number | null | undefined): string {
   return `€${eur.toFixed(eur < 0.01 ? 4 : 2)}`;
 }
 
-const rightTd: React.CSSProperties = { ...compactTdStyle, textAlign: 'right', fontVariantNumeric: 'tabular-nums' };
-const rightTh: React.CSSProperties = { ...compactThStyle, textAlign: 'right' };
+
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -120,7 +115,7 @@ export const ContentOverview: React.FC = () => {
   }, [jobs]);
 
   if (loading) return <LoadingState message="Loading content overview…" />;
-  if (error) return <div className="p-20" style={{ color: '#991b1b' }}>Error: {error}</div>;
+  if (error) return <div className="p-20 text-error">Error: {error}</div>;
 
   return (
     <div className="flex-col gap-16">
@@ -128,37 +123,37 @@ export const ContentOverview: React.FC = () => {
       {/* ── Summary table ─────────────────────────────────────────────────────── */}
       <Card>
         <div className="overflow-x-auto">
-          <table style={compactTableStyle}>
+          <table className="dir-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Metric</th>
-                <th style={rightTh}>Value</th>
+                <th className="dir-th">Metric</th>
+                <th className="dir-th text-right">Value</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td style={compactTdStyle}>Total Content Items</td><td style={rightTd}>{summary.total}</td></tr>
-              <tr><td style={compactTdStyle}>🖼️ AI Images</td><td style={rightTd}>{summary.images}</td></tr>
-              <tr><td style={compactTdStyle}>🎬 AI Videos</td><td style={rightTd}>{summary.videos}</td></tr>
-              <tr><td style={compactTdStyle}>Total Variants</td><td style={rightTd}>{summary.variants}</td></tr>
-              <tr><td style={compactTdStyle}>Avg. Generation Time</td><td style={rightTd}>{fmtDur(summary.avgGenTime)}</td></tr>
-              <tr><td style={compactTdStyle}>Est. Input Tokens</td><td style={rightTd}>{summary.totalInputTokens > 0 ? summary.totalInputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
-              <tr><td style={compactTdStyle}>Est. Output Tokens</td><td style={rightTd}>{summary.totalOutputTokens > 0 ? summary.totalOutputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
-              <tr><td style={compactTdStyle}>Pending Review</td><td style={rightTd}>{summary.pendingReview}</td></tr>
-              <tr><td className="fw-600" style={{ ...compactTdStyle }}>Est. Total Cost</td><td className="fw-600" style={{ ...rightTd }}>{fmtCost(summary.totalCost)}</td></tr>
+              <tr><td className="dir-td">Total Content Items</td><td className="dir-td text-right tabular-nums">{summary.total}</td></tr>
+              <tr><td className="dir-td">🖼️ AI Images</td><td className="dir-td text-right tabular-nums">{summary.images}</td></tr>
+              <tr><td className="dir-td">🎬 AI Videos</td><td className="dir-td text-right tabular-nums">{summary.videos}</td></tr>
+              <tr><td className="dir-td">Total Variants</td><td className="dir-td text-right tabular-nums">{summary.variants}</td></tr>
+              <tr><td className="dir-td">Avg. Generation Time</td><td className="dir-td text-right tabular-nums">{fmtDur(summary.avgGenTime)}</td></tr>
+              <tr><td className="dir-td">Est. Input Tokens</td><td className="dir-td text-right tabular-nums">{summary.totalInputTokens > 0 ? summary.totalInputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
+              <tr><td className="dir-td">Est. Output Tokens</td><td className="dir-td text-right tabular-nums">{summary.totalOutputTokens > 0 ? summary.totalOutputTokens.toLocaleString('nl-NL') : '—'}</td></tr>
+              <tr><td className="dir-td">Pending Review</td><td className="dir-td text-right tabular-nums">{summary.pendingReview}</td></tr>
+              <tr><td className="dir-td fw-600">Est. Total Cost</td><td className="dir-td text-right tabular-nums fw-600">{fmtCost(summary.totalCost)}</td></tr>
             </tbody>
           </table>
         </div>
       </Card>
 
       {/* ── Status / Approval side-by-side ────────────────────────────── */}
-      <div className="gap-16 flex-wrap" style={{ display: 'flex' }}>
+      <div className="flex-row gap-16 flex-wrap">
         <Card style={{ flex: '1 1 300px' }}>
           <div className="overflow-x-auto">
-            <table style={compactTableStyle}>
-              <thead><tr><th style={compactThStyle}>Job Status</th><th style={rightTh}>Count</th></tr></thead>
+            <table className="dir-table">
+              <thead><tr><th className="dir-th">Job Status</th><th className="dir-th text-right">Count</th></tr></thead>
               <tbody>
                 {byStatus.map(([s, c]) => (
-                  <tr key={s}><td style={compactTdStyle}>{s.replace(/_/g, ' ')}</td><td style={rightTd}>{c}</td></tr>
+                  <tr key={s}><td className="dir-td">{s.replace(/_/g, ' ')}</td><td className="dir-td text-right tabular-nums">{c}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -166,11 +161,11 @@ export const ContentOverview: React.FC = () => {
         </Card>
         <Card style={{ flex: '1 1 300px' }}>
           <div className="overflow-x-auto">
-            <table style={compactTableStyle}>
-              <thead><tr><th style={compactThStyle}>Approval Status</th><th style={rightTh}>Count</th></tr></thead>
+            <table className="dir-table">
+              <thead><tr><th className="dir-th">Approval Status</th><th className="dir-th text-right">Count</th></tr></thead>
               <tbody>
                 {byApproval.map(([s, c]) => (
-                  <tr key={s}><td style={compactTdStyle}>{s.replace(/_/g, ' ')}</td><td style={rightTd}>{c}</td></tr>
+                  <tr key={s}><td className="dir-td">{s.replace(/_/g, ' ')}</td><td className="dir-td text-right tabular-nums">{c}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -181,43 +176,43 @@ export const ContentOverview: React.FC = () => {
       {/* ── Providers & Models ────────────────────────────────────────── */}
       <Card>
         <div className="overflow-x-auto">
-          <table style={compactTableStyle}>
+          <table className="dir-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Provider</th>
-                <th style={compactThStyle}>Model</th>
-                <th style={rightTh}>Total</th>
-                <th style={rightTh}>Images</th>
-                <th style={rightTh}>Videos</th>
-                <th style={rightTh}>Avg Gen. Time</th>
-                <th style={rightTh}>Tokens (in/out)</th>
-                <th style={rightTh}>Est. Cost</th>
+                <th className="dir-th">Provider</th>
+                <th className="dir-th">Model</th>
+                <th className="dir-th text-right">Total</th>
+                <th className="dir-th text-right">Images</th>
+                <th className="dir-th text-right">Videos</th>
+                <th className="dir-th text-right">Avg Gen. Time</th>
+                <th className="dir-th text-right">Tokens (in/out)</th>
+                <th className="dir-th text-right">Est. Cost</th>
               </tr>
             </thead>
             <tbody>
               {byProvider.map(([prov, d]) => (
                 <tr key={prov}>
-                  <td className="fw-600" style={{ ...compactTdStyle }}>{prov}</td>
-                  <td style={compactTdStyle}>{[...d.models].join(', ') || '—'}</td>
-                  <td style={rightTd}>{d.count}</td>
-                  <td style={rightTd}>{d.images}</td>
-                  <td style={rightTd}>{d.videos}</td>
-                  <td style={rightTd}>{d.durN > 0 ? fmtDur(d.totalDur / d.durN) : '—'}</td>
-                  <td className="fs-11" style={{ ...rightTd }}>{d.inTok > 0 || d.outTok > 0 ? `${(d.inTok / 1000).toFixed(1)}k / ${(d.outTok / 1000).toFixed(1)}k` : '—'}</td>
-                  <td style={rightTd}>{fmtCost(d.cost)}</td>
+                  <td className="dir-td fw-600">{prov}</td>
+                  <td className="dir-td">{[...d.models].join(', ') || '—'}</td>
+                  <td className="dir-td text-right tabular-nums">{d.count}</td>
+                  <td className="dir-td text-right tabular-nums">{d.images}</td>
+                  <td className="dir-td text-right tabular-nums">{d.videos}</td>
+                  <td className="dir-td text-right tabular-nums">{d.durN > 0 ? fmtDur(d.totalDur / d.durN) : '—'}</td>
+                  <td className="dir-td text-right tabular-nums fs-11">{d.inTok > 0 || d.outTok > 0 ? `${(d.inTok / 1000).toFixed(1)}k / ${(d.outTok / 1000).toFixed(1)}k` : '—'}</td>
+                  <td className="dir-td text-right tabular-nums">{fmtCost(d.cost)}</td>
                 </tr>
               ))}
               {/* Totals row */}
               {byProvider.length > 1 && (
                 <tr className="fw-600" style={{ borderTop: '2px solid #e5e7eb' }}>
-                  <td style={compactTdStyle}>Total</td>
-                  <td style={compactTdStyle}></td>
-                  <td style={rightTd}>{summary.total}</td>
-                  <td style={rightTd}>{summary.images}</td>
-                  <td style={rightTd}>{summary.videos}</td>
-                  <td style={rightTd}>{fmtDur(summary.avgGenTime)}</td>
-                  <td className="fs-11" style={{ ...rightTd }}>{summary.totalInputTokens > 0 || summary.totalOutputTokens > 0 ? `${(summary.totalInputTokens / 1000).toFixed(1)}k / ${(summary.totalOutputTokens / 1000).toFixed(1)}k` : '—'}</td>
-                  <td style={rightTd}>{fmtCost(summary.totalCost)}</td>
+                  <td className="dir-td">Total</td>
+                  <td className="dir-td"></td>
+                  <td className="dir-td text-right tabular-nums">{summary.total}</td>
+                  <td className="dir-td text-right tabular-nums">{summary.images}</td>
+                  <td className="dir-td text-right tabular-nums">{summary.videos}</td>
+                  <td className="dir-td text-right tabular-nums">{fmtDur(summary.avgGenTime)}</td>
+                  <td className="dir-td text-right tabular-nums fs-11">{summary.totalInputTokens > 0 || summary.totalOutputTokens > 0 ? `${(summary.totalInputTokens / 1000).toFixed(1)}k / ${(summary.totalOutputTokens / 1000).toFixed(1)}k` : '—'}</td>
+                  <td className="dir-td text-right tabular-nums">{fmtCost(summary.totalCost)}</td>
                 </tr>
               )}
             </tbody>
@@ -229,24 +224,24 @@ export const ContentOverview: React.FC = () => {
       {byClub.length > 1 && (
         <Card>
           <div className="overflow-x-auto">
-            <table style={compactTableStyle}>
+            <table className="dir-table">
               <thead>
                 <tr>
-                  <th style={compactThStyle}>Club / Team</th>
-                  <th style={rightTh}>Total</th>
-                  <th style={rightTh}>Images</th>
-                  <th style={rightTh}>Videos</th>
-                  <th style={rightTh}>Est. Cost</th>
+                  <th className="dir-th">Club / Team</th>
+                  <th className="dir-th text-right">Total</th>
+                  <th className="dir-th text-right">Images</th>
+                  <th className="dir-th text-right">Videos</th>
+                  <th className="dir-th text-right">Est. Cost</th>
                 </tr>
               </thead>
               <tbody>
                 {byClub.map(([club, d]) => (
                   <tr key={club}>
-                    <td className="fw-500" style={{ ...compactTdStyle }}>{club}</td>
-                    <td style={rightTd}>{d.count}</td>
-                    <td style={rightTd}>{d.images}</td>
-                    <td style={rightTd}>{d.videos}</td>
-                    <td style={rightTd}>{fmtCost(d.cost)}</td>
+                    <td className="dir-td fw-500">{club}</td>
+                    <td className="dir-td text-right tabular-nums">{d.count}</td>
+                    <td className="dir-td text-right tabular-nums">{d.images}</td>
+                    <td className="dir-td text-right tabular-nums">{d.videos}</td>
+                    <td className="dir-td text-right tabular-nums">{fmtCost(d.cost)}</td>
                   </tr>
                 ))}
               </tbody>

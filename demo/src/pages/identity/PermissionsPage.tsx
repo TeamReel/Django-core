@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
-import { compactTableStyle, compactThStyle, compactTdStyle } from './detail/detailStyles';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
   roleColumns, expectedPermissionKeys, permissionMatrix,
@@ -141,19 +140,19 @@ export const PermissionsPage: React.FC = () => {
 
                 <div className="overflow-auto"
                   style={{ border: '1px solid var(--app-border)', borderRadius: '10px', maxHeight: 'calc(100vh - 320px)', backgroundColor: 'var(--app-surface)' }}>
-                  <Table style={compactTableStyle} responsive={false}>
+                  <Table className="detail-table" responsive={false}>
                     <colgroup>
                       <col style={{ width: '360px' }} />
                       {roleColumns.map(col => <col key={String(col.key)} style={{ width: '100px' }} />)}
                     </colgroup>
                     <thead>
                       <tr>
-                        <th className="sticky" style={{ ...compactThStyle, top: 0, left: 0, zIndex: 4, minWidth: 320, backgroundColor: 'var(--app-table-header-bg)' }}>
+                        <th className="sticky detail-th" style={{ top: 0, left: 0, zIndex: 4, minWidth: 320, backgroundColor: 'var(--app-table-header-bg)' }}>
                           Feature
                         </th>
                         {roleColumns.map(col => (
-                          <th key={String(col.key)} className="sticky text-center whitespace-nowrap"
-                            style={{ ...compactThStyle, top: 0, zIndex: 3, fontSize: '0.75rem', backgroundColor: 'var(--app-table-header-bg)' }}>
+                          <th key={String(col.key)} className="sticky text-center whitespace-nowrap detail-th"
+                            style={{ top: 0, zIndex: 3, fontSize: '0.75rem', backgroundColor: 'var(--app-table-header-bg)' }}>
                             {col.label}
                           </th>
                         ))}
@@ -164,7 +163,7 @@ export const PermissionsPage: React.FC = () => {
                         const rows: React.ReactNode[] = [];
                         rows.push(
                           <tr key={`cat-${category.category}`}>
-                            <td colSpan={1 + roleColumns.length} style={{ ...compactTdStyle, paddingTop: '14px' }}>
+                            <td colSpan={1 + roleColumns.length} className="detail-td" style={{ paddingTop: '14px' }}>
                               <div className="flex-row gap-12 rounded-8"
                                 style={{ padding: '8px 10px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)' }}>
                                 <span className="fw-800 whitespace-nowrap" style={{ fontSize: '0.78rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
@@ -181,15 +180,15 @@ export const PermissionsPage: React.FC = () => {
                           const desc = permissionDescriptionFor(row.permission);
                           rows.push(
                             <tr key={row.permission} data-testid={`permission-row-${row.permission}`}>
-                              <td className="sticky break-word"
-                                style={{ ...compactTdStyle, verticalAlign: 'top', left: 0, zIndex: 1, borderRight: '1px solid var(--app-border)', whiteSpace: 'normal', backgroundColor: 'var(--app-table-row-bg)' }}>
+                              <td className="sticky break-word detail-td"
+                                style={{ verticalAlign: 'top', left: 0, zIndex: 1, borderRight: '1px solid var(--app-border)', whiteSpace: 'normal', backgroundColor: 'var(--app-table-row-bg)' }}>
                                 <div className="fw-600">{label}</div>
                                 {desc && <div style={{ fontSize: '0.78rem', opacity: 0.75, marginTop: 2 }}>{desc}</div>}
                                 <div className="mt-4" style={{ fontSize: '0.72rem', opacity: 0.55, fontFamily: 'monospace' }}>{row.permission}</div>
                               </td>
                               {roleColumns.map(col => (
-                                <td key={String(col.key)} className="text-center"
-                                  style={{ ...compactTdStyle, fontWeight: row[col.key] ? 700 : 400, color: row[col.key] ? 'var(--app-text)' : 'var(--app-muted-text)' }}>
+                                <td key={String(col.key)} className="text-center detail-td"
+                                  style={{ fontWeight: row[col.key] ? 700 : 400, color: row[col.key] ? 'var(--app-text)' : 'var(--app-muted-text)' }}>
                                   {row[col.key] ? '✓' : '—'}
                                 </td>
                               ))}

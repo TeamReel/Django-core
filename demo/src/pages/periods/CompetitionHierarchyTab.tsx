@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
-import { actionButtonStyle, type ActionTone } from '../identity/detail/detailStyles';
 
 export interface CompetitionHierarchyTabProps {
   hierarchySearch: string;
@@ -183,15 +182,15 @@ export function CompetitionHierarchyTab({
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                             <span style={pillStyle}>Participants: {m.participations_count ?? '—'}</span>
-                            <button type="button" className="app-action-button" onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
+                            <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }}>
                               View
                             </button>
-                            <button type="button" className="app-action-button" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }} style={actionButtonStyle('warning')}>
+                            <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }}>
                               Edit
                             </button>
                             <button
                               type="button"
-                              className="app-action-button"
+                              className="app-action-button action-btn action-btn-danger"
                               onClick={async () => {
                                 if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
                                 try {
@@ -210,7 +209,6 @@ export function CompetitionHierarchyTab({
                                   alert('Error deleting match');
                                 }
                               }}
-                              style={actionButtonStyle('danger')}
                             >
                               Delete
                             </button>

@@ -4,9 +4,6 @@ import { Card, Input } from '@django-core/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
-import {
-  actionButtonStyle,
-} from '../identity/detail/detailStyles';
 import { getMatchParticipantsCount } from './seasonDetailUtils';
 import s from './ProjectSeasonDetailPage.module.css';
 
@@ -97,17 +94,15 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
             <>
               <button
                 type="button"
-                className="app-action-button"
+                className="app-action-button action-btn action-btn-primary"
                 onClick={() => setIsCreateCompetitionModalOpen(true)}
-                style={actionButtonStyle('primary')}
               >
                 Add Competition
               </button>
               <button
                 type="button"
-                className="app-action-button"
+                className="app-action-button action-btn action-btn-primary"
                 onClick={() => setIsCreateMatchModalOpen(true)}
-                style={actionButtonStyle('primary')}
               >
                 Add Match
               </button>
@@ -184,18 +179,18 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                         <span className={s.pill}>Matches: {getMatchCountForCompetition(competition)}</span>
                         <span className={s.pill}>Participants: {getCompetitionParticipantsCount(competition)}</span>
-                        <button type="button" className="app-action-button" onClick={() => { setSelectedDetailPeriod(competition); setIsPeriodDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailPeriod(competition); setIsPeriodDetailModalOpen(true); }}>
                           View
                         </button>
                         {userCanEditProject && (
-                          <button type="button" className="app-action-button" onClick={() => { setSelectedEditPeriod(competition); setIsPeriodEditModalOpen(true); }} style={actionButtonStyle('warning')}>
+                          <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditPeriod(competition); setIsPeriodEditModalOpen(true); }}>
                             Edit
                           </button>
                         )}
                         {userCanDeleteProject && (
                           <button
                             type="button"
-                            className="app-action-button"
+                            className="app-action-button action-btn action-btn-danger"
                             onClick={async () => {
                               if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                               try {
@@ -214,7 +209,6 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                 alert('Error deleting competition');
                               }
                             }}
-                            style={actionButtonStyle('danger')}
                           >
                             Delete
                           </button>
@@ -254,18 +248,18 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                                   <span className={s.pill}>Participants: {getMatchParticipantsCount(match)}</span>
-                                  <button type="button" className="app-action-button" onClick={() => { setSelectedDetailMatch(match); setIsMatchDetailModalOpen(true); }} style={actionButtonStyle('primary')}>
+                                  <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailMatch(match); setIsMatchDetailModalOpen(true); }}>
                                     View
                                   </button>
                                   {userCanEditProject && (
-                                    <button type="button" className="app-action-button" onClick={() => { setSelectedEditMatch(match); setIsMatchEditModalOpen(true); }} style={actionButtonStyle('warning')}>
+                                    <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(match); setIsMatchEditModalOpen(true); }}>
                                       Edit
                                     </button>
                                   )}
                                   {userCanDeleteProject && (
                                     <button
                                       type="button"
-                                      className="app-action-button"
+                                      className="app-action-button action-btn action-btn-danger"
                                       onClick={async () => {
                                         if (!window.confirm(`Delete match ${match.title || match.name}?`)) return;
                                         try {
@@ -284,7 +278,6 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                           alert('Error deleting match');
                                         }
                                       }}
-                                      style={actionButtonStyle('danger')}
                                     >
                                       Delete
                                     </button>

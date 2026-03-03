@@ -2,14 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, Card } from '@django-core/design-system';
 import { Table } from '../../../shims/design-system';
-import {
-  actionButtonStyle,
-  compactActionsStyle,
-  compactTableStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactThStyle,
-} from './detailStyles';
 
 type Props = {
   isTeamRoute: boolean;
@@ -167,7 +159,7 @@ export default function UsersTable({
 
   return (
     <Card>
-      <Table style={compactTableStyle}>
+      <Table className="detail-table">
         <colgroup>
           {isTeamRoute ? (
             <>
@@ -188,11 +180,11 @@ export default function UsersTable({
         </colgroup>
         <thead>
           <tr>
-            <th style={compactThStyle}>User</th>
-            <th style={compactThStyle}>Email</th>
-            <th style={compactThStyle}>Role</th>
-            {isTeamRoute ? <th style={compactThStyle}>Functional</th> : null}
-            <th style={compactThStyle}>Actions</th>
+            <th className="detail-th">User</th>
+            <th className="detail-th">Email</th>
+            <th className="detail-th">Role</th>
+            {isTeamRoute ? <th className="detail-th">Functional</th> : null}
+            <th className="detail-th">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -276,23 +268,23 @@ export default function UsersTable({
 
             return (
               <tr key={String(userObj.id)}>
-                <td style={compactTextTdStyle}>
+                <td className="detail-td-text">
                   <Link to={`/users/${userObj.id}`} className="text-blue-600 hover:underline">
                     {`${userObj.first_name || ''} ${userObj.last_name || ''}`.trim() || userObj.email}
                   </Link>
                 </td>
-                <td style={compactTdStyle}>
+                <td className="detail-td">
                   <Badge variant="default" title={String(userObj.email || '')} style={noBorderBadgeStyle}>
                     {String(userObj.email || '—')}
                   </Badge>
                 </td>
-                <td style={compactTdStyle}>
+                <td className="detail-td">
                   <Badge variant="default" title={roleDisplay.title} style={noBorderBadgeStyle}>
                     {roleDisplay.label}
                   </Badge>
                 </td>
                 {isTeamRoute ? (
-                  <td style={compactTdStyle}>
+                  <td className="detail-td">
                     {functionalRoles.length ? (
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                         {functionalRoles.map((r) => (
@@ -306,9 +298,9 @@ export default function UsersTable({
                     )}
                   </td>
                 ) : null}
-                <td style={compactTdStyle}>
+                <td className="detail-td">
                   {userCanManageMembers ? (
-                    <div style={compactActionsStyle}>
+                    <div className="detail-actions">
                       <button
                         type="button"
                         disabled={!canViewUser && !canViewMembership}
@@ -316,8 +308,7 @@ export default function UsersTable({
                           if (canViewUser) return onViewUser(userObj);
                           if (canViewMembership) return onViewMembership(membershipId);
                         }}
-                        className="app-action-button"
-                        style={actionButtonStyle('primary')}
+                        className="app-action-button action-btn action-btn-primary"
                       >
                         View
                       </button>
@@ -328,8 +319,7 @@ export default function UsersTable({
                           const scopedTeamId = isTeamRoute ? String(currentProjectId || '').trim() : String(teamId || '').trim();
                           onEditMembership({ item, teamId: scopedTeamId || undefined });
                         }}
-                        className="app-action-button"
-                        style={actionButtonStyle('warning')}
+                        className="app-action-button action-btn action-btn-warning"
                         title={
                           isTeamRoute
                             ? 'Edit team access + functional roles'
@@ -346,8 +336,7 @@ export default function UsersTable({
                         <button
                           type="button"
                           onClick={() => onOpenAssignSeason(item)}
-                          className="app-action-button"
-                          style={actionButtonStyle('success')}
+                          className="app-action-button action-btn action-btn-success"
                           title={String(seasonId || '').trim() ? `Assign (filter: ${String(seasonId)})` : 'Assign to a season'}
                         >
                           Assign
@@ -357,8 +346,7 @@ export default function UsersTable({
                         <button
                           type="button"
                           onClick={() => onOpenUnassignSeason(item)}
-                          className="app-action-button"
-                          style={actionButtonStyle('neutral')}
+                          className="app-action-button action-btn action-btn-neutral"
                           title={String(seasonId || '').trim() ? `Unassign (filter: ${String(seasonId)})` : 'Unassign from a season'}
                         >
                           Unassign
@@ -372,8 +360,7 @@ export default function UsersTable({
                           if (!window.confirm(`Remove ${userObj.email} from federation?`)) return;
                           await onRemoveMembership(membershipId, String(userObj.email || ''));
                         }}
-                        className="app-action-button"
-                        style={actionButtonStyle('danger')}
+                        className="app-action-button action-btn action-btn-danger"
                         title={!hasOrgMembership ? 'User has no direct federation membership to remove' : undefined}
                       >
                         Remove

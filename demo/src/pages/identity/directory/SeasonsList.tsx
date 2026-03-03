@@ -6,13 +6,6 @@ import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
 import {
-    compactThStyle,
-    compactTdStyle,
-    compactTextTdStyle,
-    compactActionsStyle,
-    actionButtonStyle
-} from '../../../utils/directoryStyles';
-import {
     resolveRowContext,
 } from '../../../utils/directoryHelpers';
 import type { DirectoryListProps, RowContextConfig } from '../../../utils/directoryHelpers';
@@ -78,20 +71,20 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
               <thead>
                 <tr>
                     {!orgLocked && (
-                      <th style={{ ...compactThStyle, width: '140px' }}>Federation</th>
+                      <th className="dir-th" style={{ width: '140px' }}>Federation</th>
                     )}
                     {!clubLocked && (
-                      <th style={{ ...compactThStyle, width: '140px' }}>Club</th>
+                      <th className="dir-th" style={{ width: '140px' }}>Club</th>
                     )}
-                    {!teamLocked && <th style={{ ...compactThStyle, width: '140px' }}>Team</th>}
-                    <th style={{ ...compactThStyle, width: '260px' }}>Season</th>
-                  <th style={{ ...compactThStyle, width: '140px' }}>Sport</th>
-                  <th style={{ ...compactThStyle, width: '90px' }}>Variant</th>
-                  <th style={{ ...compactThStyle, width: '110px' }}>Competition</th>
-                  <th style={{ ...compactThStyle, width: '100px' }}>Match</th>
-                    <th style={{ ...compactThStyle, width: '90px' }}>Squad</th>
-                    <th style={{ ...compactThStyle, width: '100px' }}>Status</th>
-                    <th style={{ ...compactThStyle, width: '140px' }}>Actions</th>
+                    {!teamLocked && <th className="dir-th" style={{ width: '140px' }}>Team</th>}
+                    <th className="dir-th" style={{ width: '260px' }}>Season</th>
+                  <th className="dir-th" style={{ width: '140px' }}>Sport</th>
+                  <th className="dir-th" style={{ width: '90px' }}>Variant</th>
+                  <th className="dir-th" style={{ width: '110px' }}>Competition</th>
+                  <th className="dir-th" style={{ width: '100px' }}>Match</th>
+                    <th className="dir-th" style={{ width: '90px' }}>Squad</th>
+                    <th className="dir-th" style={{ width: '100px' }}>Status</th>
+                    <th className="dir-th" style={{ width: '140px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -116,7 +109,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                     return (
                     <tr key={season.id}>
                         {!orgLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="dir-td-text">
                             {row.orgSlug ? (
                               <a
                                 href={`/organisations/${row.orgSlug}`}
@@ -134,7 +127,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           </td>
                         )}
                         {!clubLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="dir-td-text">
                             {row.clubSlug && row.orgSlug ? (
                               <a
                                 href={`/${row.orgSlug}/${row.clubSlug}`}
@@ -152,7 +145,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           </td>
                         )}
                         {!teamLocked && (
-                          <td style={compactTextTdStyle}>
+                          <td className="dir-td-text">
                             {row.teamSlug && row.orgSlug ? (
                               <a
                                 href={row.teamBasePath}
@@ -169,7 +162,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                             )}
                           </td>
                         )}
-                        <td style={compactTextTdStyle}>
+                        <td className="dir-td-text">
                           {seasonDetailPath ? (
                             <a
                               href={seasonDetailPath}
@@ -200,7 +193,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           )}
                         </td>
 
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           {sportDisplay?.category_name ? (
                             <span className="fs-12">{sportDisplay.category_name}</span>
                           ) : (
@@ -208,7 +201,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                           )}
                         </td>
 
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           {sportDisplay ? (
                             <span className="flex-row gap-4">
                               <span>{sportDisplay.sport_icon}</span>
@@ -218,22 +211,22 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                             <span className="text-muted">—</span>
                           )}
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                             <Badge variant="default">
                                 {season.children_count || 0}
                             </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                             <Badge variant="default">
                             {(season as any).matches_total_count ?? season.matches_count ?? 0}
                             </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                             <Badge variant="default">
                                 {(season as any).members_count || 0}
                             </Badge>
                         </td>
-                         <td style={compactTdStyle}>
+                         <td className="dir-td">
                            {(() => {
                              const today = new Date().toISOString().split('T')[0];
                              const start = season.start_date || '0000-00-00';
@@ -246,14 +239,14 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                              );
                            })()}
                          </td>
-                        <td style={compactTdStyle}>
-                          <div style={compactActionsStyle}>
+                        <td className="dir-td">
+                          <div className="dir-actions">
                             <button
                                 onClick={() => {
                                     setDetailSeason(season);
                                     setIsDetailModalOpen(true);
                                 }}
-                                style={actionButtonStyle('primary')}
+                                className="action-btn action-btn-primary"
                             >
                                 View
                             </button>
@@ -262,13 +255,13 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                                 setEditSeason(season);
                                 setIsEditModalOpen(true);
                               }}
-                              style={actionButtonStyle('warning')}
+                              className="action-btn action-btn-warning"
                             >
                               Edit
                             </button>
                             <button
                                 onClick={() => handleDeleteSeason(String(row.orgId), season.id, season.name)}
-                                style={actionButtonStyle('danger')}
+                                className="action-btn action-btn-danger"
                             >
                                 Delete
                             </button>

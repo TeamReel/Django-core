@@ -2,14 +2,7 @@
  * UserDetailMembershipTabs — Federations, Clubs, Teams table tabs.
  */
 import { Table } from '../../shims/design-system';
-import {
-  actionButtonStyle,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from './detail/detailStyles';
+
 import type { UserDetailDataReturn } from './useUserDetailData';
 
 interface Props {
@@ -30,14 +23,14 @@ export function UserDetailMembershipTabs({ data }: Props) {
       <div className="card">
         <div className="flex-between gap-10">
           <h3 className="m-0">Federations</h3>
-          <button type="button" onClick={() => setIsLinkModalOpen(true)} style={actionButtonStyle('neutral')} disabled={!user}>Add to…</button>
+          <button type="button" onClick={() => setIsLinkModalOpen(true)} className="action-btn action-btn-neutral" disabled={!user}>Add to…</button>
         </div>
-        <Table style={compactTableStyle}>
+        <Table className="detail-table">
           <thead>
             <tr>
-              <th style={compactThStyle}>Name</th>
-              <th style={compactThStyle}>Role</th>
-              <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+              <th className="detail-th">Name</th>
+              <th className="detail-th">Role</th>
+              <th className="detail-th text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -47,8 +40,8 @@ export function UserDetailMembershipTabs({ data }: Props) {
               const currentRole = String(o?.role || o?.user_role || '').trim() || 'member';
               return (
                 <tr key={String(o?.id || o?.slug)}>
-                  <td style={compactTextTdStyle}>{renderNavLink(String(o?.name || orgSlugOrId || ''), orgPath)}</td>
-                  <td style={compactTextTdStyle}>
+                  <td className="detail-td-text">{renderNavLink(String(o?.name || orgSlugOrId || ''), orgPath)}</td>
+                  <td className="detail-td-text">
                     <button type="button" disabled={!orgSlugOrId} onClick={async () => {
                       if (!orgSlugOrId) return;
                       const next = window.prompt('Set federation role (admin/member):', currentRole) || '';
@@ -59,17 +52,17 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       {currentRole}
                     </button>
                   </td>
-                  <td style={compactTdStyle}>
-                    <div style={compactActionsStyle}>
-                      <button type="button" className="app-action-button" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath} style={actionButtonStyle('primary')}>View</button>
-                      <button type="button" className="app-action-button" style={actionButtonStyle('warning')} disabled={!orgSlugOrId} onClick={async () => {
+                  <td className="detail-td">
+                    <div className="detail-actions">
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => orgPath && navigate(orgPath)} disabled={!orgPath}>View</button>
+                      <button type="button" className="app-action-button action-btn action-btn-warning" disabled={!orgSlugOrId} onClick={async () => {
                         if (!orgSlugOrId) return;
                         const next = window.prompt('Set federation role (admin/member):', currentRole) || '';
                         const role = next.trim().toLowerCase();
                         if (!role) return;
                         try { await updateOrganisationMembershipRole(orgSlugOrId, role); } catch (e) { alert(e instanceof Error ? e.message : 'Failed to update role'); }
                       }}>Edit</button>
-                      <button type="button" className="app-action-button" style={actionButtonStyle('danger')} disabled={!orgSlugOrId} onClick={async () => {
+                      <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!orgSlugOrId} onClick={async () => {
                         if (!orgSlugOrId) return;
                         if (!window.confirm('Unlink this user from the federation?')) return;
                         try { await removeOrganisationMembership(orgSlugOrId); } catch (e) { alert(e instanceof Error ? e.message : 'Failed to unlink federation'); }
@@ -79,7 +72,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                 </tr>
               );
             })}
-            {!userOrgs.length && <tr><td style={compactTdStyle} colSpan={3}><em className="text-muted">No federation memberships.</em></td></tr>}
+            {!userOrgs.length && <tr><td className="detail-td" colSpan={3}><em className="text-muted">No federation memberships.</em></td></tr>}
           </tbody>
         </Table>
       </div>
@@ -91,14 +84,14 @@ export function UserDetailMembershipTabs({ data }: Props) {
       <div className="card">
         <div className="flex-between gap-10">
           <h3 className="m-0">Clubs</h3>
-          <button type="button" onClick={() => setIsLinkModalOpen(true)} style={actionButtonStyle('neutral')} disabled={!user}>Add to…</button>
+          <button type="button" onClick={() => setIsLinkModalOpen(true)} className="action-btn action-btn-neutral" disabled={!user}>Add to…</button>
         </div>
-        <Table style={compactTableStyle}>
+        <Table className="detail-table">
           <thead>
             <tr>
-              <th style={compactThStyle}>Name</th>
-              <th style={compactThStyle}>Role</th>
-              <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+              <th className="detail-th">Name</th>
+              <th className="detail-th">Role</th>
+              <th className="detail-th text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -110,8 +103,8 @@ export function UserDetailMembershipTabs({ data }: Props) {
               const membershipId = (direct as any)?.membership_id;
               return (
                 <tr key={String(c?.id)}>
-                  <td style={compactTextTdStyle}>{renderNavLink(String(c?.name || ''), clubPath)}</td>
-                  <td style={compactTextTdStyle}>
+                  <td className="detail-td-text">{renderNavLink(String(c?.name || ''), clubPath)}</td>
+                  <td className="detail-td-text">
                     {direct ? (
                       <button type="button" disabled={!projectId} onClick={() => {
                         if (!projectId) return;
@@ -124,15 +117,15 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       <span title="This user is linked to this club via team membership."><span className="text-muted fw-700">Via team</span></span>
                     )}
                   </td>
-                  <td style={compactTdStyle}>
-                    <div style={compactActionsStyle}>
-                      <button type="button" className="app-action-button" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath} style={actionButtonStyle('primary')}>View</button>
-                      <button type="button" className="app-action-button" onClick={() => {
+                  <td className="detail-td">
+                    <div className="detail-actions">
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath}>View</button>
+                      <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => {
                         if (!projectId || !direct) return;
                         setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String((direct as any)?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
-                      }} disabled={!projectId || !direct} style={actionButtonStyle('warning')}>Edit</button>
-                      <button type="button" className="app-action-button" style={actionButtonStyle('danger')} disabled={!projectId || !direct} onClick={async () => {
+                      }} disabled={!projectId || !direct}>Edit</button>
+                      <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!projectId || !direct} onClick={async () => {
                         if (!projectId || !direct) return;
                         if (!window.confirm('Remove this user from the club?')) return;
                         try { await removeProjectMembership(projectId, membershipId); } catch (e) { alert(e instanceof Error ? e.message : 'Failed to remove membership'); }
@@ -142,7 +135,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                 </tr>
               );
             })}
-            {!clubsForTab.length && <tr><td style={compactTdStyle} colSpan={3}><em className="text-muted">No club memberships.</em></td></tr>}
+            {!clubsForTab.length && <tr><td className="detail-td" colSpan={3}><em className="text-muted">No club memberships.</em></td></tr>}
           </tbody>
         </Table>
       </div>
@@ -154,15 +147,15 @@ export function UserDetailMembershipTabs({ data }: Props) {
       <div className="card">
         <div className="flex-between gap-10">
           <h3 className="m-0">Teams</h3>
-          <button type="button" onClick={() => setIsLinkModalOpen(true)} style={actionButtonStyle('neutral')} disabled={!user}>Add to…</button>
+          <button type="button" onClick={() => setIsLinkModalOpen(true)} className="action-btn action-btn-neutral" disabled={!user}>Add to…</button>
         </div>
-        <Table style={compactTableStyle}>
+        <Table className="detail-table">
           <thead>
             <tr>
-              <th style={compactThStyle}>Club</th>
-              <th style={compactThStyle}>Team</th>
-              <th style={compactThStyle}>Role</th>
-              <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+              <th className="detail-th">Club</th>
+              <th className="detail-th">Team</th>
+              <th className="detail-th">Role</th>
+              <th className="detail-th text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -176,9 +169,9 @@ export function UserDetailMembershipTabs({ data }: Props) {
               const membershipId = (t as any)?.membership_id;
               return (
                 <tr key={String(t?.id)}>
-                  <td style={compactTextTdStyle}>{renderNavLink(String(t?.parent_name || ''), clubPath)}</td>
-                  <td style={compactTextTdStyle}>{renderNavLink(String(t?.name || ''), teamPath)}</td>
-                  <td style={compactTextTdStyle}>
+                  <td className="detail-td-text">{renderNavLink(String(t?.parent_name || ''), clubPath)}</td>
+                  <td className="detail-td-text">{renderNavLink(String(t?.name || ''), teamPath)}</td>
+                  <td className="detail-td-text">
                     <button type="button" disabled={!projectId} onClick={() => {
                       if (!projectId) return;
                       setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
@@ -187,15 +180,15 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       {String(t?.role || '') || '—'}
                     </button>
                   </td>
-                  <td style={compactTdStyle}>
-                    <div style={compactActionsStyle}>
-                      <button type="button" className="app-action-button" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath} style={actionButtonStyle('primary')}>View</button>
-                      <button type="button" className="app-action-button" onClick={() => {
+                  <td className="detail-td">
+                    <div className="detail-actions">
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => teamPath && navigate(teamPath)} disabled={!teamPath}>View</button>
+                      <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => {
                         if (!projectId) return;
                         setEditingMembership({ projectId, projectName: String(t?.name || 'Team'), currentRole: String(t?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
-                      }} disabled={!projectId} style={actionButtonStyle('warning')}>Edit</button>
-                      <button type="button" className="app-action-button" style={actionButtonStyle('danger')} disabled={!projectId} onClick={async () => {
+                      }} disabled={!projectId}>Edit</button>
+                      <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!projectId} onClick={async () => {
                         if (!projectId) return;
                         if (!window.confirm('Remove this user from the team?')) return;
                         try { await removeProjectMembership(projectId, membershipId); } catch (e) { alert(e instanceof Error ? e.message : 'Failed to remove membership'); }
@@ -205,7 +198,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                 </tr>
               );
             })}
-            {!teamMemberships.length && <tr><td style={compactTdStyle} colSpan={4}><em className="text-muted">No team memberships.</em></td></tr>}
+            {!teamMemberships.length && <tr><td className="detail-td" colSpan={4}><em className="text-muted">No team memberships.</em></td></tr>}
           </tbody>
         </Table>
       </div>

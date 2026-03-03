@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Card, Input, Alert } from '@django-core/design-system';
-import { actionButtonStyle } from '../../utils/directoryStyles';
 
 type Period = {
   id: string;
@@ -209,9 +208,8 @@ export function ClubHierarchyTab({
                     {teamPath ? (
                       <button
                         type="button"
-                        className="app-action-button"
+                        className="app-action-button action-btn action-btn-primary"
                         onClick={() => navigate(teamPath)}
-                        style={actionButtonStyle('primary')}
                       >
                         View Team
                       </button>

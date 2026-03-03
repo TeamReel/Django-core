@@ -2,7 +2,6 @@
  * UserDetailOverviewTab — Summary cards for federations, clubs, teams, matches.
  */
 import { Badge, Card } from '@django-core/design-system';
-import { actionButtonStyle } from './detail/detailStyles';
 import type { UserDetailDataReturn } from './useUserDetailData';
 
 interface Props {
@@ -24,7 +23,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Federations <span className="text-gray-500 fw-600">({userOrgs.length})</span>
             </div>
-            <button type="button" className="app-action-button" onClick={() => setTab('federations')} style={actionButtonStyle('neutral')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('federations')}>View all</button>
           </div>
           {userOrgs.length === 0 ? (
             <div className="text-sm text-gray-500">No federations.</div>
@@ -51,7 +50,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Clubs <span className="text-gray-500 fw-600">({clubsForTab.length})</span>
             </div>
-            <button type="button" className="app-action-button" onClick={() => setTab('clubs')} style={actionButtonStyle('neutral')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('clubs')}>View all</button>
           </div>
           {clubsForTab.length === 0 ? (
             <div className="text-sm text-gray-500">No clubs.</div>
@@ -79,7 +78,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Teams <span className="text-gray-500 fw-600">({teamMemberships.length})</span>
             </div>
-            <button type="button" className="app-action-button" onClick={() => setTab('teams')} style={actionButtonStyle('neutral')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('teams')}>View all</button>
           </div>
           {teamMemberships.length === 0 ? (
             <div className="text-sm text-gray-500">No teams.</div>
@@ -109,7 +108,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm font-semibold text-gray-900">
               Matches <span className="text-gray-500 fw-600">({linkedMatches.length})</span>
             </div>
-            <button type="button" className="app-action-button" onClick={() => setTab('matches')} style={actionButtonStyle('neutral')}>View all</button>
+            <button type="button" className="app-action-button action-btn" onClick={() => setTab('matches')}>View all</button>
           </div>
           {linkedMatches.length === 0 ? (
             <div className="text-sm text-gray-500">No matches.</div>

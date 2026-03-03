@@ -1,14 +1,6 @@
 import React from 'react';
 import { Card, Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-  actionButtonStyle,
-} from '../../../utils/directoryStyles';
 import { isNumericId, isUuid } from './useTeamsListData';
 import type { OrganisationOption } from '../../work/WorkFilterBar';
 
@@ -35,20 +27,20 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
 }) => (
   <Card>
     <div className="overflow-x-auto">
-      <Table style={compactTableStyle}>
+      <Table className="dir-table">
         <thead>
           <tr>
-            {!orgLocked && <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>}
-            {!clubLocked && <th style={{ ...compactThStyle, width: '15%' }}>Club</th>}
-            <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
-            <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
-            <th style={{ ...compactThStyle, width: '8%' }}>Variant</th>
-            <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
-            <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
-            <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
-            <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
-            <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
-            <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+            {!orgLocked && <th className="dir-th" style={{ width: '15%' }}>Federation</th>}
+            {!clubLocked && <th className="dir-th" style={{ width: '15%' }}>Club</th>}
+            <th className="dir-th" style={{ width: '18%' }}>Team</th>
+            <th className="dir-th" style={{ width: '12%' }}>Sport</th>
+            <th className="dir-th" style={{ width: '8%' }}>Variant</th>
+            <th className="dir-th" style={{ width: '8%' }}>Season</th>
+            <th className="dir-th" style={{ width: '8%' }}>Competition</th>
+            <th className="dir-th" style={{ width: '8%' }}>Match</th>
+            <th className="dir-th" style={{ width: '8%' }}>Users</th>
+            <th className="dir-th" style={{ width: '8%' }}>Status</th>
+            <th className="dir-th" style={{ width: '12%' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -57,7 +49,7 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
             return (
               <tr key={team.id}>
                 {!orgLocked && (
-                  <td style={compactTextTdStyle}>
+                  <td className="dir-td-text">
                     {resolved.orgSlugOrId ? (
                       <a
                         href={`/organisations/${resolved.orgSlugOrId}`}
@@ -71,7 +63,7 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                 )}
 
                 {!clubLocked && (
-                  <td style={compactTextTdStyle}>
+                  <td className="dir-td-text">
                     {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
                       <a
                         href={`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}`}
@@ -84,7 +76,7 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                   </td>
                 )}
 
-                <td style={compactTextTdStyle}>
+                <td className="dir-td-text">
                   {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
                     <a
                       href={`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}/${resolved.teamSlugOrId}`}
@@ -96,7 +88,7 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                   ) : team.name}
                 </td>
 
-                <td style={compactTdStyle}>
+                <td className="dir-td">
                   {resolved.orgSport ? (
                     <span className="flex-row gap-4">
                       <span>{resolved.orgSport.sport_icon}</span>
@@ -105,26 +97,26 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                   ) : <span className="text-muted">—</span>}
                 </td>
 
-                <td style={compactTdStyle}><Badge variant="default">{team.sport_variants_count || 0}</Badge></td>
-                <td style={compactTdStyle}><Badge variant="default">{team.seasons_count || 0}</Badge></td>
-                <td style={compactTdStyle}><Badge variant="default">{team.competitions_count || 0}</Badge></td>
-                <td style={compactTdStyle}><Badge variant="default">{team.matches_count || 0}</Badge></td>
-                <td style={compactTdStyle}><Badge variant="default">{team.member_count || 0}</Badge></td>
-                <td style={compactTdStyle}>
+                <td className="dir-td"><Badge variant="default">{team.sport_variants_count || 0}</Badge></td>
+                <td className="dir-td"><Badge variant="default">{team.seasons_count || 0}</Badge></td>
+                <td className="dir-td"><Badge variant="default">{team.competitions_count || 0}</Badge></td>
+                <td className="dir-td"><Badge variant="default">{team.matches_count || 0}</Badge></td>
+                <td className="dir-td"><Badge variant="default">{team.member_count || 0}</Badge></td>
+                <td className="dir-td">
                   <Badge variant={team.is_active === false ? 'warning' : 'success'}>
                     {team.is_active === false ? 'Inactive' : 'Active'}
                   </Badge>
                 </td>
-                <td style={compactTdStyle}>
-                  <div style={compactActionsStyle}>
-                    <button onClick={() => onView(team)} style={actionButtonStyle('primary')}>View</button>
+                <td className="dir-td">
+                  <div className="dir-actions">
+                    <button onClick={() => onView(team)} className="action-btn action-btn-primary">View</button>
                     {userCanEditProject && (
-                      <button onClick={() => onEdit(team)} style={actionButtonStyle('warning')}>Edit</button>
+                      <button onClick={() => onEdit(team)} className="action-btn action-btn-warning">Edit</button>
                     )}
                     {userCanDeleteProject && (
                       <button
                         onClick={() => onDelete(String(resolved.orgSlugOrId), String(team.id), String(team.name))}
-                        style={actionButtonStyle('danger')}
+                        className="action-btn action-btn-danger"
                       >
                         Delete
                       </button>

@@ -5,16 +5,6 @@ import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
-import {
-  actionButtonStyle,
-  ctaButtonStyle,
-  type ActionTone,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from '../identity/detail/detailStyles';
 import s from './ProjectSeasonDetailPage.module.css';
 
 export interface SeasonCompetitionsTabProps {
@@ -35,10 +25,6 @@ export interface SeasonCompetitionsTabProps {
   setIsPeriodEditModalOpen: (v: boolean) => void;
   setCompetitions: React.Dispatch<React.SetStateAction<Period[]>>;
 }
-
-const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
-  ...actionButtonStyle(tone),
-});
 
 const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
   competitions,
@@ -67,9 +53,8 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
             {userCanEditProject ? (
               <button
                 type="button"
-                className="app-action-button"
+                className="app-action-button cta-btn cta-btn-primary"
                 onClick={() => setIsCreateCompetitionModalOpen(true)}
-                style={ctaButtonStyle('primary')}
               >
                 Add Competition
               </button>
@@ -80,21 +65,21 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
           ) : competitions.length === 0 ? (
             <Alert variant="info">No competitions found in this season.</Alert>
           ) : (
-            <Table style={compactTableStyle}>
+            <Table className="detail-table">
               <thead>
                 <tr>
-                  <th style={compactThStyle}>Competition</th>
-                  <th style={compactThStyle}>Sport Variant</th>
-                  <th style={compactThStyle}>Dates</th>
-                  <th style={compactThStyle}>Matches</th>
-                  <th style={compactThStyle}>Participants</th>
-                  <th style={compactThStyle} className="text-right">Actions</th>
+                  <th className="detail-th">Competition</th>
+                  <th className="detail-th">Sport Variant</th>
+                  <th className="detail-th">Dates</th>
+                  <th className="detail-th">Matches</th>
+                  <th className="detail-th">Participants</th>
+                  <th className="detail-th text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {competitions.map((competition) => (
                   <tr key={competition.id}>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       <Link
                         to={
                           isTeamRoute
@@ -106,48 +91,46 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                         {competition.name}
                       </Link>
                     </td>
-                    <td style={compactTdStyle}>
+                    <td className="detail-td">
                       {competition.sport ? (
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <span>{competition.sport.sport_icon}</span>
                           <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
                         </span>
                       ) : (
-                        <span style={{ color: 'var(--app-muted-text)' }}>\u2014</span>
+                        <span className="text-muted">\u2014</span>
                       )}
                     </td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {new Date(competition.start_date || '').toLocaleDateString()} \u2013{' '}
                       {new Date(competition.end_date || '').toLocaleDateString()}
                     </td>
-                    <td style={compactTdStyle}>
+                    <td className="detail-td">
                       <Badge variant="default">{getMatchCountForCompetition(competition)}</Badge>
                     </td>
-                    <td style={compactTdStyle}>
+                    <td className="detail-td">
                       <Badge variant="default">{getCompetitionParticipantsCount(competition)}</Badge>
                     </td>
-                    <td style={compactTdStyle}>
-                      <div style={compactActionsStyle}>
+                    <td className="detail-td">
+                      <div className="detail-actions">
                         <button
                           type="button"
-                          className="app-action-button"
+                          className="app-action-button action-btn action-btn-primary"
                           onClick={() => {
                             setSelectedDetailPeriod(competition);
                             setIsPeriodDetailModalOpen(true);
                           }}
-                          style={tableActionButtonStyle('primary')}
                         >
                           View
                         </button>
                         {userCanEditProject && (
                           <button
                             type="button"
-                            className="app-action-button"
+                            className="app-action-button action-btn action-btn-warning"
                             onClick={() => {
                               setSelectedEditPeriod(competition);
                               setIsPeriodEditModalOpen(true);
                             }}
-                            style={tableActionButtonStyle('warning')}
                           >
                             Edit
                           </button>
@@ -155,7 +138,7 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                         {userCanDeleteProject && (
                           <button
                             type="button"
-                            className="app-action-button"
+                            className="app-action-button action-btn action-btn-danger"
                             onClick={async () => {
                               if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                               try {
@@ -181,7 +164,6 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                                 alert('Error deleting competition');
                               }
                             }}
-                            style={tableActionButtonStyle('danger')}
                           >
                             Delete
                           </button>

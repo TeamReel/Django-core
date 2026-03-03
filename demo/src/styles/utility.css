@@ -131,6 +131,7 @@
 .text-left    { text-align: left; }
 .text-center  { text-align: center; }
 .text-right   { text-align: right; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
 
 /* ---------------------------------------------------------------------------
    Colors — Text (using --app-* tokens)
@@ -511,4 +512,161 @@
 @keyframes toast-slide-in {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------------------------
+   Directory table styles (from directoryStyles.ts)
+   --------------------------------------------------------------------------- */
+.dir-table {
+  table-layout: auto;
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.dir-th {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  text-align: left;
+  border-bottom: 2px solid var(--app-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dir-td {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--app-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dir-td-text {
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--app-border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+}
+.dir-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Detail table styles (from detailStyles.ts)
+   --------------------------------------------------------------------------- */
+.detail-table {
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+}
+.detail-th {
+  padding: 6px 8px;
+  font-size: 0.8rem;
+  text-align: left;
+  border-bottom: 2px solid var(--app-border);
+}
+.detail-td {
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #eee;
+}
+.detail-td-text {
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #eee;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0;
+}
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Action buttons — shared across directory/detail tables
+   --------------------------------------------------------------------------- */
+.action-btn {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border: 1px solid var(--app-border);
+  color: var(--app-muted-text);
+}
+.action-btn-primary {
+  border-color: var(--app-link);
+  color: var(--app-link);
+}
+.action-btn-warning {
+  border-color: var(--app-warning);
+  color: var(--app-warning);
+}
+.action-btn-danger {
+  border-color: var(--app-error);
+  color: var(--app-error);
+}
+.action-btn-success {
+  border-color: var(--app-success, #10b981);
+  color: var(--app-success, #10b981);
+}
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cta-btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  min-width: 120px;
+  border: 1px solid var(--app-border);
+  color: var(--app-muted-text);
+}
+.cta-btn-primary {
+  border-color: var(--app-link);
+  color: var(--app-link);
+}
+.cta-btn-warning {
+  border-color: var(--app-warning);
+  color: var(--app-warning);
+}
+.cta-btn-danger {
+  border-color: var(--app-error);
+  color: var(--app-error);
+}
+.cta-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

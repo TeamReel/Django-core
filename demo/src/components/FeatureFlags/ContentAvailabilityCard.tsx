@@ -14,12 +14,6 @@ import {
   type ScopeType,
 } from '../../utils/featureFlagsApi';
 import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  actionButtonStyle,
-} from '../../utils/directoryStyles';
-import {
   TYPE_LABELS,
   SUBTYPE_LABELS,
   getDisplayLabel,
@@ -378,10 +372,10 @@ export default function ContentAvailabilityCard({
         <div className="p-8 text-center text-gray-500">No templates match the current filters.</div>
       ) : (
         <div className="overflow-x-auto">
-          <table style={compactTableStyle}>
+          <table className="dir-table">
             <thead>
               <tr>
-                <th style={{ ...compactThStyle, width: '40px' }}>
+                <th className="dir-th" style={{ width: '40px' }}>
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -389,20 +383,20 @@ export default function ContentAvailabilityCard({
                     className="cursor-pointer"
                   />
                 </th>
-                <th style={{ ...compactThStyle, width: '15%' }}>Type</th>
-                <th style={{ ...compactThStyle, width: '18%' }}>Subtype</th>
-                <th style={{ ...compactThStyle, width: '12%' }}>Style</th>
-                <th style={{ ...compactThStyle, width: '8%' }}>Global</th>
+                <th className="dir-th" style={{ width: '15%' }}>Type</th>
+                <th className="dir-th" style={{ width: '18%' }}>Subtype</th>
+                <th className="dir-th" style={{ width: '12%' }}>Style</th>
+                <th className="dir-th" style={{ width: '8%' }}>Global</th>
                 {scopeType === 'PROJECT' ? (
                   <>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Org</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Project</th>
+                    <th className="dir-th" style={{ width: '8%' }}>Org</th>
+                    <th className="dir-th" style={{ width: '8%' }}>Project</th>
                   </>
                 ) : (
-                  <th style={{ ...compactThStyle, width: '8%' }}>Org</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Org</th>
                 )}
-                <th style={{ ...compactThStyle, width: '8%' }}>Effective</th>
-                <th style={{ ...compactThStyle, width: '15%' }}>Actions</th>
+                <th className="dir-th" style={{ width: '8%' }}>Effective</th>
+                <th className="dir-th" style={{ width: '15%' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -414,7 +408,7 @@ export default function ContentAvailabilityCard({
 
                 return (
                   <tr key={row.id}>
-                    <td style={compactTdStyle}>
+                    <td className="dir-td">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -422,15 +416,15 @@ export default function ContentAvailabilityCard({
                         className="cursor-pointer"
                       />
                     </td>
-                    <td style={compactTdStyle}>{row.type}</td>
-                    <td style={compactTdStyle}>{row.subtype}</td>
-                    <td style={compactTdStyle}>{row.style}</td>
-                    <td style={compactTdStyle}>
+                    <td className="dir-td">{row.type}</td>
+                    <td className="dir-td">{row.subtype}</td>
+                    <td className="dir-td">{row.style}</td>
+                    <td className="dir-td">
                       <Badge variant={row.globalValue ? 'success' : row.globalValue === false ? 'default' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                         {row.globalValue === null ? 'On' : row.globalValue ? 'On' : 'Off'}
                       </Badge>
                     </td>
-                    <td style={compactTdStyle}>
+                    <td className="dir-td">
                       {orgDisplay === null ? (
                         <span className="fs-11" style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>Inherit</span>
                       ) : (
@@ -440,7 +434,7 @@ export default function ContentAvailabilityCard({
                       )}
                     </td>
                     {scopeType === 'PROJECT' && (
-                      <td style={compactTdStyle}>
+                      <td className="dir-td">
                         {projectDisplay === null || projectDisplay === undefined ? (
                           <span className="fs-11" style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>Inherit</span>
                         ) : (
@@ -450,15 +444,15 @@ export default function ContentAvailabilityCard({
                         )}
                       </td>
                     )}
-                    <td style={compactTdStyle}>
+                    <td className="dir-td">
                       <Badge variant={row.effectiveValue ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
                         {row.effectiveValue ? 'On' : 'Off'}
                       </Badge>
                     </td>
-                    <td style={compactTdStyle}>
+                    <td className="dir-td">
                       <div className="flex-row gap-4">
                         <button
-                          style={actionButtonStyle(row.effectiveValue ? 'neutral' : 'primary')}
+                          className={`action-btn${row.effectiveValue ? '' : ' action-btn-primary'}`}
                           disabled={isUpdating || (row.disableEnable && !row.effectiveValue)}
                           title={row.disableEnable && !row.effectiveValue ? row.disabledReason : undefined}
                           onClick={() => handleToggle(row)}
@@ -467,7 +461,7 @@ export default function ContentAvailabilityCard({
                         </button>
                         {row.overrideId && (
                           <button
-                            style={actionButtonStyle('neutral')}
+                            className="action-btn"
                             onClick={() => handleReset(row)}
                             disabled={isUpdating}
                             title="Reset"

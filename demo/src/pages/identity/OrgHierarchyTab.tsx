@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card, Input } from '@django-core/design-system';
 import { Project } from '../../types';
-import { actionButtonStyle } from '../../utils/directoryStyles';
 
 export interface OrgHierarchyTabProps {
   hierarchySearch: string;
@@ -221,7 +220,7 @@ export function OrgHierarchyTab({
                     <span style={pillStyle}>Competitions: {club.competitionsCount ?? 0}</span>
                     <span style={pillStyle}>Matches: {club.matchesCount ?? 0}</span>
                     {clubPath ? (
-                      <button type="button" className="app-action-button" onClick={() => navigate(clubPath)} style={actionButtonStyle('primary')}>
+                      <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(clubPath)}>
                         View Club
                       </button>
                     ) : null}
@@ -267,7 +266,7 @@ export function OrgHierarchyTab({
                               <span style={pillStyle}>Competitions: {t.competitionsCount ?? 0}</span>
                               <span style={pillStyle}>Matches: {t.matchesCount ?? 0}</span>
                               {teamPath ? (
-                                <button type="button" className="app-action-button" onClick={() => navigate(teamPath)} style={actionButtonStyle('primary')}>
+                                <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(teamPath)}>
                                   View Team
                                 </button>
                               ) : null}

@@ -5,14 +5,6 @@ import { Table } from '@/shims/design-system';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-  actionButtonStyle,
-} from '../../../utils/directoryStyles';
 import { useClubsData } from './useClubsData';
 
 interface ClubsListProps {
@@ -85,22 +77,22 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       {!d.isLoading && !d.error && d.filteredClubs.length > 0 && (
         <Card>
           <div className="overflow-x-auto">
-            <Table style={compactTableStyle}>
+            <Table className="dir-table">
               <thead>
                 <tr>
                   {!d.orgLocked && (
-                    <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>
+                    <th className="dir-th" style={{ width: '15%' }}>Federation</th>
                   )}
-                  <th style={{ ...compactThStyle, width: '20%' }}>Club</th>
-                  <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Variant</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Teams</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
-                  <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
-                  <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-                  <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+                  <th className="dir-th" style={{ width: '20%' }}>Club</th>
+                  <th className="dir-th" style={{ width: '12%' }}>Sport</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Variant</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Teams</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Season</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Competition</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Match</th>
+                  <th className="dir-th" style={{ width: '8%' }}>Users</th>
+                  <th className="dir-th" style={{ width: '10%' }}>Status</th>
+                  <th className="dir-th" style={{ width: '12%' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,7 +171,7 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
   return (
     <tr>
       {!d.orgLocked && (
-        <td style={compactTextTdStyle}>
+        <td className="dir-td-text">
           {orgSlugOrId ? (
             <a
               href={`/organisations/${orgSlugOrId}`}
@@ -196,7 +188,7 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
           )}
         </td>
       )}
-      <td style={compactTextTdStyle}>
+      <td className="dir-td-text">
         <a
           href={`/${orgSlugOrId}/${clubSlugOrId}`}
           className="text-blue-600 hover:underline"
@@ -208,7 +200,7 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
           {club.name}
         </a>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         {orgSport ? (
           <span className="flex-row gap-4">
             <span>{orgSport.sport_icon}</span>
@@ -218,37 +210,37 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
           <span className="text-muted">—</span>
         )}
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant="default">{club.sport_variants_count || 0}</Badge>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant="default">{teamsForClub.length}</Badge>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant="default">{club.seasons_count || 0}</Badge>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant="default">{club.competitions_count || 0}</Badge>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant="default">{club.matches_count || 0}</Badge>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant="default">{club.member_count || 0}</Badge>
       </td>
-      <td style={compactTdStyle}>
+      <td className="dir-td">
         <Badge variant={club.is_active === false ? 'warning' : 'success'}>
           {club.is_active === false ? 'Inactive' : 'Active'}
         </Badge>
       </td>
-      <td style={compactTdStyle}>
-        <div style={compactActionsStyle}>
+      <td className="dir-td">
+        <div className="dir-actions">
           <button
             onClick={() => {
               d.setDetailProject(club);
               d.setIsDetailModalOpen(true);
             }}
-            style={actionButtonStyle('primary')}
+            className="action-btn action-btn-primary"
           >
             View
           </button>
@@ -258,7 +250,7 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
                 d.setEditProject(club);
                 d.setIsEditModalOpen(true);
               }}
-              style={actionButtonStyle('warning')}
+              className="action-btn action-btn-warning"
             >
               Edit
             </button>
@@ -266,7 +258,7 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
           {d.userCanDeleteProject && (
             <button
               onClick={() => d.handleDeleteProject(String(orgSlugOrId), String(clubSlugOrId), String(club.name))}
-              style={actionButtonStyle('danger')}
+              className="action-btn action-btn-danger"
             >
               Delete
             </button>

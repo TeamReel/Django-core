@@ -3,12 +3,6 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../../shims/design-system';
 import GovernanceSummaryCard from '../../../components/Governance/GovernanceSummaryCard';
 import {
-  compactTableStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactThStyle,
-} from './detailStyles';
-import {
   useTeamCreditsData,
   formatCredits,
   formatDateTime,
@@ -324,14 +318,14 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                   </div>
                 </div>
                 <div className="overflow-x-auto">
-                  <Table style={compactTableStyle}>
+                  <Table className="detail-table">
                     <thead>
                       <tr>
-                        <th style={compactThStyle}>Time</th>
-                        <th style={compactThStyle}>Type</th>
-                        <th style={compactThStyle}>Amount</th>
-                        <th style={compactThStyle}>Notes</th>
-                        <th style={compactThStyle}>User</th>
+                        <th className="detail-th">Time</th>
+                        <th className="detail-th">Type</th>
+                        <th className="detail-th">Amount</th>
+                        <th className="detail-th">Notes</th>
+                        <th className="detail-th">User</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -340,18 +334,18 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                         const showPlus = Number.isFinite(amountNum) && amountNum > 0;
                         return (
                           <tr key={t.id}>
-                            <td style={compactTextTdStyle}>{formatDateTime(t.timestamp)}</td>
-                            <td style={compactTextTdStyle}>
+                            <td className="detail-td-text">{formatDateTime(t.timestamp)}</td>
+                            <td className="detail-td-text">
                               <Badge variant="default">{sourceTypeLabel(t.source_type)}</Badge>
                             </td>
-                            <td style={{ ...compactTdStyle, color: amountColor(amountNum), fontWeight: 700 }}>
+                            <td className="detail-td" style={{ color: amountColor(amountNum), fontWeight: 700 }}>
                               {showPlus ? '+' : ''}
                               {formatCredits(t.amount)}
                             </td>
-                            <td style={compactTextTdStyle}>
+                            <td className="detail-td-text">
                               <span style={{ opacity: t.notes ? 1 : 0.5 }}>{t.notes || '—'}</span>
                             </td>
-                            <td style={compactTextTdStyle}>
+                            <td className="detail-td-text">
                               <span style={{ opacity: t.created_by_email ? 1 : 0.5 }}>{t.created_by_email || '—'}</span>
                             </td>
                           </tr>

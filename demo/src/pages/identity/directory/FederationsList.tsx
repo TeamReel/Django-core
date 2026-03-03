@@ -18,14 +18,6 @@ import OrganisationCreateModal from '../OrganisationCreateModal';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { useSports } from '../../../hooks/useSports';
 import type { Organisation } from '../../../types';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-  actionButtonStyle,
-} from '../../../utils/directoryStyles';
 
 export const FederationsList: React.FC = () => {
   const navigate = useNavigate();
@@ -224,25 +216,25 @@ export const FederationsList: React.FC = () => {
         return (
           <Card>
             <div className="overflow-x-auto">
-              <Table style={compactTableStyle}>
+              <Table className="dir-table">
                 <thead>
                   <tr>
-                    <th onClick={() => handleSort('name')} className="cursor-pointer" style={{ ...compactThStyle, width: '18%' }}>
+                    <th onClick={() => handleSort('name')} className="dir-th cursor-pointer" style={{ width: '18%' }}>
                       Federation {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '10%' }}>Sport</th>
-                    <th style={{ ...compactThStyle, width: '6%' }}>Variant</th>
-                    <th onClick={() => handleSort('project_count')} className="cursor-pointer" style={{ ...compactThStyle, width: '6%' }}>
+                    <th className="dir-th" style={{ width: '10%' }}>Sport</th>
+                    <th className="dir-th" style={{ width: '6%' }}>Variant</th>
+                    <th onClick={() => handleSort('project_count')} className="dir-th cursor-pointer" style={{ width: '6%' }}>
                       Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '6%' }}>Season</th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
-                    <th style={{ ...compactThStyle, width: '6%' }}>Match</th>
-                    <th onClick={() => handleSort('member_count')} className="cursor-pointer" style={{ ...compactThStyle, width: '6%' }}>
+                    <th className="dir-th" style={{ width: '6%' }}>Season</th>
+                    <th className="dir-th" style={{ width: '8%' }}>Competition</th>
+                    <th className="dir-th" style={{ width: '6%' }}>Match</th>
+                    <th onClick={() => handleSort('member_count')} className="dir-th cursor-pointer" style={{ width: '6%' }}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
-                    <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+                    <th className="dir-th" style={{ width: '8%' }}>Status</th>
+                    <th className="dir-th" style={{ width: '12%' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -257,7 +249,7 @@ export const FederationsList: React.FC = () => {
 
                     return (
                       <tr key={org.id}>
-                        <td style={compactTextTdStyle}>
+                        <td className="dir-td-text">
                           <span
                             className="cursor-pointer"
                             style={{
@@ -269,7 +261,7 @@ export const FederationsList: React.FC = () => {
                             {org.name}
                           </span>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           {org.sport ? (
                             <span className="flex-row gap-4">
                               <span>{org.sport.sport_icon}</span>
@@ -279,47 +271,47 @@ export const FederationsList: React.FC = () => {
                             <span className="text-muted">—</span>
                           )}
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant="default">{(org as any).sport_variants_count || 0}</Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant="default">
                             {org.project_count || 0}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant="default">
                             {(org as any).seasons_count || 0}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant="default">
                             {(org as any).competitions_count || 0}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant="default">
                             {(org as any).matches_count || 0}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant="default">
                             {org.member_count || 0}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
+                        <td className="dir-td">
                           <Badge variant={org.is_active ? 'success' : 'warning'}>
                             {org.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </td>
-                        <td style={compactTdStyle}>
-                          <div style={compactActionsStyle}>
+                        <td className="dir-td">
+                          <div className="dir-actions">
                             <button
                               onClick={() => {
                                 setDetailOrganisation(org);
                                 setIsDetailModalOpen(true);
                               }}
-                              style={actionButtonStyle('primary')}
+                              className="action-btn action-btn-primary"
                             >
                               View
                             </button>
@@ -329,7 +321,7 @@ export const FederationsList: React.FC = () => {
                                   setEditOrganisation(org);
                                   setIsEditModalOpen(true);
                                 }}
-                                style={actionButtonStyle('warning')}
+                                className="action-btn action-btn-warning"
                               >
                                 Edit
                               </button>
@@ -337,7 +329,7 @@ export const FederationsList: React.FC = () => {
                             {userCanDelete && (
                               <button
                                 onClick={() => handleDelete(org.slug || org.id)}
-                                style={actionButtonStyle('danger')}
+                                className="action-btn action-btn-danger"
                               >
                                 Delete
                               </button>

@@ -54,8 +54,8 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                     {d.step !== 'running' && (
                         <button
                             onClick={onClose}
-                            className="border-none bg-transparent cursor-pointer fs-20 p-4"
-                            style={{ color: 'var(--app-text-muted, #888)', lineHeight: 1 }}
+                            className="border-none bg-transparent cursor-pointer fs-20 p-4 text-muted"
+                            style={{ lineHeight: 1 }}
                             title="Sluiten"
                         >
                             ✕
@@ -147,7 +147,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
                         />
                         <div className="flex-1">
                             <div className="fw-500 fs-14">{action.icon} {action.label}</div>
-                            <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>{action.description}</div>
+                            <div className="fs-12 text-muted mt-2">{action.description}</div>
                         </div>
                     </div>
                 ))}
@@ -211,7 +211,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
         {/* Delete warning */}
         {d.selectedAction === 'delete' && (
             <div style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)' }}>
-                <div className="gap-10" style={{ display: 'flex', alignItems: 'flex-start' }}>
+                    <div className="gap-10 flex-row" style={{ alignItems: 'flex-start' }}>
                     <span className="fs-20">⚠️</span>
                     <div>
                         <div className="fw-600 fs-14" style={{ color: 'var(--color-red-500)' }}>
@@ -230,7 +230,7 @@ const ConfigureStep: React.FC<{ d: HookData; members: MemberBatchActionModalProp
 
         {/* Summary card */}
         {d.canProceed && (
-            <div style={{ ...cardStyle, marginTop: '16px', borderColor: '#3b82f644' }}>
+            <div className="mt-16" style={{ ...cardStyle, borderColor: '#3b82f644' }}>
                 <div className="flex-row gap-8 fs-13">
                     <span className="fw-600" style={{ color: 'var(--color-blue-500)' }}>Samenvatting:</span>
                     <span className="text-primary">{d.getSummaryText()}</span>
@@ -272,7 +272,7 @@ const DoneStep: React.FC<{ progress: HookData['progress']; errors: string[] }> =
             </div>
         </div>
         {errors.length > 0 && (
-            <div style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)', marginTop: '12px' }}>
+            <div className="mt-12" style={{ ...cardStyle, borderColor: '#ef444444', background: 'rgba(239,68,68,0.06)' }}>
                 <div className="fs-13 fw-600" style={{ color: 'var(--color-red-500)', marginBottom: '6px' }}>Fouten:</div>
                 <ul className="m-0 fs-12 text-muted" style={{ paddingLeft: '18px' }}>
                     {errors.slice(0, 10).map((err, i) => <li key={i}>{err}</li>)}

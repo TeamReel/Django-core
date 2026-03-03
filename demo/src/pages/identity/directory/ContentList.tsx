@@ -3,13 +3,6 @@ import { Card } from '@django-core/design-system';
 import LoadingState from '../../../components/LoadingState';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  actionButtonStyle,
-} from '../../../utils/directoryStyles';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -71,6 +64,9 @@ function Pill({ text, colors }: { text: string; colors: Record<string, { bg: str
 const selectStyle: React.CSSProperties = {
   padding: '4px 8px', fontSize: 13, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', minWidth: 100,
 };
+
+const thSort = 'dir-th cursor-pointer';
+const thSortR = 'dir-th text-right cursor-pointer';
 
 type SortCol = 'created_at' | 'duration_seconds' | 'content_duration_seconds' | 'estimated_cost_eur' | 'provider' | 'status';
 
@@ -153,13 +149,11 @@ export const ContentList: React.FC = () => {
   };
   const arrow = (col: SortCol) => (sortCol === col ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '');
 
-  const thSort: React.CSSProperties = { ...compactThStyle, cursor: 'pointer' };
-  const thSortR: React.CSSProperties = { ...compactThStyle, cursor: 'pointer', textAlign: 'right' };
 
   const totalCost = useMemo(() => filtered.reduce((s, j) => s + (j.estimated_cost_eur ?? 0), 0), [filtered]);
 
   if (loading) return <LoadingState message="Loading content…" />;
-  if (error) return <div className="p-20" style={{ color: '#991b1b' }}>Error: {error}</div>;
+  if (error) return <div className="p-20 text-error">Error: {error}</div>;
 
   return (
     <div className="flex-col gap-12">
@@ -195,9 +189,9 @@ export const ContentList: React.FC = () => {
         )}
         {(statusFilter || typeFilter || providerFilter || approvalFilter || clubFilter || searchQuery) && (
           <button onClick={() => { setStatusFilter(''); setTypeFilter(''); setProviderFilter(''); setApprovalFilter(''); setClubFilter(''); setSearchQuery(''); }}
-            style={actionButtonStyle('neutral')}>Clear</button>
+            className="action-btn">Clear</button>
         )}
-        <span className="ml-auto fs-12" style={{ color: '#9ca3af' }}>
+        <span className="ml-auto fs-12 text-muted">
           {filtered.length} / {jobs.length} items · Est. {fmtCost(totalCost)}
         </span>
       </div>
@@ -205,59 +199,59 @@ export const ContentList: React.FC = () => {
       {/* ── Table ─────────────────────────────────────────────────────── */}
       <Card>
         <div className="overflow-x-auto">
-          <table style={compactTableStyle}>
+          <table className="dir-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Type</th>
-                <th style={compactThStyle}>Label</th>
-                <th style={compactThStyle}>Member</th>
-                <th style={compactThStyle}>Club</th>
-                <th style={compactThStyle}>Team</th>
-                <th style={thSort} onClick={() => toggleSort('provider')}>Provider{arrow('provider')}</th>
-                <th style={compactThStyle}>Model</th>
-                <th style={thSort} onClick={() => toggleSort('status')}>Status{arrow('status')}</th>
-                <th style={compactThStyle}>Approval</th>
-                <th style={thSort} onClick={() => toggleSort('created_at')}>Created{arrow('created_at')}</th>
-                <th style={thSortR} onClick={() => toggleSort('duration_seconds')}>Gen. Time{arrow('duration_seconds')}</th>
-                <th style={thSortR} onClick={() => toggleSort('content_duration_seconds')}>Content Dur.{arrow('content_duration_seconds')}</th>
-                <th style={{ ...compactThStyle, textAlign: 'right' }}>Tokens (in/out)</th>
-                <th style={thSortR} onClick={() => toggleSort('estimated_cost_eur')}>Cost{arrow('estimated_cost_eur')}</th>
-                <th style={{ ...compactThStyle, textAlign: 'right' }}>Variants</th>
-                <th style={compactThStyle}>Preview</th>
+                <th className="dir-th">Type</th>
+                <th className="dir-th">Label</th>
+                <th className="dir-th">Member</th>
+                <th className="dir-th">Club</th>
+                <th className="dir-th">Team</th>
+                <th className={thSort} onClick={() => toggleSort('provider')}>Provider{arrow('provider')}</th>
+                <th className="dir-th">Model</th>
+                <th className={thSort} onClick={() => toggleSort('status')}>Status{arrow('status')}</th>
+                <th className="dir-th">Approval</th>
+                <th className={thSort} onClick={() => toggleSort('created_at')}>Created{arrow('created_at')}</th>
+                <th className={thSortR} onClick={() => toggleSort('duration_seconds')}>Gen. Time{arrow('duration_seconds')}</th>
+                <th className={thSortR} onClick={() => toggleSort('content_duration_seconds')}>Content Dur.{arrow('content_duration_seconds')}</th>
+                <th className="dir-th text-right">Tokens (in/out)</th>
+                <th className={thSortR} onClick={() => toggleSort('estimated_cost_eur')}>Cost{arrow('estimated_cost_eur')}</th>
+                <th className="dir-th text-right">Variants</th>
+                <th className="dir-th">Preview</th>
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={16} className="text-center" style={{ ...compactTdStyle, color: '#9ca3af', padding: 24 }}>No content items found</td></tr>
+                <tr><td colSpan={16} className="text-center dir-td text-muted" style={{ padding: 24 }}>No content items found</td></tr>
               )}
               {filtered.map((job) => (
                 <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={compactTdStyle}>
+                  <td className="dir-td">
                     <span style={{ fontSize: 15, marginRight: 3 }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
-                    <span className="fs-11" style={{ color: 'var(--app-muted-text)' }}>{job.output_asset_type || job.output_type}</span>
+                    <span className="fs-11 text-muted">{job.output_asset_type || job.output_type}</span>
                   </td>
-                  <td style={compactTextTdStyle}>{job.label || '—'}</td>
-                  <td style={compactTextTdStyle}>{job.membership_name || '—'}</td>
-                  <td style={compactTextTdStyle}>{job.club_name || '—'}</td>
-                  <td style={compactTextTdStyle}>{job.project_name || '—'}</td>
-                  <td className="fw-600" style={compactTdStyle}>{job.provider || '—'}</td>
-                  <td style={compactTextTdStyle}>{job.model || '—'}</td>
-                  <td style={compactTdStyle}><Pill text={job.status} colors={statusColors} /></td>
-                  <td style={compactTdStyle}>
+                  <td className="dir-td-text">{job.label || '—'}</td>
+                  <td className="dir-td-text">{job.membership_name || '—'}</td>
+                  <td className="dir-td-text">{job.club_name || '—'}</td>
+                  <td className="dir-td-text">{job.project_name || '—'}</td>
+                  <td className="dir-td fw-600">{job.provider || '—'}</td>
+                  <td className="dir-td-text">{job.model || '—'}</td>
+                  <td className="dir-td"><Pill text={job.status} colors={statusColors} /></td>
+                  <td className="dir-td">
                     {job.approval_status ? <Pill text={job.approval_status} colors={approvalColors} /> : <span className="fs-11" style={{ color: '#d1d5db' }}>—</span>}
                   </td>
-                  <td style={compactTdStyle}>
+                  <td className="dir-td">
                     <span className="fs-12 whitespace-nowrap">{fmtDate(job.created_at)}</span>{' '}
                     <span style={{ fontSize: 10, color: '#9ca3af' }}>{fmtTime(job.created_at)}</span>
                   </td>
-                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.duration_seconds)}</td>
-                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums' }}>{fmtDur(job.content_duration_seconds)}</td>
-                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums', fontSize: 11 }}>{fmtTokens(job.estimated_input_tokens, job.estimated_output_tokens)}</td>
-                  <td className="text-right" style={{ ...compactTdStyle, fontVariantNumeric: 'tabular-nums' }}>{fmtCost(job.estimated_cost_eur)}</td>
-                  <td className="text-right" style={compactTdStyle}>{job.variant_count ?? 0}</td>
-                  <td style={compactTdStyle}>
+                  <td className="dir-td text-right tabular-nums">{fmtDur(job.duration_seconds)}</td>
+                  <td className="dir-td text-right tabular-nums">{fmtDur(job.content_duration_seconds)}</td>
+                  <td className="dir-td text-right tabular-nums fs-11">{fmtTokens(job.estimated_input_tokens, job.estimated_output_tokens)}</td>
+                  <td className="dir-td text-right tabular-nums">{fmtCost(job.estimated_cost_eur)}</td>
+                  <td className="dir-td text-right">{job.variant_count ?? 0}</td>
+                  <td className="dir-td">
                     {job.output_url
-                      ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" style={{ ...actionButtonStyle('primary'), textDecoration: 'none', fontSize: 11 }}>View</a>
+                      ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-primary text-decoration-none fs-11">View</a>
                       : <span className="fs-11" style={{ color: '#d1d5db' }}>—</span>}
                   </td>
                 </tr>

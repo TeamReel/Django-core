@@ -3,16 +3,6 @@ import { Link } from 'react-router-dom';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import {
-  actionButtonStyle,
-  ctaButtonStyle,
-  type ActionTone,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from '../identity/detail/detailStyles';
-import {
   normalizeAccessRole,
   getRbacLabel,
   getAccessRoleOptions,
@@ -35,10 +25,6 @@ export interface SeasonSquadTabProps {
   setIsAddSquadMemberModalOpen: (v: boolean) => void;
   onMemberUpdated: (membershipId: string, role: string, functionalRoles: string[]) => void;
 }
-
-const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
-  ...actionButtonStyle(tone),
-});
 
 const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   members,
@@ -144,15 +130,14 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
-                    className="app-action-button"
+                    className="app-action-button cta-btn cta-btn-neutral"
                     onClick={() => setIsAddSquadMemberModalOpen(true)}
-                    style={ctaButtonStyle('neutral')}
                   >
                     Add User (advanced)
                   </button>
                   <button
                     type="button"
-                    className="app-action-button"
+                    className="app-action-button cta-btn cta-btn-danger"
                     disabled={bulkSubmitting || selectedSquadMembershipIds.size === 0}
                     onClick={async () => {
                       const ids = Array.from(selectedSquadMembershipIds.values()).filter(Boolean);
@@ -163,7 +148,6 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         return next;
                       });
                     }}
-                    style={ctaButtonStyle('danger')}
                     title="Unassign selected users from the squad"
                   >
                     Unassign ({selectedSquadMembershipIds.size})
@@ -178,17 +162,17 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                   <Alert variant="info">No members in this season squad. Go to the Team tab to assign team members.</Alert>
                 ) : !membersLoading && !membersError ? (
                   <div className="overflow-x-auto">
-                    <Table style={compactTableStyle}>
+                    <Table className="detail-table">
                       <thead>
                         <tr>
-                          <th style={{ ...compactThStyle, width: '44px' }}></th>
-                          <th style={compactThStyle}>Name</th>
-                          <th style={compactThStyle}>Email</th>
-                          <th style={compactThStyle}>Access</th>
-                          <th style={compactThStyle}>Functional</th>
-                          <th style={compactThStyle}>Position</th>
-                          <th style={compactThStyle}>#</th>
-                          <th style={{ ...compactThStyle, width: '180px' }} className="text-right">
+                          <th className="detail-th" style={{ width: '44px' }}></th>
+                          <th className="detail-th">Name</th>
+                          <th className="detail-th">Email</th>
+                          <th className="detail-th">Access</th>
+                          <th className="detail-th">Functional</th>
+                          <th className="detail-th">Position</th>
+                          <th className="detail-th">#</th>
+                          <th className="detail-th text-right" style={{ width: '180px' }}>
                             Action
                           </th>
                         </tr>
@@ -214,7 +198,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
 
                           return (
                             <tr key={membershipId}>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td">
                                 <input
                                   type="checkbox"
                                   checked={checked}
@@ -225,7 +209,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                                   }}
                                 />
                               </td>
-                              <td style={compactTextTdStyle}>
+                              <td className="detail-td-text">
                                 {href ? (
                                   <Link
                                     to={href}
@@ -237,13 +221,13 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                                   name
                                 )}
                               </td>
-                              <td style={compactTextTdStyle}>{email}</td>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td-text">{email}</td>
+                              <td className="detail-td">
                                 <Badge variant={role === 'admin' ? 'warning' : 'default'}>
                                   {rbacLabel}
                                 </Badge>
                               </td>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td">
                                 {functionalRoles.length ? (
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                     {functionalRoles.map((r: string) => (
@@ -256,13 +240,13 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                                   '\u2014'
                                 )}
                               </td>
-                              <td style={compactTextTdStyle}>{position}</td>
-                              <td style={compactTdStyle}>{shirtNumber || '\u2014'}</td>
-                              <td style={compactTdStyle} className="text-right">
-                                <div style={compactActionsStyle}>
+                              <td className="detail-td-text">{position}</td>
+                              <td className="detail-td">{shirtNumber || '\u2014'}</td>
+                              <td className="detail-td text-right">
+                                <div className="detail-actions">
                                   <button
                                     type="button"
-                                    className="app-action-button"
+                                    className="app-action-button action-btn action-btn-primary"
                                     disabled={!membershipId || bulkSubmitting}
                                     onClick={() => {
                                       if (!membershipId) return;
@@ -270,20 +254,18 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                                       setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
                                       setIsEditMemberModalOpen(true);
                                     }}
-                                    style={tableActionButtonStyle('primary')}
                                     title="Edit member details"
                                   >
                                     Edit
                                   </button>
                                   <button
                                     type="button"
-                                    className="app-action-button"
+                                    className="app-action-button action-btn action-btn-danger"
                                     disabled={!membershipId || bulkSubmitting}
                                     onClick={async () => {
                                       if (!membershipId) return;
                                       await unassignMembershipsFromSeasonSquad([membershipId]);
                                     }}
-                                    style={tableActionButtonStyle('danger')}
                                     title="Unassign this user from the season squad"
                                   >
                                     Unassign
@@ -305,15 +287,15 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                   <Alert variant="info">No members found for this season.</Alert>
                 ) : !membersLoading && !membersError ? (
                   <div className="overflow-x-auto">
-                    <Table style={compactTableStyle}>
+                    <Table className="detail-table">
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Name</th>
-                          <th style={compactThStyle}>Email</th>
-                          <th style={compactThStyle}>Access</th>
-                          <th style={compactThStyle}>Functional</th>
-                          <th style={compactThStyle}>Position</th>
-                          <th style={compactThStyle}>#</th>
+                          <th className="detail-th">Name</th>
+                          <th className="detail-th">Email</th>
+                          <th className="detail-th">Access</th>
+                          <th className="detail-th">Functional</th>
+                          <th className="detail-th">Position</th>
+                          <th className="detail-th">#</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -334,7 +316,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
 
                           return (
                             <tr key={String(m.id || memberUser.email)}>
-                              <td style={compactTextTdStyle}>
+                              <td className="detail-td-text">
                                 {href ? (
                                   <Link
                                     to={href}
@@ -346,13 +328,13 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                                   name
                                 )}
                               </td>
-                              <td style={compactTextTdStyle}>{email}</td>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td-text">{email}</td>
+                              <td className="detail-td">
                                 <Badge variant={role === 'admin' ? 'warning' : 'default'}>
                                   {getRbacLabel(m.role || 'viewer', isTeamRoute)}
                                 </Badge>
                               </td>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td">
                                 {functionalRoles.length ? (
                                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                     {functionalRoles.map((r: string) => (
@@ -365,8 +347,8 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                                   '\u2014'
                                 )}
                               </td>
-                              <td style={compactTextTdStyle}>{position}</td>
-                              <td style={compactTdStyle}>{shirtNumber || '\u2014'}</td>
+                              <td className="detail-td-text">{position}</td>
+                              <td className="detail-td">{shirtNumber || '\u2014'}</td>
                             </tr>
                           );
                         })}

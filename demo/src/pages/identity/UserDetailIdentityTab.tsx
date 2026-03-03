@@ -2,7 +2,6 @@
  * UserDetailIdentityTab — Profile photo + editable profile details.
  */
 import { Alert, Badge, Input } from '@django-core/design-system';
-import { actionButtonStyle, ctaButtonStyle } from './detail/detailStyles';
 import type { UserDetailDataReturn } from './useUserDetailData';
 
 interface Props {
@@ -77,7 +76,7 @@ export function UserDetailIdentityTab({ data }: Props) {
                 setIdentitySaveError(null);
                 setIdentitySaveSuccess(false);
               }}
-              style={actionButtonStyle('primary')}
+              className="action-btn action-btn-primary"
             >
               Edit
             </button>
@@ -122,11 +121,11 @@ export function UserDetailIdentityTab({ data }: Props) {
                     setIdentitySaving(false);
                   }
                 }}
-                style={{ ...ctaButtonStyle('primary'), opacity: identitySaving ? 0.6 : 1, cursor: identitySaving ? 'not-allowed' : 'pointer' }}
+                className="cta-btn cta-btn-primary" style={{ opacity: identitySaving ? 0.6 : 1, cursor: identitySaving ? 'not-allowed' : 'pointer' }}
               >
                 {identitySaving ? 'Saving…' : 'Save Changes'}
               </button>
-              <button type="button" disabled={identitySaving} onClick={() => { setIdentityEditing(false); setIdentitySaveError(null); }} style={ctaButtonStyle('neutral')}>
+              <button type="button" disabled={identitySaving} onClick={() => { setIdentityEditing(false); setIdentitySaveError(null); }} className="cta-btn">
                 Cancel
               </button>
             </div>

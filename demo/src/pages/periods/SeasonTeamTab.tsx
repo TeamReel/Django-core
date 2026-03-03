@@ -2,16 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import {
-  actionButtonStyle,
-  ctaButtonStyle,
-  type ActionTone,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from '../identity/detail/detailStyles';
-import {
   getUserId,
   getUserLabel,
   getRbacLabel,
@@ -30,10 +20,6 @@ export interface SeasonTeamTabProps {
   getBestRoleForUser: (userId: string) => string;
   getFunctionalRolesForUser: (userId: string) => string[];
 }
-
-const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
-  ...actionButtonStyle(tone),
-});
 
 const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
   teamRoster,
@@ -138,7 +124,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                 </Button>
                 <button
                   type="button"
-                  className="app-action-button"
+                  className="app-action-button cta-btn cta-btn-success"
                   disabled={bulkSubmitting || selectedEligibleUserIds.size === 0}
                   onClick={async () => {
                     const userIds = Array.from(selectedEligibleUserIds.values()).filter(Boolean);
@@ -150,7 +136,6 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                       return next;
                     });
                   }}
-                  style={ctaButtonStyle('success')}
                   title="Assign selected users to the squad"
                 >
                   Assign to Squad ({selectedEligibleUserIds.size})
@@ -162,18 +147,18 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
               <Alert variant="info">All team members are already assigned to this season squad.</Alert>
             ) : !teamRosterLoading ? (
               <div className="overflow-x-auto">
-                <Table style={compactTableStyle}>
+                <Table className="detail-table">
                   <thead>
                     <tr>
                       {userCanEditProject && (
-                        <th style={{ ...compactThStyle, width: '44px' }}></th>
+                        <th className="detail-th" style={{ width: '44px' }}></th>
                       )}
-                      <th style={compactThStyle}>Name</th>
-                      <th style={compactThStyle}>Email</th>
-                      <th style={compactThStyle}>Access</th>
-                      <th style={compactThStyle}>Functional</th>
+                      <th className="detail-th">Name</th>
+                      <th className="detail-th">Email</th>
+                      <th className="detail-th">Access</th>
+                      <th className="detail-th">Functional</th>
                       {userCanEditProject && (
-                        <th style={{ ...compactThStyle, width: '120px' }} className="text-right">
+                        <th className="detail-th text-right" style={{ width: '120px' }}>
                           Action
                         </th>
                       )}
@@ -189,7 +174,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                       return (
                         <tr key={`team-eligible:${userId || email}`}>
                           {userCanEditProject && (
-                            <td style={compactTdStyle}>
+                            <td className="detail-td">
                               <input
                                 type="checkbox"
                                 checked={checked}
@@ -201,12 +186,12 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                               />
                             </td>
                           )}
-                          <td style={compactTextTdStyle}>{name}</td>
-                          <td style={compactTextTdStyle}>{email}</td>
-                          <td style={compactTdStyle}>
+                          <td className="detail-td-text">{name}</td>
+                          <td className="detail-td-text">{email}</td>
+                          <td className="detail-td">
                             <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(role, isTeamRoute)}</Badge>
                           </td>
-                          <td style={compactTdStyle}>
+                          <td className="detail-td">
                             {functionalRoles.length ? (
                               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                 {functionalRoles.map((r) => (
@@ -220,11 +205,11 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                             )}
                           </td>
                           {userCanEditProject && (
-                            <td style={compactTdStyle} className="text-right">
-                              <div style={compactActionsStyle}>
+                            <td className="detail-td text-right">
+                              <div className="detail-actions">
                                 <button
                                   type="button"
-                                  className="app-action-button"
+                                  className="app-action-button action-btn action-btn-success"
                                   disabled={!userId || bulkSubmitting}
                                   onClick={async () => {
                                     if (!userId) return;
@@ -235,7 +220,6 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                                       return next;
                                     });
                                   }}
-                                  style={tableActionButtonStyle('success')}
                                   title="Assign this user to the season squad"
                                 >
                                   Assign

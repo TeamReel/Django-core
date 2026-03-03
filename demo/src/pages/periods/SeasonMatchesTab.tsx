@@ -4,16 +4,6 @@ import { Alert, Badge, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { getCsrfToken } from '../../utils/csrf';
-import {
-  actionButtonStyle,
-  ctaButtonStyle,
-  type ActionTone,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from '../identity/detail/detailStyles';
 import { getMatchParticipantsCount } from './seasonDetailUtils';
 import s from './ProjectSeasonDetailPage.module.css';
 
@@ -34,10 +24,6 @@ export interface SeasonMatchesTabProps {
   setIsMatchEditModalOpen: (v: boolean) => void;
   setMatches: React.Dispatch<React.SetStateAction<any[]>>;
 }
-
-const tableActionButtonStyle = (tone: ActionTone = 'neutral'): React.CSSProperties => ({
-  ...actionButtonStyle(tone),
-});
 
 const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
   matches,
@@ -65,9 +51,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
             {userCanEditProject ? (
               <button
                 type="button"
-                className="app-action-button"
+                className="app-action-button cta-btn cta-btn-primary"
                 onClick={() => setIsCreateMatchModalOpen(true)}
-                style={ctaButtonStyle('primary')}
               >
                 Add Match
               </button>
@@ -78,20 +63,20 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
           ) : matches.length === 0 ? (
             <Alert variant="info">No matches found in this season.</Alert>
           ) : (
-            <Table style={compactTableStyle}>
+            <Table className="detail-table">
               <thead>
                 <tr>
-                  <th style={compactThStyle}>Match</th>
-                  <th style={compactThStyle}>Competition</th>
-                  <th style={compactThStyle}>Date</th>
-                  <th className="hide-mobile" style={compactThStyle}>Participants</th>
-                  <th className="hide-mobile text-right" style={compactThStyle}>Actions</th>
+                  <th className="detail-th">Match</th>
+                  <th className="detail-th">Competition</th>
+                  <th className="detail-th">Date</th>
+                  <th className="hide-mobile detail-th">Participants</th>
+                  <th className="hide-mobile text-right detail-th">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {matches.map((match) => (
                   <tr key={match.id}>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {(() => {
                         const compId = String(
                           (match as any).period_id || match.period?.id || (match as any).period || ''
@@ -111,7 +96,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                         );
                       })()}
                     </td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {match.period?.id ? (
                         <Link
                           to={
@@ -127,34 +112,32 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                         match.period?.name || '\u2014'
                       )}
                     </td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {match.start_time ? new Date(match.start_time).toLocaleString() : '\u2014'}
                     </td>
-                    <td className="hide-mobile" style={compactTdStyle}>
+                    <td className="hide-mobile detail-td">
                       <Badge variant="default">{getMatchParticipantsCount(match)}</Badge>
                     </td>
-                    <td className="hide-mobile" style={compactTdStyle}>
-                      <div style={compactActionsStyle}>
+                    <td className="hide-mobile detail-td">
+                      <div className="detail-actions">
                         <button
                           type="button"
-                          className="app-action-button"
+                          className="app-action-button action-btn action-btn-primary"
                           onClick={() => {
                             setSelectedDetailMatch(match);
                             setIsMatchDetailModalOpen(true);
                           }}
-                          style={tableActionButtonStyle('primary')}
                         >
                           View
                         </button>
                         {userCanEditProject && (
                           <button
                             type="button"
-                            className="app-action-button"
+                            className="app-action-button action-btn action-btn-warning"
                             onClick={() => {
                               setSelectedEditMatch(match);
                               setIsMatchEditModalOpen(true);
                             }}
-                            style={tableActionButtonStyle('warning')}
                           >
                             Edit
                           </button>
@@ -162,7 +145,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                         {userCanDeleteProject && (
                           <button
                             type="button"
-                            className="app-action-button"
+                            className="app-action-button action-btn action-btn-danger"
                             onClick={async () => {
                               if (!window.confirm(`Are you sure you want to delete match ${match.title || match.name}?`)) return;
                               try {
@@ -188,7 +171,6 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                                 alert('Error deleting match');
                               }
                             }}
-                            style={tableActionButtonStyle('danger')}
                           >
                             Delete
                           </button>

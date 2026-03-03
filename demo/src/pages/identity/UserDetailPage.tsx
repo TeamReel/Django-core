@@ -8,7 +8,6 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 
 import LoadingState from '../../components/LoadingState';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
-import { actionButtonStyle, ctaButtonStyle } from './detail/detailStyles';
 import { useUserDetailData } from './useUserDetailData';
 import { UserDetailModals } from './UserDetailModals';
 import { UserDetailOverviewTab } from './UserDetailOverviewTab';
@@ -43,14 +42,14 @@ const UserDetailPage: React.FC = () => {
         ]}
         actions={
           <div className="flex-row gap-10">
-            <button type="button" className="app-action-button" onClick={() => {
+            <button type="button" onClick={() => {
               const orgIdForTxn = getPreferredOrganisationId();
               if (!orgIdForTxn) { alert('Select an organisation first (context switcher), then try again'); return; }
               if (!Number.isFinite(currentUserIdForTxn)) { alert('No current user id available'); return; }
               if (!Number.isFinite(targetUserIdForTxn)) { alert('No target user id available'); return; }
               setIsCreateTxnModalOpen(true);
-            }} style={ctaButtonStyle('primary')} disabled={!user}>Create transaction</button>
-            <button type="button" className="app-action-button" onClick={() => setIsLinkModalOpen(true)} style={ctaButtonStyle('neutral')} disabled={!user}>Add to…</button>
+            }} className="app-action-button cta-btn cta-btn-primary" disabled={!user}>Create transaction</button>
+            <button type="button" className="app-action-button cta-btn" onClick={() => setIsLinkModalOpen(true)} disabled={!user}>Add to…</button>
             <Button variant="secondary" size="sm" onClick={() => setIsViewModalOpen(true)}>View</Button>
             <Button variant="secondary" size="sm" onClick={() => setIsEditModalOpen(true)}>Edit</Button>
             <Button variant="secondary" size="sm" onClick={handleDeleteUser}>Delete</Button>
@@ -67,7 +66,7 @@ const UserDetailPage: React.FC = () => {
             <Card>
               <div className="flex-between gap-12">
                 <h3 className="m-0">Balance</h3>
-                <button type="button" onClick={() => setUserBalanceReloadToken((n) => n + 1)} style={actionButtonStyle('neutral')} disabled={userBalanceLoading}>Refresh</button>
+                <button type="button" onClick={() => setUserBalanceReloadToken((n) => n + 1)} className="action-btn" disabled={userBalanceLoading}>Refresh</button>
               </div>
               {userBalanceError && <div className="mt-12"><Alert variant="warning">{userBalanceError}</Alert></div>}
               <div className="mt-12 grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
@@ -80,8 +79,8 @@ const UserDetailPage: React.FC = () => {
                 <Card>
                   <div className="text-muted fs-12">Quick links</div>
                   <div className="mt-10 flex-row gap-8 flex-wrap">
-                    <button type="button" onClick={() => setTab('transactions')} style={actionButtonStyle('primary')}>View transactions</button>
-                    <button type="button" onClick={() => setIsCreateTxnModalOpen(true)} style={actionButtonStyle('neutral')}>Create transaction</button>
+                    <button type="button" onClick={() => setTab('transactions')} className="action-btn action-btn-primary">View transactions</button>
+                    <button type="button" onClick={() => setIsCreateTxnModalOpen(true)} className="action-btn">Create transaction</button>
                   </div>
                 </Card>
               </div>

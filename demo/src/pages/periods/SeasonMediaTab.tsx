@@ -9,12 +9,6 @@ import { getCsrfToken } from '../../utils/csrf';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-} from '../identity/detail/detailStyles';
 import s from './ProjectSeasonDetailPage.module.css';
 
 export interface SeasonMediaTabProps {
@@ -216,10 +210,10 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
             <Alert variant="info">No squad members to show media status for.</Alert>
           ) : (
             <div className="overflow-x-auto">
-              <Table style={compactTableStyle}>
+              <Table className="detail-table">
                 <thead>
                   <tr>
-                    <th style={{ ...compactThStyle, width: '36px', textAlign: 'center' }}>
+                    <th className="detail-th" style={{ width: '36px', textAlign: 'center' }}>
                       <input
                         type="checkbox"
                         checked={batchSelectedMemberIds.size === members.length && members.length > 0}
@@ -235,9 +229,9 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         title="Selecteer alles"
                       />
                     </th>
-                    <th style={{ ...compactThStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
+                    <th className="detail-th" style={{ position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
                     {MEDIA_SLOTS.map((slot) => (
-                      <th key={slot.id} style={{ ...compactThStyle, textAlign: 'center', minWidth: '60px', height: '80px', verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
+                      <th key={slot.id} className="detail-th" style={{ textAlign: 'center', minWidth: '60px', height: '80px', verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                           <span style={{
                             display: 'block',
@@ -254,16 +248,16 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         </div>
                       </th>
                     ))}
-                    <th style={{ ...compactThStyle, textAlign: 'center' }}>Score</th>
+                    <th className="detail-th" style={{ textAlign: 'center' }}>Score</th>
                   </tr>
                 </thead>
                 <tbody>
                   {/* Guest Player row */}
                   <tr className={s.guestRow}>
-                    <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                    <td className="detail-td" style={{ textAlign: 'center' }}>
                       {/* No batch checkbox for guest */}
                     </td>
-                    <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
+                    <td className="detail-td-text" style={{ position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
                       <span className={s.guestLabel}>{'\uD83C\uDFC3'} Gast Speler</span>
                     </td>
                     {MEDIA_SLOTS.map((slot) => {
@@ -279,7 +273,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           ? () => cropGuestCloseup('home')
                           : () => openGuestAiModal(guestSlot.templateId);
                         return (
-                          <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
+                          <td key={slot.id} className="detail-td" style={{ textAlign: 'center' }}>
                             <span
                               className={s.guestIndicator}
                               title={guestSlot.has ? `${guestSlot.label}: Beschikbaar \u2014 klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
@@ -291,12 +285,12 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         );
                       }
                       return (
-                        <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
+                        <td key={slot.id} className="detail-td" style={{ textAlign: 'center' }}>
                           <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}>\u2014</span>
                         </td>
                       );
                     })}
-                    <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                    <td className="detail-td" style={{ textAlign: 'center' }}>
                       {(() => {
                         const guestFilledCount = [
                           guestPlayer?.has_avatar,
@@ -327,7 +321,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
 
                     return (
                       <tr key={String(m.id)} style={{ background: isBatchSelected ? 'rgba(59,130,246,0.06)' : undefined }}>
-                        <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                        <td className="detail-td" style={{ textAlign: 'center' }}>
                           <input
                             type="checkbox"
                             checked={isBatchSelected}
@@ -342,7 +336,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             style={{ cursor: 'pointer' }}
                           />
                         </td>
-                        <td style={{ ...compactTextTdStyle, position: 'sticky', left: 0, background: isBatchSelected ? 'rgba(59,130,246,0.06)' : 'var(--app-surface)', zIndex: 1 }}>
+                        <td className="detail-td-text" style={{ position: 'sticky', left: 0, background: isBatchSelected ? 'rgba(59,130,246,0.06)' : 'var(--app-surface)', zIndex: 1 }}>
                           {href ? (
                             <Link
                               to={href}
@@ -373,7 +367,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           };
                           const tabId = slotTabMap[slot.id] || slot.id;
                           return (
-                            <td key={slot.id} style={{ ...compactTdStyle, textAlign: 'center' }}>
+                            <td key={slot.id} className="detail-td" style={{ textAlign: 'center' }}>
                               {href ? (
                                 <Link
                                   to={`${href}?tab=${tabId}`}
@@ -388,7 +382,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             </td>
                           );
                         })}
-                        <td style={{ ...compactTdStyle, textAlign: 'center' }}>
+                        <td className="detail-td" style={{ textAlign: 'center' }}>
                           <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
                             {filledCount}/{MEDIA_SLOTS.length}
                           </Badge>

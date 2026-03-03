@@ -14,14 +14,6 @@ import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core
 import LoadingState from '../../components/LoadingState';
 import { Table } from '../../shims/design-system';
 import PeriodEditModal from '../identity/PeriodEditModal';
-import {
-  actionButtonStyle,
-  compactActionsStyle,
-  compactTableStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactThStyle,
-} from '../identity/detail/detailStyles';
 import { periodPathKey } from '../../utils/periodPath';
 
 import { useSquadPageData } from './useSquadPageData';
@@ -167,16 +159,16 @@ export default function ProjectSeasonSquadPage() {
 
                 <div className="p-16">
                   <div className="overflow-x-auto">
-                    <Table style={compactTableStyle}>
+                    <Table className="detail-table">
                       <thead>
                         <tr>
-                          <th style={compactThStyle}>Name</th>
-                          <th style={compactThStyle}>Email</th>
-                          <th style={compactThStyle}>Access</th>
-                          <th style={compactThStyle}>Functional</th>
-                          <th style={compactThStyle}>Position</th>
-                          <th style={compactThStyle}>#</th>
-                          <th style={compactThStyle} className="text-right">Actions</th>
+                          <th className="detail-th">Name</th>
+                          <th className="detail-th">Email</th>
+                          <th className="detail-th">Access</th>
+                          <th className="detail-th">Functional</th>
+                          <th className="detail-th">Position</th>
+                          <th className="detail-th">#</th>
+                          <th className="detail-th text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -204,34 +196,34 @@ export default function ProjectSeasonSquadPage() {
 
                           return (
                             <tr key={String(membershipId || user.id)}>
-                              <td style={compactTextTdStyle}>
+                              <td className="detail-td-text">
                                 {userId ? (
                                   <Link to={`/users/${userId}`} className="text-blue-600 hover:underline" style={{ textDecoration: 'none' }}>{name}</Link>
                                 ) : name}
                               </td>
-                              <td style={compactTextTdStyle}>{email}</td>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td-text">{email}</td>
+                              <td className="detail-td">
                                 <Badge variant={role === 'admin' ? 'warning' : 'default'}>{role}</Badge>
                               </td>
-                              <td style={compactTdStyle}>
+                              <td className="detail-td">
                                 {functionalRoles.length ? (
                                   <div className="flex-row gap-6 flex-wrap">
                                     {functionalRoles.map((r: string) => <Badge key={r} variant="default">{r}</Badge>)}
                                   </div>
                                 ) : '—'}
                               </td>
-                              <td style={compactTextTdStyle}>{position}</td>
-                              <td style={compactTdStyle}>{shirtNumber || '—'}</td>
-                              <td style={compactTdStyle}>
-                                <div style={compactActionsStyle}>
+                              <td className="detail-td-text">{position}</td>
+                              <td className="detail-td">{shirtNumber || '—'}</td>
+                              <td className="detail-td">
+                                <div className="detail-actions">
                                   {userId ? (
-                                    <button onClick={() => d.navigate(`/users/${userId}`)} style={actionButtonStyle('primary')}>View</button>
-                                  ) : <span style={{ color: 'var(--app-muted-text)' }}>—</span>}
+                                    <button onClick={() => d.navigate(`/users/${userId}`)} className="action-btn action-btn-primary">View</button>
+                                  ) : <span className="text-muted">—</span>}
                                   {d.userCanEditProject && (
-                                    <button onClick={() => { d.setSelectedMembership(m); d.setIsMembershipEditModalOpen(true); }} style={actionButtonStyle('warning')}>Edit</button>
+                                    <button onClick={() => { d.setSelectedMembership(m); d.setIsMembershipEditModalOpen(true); }} className="action-btn action-btn-warning">Edit</button>
                                   )}
                                   {d.userCanDeleteProject && (
-                                    <button onClick={() => d.deleteMembership(m)} style={actionButtonStyle('danger')}>Delete</button>
+                                    <button onClick={() => d.deleteMembership(m)} className="action-btn action-btn-danger">Delete</button>
                                   )}
                                 </div>
                               </td>
@@ -240,7 +232,7 @@ export default function ProjectSeasonSquadPage() {
                         })}
                         {d.members.length === 0 && (
                           <tr>
-                            <td colSpan={7} style={{ ...compactTdStyle, textAlign: 'center', padding: '24px' }}>
+                            <td colSpan={7} className="detail-td" style={{ textAlign: 'center', padding: '24px' }}>
                               No members found for this season.
                             </td>
                           </tr>

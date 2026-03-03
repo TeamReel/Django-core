@@ -4,14 +4,6 @@
 import { Alert, Input } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
-import {
-  actionButtonStyle,
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-} from './detail/detailStyles';
 import type { UserDetailDataReturn } from './useUserDetailData';
 
 interface Props {
@@ -36,40 +28,40 @@ export function UserDetailActivityTabs({ data }: Props) {
           <Input value={hierarchySearch} onChange={(e) => setHierarchySearch((e.target as any).value)} placeholder="Search…" />
         </div>
         <div className="mt-12">
-          <Table style={compactTableStyle}>
+          <Table className="detail-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Club</th>
-                <th style={compactThStyle}>Team</th>
-                <th style={compactThStyle}>Season</th>
-                <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                <th className="detail-th">Club</th>
+                <th className="detail-th">Team</th>
+                <th className="detail-th">Season</th>
+                <th className="detail-th text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {hierarchyRows.map((r) => (
                 <tr key={`${r.teamId}::${r.seasonId}`}>
-                  <td style={compactTextTdStyle}>
+                  <td className="detail-td-text">
                     {renderNavLink(r.clubName || '-', r.clubSlug ? `/organisations/${primaryOrgSlug}/projects/${r.clubSlug}` : '')}
                   </td>
-                  <td style={compactTextTdStyle}>{renderNavLink(r.teamName || '-', r.teamPath)}</td>
-                  <td style={compactTextTdStyle}>{renderNavLink(r.seasonName || r.seasonId, r.seasonPath)}</td>
-                  <td style={compactTdStyle}>
-                    <div style={compactActionsStyle}>
+                  <td className="detail-td-text">{renderNavLink(r.teamName || '-', r.teamPath)}</td>
+                  <td className="detail-td-text">{renderNavLink(r.seasonName || r.seasonId, r.seasonPath)}</td>
+                  <td className="detail-td">
+                    <div className="detail-actions">
                       {r.teamPath ? (
-                        <button type="button" className="app-action-button" onClick={() => navigate(r.teamPath)} style={actionButtonStyle('primary')}>View Team</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(r.teamPath)}>View Team</button>
                       ) : (
-                        <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>View Team</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" disabled>View Team</button>
                       )}
                       {r.seasonPath ? (
-                        <button type="button" className="app-action-button" onClick={() => navigate(r.seasonPath)} style={actionButtonStyle('primary')}>View Season</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(r.seasonPath)}>View Season</button>
                       ) : (
-                        <button type="button" className="app-action-button" disabled style={{ ...actionButtonStyle('primary'), opacity: 0.5, cursor: 'not-allowed' }}>View Season</button>
+                        <button type="button" className="app-action-button action-btn action-btn-primary" disabled>View Season</button>
                       )}
                     </div>
                   </td>
                 </tr>
               ))}
-              {!hierarchyRows.length && <tr><td style={compactTdStyle} colSpan={4}><em className="text-muted">No linked seasons found.</em></td></tr>}
+              {!hierarchyRows.length && <tr><td className="detail-td" colSpan={4}><em className="text-muted">No linked seasons found.</em></td></tr>}
             </tbody>
           </Table>
         </div>
@@ -82,14 +74,14 @@ export function UserDetailActivityTabs({ data }: Props) {
       <div className="grid gap-12">
         {loadingRelations && <Alert variant="info">Loading seasons, competitions and matches…</Alert>}
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>Seasons</h3>
-          <Table style={compactTableStyle}>
+          <h3 className="m-0">Seasons</h3>
+          <Table className="detail-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Season</th>
-                <th style={compactThStyle}>Team</th>
-                <th style={compactThStyle}>Club</th>
-                <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                <th className="detail-th">Season</th>
+                <th className="detail-th">Team</th>
+                <th className="detail-th">Club</th>
+                <th className="detail-th text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -100,22 +92,22 @@ export function UserDetailActivityTabs({ data }: Props) {
                   ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}/${r.seasonId}` : '';
                 return (
                   <tr key={`${r.teamId}::${r.seasonId}`}>
-                    <td style={compactTextTdStyle}>{renderNavLink(r.seasonName || r.seasonId, seasonPath)}</td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">{renderNavLink(r.seasonName || r.seasonId, seasonPath)}</td>
+                    <td className="detail-td-text">
                       {renderNavLink(r.teamName || r.teamId, primaryOrgSlug && clubSlug && teamSlugOrId ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}` : '')}
                     </td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {renderNavLink(r.clubName || r.clubId, primaryOrgSlug && clubSlug ? `/${primaryOrgSlug}/${clubSlug}` : '')}
                     </td>
-                    <td style={compactTdStyle}>
-                      <div style={compactActionsStyle}>
-                        <button type="button" className="app-action-button" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath} style={actionButtonStyle('primary')}>View</button>
+                    <td className="detail-td">
+                      <div className="detail-actions">
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => seasonPath && navigate(seasonPath)} disabled={!seasonPath}>View</button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {!teamSeasonPairs.length && <tr><td style={compactTdStyle} colSpan={4}><em className="text-muted">No season-linked team memberships.</em></td></tr>}
+              {!teamSeasonPairs.length && <tr><td className="detail-td" colSpan={4}><em className="text-muted">No season-linked team memberships.</em></td></tr>}
             </tbody>
           </Table>
         </div>
@@ -128,14 +120,14 @@ export function UserDetailActivityTabs({ data }: Props) {
       <div className="grid gap-12">
         {loadingRelations && <Alert variant="info">Loading competitions…</Alert>}
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>Competitions</h3>
-          <Table style={compactTableStyle}>
+          <h3 className="m-0">Competitions</h3>
+          <Table className="detail-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Name</th>
-                <th style={compactThStyle}>Season</th>
-                <th style={compactThStyle}>Team</th>
-                <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                <th className="detail-th">Name</th>
+                <th className="detail-th">Season</th>
+                <th className="detail-th">Team</th>
+                <th className="detail-th text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -150,23 +142,23 @@ export function UserDetailActivityTabs({ data }: Props) {
                   ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}/${parentSeasonId}/${c.id}` : '';
                 return (
                   <tr key={String(c?.id)}>
-                    <td style={compactTextTdStyle}>{renderNavLink(String(c?.name || ''), competitionPath)}</td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">{renderNavLink(String(c?.name || ''), competitionPath)}</td>
+                    <td className="detail-td-text">
                       {renderNavLink(String(c?.parent_period?.name || ''), parentSeasonId && primaryOrgSlug && clubSlug && teamSlugOrId
                         ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}/${parentSeasonId}` : '')}
                     </td>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {renderNavLink(String(team?.name || ''), primaryOrgSlug && clubSlug && teamSlugOrId ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}` : '')}
                     </td>
-                    <td style={compactTdStyle}>
-                      <div style={compactActionsStyle}>
-                        <button type="button" className="app-action-button" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath} style={actionButtonStyle('primary')}>View</button>
+                    <td className="detail-td">
+                      <div className="detail-actions">
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => competitionPath && navigate(competitionPath)} disabled={!competitionPath}>View</button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
-              {!linkedCompetitions.length && <tr><td style={compactTdStyle} colSpan={4}><em className="text-muted">No competitions found for linked seasons.</em></td></tr>}
+              {!linkedCompetitions.length && <tr><td className="detail-td" colSpan={4}><em className="text-muted">No competitions found for linked seasons.</em></td></tr>}
             </tbody>
           </Table>
         </div>
@@ -179,14 +171,14 @@ export function UserDetailActivityTabs({ data }: Props) {
       <div className="grid gap-12">
         {loadingRelations && <Alert variant="info">Loading matches…</Alert>}
         <div className="card">
-          <h3 style={{ marginTop: 0 }}>Matches</h3>
-          <Table style={compactTableStyle}>
+          <h3 className="m-0">Matches</h3>
+          <Table className="detail-table">
             <thead>
               <tr>
-                <th style={compactThStyle}>Title</th>
-                <th style={compactThStyle}>Start</th>
-                <th style={compactThStyle}>Team</th>
-                <th style={{ ...compactThStyle, textAlign: 'right' }}>Actions</th>
+                <th className="detail-th">Title</th>
+                <th className="detail-th">Start</th>
+                <th className="detail-th">Team</th>
+                <th className="detail-th text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -210,20 +202,20 @@ export function UserDetailActivityTabs({ data }: Props) {
                   : (matchKeyOrId ? `/matches/${matchKeyOrId}` : '');
                 return (
                   <tr key={String(m?.id)}>
-                    <td style={compactTextTdStyle}>
+                    <td className="detail-td-text">
                       {matchPath ? (
-                        <a href={matchPath} className="text-blue-600 hover:underline fw-700 inline-block truncate" style={{ textDecoration: 'none', maxWidth: '100%' }} onClick={(e) => { e.preventDefault(); navigate(matchPath); }} title="Open match details">
+                        <a href={matchPath} className="text-blue-600 hover:underline fw-700 inline-block truncate text-decoration-none" style={{ maxWidth: '100%' }} onClick={(e) => { e.preventDefault(); navigate(matchPath); }} title="Open match details">
                           {String(m?.title || '') || '—'}
                         </a>
                       ) : <span className="text-muted">—</span>}
                     </td>
-                    <td style={compactTextTdStyle}>{String(m?.start_time || '')}</td>
-                    <td style={compactTextTdStyle}>{renderNavLink(teamName, teamPath)}</td>
-                    <td style={compactTdStyle}>
-                      <div style={compactActionsStyle}>
-                        <button type="button" className="app-action-button" onClick={() => { if (matchPath) navigate(matchPath); }} disabled={!matchPath} style={actionButtonStyle('primary')}>View</button>
-                        <button type="button" className="app-action-button" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }} style={actionButtonStyle('warning')}>Edit</button>
-                        <button type="button" className="app-action-button" style={actionButtonStyle('danger')} onClick={async () => {
+                    <td className="detail-td-text">{String(m?.start_time || '')}</td>
+                    <td className="detail-td-text">{renderNavLink(teamName, teamPath)}</td>
+                    <td className="detail-td">
+                      <div className="detail-actions">
+                        <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { if (matchPath) navigate(matchPath); }} disabled={!matchPath}>View</button>
+                        <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }}>Edit</button>
+                        <button type="button" className="app-action-button action-btn action-btn-danger" onClick={async () => {
                           if (!m?.id) return;
                           if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
                           try { await deleteMatch(m.id); } catch (e) { alert(e instanceof Error ? e.message : 'Failed'); }
@@ -233,7 +225,7 @@ export function UserDetailActivityTabs({ data }: Props) {
                   </tr>
                 );
               })}
-              {!linkedMatches.length && <tr><td style={compactTdStyle} colSpan={4}><em className="text-muted">No matches linked.</em></td></tr>}
+              {!linkedMatches.length && <tr><td className="detail-td" colSpan={4}><em className="text-muted">No matches linked.</em></td></tr>}
             </tbody>
           </Table>
         </div>

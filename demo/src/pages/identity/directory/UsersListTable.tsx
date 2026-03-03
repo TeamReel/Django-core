@@ -7,14 +7,7 @@
 import React from 'react';
 import { Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
-import {
-  compactTableStyle,
-  compactThStyle,
-  compactTdStyle,
-  compactTextTdStyle,
-  compactActionsStyle,
-  actionButtonStyle,
-} from '../../../utils/directoryStyles';
+
 import {
   linkButtonStyle,
   badgeButtonStyle,
@@ -103,16 +96,12 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
         className="overflow-x-auto"
         style={{ WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}
       >
-        <Table style={compactTableStyle}>
+        <Table className="dir-table">
           <thead>
             <tr>
               <th
-                style={{
-                  ...compactThStyle,
-                  width: 36,
-                  textAlign: 'center',
-                  padding: '4px',
-                }}
+                className="dir-th text-center"
+                style={{ width: 36, padding: '4px' }}
               >
                 <input
                   type="checkbox"
@@ -124,22 +113,22 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                 />
               </th>
               {!orgLocked && (
-                <th style={{ ...compactThStyle, width: '14%' }}>Federation</th>
+                <th className="dir-th" style={{ width: '14%' }}>Federation</th>
               )}
               {!clubLocked && (
-                <th style={{ ...compactThStyle, width: '14%' }}>Club</th>
+                <th className="dir-th" style={{ width: '14%' }}>Club</th>
               )}
               {!teamLocked && (
-                <th style={{ ...compactThStyle, width: '14%' }}>Team</th>
+                <th className="dir-th" style={{ width: '14%' }}>Team</th>
               )}
-              <th style={{ ...compactThStyle, width: '12%' }}>Username</th>
-              <th style={{ ...compactThStyle, width: '14%' }}>Email</th>
-              <th style={{ ...compactThStyle, width: '10%' }}>Season</th>
-              <th style={{ ...compactThStyle, width: '10%' }}>Competition</th>
-              <th style={{ ...compactThStyle, width: '10%' }}>Match</th>
-              <th style={{ ...compactThStyle, width: '8%' }}>Role</th>
-              <th style={{ ...compactThStyle, width: '10%' }}>Status</th>
-              <th style={{ ...compactThStyle, width: '10%' }}>Actions</th>
+              <th className="dir-th" style={{ width: '12%' }}>Username</th>
+              <th className="dir-th" style={{ width: '14%' }}>Email</th>
+              <th className="dir-th" style={{ width: '10%' }}>Season</th>
+              <th className="dir-th" style={{ width: '10%' }}>Competition</th>
+              <th className="dir-th" style={{ width: '10%' }}>Match</th>
+              <th className="dir-th" style={{ width: '8%' }}>Role</th>
+              <th className="dir-th" style={{ width: '10%' }}>Status</th>
+              <th className="dir-th" style={{ width: '10%' }}>Actions</th>
             </tr>
           </thead>
 
@@ -205,12 +194,8 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   }
                 >
                   <td
-                    style={{
-                      ...compactTdStyle,
-                      textAlign: 'center',
-                      padding: '4px',
-                      width: 36,
-                    }}
+                    className="dir-td text-center"
+                    style={{ padding: '4px', width: 36 }}
                   >
                     <input
                       type="checkbox"
@@ -223,7 +208,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
 
                   {/* Federation */}
                   {!orgLocked && (
-                    <td style={compactTextTdStyle} title={orgName}>
+                    <td className="dir-td-text" title={orgName}>
                       {orgHref && orgName !== '-' ? (
                         <button
                           style={linkButtonStyle}
@@ -239,7 +224,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
 
                   {/* Club */}
                   {!clubLocked && (
-                    <td style={compactTextTdStyle} title={scoped.club.title}>
+                    <td className="dir-td-text" title={scoped.club.title}>
                       {clubHref && scoped.club.label !== '-' ? (
                         <button
                           style={linkButtonStyle}
@@ -255,7 +240,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
 
                   {/* Team */}
                   {!teamLocked && (
-                    <td style={compactTextTdStyle} title={scoped.team.title}>
+                    <td className="dir-td-text" title={scoped.team.title}>
                       {teamHref && scoped.team.label !== '-' ? (
                         <button
                           style={linkButtonStyle}
@@ -270,7 +255,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   )}
 
                   {/* Username */}
-                  <td style={compactTextTdStyle} className="font-medium">
+                  <td className="dir-td-text font-medium">
                     {u?.id ? (
                       <button
                         style={linkButtonStyle}
@@ -289,14 +274,14 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
 
                   {/* Email */}
                   <td
-                    style={compactTextTdStyle}
+                    className="dir-td-text"
                     title={String(u.email || '')}
                   >
                     {u.email}
                   </td>
 
                   {/* Season */}
-                  <td style={compactTdStyle}>
+                  <td className="dir-td">
                     <button
                       type="button"
                       style={badgeButtonStyle}
@@ -316,7 +301,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   </td>
 
                   {/* Competition */}
-                  <td style={compactTdStyle}>
+                  <td className="dir-td">
                     <button
                       type="button"
                       style={badgeButtonStyle}
@@ -339,7 +324,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   </td>
 
                   {/* Match */}
-                  <td style={compactTdStyle}>
+                  <td className="dir-td">
                     <button
                       type="button"
                       style={badgeButtonStyle}
@@ -359,7 +344,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   </td>
 
                   {/* Role */}
-                  <td style={compactTdStyle} title={roleDisplay.title}>
+                  <td className="dir-td" title={roleDisplay.title}>
                     <Badge
                       variant="default"
                       style={scopedLocked ? badgeNoBorderStyle : undefined}
@@ -369,7 +354,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   </td>
 
                   {/* Status */}
-                  <td style={compactTdStyle}>
+                  <td className="dir-td">
                     <Badge
                       variant={u.is_active ? 'success' : 'warning'}
                       style={scopedLocked ? badgeNoBorderStyle : undefined}
@@ -379,14 +364,14 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   </td>
 
                   {/* Actions */}
-                  <td style={compactTdStyle}>
-                    <div style={compactActionsStyle}>
+                  <td className="dir-td">
+                    <div className="dir-actions">
                       <button
                         onClick={() => {
                           setDetailUser(u);
                           setIsDetailModalOpen(true);
                         }}
-                        style={actionButtonStyle('primary')}
+                        className="action-btn action-btn-primary"
                       >
                         View
                       </button>
@@ -394,7 +379,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                       {isDirectMembership && (
                         <button
                           onClick={() => handleEditClick(u)}
-                          style={actionButtonStyle('warning')}
+                          className="action-btn action-btn-warning"
                         >
                           Edit
                         </button>
@@ -409,7 +394,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                               orgName,
                             )
                           }
-                          style={actionButtonStyle('danger')}
+                          className="action-btn action-btn-danger"
                         >
                           Delete
                         </button>
@@ -424,7 +409,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                               scoped.team.label,
                             )
                           }
-                          style={actionButtonStyle('danger')}
+                          className="action-btn action-btn-danger"
                         >
                           Remove
                         </button>
