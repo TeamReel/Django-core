@@ -1,0 +1,178 @@
+import React from 'react';
+import { Card, Badge } from '@django-core/design-system';
+import { Table } from '@/shims/design-system';
+import {
+  compactTableStyle,
+  compactThStyle,
+  compactTdStyle,
+  compactTextTdStyle,
+  compactActionsStyle,
+  actionButtonStyle,
+} from '../../../utils/directoryStyles';
+import { isNumericId, isUuid } from './useTeamsListData';
+import type { OrganisationOption } from '../../work/WorkFilterBar';
+
+interface TeamsListTableProps {
+  filteredTeams: any[];
+  organisations: OrganisationOption[];
+  clubs: any[];
+  orgLocked: boolean;
+  clubLocked: boolean;
+  lockedOrgSlug: string;
+  selectedOrgId: string;
+  userCanEditProject: boolean;
+  userCanDeleteProject: boolean;
+  navigate: (path: string) => void;
+  onView: (team: any) => void;
+  onEdit: (team: any) => void;
+  onDelete: (orgSlugOrId: string, teamId: string, teamName: string) => void;
+}
+
+export const TeamsListTable: React.FC<TeamsListTableProps> = ({
+  filteredTeams, organisations, clubs, orgLocked, clubLocked,
+  lockedOrgSlug, selectedOrgId, userCanEditProject, userCanDeleteProject,
+  navigate, onView, onEdit, onDelete,
+}) => (
+  <Card>
+    <div className="overflow-x-auto">
+      <Table style={compactTableStyle}>
+        <thead>
+          <tr>
+            {!orgLocked && <th style={{ ...compactThStyle, width: '15%' }}>Federation</th>}
+            {!clubLocked && <th style={{ ...compactThStyle, width: '15%' }}>Club</th>}
+            <th style={{ ...compactThStyle, width: '18%' }}>Team</th>
+            <th style={{ ...compactThStyle, width: '12%' }}>Sport</th>
+            <th style={{ ...compactThStyle, width: '8%' }}>Variant</th>
+            <th style={{ ...compactThStyle, width: '8%' }}>Season</th>
+            <th style={{ ...compactThStyle, width: '8%' }}>Competition</th>
+            <th style={{ ...compactThStyle, width: '8%' }}>Match</th>
+            <th style={{ ...compactThStyle, width: '8%' }}>Users</th>
+            <th style={{ ...compactThStyle, width: '8%' }}>Status</th>
+            <th style={{ ...compactThStyle, width: '12%' }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredTeams.map((team: any) => {
+            const resolved = resolveTeamRow(team, organisations, clubs, lockedOrgSlug, selectedOrgId, orgLocked);
+            return (
+              <tr key={team.id}>
+                {!orgLocked && (
+                  <td style={compactTextTdStyle}>
+                    {resolved.orgSlugOrId ? (
+                      <a
+                        href={`/organisations/${resolved.orgSlugOrId}`}
+                        className="text-blue-600 hover:underline"
+                        onClick={(e) => { e.preventDefault(); navigate(`/organisations/${resolved.orgSlugOrId}`); }}
+                      >
+                        {team.organisation?.name || '-'}
+                      </a>
+                    ) : (team.organisation?.name || '-')}
+                  </td>
+                )}
+
+                {!clubLocked && (
+                  <td style={compactTextTdStyle}>
+                    {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
+                      <a
+                        href={`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}`}
+                        className="text-blue-600 hover:underline"
+                        onClick={(e) => { e.preventDefault(); navigate(`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}`); }}
+                      >
+                        {resolved.clubName}
+                      </a>
+                    ) : resolved.clubName}
+                  </td>
+                )}
+
+                <td style={compactTextTdStyle}>
+                  {resolved.orgSlugOrId && resolved.clubSlugOrId ? (
+                    <a
+                      href={`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}/${resolved.teamSlugOrId}`}
+                      className="text-blue-600 hover:underline"
+                      onClick={(e) => { e.preventDefault(); navigate(`/${resolved.orgSlugOrId}/${resolved.clubSlugOrId}/${resolved.teamSlugOrId}`); }}
+                    >
+                      {team.name}
+                    </a>
+                  ) : team.name}
+                </td>
+
+                <td style={compactTdStyle}>
+                  {resolved.orgSport ? (
+                    <span className="flex-row gap-4">
+                      <span>{resolved.orgSport.sport_icon}</span>
+                      <span className="fs-12">{resolved.orgSport.name}</span>
+                    </span>
+                  ) : <span className="text-muted">—</span>}
+                </td>
+
+                <td style={compactTdStyle}><Badge variant="default">{team.sport_variants_count || 0}</Badge></td>
+                <td style={compactTdStyle}><Badge variant="default">{team.seasons_count || 0}</Badge></td>
+                <td style={compactTdStyle}><Badge variant="default">{team.competitions_count || 0}</Badge></td>
+                <td style={compactTdStyle}><Badge variant="default">{team.matches_count || 0}</Badge></td>
+                <td style={compactTdStyle}><Badge variant="default">{team.member_count || 0}</Badge></td>
+                <td style={compactTdStyle}>
+                  <Badge variant={team.is_active === false ? 'warning' : 'success'}>
+                    {team.is_active === false ? 'Inactive' : 'Active'}
+                  </Badge>
+                </td>
+                <td style={compactTdStyle}>
+                  <div style={compactActionsStyle}>
+                    <button onClick={() => onView(team)} style={actionButtonStyle('primary')}>View</button>
+                    {userCanEditProject && (
+                      <button onClick={() => onEdit(team)} style={actionButtonStyle('warning')}>Edit</button>
+                    )}
+                    {userCanDeleteProject && (
+                      <button
+                        onClick={() => onDelete(String(resolved.orgSlugOrId), String(team.id), String(team.name))}
+                        style={actionButtonStyle('danger')}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+    </div>
+  </Card>
+);
+
+/* ── Per-row slug resolution (extracted from inline map logic) ── */
+
+function resolveTeamRow(
+  team: any,
+  organisations: OrganisationOption[],
+  clubs: any[],
+  lockedOrgSlug: string,
+  selectedOrgId: string,
+  orgLocked: boolean,
+) {
+  const orgIdFromProject = team.organisation?.id || (typeof team.organisation === 'string' ? team.organisation : undefined);
+  const orgSlugFromProject = team.organisation?.slug;
+  const orgFromList = orgIdFromProject
+    ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
+    : undefined;
+
+  const orgSport = (team.organisation as any)?.sport || (orgFromList as any)?.sport;
+
+  const contextSlug = lockedOrgSlug || (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined);
+  const orgSlugOrId =
+    orgSlugFromProject ||
+    orgFromList?.slug ||
+    (orgLocked ? contextSlug : undefined) ||
+    orgIdFromProject ||
+    selectedOrgId;
+
+  const parent = team.parent_project || team.parent_id || team.parent_project_id;
+  const parentId = typeof parent === 'object' ? parent.id : parent;
+  const parentName = typeof parent === 'object' ? (parent.name || parent.slug) : parent;
+  const clubObj = clubs.find((c: any) => String(c.id) === String(parentId));
+  const clubName = clubObj ? clubObj.name : (parentName || '-');
+  const clubSlugOrId = clubObj ? (clubObj.slug || clubObj.id) : parentId;
+  const teamSlugOrId = team.slug || team.id;
+
+  return { orgSlugOrId, orgSport, clubName, clubSlugOrId, teamSlugOrId };
+}
