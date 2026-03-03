@@ -201,12 +201,10 @@ export const AuditLogPage: React.FC = () => {
         )}
 
         {/* Details modal */}
-        {d.selectedEvent && (
-          <AuditLogDetailModal
-            event={d.selectedEvent}
-            onClose={() => d.setSelectedEvent(null)}
-          />
-        )}
+        <AuditLogDetailModal
+          event={d.selectedEvent}
+          onClose={() => d.setSelectedEvent(null)}
+        />
       </PageContent>
     </>
   );

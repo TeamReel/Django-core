@@ -1,41 +1,21 @@
 import React from 'react';
 import type { AuditEvent } from '../../types';
+import { Modal } from '../../components/ui';
 
 interface AuditLogDetailModalProps {
-  event: AuditEvent;
+  event: AuditEvent | null;
   onClose: () => void;
 }
 
 export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({ event, onClose }) => (
-  <div
-    style={{
-      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 1000,
-    }}
-    onClick={onClose}
-    data-testid="audit-details-modal"
+  <Modal
+    isOpen={!!event}
+    onClose={onClose}
+    title="Audit Event Details"
+    size="lg"
   >
-    <div
-      style={{
-        backgroundColor: 'var(--app-surface)', borderRadius: '8px',
-        maxWidth: '800px', width: '90%', maxHeight: '80vh',
-        overflow: 'auto', padding: '24px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-      }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="flex-between mb-24">
-        <h2 className="m-0 fs-20 fw-600 text-primary">Audit Event Details</h2>
-        <button
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: 'var(--app-text)', padding: '0 8px' }}
-          aria-label="Close"
-        >×</button>
-      </div>
-
-      <div className="flex-col gap-16">
+    {event && (
+      <div className="flex-col gap-16" data-testid="audit-details-modal">
         <Field label="Event ID" value={event.id} mono />
         <Field label="Timestamp (ISO)" value={new Date(event.timestamp).toISOString()} mono />
         <Field label="Event Type" value={event.event_type} />
@@ -60,8 +40,8 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({ event,
           </div>
         )}
       </div>
-    </div>
-  </div>
+    )}
+  </Modal>
 );
 
 const Field: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (

@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Badge, Button } from '@django-core/design-system';
+import { Modal } from '../ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
 // ============================================================================
@@ -38,51 +39,7 @@ import { getCsrfToken } from '../../utils/csrf';
 // Styles
 // ============================================================================
 
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  zIndex: 9000,
-  background: 'rgba(0, 0, 0, 0.6)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '20px',
-};
 
-const modalStyle: React.CSSProperties = {
-  background: 'var(--app-surface, #1a1a2e)',
-  borderRadius: '12px',
-  width: '100%',
-  maxWidth: '700px',
-  maxHeight: '80vh',
-  display: 'flex',
-  flexDirection: 'column',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-  border: '1px solid var(--app-border, #333)',
-};
-
-const headerStyle: React.CSSProperties = {
-  padding: '20px 24px',
-  borderBottom: '1px solid var(--app-border, #333)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-};
-
-const bodyStyle: React.CSSProperties = {
-  padding: '24px',
-  overflowY: 'auto',
-  flex: 1,
-};
-
-const footerStyle: React.CSSProperties = {
-  padding: '16px 24px',
-  borderTop: '1px solid var(--app-border, #333)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-end',
-  gap: '12px',
-};
 
 const jobRowStyle: React.CSSProperties = {
   display: 'flex',
@@ -243,28 +200,24 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
   };
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div style={headerStyle}>
-          <div className="flex-row gap-12">
-            <span className="fs-20">⚙️</span>
-            <h2 className="m-0 fs-18 fw-600">Actieve Jobs</h2>
-            <Badge variant="info">{jobs.length} actief</Badge>
-          </div>
-          <button
-            onClick={onClose}
-            className="bg-transparent border-none cursor-pointer fs-20 p-4"
-            style={{
-              color: 'var(--app-muted-text, #888)',
-            }}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Body */}
-        <div style={bodyStyle}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={<><span className="fs-20">⚙️</span> Actieve Jobs <Badge variant="info">{jobs.length} actief</Badge></>}
+      size="md"
+      footer={
+        <>
+          {jobs.filter((j) => j.processing_state === 'processing').length > 1 && (
+            <Button variant="outline" onClick={cancelAllJobs}>
+              Alles annuleren
+            </Button>
+          )}
+          <Button variant="primary" onClick={onClose}>
+            Sluiten
+          </Button>
+        </>
+      }
+    >
           {loading && jobs.length === 0 && (
             <div className="text-center" style={{ color: 'var(--app-muted-text, #888)', padding: '40px' }}>
               Laden...
@@ -358,35 +311,21 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
             );
           })}
 
-          {/* Info notice */}
-          {jobs.length > 0 && (
-            <div
-              className="mt-16 py-12 px-16 rounded-8 fs-13"
-              style={{
-                background: 'rgba(59, 130, 246, 0.1)',
-                border: '1px solid rgba(59, 130, 246, 0.3)',
-                color: '#60a5fa',
-              }}
-            >
-              💡 Video processing draait op de server. Je kunt dit venster sluiten - de verwerking gaat door.
-              De pagina wordt elke 5 seconden automatisch vernieuwd.
-            </div>
-          )}
+      {/* Info notice */}
+      {jobs.length > 0 && (
+        <div
+          className="mt-16 py-12 px-16 rounded-8 fs-13"
+          style={{
+            background: 'rgba(59, 130, 246, 0.1)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            color: '#60a5fa',
+          }}
+        >
+          💡 Video processing draait op de server. Je kunt dit venster sluiten - de verwerking gaat door.
+          De pagina wordt elke 5 seconden automatisch vernieuwd.
         </div>
-
-        {/* Footer */}
-        <div style={footerStyle}>
-          {jobs.filter((j) => j.processing_state === 'processing').length > 1 && (
-            <Button variant="outline" onClick={cancelAllJobs}>
-              Alles annuleren
-            </Button>
-          )}
-          <Button variant="primary" onClick={onClose}>
-            Sluiten
-          </Button>
-        </div>
-      </div>
-    </div>
+      )}
+    </Modal>
   );
 };
 
