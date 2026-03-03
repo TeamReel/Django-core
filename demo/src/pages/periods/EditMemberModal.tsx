@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './ProjectSeasonDetailPage.module.css';
 import { getFunctionalRolesFromMembership, type AccessRoleOption } from './seasonDetailUtils';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 
 interface EditMemberModalProps {
   member: any;

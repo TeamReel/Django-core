@@ -18,7 +18,8 @@ import {
 } from '../../../utils/directoryStyles';
 import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
 import { useMatchesData } from '../../../hooks/useMatchesData';
-import { getCsrfToken, resolveRowContext } from '../../../utils/directoryHelpers';
+import { resolveRowContext } from '../../../utils/directoryHelpers';
+import { getCsrfToken } from '../../../utils/csrf';
 import type { DirectoryListProps, RowContextConfig, Activity } from '../../../utils/directoryHelpers';
 
 // ─── MatchRow sub-component ──────────────────────────────────────────

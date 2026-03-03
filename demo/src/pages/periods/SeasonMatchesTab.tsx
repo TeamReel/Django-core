@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { periodPathKey } from '../../utils/periodPath';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import {
   actionButtonStyle,
   ctaButtonStyle,

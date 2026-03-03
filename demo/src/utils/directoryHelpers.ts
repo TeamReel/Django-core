@@ -39,12 +39,6 @@ export const sortKey = (value: unknown): string => {
 };
 
 // ────────────────────────────────────────────
-// CSRF
-// ────────────────────────────────────────────
-
-/** Read the Django CSRF token from cookies. */
-export { getCsrfToken } from './csrf';
-
 // ────────────────────────────────────────────
 // Date helpers
 // ────────────────────────────────────────────

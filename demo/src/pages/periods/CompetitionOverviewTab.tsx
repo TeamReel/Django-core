@@ -5,7 +5,7 @@ import React from 'react';
 import { Button, Card } from '@django-core/design-system';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 
 interface CompetitionOverviewTabProps {
   competition: any;

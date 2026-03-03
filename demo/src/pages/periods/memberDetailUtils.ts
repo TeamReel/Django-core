@@ -9,7 +9,7 @@ import {
   getBestUrl,
 } from '../../constants/assetProcessingSpecs';
 import { MEDIA_SLOTS, type MemberMediaForm } from '../../constants/mediaSlots';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 
 // ─── Constants ───────────────────────────────────────────────────────
 

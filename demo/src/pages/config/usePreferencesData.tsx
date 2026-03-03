@@ -21,7 +21,6 @@ import type {
 } from './preferencesTypes';
 import { useCascadingEntitySelection } from './useCascadingEntitySelection';
 
-export { getCsrfToken };
 export type { UserPreferences, I18nEffectivePreferences, NotificationPreference, EventTypeGroup, PreferencesDataReturn };
 
 /* ------------------------------------------------------------------ */

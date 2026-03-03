@@ -14,7 +14,7 @@ import {
   compactTextTdStyle,
   compactThStyle,
 } from '../identity/detail/detailStyles';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 
 export interface CompetitionMatchesTableProps {
   rows: any[];

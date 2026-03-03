@@ -10,13 +10,13 @@ import { fetchAllPages, invalidateFetchAllPagesCache } from '../utils/fetchAllPa
 import { getApiBaseUrl } from '../utils/apiBase';
 import {
   chunkArray,
-  getCsrfToken,
   sortKey,
   getTeamParentId,
   getFederationName,
   getTeamName,
   getClubName,
 } from '../utils/directoryHelpers';
+import { getCsrfToken } from '../utils/csrf';
 import type { Activity } from '../utils/directoryHelpers';
 import type { useDirectoryFilters } from './useDirectoryFilters';
 

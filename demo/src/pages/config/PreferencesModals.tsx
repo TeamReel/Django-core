@@ -6,7 +6,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from './usePreferencesData';
+import { getCsrfToken } from '../../utils/csrf';
 import type { PreferencesDataReturn } from './usePreferencesData';
 
 /* ------------------------------------------------------------------ */

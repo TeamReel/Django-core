@@ -91,6 +91,3 @@ export function unwrapListResults<T = any>(raw: any): T[] {
     envelope;
   return Array.isArray(results) ? (results as T[]) : [];
 }
-
-/** Safe CSRF token reader. */
-export { getCsrfToken } from '../utils/csrf';

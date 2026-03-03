@@ -6,7 +6,6 @@ import { AuthProvider } from '@django-core/auth-ui';
 import type { AuthConfig } from '@django-core/auth-ui';
 import { ContextSwitcherProvider } from '@django-core/context-switcher';
 import type { ContextSwitcherConfig } from '@django-core/context-switcher';
-// import { PermissionsProvider } from '@django-core/permissions';
 import { ThemeProvider, LocalStorageAdapter } from '@django-core/theme-system';
 import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
 import ErrorBoundary from './components/ErrorBoundary';

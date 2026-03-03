@@ -19,14 +19,11 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@django-core/design-system": ["../../packages/design-system/src/index.ts"],
-      "@django-core/context-switcher": ["../../packages/context-switcher/src/index.ts"],
-      "@django-core/auth-ui": ["../../packages/auth/src/index.ts"],
-      "@django-core/theme-system": ["../../packages/theme-system/src/index.ts"],
-      "@django-core/api-client": ["../../packages/api-client/src/index.ts"],
-      "@django-core/notifications-hub": ["../../packages/notifications-hub/src/index.ts"],
-      "@django-core/permissions": ["../../packages/permissions/src/index.ts"],
-      "@django-core/resource-alerts": ["../../packages/resource-display-alerts/src/index.ts"]
+      "@django-core/design-system": ["../packages/design-system/src/index.ts"],
+      "@django-core/context-switcher": ["../packages/context-switcher/src/index.ts"],
+      "@django-core/auth-ui": ["../packages/auth/src/index.ts"],
+      "@django-core/theme-system": ["../packages/theme-system/src/index.ts"],
+      "@django-core/api-client": ["../packages/api-client/src/index.ts"]
     }
   },
   "include": ["src"],

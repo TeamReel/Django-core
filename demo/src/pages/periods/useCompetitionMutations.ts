@@ -7,7 +7,7 @@ import type React from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import type { Period, SeasonProject as Project } from '../../types/season';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 
 export interface CompetitionMutationsDeps {
   apiBaseUrl: string;

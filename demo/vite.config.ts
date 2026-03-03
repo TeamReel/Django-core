@@ -17,9 +17,6 @@ export default defineConfig({
       '@django-core/auth-ui': path.resolve(__dirname, '../packages/auth/src/index.ts'),
       '@django-core/theme-system': path.resolve(__dirname, '../packages/theme-system/src/index.ts'),
       '@django-core/api-client': path.resolve(__dirname, '../packages/api-client/src/index.ts'),
-      '@django-core/notifications-hub': path.resolve(__dirname, '../packages/notifications-hub/src/index.ts'),
-      '@django-core/permissions': path.resolve(__dirname, '../packages/permissions/src/index.ts'),
-      '@django-core/resource-alerts': path.resolve(__dirname, '../packages/resource-display-alerts/src/index.ts'),
       // Force single React instance to avoid Context issues
       react: path.resolve(__dirname, './node_modules/react'),
       'react-dom': path.resolve(__dirname, './node_modules/react-dom'),

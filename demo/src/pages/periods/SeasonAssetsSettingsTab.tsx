@@ -2,7 +2,7 @@ import React from 'react';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 
 export interface SeasonAssetsSettingsTabProps {

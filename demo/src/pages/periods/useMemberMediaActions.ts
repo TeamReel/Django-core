@@ -14,7 +14,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
 import { getBestUrl } from '../../constants/assetProcessingSpecs';
 import { resolvePresignedUrls } from '../../hooks/useBrandProfile';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import {
   createEmptyMediaForm,
   createEmptyVideoVariants,

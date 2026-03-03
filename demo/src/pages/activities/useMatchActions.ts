@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import type { MatchDetail, Participation, ContentItem } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import { getEnvelopeData } from './matchDetailTypes';

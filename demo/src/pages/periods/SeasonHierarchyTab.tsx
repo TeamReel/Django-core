@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Input } from '@django-core/design-system';
 import { periodPathKey } from '../../utils/periodPath';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
 import {
   actionButtonStyle,

@@ -4,11 +4,11 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 import {
   TEMPLATE_CATEGORIES,
   SUBTYPE_LABELS,
-  getCsrfToken,
   type ContentTemplate,
   type Sport,
   type Formation,
 } from './contentTemplatesData';
+import { getCsrfToken } from '../../utils/csrf';
 
 export interface EditFormState {
   name: string;

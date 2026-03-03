@@ -5,7 +5,7 @@ import { Table } from '../../shims/design-system';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import { countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { Period } from '../../types/season';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { sleep, fetchWithThrottleRetry } from './seasonDetailUtils';
 

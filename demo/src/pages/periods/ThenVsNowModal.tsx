@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import s from './ProjectSeasonDetailPage.module.css';
-import { getCsrfToken } from '../../types/season';
+import { getCsrfToken } from '../../utils/csrf';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
