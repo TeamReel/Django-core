@@ -7,7 +7,8 @@
  * Route: /studio/videos
  * Sidebar: CONTENT section
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { PullToRefresh } from '@django-core/design-system';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -244,6 +245,12 @@ export default function VideoQueuePage() {
       />
 
       <PageContent>
+        <PullToRefresh
+          onRefresh={async () => { refresh(); }}
+          pullText="Trek om te vernieuwen"
+          releaseText="Laat los om te vernieuwen"
+          refreshingText="Vernieuwen..."
+        >
         {/* Filter bar */}
         <div className="flex-wrap gap-6 mb-16 flex-row">
           {STATUS_FILTERS.map(opt => (
@@ -304,6 +311,7 @@ export default function VideoQueuePage() {
             />
           ))}
         </div>
+      </PullToRefresh>
       </PageContent>
     </>
   );

@@ -699,3 +699,27 @@
 .safe-bottom-nav {
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
+
+/* ---------------------------------------------------------------------------
+   Container query helpers
+   --------------------------------------------------------------------------- */
+/* Establish an inline-size containment context on any element */
+.cq-inline {
+  container-type: inline-size;
+}
+
+/* Named containers for targeted @container rules */
+.cq-gallery {
+  container-type: inline-size;
+  container-name: gallery;
+}
+
+.cq-dashboard {
+  container-type: inline-size;
+  container-name: dashboard;
+}
+
+.cq-card-grid {
+  container-type: inline-size;
+  container-name: card-grid;
+}

@@ -8,6 +8,7 @@
  * Sidebar: CONTENT section → "Queue"
  */
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { PullToRefresh } from '@django-core/design-system';
 import { useLocation } from 'react-router-dom';
 import MobileTabBar from '../components/MobileTabBar';
 import { PageContent, PageHeader } from '@django-core/page-templates';
@@ -294,6 +295,12 @@ export default function ApprovalsPage() {
       />
 
       <PageContent>
+        <PullToRefresh
+          onRefresh={async () => { refresh(); refreshAiJobs(); refreshVideoJobs(); }}
+          pullText="Trek om te vernieuwen"
+          releaseText="Laat los om te vernieuwen"
+          refreshingText="Vernieuwen..."
+        >
         <MobileTabBar
           tabs={[
             { id: 'all', label: 'All' },
@@ -409,6 +416,7 @@ export default function ApprovalsPage() {
             ))}
           </div>
         )}
+      </PullToRefresh>
       </PageContent>
     </>
   );

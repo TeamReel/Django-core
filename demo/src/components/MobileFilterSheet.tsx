@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 interface MobileFilterSheetProps {
   /** Number of currently active filters (shown as badge) */
@@ -22,6 +22,9 @@ interface MobileFilterSheetProps {
 export default function MobileFilterSheet({ activeFilterCount = 0, children, onClose }: MobileFilterSheetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [dragY, setDragY] = useState(0);
+  const dragStartY = useRef(0);
+  const isDragging = useRef(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -32,8 +35,32 @@ export default function MobileFilterSheet({ activeFilterCount = 0, children, onC
 
   const close = useCallback(() => {
     setIsOpen(false);
+    setDragY(0);
     onClose?.();
   }, [onClose]);
+
+  // Swipe-to-dismiss handlers for bottom sheet
+  const handleDragStart = useCallback((e: React.TouchEvent) => {
+    dragStartY.current = e.touches[0].clientY;
+    isDragging.current = true;
+  }, []);
+
+  const handleDragMove = useCallback((e: React.TouchEvent) => {
+    if (!isDragging.current) return;
+    const diff = e.touches[0].clientY - dragStartY.current;
+    if (diff > 0) {
+      setDragY(diff);
+    }
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    isDragging.current = false;
+    if (dragY > 100) {
+      close();
+    } else {
+      setDragY(0);
+    }
+  }, [dragY, close]);
 
   // Close on Escape
   useEffect(() => {
@@ -118,6 +145,9 @@ export default function MobileFilterSheet({ activeFilterCount = 0, children, onC
 
       {/* Bottom sheet */}
       <div
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
         style={{
           position: 'fixed',
           left: 0,
@@ -130,9 +160,9 @@ export default function MobileFilterSheet({ activeFilterCount = 0, children, onC
           boxShadow: '0 -4px 20px rgba(0,0,0,0.15)',
           maxHeight: '80vh',
           overflowY: 'auto',
-          transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.3s ease',
-          padding: '16px 20px 24px',
+          transform: isOpen ? `translateY(${dragY}px)` : 'translateY(100%)',
+          transition: isDragging.current ? 'none' : 'transform 0.3s ease',
+          padding: '16px 20px calc(24px + env(safe-area-inset-bottom, 0px))',
           display: 'flex',
           flexDirection: 'column',
           gap: 12,

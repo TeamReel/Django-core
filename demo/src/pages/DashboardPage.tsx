@@ -1,5 +1,7 @@
+import { useState, useCallback } from 'react';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { PullToRefresh } from '@django-core/design-system';
 import { Link, useNavigate } from 'react-router-dom';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
@@ -34,6 +36,12 @@ export default function DashboardPage() {
     context.organisation?.id?.toString()
   );
 
+  // Pull-to-refresh: increment key to force child widgets to re-mount and refetch
+  const [refreshKey, setRefreshKey] = useState(0);
+  const handleRefresh = useCallback(async () => {
+    setRefreshKey(k => k + 1);
+  }, []);
+
   // Determine activity filter scope based on user role
   const isSuperadmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
 
@@ -52,7 +60,13 @@ export default function DashboardPage() {
     : { organisationId: context.organisation?.id?.toString() };
 
   return (
-      <div className="bg-primary" style={{ minHeight: '100%' }}>
+      <PullToRefresh
+        onRefresh={handleRefresh}
+        pullText="Trek om te vernieuwen"
+        releaseText="Laat los om te vernieuwen"
+        refreshingText="Vernieuwen..."
+      >
+      <div key={refreshKey} className="bg-primary" style={{ minHeight: '100%' }}>
         {lowBalanceAlert && (
           <div className="flex-row flex-wrap gap-12 mb-24 p-16 bg-surface-2 text-primary rounded-4" style={{ border: '1px solid #ffc107' }}>
             <span className="fs-24">⚠️</span>
@@ -247,5 +261,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      </PullToRefresh>
   );
 }

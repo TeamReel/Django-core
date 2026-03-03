@@ -1464,3 +1464,97 @@ header [role="alert"] {
     display: none !important;
   }
 }
+
+/* =============================================================================
+   CONTAINER QUERIES — Component‑level responsive layouts
+   ============================================================================= */
+
+/* Gallery grid: container for card adaptation */
+.gallery-grid {
+  container-type: inline-size;
+  container-name: gallery;
+}
+
+/* Gallery grid — switch to 2‑col compact when container < 480px */
+@container gallery (max-width: 480px) {
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .gallery-card-thumb {
+    height: 120px !important;
+  }
+
+  .gallery-card-verbose {
+    display: none !important;
+  }
+}
+
+/* Gallery grid — single column when container < 260px (e.g. sidebar) */
+@container gallery (max-width: 260px) {
+  .gallery-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Stats grid: container for stat cards */
+.stats-grid {
+  container-type: inline-size;
+  container-name: stats;
+}
+
+/* Stats grid — 4 columns when container ≥ 400px */
+@container stats (min-width: 400px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* Stats grid — 2 columns (default) when container < 400px: handled by grid-cols-2 */
+
+/* Dashboard grid: container for layout switching */
+.dashboard-grid {
+  container-type: inline-size;
+  container-name: dashboard;
+}
+
+/* Dashboard grid — side-by-side when container ≥ 768px */
+@container dashboard (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 2fr 1fr !important;
+  }
+
+  .dashboard-main { order: 1; }
+  .dashboard-sidebar { order: 2; }
+}
+
+/* Dashboard grid — stacked when container < 768px */
+@container dashboard (max-width: 767px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-sidebar { order: -1; }
+}
+
+/* Generic card grid: container for card‑level layout switching */
+.card-grid {
+  container-type: inline-size;
+  container-name: card-grid;
+}
+
+/* Card grid — 2 columns when container < 500px */
+@container card-grid (max-width: 500px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* Card grid — single column when container < 280px */
+@container card-grid (max-width: 280px) {
+  .card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

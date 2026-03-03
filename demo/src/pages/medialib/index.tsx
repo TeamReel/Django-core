@@ -218,7 +218,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* Brand Assets Grid (org, club, team) */}
           {activeLevel !== 'files' && activeLevel !== 'member' && !loading && (
             filteredBrandAssets.length > 0 ? (
-              <div className="grid gap-16" style={{
+              <div className="card-grid grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               }}>
                 {filteredBrandAssets.map((asset) => (
@@ -240,7 +240,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* Member Media Grid */}
           {activeLevel === 'member' && !loading && (
             filteredMemberMedia.length > 0 ? (
-              <div className="grid gap-16" style={{
+              <div className="card-grid grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               }}>
                 {filteredMemberMedia.map((item) => (
@@ -262,7 +262,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* File Assets Grid */}
           {activeLevel === 'files' && !loading && (
             filteredFiles.length > 0 ? (
-              <div className="grid gap-16" style={{
+              <div className="card-grid grid gap-16" style={{
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
               }}>
                 {filteredFiles.map((file) => (
