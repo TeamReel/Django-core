@@ -162,6 +162,23 @@
 .rounded-full  { border-radius: var(--radius-full); }
 
 /* ---------------------------------------------------------------------------
+   Elevation — wired to --shadow-* tokens
+   --------------------------------------------------------------------------- */
+.shadow-xs  { box-shadow: var(--shadow-xs); }
+.shadow-sm  { box-shadow: var(--shadow-sm); }
+.shadow-md  { box-shadow: var(--shadow-md); }
+.shadow-lg  { box-shadow: var(--shadow-lg); }
+.shadow-xl  { box-shadow: var(--shadow-xl); }
+.shadow-none { box-shadow: none; }
+
+/* ---------------------------------------------------------------------------
+   Transitions — wired to --duration-* + --ease-* tokens
+   --------------------------------------------------------------------------- */
+.transition-fast   { transition: all var(--duration-fast) var(--ease-default); }
+.transition        { transition: all var(--duration-normal) var(--ease-default); }
+.transition-slow   { transition: all var(--duration-slow) var(--ease-default); }
+
+/* ---------------------------------------------------------------------------
    Overflow
    --------------------------------------------------------------------------- */
 .overflow-auto    { overflow: auto; }

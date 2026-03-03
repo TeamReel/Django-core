@@ -43,7 +43,7 @@ export function TileGrid({ items, columns = 3 }: TileGridProps) {
               display: 'flex',
               flexDirection: 'column',
               gap: '12px',
-              transition: 'all 0.15s ease',
+              transition: 'all var(--duration-fast) var(--ease-default)',
               cursor: 'pointer',
               border: '1px solid var(--app-border)',
             }}

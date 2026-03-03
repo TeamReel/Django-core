@@ -129,6 +129,50 @@
 }
 
 /* ======================================================================
+   MOTION TOKENS — Duration + Easing
+   ====================================================================== */
+:root {
+  --duration-fast:   100ms;
+  --duration-normal: 200ms;
+  --duration-slow:   300ms;
+  --duration-slower:  500ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ======================================================================
+   ELEVATION TOKENS — Shadows
+   ====================================================================== */
+:root {
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* ======================================================================
+   BREAKPOINT TOKENS — Responsive thresholds
+   ====================================================================== */
+:root {
+  --breakpoint-sm:  640px;
+  --breakpoint-md:  768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* ======================================================================
    SEMANTIC TOKENS — Light Theme
    ====================================================================== */
 :root {

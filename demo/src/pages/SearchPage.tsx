@@ -135,7 +135,7 @@ export default function SearchPage() {
                   background: showHierarchy ? 'var(--color-primary, #3b82f6)' : 'var(--color-bg-surface)',
                   color: showHierarchy ? '#fff' : 'var(--color-text-primary)',
                   border: showHierarchy ? 'none' : '1px solid var(--color-border)',
-                  transition: 'all 0.2s',
+                  transition: 'all var(--duration-normal)',
                 }}
               >
                 🌳 {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}

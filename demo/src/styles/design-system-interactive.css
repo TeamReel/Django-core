@@ -7,7 +7,7 @@
 
 .interactive-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .interactive-button:active {
@@ -21,7 +21,7 @@
 }
 
 .interactive-card:hover {
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xl);
   border-color: var(--app-border);
   transform: translateY(-2px);
 }
@@ -52,7 +52,7 @@
 
 .badge-hover:hover {
   transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Modern Loading Animations */

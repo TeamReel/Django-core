@@ -178,7 +178,7 @@ export default function CommandPalette({
           background: 'var(--app-surface)',
           border: '1px solid var(--app-border)',
           borderRadius: 14,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+          boxShadow: 'var(--shadow-xl)',
           overflow: 'hidden',
         }}
       >

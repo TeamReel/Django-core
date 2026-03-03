@@ -125,7 +125,7 @@ export function MediaAssetCard({
         style={{
           border: `1px solid ${borderColor}`,
           background: 'var(--vscode-editor-background, #1e1e1e)',
-          transition: 'all 0.2s ease',
+          transition: 'all var(--duration-normal) var(--ease-default)',
           cursor: mediaItem && onPreview ? 'pointer' : 'default',
         }}
         onMouseEnter={(e) => {

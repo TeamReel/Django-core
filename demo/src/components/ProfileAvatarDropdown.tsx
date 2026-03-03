@@ -159,7 +159,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          transition: 'all 0.2s ease',
+          transition: 'all var(--duration-normal) var(--ease-default)',
           padding: 0,
         }}
         onMouseEnter={(e) => {
@@ -203,7 +203,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             backgroundColor: 'var(--app-surface)',
             border: '1px solid var(--app-border)',
             borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            boxShadow: 'var(--shadow-lg)',
             padding: '8px 0',
             zIndex: 1000,
           }}

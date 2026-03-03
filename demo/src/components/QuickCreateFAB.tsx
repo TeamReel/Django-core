@@ -43,7 +43,7 @@ export default function QuickCreateFAB({ initialMatchId }: QuickCreateFABProps) 
           backgroundColor: 'var(--app-primary, #3B8EA5)',
           color: 'white',
           border: 'none',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+          boxShadow: 'var(--shadow-lg)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',

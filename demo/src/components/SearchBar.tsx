@@ -167,7 +167,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
             backgroundColor: 'var(--app-surface, var(--color-background-primary))',
             border: '1px solid var(--app-border, var(--color-border))',
             borderRadius: '8px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            boxShadow: 'var(--shadow-lg)',
             maxHeight: '70vh',
             overflowY: 'auto',
             zIndex: 1000,

@@ -171,7 +171,7 @@ export default function TopNavigation() {
                 backgroundColor: 'var(--app-surface)',
                 border: '1px solid var(--app-border)',
                 borderRadius: '6px',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                boxShadow: 'var(--shadow-md)',
                 minWidth: '120px',
                 zIndex: 1000,
               }}>
