@@ -2,10 +2,14 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Input } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
+import {
+  overlayStyle, panelStyle, tabStyle,
+  labelStyle, fieldWrapStyle, errorBoxStyle,
+  successBoxStyle, userRowStyle, LEVEL_LABEL,
+} from './addMemberModalStyles';
+import type { ContextLevel, UserResult } from './addMemberModalStyles';
 
 /* ────────────────────────────────────────────────────────── types ── */
-
-type ContextLevel = 'organisation' | 'club' | 'team';
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -21,113 +25,9 @@ interface AddMemberModalProps {
   teamProjectId?: string | number;
 }
 
-interface UserResult {
-  id: number | string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  is_active: boolean;
-}
-
 /* ───────────────────────────────────────────────────────── helpers ── */
 
 const apiBase = () => getApiBaseUrl();
-
-/* ──────────────────────────────────────────────────────── styles ── */
-
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: 'rgba(0,0,0,0.5)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 1100,
-  overflowY: 'auto',
-  WebkitOverflowScrolling: 'touch',
-  padding: '16px',
-};
-
-const panelStyle: React.CSSProperties = {
-  backgroundColor: 'var(--app-surface, white)',
-  padding: '24px',
-  borderRadius: '12px',
-  width: '700px',
-  maxWidth: '100%',
-  boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-  color: 'var(--app-text)',
-  display: 'flex',
-  flexDirection: 'column',
-  maxHeight: 'calc(100vh - 32px)',
-  margin: 'auto',
-};
-
-const tabStyle = (active: boolean): React.CSSProperties => ({
-  padding: '10px 24px',
-  border: 'none',
-  background: active ? 'var(--app-primary, #0b5ed7)' : 'transparent',
-  color: active ? '#fff' : 'var(--app-text, #333)',
-  cursor: 'pointer',
-  fontWeight: active ? 600 : 400,
-  fontSize: '14px',
-  borderRadius: '8px 8px 0 0',
-  transition: 'all .15s ease',
-});
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  marginBottom: '4px',
-  fontSize: '14px',
-  fontWeight: 500,
-  color: 'var(--app-text)',
-};
-
-const fieldWrapStyle: React.CSSProperties = {
-  marginBottom: '16px',
-};
-
-const errorBoxStyle: React.CSSProperties = {
-  padding: '8px 12px',
-  backgroundColor: 'rgba(220, 53, 69, 0.1)',
-  color: '#dc3545',
-  border: '1px solid rgba(220, 53, 69, 0.3)',
-  borderRadius: '6px',
-  marginBottom: '16px',
-  fontSize: '14px',
-};
-
-const successBoxStyle: React.CSSProperties = {
-  padding: '8px 12px',
-  backgroundColor: 'rgba(25, 135, 84, 0.1)',
-  color: '#198754',
-  border: '1px solid rgba(25, 135, 84, 0.3)',
-  borderRadius: '6px',
-  marginBottom: '16px',
-  fontSize: '14px',
-};
-
-const userRowStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '10px 12px',
-  borderRadius: '8px',
-  border: '1px solid var(--app-border, #e0e0e0)',
-  marginBottom: '8px',
-  cursor: 'pointer',
-  transition: 'background .1s',
-};
-
-/* ──────────────────────────────────── hierarchy description table ── */
-
-const LEVEL_LABEL: Record<ContextLevel, string> = {
-  organisation: 'Federation',
-  club: 'Club',
-  team: 'Team',
-};
 
 /* ════════════════════════════════════════════════════════════════════
    COMPONENT
@@ -441,7 +341,7 @@ export default function AddMemberModal({
 
             {!isSearching && searchQuery.length >= 2 && searchResults.length === 0 && (
               <div className="p-16 text-center text-muted fs-14">
-                No users found for "{searchQuery}"
+                No users found for &quot;{searchQuery}&quot;
               </div>
             )}
 
