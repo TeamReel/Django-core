@@ -1,0 +1,281 @@
+import { useEffect, useState } from 'react';
+
+import { fetchAllPages } from '../../utils/fetchAllPages';
+import {
+  type Period,
+  type OverviewMember,
+  mergeUniqueById,
+  isSeasonPeriod,
+  getParentPeriodId,
+} from './teamDetailTypes';
+
+interface UseTeamTabDataParams {
+  activeTabFromUrl: string;
+  apiBaseUrl: string;
+  teamIdForDirectoryLists: string;
+  clubIdForDirectoryLists: string;
+  orgSlugForDirectoryLists: string;
+}
+
+export function useTeamTabData({
+  activeTabFromUrl,
+  apiBaseUrl,
+  teamIdForDirectoryLists,
+  clubIdForDirectoryLists,
+  orgSlugForDirectoryLists,
+}: UseTeamTabDataParams) {
+  // ── Hierarchy state ──
+  const [hierarchySeasons, setHierarchySeasons] = useState<Period[]>([]);
+  const [hierarchyCompetitionsBySeasonId, setHierarchyCompetitionsBySeasonId] = useState<Record<string, Period[]>>({});
+  const [hierarchyMatchesCountBySeasonId, setHierarchyMatchesCountBySeasonId] = useState<Record<string, number>>({});
+  const [hierarchyMatchesCountByCompetitionId, setHierarchyMatchesCountByCompetitionId] = useState<Record<string, number>>({});
+  const [hierarchyLoading, setHierarchyLoading] = useState(false);
+  const [hierarchyError, setHierarchyError] = useState<string | null>(null);
+  const [hierarchySearch, setHierarchySearch] = useState('');
+
+  // ── Overview members state ──
+  const [overviewMembers, setOverviewMembers] = useState<OverviewMember[]>([]);
+  const [overviewMembersCount, setOverviewMembersCount] = useState<number | null>(null);
+  const [overviewMembersLoading, setOverviewMembersLoading] = useState(false);
+  const [overviewMembersError, setOverviewMembersError] = useState<string | null>(null);
+
+  // ── Load hierarchy (seasons → competitions → match counts) ──
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadHierarchy = async () => {
+      if (activeTabFromUrl !== 'hierarchy' && activeTabFromUrl !== 'overview') return;
+      if (!teamIdForDirectoryLists) return;
+
+      setHierarchyLoading(true);
+      setHierarchyError(null);
+
+      try {
+        // 1) Seasons for this team (typed query first; fallback to untyped + competition parent seasons)
+        const baseSeasonParams = new URLSearchParams();
+        baseSeasonParams.set('page_size', '2000');
+
+        const seasonProjectIds = [teamIdForDirectoryLists, clubIdForDirectoryLists].filter(Boolean);
+        if (seasonProjectIds.length === 1) {
+          baseSeasonParams.set('project_id', seasonProjectIds[0]);
+        } else if (seasonProjectIds.length > 1) {
+          baseSeasonParams.set('project_id__in', seasonProjectIds.join(','));
+        }
+
+        const typedParams = new URLSearchParams(baseSeasonParams);
+        typedParams.set('type', 'season');
+
+        const typedUrl = `${apiBaseUrl}/api/v1/periods/?${typedParams.toString()}`;
+        const typedList: any[] = await fetchAllPages<any>(typedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+
+        const untypedUrl = `${apiBaseUrl}/api/v1/periods/?${baseSeasonParams.toString()}`;
+        const untypedList: any[] = await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+
+        // Pull season parents from competitions as a last-resort source of truth.
+        const competitionsParams = new URLSearchParams();
+        competitionsParams.set('project_id', teamIdForDirectoryLists);
+        competitionsParams.set('page_size', '2000');
+        competitionsParams.set('type', 'competition');
+        const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?${competitionsParams.toString()}`;
+        const competitionsList: any[] = await fetchAllPages<any>(
+          competitionsUrl,
+          { credentials: 'include' },
+          { bypass: true, maxItems: 5000 },
+        );
+        const parentSeasonsFromCompetitions = (competitionsList || [])
+          .map((c: any) => c?.parent_period)
+          .filter((p: any) => p && (p?.id || p?.slug));
+
+        const seasons = mergeUniqueById(
+          [...(typedList || []), ...(untypedList || []), ...parentSeasonsFromCompetitions]
+            .filter(isSeasonPeriod)
+            .filter((p: any) => !getParentPeriodId(p)),
+        );
+        seasons.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
+
+        if (cancelled) return;
+        setHierarchySeasons(seasons);
+
+        // 2) Competitions for this team (fetch all periods and group by season parent id)
+        const periodsParams = new URLSearchParams();
+        periodsParams.set('project_id', teamIdForDirectoryLists);
+        periodsParams.set('page_size', '1000');
+
+        const periodsUrl = `${apiBaseUrl}/api/v1/periods/?${periodsParams.toString()}`;
+        const periodsList: any[] = await fetchAllPages<any>(periodsUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+
+        const seasonIds = new Set(seasons.map((s) => String(s.id)));
+        const competitions = (periodsList || []).filter((p: any) => {
+          const parentId = getParentPeriodId(p);
+          if (!parentId) return false;
+          return seasonIds.has(parentId);
+        });
+
+        const bySeason: Record<string, Period[]> = {};
+        for (const c of competitions) {
+          const parentId = getParentPeriodId(c);
+          if (!parentId) continue;
+          (bySeason[parentId] ||= []).push(c);
+        }
+
+        for (const key of Object.keys(bySeason)) {
+          bySeason[key] = mergeUniqueById(bySeason[key]).sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        }
+
+        // Build children map for recursive activity counts.
+        const childrenMap = new Map<string, any[]>();
+        for (const p of periodsList || []) {
+          const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+          if (!parentId) continue;
+          const key = String(parentId);
+          const arr = childrenMap.get(key) || [];
+          arr.push(p);
+          childrenMap.set(key, arr);
+        }
+
+        const getRecursiveActivitiesCount = (p: any): number => {
+          let count = (p?.activities_count ?? 0);
+          const children = childrenMap.get(String(p?.id));
+          if (children) {
+            for (const child of children) {
+              count += getRecursiveActivitiesCount(child);
+            }
+          }
+          return count;
+        };
+
+        const matchesCountByCompetitionId: Record<string, number> = {};
+        for (const list of Object.values(bySeason)) {
+          for (const c of list || []) {
+            const cid = String((c as any)?.id ?? '').trim();
+            if (!cid) continue;
+            matchesCountByCompetitionId[cid] = getRecursiveActivitiesCount(c);
+          }
+        }
+
+        const matchesCountBySeasonId: Record<string, number> = {};
+        for (const season of seasons) {
+          const sid = String((season as any)?.id ?? '').trim();
+          if (!sid) continue;
+          const comps = bySeason[sid] || [];
+          matchesCountBySeasonId[sid] = comps.reduce((sum, c) => {
+            const cid = String((c as any)?.id ?? '').trim();
+            return sum + (matchesCountByCompetitionId[cid] ?? 0);
+          }, 0);
+        }
+
+        if (cancelled) return;
+        setHierarchyCompetitionsBySeasonId(bySeason);
+        setHierarchyMatchesCountByCompetitionId(matchesCountByCompetitionId);
+        setHierarchyMatchesCountBySeasonId(matchesCountBySeasonId);
+      } catch (e) {
+        if (cancelled) return;
+        setHierarchyError(e instanceof Error ? e.message : 'Failed to load hierarchy');
+        setHierarchySeasons([]);
+        setHierarchyCompetitionsBySeasonId({});
+        setHierarchyMatchesCountBySeasonId({});
+        setHierarchyMatchesCountByCompetitionId({});
+      } finally {
+        if (!cancelled) setHierarchyLoading(false);
+      }
+    };
+
+    void loadHierarchy();
+    return () => { cancelled = true; };
+  }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists]);
+
+  // ── Load overview members ──
+  useEffect(() => {
+    let cancelled = false;
+
+    const extractMembersCount = (raw: any, list: any[]): number => {
+      const metaTotal = raw?.meta?.pagination?.total;
+      if (typeof metaTotal === 'number') return metaTotal;
+      const dataCount = raw?.data?.count ?? raw?.count;
+      if (typeof dataCount === 'number') return dataCount;
+      return Array.isArray(list) ? list.length : 0;
+    };
+
+    const loadOverviewMembers = async () => {
+      if (activeTabFromUrl !== 'overview') return;
+      const orgSlug = String(orgSlugForDirectoryLists || '').trim();
+      const teamId = String(teamIdForDirectoryLists || '').trim();
+      if (!orgSlug || !teamId) return;
+
+      setOverviewMembersLoading(true);
+      setOverviewMembersError(null);
+
+      try {
+        const params = new URLSearchParams();
+        params.set('page_size', '250');
+        params.set('include_project_memberships', 'true');
+        params.set('include_project_membership_details', 'true');
+
+        const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?${params.toString()}`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) throw new Error(`Failed to load members (${res.status})`);
+        const json = await res.json().catch(() => null);
+
+        const rawList = json?.data?.data || json?.data?.results || json?.results || json?.data || [];
+        const list: any[] = Array.isArray(rawList) ? rawList : [];
+
+        const isMemberInTeam = (item: any): boolean => {
+          const nestedUser = item?.user;
+          const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+          const memberships = item?.project_memberships || u?.project_memberships || [];
+          if (!Array.isArray(memberships) || memberships.length === 0) return false;
+          return memberships.some((m: any) => String(m?.project_id ?? m?.project?.id ?? '') === String(teamId));
+        };
+
+        const normalized: OverviewMember[] = list
+          .filter(isMemberInTeam)
+          .map((item: any) => {
+            const nestedUser = item?.user;
+            const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
+            return {
+              id: String(u?.id ?? item?.id ?? '').trim(),
+              email: u?.email,
+              first_name: u?.first_name,
+              last_name: u?.last_name,
+            };
+          })
+          .filter((u) => Boolean(u.id));
+
+        const sorted = [...normalized].sort((a, b) => {
+          const an = `${a?.last_name || ''} ${a?.first_name || ''} ${a?.email || ''}`.trim();
+          const bn = `${b?.last_name || ''} ${b?.first_name || ''} ${b?.email || ''}`.trim();
+          return an.localeCompare(bn);
+        });
+
+        if (cancelled) return;
+        setOverviewMembers(sorted.slice(0, 6));
+        setOverviewMembersCount(extractMembersCount(json, normalized));
+      } catch (e) {
+        if (cancelled) return;
+        setOverviewMembers([]);
+        setOverviewMembersCount(null);
+        setOverviewMembersError(e instanceof Error ? e.message : 'Failed to load members');
+      } finally {
+        if (!cancelled) setOverviewMembersLoading(false);
+      }
+    };
+
+    void loadOverviewMembers();
+    return () => { cancelled = true; };
+  }, [activeTabFromUrl, apiBaseUrl, orgSlugForDirectoryLists, teamIdForDirectoryLists]);
+
+  return {
+    hierarchySeasons,
+    hierarchyCompetitionsBySeasonId,
+    hierarchyMatchesCountBySeasonId,
+    hierarchyMatchesCountByCompetitionId,
+    hierarchyLoading,
+    hierarchyError,
+    hierarchySearch,
+    setHierarchySearch,
+    overviewMembers,
+    overviewMembersCount,
+    overviewMembersLoading,
+    overviewMembersError,
+  };
+}
