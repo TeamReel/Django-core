@@ -7,6 +7,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
+import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
 // ============================================================================
@@ -231,7 +232,7 @@ export function KitsTab({
           </Alert>
         )}
 
-        <div className="grid gap-20" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+        <ResponsiveGrid minWidth="280px" gap={20}>
           {KIT_TYPES.map((kitType) => {
             const kit = getKitForType(kitType.id);
             const imageUrl = getKitImageUrl(kit);
@@ -317,7 +318,7 @@ export function KitsTab({
               </div>
             );
           })}
-        </div>
+        </ResponsiveGrid>
 
         {!readOnly && (
           <input

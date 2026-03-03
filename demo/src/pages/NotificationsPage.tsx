@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import AppShell from '../components/AppShell';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
+import { PageHeader } from '../components/ui/PageHeader';
 import { getApiBaseUrl } from '../utils/apiBase';
 import SwipeableCard from '../components/SwipeableCard';
 
@@ -205,40 +206,31 @@ export default function NotificationsPage() {
   return (
     <AppShell>
       <div className="py-24 px-16 mx-auto" style={{ maxWidth: 1100 }}>
-        <div
-          className="gap-12 flex-wrap mb-16"
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-          }}
-        >
-          <div>
-            <h1 className="m-0 fs-24 fw-800 text-primary">Notifications</h1>
-            <div className="text-muted mt-4">
-              View all your system notifications and updates
+        <PageHeader
+          title="Notifications"
+          subtitle="View all your system notifications and updates"
+          className="mb-16"
+          actions={
+            <div className="flex-row gap-8 flex-wrap">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={markAllAsRead}
+                disabled={notificationsList.length === 0}
+              >
+                Mark All as Read
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={markAllAsUnread}
+                disabled={notificationsList.length === 0}
+              >
+                Mark All as Unread
+              </Button>
             </div>
-          </div>
-
-          <div className="flex-row gap-8 flex-wrap">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={markAllAsRead}
-              disabled={notificationsList.length === 0}
-            >
-              Mark All as Read
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={markAllAsUnread}
-              disabled={notificationsList.length === 0}
-            >
-              Mark All as Unread
-            </Button>
-          </div>
-        </div>
+          }
+        />
 
         <PullToRefresh
           onRefresh={fetchNotifications}

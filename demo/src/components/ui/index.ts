@@ -23,3 +23,29 @@ export type { IconButtonProps, IconButtonVariant, IconButtonSize } from './IconB
 // DataTable — generic sortable data table
 export { DataTable } from './DataTable';
 export type { DataTableProps, Column, SortDirection } from './DataTable';
+
+// Layout Primitives
+
+// Stack — vertical flex with typed gap presets
+export { Stack } from './Stack';
+export type { StackProps, StackGap } from './Stack';
+
+// Row — horizontal flex with typed gap/justify/align
+export { Row } from './Row';
+export type { RowProps, RowGap } from './Row';
+
+// PageHeader — page title + subtitle + actions
+export { PageHeader } from './PageHeader';
+export type { PageHeaderProps } from './PageHeader';
+
+// Section — titled content section
+export { Section } from './Section';
+export type { SectionProps } from './Section';
+
+// SplitView — responsive sidebar + main layout
+export { SplitView } from './SplitView';
+export type { SplitViewProps } from './SplitView';
+
+// ResponsiveGrid — auto-fill CSS Grid
+export { ResponsiveGrid } from './ResponsiveGrid';
+export type { ResponsiveGridProps } from './ResponsiveGrid';

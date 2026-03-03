@@ -3,6 +3,7 @@ import { Card, Text, Badge, Button, Stack } from '@django-core/design-system';
 import { Copy, Check, Upload, Image } from 'lucide-react';
 import { formatTokenKey, getContrastColor, TOKEN_TYPE_ICONS, TOKEN_TYPE_LABELS, ASSET_TYPE_LABELS } from './brandIdentity.types';
 import type { DesignToken, BrandAsset } from './brandIdentity.types';
+import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 
 // ── CopyableValue ────────────────────────────────────────────
 export function CopyableValue({ value, label }: { value: string; label?: string }) {
@@ -43,7 +44,7 @@ export function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
           <Badge variant="default">{colors.length} colors</Badge>
         </div>
 
-        <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+        <ResponsiveGrid minWidth="180px" gap={16}>
           {colors.map((token) => (
             <div key={token.id} className="rounded-12 overflow-hidden border" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
               <div className="flex-center" style={{ height: '100px', backgroundColor: token.value }}>
@@ -56,7 +57,7 @@ export function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
               </div>
             </div>
           ))}
-        </div>
+        </ResponsiveGrid>
 
         <div className="mt-8">
           <Text size="xs" weight="bold" color="secondary" className="mb-8" style={{ textTransform: 'uppercase' }}>Combined Preview</Text>
@@ -123,14 +124,14 @@ export function OtherTokensSection({ tokens }: { tokens: Map<string, DesignToken
                   <Text weight="bold" size="sm" style={{ textTransform: 'uppercase' }}>{label}</Text>
                   <Badge variant="default">{typeTokens.length}</Badge>
                 </div>
-                <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+                <ResponsiveGrid minWidth="200px" gap={12}>
                   {typeTokens.map((token) => (
                     <div key={token.id} className="flex-between rounded-8 border py-12 px-16" style={{ backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))' }}>
                       <Text size="sm" weight="medium">{formatTokenKey(token.key)}</Text>
                       <CopyableValue value={token.value} label={token.key} />
                     </div>
                   ))}
-                </div>
+                </ResponsiveGrid>
               </div>
             );
           })}
@@ -160,7 +161,7 @@ export function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
             <Text color="secondary" size="xs" className="mt-8">Upload logos, icons, banners and other visual assets</Text>
           </div>
         ) : (
-          <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+          <ResponsiveGrid minWidth="180px" gap={16}>
             {assets.map((asset) => (
               <div key={asset.id} className="rounded-12 overflow-hidden border bg-surface" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                 <div className="flex-center p-16" style={{ aspectRatio: '1', backgroundColor: 'var(--app-surface-alt, #f8f8f8)' }}>
@@ -189,7 +190,7 @@ export function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
                 </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         )}
       </Stack>
     </Card>

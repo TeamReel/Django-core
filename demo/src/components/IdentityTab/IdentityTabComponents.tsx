@@ -178,25 +178,7 @@ export function AssetCard({
 // Section + AssetGrid
 // ============================================================================
 
-interface SectionProps {
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-}
-
-export function Section({ title, description, children }: SectionProps) {
-  return (
-    <div className="mb-24">
-      <h3 className="fs-14 fw-600 mb-4">{title}</h3>
-      {description && (
-        <p className="fs-12 mb-12" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
-          {description}
-        </p>
-      )}
-      {children}
-    </div>
-  );
-}
+export { Section } from '../ui/Section';
 
 export function AssetGrid({ children }: { children: React.ReactNode }) {
   return (
