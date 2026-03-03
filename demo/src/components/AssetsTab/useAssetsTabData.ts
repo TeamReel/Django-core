@@ -5,15 +5,14 @@
  * Contains all state, effects, and handler functions.
  */
 
-import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   useBrandProfile,
   getAssetUrl,
   MULTI_INSTANCE_TYPES,
   type BrandAsset,
 } from '../../hooks/useBrandProfile';
-import { useAssetGeneration } from '../../hooks/useAssetGeneration';
-import { getTemplate } from '../../constants/assetTemplates';
+import { useAssetAutoProcessing } from './useAssetAutoProcessing';
 import { UPLOAD_OUTPUT_TYPE, UPLOAD_TO_AI_TEMPLATE, type AssetsLevel } from './assetsTabHelpers';
 import type { HistoryItem } from './AssetSubComponents';
 
@@ -132,104 +131,15 @@ export function useAssetsTabData({
   const [aiInitialParams, setAiInitialParams] = useState<Record<string, string>>({});
   const [aiLabel, setAiLabel] = useState<string | undefined>();
 
-  // ── Postprocess: direct API call without modal ──
-  const postProcessGen = useAssetGeneration();
-  const [postProcessingAsset, setPostProcessingAsset] = useState<string | null>(null);
-  const [postProcessOutputType, setPostProcessOutputType] = useState<string | null>(null);
-  const postProcessSavingRef = useRef(false);
-
-  // Auto-accept postprocess result
-  useEffect(() => {
-    if (postProcessGen.step === 'completed' && postProcessGen.variants.length > 0 && postProcessingAsset) {
-      if (postProcessSavingRef.current) return;
-      postProcessSavingRef.current = true;
-
-      (async () => {
-        try {
-          const variant = postProcessGen.variants[0];
-          if (variant?.error) {
-            console.error('❌ Postprocess variant has error:', variant.error);
-            alert(`Bewerken mislukt: ${variant.error}`);
-            return;
-          }
-          if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
-            console.error('❌ Postprocess variant has no content:', variant);
-            alert('Bewerken mislukt: geen resultaat ontvangen van de server.');
-            return;
-          }
-          console.log('📝 Postprocess auto-accept starting for', postProcessingAsset);
-          const result = await postProcessGen.acceptVariant(0);
-          if (result) {
-            console.log('✅ Postprocess auto-saved:', postProcessingAsset, result);
-            await refresh();
-            console.log('🔄 Profile refreshed after postprocess save');
-          } else {
-            console.error('❌ Postprocess save failed for', postProcessingAsset);
-          }
-        } catch (err) {
-          console.error('❌ Postprocess auto-accept error:', err);
-        } finally {
-          setPostProcessingAsset(null);
-          setPostProcessOutputType(null);
-          postProcessGen.reset();
-          postProcessSavingRef.current = false;
-        }
-      })();
-    } else if (postProcessGen.step === 'error' && postProcessingAsset) {
-      console.error('❌ Postprocess failed:', postProcessGen.error);
-      alert(`Bewerken mislukt: ${postProcessGen.error || 'Onbekende fout'}`);
-      setPostProcessingAsset(null);
-      setPostProcessOutputType(null);
-      postProcessGen.reset();
-      postProcessSavingRef.current = false;
-    }
-  }, [postProcessGen.step, postProcessGen.variants.length]);
-
-  // ── Upload auto-processing ──
-  const uploadAutoGen = useAssetGeneration();
-  const [uploadProcessingAsset, setUploadProcessingAsset] = useState<string | null>(null);
-  const uploadAutoSavingRef = useRef(false);
-
-  useEffect(() => {
-    if (uploadAutoGen.step === 'completed' && uploadAutoGen.variants.length > 0 && uploadProcessingAsset) {
-      if (uploadAutoSavingRef.current) return;
-      uploadAutoSavingRef.current = true;
-
-      (async () => {
-        try {
-          const variant = uploadAutoGen.variants[0];
-          if (variant?.error) {
-            console.error('❌ Upload auto-process variant has error:', variant.error);
-            return;
-          }
-          if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
-            console.error('❌ Upload auto-process variant has no content:', variant);
-            return;
-          }
-          console.log('📝 Upload auto-accept starting for', uploadProcessingAsset);
-          const result = await uploadAutoGen.acceptVariant(0);
-          if (result) {
-            console.log('✅ Upload auto-saved:', uploadProcessingAsset, result);
-            await refresh();
-            console.log('🔄 Profile refreshed after upload auto-process');
-          } else {
-            console.error('❌ Upload auto-save failed for', uploadProcessingAsset);
-          }
-        } catch (err) {
-          console.error('❌ Upload auto-accept error:', err);
-        } finally {
-          setUploadProcessingAsset(null);
-          uploadAutoGen.reset();
-          uploadAutoSavingRef.current = false;
-        }
-      })();
-    } else if (uploadAutoGen.step === 'error' && uploadProcessingAsset) {
-      console.error('❌ Upload auto-process failed:', uploadAutoGen.error);
-      setUploadProcessingAsset(null);
-      uploadAutoGen.reset();
-      uploadAutoSavingRef.current = false;
-    }
-  }, [uploadAutoGen.step, uploadAutoGen.variants.length]);
+  // ── Auto-processing (sub-hook) ──
+  const { postProcessingAsset, uploadProcessingAsset, handlePostProcess, startUploadAutoProcess } = useAssetAutoProcessing({
+    refresh,
+    getAsset,
+    parentGetAsset: parentBrand.getAsset,
+    parentProjectId,
+    projectId,
+    organisationId,
+  });
 
   // ── History state ──
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -344,8 +254,7 @@ export function useAssetsTabData({
           ? (result as any)?.label || file.name.replace(/\.[^.]+$/, '')
           : undefined;
 
-        setUploadProcessingAsset(outputType);
-        uploadAutoGen.submit({
+        startUploadAutoProcess(outputType, {
           templateId: autoAi.templateId,
           parameters: params,
           variantCount: 1,
@@ -380,7 +289,7 @@ export function useAssetsTabData({
         setShowAiModal(true);
       }, 300);
     }
-  }, [level, entityName, organisationId, projectId, parentProjectId, uploadAsset, baseAiInputAssets, uploadAutoGen]);
+  }, [level, entityName, organisationId, projectId, parentProjectId, uploadAsset, baseAiInputAssets, startUploadAutoProcess]);
 
   const handleDelete = useCallback(async (assetType: string) => {
     await deleteAsset(assetType);
@@ -393,52 +302,6 @@ export function useAssetsTabData({
   const handleReplaceAi = useCallback((assetType: string) => {
     openAiForAsset(assetType);
   }, []);
-
-  const handlePostProcess = useCallback((assetType: string) => {
-    if (postProcessingAsset) return;
-
-    const getEff = (type: string) => {
-      const own = getAsset(type);
-      if (own) return own;
-      if (parentProjectId && parentBrand.getAsset) return parentBrand.getAsset(type);
-      return undefined;
-    };
-
-    let templateId: string | undefined;
-    if (assetType === 'logo') templateId = 'logo_postprocess';
-    else if (assetType === 'sponsor_logo') templateId = 'sponsor_postprocess';
-    else if (assetType.includes('kit_')) templateId = 'kit_postprocess';
-    else if (assetType === 'stadium_background') templateId = 'location_postprocess';
-
-    if (!templateId) return;
-
-    const asset = getEff(assetType);
-    if (!asset) {
-      alert('Genereer eerst een AI versie voordat je kunt bewerken.');
-      return;
-    }
-
-    const tmpl = getTemplate(templateId);
-    const defaultParams: Record<string, string> = {};
-    if (tmpl) {
-      Object.entries(tmpl.parameters).forEach(([key, param]) => {
-        defaultParams[key] = param.default;
-      });
-    }
-
-    setPostProcessingAsset(assetType);
-    setPostProcessOutputType(tmpl?.outputAssetType || assetType);
-
-    postProcessGen.submit({
-      templateId,
-      parameters: defaultParams,
-      variantCount: 1,
-      projectId: projectId || '',
-      organisationId,
-      outputAssetType: assetType,
-      inputImageUrls: { source: getAssetUrl(asset.url) || '' },
-    });
-  }, [postProcessingAsset, getAsset, parentProjectId, parentBrand, projectId, organisationId, postProcessGen]);
 
   const openAiForAsset = useCallback((assetType: string) => {
     let templateId: string | undefined;
