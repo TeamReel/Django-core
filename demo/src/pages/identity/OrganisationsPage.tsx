@@ -13,6 +13,7 @@ import {
 } from '@django-core/page-templates';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import {
   Organisation,
   ListResponse,
@@ -36,6 +37,7 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 export const OrganisationsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const confirm = useConfirm();
   const { organisations: myOrganisations } = useContextSwitcher();
   const [searchParams, setSearchParams] = useSearchParams();
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
@@ -111,9 +113,13 @@ export const OrganisationsPage: React.FC = () => {
   }, [sort, order, search, refreshKey]);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this organisation?')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Delete Organisation',
+      message: 'Are you sure you want to delete this organisation?',
+      variant: 'danger',
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
 
     try {
       // Get CSRF token from cookie

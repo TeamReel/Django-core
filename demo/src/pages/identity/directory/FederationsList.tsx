@@ -9,6 +9,7 @@ import {
 import { Table } from '@/shims/design-system';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
+import { useConfirm } from '../../../components/ui/ConfirmDialog';
 // Adjust imports to point to parent directory
 import { canPerformAction } from '../../../utils/permissions';
 import OrganisationDetailModal from '../OrganisationDetailModal';
@@ -29,6 +30,7 @@ import {
 export const FederationsList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const confirm = useConfirm();
   const { organisations: myOrganisations } = useContextSwitcher();
   const [searchParams, setSearchParams] = useSearchParams();
   const [organisations, setOrganisations] = useState<Organisation[]>([]);
@@ -99,9 +101,13 @@ export const FederationsList: React.FC = () => {
   }, [sort, order, search, refreshKey]);
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this organisation?')) {
-      return;
-    }
+    const ok = await confirm({
+      title: 'Delete Organisation',
+      message: 'Are you sure you want to delete this organisation?',
+      variant: 'danger',
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
 
     try {
       const csrfToken = document.cookie

@@ -9,6 +9,8 @@ import type { ContextSwitcherConfig } from '@django-core/context-switcher';
 import { ThemeProvider, LocalStorageAdapter } from '@django-core/theme-system';
 import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ConfirmProvider } from './components/ui/ConfirmDialog';
+import { ToastProvider, ToastContainer } from './components/ui/Toast';
 import App from './App';
 import '@django-core/design-system/tokens.css';
 import '@django-core/theme-system/dist/style.css';
@@ -63,9 +65,14 @@ function AppWithProviders() {
     <ThemeProvider storage={themeStorage}>
       <AuthProvider config={authConfig}>
         <ContextSwitcherProvider config={contextConfig}>
-          <ErrorBoundary location={location}>
-            <App />
-          </ErrorBoundary>
+          <ToastProvider>
+            <ConfirmProvider>
+              <ErrorBoundary location={location}>
+                <App />
+              </ErrorBoundary>
+              <ToastContainer />
+            </ConfirmProvider>
+          </ToastProvider>
         </ContextSwitcherProvider>
       </AuthProvider>
     </ThemeProvider>

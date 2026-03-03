@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Button, Card } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core/page-templates';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 import { TeamsList } from './directory/TeamsList';
@@ -48,6 +49,8 @@ export default function ClubOrganisationDetailPage() {
     hierarchyLoading, hierarchyError,
     brandLogoUrl, brandProfileId,
   } = useClubOrgDetailData();
+
+  const confirm = useConfirm();
 
   // ── Loading state ──
   if (loading) {
@@ -151,7 +154,13 @@ export default function ClubOrganisationDetailPage() {
                 size="sm"
                 onClick={async () => {
                   if (!club) return;
-                  if (!window.confirm(`Are you sure you want to delete club ${club.name}?`)) return;
+                  const ok = await confirm({
+                    title: 'Delete Club',
+                    message: `Are you sure you want to delete club ${club.name}?`,
+                    variant: 'danger',
+                    confirmLabel: 'Delete',
+                  });
+                  if (!ok) return;
                   try {
                     const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
                       method: 'DELETE',

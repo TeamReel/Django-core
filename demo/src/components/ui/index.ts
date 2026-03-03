@@ -49,3 +49,17 @@ export type { SplitViewProps } from './SplitView';
 // ResponsiveGrid — auto-fill CSS Grid
 export { ResponsiveGrid } from './ResponsiveGrid';
 export type { ResponsiveGridProps } from './ResponsiveGrid';
+
+// Feedback Primitives
+
+// Toast — notification system (hook + provider + container)
+export { ToastProvider, ToastContainer, useToast } from './Toast';
+export type { ToastItem, ToastType } from './Toast';
+
+// ConfirmDialog — replaces window.confirm() with styled modal
+export { ConfirmProvider, useConfirm } from './ConfirmDialog';
+export type { ConfirmOptions } from './ConfirmDialog';
+
+// ProgressBar — progress indication bar
+export { ProgressBar } from './ProgressBar';
+export type { ProgressBarProps } from './ProgressBar';
