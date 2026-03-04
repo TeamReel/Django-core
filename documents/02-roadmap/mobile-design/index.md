@@ -28,12 +28,12 @@ Premium, vloeiende mobile-first webapp. Best practices hergebruiken (geen wiel u
 | Nr | Track | Fase | Focus | Resultaat |
 |----|-------|------|-------|-----------|
 | A1 | A | Skeleton shimmer | Loading states standaardiseren | 18 bestanden gemigreerd, 5 page-level composites, 0 spinners over |
+| A2 | A | Empty states | SmartEmptyState consequent toepassen | 28 bestanden, 17 types, 25+ locaties gemigreerd |
 
 ### 📋 Planned
 
 | Nr | Track | Fase | Focus | Effort |
 |----|-------|------|-------|--------|
-| A2 | A | Empty states | SmartEmptyState consequent toepassen | Klein |
 | A3 | A+E | Post-generate flow | Success toast + shortcuts na content generatie | Klein |
 | A4 | A | Overlay navigation | "Bekijk alles →" links in alle overlay modals | Klein |
 | B1 | B | Wizard thumbnails | Content-type cards met thumbnail previews | Medium |
