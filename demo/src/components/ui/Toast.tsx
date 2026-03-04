@@ -15,10 +15,17 @@ import React, { createContext, useCallback, useContext, useState, useRef, useEff
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 export interface ToastItem {
   id: string;
   message: string;
   type: ToastType;
+  /** Optional action buttons rendered below the message. */
+  actions?: ToastAction[];
 }
 
 interface ToastContextValue {
@@ -44,7 +51,9 @@ export function ToastProvider({ children, autoDismissMs = 5000 }: { children: Re
   const pushToast = useCallback((t: Omit<ToastItem, 'id'>) => {
     const id = `toast-${++_toastIdCounter}`;
     setToasts((prev) => [...prev, { ...t, id }]);
-    const timer = setTimeout(() => removeToast(id), autoDismissMs);
+    // Action toasts stay longer (8s) so users can press the buttons
+    const ms = t.actions?.length ? Math.max(autoDismissMs, 8000) : autoDismissMs;
+    const timer = setTimeout(() => removeToast(id), ms);
     timersRef.current.set(id, timer);
   }, [autoDismissMs, removeToast]);
 
@@ -108,6 +117,35 @@ export function ToastContainer() {
           }}
         >
           {t.message}
+          {t.actions && t.actions.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              {t.actions.map((action, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeToast(t.id);
+                    action.onClick();
+                  }}
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.4)',
+                    borderRadius: 6,
+                    color: '#fff',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    padding: '4px 12px',
+                    cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = 'rgba(255,255,255,0.35)'; }}
+                  onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = 'rgba(255,255,255,0.2)'; }}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       ))}
     </div>

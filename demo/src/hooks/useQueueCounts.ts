@@ -126,5 +126,18 @@ export function useQueueCounts(pollInterval = 30000): QueueCounts {
     };
   }, [fetchCounts, pollInterval]);
 
+  // Optimistic update: increment active count immediately when content is generated
+  useEffect(() => {
+    const handleQueueUpdate = () => {
+      setCounts(prev => ({
+        ...prev,
+        active: prev.active + 1,
+        all: prev.all + 1,
+      }));
+    };
+    window.addEventListener('teamreel:queue-update', handleQueueUpdate);
+    return () => window.removeEventListener('teamreel:queue-update', handleQueueUpdate);
+  }, []);
+
   return counts;
 }

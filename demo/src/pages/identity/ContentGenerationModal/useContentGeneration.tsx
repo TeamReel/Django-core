@@ -5,6 +5,7 @@
  * Manages step navigation, option states, generation dispatch, and save logic.
  */
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type {
   ContentTemplate,
   GeneratedVariant,
@@ -29,6 +30,7 @@ import {
   generateMatchIntro,
 } from './contentGenerationVideoApi';
 import { useContentOptions } from './useContentOptions';
+import { useToast } from '../../../components/ui/Toast';
 
 export function useContentGeneration({
   isOpen,
@@ -48,6 +50,10 @@ export function useContentGeneration({
   const homeTeamName = homeTeamNameProp || matchData?.project?.name || 'Thuis';
   const awayTeamName = awayTeamNameProp || matchData?.opponent_project?.name || 'Uit';
   const projectId = matchData?.project?.id || (season?.project_id ? String(season.project_id) : null);
+
+  // Toast + navigation for post-generate flow
+  const { pushToast } = useToast();
+  const navigate = useNavigate();
 
   // ─── Step & template state ──────────────────────────────
   const [step, setStep] = useState<StepType>('type');
@@ -273,6 +279,12 @@ export function useContentGeneration({
           goal: 'Goal celebration staat in de wachtrij en wordt op de achtergrond verwerkt.',
           match_intro: 'Match intro staat in de wachtrij en wordt op de achtergrond verwerkt.',
         };
+        pushToast({
+          message: labels[subtype],
+          type: 'info',
+          actions: [{ label: 'Naar queue', onClick: () => navigate('/approvals') }],
+        });
+        window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
         onGenerated?.(labels[subtype]);
         return;
       }
@@ -332,7 +344,20 @@ export function useContentGeneration({
 
       if (!opts?.skipAutoClose && generatedVariants.length <= 1) {
         setSaveSuccess(true);
-        setTimeout(() => { onClose(); }, 1200);
+        const previewUrl = variant.presigned_url || generatedOutput?.presigned_url;
+        pushToast({
+          message: `${selectedType?.label || 'Content'} opgeslagen! 🎉`,
+          type: 'success',
+          actions: [
+            ...(previewUrl ? [{ label: 'Bekijk', onClick: () => window.open(previewUrl, '_blank') }] : []),
+            { label: 'Naar queue', onClick: () => navigate('/approvals') },
+          ],
+        });
+        window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
+        setTimeout(() => {
+          onGenerated?.(`${selectedType?.label || 'Content'} opgeslagen`);
+          onClose();
+        }, 1200);
       }
     } catch (err) {
       console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
@@ -353,7 +378,20 @@ export function useContentGeneration({
     }
     setSaveSuccess(true);
     setSavingAsset(false);
-    setTimeout(() => { onClose(); }, 1200);
+    const previewUrl = generatedVariants[0]?.presigned_url || generatedOutput?.presigned_url;
+    pushToast({
+      message: `${generatedVariants.length} varianten opgeslagen! 🎉`,
+      type: 'success',
+      actions: [
+        ...(previewUrl ? [{ label: 'Bekijk', onClick: () => window.open(previewUrl, '_blank') }] : []),
+        { label: 'Naar queue', onClick: () => navigate('/approvals') },
+      ],
+    });
+    window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
+    setTimeout(() => {
+      onGenerated?.(`${generatedVariants.length} varianten opgeslagen`);
+      onClose();
+    }, 1200);
   };
 
   // ─── Navigation handlers ────────────────────────────────

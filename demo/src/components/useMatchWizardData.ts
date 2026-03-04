@@ -249,7 +249,11 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   };
 
   const handleContentModalClose = () => { setIsContentModalOpen(false); setSelectedTemplate(null); setSelectedContentTypeLabel(''); };
-  const handleContentGenerated = (_message?: string) => { /* keep modal open for video jobs */ };
+  const handleContentGenerated = (_message?: string) => {
+    // After successful generation: close content modal + entire wizard
+    handleContentModalClose();
+    setTimeout(() => handleClose(), 100);
+  };
 
   const handleBack = () => {
     if (currentStep === 'lineup') { setPendingContent(null); setCurrentStep('content'); }

@@ -230,9 +230,9 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
   }, []);
 
   const handleContentGenerated = useCallback((message?: string) => {
-    pushToast(message || '\u{1F4CB} Content wordt gegenereerd en komt in de approval queue.', 'success');
+    // Toast is now handled globally by useContentGeneration — just refresh media
     void refreshMatchMedia();
-  }, [pushToast, refreshMatchMedia]);
+  }, [refreshMatchMedia]);
 
   return {
     fetchMatchMedia, mediaBySubtype, getLatestMediaForSubtype, getMediaHistoryForSubtype,

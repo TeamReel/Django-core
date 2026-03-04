@@ -116,9 +116,9 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
     setSelectedContentTypeLabel('');
   };
 
-  const handleContentGenerated = useCallback((message?: string) => {
-    pushToast(message || '\uD83D\uDCCB Content wordt gegenereerd en komt in de approval queue.', 'success');
-  }, [pushToast]);
+  const handleContentGenerated = useCallback((_message?: string) => {
+    // Toast is now handled globally by useContentGeneration
+  }, []);
 
   const openThenVsNowModal = (videoType: ThenVsNowVideoType) => {
     setThenVsNowModalType(videoType);
