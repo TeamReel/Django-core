@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import SmartEmptyState from './SmartEmptyState';
 import { POSITIONS, getSquadMemberName, type SquadMember } from './matchWizardTypes';
 import type { useMatchWizardData } from './useMatchWizardData';
 import styles from './MatchWizardLineupStep.module.css';
@@ -37,7 +38,7 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
       {squadLoading ? (
         <div className={`text-center p-32 ${styles.textMuted}`}>Spelers laden...</div>
       ) : allPlayers.length === 0 ? (
-        <div className={`text-center p-32 ${styles.textMuted}`}>Geen spelers gevonden in het team</div>
+        <SmartEmptyState type="members" compact hideActions description="Geen spelers gevonden in het team." />
       ) : (
         <div className="flex-col gap-6">
           {POSITIONS.map((posConfig) => {

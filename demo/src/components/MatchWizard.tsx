@@ -12,6 +12,7 @@
 import React from 'react';
 import { BottomSheet } from '@django-core/design-system';
 import { ChevronRight, Check, Zap, Play, Clock } from 'lucide-react';
+import SmartEmptyState from './SmartEmptyState';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import ContentGenerationModal from '../pages/identity/ContentGenerationModal';
 import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, type MatchWizardProps } from './matchWizardTypes';
@@ -57,7 +58,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               {matchesLoading ? (
                 <div className="text-center p-32 text-muted">Laden...</div>
               ) : upcomingMatches.length === 0 ? (
-                <div className="text-center p-32 text-muted">Geen komende wedstrijden gevonden</div>
+                <SmartEmptyState type="matches" compact hideActions />
               ) : (
                 upcomingMatches.map((match) => {
                   const isSelected = selectedMatch?.id === match.id;

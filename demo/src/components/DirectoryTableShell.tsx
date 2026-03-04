@@ -8,6 +8,8 @@
 import React from 'react';
 import { Alert, Card } from '@django-core/design-system';
 import { SkeletonTablePage } from './Skeleton';
+import SmartEmptyState from './SmartEmptyState';
+import type { EmptyStateType } from './SmartEmptyState';
 import { Table } from '@/shims/design-system';
 
 export interface DirectoryTableShellProps {
@@ -19,8 +21,14 @@ export interface DirectoryTableShellProps {
   domainLoading: boolean;
   /** Message while domain data loads. */
   domainLoadingMessage: string;
-  /** Message when no rows are found after loading. */
-  emptyMessage: string;
+  /** SmartEmptyState type for the empty state. */
+  emptyStateType?: EmptyStateType;
+  /** Custom title for the empty state. */
+  emptyTitle?: string;
+  /** Custom description for the empty state. */
+  emptyDescription?: string;
+  /** Hide default action buttons on the empty state. */
+  hideActions?: boolean;
   /** Number of items to decide empty vs table. */
   itemCount: number;
   /** The `<thead>` + `<tbody>` to render inside the table. */
@@ -31,7 +39,10 @@ export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
   isLoading,
   error,
   domainLoading,
-  emptyMessage,
+  emptyStateType = 'generic',
+  emptyTitle,
+  emptyDescription,
+  hideActions,
   itemCount,
   children,
 }) => (
@@ -44,7 +55,12 @@ export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
     )}
 
     {!isLoading && !error && !domainLoading && itemCount === 0 && (
-      <Alert variant="info">{emptyMessage}</Alert>
+      <SmartEmptyState
+        type={emptyStateType}
+        title={emptyTitle}
+        description={emptyDescription}
+        hideActions={hideActions}
+      />
     )}
 
     {!isLoading && !error && !domainLoading && itemCount > 0 && (

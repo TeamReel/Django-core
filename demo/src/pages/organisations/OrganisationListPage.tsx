@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DefaultEmpty } from '@django-core/page-templates';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import type { Organisation } from '../../types';
 
@@ -72,9 +72,11 @@ export default function OrganisationListPage() {
         )}
 
         {!isLoading && !error && organisations.length === 0 && (
-          <DefaultEmpty
-            title="No organisations found"
-            message="You don't have access to any organisations yet. Contact your administrator to get started."
+          <SmartEmptyState
+            type="generic"
+            title="Geen organisaties gevonden"
+            description="Je hebt nog geen toegang tot een organisatie. Neem contact op met je beheerder."
+            hideActions
           />
         )}
 

@@ -12,6 +12,7 @@ import { Alert, Badge, Card } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core/page-templates';
 
 import { SkeletonList } from '../../components/Skeleton';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import { Table } from '../../shims/design-system';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import { periodPathKey } from '../../utils/periodPath';
@@ -226,7 +227,7 @@ export default function ProjectSeasonSquadPage() {
                         {d.members.length === 0 && (
                           <tr>
                             <td colSpan={7} className={`detail-td ${styles.emptyRow}`}>
-                              No members found for this season.
+                              <SmartEmptyState type="members" compact hideActions />
                             </td>
                           </tr>
                         )}

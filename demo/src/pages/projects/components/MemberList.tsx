@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Select } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
+import SmartEmptyState from '../../../components/SmartEmptyState';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 
 interface Member {
@@ -218,7 +219,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                 {members.length === 0 && (
                     <tr>
                         <td colSpan={6} className="text-center p-20 text-muted">
-                            No members found for this season.
+                            <SmartEmptyState type="members" compact hideActions />
                         </td>
                     </tr>
                 )}

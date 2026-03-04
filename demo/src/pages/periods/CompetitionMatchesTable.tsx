@@ -5,6 +5,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import { getCsrfToken } from '../../utils/csrf';
 
 export interface CompetitionMatchesTableProps {
@@ -36,7 +37,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
     return <div className="text-sm text-gray-500 py-4 text-center">Loading matches…</div>;
   }
   if (!rows.length) {
-    return <div className="text-sm text-gray-500 py-4 text-center">No matches in this competition.</div>;
+    return <SmartEmptyState type="matches" compact hideActions />;
   }
 
   return (

@@ -8,6 +8,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Badge } from '@django-core/design-system';
+import SmartEmptyState from './SmartEmptyState';
 import { MEDIA_SLOTS } from '../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots } from '../utils/mediaHelpers';
 import styles from './MemberMediaMatrix.module.css';
@@ -77,7 +78,7 @@ export function MemberMediaMatrix({
       ) : membersError ? (
         <Alert variant="error">{membersError}</Alert>
       ) : members.length === 0 ? (
-        <Alert variant="info">No members to show media status for.</Alert>
+        <SmartEmptyState type="members" compact hideActions />
       ) : (
         <>
           {/* Table */}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, Alert, Card } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { SkeletonTablePage } from '../../components/Skeleton';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import WorkFilterBar from '../work/WorkFilterBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -103,13 +104,20 @@ export const ProjectsPage: React.FC = () => {
         )}
 
         {!loading && projects.length === 0 && (
-          <Alert variant="info" data-testid="project-empty-state">
-            No projects found. {currentOrgSlug ? 'Create a new project to get started.' : 'No accessible projects.'}
-          </Alert>
+          <SmartEmptyState
+            type="projects"
+            description={currentOrgSlug ? 'Maak een nieuw project aan om te beginnen.' : 'Geen toegankelijke projecten.'}
+            hideActions={!currentOrgSlug}
+          />
         )}
 
         {!loading && projects.length > 0 && filtered.length === 0 && (
-          <Alert variant="info" data-testid="project-filtered-empty">No projects match the current filters.</Alert>
+          <SmartEmptyState
+            type="search"
+            title="Geen projecten gevonden"
+            description="Pas je filters aan om resultaten te zien."
+            hideActions
+          />
         )}
 
         {!loading && filtered.length > 0 && (

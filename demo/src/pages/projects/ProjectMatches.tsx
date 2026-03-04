@@ -3,6 +3,7 @@ import { Badge, Button } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import SmartEmptyState from '../../components/SmartEmptyState';
 
 
 interface Match {
@@ -84,14 +85,10 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
 
   if (matches.length === 0) {
     return (
-      <div className="text-center rounded-8 text-muted" style={{
-        padding: '40px',
-        backgroundColor: 'rgba(0,0,0,0.02)',
-        border: '1px dashed #ccc'
-      }}>
-        <p>No matches scheduled for this team yet.</p>
-        <Button size="sm">Schedule Match</Button>
-      </div>
+      <SmartEmptyState
+        type="matches"
+        description="Er zijn nog geen wedstrijden gepland voor dit team."
+      />
     );
   }
 

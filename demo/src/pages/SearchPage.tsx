@@ -4,6 +4,7 @@ import { useSearch, type GroupedSearchResults, type PaginatedSearchResults, type
 import AppShell from '../components/AppShell';
 import HierarchyTreeView from '../components/HierarchyTreeView';
 import { BottomSheet, Button } from '@django-core/design-system';
+import SmartEmptyState from '../components/SmartEmptyState';
 import styles from './SearchPage.module.css';
 
 export default function SearchPage() {
@@ -175,11 +176,12 @@ export default function SearchPage() {
         )}
 
         {!isSearching && !error && totalResults === 0 && query && (
-          <div className="text-center rounded-8 p-32 text-secondary bg-surface-2">
-            <div className={`mb-16 ${styles.emptyIcon}`}>🔍</div>
-            <h3 className="fs-20 mb-8 text-primary">No results found</h3>
-            <p>We couldn't find anything matching "{query}". Try different keywords or check for typos.</p>
-          </div>
+          <SmartEmptyState
+            type="search"
+            title="Geen resultaten"
+            description={`We konden niets vinden voor "${query}". Probeer andere zoektermen.`}
+            hideActions
+          />
         )}
 
         {/* Hierarchy Tree View (when enabled) */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import SmartEmptyState from '../SmartEmptyState';
 import styles from './AuditLogTable.module.css';
 
 interface AuditEvent {
@@ -95,7 +96,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
           {events.length === 0 ? (
             <tr>
               <td colSpan={5} className="p-20 text-center text-muted">
-                No audit events found.
+                <SmartEmptyState type="audit" compact hideActions />
               </td>
             </tr>
           ) : (

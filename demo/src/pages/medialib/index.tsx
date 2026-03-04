@@ -23,8 +23,8 @@ import {
   FileCard,
   MemberMediaCard,
   FilterChip,
-  EmptyState,
 } from './MediaLibCards';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import { useMediaLibData } from './useMediaLibData';
 import styles from './index.module.css';
 
@@ -59,7 +59,7 @@ const MediaLibraryPage: React.FC = () => {
   if (!orgId) {
     return (
       <div className={`p-24 bg-primary ${styles.page}`}>
-        <Alert variant="info">Selecteer een organisatie om de media library te bekijken.</Alert>
+        <SmartEmptyState type="generic" title="Selecteer een organisatie" description="Kies een organisatie om de media library te bekijken." hideActions />
       </div>
     );
   }
@@ -226,9 +226,9 @@ const MediaLibraryPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState icon="🏷️" message="Geen assets gevonden." sub={
-                brandAssets.length > 0 ? 'Pas je filters of zoekopdracht aan.' : "Upload assets via Brand Identity."
-              } />
+              <SmartEmptyState type="media" compact hideActions
+                description={brandAssets.length > 0 ? 'Pas je filters of zoekopdracht aan.' : 'Upload assets via Brand Identity.'}
+              />
             )
           )}
 
@@ -246,9 +246,10 @@ const MediaLibraryPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState icon="👤" message="Geen speler media gevonden." sub={
-                memberMedia.length > 0 ? 'Pas je filters of zoekopdracht aan.' : "Genereer speler assets via de team/seizoen pagina."
-              } />
+              <SmartEmptyState type="media" compact hideActions
+                title="Geen speler media gevonden"
+                description={memberMedia.length > 0 ? 'Pas je filters of zoekopdracht aan.' : 'Genereer speler assets via de team/seizoen pagina.'}
+              />
             )
           )}
 
@@ -261,9 +262,9 @@ const MediaLibraryPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState icon="📁" message="Geen bestanden gevonden." sub={
-                files.length > 0 ? 'Pas je zoekopdracht aan.' : 'Upload bestanden om ze hier te zien.'
-              } />
+              <SmartEmptyState type="files" compact hideActions
+                description={files.length > 0 ? 'Pas je zoekopdracht aan.' : 'Upload bestanden om ze hier te zien.'}
+              />
             )
           )}
 

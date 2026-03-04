@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card } from '@django-core/design-system';
+import SmartEmptyState from '../SmartEmptyState';
 import { useTransactions, Transaction } from '../../hooks/useTransactions';
 import styles from './TransactionWidget.module.css';
 
@@ -67,7 +68,7 @@ export const TransactionWidget: React.FC<TransactionWidgetProps> = ({
           <h3 className={styles.widgetTitle}>
             Recent Transactions
           </h3>
-          <div className={styles.emptyText}>No transactions found.</div>
+          <SmartEmptyState type="transactions" compact hideActions />
         </div>
       </Card>
     );

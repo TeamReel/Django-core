@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import styles from './CompetitionHierarchyTab.module.css';
 
 export interface CompetitionHierarchyTabProps {
@@ -87,9 +88,7 @@ export function CompetitionHierarchyTab({
           Loading matches...
         </div>
       ) : filteredMatches.length === 0 ? (
-        <div className={`text-sm text-gray-500 py-2 ${styles.statusMessage}`}>
-          No matches found.
-        </div>
+        <SmartEmptyState type="matches" compact hideActions />
       ) : (
         (() => {
           // Group by date

@@ -66,7 +66,9 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
         error={error}
         domainLoading={seasonsLoading}
         domainLoadingMessage="Loading seasons..."
-        emptyMessage="No seasons found. Use filters to narrow your search."
+        emptyStateType="seasons"
+        emptyDescription="Pas je filters aan of maak een seizoen aan."
+        hideActions
         itemCount={filteredSeasons.length}
       >
               <thead>

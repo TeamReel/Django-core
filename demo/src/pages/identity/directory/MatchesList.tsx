@@ -380,7 +380,9 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
         error={error}
         domainLoading={matchesLoading}
         domainLoadingMessage="Loading matches..."
-        emptyMessage="No matches found. Use filters to narrow your search."
+        emptyStateType="matches"
+        emptyDescription="Pas je filters aan of voeg een wedstrijd toe."
+        hideActions
         itemCount={sortedMatches.length}
       >
         <thead>

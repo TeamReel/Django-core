@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SmartEmptyState from '../SmartEmptyState';
 import styles from './AuditLogViewer.module.css';
 
 interface AuditEvent {
@@ -76,7 +77,7 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
 
       <div className="rounded-8 overflow-hidden border">
         {filteredEvents.length === 0 ? (
-          <div className="p-20 text-center text-muted">No events found.</div>
+          <SmartEmptyState type="audit" compact hideActions />
         ) : (
           <table className={`w-full ${styles.auditTable}`}>
             <thead className="bg-surface-2">

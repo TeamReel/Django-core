@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert } from '@django-core/design-system';
 import { SkeletonList } from '../../../components/Skeleton';
+import SmartEmptyState from '../../../components/SmartEmptyState';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
@@ -49,7 +50,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
       {d.error && <Alert variant="error">{d.error}</Alert>}
 
       {!d.isLoading && !d.error && d.filteredTeams.length === 0 && (
-        <Alert variant="info">No teams match the current filters.</Alert>
+        <SmartEmptyState type="teams" hideActions />
       )}
 
       {!d.isLoading && !d.error && d.filteredTeams.length > 0 && (

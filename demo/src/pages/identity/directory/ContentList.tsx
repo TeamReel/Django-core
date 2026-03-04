@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
 import { SkeletonList } from '../../../components/Skeleton';
+import SmartEmptyState from '../../../components/SmartEmptyState';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
 
@@ -197,6 +198,9 @@ export const ContentList: React.FC = () => {
       </div>
 
       {/* ── Table ─────────────────────────────────────────────────────── */}
+      {filtered.length === 0 ? (
+        <SmartEmptyState type="content" hideActions />
+      ) : (
       <Card>
         <div className="overflow-x-auto">
           <table className="dir-table">
@@ -221,9 +225,6 @@ export const ContentList: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 && (
-                <tr><td colSpan={16} className="text-center dir-td text-muted p-24">No content items found</td></tr>
-              )}
               {filtered.map((job) => (
                 <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                   <td className="dir-td">
@@ -260,6 +261,7 @@ export const ContentList: React.FC = () => {
           </table>
         </div>
       </Card>
+      )}
     </div>
   );
 };

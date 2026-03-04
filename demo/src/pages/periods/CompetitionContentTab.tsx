@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Card } from '@django-core/design-system';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
 import styles from './CompetitionContentTab.module.css';
@@ -52,7 +53,7 @@ export function CompetitionContentTab({
         {matchMediaLoading ? (
           <Alert variant="info">Media laden…</Alert>
         ) : sortedMatches.length === 0 ? (
-          <Alert variant="info">Geen wedstrijden gevonden.</Alert>
+          <SmartEmptyState type="matches" compact hideActions />
         ) : (
           <div className="overflow-x-auto">
             <table className={styles.table}>

@@ -9,6 +9,7 @@
 import React from 'react';
 import { Alert } from '@django-core/design-system';
 import { SkeletonList } from '../../../components/Skeleton';
+import SmartEmptyState from '../../../components/SmartEmptyState';
 import UserDetailModal from '../UserDetailModal';
 import UserEditModal from '../UserEditModal';
 import AddMemberModal from '../AddMemberModal';
@@ -87,7 +88,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
       {isLoading && <SkeletonList count={5} variant="row" />}
       {error && <Alert variant="error">{error}</Alert>}
       {!isLoading && !error && !hasUsers && (
-        <Alert variant="info">No users found.</Alert>
+        <SmartEmptyState type="users" hideActions />
       )}
 
       <MemberBatchActionModal

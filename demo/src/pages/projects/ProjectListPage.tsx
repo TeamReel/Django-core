@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 // import { useContextSwitcher } from '@django-core/context-switcher';
-import { DefaultEmpty } from '@django-core/page-templates';
+import SmartEmptyState from '../../components/SmartEmptyState';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './ProjectListPage.module.css';
 
@@ -99,16 +99,9 @@ export default function ProjectListPage() {
         )}
 
         {!isLoading && !error && projects.length === 0 && (
-          <DefaultEmpty
-            title="No projects found"
-            message="This organisation doesn't have any projects yet. Create your first project to get started."
-          />
-        )}
-
-        {!isLoading && !error && projects.length === 0 && (
-          <DefaultEmpty
-            title="No projects found"
-            message="This organisation doesn't have any projects yet. Create your first project to get started."
+          <SmartEmptyState
+            type="projects"
+            description="Deze organisatie heeft nog geen projecten. Maak een project aan om te beginnen."
           />
         )}
 
@@ -181,7 +174,7 @@ export default function ProjectListPage() {
                     </div>
                   ) : (
                     <div className={`mt-16 fs-14 text-muted ${styles.noTeams}`}>
-                      No teams created for this club yet.
+                      <SmartEmptyState type="teams" compact hideActions description="Er zijn nog geen teams aangemaakt voor deze club." />
                     </div>
                   )}
                 </div>

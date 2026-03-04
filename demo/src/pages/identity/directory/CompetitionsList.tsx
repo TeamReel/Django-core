@@ -74,7 +74,9 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
         error={error}
         domainLoading={competitionsLoading}
         domainLoadingMessage="Loading competitions..."
-        emptyMessage="No competitions found. Use filters to narrow your search."
+        emptyStateType="competitions"
+        emptyDescription="Pas je filters aan of voeg een competitie toe."
+        hideActions
         itemCount={sortedCompetitions.length}
       >
               <thead>

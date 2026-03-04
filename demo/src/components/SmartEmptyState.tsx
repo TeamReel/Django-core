@@ -4,12 +4,21 @@ import { Button } from '@django-core/design-system';
 import {
   Zap,
   Calendar,
+  CalendarDays,
   Users,
+  UserRound,
   FileText,
   Image,
   Video,
   Plus,
   Search,
+  FolderOpen,
+  Shield,
+  Building2,
+  Trophy,
+  ScrollText,
+  CreditCard,
+  Layers,
   type LucideIcon
 } from 'lucide-react';
 import styles from './SmartEmptyState.module.css';
@@ -22,7 +31,16 @@ type EmptyStateType =
   | 'images'
   | 'videos'
   | 'search'
-  | 'generic';
+  | 'generic'
+  | 'projects'
+  | 'teams'
+  | 'clubs'
+  | 'users'
+  | 'seasons'
+  | 'competitions'
+  | 'audit'
+  | 'transactions'
+  | 'media';
 
 interface SmartEmptyStateConfig {
   icon: LucideIcon;
@@ -111,6 +129,72 @@ const configs: Record<EmptyStateType, SmartEmptyStateConfig> = {
       label: 'Toevoegen',
     },
   },
+  projects: {
+    icon: FolderOpen,
+    title: 'Geen projecten gevonden',
+    description: 'Maak een nieuw project aan om te beginnen.',
+    primaryAction: {
+      label: 'Project aanmaken',
+    },
+  },
+  teams: {
+    icon: Shield,
+    title: 'Geen teams gevonden',
+    description: 'Maak een team aan binnen je club.',
+    primaryAction: {
+      label: 'Team aanmaken',
+    },
+  },
+  clubs: {
+    icon: Building2,
+    title: 'Geen clubs gevonden',
+    description: 'Voeg een club toe aan je organisatie.',
+    primaryAction: {
+      label: 'Club toevoegen',
+    },
+  },
+  users: {
+    icon: UserRound,
+    title: 'Geen gebruikers gevonden',
+    description: 'Nodig gebruikers uit om samen te werken.',
+    primaryAction: {
+      label: 'Gebruiker uitnodigen',
+    },
+  },
+  seasons: {
+    icon: CalendarDays,
+    title: 'Geen seizoenen gevonden',
+    description: 'Maak een seizoen aan om wedstrijden te plannen.',
+    primaryAction: {
+      label: 'Seizoen aanmaken',
+    },
+  },
+  competitions: {
+    icon: Trophy,
+    title: 'Geen competities gevonden',
+    description: 'Voeg een competitie toe aan het seizoen.',
+    primaryAction: {
+      label: 'Competitie toevoegen',
+    },
+  },
+  audit: {
+    icon: ScrollText,
+    title: 'Geen events gevonden',
+    description: 'Er zijn nog geen audit events geregistreerd.',
+  },
+  transactions: {
+    icon: CreditCard,
+    title: 'Geen transacties',
+    description: 'Er zijn nog geen transacties uitgevoerd.',
+  },
+  media: {
+    icon: Layers,
+    title: 'Geen media gevonden',
+    description: 'Upload media of genereer content om je bibliotheek te vullen.',
+    primaryAction: {
+      label: 'Media uploaden',
+    },
+  },
 };
 
 interface SmartEmptyStateProps {
@@ -121,8 +205,12 @@ interface SmartEmptyStateProps {
   secondaryAction?: SmartEmptyStateConfig['secondaryAction'];
   onPrimaryAction?: () => void;
   onSecondaryAction?: () => void;
+  /** Hide default action buttons (useful for filtered-empty states). */
+  hideActions?: boolean;
   matchId?: string;
   className?: string;
+  /** Compact variant with less padding, suitable for inline/table contexts. */
+  compact?: boolean;
 }
 
 export default function SmartEmptyState({
@@ -133,8 +221,10 @@ export default function SmartEmptyState({
   secondaryAction,
   onPrimaryAction,
   onSecondaryAction,
+  hideActions,
   matchId,
   className,
+  compact,
 }: SmartEmptyStateProps) {
   const navigate = useNavigate();
   const config = configs[type];
@@ -203,12 +293,12 @@ export default function SmartEmptyState({
 
   return (
     <div
-      className={`${styles.container} ${className || ''}`}
+      className={`${styles.container} ${compact ? styles.compact : ''} ${className || ''}`}
     >
       {/* Icon with subtle background */}
       <div className={styles.iconWrapper}>
         <Icon
-          size={36}
+          size={compact ? 28 : 36}
           className={styles.icon}
         />
       </div>
@@ -224,28 +314,29 @@ export default function SmartEmptyState({
       </p>
 
       {/* Actions */}
-      <div className={styles.actions}>
-        {finalPrimaryAction && (
-          <Button
-            variant="primary"
-            onClick={handlePrimaryClick}
-            className={styles.fullWidth}
-          >
-            <Zap size={18} className={styles.primaryIcon} />
-            {finalPrimaryAction.label}
-          </Button>
-        )}
+      {!hideActions && (finalPrimaryAction || finalSecondaryAction) && (
+        <div className={styles.actions}>
+          {finalPrimaryAction && (
+            <Button
+              variant="primary"
+              onClick={handlePrimaryClick}
+              className={styles.fullWidth}
+            >
+              {finalPrimaryAction.label}
+            </Button>
+          )}
 
-        {finalSecondaryAction && (
-          <Button
-            variant="secondary"
-            onClick={handleSecondaryClick}
-            className={styles.fullWidth}
-          >
-            {finalSecondaryAction.label}
-          </Button>
-        )}
-      </div>
+          {finalSecondaryAction && (
+            <Button
+              variant="secondary"
+              onClick={handleSecondaryClick}
+              className={styles.fullWidth}
+            >
+              {finalSecondaryAction.label}
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
+import SmartEmptyState from '../SmartEmptyState';
 import styles from './TransactionsPanel.module.css';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
@@ -136,7 +137,7 @@ export default function TransactionsPanel(props: {
       {loading ? (
         <div className="p-12 opacity-70 text-center">Loading…</div>
       ) : items.length === 0 ? (
-        <div className="p-12 opacity-70 text-center">No transactions found.</div>
+        <SmartEmptyState type="transactions" compact hideActions />
       ) : (
         <div className="mt-12 overflow-x-auto">
           <Table className="w-full">
