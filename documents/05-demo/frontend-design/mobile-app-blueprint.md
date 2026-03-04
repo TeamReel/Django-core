@@ -2,6 +2,7 @@
 
 > Last updated: 2026-03-04
 > Status: **Active design document** — living reference for all frontend work
+> Roadmap: [02-roadmap/mobile-design/](../../02-roadmap/mobile-design/index.md)
 
 ---
 
@@ -27,7 +28,7 @@
 | CSS Modules + `--app-*` tokens | ✅ Gebouwd | 179 modules, 110+ tokens, ~230 utilities |
 | Touch targets ≥ 44px | ✅ Gebouwd | `.touch-target` utility, `(hover: none)` media query |
 | Consistente spacing/typografie/tokens | ✅ Gebouwd | Full design system (tokens.css → theme.css → utility.css) |
-| Skeletons boven spinners | 🟡 Deels | `LoadingState` component, maar niet overal skeletons |
+| Skeletons boven spinners | ✅ Gebouwd | Phase A1: 18 bestanden gemigreerd, 5 page-level composites, 0 spinners |
 | Zoekfunctie in topbar | ✅ Gebouwd | `SearchBar` in TopNavbar, `CommandPalette` quick switch |
 
 ### Wat ontbreekt of verscherpt moet worden 🔴
