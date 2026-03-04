@@ -177,6 +177,7 @@ export interface MatchDetailDataReturn {
   resolvedSeasonId: string;
   providerLoading: boolean;
   isPlayer: boolean;
+  isSupporter: boolean;
   apiBaseUrl: string;
   orgSlugOrId: string;
   clubSlugOrId: string;

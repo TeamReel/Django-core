@@ -77,7 +77,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
   const location = useLocation();
   const { user } = useAuth();
   const { context } = useContextSwitcher();
-  const { isPlayer } = useUserRole();
+  const { isPlayer, isSupporter } = useUserRole();
   const apiBaseUrl = getApiBaseUrl();
 
   // ── Route params ───────────────────────────────────────────────────
@@ -403,6 +403,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
 
       // Misc
       isPlayer,
+      isSupporter,
       apiBaseUrl,
       reloadSeason,
     }),
@@ -438,6 +439,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
       userCanEditProject,
       userCanDeleteProject,
       isPlayer,
+      isSupporter,
       apiBaseUrl,
       reloadSeason,
     ],

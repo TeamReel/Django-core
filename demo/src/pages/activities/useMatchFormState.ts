@@ -22,7 +22,7 @@ export function useMatchFormState() {
     competitions: providerCompetitions,
     loading: providerLoading, error: providerError,
     isTeamRoute, orgSlugOrId, clubSlugOrId, projectSlugOrId,
-    effectiveSeasonId, seasonsBasePath, clubBrand, brandLogoUrl, isPlayer, apiBaseUrl,
+    effectiveSeasonId, seasonsBasePath, clubBrand, brandLogoUrl, isPlayer, isSupporter, apiBaseUrl,
   } = ctx;
 
   const { competitionId, matchId } = useParams<{ competitionId: string; matchId: string }>();
@@ -137,7 +137,7 @@ export function useMatchFormState() {
     navigate, location, user,
     // Context
     org, project, club, season, resolvedSeasonId,
-    providerCompetitions, providerLoading, isPlayer, apiBaseUrl,
+    providerCompetitions, providerLoading, isPlayer, isSupporter, apiBaseUrl,
     orgSlugOrId, clubSlugOrId, seasonsBasePath, clubBrand, brandLogoUrl, isTeamRoute,
     // Route params
     seasonKeyOrId, effectiveCompetitionIdVal, effectiveMatchIdVal,

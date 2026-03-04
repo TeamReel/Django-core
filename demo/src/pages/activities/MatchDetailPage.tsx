@@ -205,13 +205,13 @@ export default function HierarchyMatchDetailPage() {
         />
 
         {/* Mobile Tab Bar */}
+        {/* RBAC: Supporter (Overview), Member (+ Lineup), Admin (all 4) */}
         <MobileTabBar
-          variant="inline"
           tabs={[
             { id: 'overview', label: 'Overview' },
-            ...(!d.isPlayer ? [{ id: 'content', label: 'Content' }] : []),
-            { id: 'lineup', label: 'Lineup' },
-            ...(!d.isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'content', label: 'Content' }] : []),
+            ...(!d.isSupporter ? [{ id: 'lineup', label: 'Lineup' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'transactions', label: 'Transactions' }] : []),
           ]}
           activeTab={d.activeTab}
         />

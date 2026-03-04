@@ -12,6 +12,7 @@ import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import ClubAssetsTab from './detail/ClubAssetsTab';
 import MobileTabBar from '../../components/MobileTabBar';
+import { useUserRole } from '../../components/PermissionGuards';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
@@ -31,6 +32,7 @@ import { useClubOrgDetailData } from './useClubOrgDetailData';
    ═══════════════════════════════════════════════════════════════ */
 
 export default function ClubOrganisationDetailPage() {
+  const { isPlayer, isSupporter } = useUserRole();
   const {
     org, club, loading, error, navigate, apiBaseUrl,
     activeContext, setActiveContextState, activatingContext, setActivatingContext,
@@ -176,22 +178,23 @@ export default function ClubOrganisationDetailPage() {
           }
         />
 
+        {/* RBAC: Supporter (Overview, Teams), Member (+ Members, Media, Identity), Admin (all 14) */}
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            { id: 'hierarchy', label: 'Hierarchy' },
+            ...(!isPlayer && !isSupporter ? [{ id: 'hierarchy', label: 'Hierarchy' }] : []),
             { id: 'teams', label: 'Teams' },
-            { id: 'seasons', label: 'Seasons' },
-            { id: 'competitions', label: 'Competitions' },
-            { id: 'matches', label: 'Matches' },
-            { id: 'members', label: 'Members' },
-            { id: 'media', label: 'Media' },
-            { id: 'assets', label: 'Assets' },
-            { id: 'balance', label: 'Balance' },
-            { id: 'transactions', label: 'Transactions' },
-            { id: 'identity', label: 'Identity' },
-            { id: 'kits', label: 'Kits' },
-            { id: 'settings', label: 'Settings' },
+            ...(!isPlayer && !isSupporter ? [{ id: 'seasons', label: 'Seasons' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'competitions', label: 'Competitions' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'matches', label: 'Matches' }] : []),
+            ...(!isSupporter ? [{ id: 'members', label: 'Members' }] : []),
+            ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'balance', label: 'Balance' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!isSupporter ? [{ id: 'identity', label: 'Identity' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'kits', label: 'Kits' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'settings', label: 'Settings' }] : []),
           ]}
           activeTab={activeTabFromUrl}
         />

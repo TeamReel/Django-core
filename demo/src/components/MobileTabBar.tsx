@@ -1,13 +1,14 @@
 /**
- * MobileTabBar - Tab switcher for mobile detail pages
+ * MobileTabBar - Tab switcher for detail pages
  *
  * Two variants:
- * - 'dropdown' (default): Shows current tab with a dropdown to switch.
- * - 'inline': Horizontal scrollable pill tabs — more compact and direct.
+ * - 'inline' (default): Horizontal scrollable pill tabs with fade hint.
+ *   Auto-scrolls active tab into view on mount.
+ * - 'dropdown': Shows current tab with a dropdown to switch (legacy).
  *
- * Only visible on mobile (<640px)
+ * Visible on all breakpoints — horizontally scrollable on mobile.
  */
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { AppIcon } from './AppIcon';
@@ -30,13 +31,36 @@ interface MobileTabBarProps {
   variant?: 'dropdown' | 'inline';
 }
 
-export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 'tab', variant = 'dropdown' }: MobileTabBarProps) {
+export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 'tab', variant = 'inline' }: MobileTabBarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showFade, setShowFade] = useState(false);
 
   const currentTab = tabs.find(t => t.id === activeTab) || tabs[0];
+
+  // Auto-scroll active tab into view + detect overflow for fade hint
+  const checkOverflow = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setShowFade(el.scrollWidth > el.clientWidth + 8 && el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+  }, []);
+
+  useEffect(() => {
+    if (variant !== 'inline') return;
+    const el = scrollRef.current;
+    if (!el) return;
+    // Scroll active pill into view
+    const activePill = el.querySelector('[data-active="true"]') as HTMLElement | null;
+    if (activePill) {
+      activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+    checkOverflow();
+    el.addEventListener('scroll', checkOverflow, { passive: true });
+    return () => el.removeEventListener('scroll', checkOverflow);
+  }, [activeTab, variant, checkOverflow]);
 
   const handleTabClick = (tabId: string) => {
     const base = basePath || location.pathname;
@@ -70,23 +94,27 @@ export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 't
     setIsOpen(false);
   }, [location.pathname, location.search]);
 
-  // ── Inline pills variant ──────────────────────────────────────────────
+  // ── Inline pills variant (default) ────────────────────────────────────
   if (variant === 'inline') {
     return (
-      <div className={`mobile-tab-bar mobile-tab-bar--inline ${styles.inlineBar}`}>
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              className={styles.inlinePill}
-              data-active={isActive}
-              onClick={() => handleTabClick(tab.id)}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className={`mobile-tab-bar mobile-tab-bar--inline ${styles.inlineWrap}`} data-fade={showFade}>
+        <div ref={scrollRef} className={styles.inlineBar} role="tablist">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={isActive}
+                className={styles.inlinePill}
+                data-active={isActive}
+                onClick={() => handleTabClick(tab.id)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }

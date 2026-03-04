@@ -1,4 +1,22 @@
-/* ── Inline pills variant ─────────────────────────────────── */
+/* ── Inline pills variant (default) ────────────────────── */
+
+.inlineWrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+/* Right-edge fade hint when more pills are scrollable */
+.inlineWrap[data-fade="true"]::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--app-bg, #fff) 90%);
+  z-index: 1;
+}
 
 .inlineBar {
   display: flex;
@@ -6,7 +24,6 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  margin-bottom: 12px;
   padding: 2px 0;
 }
 
@@ -16,9 +33,9 @@
 
 .inlinePill {
   flex-shrink: 0;
-  padding: 10px 14px;
-  min-height: 44px;
-  border-radius: 20px;
+  padding: 8px 16px;
+  min-height: 36px;
+  border-radius: 18px;
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-muted-text, #888);
@@ -30,10 +47,10 @@
 }
 
 .inlinePill[data-active="true"] {
-  border: 1.5px solid var(--mobile-tab-active-border, rgba(99, 160, 255, 0.7));
-  background: var(--mobile-tab-active-bg, rgba(59, 130, 246, 0.22));
-  color: var(--mobile-tab-active-text, #93bbff);
-  font-weight: 700;
+  border-color: var(--app-primary, #3B8EA5);
+  background: var(--app-primary, #3B8EA5);
+  color: #fff;
+  font-weight: 600;
 }
 
 /* ── Dropdown variant ─────────────────────────────────────── */

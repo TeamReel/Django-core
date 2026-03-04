@@ -7,7 +7,19 @@ interface PermissionGuardProps {
 }
 
 /**
- * Helper to determine user role status
+ * Helper to determine user role status.
+ *
+ * RBAC tiers (from teamreel-rbac-config.md):
+ *   Super Admin  → isSystemAdmin (full platform access)
+ *   Land Admin   → isLandAdmin   (federation scope)
+ *   Club Admin   → isClubAdmin   (club + all child teams)
+ *   Team Admin   → isTeamAdmin   (single team scope)
+ *   Team Member  → isPlayer      (view + own content only)
+ *   Supporter    → isSupporter   (read-only viewer)
+ *
+ * Convenience flags:
+ *   isAdmin  = Team Admin or higher (sees admin tabs)
+ *   isMember = Team Member (sees core tabs, no admin tabs)
  */
 export function useUserRole() {
   const { user } = useAuth();
@@ -23,19 +35,30 @@ export function useUserRole() {
   const isOrgAdmin = orgs.some((org: any) =>
     org.role?.toLowerCase().includes('admin')
   );
+  const isClubAdmin = isOrgAdmin; // Club-level admin in any org
 
   const isCoach = orgs.some((org: any) =>
     org.role?.toLowerCase().includes('coach')
   );
 
   const isPlayer = role === 'player';
+  const isSupporter = role === 'supporter' || role === 'viewer';
+
+  // Team Admin+ = anyone who is an admin, coach, or higher
+  const isTeamAdmin = isCoach || isOrgAdmin || isLandAdmin || isSystemAdmin;
+  // Convenience: "can see admin tabs" = Team Admin or higher
+  const isAdmin = isTeamAdmin;
 
   return {
     isSystemAdmin,
     isLandAdmin,
+    isClubAdmin,
     isOrgAdmin,
+    isTeamAdmin,
     isCoach,
     isPlayer,
+    isSupporter,
+    isAdmin,
     hasOrgRole: isOrgAdmin || isCoach,
   };
 }

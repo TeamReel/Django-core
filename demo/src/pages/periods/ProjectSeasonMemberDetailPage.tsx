@@ -50,7 +50,7 @@ export default function ProjectSeasonMemberDetailPage() {
     membership, setMembership, membershipId, user,
     loading, error, org, project, club, season, resolvedSeasonId,
     isTeamRoute, orgSlugOrId, clubSlugOrId, seasonsBasePath, seasonKeyForLinks,
-    clubBrand, teamBrand, batchBrandKits, isSuperAdmin, userCanEditProject, isPlayer, apiBaseUrl,
+    clubBrand, teamBrand, batchBrandKits, isSuperAdmin, userCanEditProject, isPlayer, isSupporter, apiBaseUrl,
     activeTab, navigateToTab,
     activeContext, activatingContext, handleSetActiveContext,
     saving, saveError, save,
@@ -160,18 +160,19 @@ export default function ProjectSeasonMemberDetailPage() {
         }
       />
 
+      {/* RBAC: Supporter (Overview), Member (+ Input, Assets, Identity), Admin (all 10) */}
       <MobileTabBar
         tabs={[
           { id: 'overview', label: 'Overview' },
-          { id: 'input', label: 'Input Foto\'s' },
-          { id: 'assets', label: 'Assets' },
-          { id: 'intro', label: 'Short Intro' },
-          { id: 'celebration', label: 'Celebration' },
-          { id: 'then_vs_now', label: 'Transformation' },
-          { id: 'photo_composite', label: 'Duo Portret' },
-          { id: 'walking_composite', label: 'Walking Composite' },
-          { id: 'action_photo', label: 'Actiefoto' },
-          { id: 'identity', label: 'Identity' },
+          ...(!isSupporter ? [{ id: 'input', label: 'Input Foto\'s' }] : []),
+          ...(!isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
+          ...(!isPlayer && !isSupporter ? [{ id: 'intro', label: 'Short Intro' }] : []),
+          ...(!isPlayer && !isSupporter ? [{ id: 'celebration', label: 'Celebration' }] : []),
+          ...(!isPlayer && !isSupporter ? [{ id: 'then_vs_now', label: 'Transformation' }] : []),
+          ...(!isPlayer && !isSupporter ? [{ id: 'photo_composite', label: 'Duo Portret' }] : []),
+          ...(!isPlayer && !isSupporter ? [{ id: 'walking_composite', label: 'Walking Composite' }] : []),
+          ...(!isPlayer && !isSupporter ? [{ id: 'action_photo', label: 'Actiefoto' }] : []),
+          ...(!isSupporter ? [{ id: 'identity', label: 'Identity' }] : []),
         ]}
         activeTab={activeTab}
       />

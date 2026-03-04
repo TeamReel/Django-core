@@ -49,6 +49,7 @@ export interface MemberDetailData {
   isSuperAdmin: boolean;
   userCanEditProject: boolean;
   isPlayer: boolean;
+  isSupporter: boolean;
   apiBaseUrl: string;
 
   // Tab navigation
@@ -102,6 +103,7 @@ export function useMemberDetailData(): MemberDetailData {
     permissionContext,
     userCanEditProject,
     isPlayer,
+    isSupporter,
     apiBaseUrl,
   } = useSeasonContext();
 
@@ -110,9 +112,15 @@ export function useMemberDetailData(): MemberDetailData {
   // ── Tab navigation ──
   const activeTab = useMemo(() => {
     const sp = new URLSearchParams(location.search);
-    const raw = String(sp.get('tab') || '').trim();
-    return raw || 'overview';
-  }, [location.search]);
+    const raw = String(sp.get('tab') || '').trim() || 'overview';
+    /* RBAC: Supporter → overview only, Member → core set, Admin → all */
+    const allowed = isSupporter
+      ? new Set(['overview'])
+      : isPlayer
+        ? new Set(['overview', 'input', 'assets', 'identity'])
+        : new Set(['overview', 'input', 'assets', 'intro', 'celebration', 'then_vs_now', 'photo_composite', 'walking_composite', 'action_photo', 'identity']);
+    return allowed.has(raw) ? raw : 'overview';
+  }, [location.search, isPlayer, isSupporter]);
 
   const navigateToTab = useCallback((tabId: string) => {
     const sp = new URLSearchParams(location.search);
@@ -270,7 +278,7 @@ export function useMemberDetailData(): MemberDetailData {
     membership, setMembership, membershipId, user,
     loading, error, org, project, club, season, resolvedSeasonId,
     isTeamRoute, orgSlugOrId, clubSlugOrId, seasonsBasePath, seasonKeyForLinks,
-    clubBrand, teamBrand, batchBrandKits, isSuperAdmin, userCanEditProject, isPlayer, apiBaseUrl,
+    clubBrand, teamBrand, batchBrandKits, isSuperAdmin, userCanEditProject, isPlayer, isSupporter, apiBaseUrl,
     activeTab, navigateToTab,
     activeContext, activatingContext, handleSetActiveContext,
     saving, saveError, save,

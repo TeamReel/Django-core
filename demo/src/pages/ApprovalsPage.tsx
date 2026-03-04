@@ -11,6 +11,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { PullToRefresh } from '@django-core/design-system';
 import { useLocation } from 'react-router-dom';
 import MobileTabBar from '../components/MobileTabBar';
+import { useUserRole } from '../components/PermissionGuards';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import {
   useWorkflowInstances,
@@ -57,9 +58,14 @@ const tabTitles: Record<FilterState, { title: string; subtitle: string }> = {
 };
 
 export default function ApprovalsPage() {
+  const { isPlayer, isSupporter } = useUserRole();
   const location = useLocation();
   const rawTab = new URLSearchParams(location.search).get('tab') || 'all';
-  const filter: FilterState = (['all', 'review', 'active', 'completed', 'rejected', 'ai_queue', 'video'] as const).includes(rawTab as FilterState)
+  const isAdmin = !isPlayer && !isSupporter;
+  const allowedTabs = isAdmin
+    ? ['all', 'review', 'active', 'completed', 'rejected', 'ai_queue', 'video'] as const
+    : ['all', 'review', 'completed', 'rejected'] as const;
+  const filter: FilterState = (allowedTabs as readonly string[]).includes(rawTab)
     ? (rawTab as FilterState)
     : 'all';
   const [actionError, setActionError] = useState<string | null>(null);
@@ -301,15 +307,16 @@ export default function ApprovalsPage() {
           releaseText="Laat los om te vernieuwen"
           refreshingText="Vernieuwen..."
         >
+        {/* RBAC: Member (All, Review, Approved, Rejected), Admin (all 7) */}
         <MobileTabBar
           tabs={[
             { id: 'all', label: 'All' },
             { id: 'review', label: 'Needs Review' },
-            { id: 'active', label: 'In Progress' },
+            ...(!isPlayer && !isSupporter ? [{ id: 'active', label: 'In Progress' }] : []),
             { id: 'completed', label: 'Approved' },
             { id: 'rejected', label: 'Rejected' },
-            { id: 'ai_queue', label: 'AI Queue' },
-            { id: 'video', label: 'Video' },
+            ...(!isPlayer && !isSupporter ? [{ id: 'ai_queue', label: 'AI Queue' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'video', label: 'Video' }] : []),
           ]}
           activeTab={filter}
           basePath="/approvals"

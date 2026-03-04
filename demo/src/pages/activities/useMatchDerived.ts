@@ -13,6 +13,7 @@ interface UseMatchDerivedParams {
   seasonsBasePath: string;
   location: any;
   isPlayer: boolean;
+  isSupporter: boolean;
   project: any;
   match: MatchDetail | null;
   club: any;
@@ -26,7 +27,7 @@ interface UseMatchDerivedParams {
 export function useMatchDerived(params: UseMatchDerivedParams) {
   const {
     effectiveCompetitionIdVal, effectiveMatchIdVal, seasonKeyOrId, seasonsBasePath,
-    location, isPlayer, project, match, club, opponentClub, opponentClubBrand, brandLogoUrl,
+    location, isPlayer, isSupporter, project, match, club, opponentClub, opponentClubBrand, brandLogoUrl,
   } = params;
 
   // ── Paths ──
@@ -46,13 +47,16 @@ export function useMatchDerived(params: UseMatchDerivedParams) {
   const activeTab = useMemo(() => {
     const p = new URLSearchParams(location.search);
     const raw = String(p.get('tab') || 'overview').trim().toLowerCase();
-    const allowed = isPlayer
-      ? new Set(['overview', 'lineup'])
-      : new Set(['overview', 'content', 'lineup', 'transactions']);
+    /* RBAC: Supporter → overview only, Member → + lineup, Admin → all */
+    const allowed = isSupporter
+      ? new Set(['overview'])
+      : isPlayer
+        ? new Set(['overview', 'lineup'])
+        : new Set(['overview', 'content', 'lineup', 'transactions']);
     if (allowed.has(raw)) return raw;
     const legacyMap: Record<string, string> = { hierarchy: 'details', match: 'details', date: 'details' };
     return legacyMap[raw] || 'overview';
-  }, [location.search, isPlayer]);
+  }, [location.search, isPlayer, isSupporter]);
 
   // ── Wallet options ──
   const matchWalletOptions = useMemo<WalletOption[]>(() => {

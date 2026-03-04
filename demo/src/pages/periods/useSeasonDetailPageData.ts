@@ -30,7 +30,7 @@ export function useSeasonDetailPageData() {
     isTeamRoute, orgSlugOrId,
     effectiveSeasonId, seasonsBasePath, seasonPathKey, memberDetailHref,
     clubBrand, teamBrand, batchBrandKits, brandLogoUrl, brandSponsorUrl,
-    apiBaseUrl, userCanEditProject, userCanDeleteProject, isPlayer,
+    apiBaseUrl, userCanEditProject, userCanDeleteProject, isPlayer, isSupporter,
   } = ctx;
 
   const backButtonStyle: React.CSSProperties = {
@@ -45,14 +45,18 @@ export function useSeasonDetailPageData() {
   };
 
   // ── Navigation: active tab ──
+  // RBAC tiers: Supporter (Overview, Matches), Member (+ Squad, Media, Content), Admin (all 11)
   const activeTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    const raw = String(params.get('tab') || (isPlayer ? 'hierarchy' : 'overview')).trim().toLowerCase();
-    const allowed = isPlayer
-      ? new Set(['hierarchy', 'competitions', 'matches'])
-      : new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'workflow']);
-    return allowed.has(raw) ? raw : (isPlayer ? 'hierarchy' : 'overview');
-  }, [location.search, isPlayer]);
+    const defaultTab = isSupporter ? 'overview' : isPlayer ? 'overview' : 'overview';
+    const raw = String(params.get('tab') || defaultTab).trim().toLowerCase();
+    const allowed = isSupporter
+      ? new Set(['overview', 'matches'])
+      : isPlayer
+        ? new Set(['overview', 'matches', 'squad', 'media', 'content'])
+        : new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'workflow']);
+    return allowed.has(raw) ? raw : defaultTab;
+  }, [location.search, isPlayer, isSupporter]);
 
   // ── Sub-hooks ──
 
@@ -137,7 +141,7 @@ export function useSeasonDetailPageData() {
     seasonsBasePath, seasonPathKey, isTeamRoute, orgSlugOrId,
     memberDetailHref, clubBrand, teamBrand, batchBrandKits,
     brandLogoUrl, brandSponsorUrl, apiBaseUrl,
-    userCanEditProject, userCanDeleteProject, isPlayer,
+    userCanEditProject, userCanDeleteProject, isPlayer, isSupporter,
 
     // Form state (provider-synced + modals + toasts)
     ...formState,

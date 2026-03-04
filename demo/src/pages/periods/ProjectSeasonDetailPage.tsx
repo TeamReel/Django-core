@@ -167,20 +167,20 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           squadSeasonId={String(d.resolvedSeasonId || '').trim()}
         />
 
-        {/* Mobile Tab Bar */}
+        {/* Mobile Tab Bar â€” RBAC: Supporter (2), Member (5), Admin (all 11) */}
         <MobileTabBar
           tabs={[
-            ...(!d.isPlayer ? [{ id: 'overview', label: 'Overview' }] : []),
-            { id: 'hierarchy', label: 'Hierarchy' },
-            { id: 'competitions', label: 'Competitions' },
-            { id: 'matches', label: 'Matches' },
-            ...(!d.isPlayer ? [{ id: 'squad', label: 'Squad' }] : []),
-            ...(!d.isPlayer ? [{ id: 'team', label: 'Team' }] : []),
-            ...(!d.isPlayer ? [{ id: 'media', label: 'Media' }] : []),
-            ...(!d.isPlayer ? [{ id: 'content', label: 'Content' }] : []),
-            ...(!d.isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
-            ...(!d.isPlayer ? [{ id: 'assets', label: 'Assets' }] : []),
-            ...(!d.isPlayer ? [{ id: 'workflow', label: 'Workflow' }] : []),
+            { id: 'overview', label: 'Overview' },
+            ...(!d.isSupporter ? [{ id: 'matches', label: 'Matches' }] : [{ id: 'matches', label: 'Matches' }]),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'hierarchy', label: 'Hierarchy' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'competitions', label: 'Competitions' }] : []),
+            ...(!d.isSupporter ? [{ id: 'squad', label: 'Squad' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'team', label: 'Team' }] : []),
+            ...(!d.isSupporter ? [{ id: 'media', label: 'Media' }] : []),
+            ...(!d.isSupporter ? [{ id: 'content', label: 'Content' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'workflow', label: 'Workflow' }] : []),
           ]}
           activeTab={d.activeTab}
         />
@@ -394,7 +394,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 onClick={() => d.dismissToast(toast.id)}
                 className={s.toastDismiss}
               >
-                ×
+                ï¿½
               </button>
             </div>
           ))}

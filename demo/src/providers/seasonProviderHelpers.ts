@@ -100,6 +100,9 @@ export interface SeasonContextValue {
   // Player-mode flag
   isPlayer: boolean;
 
+  // Supporter-mode flag (read-only viewer)
+  isSupporter: boolean;
+
   // API helpers
   apiBaseUrl: string;
 
