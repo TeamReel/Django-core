@@ -1,0 +1,117 @@
+/* AssetGenConfigWidgets.module.css */
+
+/* ── Shared ──────────────────────────────────────────────────────── */
+
+.sectionLabel {
+  margin-bottom: 6px;
+  color: var(--vscode-foreground, #ccc);
+}
+
+.mutedHint {
+  color: #888;
+}
+
+/* ── Source Picker ────────────────────────────────────────────────── */
+
+.sourceButton {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--vscode-widget-border, #333);
+  background: transparent;
+  color: var(--vscode-foreground, #ccc);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: center;
+}
+
+.sourceButton[data-selected='true'] {
+  border: 2px solid var(--vscode-focusBorder, #007fd4);
+  background: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+/* ── Background Selector ─────────────────────────────────────────── */
+
+.backgroundSelector {
+  margin-bottom: 16px;
+}
+
+.backgroundLabel {
+  color: var(--vscode-foreground, #ccc);
+}
+
+.backgroundButton {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  padding: 0;
+  border: 2px solid var(--vscode-widget-border, #333);
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #1a1a1a;
+}
+
+.backgroundButton[data-selected='true'] {
+  border: 3px solid #10b981;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.checkmark {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: var(--color-green-400);
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* ── Model Selector ──────────────────────────────────────────────── */
+
+.modelButton {
+  flex: 1 1 auto;
+  min-width: 80px;
+  padding: 6px 8px;
+  border: 1px solid var(--vscode-widget-border, #333);
+  background: transparent;
+  color: var(--vscode-foreground, #ccc);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  text-align: center;
+}
+
+.modelButton[data-selected='true'] {
+  border: 2px solid var(--vscode-focusBorder, #007fd4);
+  background: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+.modelDesc {
+  font-size: 9px;
+  color: var(--vscode-descriptionForeground, #888);
+  margin-top: 1px;
+}
+
+.modelCostLabel {
+  font-size: 9px;
+  color: var(--vscode-charts-green, #4ec);
+  margin-top: 1px;
+}
+
+.costEstimate {
+  font-size: 11px;
+  color: var(--vscode-charts-green, #4ec);
+  margin-top: 4px;
+  font-weight: 600;
+}

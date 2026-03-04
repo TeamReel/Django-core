@@ -17,6 +17,7 @@ import type { ContentGenerationModalProps } from './types';
 
 // Hook
 import { useContentGeneration } from './useContentGeneration';
+import styles from './index.module.css';
 
 // Re-exports for backwards compatibility
 export type { ContentTemplate, FormationPosition } from './types';
@@ -79,60 +80,28 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1100,
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        padding: '16px',
-      }}
+      className={styles.overlay}
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundColor: 'var(--app-surface, white)',
-          padding: '0',
-          borderRadius: '16px',
-          width: '100%',
-          maxWidth: '600px',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-          color: 'var(--app-text)',
-          display: 'flex',
-          flexDirection: 'column',
-          maxHeight: 'calc(100vh - 32px)',
-          margin: 'auto',
-        }}
+        className={styles.panel}
       >
         {/* Header */}
-        <div className="flex-row gap-12 p-16 border-bottom" style={{ flexShrink: 0 }}>
+        <div className={`flex-row gap-12 p-16 border-bottom ${styles.header}`}>
           {(step !== 'type' || props.template) ? (
             <button
               onClick={handleBack}
               aria-label="Terug"
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: '40px', height: '40px', borderRadius: '10px',
-                backgroundColor: 'var(--app-surface-2, #f3f4f6)', border: '1px solid var(--app-border, #e5e7eb)',
-                cursor: 'pointer', color: 'var(--app-text, #111)', fontSize: '20px', lineHeight: 1,
-                flexShrink: 0,
-              }}
+              className={styles.headerButton}
             >
               ←
             </button>
           ) : (
-            <div style={{ width: '40px', flexShrink: 0 }} />
+            <div className={styles.headerSpacer} />
           )}
           <div className="flex-1-min text-center">
-            <div className="fw-600 fs-16 truncate" style={{ color: 'var(--app-text, #111)' }}>
+            <div className={`fw-600 fs-16 truncate ${styles.headerTitle}`}>
               {step === 'type' && 'Content aanmaken'}
               {step === 'template' && `${selectedType?.label || 'Template'} kiezen`}
               {step === 'members' && (isLineupFlow ? 'Lineup opties' : `${contentTypeLabel || selectedType?.label || 'Content'} instellen`)}
@@ -144,7 +113,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
               {step === 'error' && 'Fout opgetreden'}
             </div>
             {matchData && (
-              <div className="fs-13 text-muted truncate" style={{ marginTop: '2px' }}>
+              <div className={`fs-13 text-muted truncate ${styles.headerSubtitle}`}>
                 {matchData.project?.name} vs {matchData.opponent_project?.name || 'Tegenstander'}
               </div>
             )}
@@ -152,13 +121,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
           <button
             onClick={onClose}
             aria-label="Sluiten"
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              width: '40px', height: '40px', borderRadius: '10px',
-              backgroundColor: 'var(--app-surface-2, #f3f4f6)', border: '1px solid var(--app-border, #e5e7eb)',
-              cursor: 'pointer', color: 'var(--app-text, #111)', fontSize: '20px', lineHeight: 1,
-              flexShrink: 0,
-            }}
+            className={styles.headerButton}
           >
             ×
           </button>
@@ -310,16 +273,13 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
         </div>
 
         {/* Footer */}
-        <div className="flex-between border-top" style={{
-          padding: '12px 16px',
-          flexShrink: 0,
-        }}>
+        <div className={`flex-between border-top ${styles.footer}`}>
           <div>
             {(step === 'template' || step === 'members' || step === 'lineup_squad' || step === 'confirm') && (
               <Button variant="ghost" onClick={handleBack}>Terug</Button>
             )}
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div className={styles.footerActions}>
             {step !== 'generating' && step !== 'success' && step !== 'error' && (
               <Button variant="ghost" onClick={onClose}>Annuleren</Button>
             )}

@@ -1,0 +1,66 @@
+/* WorkflowPanel — extracted inline styles */
+
+.loadingText {
+  color: var(--app-text-secondary, #6b7280);
+}
+
+.errorText {
+  color: var(--color-error, #dc2626);
+}
+
+.headerTitle {
+  font-size: 15px;
+  color: var(--app-text, #111);
+}
+
+.workflowCount {
+  color: var(--app-text-secondary, #9ca3af);
+}
+
+.emptyState {
+  color: var(--app-text-secondary, #9ca3af);
+  background-color: var(--app-surface-2, #f9fafb);
+  border: 1px dashed var(--app-border, #e5e7eb);
+}
+
+.instanceSelector {
+  display: flex;
+}
+
+.instanceButton {
+  padding: 4px 10px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  background-color: transparent;
+  color: var(--app-text, #111);
+  font-weight: 400;
+}
+
+.instanceButton[data-active='true'] {
+  border-color: var(--app-primary, #2563eb);
+  background-color: var(--app-primary-light, #dbeafe);
+  font-weight: 600;
+}
+
+.card {
+  background-color: var(--app-surface, #fff);
+  border: 1px solid var(--app-border, #e5e7eb);
+}
+
+.statusLabel {
+  color: var(--app-text-secondary, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.secondaryText {
+  color: var(--app-text-secondary, #9ca3af);
+}
+
+.actionError {
+  background-color: var(--color-error-light, #fee2e2);
+  color: var(--color-error, #dc2626);
+}
+
+.historyTitle {
+  color: var(--app-text, #111);
+}

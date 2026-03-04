@@ -1,0 +1,74 @@
+/* ProjectSeasonSquadPage — extracted inline styles */
+
+.actionsWrap {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.actionBtn[data-variant="edit"] {
+  --btn-accent: #fd7e14;
+  border-color: var(--btn-accent);
+  background-color: var(--app-surface);
+  color: var(--btn-accent);
+}
+
+.actionBtn[data-variant="delete"] {
+  --btn-accent: #dc3545;
+  border-color: var(--btn-accent);
+  background-color: var(--app-surface);
+  color: var(--app-error);
+}
+
+.tabBar {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  padding: 10px 14px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid var(--app-border);
+  border-bottom-color: var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.tabBtn[data-active] {
+  border-bottom-color: var(--app-surface);
+  background-color: var(--app-surface);
+  cursor: default;
+  font-weight: 600;
+  opacity: 1;
+}
+
+.cardPaddingTop {
+  padding: 16px 16px 0 16px;
+}
+
+.noUnderline {
+  text-decoration: none;
+}
+
+.emptyRow {
+  text-align: center;
+  padding: 24px;
+}

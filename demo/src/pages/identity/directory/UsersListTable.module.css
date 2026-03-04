@@ -1,0 +1,78 @@
+/* ── Batch action bar ─────────────────────────────── */
+.batchBar {
+  background: var(--app-surface-alt, rgba(59, 130, 246, 0.08));
+}
+
+.deselectButton {
+  text-decoration: underline;
+}
+
+/* ── Scrollable table wrapper ────────────────────── */
+.scrollContainer {
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+
+/* ── Checkbox column (shared by th + td) ────────── */
+.checkboxCell {
+  width: 36px;
+  padding: 4px;
+}
+
+.checkbox {
+  accent-color: var(--color-blue-500);
+}
+
+/* ── Column widths ───────────────────────────────── */
+.colW14 {
+  width: 14%;
+}
+
+.colW12 {
+  width: 12%;
+}
+
+.colW10 {
+  width: 10%;
+}
+
+.colW8 {
+  width: 8%;
+}
+
+/* ── Data row — selected highlight via data attr ── */
+.row[data-selected] {
+  background-color: var(--color-selection-bg, rgba(59, 130, 246, 0.08));
+}
+
+/* ── Link-style button (replaces linkButtonStyle) ─ */
+.linkButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--app-link, var(--color-blue-700, #0b5ed7));
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  text-decoration: underline;
+}
+
+/* ── Badge wrapper button (replaces badgeButtonStyle) */
+.badgeButton {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Badge without border (replaces badgeNoBorderStyle) */
+.badgeNoBorder {
+  border: none;
+  border-color: transparent;
+  box-shadow: none;
+  outline: none;
+}

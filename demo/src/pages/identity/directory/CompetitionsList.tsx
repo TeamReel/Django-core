@@ -15,6 +15,7 @@ import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 import PeriodDetailModal from '../PeriodDetailModal';
 import PeriodEditModal from '../PeriodEditModal';
 import PeriodCreateModal from '../PeriodCreateModal';
+import styles from './CompetitionsList.module.css';
 
 export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
   const { preselectedClubSlug, preselectedTeamSlug } = props;
@@ -79,20 +80,20 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
               <thead>
                 <tr>
                     {!orgLocked && (
-                      <th className="dir-th" style={{ width: '12%' }}>Federation</th>
+                      <th className={`dir-th ${styles.thFederation}`}>Federation</th>
                     )}
                     {!clubLocked && (
-                      <th className="dir-th" style={{ width: '12%' }}>Club</th>
+                      <th className={`dir-th ${styles.thClub}`}>Club</th>
                     )}
-                    {!teamLocked && <th className="dir-th" style={{ width: '12%' }}>Team</th>}
-                    <th className="dir-th" style={{ width: '12%' }}>Season</th>
-                    <th className="dir-th" style={{ width: '20%' }}>Competition</th>
-                  <th className="dir-th" style={{ width: '12%' }}>Sport</th>
-                  <th className="dir-th" style={{ width: '12%' }}>Sport Variant</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Match</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Squad</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Status</th>
-                  <th className="dir-th" style={{ width: '12%' }}>Actions</th>
+                    {!teamLocked && <th className={`dir-th ${styles.thTeam}`}>Team</th>}
+                    <th className={`dir-th ${styles.thSeason}`}>Season</th>
+                    <th className={`dir-th ${styles.thCompetition}`}>Competition</th>
+                  <th className={`dir-th ${styles.thSport}`}>Sport</th>
+                  <th className={`dir-th ${styles.thVariant}`}>Sport Variant</th>
+                  <th className={`dir-th ${styles.thMatch}`}>Match</th>
+                  <th className={`dir-th ${styles.thSquad}`}>Squad</th>
+                  <th className={`dir-th ${styles.thStatus}`}>Status</th>
+                  <th className={`dir-th ${styles.thActions}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>

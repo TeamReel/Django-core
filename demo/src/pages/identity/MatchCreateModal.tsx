@@ -1,6 +1,7 @@
 import type { MatchCreateModalProps } from './matchCreateTypes';
 export type { MatchCreatePayload } from './matchCreateTypes';
 import { useMatchCreateData } from './useMatchCreateData';
+import styles from './MatchCreateModal.module.css';
 
 export default function MatchCreateModal({
   opened,
@@ -15,14 +16,12 @@ export default function MatchCreateModal({
 
   return (
     <div
-      className="modal-backdrop"
-      style={{ zIndex: 1100 }}
+      className={`modal-backdrop ${styles.backdrop}`}
       onClick={() => { if (!d.isSaving) onClose(); }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-surface p-24 rounded-8 text-primary border shadow-lg"
-        style={{ width: '640px', maxWidth: '95%' }}
+        className={`bg-surface p-24 rounded-8 text-primary border shadow-lg ${styles.container}`}
       >
         <div className="flex-between gap-12">
           <h2 className="mb-12 mt-0">{headerText || 'Create Match'}</h2>
@@ -30,20 +29,20 @@ export default function MatchCreateModal({
             type="button"
             onClick={onClose}
             disabled={d.isSaving}
-            className="btn-modal btn-modal-secondary"
-            style={{ cursor: d.isSaving ? 'not-allowed' : 'pointer', height: 'fit-content' }}
+            className={`btn-modal btn-modal-secondary ${styles.closeButton}`}
+            data-saving={d.isSaving}
           >
             Close
           </button>
         </div>
 
         <form onSubmit={d.handleCreate}>
-          <div className="grid" style={{ gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+          <div className={`grid ${styles.formGrid}`}>
             <label className="fw-600" htmlFor="match-create-title">
               Title
             </label>
             {d.isTeamContextMode ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>{d.effectiveTitle || '—'}</div>
+              <div className={styles.controlReadonly}>{d.effectiveTitle || '—'}</div>
             ) : (
               <input
                 id="match-create-title"
@@ -54,10 +53,8 @@ export default function MatchCreateModal({
                 }}
                 required
                 disabled={d.isSaving}
-                style={{
-                  ...d.controlStyle(Boolean(d.isSaving)),
-                  cursor: d.isSaving ? 'not-allowed' : 'text',
-                }}
+                className={styles.controlInput}
+                data-disabled={Boolean(d.isSaving)}
               />
             )}
 
@@ -65,7 +62,7 @@ export default function MatchCreateModal({
               Federation
             </label>
             {d.isTeamContextMode && d.selectedOrganisationId ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>{d.orgNameById(d.selectedOrganisationId) || '—'}</div>
+              <div className={styles.controlReadonly}>{d.orgNameById(d.selectedOrganisationId) || '—'}</div>
             ) : (
               <select
                 id="match-create-org"
@@ -73,7 +70,8 @@ export default function MatchCreateModal({
                 onChange={(e) => d.handleOrganisationChange(e.target.value)}
                 disabled={d.isSaving || d.isSeasonDetailMode}
                 required
-                style={d.controlStyle(Boolean(d.isSaving || d.isSeasonDetailMode))}
+                className={styles.control}
+                data-disabled={Boolean(d.isSaving || d.isSeasonDetailMode)}
               >
                 <option value="">Select federation…</option>
                 {d.sortedOrganisations.map((o) => (
@@ -88,7 +86,7 @@ export default function MatchCreateModal({
               Club
             </label>
             {d.isTeamContextMode && d.resolvedClubId ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>{d.projectNameById(d.resolvedClubId) || '—'}</div>
+              <div className={styles.controlReadonly}>{d.projectNameById(d.resolvedClubId) || '—'}</div>
             ) : (
               <select
                 id="match-create-club"
@@ -96,7 +94,8 @@ export default function MatchCreateModal({
                 onChange={(e) => d.applyClubSelection(e.target.value)}
                 disabled={d.isSaving || d.isSeasonDetailMode}
                 required
-                style={d.controlStyle(Boolean(d.isSaving || d.isSeasonDetailMode))}
+                className={styles.control}
+                data-disabled={Boolean(d.isSaving || d.isSeasonDetailMode)}
               >
                 <option value="">Select club…</option>
                 {d.filteredClubs.map((c) => (
@@ -111,7 +110,7 @@ export default function MatchCreateModal({
               Team
             </label>
             {d.isTeamContextMode && d.selectedTeamId ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>{d.projectNameById(String(d.selectedTeamId)) || '—'}</div>
+              <div className={styles.controlReadonly}>{d.projectNameById(String(d.selectedTeamId)) || '—'}</div>
             ) : (
               <select
                 id="match-create-team"
@@ -119,7 +118,8 @@ export default function MatchCreateModal({
                 onChange={(e) => d.applyTeamSelection(e.target.value)}
                 disabled={d.isSaving || d.isSeasonDetailMode}
                 required
-                style={d.controlStyle(Boolean(d.isSaving || d.isSeasonDetailMode))}
+                className={styles.control}
+                data-disabled={Boolean(d.isSaving || d.isSeasonDetailMode)}
               >
                 <option value="">Select team…</option>
                 {d.filteredTeams.map((t) => (
@@ -134,7 +134,7 @@ export default function MatchCreateModal({
               Season
             </label>
             {d.isTeamContextMode ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>
+              <div className={styles.controlReadonly}>
                 {d.periodNameById(String(d.selectedSeasonId || d.initialSeasonId || '')) || 'Loading…'}
               </div>
             ) : (
@@ -147,7 +147,8 @@ export default function MatchCreateModal({
                 }}
                 disabled={d.isSaving || d.loadingSeasons || d.isSeasonDetailMode}
                 required
-                style={d.controlStyle(Boolean(d.isSaving || d.loadingSeasons || d.isSeasonDetailMode))}
+                className={styles.control}
+                data-disabled={Boolean(d.isSaving || d.loadingSeasons || d.isSeasonDetailMode)}
               >
                 <option value="">{d.loadingSeasons ? 'Loading seasons…' : 'Select season…'}</option>
                 {d.seasonOptions.map((s) => (
@@ -162,7 +163,7 @@ export default function MatchCreateModal({
               Competition
             </label>
             {d.isTeamContextMode ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>
+              <div className={styles.controlReadonly}>
                 {d.periodNameById(String(d.selectedCompetitionId || d.initialCompetitionId || '')) || 'Loading…'}
               </div>
             ) : (
@@ -172,7 +173,8 @@ export default function MatchCreateModal({
                 onChange={(e) => d.setSelectedCompetitionId(e.target.value)}
                 disabled={d.isSaving || d.loadingCompetitions}
                 required
-                style={d.controlStyle(Boolean(d.isSaving || d.loadingCompetitions))}
+                className={styles.control}
+                data-disabled={Boolean(d.isSaving || d.loadingCompetitions)}
               >
                 <option value="">{d.loadingCompetitions ? 'Loading competitions…' : 'Select competition…'}</option>
                 {d.competitionOptions.map((c) => (
@@ -187,7 +189,7 @@ export default function MatchCreateModal({
               Location
             </label>
             {d.isTeamContextMode ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>{(d.location || d.derived.locationDefault || '').trim() || '—'}</div>
+              <div className={styles.controlReadonly}>{(d.location || d.derived.locationDefault || '').trim() || '—'}</div>
             ) : (
               <input
                 id="match-create-location"
@@ -197,10 +199,8 @@ export default function MatchCreateModal({
                   d.setLocation(e.target.value);
                 }}
                 disabled={d.isSaving}
-                style={{
-                  ...d.controlStyle(Boolean(d.isSaving)),
-                  cursor: d.isSaving ? 'not-allowed' : 'text',
-                }}
+                className={styles.controlInput}
+                data-disabled={Boolean(d.isSaving)}
               />
             )}
 
@@ -219,7 +219,8 @@ export default function MatchCreateModal({
                     d.setSelectedOpponentTeamId('');
                   }}
                   disabled={d.isSaving}
-                  style={d.controlStyle(Boolean(d.isSaving))}
+                  className={styles.control}
+                  data-disabled={Boolean(d.isSaving)}
                 >
                   <option value="">(Optional) Select federation…</option>
                   {d.sortedOrganisations.map((o) => (
@@ -241,7 +242,8 @@ export default function MatchCreateModal({
                     d.setSelectedOpponentTeamId('');
                   }}
                   disabled={d.isSaving || d.loadingOpponentClubs || !d.selectedOpponentOrganisationId}
-                  style={d.controlStyle(Boolean(d.isSaving || d.loadingOpponentClubs || !d.selectedOpponentOrganisationId))}
+                  className={styles.control}
+                  data-disabled={Boolean(d.isSaving || d.loadingOpponentClubs || !d.selectedOpponentOrganisationId)}
                 >
                   <option value="">(Optional) Select club…</option>
                   {d.filteredOpponentClubs.map((c) => (
@@ -263,7 +265,8 @@ export default function MatchCreateModal({
                   }}
                   disabled={d.isSaving || d.loadingOpponentTeams || !d.selectedOpponentOrganisationId}
                   required={d.requireOpponent}
-                  style={d.controlStyle(Boolean(d.isSaving || d.loadingOpponentTeams || !d.selectedOpponentOrganisationId))}
+                  className={styles.control}
+                  data-disabled={Boolean(d.isSaving || d.loadingOpponentTeams || !d.selectedOpponentOrganisationId)}
                 >
                   <option value="">{d.loadingOpponentTeams ? 'Loading opponents…' : 'Select opponent…'}</option>
                   {d.opponentTeamOptions.map((t) => (
@@ -287,7 +290,8 @@ export default function MatchCreateModal({
                   }}
                   disabled={d.isSaving || d.loadingOpponentTeams || !d.selectedOrganisationId}
                   required
-                  style={d.controlStyle(Boolean(d.isSaving || d.loadingOpponentTeams || !d.selectedOrganisationId))}
+                  className={styles.control}
+                  data-disabled={Boolean(d.isSaving || d.loadingOpponentTeams || !d.selectedOrganisationId)}
                 >
                   <option value="">{d.loadingOpponentTeams ? 'Loading opponents…' : 'Select opponent…'}</option>
                   {d.opponentTeamOptions.map((t) => (
@@ -310,7 +314,8 @@ export default function MatchCreateModal({
                 d.setVenue(next);
               }}
               disabled={d.isSaving}
-              style={d.controlStyle(Boolean(d.isSaving))}
+              className={styles.control}
+              data-disabled={Boolean(d.isSaving)}
             >
               <option value="Home">Home</option>
               <option value="Away">Away</option>
@@ -326,10 +331,8 @@ export default function MatchCreateModal({
               onChange={(e) => d.setMatchDate(e.target.value)}
               disabled={d.isSaving}
               required
-              style={{
-                ...d.controlStyle(Boolean(d.isSaving)),
-                cursor: d.isSaving ? 'not-allowed' : 'text',
-              }}
+              className={styles.controlInput}
+              data-disabled={Boolean(d.isSaving)}
             />
 
             <label className="fw-600" htmlFor="match-create-time">
@@ -342,17 +345,15 @@ export default function MatchCreateModal({
               onChange={(e) => d.setMatchTime(e.target.value)}
               disabled={d.isSaving}
               required
-              style={{
-                ...d.controlStyle(Boolean(d.isSaving)),
-                cursor: d.isSaving ? 'not-allowed' : 'text',
-              }}
+              className={styles.controlInput}
+              data-disabled={Boolean(d.isSaving)}
             />
 
             <label className="fw-600" htmlFor="match-create-description">
               Description
             </label>
             {d.isTeamContextMode ? (
-              <div style={{ ...d.controlStyle(true), cursor: 'default' }}>{(d.description || d.derived.descriptionDefault || '').trim() || '—'}</div>
+              <div className={styles.controlReadonly}>{(d.description || d.derived.descriptionDefault || '').trim() || '—'}</div>
             ) : (
               <textarea
                 id="match-create-description"
@@ -363,11 +364,8 @@ export default function MatchCreateModal({
                 }}
                 rows={5}
                 disabled={d.isSaving}
-                style={{
-                  ...d.controlStyle(Boolean(d.isSaving)),
-                  cursor: d.isSaving ? 'not-allowed' : 'text',
-                  resize: 'vertical',
-                }}
+                className={styles.controlTextarea}
+                data-disabled={Boolean(d.isSaving)}
               />
             )}
           </div>

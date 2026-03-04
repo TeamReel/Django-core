@@ -1,0 +1,18 @@
+.auditTable {
+  border-collapse: collapse;
+}
+
+.tableCell {
+  padding: 10px 8px;
+}
+
+.actionBadge {
+  padding: 2px 6px;
+  background-color: var(--badge-bg, #e3f2fd);
+  color: var(--badge-color, #1565c0);
+}
+
+.actionBadge[data-action="member_removed"] {
+  --badge-bg: #ffebee;
+  --badge-color: #c62828;
+}

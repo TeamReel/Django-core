@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppIcon } from './AppIcon';
 import s from './TopNavbar.module.css';
+import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
 import type { PhotoCompositeFollowUpInfo } from './topNavbarHelpers';
 
@@ -98,7 +99,7 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
         )}
 
         {/* Footer */}
-          <div className={s.followUpFooter} style={{ justifyContent: submitted ? 'center' : undefined }}>
+          <div className={`${s.followUpFooter} ${styles.followUpFooter}`} data-submitted={submitted}>
           {submitted ? (
             <button
               onClick={() => { onSubmitted(); onClose(); }}
@@ -111,16 +112,16 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
               <button
                 onClick={onClose}
                 disabled={submitting}
-                className={s.followUpSkipBtn}
-                style={{ cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+                className={`${s.followUpSkipBtn} ${styles.followUpSkipBtn}`}
+                data-submitting={submitting}
               >
                 Overslaan
               </button>
               <button
                 onClick={handleSubmitVideo}
                 disabled={submitting}
-                className={s.followUpSubmitBtn}
-                style={{ cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1 }}
+                className={`${s.followUpSubmitBtn} ${styles.followUpSubmitBtn}`}
+                data-submitting={submitting}
               >
                 {submitting ? 'Bezig...' : '\ud83d\ude80 Genereer Video'}
               </button>
@@ -176,13 +177,13 @@ export function NavbarQuickReviewModal({
           <div className={s.tabsRowCenter}>
             <button
               onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-              className={s.tabBtn} style={{ background: queueModalTab === 'review' ? 'var(--color-blue-600)' : 'var(--app-border, #334155)' }}
+              className={`${s.tabBtn} ${styles.tabBtnReview}`} data-active={queueModalTab === 'review'}
             >
               Te Reviewen ({pendingReviewJobs.length})
             </button>
             <button
               onClick={() => setQueueModalTab('in-progress')}
-              className={s.tabBtn} style={{ background: queueModalTab === 'in-progress' ? 'var(--color-amber-400)' : 'var(--app-border, #334155)' }}
+              className={`${s.tabBtn} ${styles.tabBtnProgress}`} data-active={queueModalTab === 'in-progress'}
             >
               In Progress ({inProgressJobs.length})
             </button>
@@ -209,7 +210,7 @@ export function NavbarQuickReviewModal({
   if (queueModalTab === 'in-progress') {
     return (
       <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel}`} style={{ maxWidth: 560, maxHeight: '80vh' }}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`}>
           <div className={s.modalHeader}>
             <div className="flex-between mb-12">
               <div className={s.modalTitle}>Queue</div>
@@ -218,13 +219,13 @@ export function NavbarQuickReviewModal({
             <div className={s.tabsRow}>
               <button
                 onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
-                className={s.tabBtn} style={{ background: 'var(--app-border, #334155)' }}
+                className={`${s.tabBtn} ${styles.tabBtnInactive}`}
               >
                 Te Reviewen ({pendingReviewJobs.length})
               </button>
               <button
                 onClick={() => setQueueModalTab('in-progress')}
-                className={s.tabBtn} style={{ background: 'var(--color-amber-400)' }}
+                className={`${s.tabBtn} ${styles.tabBtnAmberActive}`}
               >
                 In Progress ({inProgressJobs.length})
               </button>
@@ -232,8 +233,8 @@ export function NavbarQuickReviewModal({
           </div>
           <div className="flex-1 overflow-y-auto p-16">
             {inProgressJobs.map((j) => (
-              <div key={j.task_id} className="flex-row gap-12 p-12 rounded-8 mb-8" style={{ background: 'var(--app-background, #0f172a)' }}>
-                <div className={s.jobIcon} style={{ backgroundColor: j.status === 'processing' ? 'var(--color-amber-400)' : 'var(--app-muted-text)' }}>
+              <div key={j.task_id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
+                <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
                   {j.status === 'processing' ? '\u2699\ufe0f' : '\u23f3'}
                 </div>
                 <div className="flex-1">
@@ -284,22 +285,20 @@ export function NavbarQuickReviewModal({
     <div onClick={onClose} className={s.modalOverlay}>
       <div
         onClick={e => e.stopPropagation()}
-        className={`w-full ${s.modalPanel}`} style={{ maxWidth: variants.length > 1 ? 900 : 640, maxHeight: '92vh' }}
+        className={`w-full ${s.modalPanel} ${styles.reviewPanel}`} data-multi={variants.length > 1}
       >
         {/* Header with tabs */}
         <div className={s.modalHeader}>
           <div className={`mb-12 ${s.tabsRow}`}>
             <button
               onClick={() => setQueueModalTab('review')}
-              className={s.tabBtnSmall}
-              style={{ backgroundColor: 'var(--app-primary, #3b82f6)', color: '#fff' }}
+              className={`${s.tabBtnSmall} ${styles.tabBtnPrimaryActive}`}
             >
               Te Reviewen ({pendingReviewJobs.length})
             </button>
             <button
               onClick={() => setQueueModalTab('in-progress')}
-              className={s.tabBtnSmall}
-              style={{ backgroundColor: 'var(--app-surface-elevated, #334155)', color: 'var(--app-text-secondary, #9ca3af)' }}
+              className={`${s.tabBtnSmall} ${styles.tabBtnSurfaceInactive}`}
             >
               In Progress ({inProgressJobs.length})
             </button>
@@ -322,16 +321,16 @@ export function NavbarQuickReviewModal({
               <button
                 disabled={quickReviewIdx <= 0}
                 onClick={() => { setQuickReviewIdx((i: number) => Math.max(0, i - 1)); setSelectedVariantIdxs(new Set()); }}
-                className={s.navArrow}
-                style={{ cursor: quickReviewIdx > 0 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx > 0 ? 1 : 0.4 }}
+                className={`${s.navArrow} ${styles.navArrowBtn}`}
+                data-disabled={quickReviewIdx <= 0}
               >
                 {'\u2039'}
               </button>
               <button
                 disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
                 onClick={() => { setQuickReviewIdx((i: number) => Math.min(pendingReviewJobs.length - 1, i + 1)); setSelectedVariantIdxs(new Set()); }}
-                className={s.navArrow}
-                style={{ cursor: quickReviewIdx < pendingReviewJobs.length - 1 ? 'pointer' : 'not-allowed', opacity: quickReviewIdx < pendingReviewJobs.length - 1 ? 1 : 0.4 }}
+                className={`${s.navArrow} ${styles.navArrowBtn}`}
+                data-disabled={quickReviewIdx >= pendingReviewJobs.length - 1}
               >
                 {'\u203a'}
               </button>
@@ -342,24 +341,20 @@ export function NavbarQuickReviewModal({
 
         {/* Variants */}
         <div className="flex-1 overflow-y-auto p-16">
-          <div className="grid gap-12" style={{
+          <div className={`grid gap-12 ${styles.variantsGrid}`} style={{
             gridTemplateColumns: variants.length > 1 ? `repeat(${Math.min(variants.length, 4)}, 1fr)` : '1fr',
-            justifyItems: 'center',
           }}>
             {variants.map((v) => (
               <div
                 key={v.variant_index}
                 onClick={() => variants.length > 1 ? setSelectedVariantIdxs((prev: Set<number>) => { const next = new Set(prev); if (next.has(v.variant_index)) next.delete(v.variant_index); else next.add(v.variant_index); return next; }) : undefined}
-                className={s.variantCard}
-                style={{
-                  border: selectedVariantIdxs.has(v.variant_index) ? '3px solid #16a34a' : '1px solid var(--app-border, #334155)',
-                  maxWidth: variants.length === 1 ? 420 : '100%',
-                  cursor: variants.length > 1 ? 'pointer' : 'default',
-                  opacity: variants.length > 1 && selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index) ? 0.5 : 1,
-                }}
+                className={`${s.variantCard} ${styles.variantCardItem}`}
+                data-selected={selectedVariantIdxs.has(v.variant_index)}
+                data-single={variants.length === 1}
+                data-dimmed={variants.length > 1 && selectedVariantIdxs.size > 0 && !selectedVariantIdxs.has(v.variant_index)}
               >
                 {variants.length > 1 && (
-                  <div className={s.variantCheckmark} style={{ backgroundColor: selectedVariantIdxs.has(v.variant_index) ? '#16a34a' : 'rgba(0,0,0,0.5)' }}>
+                  <div className={`${s.variantCheckmark} ${styles.variantCheckmarkDot}`} data-selected={selectedVariantIdxs.has(v.variant_index)}>
                     {selectedVariantIdxs.has(v.variant_index) ? '\u2713' : (v.variant_index + 1)}
                   </div>
                 )}
@@ -380,8 +375,8 @@ export function NavbarQuickReviewModal({
           <button
             onClick={() => handleQuickReview('reject')}
             disabled={quickReviewBusy}
-            className={s.rejectBtn}
-            style={{ cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1 }}
+            className={`${s.rejectBtn} ${styles.rejectBtnAction}`}
+            data-busy={quickReviewBusy}
           >
             {'\u274c'} Afwijzen
           </button>
@@ -392,8 +387,8 @@ export function NavbarQuickReviewModal({
             <button
               onClick={() => handleQuickReview('approve')}
               disabled={quickReviewBusy}
-              className={s.approveBtn}
-              style={{ cursor: quickReviewBusy ? 'wait' : 'pointer', opacity: quickReviewBusy ? 0.6 : 1 }}
+              className={`${s.approveBtn} ${styles.approveBtnAction}`}
+              data-busy={quickReviewBusy}
             >
               {'\u2705'} {variants.length > 1 && selectedVariantIdxs.size > 0 ? `${selectedVariantIdxs.size === variants.length ? 'Alles' : Array.from(selectedVariantIdxs).map(i => `#${i + 1}`).join(' + ')} Goedkeuren` : 'Goedkeuren'}
             </button>
@@ -417,7 +412,7 @@ export interface NotificationsModalProps {
 export function NavbarNotificationsModal({ notificationsList, onClose, onNavigate }: NotificationsModalProps) {
   return (
     <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel}`} style={{ maxWidth: 480, maxHeight: '70vh' }}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`}>
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Notificaties</div>
@@ -439,13 +434,10 @@ export function NavbarNotificationsModal({ notificationsList, onClose, onNavigat
               {notificationsList.slice(0, 10).map((notif: any) => (
                 <div
                   key={notif.id}
-                  className="p-12 rounded-8"
-                  style={{
-                    backgroundColor: notif.read ? 'var(--app-surface-elevated, #334155)' : 'rgba(59, 130, 246, 0.15)',
-                    border: notif.read ? '1px solid var(--app-border, #475569)' : '1px solid rgba(59, 130, 246, 0.3)',
-                  }}
+                  className={`p-12 rounded-8 ${styles.notifItem}`}
+                  data-read={notif.read}
                 >
-                  <div className={s.notifMessage} style={{ fontWeight: notif.read ? 400 : 600 }}>
+                  <div className={`${s.notifMessage} ${styles.notifMessageText}`} data-read={notif.read}>
                     {notif.title || notif.message}
                   </div>
                   {notif.message && notif.title && (
@@ -475,7 +467,7 @@ export interface CreditsModalProps {
 export function NavbarCreditsModal({ myCreditsBalance, onClose, onNavigate }: CreditsModalProps) {
   return (
     <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel}`} style={{ maxWidth: 400 }}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`}>
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Credits</div>

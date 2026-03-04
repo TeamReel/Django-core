@@ -1,0 +1,57 @@
+.errorBanner {
+  --error-bg: #fee2e2;
+  --error-color: #dc2626;
+  padding: 10px 14px;
+  background-color: var(--error-bg);
+  color: var(--error-color);
+}
+
+.loadingText {
+  padding: 40px;
+}
+
+.emptyState {
+  padding: 48px;
+  border: 1px dashed var(--app-border, #e5e7eb);
+}
+
+.emptyStateIcon {
+  font-size: 32px;
+}
+
+.templateName {
+  color: var(--app-text, #111);
+}
+
+.versionBadge {
+  --version-bg: #f3f4f6;
+  background-color: var(--version-bg);
+  padding: 2px 6px;
+}
+
+.activeBadge {
+  --active-color: #059669;
+  --active-bg: #d1fae5;
+  color: var(--active-color);
+  background-color: var(--active-bg);
+  padding: 2px 6px;
+}
+
+.chevron[data-expanded="true"] {
+  transform: rotate(180deg);
+}
+
+.transitionsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.actionLabel {
+  color: var(--action-color);
+}
+
+.stateBadge {
+  padding: 1px 6px;
+  background-color: var(--state-bg);
+  color: var(--state-color);
+  font-size: 10px;
+}

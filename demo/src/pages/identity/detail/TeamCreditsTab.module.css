@@ -1,0 +1,111 @@
+/* ─── Grid Layouts ─── */
+
+.balanceGrid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.summaryGrid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* ─── Balance Cards ─── */
+
+.balanceCard {
+  background: linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%);
+}
+
+.balanceAmount {
+  font-size: 48px;
+  margin: 8px 0;
+}
+
+.balanceAmount[data-status='warning'] {
+  color: var(--app-warning);
+}
+
+.balanceAmount[data-status='success'] {
+  color: var(--app-success);
+}
+
+/* ─── Transaction Timeline ─── */
+
+.dateColumn {
+  min-width: 120px;
+}
+
+.barContainer {
+  height: 32px;
+}
+
+.bar {
+  height: 24px;
+  opacity: 0.8;
+  align-items: center;
+  min-width: 60px;
+}
+
+.bar[data-positive='true'] {
+  background-color: var(--app-success);
+}
+
+.bar[data-positive='false'] {
+  background-color: var(--app-error);
+}
+
+.notesColumn {
+  min-width: 150px;
+}
+
+/* ─── Recent Activity ─── */
+
+.activityAmount {
+  min-width: 100px;
+}
+
+.activityAmount[data-positive='true'] {
+  color: var(--app-success);
+}
+
+.activityAmount[data-positive='false'] {
+  color: var(--app-error);
+}
+
+/* ─── Summary Cards ─── */
+
+.summaryValue {
+  font-size: 26px;
+}
+
+.netValue {
+  font-size: 26px;
+}
+
+.netValue[data-positive='true'] {
+  color: var(--app-success);
+}
+
+.netValue[data-positive='false'] {
+  color: var(--app-error);
+}
+
+/* ─── Transaction Table ─── */
+
+.amountCell[data-sign='positive'] {
+  color: var(--app-success);
+}
+
+.amountCell[data-sign='negative'] {
+  color: var(--app-error);
+}
+
+.amountCell[data-sign='zero'] {
+  color: var(--app-text);
+}
+
+.dimPlaceholder[data-empty='true'] {
+  opacity: 0.5;
+}
+
+.dimPlaceholder[data-empty='false'] {
+  opacity: 1;
+}

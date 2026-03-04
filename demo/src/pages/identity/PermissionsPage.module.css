@@ -1,0 +1,117 @@
+/* PermissionsPage — extracted inline styles */
+
+.tabBar {
+  display: flex;
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: 20px;
+}
+
+.tabButton {
+  padding: 10px 14px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid var(--app-border);
+  border-bottom: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.tabButton[data-active='true'] {
+  border-bottom: 1px solid var(--app-surface);
+  background-color: var(--app-surface);
+  font-weight: 600;
+}
+
+.cardOverflowVisible {
+  overflow: visible;
+}
+
+.tableWrapper {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  max-height: calc(100vh - 320px);
+  background-color: var(--app-surface);
+}
+
+.colFeature {
+  width: 360px;
+}
+
+.colRole {
+  width: 100px;
+}
+
+.thFeature {
+  top: 0;
+  left: 0;
+  z-index: 4;
+  min-width: 320px;
+  background-color: var(--app-table-header-bg);
+}
+
+.thRole {
+  top: 0;
+  z-index: 3;
+  font-size: 0.75rem;
+  background-color: var(--app-table-header-bg);
+}
+
+.categoryTd {
+  padding-top: 14px;
+}
+
+.categoryBar {
+  padding: 8px 10px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+}
+
+.categoryLabel {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.categoryDivider {
+  height: 1px;
+  background-color: var(--app-border);
+  opacity: 0.9;
+}
+
+.categoryCount {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.permissionNameTd {
+  vertical-align: top;
+  left: 0;
+  z-index: 1;
+  border-right: 1px solid var(--app-border);
+  white-space: normal;
+  background-color: var(--app-table-row-bg);
+}
+
+.permissionDesc {
+  font-size: 0.78rem;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.permissionKey {
+  font-size: 0.72rem;
+  opacity: 0.55;
+  font-family: monospace;
+}
+
+.roleCell {
+  font-weight: 400;
+  color: var(--app-muted-text);
+}
+
+.roleCell[data-granted='true'] {
+  font-weight: 700;
+  color: var(--app-text);
+}

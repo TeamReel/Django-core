@@ -4,6 +4,7 @@ import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Button, Card, Badge, Alert, Spinner } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './DeploymentPage.module.css';
 
 export function DeploymentPage() {
   const [services, setServices] = useState<any[]>([]);
@@ -64,7 +65,7 @@ export function DeploymentPage() {
       <PageContent>
         <div className="page-container" data-testid="deployment-page">
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}><Spinner /></div>
+            <div className={styles.loadingContainer}><Spinner /></div>
           ) : (
             <>
               <Alert variant="info" className="mb-24">
@@ -72,19 +73,19 @@ export function DeploymentPage() {
                 <strong>Deployment:</strong> Railway (Backend) + Vercel (Frontend)
               </Alert>
 
-              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+              <div className={`grid gap-16 ${styles.servicesGrid}`}>
                 {services.map(service => (
                   <Card key={service.name} className="p-20">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                    <div className={styles.cardHeader}>
                       <div>
                         <h4 className="m-0">{service.name}</h4>
-                        <div className="fs-12 mt-4" style={{ color: 'var(--app-muted-text)' }}>{service.type} • v{service.version}</div>
+                        <div className={`fs-12 mt-4 ${styles.serviceType}`}>{service.type} • v{service.version}</div>
                       </div>
                       {getStatusBadge(service.status)}
                     </div>
-                    <div style={{ borderTop: '1px solid #e5e5e5', paddingTop: '12px', fontSize: '14px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                        <span style={{ color: 'var(--app-muted-text)' }}>Status Detail:</span>
+                    <div className={styles.cardDivider}>
+                      <div className={styles.detailRow}>
+                        <span className={styles.detailLabel}>Status Detail:</span>
                         <span>{service.detail || 'Running'}</span>
                       </div>
                     </div>
@@ -93,8 +94,8 @@ export function DeploymentPage() {
               </div>
 
               <Card className="p-16 mt-24">
-                <h4 style={{ margin: '0 0 12px 0' }}>Quick Links</h4>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <h4 className={styles.quickLinksTitle}>Quick Links</h4>
+                <div className={styles.quickLinksRow}>
                   <Button variant="secondary" onClick={() => window.location.href = '/health'}>View Health Details</Button>
                   <Button variant="secondary" onClick={() => window.location.href = '/observability'}>Metrics Dashboard</Button>
                 </div>

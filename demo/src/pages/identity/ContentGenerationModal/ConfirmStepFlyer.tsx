@@ -5,6 +5,7 @@
 import React from 'react';
 import type { Participation } from './types';
 import { BackgroundSelector, type BackgroundItem } from './BackgroundSelector';
+import css from './ConfirmStepFlyer.module.css';
 
 interface ConfirmStepFlyerProps {
   seasonSquad: Record<string, Participation[]>;
@@ -116,27 +117,16 @@ export function ConfirmStepFlyer({
                   }
                 }
               }}
-              className="relative flex-row items-center gap-12 rounded-12 cursor-pointer text-left w-full text-primary py-12 px-16 transition"
-              style={{
-                border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-              }}
+              className={`relative flex-row items-center gap-12 rounded-12 cursor-pointer text-left w-full text-primary py-12 px-16 transition ${css.variantButton}`}
+              data-selected={isSelected}
             >
-              <div className="flex-center fs-16 fw-700 rounded-10" style={{
-                width: 40, height: 40, flexShrink: 0,
-                backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
-              }}>{opt.icon}</div>
+              <div className={`flex-center fs-16 fw-700 rounded-10 ${css.variantIcon}`} data-selected={isSelected}>{opt.icon}</div>
               <div className="flex-1">
                 <div className="fw-600 fs-14">{opt.label}</div>
-                <div className="fs-12 text-muted" style={{ marginTop: 1 }}>{opt.desc}</div>
+                <div className={`fs-12 text-muted ${css.variantDesc}`}>{opt.desc}</div>
               </div>
               {isSelected && (
-                <div className="absolute rounded-full flex-center fw-700 text-white" style={{
-                  top: 6, right: 6, width: 18, height: 18,
-                  background: 'var(--color-green-400)',
-                  fontSize: 10,
-                }}>✓</div>
+                <div className={`absolute rounded-full flex-center fw-700 text-white ${css.checkMark}`}>✓</div>
               )}
             </button>
           );
@@ -180,15 +170,10 @@ export function ConfirmStepFlyer({
               ] as const).map((opt) => {
                 const isActive = flyerPhotoLayout === opt.key;
                 return (
-                  <button key={opt.key} onClick={() => setFlyerPhotoLayout(opt.key)} className="flex-1 rounded-8 cursor-pointer text-center fs-11 py-8 px-4" style={{
-                    border: isActive ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                    background: isActive ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface-2, #f3f4f6)',
-                    color: isActive ? '#fff' : 'var(--app-text, #111)',
-                    lineHeight: 1.4, transition: 'all 0.15s ease',
-                  }}>
-                    <div className="fs-16" style={{ marginBottom: 2 }}>{opt.icon}</div>
+                  <button key={opt.key} onClick={() => setFlyerPhotoLayout(opt.key)} className={`flex-1 rounded-8 cursor-pointer text-center fs-11 py-8 px-4 ${css.layoutButton}`} data-active={isActive}>
+                    <div className={`fs-16 ${css.layoutIcon}`}>{opt.icon}</div>
                     <div className="fw-700">{opt.label}</div>
-                    <div style={{ fontSize: 9, opacity: 0.7, marginTop: 2 }}>{opt.desc}</div>
+                    <div className={css.layoutDesc}>{opt.desc}</div>
                   </button>
                 );
               })}
@@ -233,8 +218,7 @@ function SingleMemberSelector({
       <select
         value={flyerMemberId || ''}
         onChange={(e) => { setFlyerMemberId(e.target.value || null); setFlyerActionStyle('dribbling'); }}
-        className="w-full fs-13 rounded-6 bg-surface-2 text-primary cursor-pointer mb-12"
-        style={{ padding: '8px 10px', border: '1px solid var(--app-border, #e5e7eb)' }}
+        className={`w-full fs-13 rounded-6 bg-surface-2 text-primary cursor-pointer mb-12 ${css.selectInput}`}
       >
         <option value="">-- Automatisch (eerste beschikbare) --</option>
         {membersWithActionPhotos.map((member) => {
@@ -249,8 +233,7 @@ function SingleMemberSelector({
       <select
         value={flyerActionStyle}
         onChange={(e) => setFlyerActionStyle(e.target.value)}
-        className="w-full fs-13 rounded-6 bg-surface-2 text-primary cursor-pointer"
-        style={{ padding: '8px 10px', border: '1px solid var(--app-border, #e5e7eb)' }}
+        className={`w-full fs-13 rounded-6 bg-surface-2 text-primary cursor-pointer ${css.selectInput}`}
       >
         {ACTION_STYLE_OPTIONS.map((opt) => {
           const available = !flyerMemberId || selectedMemberStyles.includes(opt.key);
@@ -259,7 +242,7 @@ function SingleMemberSelector({
       </select>
 
       {flyerMemberId && selectedMemberStyles.length === 0 && (
-        <div className="fs-11 mt-8" style={{ color: 'var(--color-amber-400)' }}>
+        <div className={`fs-11 mt-8 ${css.warningText}`}>
            Deze speler heeft nog geen bewerkte actiefoto's
         </div>
       )}
@@ -287,7 +270,7 @@ function MultiSlotSelector({
     : ['\u2460 Groot (links)', '\u2461 Klein (rechtsboven)', '\u2462 Klein (rechtsonder)'];
 
   return (
-    <>
+    <div className={css.slotList}>
       {Array.from({ length: slotCount }).map((_, slotIdx) => {
         const slot = flyerPhotoSlots[slotIdx] || { member_id: null, style_variant: 'dribbling' };
         const slotMemberStyles = slot.member_id
@@ -295,15 +278,9 @@ function MultiSlotSelector({
           : [];
 
         return (
-          <div key={slotIdx} className="p-10 border rounded-8 bg-surface" style={{
-            marginBottom: slotIdx < slotCount - 1 ? 8 : 0,
-          }}>
+          <div key={slotIdx} className="p-10 border rounded-8 bg-surface">
             <div className="fs-12 fw-700 mb-8 text-primary flex-row items-center gap-6">
-              <span className="inline-flex flex-center rounded-full fs-11 fw-700 text-white" style={{
-                width: 22, height: 22,
-                background: 'var(--app-primary, #3B8EA5)',
-                flexShrink: 0,
-              }}>{slotIdx + 1}</span>
+              <span className={`inline-flex flex-center rounded-full fs-11 fw-700 text-white ${css.slotBadge}`}>{slotIdx + 1}</span>
               {slotLabels[slotIdx]}
             </div>
 
@@ -314,8 +291,7 @@ function MultiSlotSelector({
                 newSlots[slotIdx] = { ...newSlots[slotIdx], member_id: e.target.value || null, style_variant: 'dribbling' };
                 setFlyerPhotoSlots(newSlots);
               }}
-              className="w-full fs-12 bg-surface-2 text-primary cursor-pointer"
-              style={{ padding: '6px 8px', border: '1px solid var(--app-border, #e5e7eb)', borderRadius: 5, marginBottom: 6 }}
+              className={`w-full fs-12 bg-surface-2 text-primary cursor-pointer ${css.slotSelectMember}`}
             >
               <option value="">-- Automatisch --</option>
               {membersWithActionPhotos.map((member) => {
@@ -332,8 +308,7 @@ function MultiSlotSelector({
                 newSlots[slotIdx] = { ...newSlots[slotIdx], style_variant: e.target.value };
                 setFlyerPhotoSlots(newSlots);
               }}
-              className="w-full fs-12 bg-surface-2 text-primary cursor-pointer"
-              style={{ padding: '6px 8px', border: '1px solid var(--app-border, #e5e7eb)', borderRadius: 5 }}
+              className={`w-full fs-12 bg-surface-2 text-primary cursor-pointer ${css.slotSelect}`}
             >
               {ACTION_STYLE_OPTIONS.map((opt) => {
                 const available = !slot.member_id || slotMemberStyles.includes(opt.key);
@@ -343,6 +318,6 @@ function MultiSlotSelector({
           </div>
         );
       })}
-    </>
+    </div>
   );
 }

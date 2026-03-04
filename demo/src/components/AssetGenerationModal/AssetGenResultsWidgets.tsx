@@ -7,6 +7,7 @@
 import React from 'react';
 import { Button } from '@django-core/design-system';
 import { VariantCard, ProgressBar } from './AssetGenSubComponents';
+import styles from './AssetGenResultsWidgets.module.css';
 
 // ── Results Step ─────────────────────────────────────────────────────
 
@@ -33,8 +34,8 @@ export function ResultsStep({
     <div>
       {/* Submitting */}
       {generation.step === 'submitting' && (
-        <div className="text-center" style={{ padding: '40px 0' }}>
-          <div className="mb-16" style={{ fontSize: 48 }}>
+        <div className={`text-center ${styles.centeredSection}`}>
+          <div className={`mb-16 ${styles.emojiIcon}`}>
             {selectedTemplate?.outputType === 'video' ? '🎬' : '🎨'}
           </div>
           <div className="fs-14 fw-600 mb-8">
@@ -51,15 +52,12 @@ export function ResultsStep({
 
       {/* Polling */}
       {generation.step === 'polling' && (
-        <div className="text-center" style={{ padding: '40px 0' }}>
-          <div className="mb-16" style={{ fontSize: 48 }}>🎬</div>
+        <div className={`text-center ${styles.centeredSection}`}>
+          <div className={`mb-16 ${styles.emojiIcon}`}>🎬</div>
           <div className="fs-14 fw-600 mb-8">Video wordt gegenereerd...</div>
           <ProgressBar progress={generation.progress} />
           <div
-            className="fs-12 text-muted mt-8 mx-auto"
-            style={{
-              maxWidth: 320,
-            }}
+            className={`fs-12 text-muted mt-8 mx-auto ${styles.constrainedText}`}
           >
             Dit duurt 2–5 minuten. Je kunt dit venster open laten — het resultaat
             verschijnt automatisch.
@@ -69,16 +67,13 @@ export function ResultsStep({
 
       {/* Queued */}
       {generation.step === 'queued' && (
-        <div className="text-center" style={{ padding: '40px 0' }}>
-          <div className="mb-16" style={{ fontSize: 64 }}>🟢</div>
+        <div className={`text-center ${styles.centeredSection}`}>
+          <div className={`mb-16 ${styles.emojiIconLarge}`}>🟢</div>
           <div className="fs-16 fw-700 mb-8">
             {requireApproval ? 'In Approvals Wachtrij!' : 'Toegevoegd aan de AI Queue!'}
           </div>
           <div
-            className="fs-13 text-muted mx-auto mb-24"
-            style={{
-              maxWidth: 320,
-            }}
+            className={`fs-13 text-muted mx-auto mb-24 ${styles.constrainedText}`}
           >
             {requireApproval
               ? 'Keur de gegenereerde afbeelding goed via de Approvals pagina, daarna verschijnt deze automatisch op deze pagina.'
@@ -86,24 +81,12 @@ export function ResultsStep({
                 ? 'De video wordt op de achtergrond gegenereerd (2–5 min). Je krijgt een melding zodra hij klaar is.'
                 : 'De afbeelding wordt op de achtergrond gegenereerd. Je krijgt een melding zodra hij klaar is.'}
           </div>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '8px 16px',
-              background: 'var(--vscode-editorWidget-background, #252526)',
-              border: '1px solid var(--vscode-widget-border, #333)',
-              borderRadius: 8,
-              fontSize: 12,
-              color: 'var(--vscode-descriptionForeground, #888)',
-            }}
-          >
+          <div className={styles.queuedInfoBox}>
             <span>📥</span>
             <span>{requireApproval ? 'Keur goed via' : 'Volg de voortgang in'}</span>
             <a
               href={requireApproval ? '/approvals' : '/approvals?tab=ai_queue'}
-              style={{ color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}
+              className={styles.queuedLink}
             >
               {requireApproval ? 'Approvals' : 'Workflow \u2192 AI Queue'}
             </a>
@@ -114,10 +97,9 @@ export function ResultsStep({
       {/* Error */}
       {generation.step === 'error' && (
         <div
-          className="text-center"
-          style={{ padding: '40px 0', color: 'var(--vscode-errorForeground, #f44)' }}
+          className={`text-center ${styles.errorSection}`}
         >
-          <div className="mb-16" style={{ fontSize: 48 }}>❌</div>
+          <div className={`mb-16 ${styles.emojiIcon}`}>❌</div>
           <div className="fs-14 fw-600 mb-8">Generatie mislukt</div>
           <div className="fs-12 mb-16">{generation.error}</div>
           <Button onClick={handleRegenerate}>Opnieuw proberen</Button>
@@ -129,15 +111,8 @@ export function ResultsStep({
         <div>
           <div className="fs-13 fw-600 mb-12">Kies de beste variant:</div>
           <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                generation.variants.length === 1
-                  ? '1fr'
-                  : `repeat(${Math.min(generation.variants.length, 2)}, 1fr)`,
-              gap: 12,
-              alignItems: 'start',
-            }}
+            className={styles.variantGrid}
+            data-cols={generation.variants.length === 1 ? '1' : '2'}
           >
             {generation.variants.map((v: any) => {
               const fullSrc =
@@ -158,11 +133,7 @@ export function ResultsStep({
                       href={fullSrc}
                       target="_blank"
                       rel="noreferrer"
-                      className="block mt-4 text-center fs-11 text-decoration-none"
-                      style={{
-                        color: 'var(--vscode-textLink-foreground, #60a5fa)',
-                        opacity: 0.8,
-                      }}
+                      className={`block mt-4 text-center fs-11 text-decoration-none ${styles.viewFullLink}`}
                     >
                       🔍 Volledig bekijken
                     </a>
@@ -217,16 +188,7 @@ export function FeedbackRefinement({
               onChange={(e) =>
                 setFeedbackFields((prev: any) => ({ ...prev, [field.id]: e.target.value }))
               }
-              style={{
-                width: '100%',
-                padding: '6px 8px',
-                fontSize: 12,
-                background: 'var(--vscode-input-background, #3c3c3c)',
-                color: 'var(--vscode-input-foreground, #ccc)',
-                border: '1px solid var(--vscode-input-border, #3c3c3c)',
-                borderRadius: 4,
-                outline: 'none',
-              }}
+              className={styles.feedbackInput}
             />
           </div>
         ))}
@@ -244,16 +206,7 @@ export function FeedbackRefinement({
             setFeedbackFields((prev: any) => ({ ...prev, other: e.target.value }))
           }
           placeholder="Bijv. 'Sokken wit', 'Meer contrast in foto'..."
-          style={{
-            width: '100%',
-            padding: '6px 8px',
-            fontSize: 12,
-            background: 'var(--vscode-input-background, #3c3c3c)',
-            color: 'var(--vscode-input-foreground, #ccc)',
-            border: '1px solid var(--vscode-input-border, #3c3c3c)',
-            borderRadius: 4,
-            outline: 'none',
-          }}
+          className={styles.feedbackInput}
         />
       </div>
     </div>

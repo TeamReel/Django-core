@@ -1,0 +1,76 @@
+/* UserDetailModals — extracted inline styles */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modalBody {
+  background-color: var(--app-surface);
+  width: 520px;
+  max-width: 95%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.closeButton {
+  color: var(--app-text);
+}
+
+.subtitle {
+  margin-top: 10px;
+}
+
+.errorBox {
+  padding: 10px 12px;
+  background-color: var(--color-error-bg, #fee);
+  color: var(--color-error-text, #c00);
+}
+
+.selectInput {
+  padding: 8px 10px;
+  border: 1px solid var(--app-border);
+  color: var(--app-text);
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 8px 12px;
+  border: 1px solid var(--app-border);
+  color: var(--app-text);
+  cursor: pointer;
+}
+
+.cancelButton[data-saving] {
+  cursor: not-allowed;
+}
+
+.saveButton {
+  padding: 8px 12px;
+  border: 1px solid var(--color-primary-border, #007bff);
+  background-color: var(--app-primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+.saveButton[data-saving] {
+  cursor: not-allowed;
+}
+
+.linkErrorAlert {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 1100;
+  max-width: 420px;
+}

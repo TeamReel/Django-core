@@ -1,0 +1,63 @@
+/* I18nPage – extracted inline styles */
+
+.page {
+  --i18n-bg-muted: #f9fafb;
+  --i18n-border: #e5e5e5;
+  --i18n-primary: #3b82f6;
+  --i18n-primary-bg: #eff6ff;
+  --i18n-white: #fff;
+}
+
+.welcomeHeading {
+  margin: 0 0 8px 0;
+}
+
+.sectionHeading {
+  margin: 0 0 16px 0;
+}
+
+.mutedText {
+  color: var(--app-muted-text);
+}
+
+.currentLangDisplay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--i18n-bg-muted);
+  border-radius: 8px;
+}
+
+.flagIcon {
+  font-size: 32px;
+}
+
+.langGrid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.langButton {
+  padding: 16px;
+  border: 1px solid var(--i18n-border);
+  border-radius: 8px;
+  background-color: var(--i18n-white);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.langButton[data-active='true'] {
+  border: 2px solid var(--i18n-primary);
+  background-color: var(--i18n-primary-bg);
+}
+
+.langButton:disabled {
+  cursor: not-allowed;
+}
+
+.sampleTextBox {
+  padding: 16px;
+  background-color: var(--i18n-bg-muted);
+  border-radius: 8px;
+  border-left: 4px solid var(--i18n-primary);
+}

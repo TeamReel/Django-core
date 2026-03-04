@@ -1,0 +1,135 @@
+/* ConfirmStepGoal.module.css — extracted inline styles */
+
+.wrapper {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 20px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--app-surface, white);
+}
+
+.header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface-2, #f3f4f6);
+}
+
+.headerTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--app-text, #111);
+}
+
+.label {
+  margin-bottom: 10px;
+  color: var(--app-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scoreSeparator {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--app-text-muted, #6b7280);
+  margin-top: 20px;
+}
+
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 14px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--app-surface, white);
+  color: var(--app-text, #111);
+  cursor: pointer;
+}
+
+.option {
+  color: inherit;
+  font-weight: 500;
+}
+
+.option[data-available='false'] {
+  color: var(--color-text-disabled, #999);
+  font-weight: 400;
+}
+
+.errorHint {
+  color: var(--color-error, #e11d48);
+  margin-top: 6px;
+}
+
+/* ─── ScoreColumn ─── */
+
+.scoreColumn {
+  min-width: 80px;
+}
+
+.teamLogo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  margin: 0 auto 4px;
+}
+
+.teamName {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--app-text-muted, #6b7280);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+.stepperRow {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  justify-content: center;
+}
+
+.stepperBtn {
+  width: 32px;
+  height: 56px;
+  border: 2px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, white);
+  color: var(--app-text-muted, #6b7280);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepperBtn[data-side='left'] {
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+}
+
+.stepperBtn[data-side='right'] {
+  border-left: none;
+  border-radius: 0 8px 8px 0;
+}
+
+.scoreDisplay {
+  width: 48px;
+  height: 56px;
+  font-size: 28px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 2px solid var(--app-border, #e5e7eb);
+  border-bottom: 2px solid var(--app-border, #e5e7eb);
+  border-left: none;
+  border-right: none;
+  background: var(--app-surface, white);
+  color: var(--app-text, #111);
+}

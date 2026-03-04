@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button } from '@django-core/design-system';
 import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './CreateTransactionModal.module.css';
 
 export type WalletOption =
   | { kind: 'default'; label: string }
@@ -89,16 +90,7 @@ export default function CreateTransactionModal(props: {
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 1000,
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={() => {
         if (!submitting) onClose();
       }}
@@ -106,12 +98,7 @@ export default function CreateTransactionModal(props: {
       role="dialog"
     >
       <div
-        className="bg-surface rounded-8 p-20"
-        style={{
-          maxWidth: '560px',
-          width: '92%',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
-        }}
+        className={`bg-surface rounded-8 p-20 ${styles.modal}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-between gap-12">
@@ -121,8 +108,7 @@ export default function CreateTransactionModal(props: {
             onClick={() => {
               if (!submitting) onClose();
             }}
-            className="border-none cursor-pointer text-primary"
-            style={{ background: 'none', fontSize: '22px' }}
+            className={`border-none cursor-pointer text-primary ${styles.closeButton}`}
             aria-label="Close"
           >
             ×
@@ -139,32 +125,25 @@ export default function CreateTransactionModal(props: {
           </Alert>
         ) : null}
 
-        <div className="grid gap-12" style={{ marginTop: '14px' }}>
+        <div className={`grid gap-12 ${styles.formGrid}`}>
           <label className="grid gap-6">
             <div className="fs-12 opacity-80">Description (notes)</div>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full p-10 rounded-6 border text-primary fs-13"
-              style={{
-                background: 'var(--app-surface-2)',
-                resize: 'vertical',
-              }}
+              className={`w-full p-10 rounded-6 border text-primary fs-13 ${styles.textarea}`}
               placeholder={defaultNotesForScope(scope)}
             />
           </label>
 
-          <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className={`grid gap-12 ${styles.twoColGrid}`}>
             <label className="grid gap-6">
               <div className="fs-12 opacity-80">Amount</div>
               <input
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full p-10 rounded-6 border text-primary fs-13"
-                style={{
-                  background: 'var(--app-surface-2)',
-                }}
+                className={`w-full p-10 rounded-6 border text-primary fs-13 ${styles.formInput}`}
                 placeholder="-1.00"
               />
             </label>
@@ -174,10 +153,7 @@ export default function CreateTransactionModal(props: {
               <select
                 value={String(walletIdx)}
                 onChange={(e) => setWalletIdx(Number(e.target.value))}
-                className="w-full p-10 rounded-6 border text-primary fs-13"
-                style={{
-                  background: 'var(--app-surface-2)',
-                }}
+                className={`w-full p-10 rounded-6 border text-primary fs-13 ${styles.formInput}`}
               >
                 {resolvedWalletOptions.map((o, idx) => (
                   <option key={`${o.kind}:${idx}`} value={String(idx)}>
@@ -189,7 +165,7 @@ export default function CreateTransactionModal(props: {
           </div>
         </div>
 
-        <div className="gap-8 mt-16" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className={`gap-8 mt-16 ${styles.footer}`}>
           <Button variant="secondary" size="sm" onClick={onClose} disabled={submitting}>
             Cancel
           </Button>

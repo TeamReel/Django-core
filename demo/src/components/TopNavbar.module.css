@@ -30,6 +30,16 @@
   height: 56px;
 }
 
+.navContainer[data-mobile="true"] {
+  padding: 0 12px;
+  gap: 8px;
+}
+
+.navContainer[data-mobile="false"] {
+  padding: 0 24px;
+  gap: 16px;
+}
+
 .desktopNavWrap {
   flex-wrap: nowrap;
 }
@@ -84,6 +94,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  color: var(--app-text);
+  background-color: transparent;
+  font-weight: 500;
+}
+
+.groupTrigger[data-active="true"],
+.groupTrigger[data-open="true"] {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.groupTrigger[data-active="true"] {
+  color: var(--color-blue-600);
+  font-weight: 600;
 }
 
 /* ─── Mega Menu ───────────────────────────────────────────────────────────── */
@@ -105,6 +128,11 @@
   padding: 20px;
 }
 
+.megaGrid {
+  column-gap: 40px;
+  row-gap: 10px;
+}
+
 .megaItem {
   display: flex;
   align-items: flex-start;
@@ -115,6 +143,16 @@
   transition: background-color 0.15s;
   pointer-events: auto;
   cursor: pointer;
+  color: var(--app-text);
+}
+
+.megaItem[data-active="true"] {
+  color: var(--color-blue-600);
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.megaItem:not([data-active="true"]):hover {
+  background-color: var(--app-surface-2);
 }
 
 .megaItemIcon {
@@ -132,6 +170,11 @@
 .megaItemLabel {
   font-size: 14px;
   line-height: 1.3;
+  font-weight: 500;
+}
+
+.megaItem[data-active="true"] .megaItemLabel {
+  font-weight: 600;
 }
 
 .megaItemDescription {
@@ -147,9 +190,18 @@
   align-items: center;
 }
 
+.userControls[data-mobile="true"] {
+  gap: 8px;
+}
+
+.userControls[data-mobile="false"] {
+  gap: 16px;
+}
+
 .searchWrap {
   min-width: 220px;
   max-width: 560px;
+  flex: 1 1 360px;
 }
 
 .quickSwitchBtn {
@@ -188,6 +240,11 @@
   border-left: 1px solid var(--app-border);
 }
 
+.createMainBtn[data-open="true"],
+.createChevronBtn[data-open="true"] {
+  background: rgba(59, 130, 246, 0.12);
+}
+
 .createDropdown {
   position: absolute;
   top: calc(100% + 10px);
@@ -213,6 +270,10 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.createMenuItem:hover {
+  background-color: var(--app-surface-2);
 }
 
 /* ─── Theme / Language ────────────────────────────────────────────────────── */
@@ -257,6 +318,23 @@
   border: none;
   font-size: 14px;
   cursor: pointer;
+  background-color: transparent;
+  color: var(--app-text);
+  font-weight: 400;
+}
+
+.langItem[data-selected="true"] {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--app-link);
+  font-weight: 600;
+}
+
+.langItem:not(:last-child) {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.langItem:not([data-selected="true"]):hover {
+  background-color: var(--app-surface-secondary);
 }
 
 /* ─── Nav Icon Buttons (Queue / Notification / Credits) ───────────────────── */
@@ -292,6 +370,10 @@
   font-weight: bold;
 }
 
+.badgeError {
+  background-color: var(--app-error);
+}
+
 .profileWrap {
   flex-shrink: 0;
 }
@@ -311,8 +393,8 @@
   border-radius: 6px;
   text-decoration: none;
   color: white;
-  background-color: #2563eb;
-  border: 1px solid #2563eb;
+  background-color: var(--color-blue-600, #2563eb);
+  border: 1px solid var(--color-blue-600, #2563eb);
 }
 
 /* ─── Mobile Overlay ──────────────────────────────────────────────────────── */
@@ -338,6 +420,14 @@
   margin-bottom: 8px;
   border-radius: 6px;
   text-decoration: none;
+  color: var(--app-text);
+  font-weight: 500;
+}
+
+.mobileDashLink[data-active="true"] {
+  color: var(--color-blue-600);
+  background-color: rgba(59, 130, 246, 0.1);
+  font-weight: 600;
 }
 
 .mobileGroupLabel {
@@ -357,6 +447,14 @@
   border-radius: 6px;
   text-decoration: none;
   font-size: 14px;
+  color: var(--app-text);
+  font-weight: 400;
+}
+
+.mobileGroupItem[data-active="true"] {
+  color: var(--color-blue-600);
+  background-color: rgba(59, 130, 246, 0.1);
+  font-weight: 600;
 }
 
 /* ─── Modal System ────────────────────────────────────────────────────────── */

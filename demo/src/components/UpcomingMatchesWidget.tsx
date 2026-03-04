@@ -6,6 +6,7 @@ import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import { SkeletonList } from './Skeleton';
 import SmartEmptyState from './SmartEmptyState';
 import { Zap, Calendar, MapPin, ChevronRight } from 'lucide-react';
+import styles from './UpcomingMatchesWidget.module.css';
 
 interface Match {
   id: string;
@@ -59,7 +60,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
     return (
       <div className="mb-24">
         <h3 className="text-primary fs-18 flex-row gap-8 mb-16">
-          <Calendar size={20} style={{ color: 'var(--color-primary)' }} />
+          <Calendar size={20} className={styles.iconPrimary} />
           Wedstrijden
         </h3>
         <SkeletonList count={2} variant="card" />
@@ -72,7 +73,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
     return (
       <div className="mb-24">
         <h3 className="text-primary fs-18 flex-row gap-8 mb-16">
-          <Calendar size={20} style={{ color: 'var(--color-primary)' }} />
+          <Calendar size={20} className={styles.iconPrimary} />
           Wedstrijden
         </h3>
         <SmartEmptyState
@@ -87,7 +88,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
   return (
     <div className="mb-24">
       <h3 className="text-primary fs-18 flex-row gap-8 mb-16">
-        <Calendar size={20} style={{ color: 'var(--color-primary)' }} />
+        <Calendar size={20} className={styles.iconPrimary} />
         Wedstrijden
       </h3>
 
@@ -97,38 +98,15 @@ export const UpcomingMatchesWidget: React.FC = () => {
          const relativeTime = formatRelativeTime(date, 'nl');
          const urgency = getDateUrgency(date);
 
-         const urgencyColors: Record<string, string> = {
-           urgent: 'var(--color-error, #ef4444)',
-           soon: 'var(--color-warning, #f59e0b)',
-           upcoming: 'var(--color-success, #22c55e)',
-           future: 'var(--color-text-muted)',
-           past: 'var(--color-text-muted)',
-         };
-
          return (
             <div
                key={match.id}
                onClick={() => navigate(`/matches/${match.slug || match.id}`)}
-               className="p-16 bg-surface rounded-12 border mb-12 flex-between text-primary cursor-pointer"
-               style={{
-                   transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-               }}
-               onMouseEnter={e => {
-                 (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-                 (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-               }}
-               onMouseLeave={e => {
-                 (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-                 (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-               }}
+               className={`p-16 bg-surface rounded-12 border mb-12 flex-between text-primary cursor-pointer ${styles.matchCard}`}
             >
                <div className="flex-1">
                   {/* Relative time badge */}
-                  <div className="fs-12 fw-600 mb-4" style={{
-                    color: urgencyColors[urgency],
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                  }}>
+                  <div className={`fs-12 fw-600 mb-4 ${styles.relativeTime}`} data-urgency={urgency}>
                      {relativeTime}
                   </div>
                   {/* Opponent */}
@@ -136,9 +114,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
                      vs {opponent}
                   </div>
                   {/* Venue & Team */}
-                  <div className="fs-13 flex-row gap-8" style={{
-                    color: 'var(--app-muted-text)',
-                  }}>
+                  <div className={`fs-13 flex-row gap-8 ${styles.metaInfo}`}>
                     {match.metadata.venue && (
                       <>
                         <MapPin size={12} />
@@ -162,11 +138,11 @@ export const UpcomingMatchesWidget: React.FC = () => {
                    className="flex-row gap-4 py-8 px-12"
                  >
                    <Zap size={14} />
-                   <span style={{ display: 'none', '@media (min-width: 640px)': { display: 'inline' } } as any}>
+                   <span className={styles.generateLabel}>
                      Genereer
                    </span>
                  </Button>
-                 <ChevronRight size={20} style={{ color: 'var(--app-muted-text)' }} />
+                 <ChevronRight size={20} className={styles.iconMuted} />
                </div>
             </div>
          );

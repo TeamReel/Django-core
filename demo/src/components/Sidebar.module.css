@@ -1,0 +1,252 @@
+/* ═══════════════════════════════════════════════════════════════
+   Sidebar.module.css — extracted from Sidebar.tsx inline styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Root container ── */
+.root {
+  z-index: 90;
+  flex-shrink: 0;
+}
+
+/* ── Panel A: Primary sidebar ── */
+.panelA {
+  z-index: 20;
+  background-color: var(--sidebar-a-bg);
+  color: var(--sidebar-a-text);
+  transition: width 0.2s ease-in-out;
+  flex-shrink: 0;
+  border-right: 1px solid var(--sidebar-a-border);
+  padding-top: 57px;
+}
+
+.panelA[data-open='true'] {
+  width: 240px;
+}
+
+.panelA[data-open='false'] {
+  width: 72px;
+}
+
+/* ── Section wrapper ── */
+.section {
+  margin-bottom: 16px;
+}
+
+.section[data-bottom='true'] {
+  margin-bottom: 0;
+}
+
+/* ── Section title link ── */
+.sectionTitle {
+  flex: 1;
+  padding: 0 12px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.5;
+  color: var(--sidebar-a-text);
+}
+
+.sectionTitle[data-active='true'] {
+  opacity: 1;
+  color: var(--sidebar-a-active-text);
+}
+
+/* ── Collapse button ── */
+.collapseButton {
+  width: 28px;
+  height: 28px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--sidebar-a-text);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  margin-right: 12px;
+  margin-bottom: 6px;
+}
+
+.collapseButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── Nav item (NavLink) ── */
+.navItem {
+  position: relative;
+  min-height: 44px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--sidebar-a-text);
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.navItemOpen {
+  padding: 0 12px;
+  justify-content: flex-start;
+}
+
+.navItemCollapsed {
+  padding: 0;
+  justify-content: center;
+}
+
+.navItemActive {
+  background: var(--sidebar-a-active-bg);
+  color: var(--sidebar-a-active-text);
+}
+
+/* ── Icon wrapper ── */
+.iconWrap {
+  min-width: 24px;
+}
+
+/* ── Nav label ── */
+.navLabel {
+  margin-left: 12px;
+}
+
+/* ── Queue badge (expanded sidebar) ── */
+.queueBadge {
+  color: var(--sidebar-badge-text, #fff);
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 10px;
+  min-width: 18px;
+  line-height: 16px;
+}
+
+.queueBadge[data-type='review'] {
+  background-color: var(--app-error);
+}
+
+.queueBadge[data-type='active'] {
+  background-color: var(--color-amber-400);
+}
+
+/* ── Queue badge (collapsed sidebar) ── */
+.queueBadgeCollapsed {
+  top: 4px;
+  right: 4px;
+  color: var(--sidebar-badge-text, #fff);
+  border-radius: 10px;
+  padding: 1px 5px;
+  font-size: 9px;
+  min-width: 14px;
+  line-height: 14px;
+}
+
+.queueBadgeCollapsed[data-type='review'] {
+  background-color: var(--app-error);
+}
+
+.queueBadgeCollapsed[data-type='active'] {
+  background-color: var(--color-amber-400);
+}
+
+/* ── Expand button (collapsed state) ── */
+.expandButton {
+  top: 65px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  color: var(--sidebar-a-text);
+  transition: all 0.15s ease;
+  z-index: 25;
+}
+
+.expandButton:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Panel B: Secondary sidebar ── */
+.panelB {
+  width: 220px;
+  background-color: var(--sidebar-b-bg);
+  border-right: 1px solid var(--sidebar-b-border);
+  flex-shrink: 0;
+  padding-top: 57px;
+}
+
+/* ── Panel B header ── */
+.panelBHeader {
+  padding: 12px 16px 8px;
+  color: var(--sidebar-b-muted-text);
+}
+
+/* ── Panel B tab item ── */
+.panelBTabItem {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--sidebar-b-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  width: 100%;
+}
+
+.panelBTabItem[data-active='true'] {
+  border-color: var(--sidebar-b-border);
+  background: var(--sidebar-b-active-bg);
+  color: var(--sidebar-b-active-text);
+  font-weight: 700;
+}
+
+/* ── Panel B tab icon ── */
+.panelBTabIcon {
+  margin-right: 10px;
+  display: flex;
+}
+
+/* ── Queue count (Panel B) ── */
+.queueCount {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.4;
+  color: var(--sidebar-b-muted-text);
+}
+
+.queueCount[data-visible='true'] {
+  opacity: 0.9;
+}
+
+.queueCount[data-active='true'] {
+  color: var(--sidebar-b-active-text);
+}
+
+.queueCount[data-highlight='true'] {
+  color: var(--app-error);
+}
+
+/* ── Panel B list item (no tabs) ── */
+.panelBItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  color: var(--sidebar-b-text);
+  background-color: transparent;
+  font-weight: 400;
+}
+
+.panelBItem[data-active='true'] {
+  color: var(--sidebar-b-active-text);
+  background-color: var(--sidebar-b-active-bg);
+  font-weight: 600;
+}
+
+/* ── Panel B item icon ── */
+.panelBItemIcon {
+  margin-right: 10px;
+  display: flex;
+}

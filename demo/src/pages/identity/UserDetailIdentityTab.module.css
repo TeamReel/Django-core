@@ -1,0 +1,49 @@
+/* UserDetailIdentityTab — extracted inline styles */
+
+.profilePhotoTitle {
+  margin-top: 0;
+}
+
+.photoRow {
+  align-items: flex-start;
+}
+
+.avatarContainer {
+  width: 120px;
+  height: 120px;
+  background-color: var(--app-surface-alt, #f5f5f5);
+  border: 2px solid var(--app-border);
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  object-fit: cover;
+}
+
+.avatarInitial {
+  font-size: 48px;
+  color: var(--app-muted-text);
+}
+
+.avatarLink {
+  color: var(--app-primary);
+}
+
+.fieldLabel {
+  margin-bottom: 6px;
+}
+
+.saveButton {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.saveButton[data-saving="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.detailsGrid {
+  grid-template-columns: 160px 1fr;
+  gap: 12px 16px;
+}

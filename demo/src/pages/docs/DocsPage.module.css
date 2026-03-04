@@ -1,0 +1,55 @@
+/* DocsPage — CSS Module */
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.sectionHeading {
+  margin: 0 0 16px 0;
+}
+
+.linkButtonGroup {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.linkButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #6c757d;
+  background-color: var(--app-surface);
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.linkButtonPrimary {
+  composes: linkButton;
+  border-color: var(--app-primary);
+  color: var(--app-primary);
+}
+
+.table {
+  border-collapse: collapse;
+}
+
+.tableHeadRow {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.tableRow {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.checkMark {
+  color: var(--color-green-400);
+}
+
+.crossMark {
+  color: var(--color-red-500);
+}

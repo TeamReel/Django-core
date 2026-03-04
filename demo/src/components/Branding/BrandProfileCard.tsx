@@ -3,6 +3,7 @@ import { Card, Text, Stack, Alert, Badge } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { Palette, Image, Type, Circle, Square, Hash } from 'lucide-react';
+import styles from './BrandProfileCard.module.css';
 
 interface DesignToken {
   id: string;
@@ -259,7 +260,7 @@ export default function BrandProfileCard({
                   return (
                     <div key={type}>
                       <div className="flex-row gap-6 mb-8">
-                        <Icon size={14} style={{ opacity: 0.6 }} />
+                        <Icon size={14} className={styles.iconMuted} />
                         <Text size="xs" weight="bold" color="secondary" className="uppercase">
                           {label}
                         </Text>
@@ -269,30 +270,21 @@ export default function BrandProfileCard({
                         {tokens.map((token) => (
                           <div
                             key={token.id}
-                            className="flex-row gap-8 rounded-6 border"
-                            style={{
-                              padding: '6px 10px',
-                              backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.03))',
-                            }}
+                            className={`flex-row gap-8 rounded-6 border ${styles.tokenItem}`}
                             title={token.description || token.key}
                           >
                             {/* Color swatch for color tokens */}
                             {isColorValue(token.value) && (
                               <div
-                                className="rounded-4 border"
-                                style={{
-                                  width: 16,
-                                  height: 16,
-                                  backgroundColor: token.value,
-                                  flexShrink: 0,
-                                }}
+                                className={`rounded-4 border ${styles.colorSwatch}`}
+                                style={{ '--swatch-color': token.value } as React.CSSProperties}
                               />
                             )}
                             <div>
                               <Text size="xs" weight="medium">
                                 {token.key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                               </Text>
-                              <Text size="xs" color="secondary" style={{ fontFamily: 'monospace' }}>
+                              <Text size="xs" color="secondary" className={styles.monoValue}>
                                 {token.value}
                               </Text>
                             </div>
@@ -310,36 +302,25 @@ export default function BrandProfileCard({
         {profile.assets && profile.assets.length > 0 && (
           <div className="border-top pt-16">
             <div className="flex-row gap-6 mb-12">
-              <Image size={14} style={{ opacity: 0.6 }} />
+              <Image size={14} className={styles.iconMuted} />
               <Text weight="bold" size="sm">Brand Assets</Text>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+            <div className={styles.assetsGrid}>
               {profile.assets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="flex-col gap-8 p-12 rounded-8 border"
-                  style={{
-                    backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.03))',
-                  }}
+                  className={`flex-col gap-8 p-12 rounded-8 border ${styles.assetCard}`}
                 >
                   {/* Asset Preview */}
                   {asset.file_url && (
                     <div
-                      className="w-full flex-center rounded-6 overflow-hidden border"
-                      style={{
-                        aspectRatio: '1',
-                        backgroundColor: 'var(--app-surface)',
-                      }}
+                      className={`w-full flex-center rounded-6 overflow-hidden border ${styles.assetPreview}`}
                     >
                       <img
                         src={asset.file_url}
                         alt={asset.name}
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain',
-                        }}
+                        className={styles.assetImage}
                         onError={(e) => {
                           // Hide broken images
                           (e.target as HTMLImageElement).style.display = 'none';
@@ -349,13 +330,9 @@ export default function BrandProfileCard({
                   )}
                   {!asset.file_url && (
                     <div
-                      className="w-full flex-center rounded-6 border"
-                      style={{
-                        aspectRatio: '1',
-                        backgroundColor: 'var(--app-surface)',
-                      }}
+                      className={`w-full flex-center rounded-6 border ${styles.assetPreview}`}
                     >
-                      <Image size={24} style={{ opacity: 0.3 }} />
+                      <Image size={24} className={styles.placeholderIcon} />
                     </div>
                   )}
                   <div>

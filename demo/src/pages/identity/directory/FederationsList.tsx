@@ -18,6 +18,7 @@ import OrganisationCreateModal from '../OrganisationCreateModal';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import { useSports } from '../../../hooks/useSports';
 import type { Organisation } from '../../../types';
+import styles from './FederationsList.module.css';
 
 export const FederationsList: React.FC = () => {
   const navigate = useNavigate();
@@ -219,22 +220,22 @@ export const FederationsList: React.FC = () => {
               <Table className="dir-table">
                 <thead>
                   <tr>
-                    <th onClick={() => handleSort('name')} className="dir-th cursor-pointer" style={{ width: '18%' }}>
+                    <th onClick={() => handleSort('name')} className={`dir-th cursor-pointer ${styles.thFederation}`}>
                       Federation {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="dir-th" style={{ width: '10%' }}>Sport</th>
-                    <th className="dir-th" style={{ width: '6%' }}>Variant</th>
-                    <th onClick={() => handleSort('project_count')} className="dir-th cursor-pointer" style={{ width: '6%' }}>
+                    <th className={`dir-th ${styles.thSport}`}>Sport</th>
+                    <th className={`dir-th ${styles.thVariant}`}>Variant</th>
+                    <th onClick={() => handleSort('project_count')} className={`dir-th cursor-pointer ${styles.thClub}`}>
                       Club {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="dir-th" style={{ width: '6%' }}>Season</th>
-                    <th className="dir-th" style={{ width: '8%' }}>Competition</th>
-                    <th className="dir-th" style={{ width: '6%' }}>Match</th>
-                    <th onClick={() => handleSort('member_count')} className="dir-th cursor-pointer" style={{ width: '6%' }}>
+                    <th className={`dir-th ${styles.thSeason}`}>Season</th>
+                    <th className={`dir-th ${styles.thCompetition}`}>Competition</th>
+                    <th className={`dir-th ${styles.thMatch}`}>Match</th>
+                    <th onClick={() => handleSort('member_count')} className={`dir-th cursor-pointer ${styles.thUsers}`}>
                       Users {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                     </th>
-                    <th className="dir-th" style={{ width: '8%' }}>Status</th>
-                    <th className="dir-th" style={{ width: '12%' }}>Actions</th>
+                    <th className={`dir-th ${styles.thStatus}`}>Status</th>
+                    <th className={`dir-th ${styles.thActions}`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -251,11 +252,7 @@ export const FederationsList: React.FC = () => {
                       <tr key={org.id}>
                         <td className="dir-td-text">
                           <span
-                            className="cursor-pointer"
-                            style={{
-                              color: 'var(--color-blue-600)',
-                              textDecoration: 'underline',
-                            }}
+                            className={`cursor-pointer ${styles.orgLink}`}
                             onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
                           >
                             {org.name}

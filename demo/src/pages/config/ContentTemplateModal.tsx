@@ -3,6 +3,7 @@ import { Card, Button, Input } from '@django-core/design-system';
 import { type Formation, type Sport } from './contentTemplatesData';
 import type { EditFormState } from './useContentTemplatesData';
 import { ContentTemplateRequirementsTab } from './ContentTemplateRequirementsTab';
+import styles from './ContentTemplateModal.module.css';
 
 interface ContentTemplateModalProps {
   editingTemplate: { id: number } | null;
@@ -39,7 +40,7 @@ export function ContentTemplateModal({
       onClick={onClose}
     >
       <Card
-        style={{ width: '700px', maxHeight: '90vh', overflow: 'auto' }}
+        className={styles.modalCard}
         onClick={e => e.stopPropagation()}
       >
         <h2 className="mb-16">
@@ -50,25 +51,15 @@ export function ContentTemplateModal({
         <div className="flex-row gap-4 mb-20 border-bottom">
           <button
             onClick={() => setModalTab('basic')}
-            className="cursor-pointer fw-500"
-            style={{
-              padding: '10px 20px', border: 'none',
-              background: modalTab === 'basic' ? 'var(--app-primary)' : 'transparent',
-              color: modalTab === 'basic' ? 'white' : 'var(--app-text)',
-              borderRadius: '6px 6px 0 0',
-            }}
+            className={`cursor-pointer fw-500 ${styles.tabButton}`}
+            data-active={modalTab === 'basic'}
           >
             Basic Info
           </button>
           <button
             onClick={() => setModalTab('requirements')}
-            className="cursor-pointer fw-500"
-            style={{
-              padding: '10px 20px', border: 'none',
-              background: modalTab === 'requirements' ? 'var(--app-primary)' : 'transparent',
-              color: modalTab === 'requirements' ? 'white' : 'var(--app-text)',
-              borderRadius: '6px 6px 0 0',
-            }}
+            className={`cursor-pointer fw-500 ${styles.tabButton}`}
+            data-active={modalTab === 'requirements'}
           >
             Input Requirements
           </button>
@@ -93,8 +84,7 @@ export function ContentTemplateModal({
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                 placeholder="Template description..."
                 rows={2}
-                className="form-textarea"
-                style={{ resize: 'vertical' }}
+                className={`form-textarea ${styles.resizableTextarea}`}
               />
             </div>
 
@@ -174,11 +164,8 @@ export function ContentTemplateModal({
                     formation_code: '',
                   })}
                   disabled={!editForm.sport_category}
-                  className="form-input"
-                  style={{
-                    backgroundColor: !editForm.sport_category ? 'var(--app-bg-muted)' : 'var(--app-bg)',
-                    opacity: !editForm.sport_category ? 0.6 : 1,
-                  }}
+                  className={`form-input ${styles.formSelect}`}
+                  data-disabled={!editForm.sport_category}
                 >
                   <option value="">-- Select Variant --</option>
                   {getVariantsForCategory(editForm.sport_category).map(v => (
@@ -233,7 +220,7 @@ export function ContentTemplateModal({
                 id="is_active"
                 checked={editForm.is_active}
                 onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })}
-                style={{ width: '18px', height: '18px' }}
+                className={styles.checkbox}
               />
               <label htmlFor="is_active" className="fw-500">Active</label>
             </div>
@@ -247,7 +234,7 @@ export function ContentTemplateModal({
                 value={editForm.credits_required}
                 onChange={(e) => setEditForm({ ...editForm, credits_required: Math.max(1, parseInt(e.target.value) || 1) })}
                 placeholder="1"
-                style={{ width: '100px' }}
+                className={styles.creditsInput}
               />
               <p className="fs-12 text-muted mt-4">
                 Number of credits consumed per generation
@@ -262,7 +249,7 @@ export function ContentTemplateModal({
         )}
 
         {/* Actions */}
-        <div className="flex-row gap-8 mt-24" style={{ justifyContent: 'flex-end' }}>
+        <div className={`flex-row gap-8 mt-24 ${styles.modalActions}`}>
           <Button variant="secondary" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

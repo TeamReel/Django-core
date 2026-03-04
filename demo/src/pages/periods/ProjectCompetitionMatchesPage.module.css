@@ -1,0 +1,46 @@
+.emptyState {
+  padding: 16px;
+  color: var(--app-text-secondary);
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thCenter {
+  text-align: center;
+}
+
+.thRight {
+  text-align: right;
+}
+
+.dateCell {
+  white-space: nowrap;
+}
+
+.matchInfo {
+  display: grid;
+}
+
+.matchTitle {
+  font-weight: 600;
+}
+
+.matchOpponent {
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+.scoreCell {
+  text-align: center;
+  font-weight: 700;
+}
+
+.statusCell {
+  text-align: right;
+}
+
+.actionCell {
+  text-align: right;
+}

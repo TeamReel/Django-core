@@ -6,6 +6,7 @@ import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { periodPathKey } from '../../utils/periodPath';
+import styles from './ProjectSeasonsPage.module.css';
 
 type Period = {
   id: string;
@@ -170,37 +171,37 @@ export const ProjectSeasonsPage: React.FC = () => {
 
           <Card>
             {loading ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading seasons…</div>
+              <div className={styles.emptyState}>Loading seasons…</div>
             ) : seasons.length === 0 ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>No seasons found.</div>
+              <div className={styles.emptyState}>No seasons found.</div>
             ) : (
               <Table>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left' }}>Season</th>
-                    <th style={{ textAlign: 'left' }}>Dates</th>
-                    <th style={{ textAlign: 'center' }}>Competitions</th>
-                    <th style={{ textAlign: 'right' }}>Action</th>
+                    <th className={styles.thLeft}>Season</th>
+                    <th className={styles.thLeft}>Dates</th>
+                    <th className={styles.thCenter}>Competitions</th>
+                    <th className={styles.thRight}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {seasons.map((season) => (
                     <tr key={season.id}>
-                      <td style={{ fontWeight: 600 }}>
+                      <td className={styles.seasonName}>
                         {season.name}
                         {season.period_type === 'legends' && (
-                          <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: '2px 6px', borderRadius: 4, background: '#fffbeb', color: '#d97706' }}>
+                          <span className={styles.legendsBadge}>
                             Legends
                           </span>
                         )}
                       </td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
+                      <td className={styles.dateCell}>
                         {new Date(season.start_date).toLocaleDateString()} – {new Date(season.end_date).toLocaleDateString()}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td className={styles.centerCell}>
                         <Badge variant="default">{season.children_count ?? '—'}</Badge>
                       </td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className={styles.rightCell}>
                         <Button
                           size="sm"
                           variant="secondary"

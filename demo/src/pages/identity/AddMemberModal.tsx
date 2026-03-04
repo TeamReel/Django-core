@@ -3,10 +3,10 @@ import { Button, Input } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import {
-  tabStyle,
   LEVEL_LABEL,
 } from './addMemberModalStyles';
 import type { ContextLevel, UserResult } from './addMemberModalStyles';
+import modalStyles from './AddMemberModal.module.css';
 
 /* ────────────────────────────────────────────────────────── types ── */
 
@@ -259,8 +259,8 @@ export default function AddMemberModal({
   const levelLabel = LEVEL_LABEL[contextLevel];
 
   return (
-    <div className="modal-backdrop overflow-y-auto p-16" style={{ zIndex: 1100, WebkitOverflowScrolling: 'touch' }} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-surface p-24 rounded-12 text-primary flex-col" style={{ width: '700px', maxWidth: '100%', boxShadow: '0 10px 25px rgba(0,0,0,0.2)', maxHeight: 'calc(100vh - 32px)', margin: 'auto' }}>
+    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className={`bg-surface p-24 rounded-12 text-primary flex-col ${modalStyles.panel}`}>
         {/* ── Header ── */}
         <div className="flex-between mb-4">
           <h2 className="m-0 fs-20 fw-700">
@@ -268,8 +268,7 @@ export default function AddMemberModal({
           </h2>
           <button
             onClick={onClose}
-            className="bg-transparent border-none fs-24 cursor-pointer text-muted py-4 px-8"
-            style={{ lineHeight: 1 }}
+            className={`bg-transparent border-none fs-24 cursor-pointer text-muted py-4 px-8 ${modalStyles.closeButton}`}
             aria-label="Close"
           >
             ✕
@@ -283,11 +282,11 @@ export default function AddMemberModal({
         </p>
 
         {/* ── Tabs ── */}
-        <div className="flex-row gap-4" style={{ borderBottom: '2px solid var(--app-border, #e0e0e0)', marginBottom: '20px' }}>
-          <button style={tabStyle(tab === 'existing')} onClick={() => { setTab('existing'); setError(null); setSuccessMsg(null); }}>
+        <div className={`flex-row gap-4 ${modalStyles.tabBar}`}>
+          <button className={modalStyles.tab} data-active={tab === 'existing'} onClick={() => { setTab('existing'); setError(null); setSuccessMsg(null); }}>
             Existing User
           </button>
-          <button style={tabStyle(tab === 'new')} onClick={() => { setTab('new'); setError(null); setSuccessMsg(null); }}>
+          <button className={modalStyles.tab} data-active={tab === 'new'} onClick={() => { setTab('new'); setError(null); setSuccessMsg(null); }}>
             New User
           </button>
         </div>
@@ -310,7 +309,7 @@ export default function AddMemberModal({
                   autoFocus
                 />
               </div>
-              <div style={{ width: '160px' }}>
+              <div className={modalStyles.roleSelectWrapper}>
                 <label className="block mb-4 fs-14 fw-500">Role</label>
                 <select
                   value={selectedRole}
@@ -337,18 +336,11 @@ export default function AddMemberModal({
             )}
 
             {!isSearching && searchResults.length > 0 && (
-              <div className="overflow-y-auto" style={{ maxHeight: '340px' }}>
+              <div className={`overflow-y-auto ${modalStyles.searchResultsList}`}>
                 {searchResults.map((u) => (
                   <div
                     key={u.id}
-                    className="flex-between rounded-8 border mb-8 cursor-pointer"
-                    style={{ padding: '10px 12px', transition: 'background .1s' }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--app-hover-bg, #f5f5f5)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLDivElement).style.backgroundColor = '';
-                    }}
+                    className={`flex-between rounded-8 border mb-8 cursor-pointer ${modalStyles.userRow}`}
                   >
                     <div>
                       <div className="fw-600 fs-14">
@@ -372,7 +364,7 @@ export default function AddMemberModal({
             )}
 
             {searchQuery.length < 2 && !isSearching && (
-              <div className="text-center text-muted fs-14" style={{ padding: '32px 16px' }}>
+              <div className={`text-center text-muted fs-14 ${modalStyles.emptyState}`}>
                 Type at least 2 characters to search for users
               </div>
             )}
@@ -381,7 +373,7 @@ export default function AddMemberModal({
 
         {/* ═══════════════════════ TAB: New User ═══════════════════════════ */}
         {tab === 'new' && (
-          <form onSubmit={createNewUser} className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+          <form onSubmit={createNewUser} className={`flex-1 overflow-y-auto ${modalStyles.formBody}`}>
             <div className="flex-row gap-12 mb-16">
               <div className="flex-1">
                 <label className="block mb-4 fs-14 fw-500">First Name</label>

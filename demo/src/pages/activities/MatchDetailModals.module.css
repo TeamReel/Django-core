@@ -1,0 +1,121 @@
+/* MatchDetailModals.module.css — extracted inline styles */
+
+/* ------------------------------------------------------------------ */
+/*  Content Preview Modal                                              */
+/* ------------------------------------------------------------------ */
+
+.contentPreviewOverlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.contentPreviewCard {
+  background-color: var(--app-card-bg);
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.contentPreviewMedia {
+  max-width: 100%;
+  max-height: 60vh;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Shared                                                             */
+/* ------------------------------------------------------------------ */
+
+.modalFooter {
+  border-radius: 0 0 12px 12px;
+}
+
+.primaryActionLink {
+  align-items: center;
+  background-color: var(--app-primary);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Saved Asset Preview Modal                                          */
+/* ------------------------------------------------------------------ */
+
+.savedAssetOverlay {
+  z-index: 1100;
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 16px 8px 80px;
+}
+
+.savedAssetCard {
+  background-color: var(--app-card-bg);
+  max-width: 900px;
+  width: 92%;
+  max-height: calc(90vh - 80px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.savedAssetMedia {
+  max-width: 100%;
+  max-height: 65vh;
+}
+
+.savedAssetFooter {
+  justify-content: flex-end;
+  border-radius: 0 0 12px 12px;
+}
+
+.savedDownloadLink {
+  align-items: center;
+  background-color: var(--app-surface-secondary);
+  color: var(--app-text);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Toast Notifications                                                */
+/* ------------------------------------------------------------------ */
+
+.toastContainer {
+  top: 16px;
+  right: 16px;
+  z-index: 9999;
+  max-width: 420px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toastItem {
+  --color-toast-success: #166534;
+  --color-toast-error: #991b1b;
+  --color-toast-warning: #92400e;
+  --color-toast-info: #1e40af;
+
+  animation: slideInRight 0.3s ease-out;
+}
+
+.toastItem[data-toast-type='success'] {
+  background: var(--color-toast-success);
+}
+
+.toastItem[data-toast-type='error'] {
+  background: var(--color-toast-error);
+}
+
+.toastItem[data-toast-type='warning'] {
+  background: var(--color-toast-warning);
+}
+
+.toastItem[data-toast-type='info'] {
+  background: var(--color-toast-info);
+}
+
+.toastDismiss {
+  line-height: 1;
+  opacity: 0.7;
+}

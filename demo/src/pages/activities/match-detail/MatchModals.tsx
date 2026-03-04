@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Badge } from '@django-core/design-system';
 import type { ContentItem, SavedAssetPreview } from './types';
+import styles from './MatchModals.module.css';
 
 interface ContentPreviewModalProps {
   item: ContentItem;
@@ -10,29 +11,16 @@ interface ContentPreviewModalProps {
 export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps) {
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={onClose}
     >
       <div
-        className="rounded-12 max-w-800 overflow-auto"
-        style={{
-          backgroundColor: 'var(--app-card-bg)',
-          width: '90%',
-          maxHeight: '90vh',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        }}
+        className={`rounded-12 max-w-800 overflow-auto ${styles.modal} ${styles.contentModal}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div
-          className="flex-between border-bottom"
-          style={{ padding: '16px 20px' }}
+          className={`flex-between border-bottom ${styles.modalHeader}`}
         >
           <div>
             <h3 className="m-0 fs-18 fw-600">
@@ -44,8 +32,7 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
           </div>
           <button
             onClick={onClose}
-            className="border-none fs-24 cursor-pointer text-muted py-4 px-8"
-            style={{ background: 'none' }}
+            className={`border-none fs-24 cursor-pointer text-muted py-4 px-8 ${styles.closeButton}`}
           >
             ×
           </button>
@@ -59,15 +46,13 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
                 <video
                   src={item.output_file.url}
                   controls
-                  className="rounded-8"
-                  style={{ maxWidth: '100%', maxHeight: '60vh' }}
+                  className={`rounded-8 ${styles.contentVideo}`}
                 />
               ) : (
                 <img
                   src={item.output_file.url}
                   alt={item.template?.name || 'Generated content'}
-                  className="rounded-8"
-                  style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }}
+                  className={`rounded-8 ${styles.contentImage}`}
                 />
               )}
             </div>
@@ -82,12 +67,7 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
 
         {/* Modal Footer */}
         <div
-          className="flex-between border-top"
-          style={{
-            padding: '16px 20px',
-            backgroundColor: 'var(--app-bg)',
-            borderRadius: '0 0 12px 12px',
-          }}
+          className={`flex-between border-top ${styles.modalFooter}`}
         >
           <Badge
             variant={
@@ -103,12 +83,7 @@ export function ContentPreviewModal({ item, onClose }: ContentPreviewModalProps)
                 download={item.output_file.file_name || 'content'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex gap-6 py-8 px-16 rounded-6 fs-14 fw-500"
-                style={{
-                  backgroundColor: 'var(--app-primary)',
-                  color: 'white',
-                  textDecoration: 'none',
-                }}
+                className={`inline-flex gap-6 py-8 px-16 rounded-6 fs-14 fw-500 ${styles.actionLink}`}
               >
                 ⬇️ Download
               </a>
@@ -136,29 +111,15 @@ export function SavedAssetPreviewModal({
 }: SavedAssetPreviewModalProps) {
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 1000,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={onClose}
     >
       <div
-        className="rounded-12 overflow-auto"
-        style={{
-          backgroundColor: 'var(--app-card-bg)',
-          maxWidth: '900px',
-          width: '92%',
-          maxHeight: '90vh',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        }}
+        className={`rounded-12 overflow-auto ${styles.modal} ${styles.assetModal}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="flex-between border-bottom"
-          style={{ padding: '16px 20px' }}
+          className={`flex-between border-bottom ${styles.modalHeader}`}
         >
           <div>
             <h3 className="m-0 fs-18 fw-600">
@@ -172,8 +133,7 @@ export function SavedAssetPreviewModal({
           </div>
           <button
             onClick={onClose}
-            className="border-none fs-24 cursor-pointer text-muted py-4 px-8"
-            style={{ background: 'none' }}
+            className={`border-none fs-24 cursor-pointer text-muted py-4 px-8 ${styles.closeButton}`}
           >
             ×
           </button>
@@ -185,41 +145,26 @@ export function SavedAssetPreviewModal({
               <video
                 src={preview.url}
                 controls
-                className="rounded-8"
-                style={{ maxWidth: '100%', maxHeight: '65vh' }}
+                className={`rounded-8 ${styles.assetVideo}`}
               />
             ) : (
               <img
                 src={preview.url}
                 alt={preview.title}
-                className="rounded-8"
-                style={{ maxWidth: '100%', maxHeight: '65vh', objectFit: 'contain' }}
+                className={`rounded-8 ${styles.assetImage}`}
               />
             )}
           </div>
         </div>
 
         <div
-          className="border-top gap-8"
-          style={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
-            padding: '16px 20px',
-            backgroundColor: 'var(--app-bg)',
-            borderRadius: '0 0 12px 12px',
-          }}
+          className={`border-top gap-8 ${styles.assetFooter}`}
         >
           <a
             href={preview.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex gap-6 py-8 px-16 rounded-6 fs-14 fw-500"
-            style={{
-              backgroundColor: 'var(--app-primary)',
-              color: 'white',
-              textDecoration: 'none',
-            }}
+            className={`inline-flex gap-6 py-8 px-16 rounded-6 fs-14 fw-500 ${styles.actionLink}`}
           >
             🔗 Open
           </a>

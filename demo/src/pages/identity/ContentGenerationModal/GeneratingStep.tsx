@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from '@django-core/design-system';
+import styles from './GeneratingStep.module.css';
 
 interface GeneratingStepProps {
   progress: number;
@@ -102,35 +103,30 @@ export function GeneratingStep({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', paddingTop: '48px', paddingBottom: '48px' }}>
-      <div style={{ width: '100%', maxWidth: '448px', textAlign: 'center' }}>
+    <div className={styles.container}>
+      <div className={styles.content}>
         {/* Icon */}
-        <div style={{ fontSize: '48px', marginBottom: '24px' }}>{isGoalCelebration ? 'GC' : isMatchIntro ? 'MI' : isLineupFlyer ? 'LF' : 'LV'}</div>
+        <div className={styles.icon}>{isGoalCelebration ? 'GC' : isMatchIntro ? 'MI' : isLineupFlyer ? 'LF' : 'LV'}</div>
 
         {/* Headline */}
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--app-text, #1C355E)', marginBottom: '8px' }}>{headline}</h2>
+        <h2 className={styles.headline}>{headline}</h2>
 
         {/* Description */}
-        <p style={{ fontSize: '14px', color: 'var(--app-text-muted, #6b7280)', marginBottom: '24px', minHeight: '20px' }}>{description}</p>
+        <p className={styles.description}>{description}</p>
 
-        {/* Progress bar — merged duplicate style= into one */}
-        <div style={{ width: '100%', background: 'var(--app-border, #e5e5e5)', borderRadius: '9999px', height: '10px', marginBottom: '8px', overflow: 'hidden' }}>
+        {/* Progress bar */}
+        <div className={styles.progressTrack}>
           <div
-            style={{
-              background: 'var(--app-primary, #3B8EA5)',
-              height: '100%',
-              borderRadius: '9999px',
-              transition: 'all 150ms ease',
-              width: `${Math.max(displayProgress, 2)}%`,
-            }}
+            className={styles.progressFill}
+            style={{ width: `${Math.max(displayProgress, 2)}%` }}
           />
         </div>
-        <div style={{ fontSize: '14px', color: 'var(--app-text-secondary, #4b5563)', fontWeight: 500 }}>{Math.round(displayProgress)}%</div>
+        <div className={styles.progressLabel}>{Math.round(displayProgress)}%</div>
 
-        {/* Close option for lineup/goal (runs in background) — fixed className="mt-8" to inline */}
+        {/* Close option for lineup/goal (runs in background) */}
         {isVideoJob && videoJobId && (
-          <div style={{ marginTop: '32px' }}>
-            <p style={{ fontSize: '12px', color: 'var(--app-text-muted, #9ca3af)', marginBottom: '8px' }}>
+          <div className={styles.closeSection}>
+            <p className={styles.closeHint}>
               Je kunt dit venster sluiten — de video wordt op de achtergrond verwerkt.
             </p>
             <Button

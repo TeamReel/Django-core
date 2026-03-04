@@ -1,0 +1,70 @@
+.table {
+  border-collapse: collapse;
+}
+
+.th {
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 2px solid var(--app-border);
+  white-space: nowrap;
+}
+
+.td {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.stickyCell {
+  position: sticky;
+  left: 0;
+  background: var(--app-surface);
+  z-index: 1;
+}
+
+.slotHeader {
+  text-align: center;
+  min-width: 60px;
+  height: 80px;
+  vertical-align: bottom;
+  position: relative;
+}
+
+.rotatedLabel {
+  display: block;
+  font-size: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  margin-bottom: 4px;
+  opacity: 0.8;
+  letter-spacing: 0.02em;
+}
+
+.scoreHeader {
+  text-align: center;
+}
+
+.nameCell {
+  font-weight: 500;
+}
+
+.memberLink {
+  text-decoration: none;
+  color: var(--member-link-color, #60a5fa);
+}
+
+.slotLink {
+  text-decoration: none;
+}
+
+.centerCell {
+  text-align: center;
+}
+
+.legend {
+  background: var(--app-muted);
+}

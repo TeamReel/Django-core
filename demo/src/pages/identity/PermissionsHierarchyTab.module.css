@@ -1,0 +1,103 @@
+/* PermissionsHierarchyTab — extracted inline styles */
+
+.headerWrapper {
+  align-items: flex-start;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+}
+
+.roleGrid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.roleCard {
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  padding: 14px;
+  box-shadow: none;
+}
+
+.roleCard[data-current="true"] {
+  border-color: var(--app-focus-ring);
+  background-color: var(--app-surface-2);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0);
+}
+
+.roleCardHeader {
+  align-items: flex-start;
+}
+
+.roleCardHeaderInner {
+  align-items: flex-start;
+}
+
+.levelBadge {
+  width: 34px;
+  height: 34px;
+  background-color: var(--app-table-header-bg);
+}
+
+.roleScope {
+  margin-top: 2px;
+  font-size: 0.8rem;
+}
+
+.roleDescription {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: var(--app-text);
+}
+
+.highlightList {
+  margin-top: 10px;
+}
+
+.highlightItem {
+  font-size: 0.85rem;
+}
+
+/* Hierarchy Ladder */
+
+.ladderContainer {
+  margin-top: 14px;
+  padding: 14px;
+}
+
+.ladderLineCol {
+  width: 18px;
+  align-items: center;
+}
+
+.ladderDot {
+  width: 10px;
+  height: 10px;
+  background-color: var(--app-border);
+}
+
+.ladderDot[data-current="true"] {
+  background-color: var(--app-focus-ring);
+}
+
+.ladderLine {
+  width: 2px;
+  background-color: var(--app-border);
+}
+
+.ladderContent {
+  padding-bottom: 12px;
+}
+
+.ladderContent[data-last="true"] {
+  padding-bottom: 0;
+}
+
+.ladderScope {
+  font-size: 0.8rem;
+}
+
+.ladderDescription {
+  font-size: 0.9rem;
+}

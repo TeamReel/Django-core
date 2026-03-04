@@ -1,0 +1,342 @@
+/* ======================================================================
+   BASE / GLOBAL STYLES — Resets, body, form controls, tables, buttons,
+   cards, links, headings, dark-mode overrides, accessibility.
+   Extracted from index.css for maintainability.
+   ====================================================================== */
+
+/* Global Accessibility: Ensure visible focus indicator for all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--app-focus-ring) !important;
+  outline-offset: 2px !important;
+  z-index: 10; /* Ensure focus ring is visible above other elements */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  /* Safe area insets for notched devices (iPhone X+) */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* --- Organisation Detail Page: theme bridge for legacy gray utility classes --- */
+.org-detail-page {
+  color: var(--app-text);
+}
+
+.org-detail-page .text-gray-900 { color: var(--app-text) !important; }
+.org-detail-page .text-gray-800 { color: var(--app-text) !important; }
+.org-detail-page .text-gray-700 { color: var(--app-text) !important; }
+.org-detail-page .text-gray-600 { color: var(--app-muted-text) !important; }
+.org-detail-page .text-gray-500 { color: var(--app-muted-text) !important; }
+.org-detail-page .text-gray-400 { color: var(--app-muted-text) !important; }
+
+.org-detail-page .bg-gray-50 { background-color: var(--app-bg) !important; }
+.org-detail-page .bg-gray-100 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-gray-200 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-gray-300 { background-color: var(--app-surface-2) !important; }
+.org-detail-page .bg-gray-800 { background-color: var(--app-surface) !important; }
+.org-detail-page .bg-gray-900 { background-color: var(--app-surface) !important; }
+.org-detail-page .bg-white { background-color: var(--app-surface) !important; }
+
+.org-detail-page .border-gray-100 { border-color: var(--app-border) !important; }
+.org-detail-page .border-gray-200 { border-color: var(--app-border) !important; }
+.org-detail-page .border-gray-300 { border-color: var(--app-border) !important; }
+.org-detail-page .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--app-border) !important; }
+
+.org-detail-page .text-blue-600 { color: var(--app-link) !important; }
+
+#root {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  min-height: 100vh;
+}
+
+/* Main content wrapper should use page background */
+[style*="padding: 20px"],
+[style*="padding: 24px"],
+[style*="padding:20px"],
+[style*="padding:24px"] {
+  background-color: var(--app-bg);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+button {
+  font-family: inherit;
+  border: 1px solid transparent;
+}
+
+/* Navbar defaults: keep chrome off by default,
+   but allow opt-in bordered controls via .nav-icon-button / .nav-keep-border. */
+nav button:not(.nav-icon-button):not(.nav-keep-border),
+nav [class*="Button"]:not(.nav-icon-button):not(.nav-keep-border) {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure form buttons (not in nav) have proper borders and contrast */
+form button[type="submit"],
+form button[type="button"],
+[class*="Button"]:not(nav *),
+[class*="button"]:not(nav *) {
+  border: 1px solid var(--app-border) !important;
+}
+
+/* Primary buttons - stronger styling (excluding nav) */
+form button[type="submit"]:not([disabled]),
+button[type="submit"]:not(nav *):not([disabled]),
+button[style*="backgroundColor: '#007bff'"]:not(nav *),
+button[style*="backgroundColor: '#0066cc'"]:not(nav *),
+button[style*="backgroundColor: #007bff"]:not(nav *),
+button[style*="backgroundColor: #0066cc"]:not(nav *) {
+  border: 1px solid #0056b3 !important;
+}
+
+/* Secondary/Cancel buttons - subtle but visible (excluding nav) */
+form button[type="button"]:not([type="submit"]):not(.app-action-button):not(.app-unstyled-button),
+button[type="button"]:not(nav *):not([type="submit"]):not(.app-action-button):not(.app-unstyled-button):not([style*="backgroundColor: #dc3545"]):not([style*="backgroundColor: '#dc3545'"]) {
+  border: 1px solid var(--app-border) !important;
+  background-color: var(--app-surface-2);
+}
+
+/* Danger buttons (excluding nav) */
+button[style*="backgroundColor: #dc3545"]:not(nav *),
+button[style*="backgroundColor: '#dc3545'"]:not(nav *) {
+  border: 1px solid #bd2130 !important;
+}
+
+/* Button hover states (excluding nav) */
+button:not([disabled]):not(nav *):not(.app-action-button):not(.app-unstyled-button):hover {
+  opacity: 0.9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Button focus states */
+button:focus-visible, [class*="Button"]:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Utility: opt-out of global button chrome (used for badge-only click targets) */
+.app-unstyled-button {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.app-unstyled-button:hover {
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Utility: outlined action button (border uses current text color)
+   NOTE: selector specificity must beat global button border rules above. */
+button.app-action-button,
+button.app-action-button[type="button"],
+button.app-action-button[type="submit"] {
+  border: 1px solid currentColor !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+button.app-action-button:hover {
+  background-color: var(--app-surface-2) !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+a {
+  color: var(--app-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Global table styles for dark mode consistency */
+table {
+  background-color: var(--app-table-row-bg);
+  border-color: var(--app-border);
+  color: var(--app-text);
+}
+
+thead, th {
+  background-color: var(--app-table-header-bg) !important;
+  color: var(--app-text) !important;
+  border-color: var(--app-border) !important;
+}
+
+tbody, td {
+  background-color: var(--app-table-row-bg) !important;
+  color: var(--app-text) !important;
+  border-color: var(--app-border) !important;
+}
+
+tbody tr:hover td {
+  background-color: var(--app-table-row-hover-bg) !important;
+}
+
+/* Table container backgrounds */
+[class*="Table"], [class*="table"], div[role="table"] {
+  background-color: var(--app-surface) !important;
+  color: var(--app-text);
+}
+
+/* Form controls */
+input, select, textarea {
+  background-color: var(--app-input-bg) !important;
+  color: var(--app-input-text) !important;
+  border: 1px solid var(--app-input-border) !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Form labels */
+label {
+  color: var(--app-text) !important;
+}
+
+/* Span elements (used for checkbox/radio labels) */
+span {
+  color: var(--app-text);
+}
+
+/* Design System Input component override */
+[class*="Input"], input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"] {
+  background-color: var(--app-input-bg) !important;
+  color: var(--app-input-text) !important;
+  border-color: var(--app-input-border) !important;
+}
+
+/* Ensure placeholder text is visible */
+input::placeholder, textarea::placeholder {
+  color: var(--app-muted-text);
+  opacity: 0.7;
+}
+
+/* Card/surface styles */
+[class*="card"], [class*="Card"] {
+  background-color: var(--app-surface);
+  color: var(--app-text);
+  border-color: var(--app-border);
+}
+
+/* Button component styles - ensure visibility in both themes */
+[class*="Button"], button[class*="Button"] {
+  border: 1px solid var(--app-border) !important;
+  min-height: 36px;
+}
+
+/* Primary variant buttons */
+[class*="Button"][class*="primary"], button[class*="primary"] {
+  border-color: #0056b3 !important;
+}
+
+/* Secondary variant buttons */
+[class*="Button"][class*="secondary"], button[class*="secondary"] {
+  background-color: var(--app-surface-2) !important;
+  color: var(--app-text) !important;
+  border: 1px solid var(--app-border) !important;
+}
+
+/* Destructive/danger variant buttons */
+[class*="Button"][class*="destructive"], button[class*="destructive"] {
+  border: 1px solid #bd2130 !important;
+}
+
+/* Horizontal rules */
+hr {
+  border-color: var(--app-border);
+}
+
+/* Override common hardcoded backgrounds in dark mode */
+[data-theme="dark"] [style*="background-color: #fff"],
+[data-theme="dark"] [style*="background-color:#fff"],
+[data-theme="dark"] [style*="backgroundColor: '#fff'"],
+[data-theme="dark"] [style*='backgroundColor: "#fff"'] {
+  background-color: var(--app-surface) !important;
+}
+
+[data-theme="dark"] [style*="color: #666"],
+[data-theme="dark"] [style*="color:#666"] {
+  color: var(--app-muted-text) !important;
+}
+
+[data-theme="dark"] [style*="border-color: #ddd"],
+[data-theme="dark"] [style*="border: 1px solid #ddd"] {
+  border-color: var(--app-border) !important;
+}
+
+/* Ensure main content area uses theme background */
+main {
+  background-color: var(--app-bg) !important;
+  color: var(--app-text);
+}
+
+/* Better contrast for headings in both modes */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--app-text);
+}
+
+/* Better contrast for buttons with hardcoded colors */
+[data-theme="dark"] button[style*="color: #6c757d"],
+[data-theme="dark"] button[style*="color:#6c757d"] {
+  color: #adb5bd !important;
+}
+
+[data-theme="dark"] button[style*="border: 1px solid #6c757d"],
+[data-theme="dark"] button[style*="border:1px solid #6c757d"] {
+  border-color: #adb5bd !important;
+}
+
+/* Improve text contrast in dark mode */
+[data-theme="dark"] strong {
+  color: var(--app-text);
+  font-weight: 600;
+}
+
+[data-theme="dark"] p {
+  color: var(--app-text);
+}
+
+/* Hide context switcher errors (non-critical, handled by error handler) */
+[role="alert"]:has([data-context-error]) {
+  display: none !important;
+}
+
+/* Alternative: hide all error alerts in header if context switcher errors are shown there */
+header [role="alert"] {
+  display: none !important;
+}

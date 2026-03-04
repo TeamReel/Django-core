@@ -1,0 +1,56 @@
+/* Custom properties scoped to settings page */
+.settingsContainer {
+  --settings-saving-color: #6c757d;
+  --settings-btn-bg: white;
+  --settings-btn-text: #333;
+  --settings-danger-badge-bg: #dc354520;
+  --settings-success-badge-bg: #28a74520;
+
+  height: calc(100vh - 120px);
+}
+
+.formInput {
+  padding: 10px 12px;
+}
+
+.formTextarea {
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.saveButton {
+  padding: 10px 20px;
+  background-color: var(--app-primary);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.saveButton[data-status='saving'] {
+  background-color: var(--settings-saving-color);
+  cursor: not-allowed;
+}
+
+.saveButton[data-status='success'] {
+  background-color: var(--app-success);
+}
+
+.saveButton[data-status='error'] {
+  background-color: var(--app-error);
+}
+
+.changePasswordButton {
+  background-color: var(--settings-btn-bg);
+  color: var(--settings-btn-text);
+}
+
+.badgeDanger {
+  background-color: var(--settings-danger-badge-bg);
+}
+
+.enable2faButton {
+  background-color: var(--app-success);
+}
+
+.badgeSuccess {
+  background-color: var(--settings-success-badge-bg);
+}

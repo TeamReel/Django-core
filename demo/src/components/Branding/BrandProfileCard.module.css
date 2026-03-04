@@ -1,0 +1,46 @@
+/* BrandProfileCard – extracted inline styles */
+
+.iconMuted {
+  opacity: 0.6;
+}
+
+.tokenItem {
+  padding: 6px 10px;
+  background-color: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
+}
+
+.colorSwatch {
+  width: 16px;
+  height: 16px;
+  background-color: var(--swatch-color);
+  flex-shrink: 0;
+}
+
+.monoValue {
+  font-family: monospace;
+}
+
+.assetsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.assetCard {
+  background-color: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
+}
+
+.assetPreview {
+  aspect-ratio: 1;
+  background-color: var(--app-surface);
+}
+
+.assetImage {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.placeholderIcon {
+  opacity: 0.3;
+}

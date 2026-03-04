@@ -10,6 +10,7 @@ import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
 import { useNavRecents } from '../hooks/useNavItems';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useUserRole } from '../components/PermissionGuards';
+import styles from './DashboardPage.module.css';
 
 /** Content types available from the dashboard quick-create */
 const QUICK_CREATE_TYPES = [
@@ -66,17 +67,17 @@ export default function DashboardPage() {
         releaseText="Laat los om te vernieuwen"
         refreshingText="Vernieuwen..."
       >
-      <div key={refreshKey} className="bg-primary" style={{ minHeight: '100%' }}>
+      <div key={refreshKey} className={`bg-primary ${styles.pageRoot}`}>
         {lowBalanceAlert && (
-          <div className="flex-row flex-wrap gap-12 mb-24 p-16 bg-surface-2 text-primary rounded-4" style={{ border: '1px solid #ffc107' }}>
+          <div className={`flex-row flex-wrap gap-12 mb-24 p-16 bg-surface-2 text-primary rounded-4 ${styles.lowBalanceBanner}`}>
             <span className="fs-24">⚠️</span>
             <div className="flex-1">
               <strong>Low Credits Warning</strong>
-              <p className="fs-14" style={{ margin: '4px 0 0 0' }}>
+              <p className={`fs-14 ${styles.lowBalanceText}`}>
                 Your credit balance is low ({balance} remaining). The threshold is {threshold}. Consider upgrading or top up.
               </p>
             </div>
-            <button className="fs-14 fw-500 rounded-4 border-none cursor-pointer" style={{ padding: '8px 16px', backgroundColor: '#ffc107', color: '#000' }}>
+            <button className={`fs-14 fw-500 rounded-4 border-none cursor-pointer ${styles.upgradeButton}`}>
               Upgrade Plan
             </button>
           </div>
@@ -92,8 +93,7 @@ export default function DashboardPage() {
             </div>
             <Link
               to="/recents"
-              className="fw-600 fs-13 bg-surface-2 text-primary border rounded-6 text-decoration-none"
-              style={{ padding: '8px 12px' }}
+              className={`fw-600 fs-13 bg-surface-2 text-primary border rounded-6 text-decoration-none ${styles.viewAllLink}`}
             >
               View all
             </Link>
@@ -109,8 +109,7 @@ export default function DashboardPage() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="fw-600 fs-13 bg-surface-2 text-primary border rounded-full truncate text-decoration-none"
-                  style={{ padding: '8px 10px', maxWidth: 260 }}
+                  className={`fw-600 fs-13 bg-surface-2 text-primary border rounded-full truncate text-decoration-none ${styles.recentPill}`}
                   title={item.label}
                 >
                   {item.label}
@@ -121,7 +120,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Activity Feed and Welcome row */}
-        <div className="dashboard-grid grid gap-24 mb-32" style={{ gridTemplateColumns: '1fr' }}>
+        <div className={`dashboard-grid grid gap-24 mb-32 ${styles.dashboardGrid}`}>
           {/* Main Welcome Card */}
           <div className="dashboard-main">
             <div className="p-24 bg-surface rounded-8 border text-primary">
@@ -156,22 +155,13 @@ export default function DashboardPage() {
                    <div className="flex-row flex-wrap gap-8 mt-16">
                      <Link
                        to={`/organisations/${context.organisation.slug}/projects`}
-                       className="fw-500 fs-14 text-white text-decoration-none rounded-4"
-                       style={{
-                         padding: '10px 16px',
-                         backgroundColor: 'var(--app-primary)',
-                         flex: '1 1 auto'
-                       }}
+                       className={`fw-500 fs-14 text-white text-decoration-none rounded-4 ${styles.projectsLink}`}
                      >
                        Projects
                      </Link>
                      <Link
                        to={`/organisations/${context.organisation.slug}`}
-                       className="fw-500 fs-14 text-primary bg-surface-2 border text-decoration-none rounded-4"
-                       style={{
-                         padding: '10px 16px',
-                         flex: '1 1 auto'
-                       }}
+                       className={`fw-500 fs-14 text-primary bg-surface-2 border text-decoration-none rounded-4 ${styles.teamLink}`}
                      >
                        Team
                      </Link>
@@ -202,16 +192,15 @@ export default function DashboardPage() {
                     )}
                   </div>
                   {matchId ? (
-                    <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
+                    <div className={`grid gap-8 ${styles.quickCreateGrid}`}>
                       {QUICK_CREATE_TYPES.map((ct) => (
                         <button
                           key={ct.key}
                           onClick={() => navigate(`/matches/${matchId}?tab=content`)}
-                          className="flex-col flex-center gap-4 fs-12 fw-500 text-primary bg-surface-2 border rounded-8 cursor-pointer"
-                          style={{ padding: '12px 8px', minHeight: 64 }}
+                          className={`flex-col flex-center gap-4 fs-12 fw-500 text-primary bg-surface-2 border rounded-8 cursor-pointer ${styles.quickCreateButton}`}
                         >
                           <span className="fs-24">{ct.icon}</span>
-                          <span className="text-center" style={{ lineHeight: 1.2 }}>{ct.label}</span>
+                          <span className={`text-center ${styles.quickCreateLabel}`}>{ct.label}</span>
                         </button>
                       ))}
                     </div>

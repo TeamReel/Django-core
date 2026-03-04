@@ -1,0 +1,53 @@
+.kitHeader {
+  margin-bottom: 12px;
+}
+
+.kitIconFallback {
+  font-size: 20px;
+}
+
+.mlAuto {
+  margin-left: auto;
+}
+
+.fullbodyRequired {
+  font-size: 10px;
+  opacity: 0.5;
+  margin-left: auto;
+}
+
+.variantCardBorder[data-border="ready"] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.variantCardBorder[data-border="has-url"] {
+  --color-amber: #f59e0b;
+  border: 2px solid var(--color-amber);
+}
+
+.variantCardBorder[data-border="empty"] {
+  border: 1px solid var(--app-border);
+}
+
+.previewBg[data-has-url="true"] {
+  background: var(--preview-url) center/cover no-repeat,
+    repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px;
+  cursor: zoom-in;
+}
+
+.previewBg[data-has-url="false"] {
+  cursor: default;
+}
+
+.notGeneratedOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.alertWrapper {
+  margin-top: 16px;
+}

@@ -11,7 +11,8 @@
  * History is the list of older MediaItems for the same subtype.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import styles from './MediaAssetCard.module.css';
 import { getAssetUrl } from '../hooks/useBrandProfile';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { getStateDisplay } from '../hooks/useWorkflows';
@@ -100,56 +101,29 @@ export function MediaAssetCard({
 
   // Determine status badge
   let badgeText = '';
-  let badgeColor = 'var(--app-muted-text)';
   if (isGenerating) {
     badgeText = '⏳ Bezig';
-    badgeColor = 'var(--color-amber-400)';
   } else if (isFailed) {
     badgeText = '✕ Mislukt';
-    badgeColor = 'var(--color-red-500)';
   } else if (mediaItem) {
     badgeText = '✓ Opgeslagen';
-    badgeColor = 'var(--color-green-400)';
   }
 
-  // Border color based on status
-  let borderColor = 'var(--vscode-widget-border, #333)';
-  if (isGenerating) borderColor = 'var(--color-amber-400)';
-  else if (isFailed) borderColor = 'var(--color-red-500)';
-  else if (mediaItem) borderColor = '#22c55e';
+  // Status key for data-attribute driven styles
+  const statusKey = isGenerating ? 'generating' : isFailed ? 'failed' : mediaItem ? 'saved' : undefined;
 
   return (
     <>
       <div
-        className="rounded-8 overflow-hidden"
-        style={{
-          border: `1px solid ${borderColor}`,
-          background: 'var(--vscode-editor-background, #1e1e1e)',
-          transition: 'all var(--duration-normal) var(--ease-default)',
-          cursor: mediaItem && onPreview ? 'pointer' : 'default',
-        }}
-        onMouseEnter={(e) => {
-          if (mediaItem) {
-            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.boxShadow = 'none';
-          e.currentTarget.style.transform = 'none';
-        }}
+        className={`rounded-8 overflow-hidden ${styles.card}`}
+        data-status={statusKey}
+        data-clickable={mediaItem && onPreview ? '' : undefined}
       >
         {/* Preview area */}
         <div
           onClick={() => mediaItem && onPreview?.(mediaItem)}
-          className="relative flex-center"
-          style={{
-            aspectRatio,
-            background: url
-              ? '#000'
-              : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-            minHeight: 100,
-          }}
+          className={`relative flex-center ${styles.previewArea} ${url ? styles.previewBgMedia : styles.previewBgEmpty}`}
+          style={{ aspectRatio }}
         >
           {url && isVideo ? (
             <video
@@ -173,12 +147,7 @@ export function MediaAssetCard({
           {/* Play overlay for video */}
           {url && isVideo && (
             <div
-              className="absolute flex-center pointer-events-none inset-0"
-              style={{
-                color: 'rgba(255,255,255,0.9)',
-                fontSize: 28,
-                textShadow: '0 2px 12px rgba(0,0,0,0.7)',
-              }}
+              className={`absolute flex-center pointer-events-none inset-0 ${styles.playOverlay}`}
             >
               ▶
             </div>
@@ -194,7 +163,7 @@ export function MediaAssetCard({
 
           {/* Generating state */}
           {isGenerating && !url && (
-            <div className="text-center fs-12" style={{ color: 'var(--color-amber-400)' }}>
+            <div className={`text-center fs-12 ${styles.generatingState}`}>
               <div className="mb-4 fs-24">⏳</div>
               <div>Bezig met genereren...</div>
             </div>
@@ -203,14 +172,8 @@ export function MediaAssetCard({
           {/* Status badge */}
           {badgeText && (
             <span
-              className="absolute fw-600 rounded-4 text-white"
-              style={{
-                top: 6,
-                right: 6,
-                background: badgeColor,
-                fontSize: 10,
-                padding: '2px 6px',
-              }}
+              className={`absolute fw-600 rounded-4 text-white ${styles.statusBadge}`}
+              data-status={statusKey}
             >
               {badgeText}
             </span>
@@ -221,15 +184,9 @@ export function MediaAssetCard({
             const ws = getStateDisplay(workflowStatus);
             return (
               <span
-                className="absolute fw-600 rounded-4 text-white"
-                style={{
-                  top: badgeText ? 28 : 6,
-                  right: 6,
-                  background: ws.bgColor,
-                  color: ws.color,
-                  fontSize: 10,
-                  padding: '2px 6px',
-                }}
+                className={`absolute fw-600 rounded-4 text-white ${styles.workflowBadge}`}
+                data-offset={badgeText ? 'true' : undefined}
+                style={{ background: ws.bgColor, color: ws.color }}
               >
                 {ws.icon} {ws.label}
               </span>
@@ -240,13 +197,7 @@ export function MediaAssetCard({
           {mediaItem && historyItems.length > 0 && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowHistory(true); }}
-              className="absolute border-none rounded-4 fs-12 cursor-pointer text-white"
-              style={{
-                top: 6,
-                left: 6,
-                background: 'rgba(0,0,0,0.6)',
-                padding: '2px 6px',
-              }}
+              className={`absolute border-none rounded-4 fs-12 cursor-pointer text-white ${styles.historyButton}`}
               title={`${historyItems.length} eerdere versie(s)`}
             >
               ⏱️ {historyItems.length}
@@ -255,27 +206,22 @@ export function MediaAssetCard({
         </div>
 
         {/* Info + actions */}
-        <div style={{ padding: '8px 10px' }}>
+        <div className={styles.infoSection}>
           <div className="fs-12 fw-600 mb-4">{label}</div>
 
           {/* Error message */}
           {isFailed && errorMessage && (
-            <div className="mb-4 text-error" style={{ fontSize: 10, lineHeight: 1.3 }}>
+            <div className={`mb-4 text-error ${styles.errorMessage}`}>
               {errorMessage}
             </div>
           )}
 
           {/* Action buttons */}
-          <div className="grid gap-4" style={{ gridTemplateColumns: mediaItem ? '1fr 1fr' : '1fr' }}>
+          <div className={`grid gap-4 ${mediaItem ? styles.actionGridDual : styles.actionGrid}`}>
             {onReplace && (
               <button
                 onClick={(e) => { e.stopPropagation(); onReplace(subtype); }}
-                className="w-full fs-11 cursor-pointer border-none rounded-4"
-                style={{
-                  padding: '4px 8px',
-                  background: 'var(--vscode-button-background, #0078d4)',
-                  color: 'var(--vscode-button-foreground, #fff)',
-                }}
+                className={`w-full fs-11 cursor-pointer border-none rounded-4 ${styles.replaceButton}`}
               >
                 {mediaItem ? 'Vervang' : 'Genereer'}
               </button>
@@ -283,11 +229,7 @@ export function MediaAssetCard({
             {mediaItem && onReplace && (
               <button
                 onClick={(e) => { e.stopPropagation(); onReplace(subtype); }}
-                className="w-full fs-11 cursor-pointer border-none rounded-4 text-white"
-                style={{
-                  padding: '4px 8px',
-                  background: '#8b5cf6',
-                }}
+                className={`w-full fs-11 cursor-pointer border-none rounded-4 text-white ${styles.improveButton}`}
               >
                 Verbeter
               </button>
@@ -303,11 +245,7 @@ export function MediaAssetCard({
                   onDelete(mediaItem);
                 }
               }}
-              className="w-full fs-11 cursor-pointer rounded-4 mt-4 bg-transparent text-error"
-              style={{
-                padding: '4px 8px',
-                border: '1px solid #ef4444',
-              }}
+              className={`w-full fs-11 cursor-pointer rounded-4 mt-4 bg-transparent text-error ${styles.deleteButton}`}
             >
               Verwijderen
             </button>
@@ -315,7 +253,7 @@ export function MediaAssetCard({
 
           {/* Updated date */}
           {mediaItem && (
-            <div className="mt-4 text-muted" style={{ fontSize: 10 }}>
+            <div className={`mt-4 text-muted ${styles.updatedDate}`}>
               {new Date(mediaItem.updated_at).toLocaleDateString('nl-NL')}
             </div>
           )}
@@ -325,26 +263,18 @@ export function MediaAssetCard({
       {/* History Modal */}
       {showHistory && (
         <div
-          className="modal-backdrop"
-          style={{ background: 'rgba(0,0,0,0.6)', zIndex: 1100 }}
+          className={`modal-backdrop ${styles.modalBackdrop}`}
           onClick={() => setShowHistory(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="rounded-8 p-20 overflow-auto"
-            style={{
-              background: '#1e1e1e',
-              border: '1px solid #333',
-              width: 500,
-              maxHeight: '80vh',
-            }}
+            className={`rounded-8 p-20 overflow-auto ${styles.modalContent}`}
           >
             <div className="flex-between mb-16">
               <h3 className="m-0 fs-16">Versiegeschiedenis — {label}</h3>
               <button
                 onClick={() => setShowHistory(false)}
-                className="border-none cursor-pointer fs-16 bg-transparent"
-                style={{ color: '#ccc' }}
+                className={`border-none cursor-pointer fs-16 bg-transparent ${styles.modalCloseButton}`}
               >
                 ✕
               </button>
@@ -365,19 +295,10 @@ export function MediaAssetCard({
                   return (
                     <div
                       key={item.id}
-                      className="flex-row gap-12 p-10 rounded-6"
-                      style={{
-                        background: '#252526',
-                      }}
+                      className={`flex-row gap-12 p-10 rounded-6 ${styles.historyRow}`}
                     >
                       <div
-                        className="rounded-4 overflow-hidden relative"
-                        style={{
-                          width: 80,
-                          height: 50,
-                          flexShrink: 0,
-                          background: '#000',
-                        }}
+                        className={`rounded-4 overflow-hidden relative ${styles.historyThumbnail}`}
                       >
                         {histUrl && histIsVideo ? (
                           <video
@@ -397,7 +318,7 @@ export function MediaAssetCard({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="flex-center h-full text-muted" style={{ fontSize: 10 }}>
+                          <div className={`flex-center h-full text-muted ${styles.historyEmptyThumb}`}>
                             —
                           </div>
                         )}
@@ -418,11 +339,7 @@ export function MediaAssetCard({
                               setShowHistory(false);
                             }
                           }}
-                          className="border-none rounded-4 fs-12 cursor-pointer text-white"
-                          style={{
-                            padding: '6px 12px',
-                            background: '#094771',
-                          }}
+                          className={`border-none rounded-4 fs-12 cursor-pointer text-white ${styles.restoreButton}`}
                         >
                           Herstellen
                         </button>
@@ -446,8 +363,7 @@ export function MediaAssetCard({
 export function MediaAssetGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="media-asset-grid grid gap-12"
-      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}
+      className={`media-asset-grid grid gap-12 ${styles.assetGrid}`}
     >
       {children}
     </div>

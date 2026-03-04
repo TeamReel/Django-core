@@ -9,6 +9,7 @@ import {
   type PermissionMatrixRow,
 } from './permissionsData';
 import { PermissionsHierarchyTab } from './PermissionsHierarchyTab';
+import styles from './PermissionsPage.module.css';
 
 /**
  * T010 - Permissions Dashboard
@@ -112,17 +113,10 @@ export const PermissionsPage: React.FC = () => {
           )}
 
           {/* Tabs */}
-          <div className="gap-6 flex-wrap" style={{ display: 'flex', borderBottom: '1px solid var(--app-border)', marginBottom: '20px' }} aria-label="Tabs">
+          <div className={`gap-6 flex-wrap ${styles.tabBar}`} aria-label="Tabs">
             {(['hierarchy', 'permissions'] as const).map(tab => (
               <button key={tab} type="button" onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '10px 14px', borderRadius: '6px 6px 0 0',
-                  border: '1px solid var(--app-border)',
-                  borderBottom: activeTab === tab ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
-                  backgroundColor: activeTab === tab ? 'var(--app-surface)' : 'var(--app-surface-2)',
-                  color: 'var(--app-text)', cursor: 'pointer', fontSize: '13px',
-                  fontWeight: activeTab === tab ? 600 : 500,
-                }}>
+                className={styles.tabButton} data-active={activeTab === tab}>
                 {tab === 'hierarchy' ? 'Role Hierarchy' : 'Permissions'}
               </button>
             ))}
@@ -132,27 +126,25 @@ export const PermissionsPage: React.FC = () => {
 
           {activeTab === 'permissions' && (
             <>
-              <Card className="mb-6" style={{ overflow: 'visible' }}>
+              <Card className={`mb-6 ${styles.cardOverflowVisible}`}>
                 <div className="mb-4">
                   <h3 className="text-lg font-semibold">Permissions (Feature Comparison)</h3>
                   <p className="text-sm text-gray-600">Features are grouped by category. Columns show which role can perform an action.</p>
                 </div>
 
-                <div className="overflow-auto"
-                  style={{ border: '1px solid var(--app-border)', borderRadius: '10px', maxHeight: 'calc(100vh - 320px)', backgroundColor: 'var(--app-surface)' }}>
+                <div className={`overflow-auto ${styles.tableWrapper}`}>
                   <Table className="detail-table" responsive={false}>
                     <colgroup>
-                      <col style={{ width: '360px' }} />
-                      {roleColumns.map(col => <col key={String(col.key)} style={{ width: '100px' }} />)}
+                      <col className={styles.colFeature} />
+                      {roleColumns.map(col => <col key={String(col.key)} className={styles.colRole} />)}
                     </colgroup>
                     <thead>
                       <tr>
-                        <th className="sticky detail-th" style={{ top: 0, left: 0, zIndex: 4, minWidth: 320, backgroundColor: 'var(--app-table-header-bg)' }}>
+                        <th className={`sticky detail-th ${styles.thFeature}`}>
                           Feature
                         </th>
                         {roleColumns.map(col => (
-                          <th key={String(col.key)} className="sticky text-center whitespace-nowrap detail-th"
-                            style={{ top: 0, zIndex: 3, fontSize: '0.75rem', backgroundColor: 'var(--app-table-header-bg)' }}>
+                          <th key={String(col.key)} className={`sticky text-center whitespace-nowrap detail-th ${styles.thRole}`}>
                             {col.label}
                           </th>
                         ))}
@@ -163,14 +155,13 @@ export const PermissionsPage: React.FC = () => {
                         const rows: React.ReactNode[] = [];
                         rows.push(
                           <tr key={`cat-${category.category}`}>
-                            <td colSpan={1 + roleColumns.length} className="detail-td" style={{ paddingTop: '14px' }}>
-                              <div className="flex-row gap-12 rounded-8"
-                                style={{ padding: '8px 10px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)' }}>
-                                <span className="fw-800 whitespace-nowrap" style={{ fontSize: '0.78rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                            <td colSpan={1 + roleColumns.length} className={`detail-td ${styles.categoryTd}`}>
+                              <div className={`flex-row gap-12 rounded-8 ${styles.categoryBar}`}>
+                                <span className={`fw-800 whitespace-nowrap ${styles.categoryLabel}`}>
                                   {category.category}
                                 </span>
-                                <span className="flex-1" style={{ height: 1, backgroundColor: 'var(--app-border)', opacity: 0.9 }} />
-                                <span className="whitespace-nowrap" style={{ fontSize: '0.75rem', opacity: 0.75 }}>{category.permissions.length} features</span>
+                                <span className={`flex-1 ${styles.categoryDivider}`} />
+                                <span className={`whitespace-nowrap ${styles.categoryCount}`}>{category.permissions.length} features</span>
                               </div>
                             </td>
                           </tr>,
@@ -180,15 +171,14 @@ export const PermissionsPage: React.FC = () => {
                           const desc = permissionDescriptionFor(row.permission);
                           rows.push(
                             <tr key={row.permission} data-testid={`permission-row-${row.permission}`}>
-                              <td className="sticky break-word detail-td"
-                                style={{ verticalAlign: 'top', left: 0, zIndex: 1, borderRight: '1px solid var(--app-border)', whiteSpace: 'normal', backgroundColor: 'var(--app-table-row-bg)' }}>
+                              <td className={`sticky break-word detail-td ${styles.permissionNameTd}`}>
                                 <div className="fw-600">{label}</div>
-                                {desc && <div style={{ fontSize: '0.78rem', opacity: 0.75, marginTop: 2 }}>{desc}</div>}
-                                <div className="mt-4" style={{ fontSize: '0.72rem', opacity: 0.55, fontFamily: 'monospace' }}>{row.permission}</div>
+                                {desc && <div className={styles.permissionDesc}>{desc}</div>}
+                                <div className={`mt-4 ${styles.permissionKey}`}>{row.permission}</div>
                               </td>
                               {roleColumns.map(col => (
-                                <td key={String(col.key)} className="text-center detail-td"
-                                  style={{ fontWeight: row[col.key] ? 700 : 400, color: row[col.key] ? 'var(--app-text)' : 'var(--app-muted-text)' }}>
+                                <td key={String(col.key)} className={`text-center detail-td ${styles.roleCell}`}
+                                  data-granted={!!row[col.key]}>
                                   {row[col.key] ? '✓' : '—'}
                                 </td>
                               ))}

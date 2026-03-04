@@ -6,10 +6,10 @@ import {
   useTeamCreditsData,
   formatCredits,
   formatDateTime,
-  amountColor,
   sourceTypeLabel,
   type TeamCreditsTabProps,
 } from './useTeamCreditsData';
+import styles from './TeamCreditsTab.module.css';
 
 export default function TeamCreditsTab(props: TeamCreditsTabProps) {
   const {
@@ -76,26 +76,16 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                 />
               </div>
 
-              <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+              <div className={`grid gap-12 ${styles.balanceGrid}`}>
                 <Card
-                  className="p-24 text-center"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
-                  }}
+                  className={`p-24 text-center ${styles.balanceCard}`}
                 >
                   <div className="fs-12 opacity-60 uppercase tracking-wide">
                     Your Credits Balance
                   </div>
                   <div
-                    className="fw-800"
-                    style={{
-                      fontSize: '48px',
-                      margin: '8px 0',
-                      color:
-                        numericUserBalance !== null && numericUserBalance < 500
-                          ? 'var(--app-warning)'
-                          : 'var(--app-success)',
-                    }}
+                    className={`fw-800 ${styles.balanceAmount}`}
+                    data-status={numericUserBalance !== null && numericUserBalance < 500 ? 'warning' : 'success'}
                   >
                     {formatCredits(userBalance?.current_balance)}
                   </div>
@@ -104,21 +94,14 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                 </Card>
 
                 <Card
-                  className="p-24 text-center"
-                  style={{
-                    background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
-                  }}
+                  className={`p-24 text-center ${styles.balanceCard}`}
                 >
                   <div className="fs-12 opacity-60 uppercase tracking-wide">
                     {(walletLabel || 'Team')} Credits Balance
                   </div>
                   <div
-                    className="fw-800"
-                    style={{
-                      fontSize: '48px',
-                      margin: '8px 0',
-                      color: numericBalance !== null && numericBalance < 500 ? 'var(--app-warning)' : 'var(--app-success)',
-                    }}
+                    className={`fw-800 ${styles.balanceAmount}`}
+                    data-status={numericBalance !== null && numericBalance < 500 ? 'warning' : 'success'}
                   >
                     {formatCredits(balance?.current_balance)}
                   </div>
@@ -153,21 +136,15 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
 
                           return (
                             <div key={txn.id} className="flex-row gap-12">
-                              <div className="fs-12 opacity-70 text-right" style={{ minWidth: '120px' }}>
+                              <div className={`fs-12 opacity-70 text-right ${styles.dateColumn}`}>
                                 {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                               </div>
 
-                              <div className="flex-row flex-1 relative" style={{ height: '32px' }}>
+                              <div className={`flex-row flex-1 relative ${styles.barContainer}`}>
                                 <div
-                                  className="rounded-4 transition flex-row px-8"
-                                  style={{
-                                    width: `${barWidth}%`,
-                                    height: '24px',
-                                    backgroundColor: isPositive ? 'var(--app-success)' : 'var(--app-error)',
-                                    opacity: 0.8,
-                                    alignItems: 'center',
-                                    minWidth: '60px',
-                                  }}
+                                  className={`rounded-4 transition flex-row px-8 ${styles.bar}`}
+                                  data-positive={isPositive}
+                                  style={{ width: `${barWidth}%` }}
                                 >
                                   <span
                                     className="fs-12 fw-700 whitespace-nowrap text-white"
@@ -179,8 +156,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                               </div>
 
                               <div
-                                className="fs-12 opacity-60 truncate"
-                                style={{ minWidth: '150px' }}
+                                className={`fs-12 opacity-60 truncate ${styles.notesColumn}`}
                               >
                                 {txn.notes || sourceTypeLabel(txn.source_type)}
                               </div>
@@ -226,11 +202,8 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                               </div>
                             </div>
                             <div
-                              className="fs-20 fw-700 text-right"
-                              style={{
-                                color: isPositive ? 'var(--app-success)' : 'var(--app-error)',
-                                minWidth: '100px',
-                              }}
+                              className={`fs-20 fw-700 text-right ${styles.activityAmount}`}
+                              data-positive={isPositive}
                             >
                               {isPositive ? '+' : ''}
                               {Number.isFinite(amount) ? amount.toLocaleString() : String(txn.amount)}
@@ -271,31 +244,25 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
           ) : (
             <>
               <div
-                className="grid gap-12 mb-16"
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                }}
+                className={`grid gap-12 mb-16 ${styles.summaryGrid}`}
               >
                 <Card className="p-16 text-center">
                   <div className="fs-12 opacity-60 uppercase">➕ Total Added</div>
-                  <div className="fw-800 text-success" style={{ fontSize: '26px' }}>
+                  <div className={`fw-800 text-success ${styles.summaryValue}`}>
                     +{formatCredits(totals.added)}
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
                   <div className="fs-12 opacity-60 uppercase">➖ Total Used</div>
-                  <div className="fw-800 text-error" style={{ fontSize: '26px' }}>
+                  <div className={`fw-800 text-error ${styles.summaryValue}`}>
                     {formatCredits(totals.used)}
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
                   <div className="fs-12 opacity-60 uppercase">📊 Net</div>
                   <div
-                    className="fw-800"
-                    style={{
-                      fontSize: '26px',
-                      color: totals.net >= 0 ? 'var(--app-success)' : 'var(--app-error)',
-                    }}
+                    className={`fw-800 ${styles.netValue}`}
+                    data-positive={totals.net >= 0}
                   >
                     {totals.net >= 0 ? '+' : ''}
                     {formatCredits(totals.net)}
@@ -334,15 +301,15 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                             <td className="detail-td-text">
                               <Badge variant="default">{sourceTypeLabel(t.source_type)}</Badge>
                             </td>
-                            <td className="detail-td fw-700" style={{ color: amountColor(amountNum) }}>
+                            <td className={`detail-td fw-700 ${styles.amountCell}`} data-sign={amountNum > 0 ? 'positive' : amountNum < 0 ? 'negative' : 'zero'}>
                               {showPlus ? '+' : ''}
                               {formatCredits(t.amount)}
                             </td>
                             <td className="detail-td-text">
-                              <span style={{ opacity: t.notes ? 1 : 0.5 }}>{t.notes || '—'}</span>
+                              <span className={styles.dimPlaceholder} data-empty={!t.notes}>{t.notes || '—'}</span>
                             </td>
                             <td className="detail-td-text">
-                              <span style={{ opacity: t.created_by_email ? 1 : 0.5 }}>{t.created_by_email || '—'}</span>
+                              <span className={styles.dimPlaceholder} data-empty={!t.created_by_email}>{t.created_by_email || '—'}</span>
                             </td>
                           </tr>
                         );

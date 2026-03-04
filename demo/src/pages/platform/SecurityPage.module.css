@@ -1,0 +1,54 @@
+/* SecurityPage — extracted from inline styles */
+
+.filterButton {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.filterButton[data-active="true"] {
+  border-color: var(--app-primary);
+  background-color: var(--app-surface-active);
+  color: var(--app-primary);
+}
+
+.filterButton[data-active="false"] {
+  border-color: var(--app-border);
+  background-color: var(--app-surface);
+  color: var(--app-text);
+}
+
+.orgSelect {
+  --org-select-border: #ccc;
+  border: 1px solid var(--org-select-border);
+}
+
+.summaryGrid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.statValue {
+  font-size: 30px;
+}
+
+.unresolvedValue {
+  font-size: 30px;
+  color: var(--color-warning);
+}
+
+.asvsGrid {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.asvsLevelValue {
+  color: var(--app-primary);
+}
+
+.filterLabel {
+  min-width: 60px;
+}

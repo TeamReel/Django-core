@@ -1,0 +1,189 @@
+/* ═══════════════════════════════════════════════════════════════
+   NavbarModals – extracted inline styles
+   ═══════════════════════════════════════════════════════════════ */
+
+/* === Photo Composite Follow-Up === */
+
+.followUpFooter[data-submitted="true"] {
+  justify-content: center;
+}
+
+.followUpSkipBtn {
+  cursor: pointer;
+  opacity: 1;
+}
+.followUpSkipBtn[data-submitting="true"] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.followUpSubmitBtn {
+  cursor: pointer;
+  opacity: 1;
+}
+.followUpSubmitBtn[data-submitting="true"] {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+/* === Quick Review – Tab buttons === */
+
+.tabBtnReview {
+  background: var(--app-border, #334155);
+}
+.tabBtnReview[data-active="true"] {
+  background: var(--color-blue-600, #2563eb);
+}
+
+.tabBtnProgress {
+  background: var(--app-border, #334155);
+}
+.tabBtnProgress[data-active="true"] {
+  background: var(--color-amber-400, #fbbf24);
+}
+
+.tabBtnInactive {
+  background: var(--app-border, #334155);
+}
+
+.tabBtnAmberActive {
+  background: var(--color-amber-400, #fbbf24);
+}
+
+.tabBtnPrimaryActive {
+  background-color: var(--app-primary, #3b82f6);
+  color: var(--color-white, #fff);
+}
+
+.tabBtnSurfaceInactive {
+  background-color: var(--app-surface-elevated, #334155);
+  color: var(--app-text-secondary, #9ca3af);
+}
+
+/* === In-Progress Panel === */
+
+.inProgressPanel {
+  max-width: 560px;
+  max-height: 80vh;
+}
+
+/* === Job rows === */
+
+.jobRow {
+  background: var(--app-background, #0f172a);
+}
+
+.jobIconStatus {
+  background-color: var(--app-muted-text);
+}
+.jobIconStatus[data-processing="true"] {
+  background-color: var(--color-amber-400, #fbbf24);
+}
+
+/* === Review Panel === */
+
+.reviewPanel {
+  max-width: 640px;
+  max-height: 92vh;
+}
+.reviewPanel[data-multi="true"] {
+  max-width: 900px;
+}
+
+/* === Nav arrows === */
+
+.navArrowBtn {
+  cursor: pointer;
+  opacity: 1;
+}
+.navArrowBtn[data-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* === Variants grid === */
+
+.variantsGrid {
+  justify-items: center;
+}
+
+/* === Variant card === */
+
+.variantCardItem {
+  border: 1px solid var(--app-border, #334155);
+  max-width: 100%;
+  cursor: pointer;
+  opacity: 1;
+}
+.variantCardItem[data-selected="true"] {
+  border: 3px solid var(--color-success, #16a34a);
+}
+.variantCardItem[data-single="true"] {
+  max-width: 420px;
+  cursor: default;
+}
+.variantCardItem[data-dimmed="true"] {
+  opacity: 0.5;
+}
+
+/* === Variant checkmark === */
+
+.variantCheckmarkDot {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.variantCheckmarkDot[data-selected="true"] {
+  background-color: var(--color-success, #16a34a);
+}
+
+/* === Action buttons === */
+
+.rejectBtnAction {
+  cursor: pointer;
+  opacity: 1;
+}
+.rejectBtnAction[data-busy="true"] {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.approveBtnAction {
+  cursor: pointer;
+  opacity: 1;
+}
+.approveBtnAction[data-busy="true"] {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+/* === Notifications Panel === */
+
+.notificationsPanel {
+  max-width: 480px;
+  max-height: 70vh;
+}
+
+/* === Notification item === */
+
+.notifItem {
+  background-color: var(--color-primary-15, rgba(59, 130, 246, 0.15));
+  border: 1px solid var(--color-primary-30, rgba(59, 130, 246, 0.3));
+}
+.notifItem[data-read="true"] {
+  background-color: var(--app-surface-elevated, #334155);
+  border: 1px solid var(--app-border, #475569);
+}
+
+/* === Notification message === */
+
+.notifMessageText {
+  font-weight: 600;
+}
+.notifMessageText[data-read="true"] {
+  font-weight: 400;
+}
+
+/* === Credits Panel === */
+
+.creditsPanel {
+  max-width: 400px;
+}

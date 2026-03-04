@@ -1,0 +1,54 @@
+.pageHeader {
+  margin-bottom: 16px;
+}
+
+.pageTitle {
+  margin: 0;
+  color: var(--title-color);
+}
+
+.pageSubtitle {
+  margin: 4px 0;
+  color: var(--subtitle-color);
+}
+
+.pageContent {
+  display: grid;
+  gap: 16px;
+}
+
+.tableWrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.headerRow {
+  border-bottom: 1px solid var(--row-border, #eee);
+}
+
+.dataRow {
+  border-bottom: 1px solid var(--row-border, #eee);
+}
+
+.tableHeaderCell {
+  padding: 12px;
+  cursor: default;
+}
+
+.tableHeaderCell[data-sortable="true"] {
+  cursor: pointer;
+}
+
+.tableCell {
+  padding: 12px;
+}

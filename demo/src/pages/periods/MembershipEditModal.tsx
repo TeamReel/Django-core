@@ -2,6 +2,7 @@
  * MembershipEditModal — edit access role + functional roles for a team membership.
  */
 import React, { useEffect, useState } from 'react';
+import styles from './MembershipEditModal.module.css';
 
 const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'coach', label: 'Coach' },
@@ -51,60 +52,34 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+      className={styles.overlay}
       onClick={onClose}
     >
       <div
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '20px',
-          borderRadius: '8px',
-          width: '520px',
-          maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
-        }}
+        className={styles.modal}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-between gap-12">
           <h2 className="m-0 fs-16 fw-700">Edit member</h2>
           <button
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--app-text)' }}
+            className={styles.closeButton}
             aria-label="Close"
           >
             ×
           </button>
         </div>
 
-        <div className="text-muted fs-13" style={{ marginTop: '10px' }}>{displayName}</div>
+        <div className={`text-muted fs-13 ${styles.displayName}`}>{displayName}</div>
 
         <div className="flex-col gap-10 mt-16">
           <div className="flex-col gap-6">
-            <label style={{ fontWeight: 600 }} htmlFor="membership-role">Access role</label>
+            <label className={styles.roleLabel} htmlFor="membership-role">Access role</label>
             <select
               id="membership-role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.roleSelect}
             >
               <option value="viewer">viewer</option>
               <option value="editor">editor</option>
@@ -115,8 +90,7 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
           <div className="flex-col gap-6">
             <div className="fw-600">Functional roles</div>
             <div
-              className="grid p-10 rounded-6 border bg-surface-2"
-              style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px 12px' }}
+              className={`grid p-10 rounded-6 border bg-surface-2 ${styles.functionalRolesGrid}`}
             >
               {FUNCTIONAL_ROLE_OPTIONS.map((opt) => {
                 const checked = functionalRoles.includes(opt.value);
@@ -145,20 +119,14 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
             </div>
           </div>
 
-          {error && <div style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className={styles.errorText}>{error}</div>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+          <div className={styles.footerActions}>
             <button
               onClick={onClose}
               disabled={saving}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: saving ? 'not-allowed' : 'pointer',
-              }}
+              className={styles.cancelButton}
+              data-saving={saving ? 'true' : undefined}
             >
               Cancel
             </button>
@@ -176,14 +144,8 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
                 }
               }}
               disabled={saving}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-primary, #1976d2)',
-                color: '#fff',
-                cursor: saving ? 'not-allowed' : 'pointer',
-              }}
+              className={styles.saveButton}
+              data-saving={saving ? 'true' : undefined}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

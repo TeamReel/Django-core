@@ -1,0 +1,57 @@
+/* OrganisationsPage — extracted inline styles */
+
+.headerActions {
+  gap: 10px;
+  align-items: center;
+}
+
+.statusSelect {
+  border: 1px solid var(--status-select-border, #ccc);
+}
+
+.colWide {
+  min-width: 150px;
+}
+
+.colNarrow {
+  min-width: 100px;
+}
+
+.orgNameLink {
+  color: var(--color-blue-600);
+  text-decoration: underline;
+  font-size: 0.85rem;
+}
+
+.orgNameLink:hover {
+  color: var(--org-link-hover, #1d4ed8);
+}
+
+.creditBalance {
+  font-size: 0.85rem;
+}
+
+.actionBtn {
+  padding: 6px 12px;
+}
+
+.viewBtn {
+  composes: actionBtn;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.editBtn {
+  composes: actionBtn;
+  border: 1px solid var(--app-warning);
+  background-color: var(--app-surface);
+  color: var(--app-warning);
+}
+
+.deleteBtn {
+  composes: actionBtn;
+  border: 1px solid var(--delete-border, #bd2130);
+  background-color: var(--app-surface);
+  color: var(--app-error);
+}

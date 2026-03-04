@@ -1,0 +1,36 @@
+.variantCardBorder[data-border="ready"] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.variantCardBorder[data-border="has-url"] {
+  --color-amber: #f59e0b;
+  border: 2px solid var(--color-amber);
+}
+
+.variantCardBorder[data-border="empty"] {
+  border: 1px solid var(--app-border);
+}
+
+.previewBgContain[data-has-url="true"] {
+  background: var(--preview-url) center/contain no-repeat,
+    repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px;
+  cursor: zoom-in;
+}
+
+.previewBgContain[data-has-url="false"] {
+  background: repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px;
+  cursor: default;
+}
+
+.closeupPreview {
+  aspect-ratio: 1 / 1;
+  min-height: 150px;
+}
+
+.inheritedSection {
+  margin-top: 32px;
+}
+
+.inheritedDescription {
+  color: var(--vscode-descriptionForeground);
+}

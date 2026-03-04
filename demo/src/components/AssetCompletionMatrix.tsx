@@ -16,6 +16,7 @@ import {
   KIT_ROLES,
   type BrandAsset,
 } from '../hooks/useBrandProfile';
+import styles from './AssetCompletionMatrix.module.css';
 
 // ============================================================================
 // Types
@@ -75,35 +76,6 @@ const PHASE_COLUMNS = [
   { key: 'upload' as const, label: 'Upload', color: 'var(--color-blue-500)' },
   { key: 'processed' as const, label: 'AI Bewerkt', color: 'var(--color-green-400)' },
 ];
-
-// ============================================================================
-// Styles
-// ============================================================================
-
-const thStyle: React.CSSProperties = {
-  padding: '8px 10px',
-  fontSize: 11,
-  fontWeight: 600,
-  textAlign: 'center',
-  borderBottom: '2px solid var(--app-border)',
-  whiteSpace: 'nowrap',
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: '6px 10px',
-  fontSize: 12,
-  borderBottom: '1px solid var(--app-border)',
-};
-
-const thumbnailStyle: React.CSSProperties = {
-  width: 32,
-  height: 32,
-  borderRadius: 4,
-  objectFit: 'contain',
-  background: 'var(--app-surface-secondary)',
-  border: '1px solid var(--app-border)',
-  verticalAlign: 'middle',
-};
 
 // ============================================================================
 // Component
@@ -180,20 +152,15 @@ export function AssetCompletionMatrix({
       </div>
 
       <div className="p-16 overflow-x-auto">
-        <table className="w-full fs-12" style={{ borderCollapse: 'collapse' }}>
+        <table className={`w-full fs-12 ${styles.table}`}>
           <thead>
             <tr>
-              <th style={{ ...thStyle, textAlign: 'left', minWidth: 160 }}>Content Type</th>
+              <th className={styles.thContentType}>Content Type</th>
               {PHASE_COLUMNS.map((col) => (
-                <th key={col.key} style={thStyle}>
+                <th key={col.key} className={styles.th}>
                   <span
-                    className="text-white fw-600 rounded-4"
-                    style={{
-                      display: 'inline-block',
-                      padding: '2px 8px',
-                      background: col.color,
-                      fontSize: 10,
-                    }}
+                    className={`text-white fw-600 rounded-4 ${styles.phaseBadge}`}
+                    style={{ '--phase-color': col.color } as React.CSSProperties}
                   >
                     {col.label}
                   </span>
@@ -208,36 +175,36 @@ export function AssetCompletionMatrix({
 
               return (
                 <tr key={row.label}>
-                  <td style={{ ...tdStyle, fontWeight: 500, whiteSpace: 'nowrap' }}>
-                    <span style={{ marginRight: 6 }}>{row.icon}</span>
+                  <td className={styles.tdLabel}>
+                    <span className={styles.rowIcon}>{row.icon}</span>
                     {row.label}
                   </td>
 
                   {/* Upload */}
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
+                  <td className={styles.tdCenter}>
                     {row.uploadType ? (
                       <div className="flex-center gap-6">
                         <span className="fs-14">{upload.exists ? '✅' : '⬜'}</span>
                         {upload.url && (
-                          <img src={upload.url} alt="" style={thumbnailStyle} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <img src={upload.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
                       </div>
                     ) : (
-                      <span style={{ opacity: 0.3 }}>—</span>
+                      <span className={styles.dimmed}>—</span>
                     )}
                   </td>
 
                   {/* AI Bewerkt */}
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
+                  <td className={styles.tdCenter}>
                     {row.processedType ? (
                       <div className="flex-center gap-6">
                         <span className="fs-14">{processed.exists ? '✅' : '⬜'}</span>
                         {processed.url && (
-                          <img src={processed.url} alt="" style={thumbnailStyle} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                          <img src={processed.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
                       </div>
                     ) : (
-                      <span style={{ opacity: 0.3 }}>—</span>
+                      <span className={styles.dimmed}>—</span>
                     )}
                   </td>
                 </tr>
@@ -247,18 +214,15 @@ export function AssetCompletionMatrix({
         </table>
 
         {/* Progress bar */}
-        <div className="mt-16 p-12 rounded-8" style={{ background: 'var(--app-muted)' }}>
-          <div className="fs-13 fw-600" style={{ marginBottom: 6 }}>
+        <div className={`mt-16 p-12 rounded-8 ${styles.progressWrapper}`}>
+          <div className={`fs-13 fw-600 ${styles.progressLabel}`}>
             Completion: {filledCells} / {totalCells} assets
           </div>
-          <div className="rounded-4 overflow-hidden" style={{ height: 8, background: '#e5e7eb' }}>
+          <div className={`rounded-4 overflow-hidden ${styles.progressTrack}`}>
             <div
-              className="transition"
-              style={{
-                height: '100%',
-                width: `${totalCells > 0 ? (filledCells / totalCells) * 100 : 0}%`,
-                background: filledCells === totalCells ? 'var(--color-green-400)' : 'var(--color-amber-400)',
-              }}
+              className={`transition ${styles.progressBar}`}
+              data-complete={filledCells === totalCells ? 'true' : 'false'}
+              style={{ width: `${totalCells > 0 ? (filledCells / totalCells) * 100 : 0}%` }}
             />
           </div>
         </div>
@@ -267,7 +231,7 @@ export function AssetCompletionMatrix({
         <div className="flex-row flex-wrap mt-12 gap-16 fs-11 opacity-70">
           {PHASE_COLUMNS.map((col) => (
             <div key={col.key} className="flex-row gap-4">
-              <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: 2, background: col.color }} />
+              <span className={styles.legendSwatch} style={{ '--phase-color': col.color } as React.CSSProperties} />
               <span>{col.label}</span>
             </div>
           ))}

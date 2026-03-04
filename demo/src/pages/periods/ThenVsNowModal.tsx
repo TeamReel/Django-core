@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import s from './ProjectSeasonDetailPage.module.css';
+import styles from './ThenVsNowModal.module.css';
 import { getCsrfToken } from '../../utils/csrf';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -227,7 +228,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
             <h3 className="m-0 fs-16 fw-700">
               Compilatie — {VIDEO_TYPE_LABELS[videoType]}
             </h3>
-            <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>
+            <div className={`fs-12 text-muted ${styles.subtitle}`}>
               {STEP_SUBTITLES[step]}
             </div>
           </div>
@@ -238,7 +239,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
 
         {/* Step: Member selection */}
         {step === 'members' && (
-          <div style={{ padding: '16px 20px' }}>
+          <div className={styles.membersStep}>
             {/* Select all / deselect all */}
             <div className={s.selectAllRow}>
               <div className={s.selectionCounter}>
@@ -266,10 +267,8 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                   {selectedOrdered.map((m, idx) => (
                     <div
                       key={m.id}
-                      className={s.orderedMemberRow}
-                      style={{
-                        borderBottom: idx < selectedOrdered.length - 1 ? '1px solid var(--app-border)' : 'none',
-                      }}
+                      className={`${s.orderedMemberRow} ${styles.orderedMemberRowBorder}`}
+                      data-last={idx === selectedOrdered.length - 1 || undefined}
                     >
                       <span className={s.orderNumber}>{idx + 1}</span>
                       <div className="flex-1-min">
@@ -289,20 +288,16 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                                 <button
                                   key={vk}
                                   onClick={() => setVariantKeys((prev) => ({ ...prev, [m.id]: vk }))}
-                                  className={s.variantPill}
-                                  style={{
-                                    border: (isSelected || isDefault) ? '1px solid var(--app-primary, #2563eb)' : '1px solid var(--app-border)',
-                                    backgroundColor: (isSelected || isDefault) ? 'var(--app-primary, #2563eb)' : 'transparent',
-                                    color: (isSelected || isDefault) ? '#fff' : 'var(--app-muted-text)',
-                                  }}
+                                  className={`${s.variantPill} ${styles.variantPill}`}
+                                  data-active={isSelected || isDefault || undefined}
                                 >{label}</button>
                               );
                             })}
                           </div>
                         )}
                       </div>
-                      <button onClick={() => moveUp(idx)} disabled={idx === 0} title="Omhoog" className={s.arrowBtn} style={{ cursor: idx === 0 ? 'default' : 'pointer', opacity: idx === 0 ? 0.25 : 0.7 }}>{"\u25B2"}</button>
-                      <button onClick={() => moveDown(idx)} disabled={idx === selectedOrdered.length - 1} title="Omlaag" className={s.arrowBtn} style={{ cursor: idx === selectedOrdered.length - 1 ? 'default' : 'pointer', opacity: idx === selectedOrdered.length - 1 ? 0.25 : 0.7 }}>{"\u25BC"}</button>
+                      <button onClick={() => moveUp(idx)} disabled={idx === 0} title="Omhoog" className={`${s.arrowBtn} ${styles.arrowBtn}`} data-disabled={idx === 0 || undefined}>{"\u25B2"}</button>
+                      <button onClick={() => moveDown(idx)} disabled={idx === selectedOrdered.length - 1} title="Omlaag" className={`${s.arrowBtn} ${styles.arrowBtn}`} data-disabled={idx === selectedOrdered.length - 1 || undefined}>{"\u25BC"}</button>
                       <button onClick={() => removeItem(m.id)} title="Verwijderen" className={s.removeBtn}>{"\u2715"}</button>
                     </div>
                   ))}
@@ -313,26 +308,24 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
             {/* Unselected members */}
             {unselected.length > 0 && (
               <div>
-                <div className="flex-row gap-8" style={{ marginBottom: '6px' }}>
+                <div className={`flex-row gap-8 ${styles.unselectedHeaderRow}`}>
                   <div className={s.unselectedHeader}>Beschikbare spelers</div>
                   <input
                     type="text"
                     placeholder="Zoek..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    style={{ flex: 1, padding: '4px 8px', border: '1px solid var(--app-border)', borderRadius: '4px', fontSize: '12px', backgroundColor: 'var(--app-bg)', color: 'var(--app-text)' }}
+                    className={styles.searchInput}
                   />
                 </div>
-                <div className="border rounded-8 overflow-hidden" style={{ maxHeight: '160px', overflowY: 'auto' }}>
+                <div className={`border rounded-8 overflow-hidden ${styles.scrollList}`}>
                   {filteredUnselected.length === 0 ? (
                     <div className={s.emptyState}>Geen spelers gevonden</div>
                   ) : filteredUnselected.map((m) => (
                     <div
                       key={m.id}
                       onClick={() => addItem(m.id)}
-                      className={s.clickableRow}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2, #2a2a3e)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                      className={`${s.clickableRow} ${styles.clickableRowHover}`}
                     >
                       <span className={s.addIcon}>+</span>
                       <div className="flex-1-min">
@@ -355,17 +348,13 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                 <div className={s.bgSelectorGrid}>
                   <button
                     onClick={() => setSelectedBgUrl(null)}
-                    style={{
-                      position: 'relative',
-                      border: !selectedBgUrl ? '2px solid var(--app-primary, #2563eb)' : '1px solid var(--app-border, #333)',
-                      borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', padding: 0,
-                      background: !selectedBgUrl ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
-                    }}
+                    className={styles.bgButton}
+                    data-active={!selectedBgUrl || undefined}
                   >
                     <div className={s.bgPreviewDefault}>
-                      <span style={{ fontSize: '20px' }}>{"\u26BD"}</span>
+                      <span className={styles.bgEmoji}>{"\u26BD"}</span>
                     </div>
-                    <div className={s.bgOptionLabel} style={{ color: !selectedBgUrl ? '#fff' : 'var(--app-muted-text)', background: !selectedBgUrl ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)' }}>
+                    <div className={`${s.bgOptionLabel} ${styles.bgOptionLabel}`} data-active={!selectedBgUrl || undefined}>
                       Standaard
                     </div>
                     {!selectedBgUrl && (
@@ -378,19 +367,11 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
                       <button
                         key={bg.id}
                         onClick={() => setSelectedBgUrl(bg.url)}
-                        style={{
-                          position: 'relative',
-                          border: isActive ? '2px solid var(--app-primary, #2563eb)' : '1px solid var(--app-border, #333)',
-                          borderRadius: '8px', overflow: 'hidden', cursor: 'pointer', padding: 0,
-                          background: isActive ? 'var(--app-surface-2, #2a2a3e)' : 'transparent',
-                        }}
+                        className={styles.bgButton}
+                        data-active={isActive || undefined}
                       >
-                        <div style={{ width: '100%', aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
-                        <div className={s.bgOptionLabel} style={{
-                          color: isActive ? '#fff' : 'var(--app-muted-text)',
-                          background: isActive ? 'var(--app-primary, #2563eb)' : 'var(--app-surface-2, #2a2a3e)',
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        }}>
+                        <div className={styles.bgPreviewImage} style={{ backgroundImage: `url(${bg.url})` }} />
+                        <div className={`${s.bgOptionLabel} ${styles.bgOptionLabel}`} data-active={isActive || undefined}>
                           {bg.label || bg.profile_name || 'Locatie'}
                         </div>
                         {isActive && (
@@ -444,12 +425,8 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
               <button
                 onClick={handleSubmit}
                 disabled={selected.length === 0}
-                className={s.modalBtnPrimary}
-                style={{
-                  cursor: selected.length > 0 ? 'pointer' : 'not-allowed',
-                  background: selected.length > 0 ? '#6366f1' : 'var(--app-muted-text)',
-                  opacity: selected.length > 0 ? 1 : 0.5,
-                }}
+                className={`${s.modalBtnPrimary} ${styles.submitBtn}`}
+                data-disabled={selected.length === 0 || undefined}
               >{"\uD83C\uDFAC"} Genereer Video ({selected.length})</button>
             </>
           )}

@@ -1,0 +1,25 @@
+/* MediaLibraryPage — extracted inline styles */
+
+.page {
+  min-height: 100vh;
+}
+
+.searchInput {
+  min-width: 180px;
+}
+
+.filterSelect {
+  min-width: 160px;
+}
+
+.contentArea {
+  max-width: 1400px;
+}
+
+.cardGrid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.loadingContainer {
+  padding: 48px;
+}

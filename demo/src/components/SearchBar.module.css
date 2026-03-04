@@ -1,0 +1,66 @@
+.container {
+  width: 100%;
+  max-width: 600px;
+}
+
+.form {
+  width: 100%;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  font-size: 16px;
+  border: 1px solid var(--app-border, var(--color-border));
+  border-radius: 6px;
+  background-color: var(--app-surface, var(--color-background-secondary));
+  color: var(--app-text, var(--color-text-primary));
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input:focus {
+  border-color: var(--app-primary, var(--color-primary));
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.searchIcon {
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.dropdown {
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background-color: var(--app-surface, var(--color-background-primary));
+  border: 1px solid var(--app-border, var(--color-border));
+  max-height: 70vh;
+}
+
+.categoryHeader {
+  background-color: var(--color-background-secondary);
+}
+
+.viewAllButton {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  padding: 4px 8px;
+}
+
+.resultButton {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+}
+
+.resultButton:hover {
+  background-color: var(--color-background-secondary);
+}
+
+.highlight {
+  line-height: 1.4;
+}

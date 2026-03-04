@@ -15,6 +15,7 @@ import {
 } from './memberDetailUtils';
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import styles from './MemberThenVsNowTab.module.css';
 
 export function MemberThenVsNowTab({
   membership,
@@ -69,36 +70,32 @@ export function MemberThenVsNowTab({
 
         {/* Prerequisites check */}
         <div className={s.prerequisiteRow}>
-          <div className={s.prerequisiteCard} style={{
-            border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-          }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>🏆 Legacy in Tenue</div>
+          <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={Boolean(legacyFullbodyUrl)}>
+            <div className={styles.prerequisiteHeading}>🏆 Legacy in Tenue</div>
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy in Tenue" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst een Legacy in Tenue</div>
+              <div className={styles.prerequisiteMissing}>⚠️ Genereer eerst een Legacy in Tenue</div>
             )}
           </div>
-          <div className={s.prerequisiteCard} style={{
-            border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-          }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, marginBottom: '8px' }}>👕 Huidige Fullbody</div>
+          <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={Boolean(currentFullbodyUrl)}>
+            <div className={styles.prerequisiteHeading}>👕 Huidige Fullbody</div>
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Player in Tenue</div>
+              <div className={styles.prerequisiteMissing}>⚠️ Genereer eerst Player in Tenue</div>
             )}
           </div>
         </div>
 
         {/* Transformation variants */}
-        <div style={{ marginTop: '28px' }}>
-          <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
-            <span style={{ fontSize: '20px' }}>🔄</span>
+        <div className={styles.transformationSection}>
+          <div className={`${s.flexCenterGap8} ${styles.transformationHeader}`}>
+            <span className={styles.transformationIcon}>🔄</span>
             <div className={s.sectionTitle}>Transformatie</div>
-            <div style={{ fontSize: '11px', opacity: 0.6, marginLeft: '4px' }}>4 sec — legacy verandert in huidige speler</div>
+            <div className={styles.transformationCaption}>4 sec — legacy verandert in huidige speler</div>
           </div>
-          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
+          <div className={`${s.variantGrid} ${styles.variantGrid}`} data-enabled={hasBothInputs}>
             {transformationVariantDefs.map((variant) => {
               const compositeKey = `transformation_${variant.id}`;
               const variantRaw = videoVariants.then_vs_now[compositeKey] || (variant.id === 'hands_on_head' ? videoVariants.then_vs_now.transformation : undefined);
@@ -113,16 +110,12 @@ export function MemberThenVsNowTab({
                 normalizedVariant?.processing_state === 'cancelling';
 
               return (
-                <div key={variant.id} className={s.variantCard} style={{
-                  border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                }}>
+                <div key={variant.id} className={`${s.variantCard} ${styles.variantCard}`} data-has-video={hasVideo}>
                   <div
                     onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
-                    className={s.variantPreview916}
-                    style={{
-                      background: (hasVideo && !variantLineupReady) ? '#000' : undefined,
-                      cursor: hasVideo ? 'pointer' : 'default',
-                    }}>
+                    className={`${s.variantPreview916} ${styles.variantPreview}`}
+                    data-dark-bg={hasVideo && !variantLineupReady}
+                    data-clickable={hasVideo}>
                     {hasVideo && resolvedUrl ? (
                       <>
                         <video key={resolvedUrl} src={resolvedUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} />
@@ -140,7 +133,7 @@ export function MemberThenVsNowTab({
                     <div className={s.actionButtonRow}>
                       {hasVideo ? (
                         <>
-                          <Button size="sm" onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)} disabled={!hasBothInputs} className={s.btnSmall} style={{ flex: 1 }}>
+                          <Button size="sm" onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.btnFlex}`}>
                             Opnieuw
                           </Button>
                           {!variantProcessing && (
@@ -188,7 +181,7 @@ export function MemberThenVsNowTab({
                           }} className={s.btnDelete}>🗑️</Button>
                         </>
                       ) : (
-                        <Button size="sm" onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)} disabled={!hasBothInputs} className={s.btnSmall} style={{ width: '100%' }}>
+                        <Button size="sm" onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.btnFullWidth}`}>
                           ✨ Genereer
                         </Button>
                       )}
@@ -201,7 +194,7 @@ export function MemberThenVsNowTab({
         </div>
 
         {!userCanEditProject && (
-          <div style={{ marginTop: '16px' }}>
+            <div className={styles.alertWrapper}>
             <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
           </div>
         )}

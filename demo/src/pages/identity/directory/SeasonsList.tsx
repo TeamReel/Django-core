@@ -15,6 +15,7 @@ import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
 import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 
 import type { Period } from '../../../utils/directoryHelpers';
+import styles from './SeasonsList.module.css';
 
 export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
   const { preselectedClubSlug, preselectedTeamSlug } = props;
@@ -71,20 +72,20 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
               <thead>
                 <tr>
                     {!orgLocked && (
-                      <th className="dir-th" style={{ width: '140px' }}>Federation</th>
+                      <th className={`dir-th ${styles.col140}`}>Federation</th>
                     )}
                     {!clubLocked && (
-                      <th className="dir-th" style={{ width: '140px' }}>Club</th>
+                      <th className={`dir-th ${styles.col140}`}>Club</th>
                     )}
-                    {!teamLocked && <th className="dir-th" style={{ width: '140px' }}>Team</th>}
-                    <th className="dir-th" style={{ width: '260px' }}>Season</th>
-                  <th className="dir-th" style={{ width: '140px' }}>Sport</th>
-                  <th className="dir-th" style={{ width: '90px' }}>Variant</th>
-                  <th className="dir-th" style={{ width: '110px' }}>Competition</th>
-                  <th className="dir-th" style={{ width: '100px' }}>Match</th>
-                    <th className="dir-th" style={{ width: '90px' }}>Squad</th>
-                    <th className="dir-th" style={{ width: '100px' }}>Status</th>
-                    <th className="dir-th" style={{ width: '140px' }}>Actions</th>
+                    {!teamLocked && <th className={`dir-th ${styles.col140}`}>Team</th>}
+                    <th className={`dir-th ${styles.col260}`}>Season</th>
+                  <th className={`dir-th ${styles.col140}`}>Sport</th>
+                  <th className={`dir-th ${styles.col90}`}>Variant</th>
+                  <th className={`dir-th ${styles.col110}`}>Competition</th>
+                  <th className={`dir-th ${styles.col100}`}>Match</th>
+                    <th className={`dir-th ${styles.col90}`}>Squad</th>
+                    <th className={`dir-th ${styles.col100}`}>Status</th>
+                    <th className={`dir-th ${styles.col140}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -181,12 +182,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                                 setDetailSeason(season as any);
                                 setIsDetailModalOpen(true);
                               }}
-                              className="bg-transparent border-none p-0 m-0 cursor-pointer"
-                              style={{
-                                color: 'var(--app-link, #2563eb)',
-                                textDecoration: 'underline',
-                                font: 'inherit',
-                              }}
+                              className={`bg-transparent border-none p-0 m-0 cursor-pointer ${styles.seasonNameBtn}`}
                             >
                               {season.name}
                             </button>

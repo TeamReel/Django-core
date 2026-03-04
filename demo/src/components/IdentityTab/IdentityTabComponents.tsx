@@ -6,6 +6,7 @@
 
 import React, { useRef } from 'react';
 import { getAssetUrl, type BrandAsset } from '../../hooks/useBrandProfile';
+import styles from './IdentityTabComponents.module.css';
 
 // ============================================================================
 // AssetCard
@@ -54,39 +55,22 @@ export function AssetCard({
 
   return (
     <div
-      style={{
-        border: '1px solid var(--vscode-widget-border, #333)',
-        borderRadius: 8,
-        overflow: 'hidden',
-        background: 'var(--vscode-editor-background, #1e1e1e)',
-        opacity: inherited ? 0.8 : 1,
-      }}
+      className={styles.assetCard}
+      data-inherited={inherited || undefined}
     >
       {/* Preview area */}
       <div
+        className={styles.previewArea}
         style={{
-          aspectRatio,
-          background: url
-            ? `url(${url}) center/contain no-repeat`
-            : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-          position: 'relative',
-          minHeight: 120,
-        }}
+          '--aspect-ratio': aspectRatio,
+          ...(url ? { '--preview-bg': `url(${url}) center/contain no-repeat` } : {}),
+        } as React.CSSProperties}
       >
         {/* Phase badge */}
         {badgeText && (
           <span
-            style={{
-              position: 'absolute',
-              top: 6,
-              right: 6,
-              background: badgeColor,
-              color: '#fff',
-              fontSize: 10,
-              padding: '2px 6px',
-              borderRadius: 4,
-              fontWeight: 600,
-            }}
+            className={styles.phaseBadge}
+            style={{ '--badge-color': badgeColor } as React.CSSProperties}
           >
             {badgeText}
           </span>
@@ -94,59 +78,28 @@ export function AssetCard({
 
         {/* Inherited badge */}
         {inherited && (
-          <span
-            style={{
-              position: 'absolute',
-              top: 6,
-              left: 6,
-              background: 'var(--color-amber-400)',
-              color: '#000',
-              fontSize: 10,
-              padding: '2px 6px',
-              borderRadius: 4,
-              fontWeight: 600,
-            }}
-          >
+          <span className={styles.inheritedBadge}>
             ← {inheritedFrom || 'Geërfd'}
           </span>
         )}
 
         {/* Empty state */}
         {!url && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--vscode-descriptionForeground, #888)',
-              fontSize: 12,
-            }}
-          >
+          <div className={styles.emptyState}>
             Niet ingesteld
           </div>
         )}
       </div>
 
       {/* Info + actions */}
-      <div style={{ padding: '8px 10px' }}>
+      <div className={styles.infoBar}>
         <div className="fs-12 fw-600 mb-4">{label}</div>
 
         {!readOnly && isUploadType && onUpload && (
           <>
             <button
               onClick={() => fileInputRef.current?.click()}
-              style={{
-                width: '100%',
-                padding: '4px 8px',
-                fontSize: 11,
-                cursor: 'pointer',
-                background: 'var(--vscode-button-background, #0078d4)',
-                color: 'var(--vscode-button-foreground, #fff)',
-                border: 'none',
-                borderRadius: 4,
-              }}
+              className={styles.uploadBtn}
             >
               {url ? 'Vervangen' : 'Uploaden'}
             </button>
@@ -165,7 +118,7 @@ export function AssetCard({
         )}
 
         {asset && (
-          <div style={{ fontSize: 10, color: 'var(--vscode-descriptionForeground, #888)', marginTop: 4 }}>
+          <div className={styles.dateText}>
             {new Date(asset.updated_at).toLocaleDateString('nl-NL')}
           </div>
         )}
@@ -183,8 +136,7 @@ export { Section } from '../ui/Section';
 export function AssetGrid({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="grid gap-12"
-      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}
+      className={`grid gap-12 ${styles.assetGrid}`}
     >
       {children}
     </div>

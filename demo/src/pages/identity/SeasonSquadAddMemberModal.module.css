@@ -1,0 +1,67 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal {
+  width: 720px;
+  max-width: 95%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.heading {
+  margin-top: 0;
+}
+
+.closeButton {
+  padding: 6px 10px;
+  height: fit-content;
+  cursor: pointer;
+}
+
+.closeButton[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.formGrid {
+  grid-template-columns: 160px 1fr;
+  gap: 10px 16px;
+}
+
+.formInput {
+  padding: 8px 10px;
+}
+
+.errorText {
+  color: var(--app-danger, #d32f2f);
+}
+
+.validationHint {
+  margin-top: 10px;
+  color: var(--app-text-muted, #6b7280);
+}
+
+.submitRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.submitButton {
+  --submit-border: #1e5aa5;
+  --submit-color: #fff;
+  border: 1px solid var(--submit-border);
+  background-color: var(--color-blue-600);
+  color: var(--submit-color);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.submitButton[data-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

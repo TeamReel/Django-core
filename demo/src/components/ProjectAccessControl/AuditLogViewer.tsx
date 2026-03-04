@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import styles from './AuditLogViewer.module.css';
 
 interface AuditEvent {
   id: string;
@@ -77,35 +78,31 @@ export const AuditLogViewer: React.FC<AuditLogViewerProps> = ({ projectId }) => 
         {filteredEvents.length === 0 ? (
           <div className="p-20 text-center text-muted">No events found.</div>
         ) : (
-          <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+          <table className={`w-full ${styles.auditTable}`}>
             <thead className="bg-surface-2">
               <tr className="text-left">
-                <th className="border-bottom" style={{ padding: '10px 8px' }}>Action</th>
-                <th className="border-bottom" style={{ padding: '10px 8px' }}>User</th>
-                <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Details</th>
-                <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Time</th>
+                <th className={`border-bottom ${styles.tableCell}`}>Action</th>
+                <th className={`border-bottom ${styles.tableCell}`}>User</th>
+                <th className={`hide-mobile border-bottom ${styles.tableCell}`}>Details</th>
+                <th className={`hide-mobile border-bottom ${styles.tableCell}`}>Time</th>
               </tr>
             </thead>
             <tbody>
               {filteredEvents.map((event) => (
                 <tr key={event.id} className="border-bottom">
-                  <td style={{ padding: '10px 8px' }}>
-                    <span className="rounded-4 fs-11" style={{
-                      padding: '2px 6px',
-                      backgroundColor: event.action === 'member_removed' ? '#ffebee' : '#e3f2fd',
-                      color: event.action === 'member_removed' ? '#c62828' : '#1565c0'
-                    }}>
+                  <td className={styles.tableCell}>
+                    <span className={`rounded-4 fs-11 ${styles.actionBadge}`} data-action={event.action}>
                       {event.action.replace('_', ' ').toUpperCase()}
                     </span>
                   </td>
-                  <td className="fs-13" style={{ padding: '10px 8px' }}>
+                  <td className={`fs-13 ${styles.tableCell}`}>
                     <div>{event.actor.name}</div>
                   </td>
-                  <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
+                  <td className={`hide-mobile fs-13 ${styles.tableCell}`}>
                     <div>{event.details}</div>
                     <div className="fs-11 text-muted">Target: {event.target.name}</div>
                   </td>
-                  <td className="hide-mobile fs-12 text-muted" style={{ padding: '10px 8px' }}>
+                  <td className={`hide-mobile fs-12 text-muted ${styles.tableCell}`}>
                     {event.timestamp}
                   </td>
                 </tr>

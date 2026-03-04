@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@django-core/theme-system';
 import { getApiBaseUrl } from '../utils/apiBase';
+import styles from './TopNavigation.module.css';
 
 interface NotificationResponse {
   count: number;
@@ -106,34 +107,19 @@ export default function TopNavigation() {
   }, [user]);
 
   return (
-    <header style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '16px 24px',
-      borderBottom: '1px solid var(--app-border)',
-      backgroundColor: 'var(--app-surface)',
-      color: 'var(--app-text)'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>Django Core-App Demo</h1>
+    <header className={styles.header}>
+      <div className={styles.leftSection}>
+        <h1 className={styles.title}>Django Core-App Demo</h1>
         {/* Context switcher removed from header - now embedded in breadcrumbs */}
       </div>
 
       {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className={styles.rightSection}>
           {/* Theme Toggle */}
           {themeToggleEnabled && (
             <button
               onClick={toggleTheme}
-              style={{
-                padding: '8px',
-                backgroundColor: 'transparent',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '20px',
-              }}
+              className={styles.themeToggle}
               title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
               aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
             >
@@ -142,66 +128,23 @@ export default function TopNavigation() {
           )}
 
           {/* Language Switcher */}
-          <div className="language-menu-container" style={{ position: 'relative' }}>
+          <div className={`language-menu-container ${styles.languageMenuContainer}`}>
             <button
               onClick={() => setLanguageMenuOpen(!languageMenuOpen)}
-              style={{
-                padding: '8px 12px',
-                backgroundColor: 'transparent',
-                border: '1px solid var(--app-border)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                color: 'var(--app-text)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
+              className={styles.languageTrigger}
               aria-label="Select language"
             >
-              🌐 {language} <span style={{ fontSize: '10px' }}>{languageMenuOpen ? '▴' : '▾'}</span>
+              🌐 {language} <span className={styles.languageArrow}>{languageMenuOpen ? '▴' : '▾'}</span>
             </button>
 
             {languageMenuOpen && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: '4px',
-                backgroundColor: 'var(--app-surface)',
-                border: '1px solid var(--app-border)',
-                borderRadius: '6px',
-                boxShadow: 'var(--shadow-md)',
-                minWidth: '120px',
-                zIndex: 1000,
-              }}>
+              <div className={styles.languageDropdown}>
                 {(['EN', 'NL', 'DE'] as const).map(lang => (
                   <button
                     key={lang}
                     onClick={() => handleLanguageChange(lang)}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: '10px 16px',
-                      textAlign: 'left',
-                      border: 'none',
-                      backgroundColor: language === lang ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                      color: language === lang ? 'var(--color-blue-600)' : 'var(--app-text)',
-                      fontWeight: language === lang ? 600 : 400,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid var(--app-border)',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (language !== lang) {
-                        e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (language !== lang) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
+                    className={styles.languageOption}
+                    data-active={language === lang}
                   >
                     {lang}
                   </button>
@@ -213,49 +156,23 @@ export default function TopNavigation() {
           {/* Notification Icon */}
           <button
             onClick={() => navigate('/notifications')}
-            style={{
-              position: 'relative',
-              padding: '8px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '20px'
-            }}
+            className={styles.notificationButton}
             title="Notifications"
           >
             🔔
             {/* Unread badge - only show if count > 0 */}
             {unreadCount > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '4px',
-                right: '4px',
-                backgroundColor: 'var(--app-error)',
-                color: 'white',
-                borderRadius: '10px',
-                padding: '2px 6px',
-                fontSize: '10px',
-                fontWeight: 'bold'
-              }}>
+              <span className={styles.unreadBadge}>
                 {unreadCount}
               </span>
             )}
           </button>
 
-          <span style={{ fontSize: '14px', color: 'var(--app-text)', opacity: 0.7 }}>{user.email}</span>
+          <span className={styles.userEmail}>{user.email}</span>
           <button
             onClick={signOut}
             disabled={loading}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: loading ? '#6c757d' : 'var(--app-error)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
+            className={styles.signOutButton}
           >
             {loading ? 'Logging out...' : 'Log Out'}
           </button>

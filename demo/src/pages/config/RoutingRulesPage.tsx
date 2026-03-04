@@ -15,6 +15,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './RoutingRulesPage.module.css';
 
 interface RoutingRule {
   id: number;
@@ -233,7 +234,7 @@ export const RoutingRulesPage: React.FC = () => {
             <Button variant="secondary" size="sm" onClick={fetchRules} disabled={loading}>
               Refresh
             </Button>
-            <a href="/routing-logs" className="text-link fs-13" style={{ textDecoration: 'none' }}>
+            <a href="/routing-logs" className={`text-link fs-13 ${styles.routingLogsLink}`}>
               View routing logs
             </a>
           </div>
@@ -247,7 +248,7 @@ export const RoutingRulesPage: React.FC = () => {
               <div className="flex-between gap-12 flex-wrap">
                 <div>
                   <h3 className="m-0 text-primary">Organisation</h3>
-                  <div className="fs-13" style={{ marginTop: 6, color: 'var(--app-text-muted)' }}>
+                  <div className={`fs-13 ${styles.orgInfo}`}>
                     {currentOrgId ? `${currentOrgName} (${currentOrgId})` : 'No organisation selected'}
                   </div>
                 </div>
@@ -260,13 +261,13 @@ export const RoutingRulesPage: React.FC = () => {
           <Card>
             <div className="p-16">
               <h3 className="m-0 mb-12 text-primary">Add org rule</h3>
-              <div className="grid gap-10" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+              <div className={`grid gap-10 ${styles.formGrid}`}>
                 <label className="grid gap-6 fs-13 text-primary">
                   Event type
                   <input
                     value={createDraft.event_type}
                     onChange={(e) => setCreateDraft({ ...createDraft, event_type: e.target.value })}
-                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
+                    className={`rounded-6 border bg-surface text-primary ${styles.formInput}`}
                   />
                 </label>
 
@@ -275,7 +276,7 @@ export const RoutingRulesPage: React.FC = () => {
                   <select
                     value={createDraft.channel}
                     onChange={(e) => setCreateDraft({ ...createDraft, channel: e.target.value as any })}
-                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
+                    className={`rounded-6 border bg-surface text-primary ${styles.formInput}`}
                   >
                     <option value="in_app">In-app</option>
                     <option value="email">Email</option>
@@ -289,7 +290,7 @@ export const RoutingRulesPage: React.FC = () => {
                     value={createDraft.target_role}
                     onChange={(e) => setCreateDraft({ ...createDraft, target_role: e.target.value })}
                     placeholder="org_admin"
-                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
+                    className={`rounded-6 border bg-surface text-primary ${styles.formInput}`}
                   />
                 </label>
 
@@ -298,7 +299,7 @@ export const RoutingRulesPage: React.FC = () => {
                   <select
                     value={String(createDraft.priority)}
                     onChange={(e) => setCreateDraft({ ...createDraft, priority: Number(e.target.value) })}
-                    className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
+                    className={`rounded-6 border bg-surface text-primary ${styles.formInput}`}
                   >
                     <option value="0">Low</option>
                     <option value="1">Normal</option>
@@ -307,7 +308,7 @@ export const RoutingRulesPage: React.FC = () => {
                   </select>
                 </label>
 
-                <label className="flex-row gap-8 fs-13 text-primary" style={{ marginTop: 22 }}>
+                <label className={`flex-row gap-8 fs-13 text-primary ${styles.enabledLabel}`}>
                   <input
                     type="checkbox"
                     checked={createDraft.enabled}
@@ -330,9 +331,9 @@ export const RoutingRulesPage: React.FC = () => {
               <h3 className="m-0 mb-12 text-primary">Rules</h3>
 
               {loading ? (
-                <div style={{ color: 'var(--app-text-muted)' }}>Loading…</div>
+                <div className={styles.emptyState}>Loading…</div>
               ) : rules.length === 0 ? (
-                <div style={{ color: 'var(--app-text-muted)' }}>No rules found.</div>
+                <div className={styles.emptyState}>No rules found.</div>
               ) : (
                 <div className="grid gap-10">
                   {rules.map((rule) => (
@@ -349,7 +350,7 @@ export const RoutingRulesPage: React.FC = () => {
                           <Badge size="sm" variant="info">{rule.channel.toUpperCase()}</Badge>
                           <Badge size="sm" variant="default">{priorityLabel[rule.priority] || String(rule.priority)}</Badge>
                         </div>
-                        <div style={{ marginTop: 6, fontSize: 13, color: 'var(--app-text-muted)' }}>
+                        <div className={styles.ruleDetails}>
                           scope={rule.scope} · role={rule.target_role || '—'}
                         </div>
                       </div>

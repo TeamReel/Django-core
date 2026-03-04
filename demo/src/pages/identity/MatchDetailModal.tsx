@@ -1,3 +1,5 @@
+import styles from './MatchDetailModal.module.css';
+
 interface MatchActivity {
   id: string;
   title: string;
@@ -19,67 +21,39 @@ export default function MatchDetailModal({ opened, onClose, match }: MatchDetail
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1100,
-      }}
+      className={styles.overlay}
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
-          width: '560px',
-          maxWidth: '90%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
-        }}
+        className={styles.modal}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>Match</h2>
+        <div className={styles.header}>
+          <h2 className={styles.title}>Match</h2>
           <button
             type="button"
             onClick={onClose}
-            style={{
-              padding: '6px 10px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              height: 'fit-content',
-            }}
+            className={styles.closeBtn}
           >
             Close
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
-          <div style={{ fontWeight: 600 }}>Title</div>
+        <div className={styles.detailGrid}>
+          <div className={styles.label}>Title</div>
           <div>{match.title}</div>
 
-          <div style={{ fontWeight: 600 }}>Start</div>
+          <div className={styles.label}>Start</div>
           <div>{match.start_time || '-'}</div>
 
-          <div style={{ fontWeight: 600 }}>End</div>
+          <div className={styles.label}>End</div>
           <div>{match.end_time || '-'}</div>
 
-          <div style={{ fontWeight: 600 }}>Location</div>
+          <div className={styles.label}>Location</div>
           <div>{match.location || '-'}</div>
 
-          <div style={{ fontWeight: 600 }}>Description</div>
-          <div style={{ whiteSpace: 'pre-wrap' }}>{match.description || '-'}</div>
+          <div className={styles.label}>Description</div>
+          <div className={styles.descriptionValue}>{match.description || '-'}</div>
         </div>
       </div>
     </div>

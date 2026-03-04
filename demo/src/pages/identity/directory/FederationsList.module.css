@@ -1,0 +1,17 @@
+/* FederationsList – extracted inline styles */
+
+.thFederation  { width: 18%; }
+.thSport       { width: 10%; }
+.thVariant     { width: 6%; }
+.thClub        { width: 6%; }
+.thSeason      { width: 6%; }
+.thCompetition { width: 8%; }
+.thMatch       { width: 6%; }
+.thUsers       { width: 6%; }
+.thStatus      { width: 8%; }
+.thActions     { width: 12%; }
+
+.orgLink {
+  color: var(--color-blue-600);
+  text-decoration: underline;
+}

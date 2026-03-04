@@ -1,0 +1,53 @@
+.root {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+.content {
+  padding: 60px 20px;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.icon {
+  font-size: 72px;
+}
+
+.statusCode {
+  font-size: 48px;
+}
+
+.tryAgainButton {
+  background-color: var(--app-primary);
+}
+
+.dashboardLink {
+  background-color: #6c757d;
+}
+
+.detailsSection {
+  margin-top: 48px;
+  background-color: #f8f9fa;
+}
+
+.detailsInner {
+  background-color: #fff;
+  font-family: monospace;
+}
+
+.preBlock {
+  margin: 8px 0 0 0;
+  white-space: pre-wrap;
+}
+
+.helpSection {
+  margin-top: 48px;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+}
+
+.helpList {
+  line-height: 1.8;
+}

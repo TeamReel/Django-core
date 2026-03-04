@@ -14,6 +14,7 @@ import {
   buildBrandAssetPageHref,
   buildMemberAssetPageHref,
 } from './medialibHelpers';
+import styles from './MediaLibCards.module.css';
 
 // ============================================================================
 // Preview Modal
@@ -25,16 +26,11 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
       role="dialog"
       aria-modal="true"
       onClick={onClose}
-      className="modal-backdrop p-24"
-      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+      className={`modal-backdrop p-24 ${styles.modalBackdrop}`}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex-col bg-surface border rounded-12 overflow-hidden"
-        style={{
-          width: 'min(1000px, 100%)',
-          maxHeight: '85vh',
-        }}
+        className={`flex-col bg-surface border rounded-12 overflow-hidden ${styles.modalDialog}`}
       >
         <div className="p-12 flex-between gap-12 border-bottom">
           <div className="min-w-0">
@@ -58,8 +54,7 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
             )}
             <button
               onClick={onClose}
-              className="border bg-transparent rounded-8 cursor-pointer fs-12 text-primary"
-              style={{ padding: '6px 10px' }}
+              className={`border bg-transparent rounded-8 cursor-pointer fs-12 text-primary ${styles.closeButton}`}
             >
               Sluiten
             </button>
@@ -74,15 +69,13 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
                 controls
                 autoPlay
                 playsInline
-                className="w-full object-contain"
-                style={{ maxHeight: '70vh' }}
+                className={`w-full object-contain ${styles.previewMedia}`}
               />
             ) : (
               <img
                 src={item.url}
                 alt={item.title}
-                className="w-full object-contain"
-                style={{ maxHeight: '70vh' }}
+                className={`w-full object-contain ${styles.previewMedia}`}
               />
             )
           ) : (
@@ -108,11 +101,7 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
   return (
     <Card className="p-0 overflow-hidden flex-col">
       {/* Thumbnail */}
-      <div className="flex-center overflow-hidden relative border-bottom" style={{
-        height: 180,
-        backgroundColor: 'var(--app-bg)',
-        cursor: asset.url ? 'pointer' : 'default',
-      }}
+      <div className={`flex-center overflow-hidden relative border-bottom ${styles.thumbnailContainer} ${asset.url ? styles.thumbnailClickable : ''}`}
       onClick={() => {
         if (!asset.url) return;
         onPreview({
@@ -128,7 +117,7 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
           isVideo ? (
             <video
               src={asset.url}
-              className="object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }}
+              className={`object-contain ${styles.mediaFit}`}
               muted
               playsInline
               preload="metadata"
@@ -137,28 +126,21 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
             <img
               src={asset.url}
               alt={asset.alt_text || friendlyAssetLabel(asset)}
-              className="p-8 object-contain"
-              style={{ maxWidth: '100%', maxHeight: '100%' }}
+              className={`p-8 object-contain ${styles.mediaFit}`}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
         ) : (
-          <span style={{ fontSize: 40, opacity: 0.3 }}>
+          <span className={styles.emptyIcon}>
             {contentType === 'kit' ? '👕' : contentType === 'logo' ? '🏷️' : contentType === 'closeup' ? '📸' : '📁'}
           </span>
         )}
         {/* Level badge overlay */}
-        <span className="badge-overlay" style={{
-          top: 8, left: 8,
-          backgroundColor: levelColor(level),
-        }}>
+        <span className={`badge-overlay ${styles.levelBadge}`} style={{ '--level-color': levelColor(level) } as React.CSSProperties}>
           {levelLabel(level)}
         </span>
         {isVideo && (
-          <span className="badge-overlay" style={{
-            top: 8, right: 8,
-            backgroundColor: '#dc2626',
-          }}>
+          <span className={`badge-overlay ${styles.videoBadge}`}>
             🎬 Video
           </span>
         )}
@@ -210,11 +192,8 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
 export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: string) => void }) {
   return (
     <Card className="p-0 overflow-hidden flex-col">
-      <div className="flex-center border-bottom" style={{
-        height: 120,
-        backgroundColor: 'var(--app-bg)',
-      }}>
-        <span style={{ fontSize: 40 }}>{getFileIcon(file.mime_type)}</span>
+      <div className={`flex-center border-bottom ${styles.fileIconContainer}`}>
+        <span className={styles.fileIcon}>{getFileIcon(file.mime_type)}</span>
       </div>
       <div className="p-12 flex-col gap-6 flex-1">
         <Text weight="bold" size="sm" className="truncate">
@@ -230,10 +209,7 @@ export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (i
         </Text>
         <button
           onClick={() => onDownload(file.id)}
-          className="mt-4 fs-11 rounded-6 bg-transparent cursor-pointer border text-primary"
-          style={{
-            alignSelf: 'flex-start', padding: '4px 10px',
-          }}
+          className={`mt-4 fs-11 rounded-6 bg-transparent cursor-pointer border text-primary ${styles.downloadButton}`}
         >
           ⬇ Download
         </button>
@@ -266,11 +242,7 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
 
   return (
     <Card className="p-0 overflow-hidden flex-col">
-      <div className="flex-center overflow-hidden relative border-bottom" style={{
-        height: 180,
-        backgroundColor: 'var(--app-bg)',
-        cursor: item.url ? 'pointer' : 'default',
-      }}
+      <div className={`flex-center overflow-hidden relative border-bottom ${styles.thumbnailContainer} ${item.url ? styles.thumbnailClickable : ''}`}
       onClick={() => {
         onPreview({
           url: item.url || null,
@@ -285,7 +257,7 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
           isVideo ? (
             <video
               src={item.url}
-              className="object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }}
+              className={`object-contain ${styles.mediaFit}`}
               muted
               playsInline
               preload="metadata"
@@ -294,25 +266,18 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
             <img
               src={item.url}
               alt={item.name}
-              className="p-8 object-contain"
-              style={{ maxWidth: '100%', maxHeight: '100%' }}
+              className={`p-8 object-contain ${styles.mediaFit}`}
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           )
         ) : (
-          <span style={{ fontSize: 40, opacity: 0.3 }}>👤</span>
+          <span className={styles.emptyIcon}>👤</span>
         )}
-        <span className="badge-overlay" style={{
-          top: 8, left: 8,
-          backgroundColor: '#059669',
-        }}>
+        <span className={`badge-overlay ${styles.memberBadge}`}>
           Member
         </span>
         {isVideo && (
-          <span className="badge-overlay" style={{
-            top: 8, right: 8,
-            backgroundColor: '#dc2626',
-          }}>
+          <span className={`badge-overlay ${styles.videoBadge}`}>
             🎬 Video
           </span>
         )}
@@ -355,22 +320,11 @@ export function FilterChip({ active, onClick, label, count }: {
   return (
     <button
       onClick={onClick}
-      className="inline-flex gap-4 fs-12 cursor-pointer rounded-16 transition"
-      style={{
-        alignItems: 'center',
-        padding: '5px 12px', fontWeight: active ? 600 : 400,
-        border: `1px solid ${active ? 'var(--color-primary, #2563eb)' : 'var(--app-border)'}`,
-        backgroundColor: active ? 'var(--color-primary-light, #dbeafe)' : 'transparent',
-        color: active ? 'var(--color-primary, #2563eb)' : 'var(--app-text-secondary)',
-      }}
+      className={`inline-flex gap-4 fs-12 cursor-pointer rounded-16 transition ${styles.filterChip} ${active ? styles.filterChipActive : ''}`}
     >
       {label}
       {count !== undefined && (
-        <span className="fw-700 rounded-8" style={{
-          fontSize: 10, padding: '0 5px',
-          backgroundColor: active ? 'var(--color-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
-          color: active ? '#fff' : 'var(--app-text-secondary)',
-        }}>
+        <span className={`fw-700 rounded-8 ${styles.filterChipCount} ${active ? styles.filterChipCountActive : ''}`}>
           {count}
         </span>
       )}
@@ -384,8 +338,8 @@ export function FilterChip({ active, onClick, label, count }: {
 
 export function EmptyState({ icon, message, sub }: { icon: string; message: string; sub: string }) {
   return (
-    <Card className="text-center" style={{ padding: 48 }}>
-      <div className="mb-8" style={{ fontSize: 32, opacity: 0.4 }}>{icon}</div>
+    <Card className={`text-center ${styles.emptyStateCard}`}>
+      <div className={`mb-8 ${styles.emptyStateIcon}`}>{icon}</div>
       <Text color="secondary">{message}</Text>
       <Text size="sm" color="secondary" className="mt-4">{sub}</Text>
     </Card>

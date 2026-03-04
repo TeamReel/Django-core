@@ -6,6 +6,7 @@ import { periodPathKey } from '../../utils/periodPath';
 import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
 import s from './ProjectSeasonDetailPage.module.css';
+import ov from './SeasonOverviewTab.module.css';
 
 export interface SeasonOverviewTabProps {
   season: Period | null;
@@ -51,22 +52,22 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   <>
     {/* Top Stats Row */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <Card style={{ padding: '16px' }}>
+      <Card className={ov.statCard}>
         <div className="text-sm font-medium text-gray-500">Dates</div>
         <div className="text-sm font-semibold mt-1">
           {season?.start_date ? new Date(season.start_date).toLocaleDateString() : '\u2014'} \u2013{' '}
           {season?.end_date ? new Date(season.end_date).toLocaleDateString() : '\u2014'}
         </div>
       </Card>
-      <Card style={{ padding: '16px' }}>
+      <Card className={ov.statCard}>
         <div className="text-sm font-medium text-gray-500">Competitions</div>
         <div className="text-2xl font-bold mt-1">{competitions.length}</div>
       </Card>
-      <Card style={{ padding: '16px' }}>
+      <Card className={ov.statCard}>
         <div className="text-sm font-medium text-gray-500">Matches</div>
         <div className="text-2xl font-bold mt-1">{seasonMatchesCount}</div>
       </Card>
-      <Card style={{ padding: '16px' }}>
+      <Card className={ov.statCard}>
         <div className="text-sm font-medium text-gray-500">Squad</div>
         <div className="text-2xl font-bold mt-1">{members.length}</div>
       </Card>
@@ -107,20 +108,19 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
                               ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
                               : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
                           }
-                          className="hover:underline"
-                          style={{ textDecoration: 'none', backgroundColor: 'transparent', color: '#60a5fa' }}
+                          className={`hover:underline ${ov.compNameLink}`}
                         >
                           {competition.name}
                         </Link>
                       </td>
                       <td className="detail-td">
                         {competition.sport ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span className={ov.sportBadge}>
                             <span>{competition.sport.sport_icon}</span>
-                            <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
+                            <span className={ov.sportName}>{competition.sport.name}</span>
                           </span>
                         ) : (
-                          <span style={{ color: 'var(--app-muted-text)' }}>\u2014</span>
+                          <span className={ov.mutedDash}>\u2014</span>
                         )}
                       </td>
                       <td className="detail-td">

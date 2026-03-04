@@ -1,0 +1,66 @@
+/* AddMemberModal — CSS Module */
+
+.backdrop {
+  z-index: 1100;
+  -webkit-overflow-scrolling: touch;
+}
+
+.panel {
+  width: 700px;
+  max-width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-height: calc(100vh - 32px);
+  margin: auto;
+}
+
+.closeButton {
+  line-height: 1;
+}
+
+.tabBar {
+  border-bottom: 2px solid var(--app-border, #e0e0e0);
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 24px;
+  border: none;
+  background: transparent;
+  color: var(--app-text, #333);
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 14px;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.15s ease;
+}
+
+.tab[data-active="true"] {
+  background: var(--app-primary, #0b5ed7);
+  color: #fff;
+  font-weight: 600;
+}
+
+.roleSelectWrapper {
+  width: 160px;
+}
+
+.searchResultsList {
+  max-height: 340px;
+}
+
+.userRow {
+  padding: 10px 12px;
+  transition: background 0.1s;
+}
+
+.userRow:hover {
+  background-color: var(--app-hover-bg, #f5f5f5);
+}
+
+.emptyState {
+  padding: 32px 16px;
+}
+
+.formBody {
+  min-height: 0;
+}

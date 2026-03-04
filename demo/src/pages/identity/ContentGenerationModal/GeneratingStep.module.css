@@ -1,0 +1,68 @@
+/* GeneratingStep — CSS Module */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+
+.content {
+  width: 100%;
+  max-width: 448px;
+  text-align: center;
+}
+
+.icon {
+  font-size: 48px;
+  margin-bottom: 24px;
+}
+
+.headline {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--app-text, #1C355E);
+  margin-bottom: 8px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--app-text-muted, #6b7280);
+  margin-bottom: 24px;
+  min-height: 20px;
+}
+
+.progressTrack {
+  width: 100%;
+  background: var(--app-border, #e5e5e5);
+  border-radius: 9999px;
+  height: 10px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.progressFill {
+  background: var(--app-primary, #3B8EA5);
+  height: 100%;
+  border-radius: 9999px;
+  transition: all 150ms ease;
+}
+
+.progressLabel {
+  font-size: 14px;
+  color: var(--app-text-secondary, #4b5563);
+  font-weight: 500;
+}
+
+.closeSection {
+  margin-top: 32px;
+}
+
+.closeHint {
+  font-size: 12px;
+  color: var(--app-text-muted, #9ca3af);
+  margin-bottom: 8px;
+}

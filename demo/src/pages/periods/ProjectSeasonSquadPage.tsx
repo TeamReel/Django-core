@@ -18,6 +18,7 @@ import { periodPathKey } from '../../utils/periodPath';
 
 import { useSquadPageData } from './useSquadPageData';
 import { MembershipEditModal, readFunctionalRolesFromMembership } from './MembershipEditModal';
+import styles from './ProjectSeasonSquadPage.module.css';
 
 export default function ProjectSeasonSquadPage() {
   const d = useSquadPageData();
@@ -89,17 +90,18 @@ export default function ProjectSeasonSquadPage() {
           title={title}
           breadcrumbs={breadcrumbs}
           actions={
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <div className={styles.actionsWrap}>
               <button
                 onClick={() => d.navigate(`${d.seasonsBasePath}/${periodPathKey(d.season || {}) || d.resolvedSeasonId || d.effectiveSeasonId}`)}
-                style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                className={styles.actionBtn}
               >
                 Back to season
               </button>
               {d.userCanEditProject && d.season && (
                 <button
                   onClick={() => { d.setSelectedEditPeriod(d.season); d.setIsPeriodEditModalOpen(true); }}
-                  style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #fd7e14', backgroundColor: 'var(--app-surface)', color: '#fd7e14', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                  className={styles.actionBtn}
+                  data-variant="edit"
                 >
                   Edit
                 </button>
@@ -107,7 +109,8 @@ export default function ProjectSeasonSquadPage() {
               {d.userCanDeleteProject && d.season && (
                 <button
                   onClick={d.deleteSeason}
-                  style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #dc3545', backgroundColor: 'var(--app-surface)', color: 'var(--app-error)', cursor: 'pointer', fontSize: '12px', fontWeight: 500 }}
+                  className={styles.actionBtn}
+                  data-variant="delete"
                 >
                   Delete
                 </button>
@@ -123,23 +126,13 @@ export default function ProjectSeasonSquadPage() {
           {!d.loading && !d.error && (
             <>
               {/* Tabs */}
-              <div style={{ display: 'flex', gap: '6px', borderBottom: '1px solid var(--app-border)', marginBottom: '20px', flexWrap: 'wrap' }}>
+              <div className={styles.tabBar}>
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => navigateToTab(tab.id)}
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '6px 6px 0 0',
-                      border: '1px solid var(--app-border)',
-                      borderBottom: tab.id === 'squad' ? '1px solid var(--app-surface)' : '1px solid var(--app-border)',
-                      backgroundColor: tab.id === 'squad' ? 'var(--app-surface)' : 'var(--app-surface-2)',
-                      color: 'var(--app-text)',
-                      cursor: tab.id === 'squad' ? 'default' : 'pointer',
-                      fontSize: '13px',
-                      fontWeight: tab.id === 'squad' ? 600 : 500,
-                      opacity: tab.id === 'squad' ? 1 : 0.9,
-                    }}
+                    className={styles.tabBtn}
+                    data-active={tab.id === 'squad' || undefined}
                     disabled={tab.id === 'squad'}
                   >
                     {tab.label}
@@ -149,7 +142,7 @@ export default function ProjectSeasonSquadPage() {
 
               {/* Members Table */}
               <Card>
-                <div style={{ padding: '16px 16px 0 16px' }}>
+                <div className={styles.cardPaddingTop}>
                   <div className="flex-row gap-12 flex-wrap">
                     <h3 className="m-0 fs-16 fw-600">Players & Staff</h3>
                     <Badge variant="info">{d.members.length} members</Badge>
@@ -198,7 +191,7 @@ export default function ProjectSeasonSquadPage() {
                             <tr key={String(membershipId || user.id)}>
                               <td className="detail-td-text">
                                 {userId ? (
-                                  <Link to={`/users/${userId}`} className="text-blue-600 hover:underline" style={{ textDecoration: 'none' }}>{name}</Link>
+                                  <Link to={`/users/${userId}`} className={`text-blue-600 hover:underline ${styles.noUnderline}`}>{name}</Link>
                                 ) : name}
                               </td>
                               <td className="detail-td-text">{email}</td>
@@ -232,7 +225,7 @@ export default function ProjectSeasonSquadPage() {
                         })}
                         {d.members.length === 0 && (
                           <tr>
-                            <td colSpan={7} className="detail-td" style={{ textAlign: 'center', padding: '24px' }}>
+                            <td colSpan={7} className={`detail-td ${styles.emptyRow}`}>
                               No members found for this season.
                             </td>
                           </tr>

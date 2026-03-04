@@ -1,0 +1,72 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--app-surface);
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.errorBox {
+  padding: 8px;
+  background-color: rgba(220, 53, 69, 0.1);
+  color: var(--app-error);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.nameRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.nameField {
+  flex: 1;
+}
+
+.label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.fieldGroup {
+  margin-bottom: 16px;
+}
+
+.fieldGroupLarge {
+  margin-bottom: 24px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

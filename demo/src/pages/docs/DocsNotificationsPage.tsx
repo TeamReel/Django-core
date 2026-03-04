@@ -4,6 +4,7 @@ import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './DocsNotificationsPage.module.css';
 
 export function DocsNotificationsPage() {
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -85,25 +86,17 @@ export function DocsNotificationsPage() {
   const filtered = filter === 'unread' ? notifications.filter(n => !n.is_read) : notifications;
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const filterBtnStyle = (active: boolean): React.CSSProperties => ({
-    padding: '6px 12px', borderRadius: '4px',
-    border: active ? '1px solid #007bff' : '1px solid #6c757d',
-    backgroundColor: 'var(--app-surface)',
-    color: active ? 'var(--app-primary)' : '#6c757d',
-    cursor: 'pointer', fontSize: '14px', fontWeight: 500,
-  });
-
   return (
     <AppShell>
       <PageHeader title="Notifications" subtitle="In-App Notifications with Persistent Read/Unread Status" />
       <PageContent>
         <div className="page-container" data-testid="notifications-page">
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}><Spinner /></div>
+            <div className={styles.loadingWrapper}><Spinner /></div>
           ) : error ? (
             <Card className="p-24 text-center bg-surface border">
-              <p className="mb-16" style={{ color: 'var(--color-red-500)' }}>{error}</p>
-              <button onClick={fetchNotifications} style={filterBtnStyle(true)}>Retry</button>
+              <p className={`mb-16 ${styles.errorText}`}>{error}</p>
+              <button onClick={fetchNotifications} className={styles.filterBtn} data-active="true">Retry</button>
             </Card>
           ) : (
             <>
@@ -111,15 +104,15 @@ export function DocsNotificationsPage() {
                 <div className="flex-between">
                   <div>
                     <h3 className="m-0 fs-18 fw-600 text-primary">Unread: {unreadCount}</h3>
-                    <p className="fs-14 text-muted" style={{ margin: '4px 0 0 0' }}>Total: {notifications.length} notifications</p>
+                    <p className={`fs-14 text-muted ${styles.totalText}`}>Total: {notifications.length} notifications</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => setFilter('all')} style={filterBtnStyle(filter === 'all')}>All</button>
-                    <button onClick={() => setFilter('unread')} style={filterBtnStyle(filter === 'unread')}>Unread ({unreadCount})</button>
+                  <div className={styles.filterGroup}>
+                    <button onClick={() => setFilter('all')} className={styles.filterBtn} data-active={String(filter === 'all')}>All</button>
+                    <button onClick={() => setFilter('unread')} className={styles.filterBtn} data-active={String(filter === 'unread')}>Unread ({unreadCount})</button>
                     <button
                       onClick={markAllAsRead}
                       disabled={unreadCount === 0}
-                      style={{ ...filterBtnStyle(false), cursor: unreadCount === 0 ? 'not-allowed' : 'pointer', opacity: unreadCount === 0 ? 0.5 : 1 }}
+                      className={styles.filterBtn}
                     >
                       Mark All Read
                     </button>
@@ -128,35 +121,29 @@ export function DocsNotificationsPage() {
               </Card>
 
               {filtered.length === 0 ? (
-                <Card className="text-center bg-surface border" style={{ padding: '48px' }}>
-                  <p style={{ color: 'var(--app-muted-text)' }}>{filter === 'unread' ? 'No unread notifications' : 'No notifications'}</p>
+                <Card className={`text-center bg-surface border ${styles.emptyCard}`}>
+                  <p className={styles.emptyText}>{filter === 'unread' ? 'No unread notifications' : 'No notifications'}</p>
                 </Card>
               ) : (
                 <div className="flex-col gap-12">
                   {filtered.map(notif => (
-                    <Card key={notif.id} style={{ padding: '16px', backgroundColor: notif.is_read ? 'var(--app-surface)' : 'var(--app-surface-2)', border: '1px solid var(--app-border)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                        <div style={{ flex: 1 }}>
+                    <Card key={notif.id} className={styles.notifCard} data-read={String(notif.is_read)}>
+                      <div className={styles.notifRow}>
+                        <div className={styles.notifContent}>
                           <div className="flex-row gap-8 mb-8">
                             <Badge variant={notif.level === 'error' ? 'error' : notif.level === 'warning' ? 'warning' : notif.level === 'success' ? 'success' : 'info'}>
                               {notif.level}
                             </Badge>
                             {!notif.is_read && <Badge variant="info">NEW</Badge>}
                           </div>
-                          <h4 className="fs-16 fw-600 text-primary" style={{ margin: '0 0 4px 0' }}>{notif.title}</h4>
-                          <p className="fs-14 text-muted" style={{ margin: '0 0 8px 0' }}>{notif.message}</p>
+                          <h4 className={`fs-16 fw-600 text-primary ${styles.notifTitle}`}>{notif.title}</h4>
+                          <p className={`fs-14 text-muted ${styles.notifMessage}`}>{notif.message}</p>
                           <div className="fs-12 text-muted">{new Date(notif.created_at).toLocaleString()}</div>
                         </div>
                         <button
                           onClick={() => handleToggleRead(notif.id, notif.is_read)}
                           disabled={marking === notif.id}
-                          style={{
-                            padding: '6px 12px', borderRadius: '4px',
-                            border: '1px solid #6c757d', backgroundColor: 'var(--app-surface)',
-                            color: '#6c757d', cursor: marking === notif.id ? 'not-allowed' : 'pointer',
-                            fontSize: '12px', fontWeight: 500,
-                            opacity: marking === notif.id ? 0.6 : 1, whiteSpace: 'nowrap',
-                          }}
+                          className={styles.toggleBtn}
                         >
                           {marking === notif.id ? 'Updating...' : notif.is_read ? 'Mark Unread' : 'Mark Read'}
                         </button>

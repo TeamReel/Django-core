@@ -1,0 +1,88 @@
+/* MemberThenVsNowTab — extracted inline styles */
+
+/* ── Prerequisite cards ── */
+
+.prerequisiteCard[data-ready="true"] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.prerequisiteCard[data-ready="false"] {
+  border: 1px dashed var(--app-border);
+}
+
+.prerequisiteHeading {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.prerequisiteMissing {
+  color: var(--app-text-muted);
+  font-size: 11px;
+}
+
+/* ── Transformation section ── */
+
+.transformationSection {
+  margin-top: 28px;
+}
+
+.transformationHeader {
+  margin-bottom: 12px;
+}
+
+.transformationIcon {
+  font-size: 20px;
+}
+
+.transformationCaption {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+/* ── Variant grid + cards ── */
+
+.variantGrid[data-enabled="true"] {
+  opacity: 1;
+}
+
+.variantGrid[data-enabled="false"] {
+  opacity: 0.5;
+}
+
+.variantCard[data-has-video="true"] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.variantCard[data-has-video="false"] {
+  border: 1px solid var(--app-border);
+}
+
+.variantPreview[data-dark-bg="true"] {
+  background: var(--color-overlay-dark, #000);
+}
+
+.variantPreview[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.variantPreview[data-clickable="false"] {
+  cursor: default;
+}
+
+/* ── Button helpers ── */
+
+.btnFlex {
+  flex: 1;
+}
+
+.btnFullWidth {
+  width: 100%;
+}
+
+/* ── Alert wrapper ── */
+
+.alertWrapper {
+  margin-top: 16px;
+}

@@ -13,6 +13,7 @@ import {
 import { ObservabilityCharts } from '../../components/ObservabilityCharts';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import type { ObservabilityMetrics } from '../../types/chart';
+import styles from './ObservabilityPage.module.css';
 // import AppShell from '../../components/AppShell';
 
 /**
@@ -146,7 +147,7 @@ export const ObservabilityPage: React.FC = () => {
   if (error) {
     return (
       <>
-        <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
+        <div className={styles.pageWrapper}>
           <PageHeader
             title="Observability"
             breadcrumbs={[
@@ -178,7 +179,7 @@ export const ObservabilityPage: React.FC = () => {
 
   return (
     <>
-      <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
+      <div className={styles.pageWrapper}>
         <PageHeader
         title="Observability"
         breadcrumbs={[
@@ -190,7 +191,7 @@ export const ObservabilityPage: React.FC = () => {
       <PageContent>
         {/* Loading state - only show on initial load */}
         {loading && !backendMetrics && (
-          <Card className="text-center bg-surface border" style={{ padding: '48px 24px' }}>
+          <Card className={`text-center bg-surface border ${styles.loadingCard}`}>
             <div className="text-muted fs-16">
               Loading observability metrics...
             </div>
@@ -222,11 +223,11 @@ export const ObservabilityPage: React.FC = () => {
                 <div>
                   <h3 className="fs-18 fw-600 mb-4 text-primary">Metrics</h3>
                   <p className="fs-14 text-muted m-0">
-                    Last updated: <span style={{ fontFamily: 'monospace', color: 'var(--app-text)' }}>
+                    Last updated: <span className={styles.timestampValue}>
                       {backendMetrics.timestamp ? new Date(backendMetrics.timestamp).toLocaleTimeString() : 'N/A'}
                     </span>
                   </p>
-                  {loading && <p className="fs-14 m-0" style={{ color: 'var(--app-primary)', marginTop: '4px' }}>Updating...</p>}
+                  {loading && <p className={`fs-14 m-0 ${styles.updatingText}`}>Updating...</p>}
                   {backendMetrics.message && (
                     <p className="fs-12 text-muted m-0 mt-4">
                       {backendMetrics.message}
@@ -255,24 +256,24 @@ export const ObservabilityPage: React.FC = () => {
 
             <Card data-testid="latency-metrics" className="mb-24 p-24 bg-surface border">
               <h3 className="fs-18 fw-600 mb-16 text-primary">Response Latency</h3>
-              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <div className={`grid gap-16 ${styles.metricsGrid}`}>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">p99 Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-error)' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.metricValueError}`}>
                     {backendMetrics.response_time_p99 != null ? backendMetrics.response_time_p99.toFixed(0) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">p95 Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: '#fd7e14' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.metricValueWarningOrange}`}>
                     {backendMetrics.response_time_p95 != null ? backendMetrics.response_time_p95.toFixed(0) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Median Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-success)' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.metricValueSuccess}`}>
                     {backendMetrics.response_time_median != null ? backendMetrics.response_time_median.toFixed(0) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
@@ -282,11 +283,11 @@ export const ObservabilityPage: React.FC = () => {
 
             <Card data-testid="error-metrics" className="mb-24 p-24 bg-surface border">
               <h3 className="fs-18 fw-600 mb-16 text-primary">Error Rates</h3>
-              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+              <div className={`grid gap-16 ${styles.metricsGridWide}`}>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">4xx Error Rate</div>
                   <div className="flex-row gap-8 mt-8">
-                    <div className="fs-24 fw-700" style={{ color: '#ffc107' }}>
+                    <div className={`fs-24 fw-700 ${styles.metricValueWarningYellow}`}>
                       {backendMetrics.error_rate_4xx != null ? backendMetrics.error_rate_4xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_4xx != null && backendMetrics.error_rate_4xx > 5 && (
@@ -297,7 +298,7 @@ export const ObservabilityPage: React.FC = () => {
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">5xx Error Rate</div>
                   <div className="flex-row gap-8 mt-8">
-                    <div className="fs-24 fw-700" style={{ color: 'var(--app-error)' }}>
+                    <div className={`fs-24 fw-700 ${styles.metricValueError}`}>
                       {backendMetrics.error_rate_5xx != null ? backendMetrics.error_rate_5xx.toFixed(2) : 'N/A'}%
                     </div>
                     {backendMetrics.error_rate_5xx != null && backendMetrics.error_rate_5xx > 1 && (
@@ -310,23 +311,23 @@ export const ObservabilityPage: React.FC = () => {
 
             <Card data-testid="resource-metrics" className="mb-24 p-24 bg-surface border">
               <h3 className="fs-18 fw-600 mb-16 text-primary">Resources</h3>
-              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <div className={`grid gap-16 ${styles.metricsGrid}`}>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Active Connections</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-primary)' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.metricValuePrimary}`}>
                     {backendMetrics.active_connections != null ? backendMetrics.active_connections : 'N/A'}
                   </div>
                 </div>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Database Latency</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-success)' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.metricValueSuccess}`}>
                     {backendMetrics.database_latency != null ? backendMetrics.database_latency.toFixed(1) : 'N/A'}
                     <span className="fs-14 fw-400 text-muted">ms</span>
                   </div>
                 </div>
                 <div className="p-16 border rounded-8 bg-surface-2">
                   <div className="fs-14 text-muted">Cache Hit Ratio</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: '#6f42c1' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.metricValuePurple}`}>
                     {backendMetrics.cache_hit_ratio != null ? (backendMetrics.cache_hit_ratio * 100).toFixed(1) : 'N/A'}%
                   </div>
                 </div>

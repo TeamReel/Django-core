@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './AuditLogTable.module.css';
 
 interface AuditEvent {
   id: string;
@@ -80,14 +81,14 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
 
   return (
     <div className="overflow-x-auto border rounded-8">
-      <table className="w-full fs-14" style={{ borderCollapse: 'collapse' }}>
+      <table className={`w-full fs-14 ${styles.table}`}>
         <thead className="bg-surface-2 text-primary">
           <tr className="text-left">
-            <th className="border-bottom" style={{ padding: '10px 8px' }}>Time</th>
-            <th className="border-bottom" style={{ padding: '10px 8px' }}>Action</th>
-            <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Actor</th>
-            <th className="hide-mobile border-bottom" style={{ padding: '10px 8px' }}>Resource</th>
-            <th className="hide-mobile hide-tablet border-bottom" style={{ padding: '10px 8px' }}>IP</th>
+            <th className={`border-bottom ${styles.cell}`}>Time</th>
+            <th className={`border-bottom ${styles.cell}`}>Action</th>
+            <th className={`hide-mobile border-bottom ${styles.cell}`}>Actor</th>
+            <th className={`hide-mobile border-bottom ${styles.cell}`}>Resource</th>
+            <th className={`hide-mobile hide-tablet border-bottom ${styles.cell}`}>IP</th>
           </tr>
         </thead>
         <tbody>
@@ -100,21 +101,21 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
           ) : (
             events.map((event) => (
               <tr key={event.id} className="border-bottom text-primary">
-                <td className="whitespace-nowrap fs-12" style={{ padding: '10px 8px' }}>
+                <td className={`whitespace-nowrap fs-12 ${styles.cell}`}>
                   {new Date(event.timestamp).toLocaleDateString()}
                 </td>
-                <td style={{ padding: '10px 8px' }}>
-                  <span className="rounded-12 bg-surface-2 fs-11 fw-500" style={{ padding: '2px 6px' }}>
+                <td className={styles.cell}>
+                  <span className={`rounded-12 bg-surface-2 fs-11 fw-500 ${styles.actionBadge}`}>
                     {event.action.toUpperCase()}
                   </span>
                 </td>
-                <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
+                <td className={`hide-mobile fs-13 ${styles.cell}`}>
                   {event.actor?.email || 'System'}
                 </td>
-                <td className="hide-mobile fs-13" style={{ padding: '10px 8px' }}>
+                <td className={`hide-mobile fs-13 ${styles.cell}`}>
                    {event.resource_type}
                 </td>
-                <td className="hide-mobile hide-tablet fs-12" style={{ padding: '10px 8px', fontFamily: 'monospace' }}>
+                <td className={`hide-mobile hide-tablet fs-12 ${styles.cell} ${styles.ipCell}`}>
                   {event.remote_ip}
                 </td>
               </tr>

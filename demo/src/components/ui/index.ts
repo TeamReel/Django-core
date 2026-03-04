@@ -8,6 +8,10 @@
 export { Modal } from './Modal';
 export type { ModalProps, ModalSize } from './Modal';
 
+// Avatar — circular avatar with image/initials fallback + status dot
+export { Avatar } from './Avatar';
+export type { AvatarProps, AvatarSize } from './Avatar';
+
 // Card — flexible card wrapper with variant presets
 export { Card } from './Card';
 export type { CardProps, CardVariant, CardPadding } from './Card';

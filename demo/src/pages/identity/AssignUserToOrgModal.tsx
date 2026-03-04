@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import type { Organisation as SharedOrganisation } from '../../types';
+import styles from './AssignUserToOrgModal.module.css';
 
 type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
 
@@ -82,69 +83,28 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
   if (!opened) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'var(--app-surface)',
-        padding: '24px',
-        borderRadius: '8px',
-        width: '500px',
-        maxWidth: '90%',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        color: 'var(--app-text)',
-        border: '1px solid var(--app-border)'
-      }}>
-        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <h2 className={styles.title}>
           Assign {user?.first_name} {user?.last_name} to Organisation
         </h2>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className={styles.formBody}>
             {error && (
-              <div style={{
-                padding: '12px',
-                backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                color: 'var(--app-error)',
-                border: '1px solid rgba(220, 53, 69, 0.2)',
-                borderRadius: '4px',
-                fontSize: '14px'
-              }}>
+              <div className={styles.errorAlert}>
                 {error}
               </div>
             )}
 
             <div>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontWeight: 500,
-                color: 'var(--app-text)',
-                fontSize: '14px'
-              }}>
+              <label className={styles.fieldLabel}>
                 Organisation
               </label>
               <select
                 value={selectedOrgId}
                 onChange={(e) => setSelectedOrgId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  fontSize: '14px'
-                }}
+                className={styles.selectInput}
                 required
               >
                 <option value="">Select Organisation...</option>
@@ -155,65 +115,34 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
             </div>
 
             <div>
-              <label style={{
-                display: 'block',
-                marginBottom: '8px',
-                fontWeight: 500,
-                color: 'var(--app-text)',
-                fontSize: '14px'
-              }}>
+              <label className={styles.fieldLabel}>
                 Role
               </label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  fontSize: '14px'
-                }}
+                className={styles.selectInput}
               >
                 <option value="member">Member</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+            <div className={styles.footer}>
               <button
                 type="button"
                 onClick={onClose}
                 disabled={loading}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 500
-                }}
+                className={styles.cancelBtn}
+                data-loading={loading || undefined}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading || !selectedOrgId}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  border: 'none',
-                  backgroundColor: loading || !selectedOrgId ? '#cccccc' : '#0066cc',
-                  color: 'white',
-                  cursor: loading || !selectedOrgId ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  opacity: loading || !selectedOrgId ? 0.6 : 1
-                }}
+                className={styles.submitBtn}
+                data-disabled={loading || !selectedOrgId || undefined}
               >
                 {loading ? 'Assigning...' : 'Assign'}
               </button>

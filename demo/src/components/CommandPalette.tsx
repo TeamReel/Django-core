@@ -4,6 +4,7 @@ import { Command, Star, Clock, Plus, ArrowRight } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useNavFavorites, useNavRecents } from '../hooks/useNavItems';
 import { isFavorite, toggleFavorite, type NavStoredItem } from '../utils/navStorage';
+import styles from './CommandPalette.module.css';
 
 type CommandItem = {
   id: string;
@@ -152,39 +153,20 @@ export default function CommandPalette({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0"
-      style={{
-        zIndex: 2000,
-      }}
+      className={`fixed inset-0 ${styles.overlay}`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="absolute inset-0"
-        style={{
-          background: 'rgba(0,0,0,0.35)',
-          backdropFilter: 'blur(2px)',
-        }}
+        className={`absolute inset-0 ${styles.backdrop}`}
       />
 
       <div
-        className="relative overflow-hidden"
-        style={{
-          maxWidth: 720,
-          margin: '10vh auto 0',
-          background: 'var(--app-surface)',
-          border: '1px solid var(--app-border)',
-          borderRadius: 14,
-          boxShadow: 'var(--shadow-xl)',
-        }}
+        className={`relative overflow-hidden ${styles.panel}`}
       >
         <div
-          className="p-12 flex-row border-bottom"
-          style={{
-            alignItems: 'center',
-            gap: 10,
-          }}
+          className={`p-12 flex-row border-bottom ${styles.searchRow}`}
         >
           <AppIcon icon={Command} size={18} />
           <input
@@ -195,30 +177,15 @@ export default function CommandPalette({
               setActiveIndex(0);
             }}
             placeholder="Search pages, recents, favorites…"
-            className="flex-1 border-none bg-transparent fs-14"
-            style={{
-              outline: 'none',
-              color: 'var(--app-text)',
-            }}
+            className={`flex-1 border-none bg-transparent fs-14 ${styles.searchInput}`}
           />
           {active?.path && (
             <button
               type="button"
               onClick={onToggleFavoriteCurrent}
               title={isFavorite(active.path) ? 'Remove from favorites' : 'Add to favorites'}
-              style={{
-                border: '1px solid var(--app-border)',
-                background: 'var(--app-surface-2)',
-                borderRadius: 10,
-                padding: '6px 10px',
-                cursor: 'pointer',
-                color: isFavorite(active.path) ? 'var(--color-amber-400)' : 'var(--app-text)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 12,
-                fontWeight: 700,
-              }}
+              className={styles.favButton}
+              data-saved={isFavorite(active.path)}
             >
               <AppIcon icon={Star} size={14} />
               {isFavorite(active.path) ? 'Saved' : 'Save'}
@@ -226,9 +193,9 @@ export default function CommandPalette({
           )}
         </div>
 
-        <div className="overflow-y-auto" style={{ maxHeight: 420 }}>
+        <div className={`overflow-y-auto ${styles.resultsList}`}>
           {filtered.length === 0 ? (
-            <div style={{ padding: 14, color: 'var(--app-muted-text)' }}>No results.</div>
+            <div className={styles.noResults}>No results.</div>
           ) : (
             filtered.map((item, idx) => {
               const selected = idx === activeIndex;
@@ -241,24 +208,17 @@ export default function CommandPalette({
                     onClose();
                     navigate(item.path);
                   }}
-                  className="w-full text-left cursor-pointer flex-between"
-                  style={{
-                    border: 'none',
-                    background: selected ? 'rgba(59, 130, 246, 0.12)' : 'transparent',
-                    color: 'var(--app-text)',
-                    padding: '12px 14px',
-                    gap: 12,
-                    borderTop: '1px solid var(--app-border)',
-                  }}
+                  className={`w-full text-left cursor-pointer flex-between ${styles.resultItem}`}
+                  data-selected={selected}
                 >
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                  <span className={styles.resultLeft}>
                     <AppIcon icon={iconFor(item)} size={16} />
-                    <span className="fs-14 truncate" style={{ fontWeight: 650 }}>
+                    <span className={`fs-14 truncate ${styles.resultLabel}`}>
                       {item.label}
                     </span>
-                    <span className="fs-12" style={{ color: 'var(--app-muted-text)' }}>{item.kind}</span>
+                    <span className={`fs-12 ${styles.resultKind}`}>{item.kind}</span>
                   </span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--app-muted-text)' }}>
+                  <span className={styles.resultRight}>
                     <span className="fs-12 whitespace-nowrap">{item.path}</span>
                     <AppIcon icon={ArrowRight} size={14} />
                   </span>
@@ -269,12 +229,7 @@ export default function CommandPalette({
         </div>
 
         <div
-          className="flex-between border-top fs-12"
-          style={{
-            padding: 10,
-            color: 'var(--app-muted-text)',
-            gap: 10,
-          }}
+          className={`flex-between border-top fs-12 ${styles.footer}`}
         >
           <span>Enter to open • Esc to close</span>
           <span>↑/↓ to navigate</span>

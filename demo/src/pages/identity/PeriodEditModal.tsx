@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSports } from '../../hooks/useSports';
+import styles from './PeriodEditModal.module.css';
 
 export interface PeriodLike {
   id: string;
@@ -223,25 +224,11 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 1000,
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={onClose}
     >
       <div
-        className="p-24 rounded-8 bg-surface text-primary border"
-        style={{
-          width: '640px',
-          maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        }}
+        className={`p-24 rounded-8 bg-surface text-primary border ${styles.modal}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-between gap-12">
@@ -264,13 +251,12 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               id="period-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="rounded-6 border bg-surface-2 text-primary"
-              style={{ padding: '8px 10px' }}
+              className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
             />
           </div>
 
           {showDates && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className={styles.dateGrid}>
               <div className="flex-col gap-6">
                 <label className="fw-600" htmlFor="period-start">
                   Start (YYYY-MM-DD)
@@ -280,8 +266,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   placeholder="YYYY-MM-DD"
-                  className="rounded-6 border bg-surface-2 text-primary"
-                  style={{ padding: '8px 10px' }}
+                  className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
                 />
               </div>
 
@@ -294,8 +279,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   placeholder="YYYY-MM-DD"
-                  className="rounded-6 border bg-surface-2 text-primary"
-                  style={{ padding: '8px 10px' }}
+                  className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
                 />
               </div>
             </div>
@@ -310,8 +294,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               value={type}
               onChange={(e) => setType(e.target.value)}
               placeholder="season / league / cup"
-              className="rounded-6 border bg-surface-2 text-primary"
-              style={{ padding: '8px 10px' }}
+              className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
             />
           </div>
 
@@ -325,8 +308,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
                 value={selectedSportId}
                 onChange={(e) => setSelectedSportId(e.target.value)}
                 disabled={saving || sportsLoading}
-                className="rounded-6 border bg-surface-2 text-primary"
-                style={{ padding: '8px 10px' }}
+                className={`rounded-6 border bg-surface-2 text-primary ${styles.input}`}
               >
                 <option value="">— Select sport variant —</option>
                 {filteredVariants.map((sport) => (
@@ -347,20 +329,19 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="rounded-6 border bg-surface-2 text-primary"
-              style={{ padding: '8px 10px', resize: 'vertical' }}
+              className={`rounded-6 border bg-surface-2 text-primary ${styles.textarea}`}
             />
           </div>
 
           {error && <div className="text-danger">{error}</div>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+          <div className={styles.footer}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="rounded-6 border bg-surface-2 text-primary cursor-pointer"
-              style={{ padding: '8px 14px', opacity: saving ? 0.7 : 1 }}
+              className={`rounded-6 border bg-surface-2 text-primary cursor-pointer ${styles.cancelBtn}`}
+              data-saving={saving || undefined}
             >
               Cancel
             </button>
@@ -368,14 +349,8 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="rounded-6 cursor-pointer"
-              style={{
-                padding: '8px 14px',
-                border: '1px solid var(--app-primary, #2563eb)',
-                backgroundColor: 'var(--app-primary, #2563eb)',
-                color: '#fff',
-                opacity: saving ? 0.7 : 1,
-              }}
+              className={`rounded-6 cursor-pointer ${styles.saveBtn}`}
+              data-saving={saving || undefined}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

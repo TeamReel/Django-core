@@ -1,0 +1,52 @@
+.iconPrimary {
+  color: var(--color-primary);
+}
+
+.matchCard {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.matchCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.relativeTime {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.relativeTime[data-urgency="urgent"] {
+  color: var(--color-error, #ef4444);
+}
+
+.relativeTime[data-urgency="soon"] {
+  color: var(--color-warning, #f59e0b);
+}
+
+.relativeTime[data-urgency="upcoming"] {
+  color: var(--color-success, #22c55e);
+}
+
+.relativeTime[data-urgency="future"],
+.relativeTime[data-urgency="past"] {
+  color: var(--color-text-muted);
+}
+
+.metaInfo {
+  color: var(--app-muted-text);
+}
+
+.generateLabel {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .generateLabel {
+    display: inline;
+  }
+}
+
+.iconMuted {
+  color: var(--app-muted-text);
+}

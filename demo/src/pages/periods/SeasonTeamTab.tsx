@@ -7,6 +7,7 @@ import {
   getRbacLabel,
 } from './seasonDetailUtils';
 import s from './ProjectSeasonDetailPage.module.css';
+import st from './SeasonTeamTab.module.css';
 
 export interface SeasonTeamTabProps {
   teamRoster: any[];
@@ -84,8 +85,8 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-3">
         <Card>
-          <div style={{ padding: '16px 16px 0 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <div className={st.cardHeader}>
+            <div className={st.titleRow}>
               <h3 className={s.sectionTitle}>Team Members</h3>
               <Badge variant="default">{eligibleTeamMembers.length} Available</Badge>
             </div>
@@ -94,17 +95,17 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
             </div>
           </div>
 
-          <div style={{ padding: '16px' }}>
+          <div className={st.cardBody}>
             {teamRosterLoading && <Alert variant="info">Loading team roster…</Alert>}
             {teamRosterError && <Alert variant="error">{teamRosterError}</Alert>}
 
             {userCanEditProject && (
-              <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+              <div className={st.filterBar}>
                 <Input
                   value={eligibleSearch}
                   onChange={(e) => setEligibleSearch(e.target.value)}
                   placeholder="Search team members"
-                  style={{ width: '280px' }}
+                  className={st.searchInput}
                 />
                 <Button
                   variant="secondary"
@@ -151,14 +152,14 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                   <thead>
                     <tr>
                       {userCanEditProject && (
-                        <th className="detail-th" style={{ width: '44px' }}></th>
+                        <th className={`detail-th ${st.checkboxCol}`}></th>
                       )}
                       <th className="detail-th">Name</th>
                       <th className="detail-th">Email</th>
                       <th className="detail-th">Access</th>
                       <th className="detail-th">Functional</th>
                       {userCanEditProject && (
-                        <th className="detail-th text-right" style={{ width: '120px' }}>
+                        <th className={`detail-th text-right ${st.actionCol}`}>
                           Action
                         </th>
                       )}
@@ -193,7 +194,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                           </td>
                           <td className="detail-td">
                             {functionalRoles.length ? (
-                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                              <div className={st.badgeList}>
                                 {functionalRoles.map((r) => (
                                   <Badge key={r} variant="default">
                                     {r}

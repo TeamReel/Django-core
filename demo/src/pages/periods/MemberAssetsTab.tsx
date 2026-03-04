@@ -12,6 +12,7 @@ import {
 } from './memberDetailUtils';
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import m from './MemberAssetsTab.module.css';
 
 export interface MemberAssetsTabProps extends MemberTabCommonProps {
   croppingCloseup: Record<string, boolean>;
@@ -93,18 +94,12 @@ export function MemberAssetsTab({
 
               <div className={s.variantGrid}>
                 {/* Fullbody Card */}
-                <div className={s.variantCard} style={{
-                  border: fbLineupReady ? '2px solid var(--vscode-charts-green)' : fbUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                }}>
+                <div className={`${s.variantCard} ${m.variantCardBorder}`} data-border={fbLineupReady ? 'ready' : fbUrl ? 'has-url' : 'empty'}>
                   <div
                     onClick={() => { const url = resolveDisplayUrl(fbUrl); if (url) window.open(url, '_blank'); }}
-                    className={s.variantPreview34}
-                    style={{
-                      background: fbUrl
-                        ? `url(${resolveDisplayUrl(fbUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
-                        : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                      cursor: fbUrl ? 'zoom-in' : 'default',
-                    }}>
+                    className={`${s.variantPreview34} ${m.previewBgContain}`}
+                    data-has-url={String(!!fbUrl)}
+                    style={fbUrl ? { '--preview-url': `url(${resolveDisplayUrl(fbUrl)})` } as React.CSSProperties : undefined}>
                     {!fbUrl && <div className={`${s.processingOverlay} bg-transparent text-muted fs-12 fw-400`}>Niet gegenereerd</div>}
                     {fbUrl && (
                       <div className={s.overlayBadgeContainer}>
@@ -150,18 +145,12 @@ export function MemberAssetsTab({
                 </div>
 
                 {/* Halfbody Card */}
-                <div className={s.variantCard} style={{
-                  border: hbLineupReady ? '2px solid var(--vscode-charts-green)' : hbUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                }}>
+                <div className={`${s.variantCard} ${m.variantCardBorder}`} data-border={hbLineupReady ? 'ready' : hbUrl ? 'has-url' : 'empty'}>
                   <div
                     onClick={() => { const url = resolveDisplayUrl(hbUrl); if (url) window.open(url, '_blank'); }}
-                    className={s.variantPreview34}
-                    style={{
-                      background: hbUrl
-                        ? `url(${resolveDisplayUrl(hbUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
-                        : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                      cursor: hbUrl ? 'zoom-in' : 'default',
-                    }}>
+                    className={`${s.variantPreview34} ${m.previewBgContain}`}
+                    data-has-url={String(!!hbUrl)}
+                    style={hbUrl ? { '--preview-url': `url(${resolveDisplayUrl(hbUrl)})` } as React.CSSProperties : undefined}>
                     {!hbUrl && <div className={`${s.processingOverlay} bg-transparent text-muted fs-12 fw-400`}>Niet gegenereerd</div>}
                     {hbUrl && (
                       <div className={s.overlayBadgeContainer}>
@@ -192,20 +181,12 @@ export function MemberAssetsTab({
                 </div>
 
                 {/* Closeup Card */}
-                <div className={s.variantCard} style={{
-                  border: cuLineupReady ? '2px solid var(--vscode-charts-green)' : cuUrl ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                }}>
+                <div className={`${s.variantCard} ${m.variantCardBorder}`} data-border={cuLineupReady ? 'ready' : cuUrl ? 'has-url' : 'empty'}>
                   <div
                     onClick={() => { const url = resolveDisplayUrl(cuUrl); if (url) window.open(url, '_blank'); }}
-                    className={s.variantPreview34}
-                    style={{
-                      aspectRatio: '1/1',
-                      background: cuUrl
-                        ? `url(${resolveDisplayUrl(cuUrl)}) center/contain no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
-                        : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                      minHeight: '150px',
-                      cursor: cuUrl ? 'zoom-in' : 'default',
-                    }}>
+                    className={`${s.variantPreview34} ${m.previewBgContain} ${m.closeupPreview}`}
+                    data-has-url={String(!!cuUrl)}
+                    style={cuUrl ? { '--preview-url': `url(${resolveDisplayUrl(cuUrl)})` } as React.CSSProperties : undefined}>
                     {!cuUrl && <div className={`${s.processingOverlay} bg-transparent text-muted fs-12 fw-400`}>Niet gegenereerd</div>}
                     {cuUrl && (
                       <div className={s.overlayBadgeContainer}>
@@ -254,9 +235,9 @@ export function MemberAssetsTab({
         })}
 
         {/* Team/Club Assets Section */}
-        <div className="pt-24 border-top" style={{ marginTop: '32px' }}>
+        <div className={`pt-24 border-top ${m.inheritedSection}`}>
           <h4 className="fs-14 fw-600 mb-8">🏟️ Geërfde Team Assets</h4>
-          <p className="fs-12 mb-16" style={{ color: 'var(--vscode-descriptionForeground)' }}>
+          <p className={`fs-12 mb-16 ${m.inheritedDescription}`}>
             Deze assets worden geërfd van het team/seizoen en worden gebruikt als basis voor generatie.
           </p>
           <AssetsTab

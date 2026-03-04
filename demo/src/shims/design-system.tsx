@@ -1,5 +1,6 @@
 import type { ReactNode, TableHTMLAttributes, CSSProperties } from 'react';
 import { themeVars } from '@django-core/design-system';
+import styles from './design-system.module.css';
 
 export * from '@django-core/design-system';
 
@@ -10,9 +11,9 @@ export type PageHeaderProps = {
   className?: string;
 };
 export const PageHeader = ({ title, subtitle, children, ...rest }: PageHeaderProps) => (
-  <div style={{ marginBottom: '16px' }} {...rest}>
-    {title ? <h1 style={{ margin: 0, color: themeVars.color.text.primary }}>{title}</h1> : null}
-    {subtitle ? <p style={{ margin: '4px 0', color: themeVars.color.text.secondary }}>{subtitle}</p> : null}
+  <div className={styles.pageHeader} {...rest}>
+    {title ? <h1 className={styles.pageTitle} style={{ '--title-color': themeVars.color.text.primary } as CSSProperties}>{title}</h1> : null}
+    {subtitle ? <p className={styles.pageSubtitle} style={{ '--subtitle-color': themeVars.color.text.secondary } as CSSProperties}>{subtitle}</p> : null}
     {children}
   </div>
 );
@@ -23,7 +24,7 @@ export type PageContentProps = {
   style?: CSSProperties;
 };
 export const PageContent = ({ children, className, style }: PageContentProps) => (
-  <div style={{ display: 'grid', gap: '16px', ...style }} className={className}>
+  <div className={`${styles.pageContent}${className ? ` ${className}` : ''}`} style={style}>
     {children}
   </div>
 );
@@ -45,29 +46,13 @@ export type TableProps = TableHTMLAttributes<HTMLTableElement> & {
   responsive?: boolean;
 };
 
-export const Table = ({ children, columns, rows, loading, style, responsive = true, ...rest }: TableProps) => {
-  const baseStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', textAlign: 'left' };
-  const mergedStyle = { ...baseStyle, ...style };
+export const Table = ({ children, columns, rows, loading, style, responsive = true, className: userClassName, ...rest }: TableProps) => {
+  const tableClassName = `${styles.table}${userClassName ? ` ${userClassName}` : ''}`;
 
   const wrap = (tableEl: ReactNode) => {
     if (!responsive) return tableEl;
     return (
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '100%',
-          overflowX: 'auto',
-          // Explicit overflowY prevents the CSS spec rule (overflow-x != visible
-          // → overflow-y auto) from creating a vertical scroll context.  Without
-          // this, tables using borderCollapse:'collapse' may produce a 1-2px
-          // sub-pixel height overflow that silently clips the last row.
-          overflowY: 'hidden',
-          WebkitOverflowScrolling: 'touch',
-          // Reserve space so hidden-Y never clips content – absorbs sub-pixel
-          // overflows from collapsed borders and overlay scrollbar gutters.
-          paddingBottom: 4,
-        }}
-      >
+      <div className={styles.tableWrapper}>
         {tableEl}
       </div>
     );
@@ -75,27 +60,28 @@ export const Table = ({ children, columns, rows, loading, style, responsive = tr
 
   if (columns && rows) {
     return wrap(
-      <table style={mergedStyle} {...rest}>
+      <table className={tableClassName} style={style} {...rest}>
         <thead>
-          <tr style={{ borderBottom: '1px solid #eee' }}>
+          <tr className={styles.headerRow}>
             {columns.map((col) => (
               <th
                 key={col.key}
-                style={{ padding: '12px', cursor: col.sortable ? 'pointer' : 'default' }}
+                className={styles.tableHeaderCell}
+                data-sortable={col.sortable ? 'true' : undefined}
                 onClick={col.onSort}
               >
                 {col.label}
-                {col.sorted === 'asc' && ' ▲'}
-                {col.sorted === 'desc' && ' ▼'}
+                {col.sorted === 'asc' && ' \u25B2'}
+                {col.sorted === 'desc' && ' \u25BC'}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+            <tr key={i} className={styles.dataRow}>
               {columns.map((col) => (
-                <td key={col.key} style={{ padding: '12px' }}>
+                <td key={col.key} className={styles.tableCell}>
                   {row[col.key]}
                 </td>
               ))}
@@ -107,7 +93,7 @@ export const Table = ({ children, columns, rows, loading, style, responsive = tr
   }
 
   return wrap(
-    <table style={{ width: '100%', borderCollapse: 'collapse', ...style }} {...rest}>
+    <table className={tableClassName} style={style} {...rest}>
       {children}
     </table>
   );

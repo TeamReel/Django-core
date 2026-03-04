@@ -1,0 +1,39 @@
+/* MemberIdentityTab — extracted inline styles */
+
+.profilePhotoContainer {
+  width: 160px;
+  height: 160px;
+  background-color: var(--app-surface-secondary);
+  border: 2px solid var(--app-border);
+}
+
+.emptyAvatarIcon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.infoColumn {
+  min-width: 200px;
+}
+
+.noPhotoText {
+  font-style: italic;
+}
+
+.mediaProfileSection {
+  background-color: var(--app-surface-secondary);
+}
+
+.mediaPhotoContainer {
+  width: 120px;
+  height: 120px;
+  border: 2px solid var(--app-border);
+}
+
+.monoUrl {
+  font-family: monospace;
+}
+
+.jerseyInput {
+  max-width: 100px;
+}

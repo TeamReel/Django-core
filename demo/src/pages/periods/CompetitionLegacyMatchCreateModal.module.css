@@ -1,0 +1,90 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--overlay-backdrop, rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--app-surface);
+  padding: 24px;
+  border-radius: 8px;
+  width: 640px;
+  max-width: 95%;
+  box-shadow: 0 4px 12px var(--modal-shadow, rgba(0, 0, 0, 0.15));
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headerTitle {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--app-text);
+}
+
+.closeButton {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  height: fit-content;
+}
+
+.closeButton[data-saving='true'] {
+  cursor: not-allowed;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 10px 16px;
+}
+
+.formControl {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.formControlTextarea {
+  composes: formControl;
+  resize: vertical;
+}
+
+.errorMessage {
+  margin-top: 12px;
+  color: var(--app-danger, #d32f2f);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.submitButton {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--submit-btn-border, #1e5aa5);
+  background-color: var(--color-blue-600);
+  color: var(--color-white, #fff);
+  cursor: pointer;
+  font-weight: 600;
+}

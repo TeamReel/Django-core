@@ -3,6 +3,7 @@ import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import type { SeasonProject as Project } from '../../types/season';
 import { getUserDisplayName } from './memberDetailUtils';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import styles from './MemberIdentityTab.module.css';
 
 export interface MemberIdentityTabProps {
   membership: any;
@@ -162,12 +163,7 @@ export function MemberIdentityTab({
           <div className="mb-24">
             <div className={`${s.sectionTitle} mb-12`}>Profile Photo</div>
             <div className="flex-row items-start gap-20 flex-wrap">
-              <div className="rounded-12 overflow-hidden flex-center" style={{
-                width: '160px',
-                height: '160px',
-                backgroundColor: 'var(--app-surface-secondary)',
-                border: '2px solid var(--app-border)',
-              }}>
+              <div className={`rounded-12 overflow-hidden flex-center ${styles.profilePhotoContainer}`}>
                 {membership?.user?.avatar_url ? (
                   <img
                     src={membership.user.avatar_url}
@@ -178,16 +174,16 @@ export function MemberIdentityTab({
                     }}
                   />
                 ) : (
-                  <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
+                  <div className={styles.emptyAvatarIcon}>👤</div>
                 )}
               </div>
-              <div className="flex-1" style={{ minWidth: '200px' }}>
+              <div className={`flex-1 ${styles.infoColumn}`}>
                 {membership?.user?.avatar_url ? (
                   <div className={s.flexCenterGap8}>
                     <span className="fs-13 text-success fw-600">✓ Profile photo set</span>
                   </div>
                 ) : (
-                  <div className="fs-13 text-muted" style={{ fontStyle: 'italic' }}>
+                  <div className={`fs-13 text-muted ${styles.noPhotoText}`}>
                     No profile photo set
                   </div>
                 )}
@@ -197,14 +193,10 @@ export function MemberIdentityTab({
 
           {/* Media Profile Photo - If different from user avatar */}
           {profileMediaUrl && profileMediaUrl !== membership?.user?.avatar_url && (
-            <div className="mb-24 p-16 rounded-8" style={{ backgroundColor: 'var(--app-surface-secondary)' }}>
+            <div className={`mb-24 p-16 rounded-8 ${styles.mediaProfileSection}`}>
               <div className={`${s.sectionTitle} mb-12`}>Media Profile Photo</div>
               <div className="flex-row items-start gap-20 flex-wrap">
-                <div className="rounded-8 overflow-hidden flex-center bg-surface" style={{
-                  width: '120px',
-                  height: '120px',
-                  border: '2px solid var(--app-border)',
-                }}>
+                <div className={`rounded-8 overflow-hidden flex-center bg-surface ${styles.mediaPhotoContainer}`}>
                   <img
                     src={profileMediaUrl}
                     alt="Media profile"
@@ -214,13 +206,11 @@ export function MemberIdentityTab({
                     }}
                   />
                 </div>
-                <div className="flex-1" style={{ minWidth: '200px' }}>
+                <div className={`flex-1 ${styles.infoColumn}`}>
                   <div className={`${s.formLabel} mb-8`}>
                     Photo from media slot (e.g., SoccerWiki import)
                   </div>
-                  <div className="py-8 px-12 bg-surface rounded-6 fs-11 word-break-all mb-12" style={{
-                    fontFamily: 'monospace',
-                  }}>
+                  <div className={`py-8 px-12 bg-surface rounded-6 fs-11 word-break-all mb-12 ${styles.monoUrl}`}>
                     {profileMediaUrl}
                   </div>
                   <Button
@@ -280,7 +270,7 @@ export function MemberIdentityTab({
                     value={editJerseyNumber}
                     onChange={(e) => setEditJerseyNumber(e.target.value)}
                     placeholder="e.g., 10"
-                    style={{ maxWidth: '100px' }}
+                    className={styles.jerseyInput}
                   />
                 </div>
                 <div className="flex-row gap-8 mt-8">

@@ -22,6 +22,7 @@ import { ENTITY_LABELS } from './entityEditTypes';
 import { useEntityEditData } from './useEntityEditData';
 import { EntityGeneralTab } from './EntityGeneralTab';
 import { EntityBrandTab } from './EntityBrandTab';
+import styles from './EntityEditModal.module.css';
 
 export default function EntityEditModal({
   isOpen,
@@ -73,31 +74,20 @@ export default function EntityEditModal({
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        zIndex: 1000,
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={() => !saving && onClose()}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="bg-surface rounded-12 max-w-800 flex-col"
-        style={{ width: '95%', maxHeight: '90vh', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)' }}
+        className={`bg-surface rounded-12 max-w-800 flex-col ${styles.modal}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex-between border-bottom" style={{ padding: '16px 20px' }}>
+        <div className={`flex-between border-bottom ${styles.header}`}>
           <div className="flex-row gap-12">
             <div
-              className="flex-center rounded-8"
-              style={{ width: '40px', height: '40px', background: 'var(--app-primary)', color: 'white' }}
+              className={`flex-center rounded-8 ${styles.headerIcon}`}
             >
               <EntityIcon size={20} />
             </div>
@@ -108,8 +98,7 @@ export default function EntityEditModal({
           </div>
           <button
             onClick={() => !saving && onClose()}
-            className="bg-transparent border-none cursor-pointer p-8"
-            style={{ color: 'var(--app-text-secondary)' }}
+            className={`bg-transparent border-none cursor-pointer p-8 ${styles.closeButton}`}
             aria-label="Close"
           >
             <X size={20} />
@@ -117,16 +106,10 @@ export default function EntityEditModal({
         </div>
 
         {/* Main: sidebar + content */}
-        <div className="flex-1 overflow-hidden" style={{ display: 'flex' }}>
+        <div className={`flex-1 overflow-hidden ${styles.mainLayout}`}>
           {/* Sidebar Tabs */}
           <div
-            className="flex-col gap-4"
-            style={{
-              padding: '16px 12px',
-              borderRight: '1px solid var(--app-border)',
-              background: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-              minWidth: '160px',
-            }}
+            className={`flex-col gap-4 ${styles.sidebar}`}
           >
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -134,13 +117,8 @@ export default function EntityEditModal({
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className="flex-row gap-8 border-none rounded-6 cursor-pointer fs-13 text-left w-full"
-                  style={{
-                    padding: '10px 12px',
-                    fontWeight: activeTab === tab.key ? 600 : 400,
-                    backgroundColor: activeTab === tab.key ? 'var(--app-primary, #3b82f6)' : 'transparent',
-                    color: activeTab === tab.key ? 'white' : 'var(--app-text-secondary)',
-                  }}
+                  className={`flex-row gap-8 border-none rounded-6 cursor-pointer fs-13 text-left w-full ${styles.tabButton}`}
+                  data-active={activeTab === tab.key}
                 >
                   <Icon size={16} />
                   {tab.label}
@@ -153,7 +131,7 @@ export default function EntityEditModal({
           <div className="flex-1 overflow-auto p-20">
             {loading && (
               <div className="p-32 text-center">
-                <Loader2 size={32} className="opacity-50" style={{ animation: 'spin 1s linear infinite' }} />
+                <Loader2 size={32} className={`opacity-50 ${styles.spinner}`} />
                 <Text color="secondary" className="mt-12">Loading...</Text>
               </div>
             )}
@@ -200,8 +178,7 @@ export default function EntityEditModal({
 
         {/* Footer */}
         <div
-          className="flex-between border-top"
-          style={{ padding: '16px 20px', background: 'var(--app-surface-alt, rgba(0,0,0,0.02))' }}
+          className={`flex-between border-top ${styles.footer}`}
         >
           <div>{hasChanges && <Text size="sm" color="secondary">You have unsaved changes</Text>}</div>
           <div className="flex-row gap-8">
@@ -209,7 +186,7 @@ export default function EntityEditModal({
             <Button variant="primary" onClick={onSaveClick} disabled={saving || !hasChanges}>
               {saving ? (
                 <>
-                  <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                  <Loader2 size={14} className={styles.spinner} />
                   Saving...
                 </>
               ) : (
@@ -221,13 +198,6 @@ export default function EntityEditModal({
             </Button>
           </div>
         </div>
-
-        <style>{`
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     </div>
   );

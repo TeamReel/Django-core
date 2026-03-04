@@ -14,9 +14,10 @@ import { BottomSheet } from '@django-core/design-system';
 import { ChevronRight, Check, Zap, Play, Clock } from 'lucide-react';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import ContentGenerationModal from '../pages/identity/ContentGenerationModal';
-import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, CARD_STYLE, type MatchWizardProps } from './matchWizardTypes';
+import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, type MatchWizardProps } from './matchWizardTypes';
 import { useMatchWizardData } from './useMatchWizardData';
 import { MatchWizardLineupStep } from './MatchWizardLineupStep';
+import styles from './MatchWizard.module.css';
 
 export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWizardProps) {
   const d = useMatchWizardData(isOpen, onClose, initialMatchId);
@@ -34,19 +35,17 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
   return (
     <BottomSheet isOpen={isOpen} onClose={handleClose}>
-      <div className="flex-col" style={{ maxHeight: '65vh' }}>
+      <div className={`flex-col ${styles.root}`}>
 
         {/* ── Header: back + title + close ─────────────────────────── */}
-        <div className="flex-row gap-12 border-bottom" style={{ padding: '4px 16px 12px', flexShrink: 0 }}>
+        <div className={`flex-row gap-12 border-bottom ${styles.header}`}>
           {currentStep !== 'match' ? (
             <button onClick={handleBack} aria-label="Terug"
-              className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10"
-              style={{ width: '40px', height: '40px', lineHeight: 1 }}>←</button>
-          ) : <div style={{ width: '40px' }} />}
+              className={`flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10 ${styles.headerBtn}`}>←</button>
+          ) : <div className={styles.headerSpacer} />}
           <span className="flex-1 text-center fw-600 fs-16 text-primary">{getStepTitle()}</span>
           <button onClick={handleClose} aria-label="Sluiten"
-            className="flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10"
-            style={{ width: '40px', height: '40px', lineHeight: 1 }}>×</button>
+            className={`flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10 ${styles.headerBtn}`}>×</button>
         </div>
 
         {/* ── Step content (scrollable) ────────────────────────────── */}
@@ -69,16 +68,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   return (
                     <button key={match.id}
                       onClick={() => { setSelectedMatch(match); setCurrentStep('content'); }}
-                      style={{
-                        ...CARD_STYLE,
-                        border: isSelected ? '2px solid var(--app-primary)' : CARD_STYLE.border,
-                        backgroundColor: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : CARD_STYLE.backgroundColor,
-                      }}>
-                      <div className="rounded-12 flex-center fw-700 fs-14" style={{
-                        width: '44px', height: '44px', flexShrink: 0,
-                        backgroundColor: urgency === 'urgent' ? 'var(--color-error)' : urgency === 'soon' ? 'var(--color-warning)' : 'var(--app-primary)',
-                        color: 'white',
-                      }}>{date.getDate()}</div>
+                      className={styles.matchCard}
+                      data-selected={isSelected}>
+                      <div className={`rounded-12 flex-center fw-700 fs-14 ${styles.dateBadge}`}
+                        data-urgency={urgency}>{date.getDate()}</div>
                       <div className="flex-1-min">
                         <div className="fw-600 text-primary truncate fs-15">{match.title}</div>
                         <div className="fs-13 text-muted">
@@ -86,8 +79,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                         </div>
                       </div>
                       {isSelected
-                        ? <Check size={22} style={{ color: 'var(--app-primary)', flexShrink: 0 }} />
-                        : <ChevronRight size={20} style={{ color: 'var(--app-text-muted)', flexShrink: 0 }} />}
+                        ? <Check size={22} className={styles.iconCheck} />
+                        : <ChevronRight size={20} className={styles.iconChevron} />}
                     </button>
                   );
                 })
@@ -99,7 +92,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {currentStep === 'content' && (
             <div className="flex-col gap-16">
               {/* Phase tabs */}
-              <div className="flex-row gap-4 bg-surface-2 rounded-10" style={{ padding: '3px' }}>
+              <div className={`flex-row gap-4 bg-surface-2 rounded-10 ${styles.phaseTabBar}`}>
                 {([
                   { key: 'pre', label: 'Voor', icon: Clock },
                   { key: 'during', label: 'Tijdens', icon: Play },
@@ -107,13 +100,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 ] as const).map(({ key, label, icon: Icon }) => (
                   <button key={key}
                     onClick={() => setSelectedContentPhase(key)}
-                    className="flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer transition"
-                    style={{
-                      padding: '10px 8px',
-                      backgroundColor: selectedContentPhase === key ? 'var(--app-primary)' : 'transparent',
-                      color: selectedContentPhase === key ? 'white' : 'var(--app-text-muted)',
-                      fontWeight: selectedContentPhase === key ? 600 : 400,
-                    }}>
+                    className={`flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer transition ${styles.phaseTab}`}
+                    data-active={selectedContentPhase === key}>
                     <Icon size={14} />{label}
                   </button>
                 ))}
@@ -127,12 +115,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   return (
                     <button key={content.key}
                       onClick={() => handleContentSelect(content.key, content.label, content.subtype, content.templateType)}
-                      style={CARD_STYLE}>
-                      <div className="flex-center rounded-12" style={{
-                        width: '44px', height: '44px', flexShrink: 0,
-                        backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.08))',
-                      }}>
-                        <Icon size={22} style={{ color: 'var(--app-primary)' }} />
+                      className={styles.contentCard}>
+                      <div className={`flex-center rounded-12 ${styles.contentIconWrap}`}>
+                        <Icon size={22} className={styles.contentIcon} />
                       </div>
                       <div className="flex-1-min">
                         <div className="fw-600 text-primary fs-15">{content.label}</div>
@@ -140,7 +125,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                           {content.description}{needsLineup && ' (opstelling nodig)'}
                         </div>
                       </div>
-                      <ChevronRight size={20} style={{ color: 'var(--app-text-muted)', flexShrink: 0 }} />
+                      <ChevronRight size={20} className={styles.iconChevron} />
                     </button>
                   );
                 })}
@@ -154,19 +139,18 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
         {/* ── Bottom action bar ─────────────────────────────────────── */}
         {currentStep === 'match' && selectedMatch && (
-          <div className="border-top" style={{ padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
+          <div className={`border-top ${styles.bottomBar}`}>
             <button onClick={() => setCurrentStep('content')}
-              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15"
-              style={{ padding: '14px', backgroundColor: 'var(--app-primary)' }}>
+              className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
               Verder<ChevronRight size={18} />
             </button>
           </div>
         )}
         {currentStep === 'lineup' && (
-          <div className="border-top" style={{ padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))', flexShrink: 0 }}>
+          <div className={`border-top ${styles.bottomBar}`}>
             <button onClick={handleLineupConfirm} disabled={lineupSaving}
-              className="w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15"
-              style={{ padding: '14px', backgroundColor: 'var(--app-primary)', opacity: lineupSaving ? 0.7 : 1 }}>
+              className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+              data-saving={lineupSaving}>
               <Zap size={18} />{lineupSaving ? 'Opslaan...' : 'Genereer content'}
             </button>
           </div>

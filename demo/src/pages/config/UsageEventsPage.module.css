@@ -1,0 +1,59 @@
+/* UsageEventsPage — extracted inline styles */
+
+.roleBadge {
+  padding: 4px 10px;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.roleBadge[data-role="admin"] {
+  background-color: var(--color-blue-500);
+}
+
+.roleBadge[data-role="org"] {
+  background-color: #a855f7;
+}
+
+.scopeDivider {
+  height: 24px;
+  width: 1px;
+  background-color: var(--app-border);
+}
+
+.scopeToggle {
+  display: flex;
+  padding: 3px;
+}
+
+.scopeButton {
+  transition: all 0.2s;
+}
+
+.scopeButton[data-active="true"][data-mode="global"] {
+  background-color: var(--color-blue-500);
+  color: white;
+}
+
+.scopeButton[data-active="true"][data-mode="org"] {
+  background-color: #a855f7;
+  color: white;
+}
+
+.scopeButton[data-active="false"] {
+  background-color: transparent;
+  color: var(--app-text);
+}
+
+.metadataCell {
+  font-size: 0.75rem;
+  max-width: 200px;
+}
+
+.detailsButton {
+  color: var(--app-primary);
+  text-decoration: underline;
+}
+
+.pagination {
+  margin-top: 20px;
+}

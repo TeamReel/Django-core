@@ -1,0 +1,77 @@
+.content {
+  align-items: center;
+  min-height: 400px;
+}
+
+.closeButton {
+  top: 16px;
+  right: 16px;
+  color: var(--color-text-muted);
+}
+
+.stepDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--color-border);
+}
+
+.stepDot[data-active="true"] {
+  background-color: var(--color-primary);
+}
+
+.iconWrapper {
+  animation: pulse 2s infinite;
+}
+
+.iconPrimary {
+  color: var(--color-primary);
+}
+
+.iconWarning {
+  color: var(--color-warning);
+}
+
+.iconSuccess {
+  color: var(--color-success);
+}
+
+.iconInfo {
+  color: var(--color-info);
+}
+
+.title {
+  font-size: 1.5rem;
+  color: var(--color-text);
+}
+
+.description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+  margin-bottom: 32px;
+  max-width: 300px;
+}
+
+.navigation {
+  max-width: 300px;
+  margin-top: auto;
+}
+
+.nextButton {
+  flex: 2;
+}
+
+.nextButton[data-full-width="true"] {
+  flex: 1;
+}
+
+.skipButton {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  text-decoration: underline;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}

@@ -1,0 +1,26 @@
+.photoSectionLabel {
+  margin-bottom: 10px;
+}
+
+.emptyPlaceholder {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.photoImg[data-uploading="true"] {
+  opacity: 0.5;
+}
+
+.uploadZoneOuter {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.uploadZoneOuter[data-editable="false"] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.uploadZoneOuter[data-uploading="true"] {
+  cursor: default;
+}

@@ -16,6 +16,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Organisation } from '../../types';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './OrganisationEditPage.module.css';
 
 /**
  * Organisation Edit Page
@@ -176,15 +177,15 @@ export const OrganisationEditPage: React.FC = () => {
       />
       <PageContent>
         <Card>
-          <form onSubmit={handleSubmit} style={{ maxWidth: '600px' }}>
+          <form onSubmit={handleSubmit} className={styles.form}>
             {error && (
-              <Alert variant="error" title="Error" style={{ marginBottom: '1rem' }}>
+              <Alert variant="error" title="Error" className={styles.errorAlert}>
                 {error}
               </Alert>
             )}
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+            <div className={styles.fieldGroup}>
+              <label htmlFor="name" className={styles.fieldLabel}>
                 Name
               </label>
               <Input
@@ -198,8 +199,8 @@ export const OrganisationEditPage: React.FC = () => {
               />
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+            <div className={styles.fieldGroupLarge}>
+              <label htmlFor="description" className={styles.fieldLabel}>
                 Description
               </label>
               <Input
@@ -212,21 +213,21 @@ export const OrganisationEditPage: React.FC = () => {
               />
             </div>
 
-            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className={styles.checkboxGroup}>
               <input
                 type="checkbox"
                 id="is_active"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
                 disabled={saving}
-                style={{ width: '1rem', height: '1rem' }}
+                className={styles.checkbox}
               />
-              <label htmlFor="is_active" style={{ fontWeight: 500 }}>
+              <label htmlFor="is_active" className={styles.checkboxLabel}>
                 Active
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className={styles.buttonGroup}>
               <Button type="submit" variant="primary" disabled={saving}>
                 {saving ? 'Saving...' : 'Save Changes'}
               </Button>

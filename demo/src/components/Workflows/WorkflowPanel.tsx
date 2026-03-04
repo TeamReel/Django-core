@@ -12,6 +12,7 @@ import {
 import { WorkflowStatusBadge } from './WorkflowStatusBadge';
 import { WorkflowActionButtons } from './WorkflowActionButtons';
 import { WorkflowTimeline } from './WorkflowTimeline';
+import styles from './WorkflowPanel.module.css';
 
 interface WorkflowPanelProps {
   /** Project ID to scope workflows */
@@ -50,7 +51,7 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
   if (loading) {
     return (
-      <div className="p-20 fs-13" style={{ color: 'var(--app-text-secondary, #6b7280)' }}>
+      <div className={`p-20 fs-13 ${styles.loadingText}`}>
         Loading workflows...
       </div>
     );
@@ -58,7 +59,7 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
   if (error) {
     return (
-      <div className="p-20 fs-13" style={{ color: '#dc2626' }}>
+      <div className={`p-20 fs-13 ${styles.errorText}`}>
         Failed to load workflows: {error}
       </div>
     );
@@ -68,11 +69,11 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
     <div className="flex-col gap-16">
       {/* Header */}
       <div className="flex-between">
-        <h3 className="m-0 fw-600" style={{ fontSize: 15, color: 'var(--app-text, #111)' }}>
+        <h3 className={`m-0 fw-600 ${styles.headerTitle}`}>
           {title || 'Workflow'}
         </h3>
         {instances.length > 1 && (
-          <span className="fs-11" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
+          <span className={`fs-11 ${styles.workflowCount}`}>
             {instances.length} workflows
           </span>
         )}
@@ -81,12 +82,7 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
       {/* No workflows */}
       {instances.length === 0 && (
         <div
-          className="p-24 text-center fs-13 rounded-8"
-          style={{
-            color: 'var(--app-text-secondary, #9ca3af)',
-            backgroundColor: 'var(--app-surface-2, #f9fafb)',
-            border: '1px dashed var(--app-border, #e5e7eb)',
-          }}
+          className={`p-24 text-center fs-13 rounded-8 ${styles.emptyState}`}
         >
           <div className="fs-24 mb-8">📋</div>
           <div>No workflow attached to this item yet.</div>
@@ -96,19 +92,13 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
       {/* Instance selector (if multiple) */}
       {instances.length > 1 && (
-        <div className="gap-6 flex-wrap" style={{ display: 'flex' }}>
+        <div className={`gap-6 flex-wrap ${styles.instanceSelector}`}>
           {instances.map(inst => (
             <button
               key={inst.id}
               onClick={() => setSelectedInstance(inst)}
-              className="fs-12 rounded-6 cursor-pointer"
-              style={{
-                padding: '4px 10px',
-                border: `1px solid ${activeInstance?.id === inst.id ? 'var(--app-primary, #2563eb)' : 'var(--app-border, #e5e7eb)'}`,
-                backgroundColor: activeInstance?.id === inst.id ? 'var(--app-primary-light, #dbeafe)' : 'transparent',
-                color: 'var(--app-text, #111)',
-                fontWeight: activeInstance?.id === inst.id ? 600 : 400,
-              }}
+              className={`fs-12 rounded-6 cursor-pointer ${styles.instanceButton}`}
+              data-active={activeInstance?.id === inst.id}
             >
               {inst.workflow_name} <WorkflowStatusBadge state={inst.current_state} size="sm" />
             </button>
@@ -121,24 +111,20 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
         <>
           {/* Current state card */}
           <div
-            className="p-16 rounded-8"
-            style={{
-              backgroundColor: 'var(--app-surface, #fff)',
-              border: '1px solid var(--app-border, #e5e7eb)',
-            }}
+            className={`p-16 rounded-8 ${styles.card}`}
           >
             <div className="flex-between mb-12">
               <div>
-                <div className="fs-11 mb-4" style={{ color: 'var(--app-text-secondary, #9ca3af)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <div className={`fs-11 mb-4 ${styles.statusLabel}`}>
                   Current Status
                 </div>
                 <WorkflowStatusBadge state={activeInstance.current_state} />
               </div>
               <div className="text-right">
-                <div className="fs-11" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
+                <div className={`fs-11 ${styles.secondaryText}`}>
                   {activeInstance.workflow_name} v{activeInstance.workflow_version}
                 </div>
-                <div className="fs-11" style={{ color: 'var(--app-text-secondary, #9ca3af)' }}>
+                <div className={`fs-11 ${styles.secondaryText}`}>
                   Created {new Date(activeInstance.created_at).toLocaleDateString()}
                   {activeInstance.created_by_username && ` by ${activeInstance.created_by_username}`}
                 </div>
@@ -148,11 +134,7 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
             {/* Action error */}
             {actionError && (
               <div
-                className="py-8 px-12 rounded-6 fs-12 mb-12"
-                style={{
-                  backgroundColor: '#fee2e2',
-                  color: '#dc2626',
-                }}
+                className={`py-8 px-12 rounded-6 fs-12 mb-12 ${styles.actionError}`}
               >
                 {actionError}
               </div>
@@ -171,13 +153,9 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
 
           {/* Timeline */}
           <div
-            className="p-16 rounded-8"
-            style={{
-              backgroundColor: 'var(--app-surface, #fff)',
-              border: '1px solid var(--app-border, #e5e7eb)',
-            }}
+            className={`p-16 rounded-8 ${styles.card}`}
           >
-            <div className="fs-13 fw-600 mb-12" style={{ color: 'var(--app-text, #111)' }}>
+            <div className={`fs-13 fw-600 mb-12 ${styles.historyTitle}`}>
               History
             </div>
             <WorkflowTimeline history={history} loading={historyLoading} />

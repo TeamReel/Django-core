@@ -1,0 +1,104 @@
+/* SeasonPickerModal — CSS Module */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal {
+  width: min(560px, 96vw);
+  background: #0f172a;
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.header {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headerInfo {
+  display: grid;
+  gap: 2px;
+}
+
+.headerTitle {
+  font-weight: 700;
+}
+
+.headerSubtext {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.closeButton {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.body {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.seasonLabel {
+  display: grid;
+  gap: 6px;
+}
+
+.seasonLabelText {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.seasonSelect {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+
+.noSeasonsText {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelButton {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.submitButton {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.submitButton[data-mode="assign"] {
+  background: #16a34a;
+}
+
+.submitButton[data-mode="unassign"] {
+  background: #334155;
+}

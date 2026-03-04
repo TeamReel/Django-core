@@ -9,6 +9,7 @@ import {
 } from './memberDetailUtils';
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import m from './MemberActionPhotoTab.module.css';
 
 export function MemberActionPhotoTab({
   membership,
@@ -69,20 +70,20 @@ export function MemberActionPhotoTab({
 
           return (
             <div key={`action-kit-${kit.id}`} className={s.kitSectionMargin}>
-              <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
+              <div className={`${s.flexCenterGap8} ${m.kitHeader}`}>
                 {kit.url ? (
                   <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
-                  <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                  <span className={m.kitIconFallback}>{kit.icon}</span>
                 )}
                 <div className={s.sectionTitle}>{kit.label}</div>
                 {userCanEditProject && fullbodyRef && (
-                  <Button size="sm" onClick={() => openAiModal('member_action_photo', kit.id, fullbodyRef, null)} className={s.btnSmall} style={{ marginLeft: 'auto' }}>
+                  <Button size="sm" onClick={() => openAiModal('member_action_photo', kit.id, fullbodyRef, null)} className={`${s.btnSmall} ${m.mlAuto}`}>
                     ✨ Genereer
                   </Button>
                 )}
                 {!fullbodyRef && (
-                  <span style={{ fontSize: '10px', opacity: 0.5, marginLeft: 'auto' }}>Fullbody vereist</span>
+                  <span className={m.fullbodyRequired}>Fullbody vereist</span>
                 )}
               </div>
 
@@ -92,21 +93,15 @@ export function MemberActionPhotoTab({
                   const isProcessed = state === 'processed' && normalized?.processed;
 
                   return (
-                    <div key={variantKey} className={s.variantCard} style={{
-                      border: isProcessed ? '2px solid var(--vscode-charts-green)' : url ? '2px solid #f59e0b' : '1px solid var(--app-border)',
-                    }}>
+                    <div key={variantKey} className={`${s.variantCard} ${m.variantCardBorder}`} data-border={isProcessed ? 'ready' : url ? 'has-url' : 'empty'}>
                       <div
                         onClick={() => { if (url) window.open(url, '_blank'); }}
-                        className={s.variantPreview916}
-                        style={{
-                          background: url
-                            ? `url(${url}) center/cover no-repeat, repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px`
-                            : undefined,
-                          cursor: url ? 'zoom-in' : 'default',
-                        }}
+                        className={`${s.variantPreview916} ${m.previewBg}`}
+                        data-has-url={String(!!url)}
+                        style={url ? { '--preview-url': `url(${url})` } as React.CSSProperties : undefined}
                       >
                         {!url && (
-                          <div className={s.notGeneratedText} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>
+                          <div className={`${s.notGeneratedText} ${m.notGeneratedOverlay}`}>
                             Niet gegenereerd
                           </div>
                         )}
@@ -152,7 +147,7 @@ export function MemberActionPhotoTab({
         })}
 
         {!userCanEditProject && (
-          <div style={{ marginTop: '16px' }}>
+          <div className={m.alertWrapper}>
             <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
           </div>
         )}

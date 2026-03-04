@@ -1,0 +1,38 @@
+/* Layout */
+.interactiveDemoContainer {
+  min-height: 60px;
+}
+
+.keyboardShortcutsGrid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+/* Dashboard stat colors */
+.statBlue {
+  color: var(--color-blue-500);
+}
+
+.statGreen {
+  color: var(--color-green-400);
+}
+
+.statPurple {
+  color: var(--color-purple-500, #8b5cf6);
+}
+
+/* Dynamic loading state — uses data attribute */
+.loadingState {
+  color: var(--app-muted-text);
+}
+
+.loadingState[data-loading="true"] {
+  color: var(--color-amber-400);
+}
+
+/* Skeleton demo — dimensions via CSS custom properties */
+.skeletonDemo {
+  height: var(--skeleton-h, 20px);
+  width: var(--skeleton-w, 100%);
+  margin-bottom: var(--skeleton-mb, 0);
+  border-radius: var(--skeleton-radius, 0);
+}

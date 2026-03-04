@@ -3,6 +3,7 @@ import { Card, Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { isNumericId, isUuid } from './useTeamsListData';
 import type { OrganisationOption } from '../../work/WorkFilterBar';
+import styles from './TeamsListTable.module.css';
 
 interface TeamsListTableProps {
   filteredTeams: any[];
@@ -30,17 +31,17 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
       <Table className="dir-table">
         <thead>
           <tr>
-            {!orgLocked && <th className="dir-th" style={{ width: '15%' }}>Federation</th>}
-            {!clubLocked && <th className="dir-th" style={{ width: '15%' }}>Club</th>}
-            <th className="dir-th" style={{ width: '18%' }}>Team</th>
-            <th className="dir-th" style={{ width: '12%' }}>Sport</th>
-            <th className="dir-th" style={{ width: '8%' }}>Variant</th>
-            <th className="dir-th" style={{ width: '8%' }}>Season</th>
-            <th className="dir-th" style={{ width: '8%' }}>Competition</th>
-            <th className="dir-th" style={{ width: '8%' }}>Match</th>
-            <th className="dir-th" style={{ width: '8%' }}>Users</th>
-            <th className="dir-th" style={{ width: '8%' }}>Status</th>
-            <th className="dir-th" style={{ width: '12%' }}>Actions</th>
+            {!orgLocked && <th className={`dir-th ${styles.colFederation}`}>Federation</th>}
+            {!clubLocked && <th className={`dir-th ${styles.colClub}`}>Club</th>}
+            <th className={`dir-th ${styles.colTeam}`}>Team</th>
+            <th className={`dir-th ${styles.colSport}`}>Sport</th>
+            <th className={`dir-th ${styles.colVariant}`}>Variant</th>
+            <th className={`dir-th ${styles.colSeason}`}>Season</th>
+            <th className={`dir-th ${styles.colCompetition}`}>Competition</th>
+            <th className={`dir-th ${styles.colMatch}`}>Match</th>
+            <th className={`dir-th ${styles.colUsers}`}>Users</th>
+            <th className={`dir-th ${styles.colStatus}`}>Status</th>
+            <th className={`dir-th ${styles.colActions}`}>Actions</th>
           </tr>
         </thead>
         <tbody>

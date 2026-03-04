@@ -1,0 +1,49 @@
+.errorAlert {
+  background-color: var(--error-bg, #fee);
+  border: 1px solid var(--error-border, #fcc);
+  color: var(--error-text, #c00);
+}
+
+.clubCard {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.clubHeader {
+  align-items: flex-start;
+}
+
+.clubBadge {
+  color: var(--badge-text, #666);
+  background-color: var(--badge-bg, #eee);
+  padding: 2px 6px;
+}
+
+.descriptionNoMargin {
+  margin-bottom: 0;
+}
+
+.manageClubLink {
+  background-color: var(--app-primary, #007bff);
+}
+
+.clubStats {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--stats-border, #eee);
+}
+
+.teamsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.teamCard {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.playersLabel {
+  font-size: 10px;
+  color: var(--players-label-color, #888);
+}
+
+.noTeams {
+  font-style: italic;
+}

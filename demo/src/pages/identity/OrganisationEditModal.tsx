@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSports } from '../../hooks/useSports';
 import type { Organisation } from '../../types';
+import styles from './OrganisationEditModal.module.css';
 
 interface OrganisationEditModalProps {
   opened: boolean;
@@ -42,21 +43,9 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
   if (!opened || !organisation) return null;
 
   return (
-    <div className="flex-center" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 1000
-    }}>
-      <div className="bg-surface p-24 rounded-8 text-primary border" style={{
-        width: '500px',
-        maxWidth: '90%',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-      }}>
-        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: '20px' }}>Edit Organisation</h2>
+    <div className={`flex-center ${styles.overlay}`}>
+      <div className={`bg-surface p-24 rounded-8 text-primary border ${styles.modal}`}>
+        <h2 className={`text-primary ${styles.heading}`}>Edit Organisation</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="flex-col gap-16">
@@ -66,10 +55,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-8 rounded-4 border text-primary"
-                style={{
-                  backgroundColor: 'var(--app-input-bg)'
-                }}
+                className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
                 required
               />
             </div>
@@ -80,10 +66,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
                 type="text"
                 value={formData.slug || ''}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                className="w-full p-8 rounded-4 border text-primary"
-                style={{
-                  backgroundColor: 'var(--app-input-bg)'
-                }}
+                className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
                 required
               />
             </div>
@@ -93,11 +76,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
               <textarea
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full p-8 rounded-4 border text-primary"
-                style={{
-                  backgroundColor: 'var(--app-input-bg)',
-                  minHeight: '80px'
-                }}
+                className={`w-full p-8 rounded-4 border text-primary ${styles.formTextarea}`}
               />
             </div>
 
@@ -118,10 +97,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
                 value={formData.sport_id || ''}
                 onChange={(e) => setFormData({ ...formData, sport_id: e.target.value || null })}
                 disabled={sportsLoading}
-                className="w-full p-8 rounded-4 border text-primary"
-                style={{
-                  backgroundColor: 'var(--app-input-bg)'
-                }}
+                className={`w-full p-8 rounded-4 border text-primary ${styles.formInput}`}
               >
                 <option value="">— No sport selected —</option>
                 {categories.map((sport) => (
@@ -133,28 +109,21 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
             </div>
           </div>
 
-          <div className="gap-12 mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`gap-12 mt-24 ${styles.buttonRow}`}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="py-8 px-16 rounded-4 border bg-surface-2 text-primary"
-              style={{
-                cursor: saving ? 'not-allowed' : 'pointer'
-              }}
+              className={`py-8 px-16 rounded-4 border bg-surface-2 text-primary ${styles.cancelBtn}`}
+              data-saving={saving || undefined}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="py-8 px-16 rounded-4 border-none"
-              style={{
-                backgroundColor: '#0066cc',
-                color: 'white',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                opacity: saving ? 0.6 : 1
-              }}
+              className={`py-8 px-16 rounded-4 border-none ${styles.submitBtn}`}
+              data-saving={saving || undefined}
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

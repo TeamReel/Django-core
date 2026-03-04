@@ -1,0 +1,47 @@
+/* WebSocketTestPage — extracted from inline styles */
+
+.tabButton {
+  padding: 16px 4px;
+  border-bottom: 2px solid transparent;
+}
+
+.tabButton[data-active="true"] {
+  border-bottom-color: var(--app-primary);
+  font-weight: 600;
+  color: var(--app-primary);
+}
+
+.tabButton[data-active="false"] {
+  border-bottom-color: transparent;
+  font-weight: 400;
+  color: var(--app-text-muted);
+}
+
+.logContainer {
+  max-height: 500px;
+  font-family: monospace;
+}
+
+.logEntry {
+  padding-bottom: 8px;
+}
+
+.logType {
+  color: var(--log-type-color);
+}
+
+.logType[data-type="sent"] {
+  --log-type-color: var(--app-info);
+}
+
+.logType[data-type="received"] {
+  --log-type-color: var(--app-success);
+}
+
+.logType[data-type="error"] {
+  --log-type-color: var(--app-error);
+}
+
+.logType[data-type="info"] {
+  --log-type-color: var(--app-text);
+}

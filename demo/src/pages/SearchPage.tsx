@@ -4,6 +4,7 @@ import { useSearch, type GroupedSearchResults, type PaginatedSearchResults, type
 import AppShell from '../components/AppShell';
 import HierarchyTreeView from '../components/HierarchyTreeView';
 import { BottomSheet, Button } from '@django-core/design-system';
+import styles from './SearchPage.module.css';
 
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -108,7 +109,7 @@ export default function SearchPage() {
       <div className="page-container">
         <div className="mb-24">
           <div className="flex-between mb-8 flex-wrap gap-12">
-            <h1 className="fw-700 text-primary" style={{ fontSize: '28px' }}>
+            <h1 className={`fw-700 text-primary ${styles.pageTitle}`}>
               Search Results
             </h1>
             <div className="flex-row gap-8">
@@ -121,7 +122,7 @@ export default function SearchPage() {
               >
                 🔍 Filters
                 {isFiltered && (
-                  <span className="flex-center fs-11 rounded-full text-white" style={{ background: 'var(--color-primary)', width: '18px', height: '18px' }}>
+                  <span className={`flex-center fs-11 rounded-full text-white ${styles.filterBadge}`}>
                     {types.length}
                   </span>
                 )}
@@ -130,12 +131,7 @@ export default function SearchPage() {
               {query && !isFiltered && (
                 <button
                 onClick={handleHierarchyToggle}
-                className="flex-row gap-8 py-8 px-16 fs-14 fw-500 rounded-8 cursor-pointer transition"
-                style={{
-                  background: showHierarchy ? 'var(--color-primary, #3b82f6)' : 'var(--color-bg-surface)',
-                  color: showHierarchy ? '#fff' : 'var(--color-text-primary)',
-                  border: showHierarchy ? 'none' : '1px solid var(--color-border)',
-                }}
+                className={`flex-row gap-8 py-8 px-16 fs-14 fw-500 rounded-8 cursor-pointer transition ${showHierarchy ? styles.hierarchyToggleActive : styles.hierarchyToggle}`}
               >
                 🌳 {showHierarchy ? 'Hierarchy On' : 'Show Hierarchy'}
               </button>
@@ -152,8 +148,7 @@ export default function SearchPage() {
                     in <strong>{getCategoryLabel(types[0])}</strong>
                     <button
                       onClick={handleClearFilter}
-                      className="fs-14 rounded-4 cursor-pointer py-4 px-12 bg-transparent border text-secondary"
-                      style={{ marginLeft: '12px' }}
+                      className={`fs-14 rounded-4 cursor-pointer py-4 px-12 bg-transparent border text-secondary ${styles.clearFilterInline}`}
                     >
                       Clear Filter
                     </button>
@@ -181,7 +176,7 @@ export default function SearchPage() {
 
         {!isSearching && !error && totalResults === 0 && query && (
           <div className="text-center rounded-8 p-32 text-secondary bg-surface-2">
-            <div className="mb-16" style={{ fontSize: '48px' }}>🔍</div>
+            <div className={`mb-16 ${styles.emptyIcon}`}>🔍</div>
             <h3 className="fs-20 mb-8 text-primary">No results found</h3>
             <p>We couldn't find anything matching "{query}". Try different keywords or check for typos.</p>
           </div>
@@ -206,15 +201,14 @@ export default function SearchPage() {
                     <h2 className="fs-20 fw-600 flex-row gap-8 text-primary">
                       <span>{getCategoryIcon(category)}</span>
                       {getCategoryLabel(category)}
-                      <span className="fs-14 fw-400 rounded-12 text-secondary bg-surface-2" style={{ padding: '2px 8px' }}>
+                      <span className={`fs-14 fw-400 rounded-12 text-secondary bg-surface-2 ${styles.categoryCount}`}>
                         {results.length}
                       </span>
                     </h2>
                     {results.length >= 5 && (
                       <button
                         onClick={() => handleCategoryClick(category)}
-                        className="fw-500 cursor-pointer border-none bg-transparent"
-                        style={{ color: 'var(--color-primary)' }}
+                        className={`fw-500 cursor-pointer border-none bg-transparent ${styles.viewAllButton}`}
                       >
                         View All
                       </button>
@@ -231,14 +225,13 @@ export default function SearchPage() {
                           {result.title}
                         </h3>
                         {result.description && (
-                          <p className="fs-14 mb-8 text-secondary" style={{ lineHeight: '1.5' }}>
+                          <p className={`fs-14 mb-8 text-secondary ${styles.resultDescription}`}>
                             {result.description}
                           </p>
                         )}
                         {result.highlight && (
                           <div
-                            className="fs-13"
-                            style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}
+                            className={`fs-13 ${styles.resultHighlight}`}
                             dangerouslySetInnerHTML={{ __html: result.highlight }}
                           />
                         )}
@@ -264,14 +257,13 @@ export default function SearchPage() {
                     {result.title}
                   </h3>
                   {result.description && (
-                    <p className="fs-14 mb-8 text-secondary" style={{ lineHeight: '1.5' }}>
+                    <p className={`fs-14 mb-8 text-secondary ${styles.resultDescription}`}>
                       {result.description}
                     </p>
                   )}
                   {result.highlight && (
                     <div
-                      className="fs-13"
-                      style={{ color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}
+                      className={`fs-13 ${styles.resultHighlight}`}
                       dangerouslySetInnerHTML={{ __html: result.highlight }}
                     />
                   )}
@@ -284,11 +276,7 @@ export default function SearchPage() {
               <button
                 disabled={!paginatedResults.previous}
                 onClick={() => handlePageChange(page - 1)}
-                className="py-8 px-16 rounded-4 bg-surface border"
-                style={{
-                  cursor: paginatedResults.previous ? 'pointer' : 'not-allowed',
-                  opacity: paginatedResults.previous ? 1 : 0.5,
-                }}
+                className={`py-8 px-16 rounded-4 bg-surface border ${paginatedResults.previous ? styles.paginationButton : styles.paginationButtonDisabled}`}
               >
                 Previous
               </button>
@@ -298,11 +286,7 @@ export default function SearchPage() {
               <button
                 disabled={!paginatedResults.next}
                 onClick={() => handlePageChange(page + 1)}
-                className="py-8 px-16 rounded-4 bg-surface border"
-                style={{
-                  cursor: paginatedResults.next ? 'pointer' : 'not-allowed',
-                  opacity: paginatedResults.next ? 1 : 0.5,
-                }}
+                className={`py-8 px-16 rounded-4 bg-surface border ${paginatedResults.next ? styles.paginationButton : styles.paginationButtonDisabled}`}
               >
                 Next
               </button>
@@ -321,14 +305,10 @@ export default function SearchPage() {
           {/* Clear Filter Option */}
           <button
             onClick={handleClearFilter}
-            className="flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left"
-            style={{
-              background: !isFiltered ? 'var(--color-primary-bg, rgba(59, 130, 246, 0.1))' : 'transparent',
-              minHeight: '44px',
-            }}
+            className={`flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left ${!isFiltered ? styles.filterSheetOptionActive : styles.filterSheetOption}`}
           >
             <span className="fs-20">🔍</span>
-            <span style={{ fontWeight: !isFiltered ? '600' : '400', color: 'var(--color-text-primary)' }}>
+            <span className={!isFiltered ? styles.filterSheetLabelActive : styles.filterSheetLabel}>
               Alle categorieën
             </span>
           </button>
@@ -338,18 +318,14 @@ export default function SearchPage() {
             <button
               key={category}
               onClick={() => handleCategoryClick(category)}
-              className="flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left"
-              style={{
-                background: types.includes(category) ? 'var(--color-primary-bg, rgba(59, 130, 246, 0.1))' : 'transparent',
-                minHeight: '44px',
-              }}
+              className={`flex-row gap-12 p-16 border-none rounded-8 cursor-pointer text-left ${types.includes(category) ? styles.filterSheetOptionActive : styles.filterSheetOption}`}
             >
               <span className="fs-20">{getCategoryIcon(category)}</span>
-              <span className="fw-500" style={{ color: types.includes(category) ? 'var(--color-primary)' : 'var(--color-text-primary)' }}>
+              <span className={`fw-500 ${types.includes(category) ? styles.categoryLabelActive : styles.categoryLabel}`}>
                 {getCategoryLabel(category)}
               </span>
               {types.includes(category) && (
-                <span className="ml-auto" style={{ color: 'var(--color-primary)' }}>✓</span>
+                <span className={`ml-auto ${styles.checkMark}`}>✓</span>
               )}
             </button>
           ))}

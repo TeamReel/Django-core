@@ -1,0 +1,88 @@
+.pageTitle {
+  font-size: 28px;
+}
+
+.filterBadge {
+  background: var(--color-primary);
+  width: 18px;
+  height: 18px;
+}
+
+.hierarchyToggle {
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.hierarchyToggleActive {
+  background: var(--color-primary, #3b82f6);
+  color: var(--color-text-inverse, #fff);
+  border: none;
+}
+
+.clearFilterInline {
+  margin-left: 12px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+}
+
+.categoryCount {
+  padding: 2px 8px;
+}
+
+.viewAllButton {
+  color: var(--color-primary);
+}
+
+.resultDescription {
+  line-height: 1.5;
+}
+
+.resultHighlight {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+.paginationButton {
+  cursor: pointer;
+  opacity: 1;
+}
+
+.paginationButtonDisabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.filterSheetOption {
+  background: transparent;
+  min-height: 44px;
+}
+
+.filterSheetOptionActive {
+  background: var(--color-primary-bg, rgba(59, 130, 246, 0.1));
+  min-height: 44px;
+}
+
+.filterSheetLabel {
+  font-weight: 400;
+  color: var(--color-text-primary);
+}
+
+.filterSheetLabelActive {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.categoryLabel {
+  color: var(--color-text-primary);
+}
+
+.categoryLabelActive {
+  color: var(--color-primary);
+}
+
+.checkMark {
+  color: var(--color-primary);
+}

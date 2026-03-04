@@ -1,0 +1,116 @@
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  width: 100%;
+  justify-content: center;
+}
+
+.filterButton[data-active] {
+  background: var(--app-primary, #3b82f6);
+  color: white;
+}
+
+.filterBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--app-primary, #3b82f6);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.filterBadge[data-active] {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: var(--app-surface);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  padding: 16px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sheet[data-open] {
+  transform: translateY(var(--drag-y, 0px));
+}
+
+.sheet[data-dragging] {
+  transition: none;
+}
+
+.handleBarContainer {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.handleBar {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--app-border);
+}
+
+.sheetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.headerTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.applyButton {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-primary, #3b82f6);
+  cursor: pointer;
+  padding: 8px 12px;
+  min-height: 44px;
+}
+
+.filterContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}

@@ -3,6 +3,7 @@ import { Button, Card, Badge, Input, Alert } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
 import '../../styles/design-system-interactive.css';
 import { FormComponentsSection, LayoutComponentsSection, InteractiveComponentsSection } from './DesignSystemStaticSections';
+import styles from './DesignSystemPage.module.css';
 
 export function DesignSystemPage() {
   const [inputValue, setInputValue] = useState('');
@@ -232,14 +233,14 @@ export function DesignSystemPage() {
             <Card variant="filled" className="p-16">
               <h3 className="ds-subsection-title">✨ Skeleton Loading</h3>
               <div className="flex-col gap-8">
-                <div className="skeleton-loader" style={{ height: '20px', width: '80%' }}></div>
-                <div className="skeleton-loader" style={{ height: '20px', width: '60%' }}></div>
-                <div className="skeleton-loader" style={{ height: '20px', width: '90%' }}></div>
+                <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '80%' } as React.CSSProperties}></div>
+                <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '60%' } as React.CSSProperties}></div>
+                <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '90%' } as React.CSSProperties}></div>
               </div>
             </Card>
             <Card variant="filled" className="p-16">
               <h3 className="ds-subsection-title">🎭 Interactive Demo</h3>
-              <div className="text-center flex-center flex-col gap-8" style={{ minHeight: '60px' }}>
+              <div className={`text-center flex-center flex-col gap-8 ${styles.interactiveDemoContainer}`}>
                 {isLoading ? (
                   <div className="flex-row gap-12">
                     <div className="dots-loader">
@@ -269,21 +270,21 @@ export function DesignSystemPage() {
               <div className="grid-auto-fit gap-16 mb-24">
                 <div>
                   <p className="fs-14 fw-600 text-muted">Button Clicks</p>
-                  <p className="fs-24 fw-700" style={{ color: 'var(--color-blue-500)' }}>{clickCount}</p>
+                  <p className={`fs-24 fw-700 ${styles.statBlue}`}>{clickCount}</p>
                 </div>
                 <div>
                   <p className="fs-14 fw-600 text-muted">Input Length</p>
-                  <p className="fs-24 fw-700" style={{ color: 'var(--color-green-400)' }}>{inputValue.length}</p>
+                  <p className={`fs-24 fw-700 ${styles.statGreen}`}>{inputValue.length}</p>
                 </div>
                 <div>
                   <p className="fs-14 fw-600 text-muted">Loading State</p>
-                  <p className="fs-24 fw-700" style={{ color: isLoading ? 'var(--color-amber-400)' : 'var(--app-muted-text)' }}>
+                  <p className={`fs-24 fw-700 ${styles.loadingState}`} data-loading={isLoading}>
                     {isLoading ? 'ON' : 'OFF'}
                   </p>
                 </div>
                 <div>
                   <p className="fs-14 fw-600 text-muted">Button Variant</p>
-                  <p className="fs-24 fw-700 capitalize" style={{ color: '#8b5cf6' }}>
+                  <p className={`fs-24 fw-700 capitalize ${styles.statPurple}`}>
                     {selectedVariant}
                   </p>
                 </div>
@@ -303,7 +304,7 @@ export function DesignSystemPage() {
               </div>
               <div className="mb-16 p-16 bg-surface rounded-8">
                 <h4 className="fs-14 fw-600 m-0 mb-8">⌨️ Keyboard Shortcuts</h4>
-                <div className="grid-auto-fit gap-8 fs-12 text-muted" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+                <div className={`grid-auto-fit gap-8 fs-12 text-muted ${styles.keyboardShortcutsGrid}`}>
                   <div><kbd className="px-4 py-4 bg-surface-2 rounded-4 fs-11">Ctrl+Enter</kbd> Increment counter</div>
                   <div><kbd className="px-4 py-4 bg-surface-2 rounded-4 fs-11">Escape</kbd> Clear input</div>
                   <div><kbd className="px-4 py-4 bg-surface-2 rounded-4 fs-11">Ctrl+S</kbd> Toggle skeleton</div>
@@ -315,15 +316,15 @@ export function DesignSystemPage() {
                   <h4 className="fs-14 fw-600 m-0 mb-12">✨ Skeleton Loading Demo</h4>
                   <div className="grid-cols-2 gap-16">
                     <div>
-                      <div className="skeleton-loader" style={{ height: '24px', width: '70%', marginBottom: '8px' }}></div>
-                      <div className="skeleton-loader" style={{ height: '16px', width: '90%', marginBottom: '8px' }}></div>
-                      <div className="skeleton-loader" style={{ height: '16px', width: '60%', marginBottom: '8px' }}></div>
-                      <div className="skeleton-loader" style={{ height: '12px', width: '80%' }}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '24px', '--skeleton-w': '70%', '--skeleton-mb': '8px' } as React.CSSProperties}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '16px', '--skeleton-w': '90%', '--skeleton-mb': '8px' } as React.CSSProperties}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '16px', '--skeleton-w': '60%', '--skeleton-mb': '8px' } as React.CSSProperties}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '12px', '--skeleton-w': '80%' } as React.CSSProperties}></div>
                     </div>
                     <div>
-                      <div className="skeleton-loader" style={{ height: '40px', width: '40px', borderRadius: '50%', marginBottom: '8px' }}></div>
-                      <div className="skeleton-loader" style={{ height: '20px', width: '100%', marginBottom: '4px' }}></div>
-                      <div className="skeleton-loader" style={{ height: '20px', width: '85%' }}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '40px', '--skeleton-w': '40px', '--skeleton-radius': '50%', '--skeleton-mb': '8px' } as React.CSSProperties}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '100%', '--skeleton-mb': '4px' } as React.CSSProperties}></div>
+                      <div className={`skeleton-loader ${styles.skeletonDemo}`} style={{ '--skeleton-h': '20px', '--skeleton-w': '85%' } as React.CSSProperties}></div>
                     </div>
                   </div>
                 </div>

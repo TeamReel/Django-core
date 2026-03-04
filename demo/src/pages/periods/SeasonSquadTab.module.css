@@ -1,0 +1,60 @@
+.cardHeader {
+  padding: 16px 16px 0 16px;
+}
+
+.cardHeaderRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cardSubtitle {
+  margin-top: 4px;
+  color: var(--app-muted-text);
+  font-size: 13px;
+}
+
+.cardBody {
+  padding: 16px;
+}
+
+.toolbarRow {
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toolbarGroup {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  width: 220px;
+}
+
+.checkboxCol {
+  width: 44px;
+}
+
+.actionCol {
+  width: 180px;
+}
+
+.badgeGroup {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}

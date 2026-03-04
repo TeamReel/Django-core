@@ -6,6 +6,7 @@ import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
 import { useClubsData } from './useClubsData';
+import styles from './ClubsList.module.css';
 
 interface ClubsListProps {
   preselectedOrgId?: string;
@@ -81,18 +82,18 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
               <thead>
                 <tr>
                   {!d.orgLocked && (
-                    <th className="dir-th" style={{ width: '15%' }}>Federation</th>
+                    <th className={`dir-th ${styles.colFederation}`}>Federation</th>
                   )}
-                  <th className="dir-th" style={{ width: '20%' }}>Club</th>
-                  <th className="dir-th" style={{ width: '12%' }}>Sport</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Variant</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Teams</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Season</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Competition</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Match</th>
-                  <th className="dir-th" style={{ width: '8%' }}>Users</th>
-                  <th className="dir-th" style={{ width: '10%' }}>Status</th>
-                  <th className="dir-th" style={{ width: '12%' }}>Actions</th>
+                  <th className={`dir-th ${styles.colClub}`}>Club</th>
+                  <th className={`dir-th ${styles.colSport}`}>Sport</th>
+                  <th className={`dir-th ${styles.colVariant}`}>Variant</th>
+                  <th className={`dir-th ${styles.colTeams}`}>Teams</th>
+                  <th className={`dir-th ${styles.colSeason}`}>Season</th>
+                  <th className={`dir-th ${styles.colCompetition}`}>Competition</th>
+                  <th className={`dir-th ${styles.colMatch}`}>Match</th>
+                  <th className={`dir-th ${styles.colUsers}`}>Users</th>
+                  <th className={`dir-th ${styles.colStatus}`}>Status</th>
+                  <th className={`dir-th ${styles.colActions}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>

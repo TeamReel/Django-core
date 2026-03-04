@@ -10,6 +10,7 @@ import { Card, Text, Badge, Button } from '@django-core/design-system';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { formatFileSize } from '../../hooks/useFileAssets';
 import { getAssetTypeLabel, getAssetTypeIcon, type ContentItem } from './contentLibraryTypes';
+import styles from './ContentCard.module.css';
 
 // ============================================================================
 // ContentCard
@@ -54,26 +55,26 @@ export function ContentCard({
     <Card className="gallery-card p-0 overflow-hidden flex-col cursor-pointer" onClick={() => onPreview?.(item)}>
       <div className="gallery-card-inner flex-col flex-1">
         {/* Thumbnail */}
-        <div className="gallery-card-thumb flex-center overflow-hidden relative border-bottom" style={{ height: 180, backgroundColor: 'var(--app-bg)', flexShrink: 0 }}>
+        <div className={`gallery-card-thumb flex-center overflow-hidden relative border-bottom ${styles.thumbContainer}`}>
           {url ? (
             isVideo ? (
-              <video src={url} className="object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }} muted playsInline preload="metadata" />
+              <video src={url} className={`object-contain ${styles.thumbMedia}`} muted playsInline preload="metadata" />
             ) : (
-              <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className="p-8 object-contain" style={{ maxWidth: '100%', maxHeight: '100%' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={url} alt={item.title || getAssetTypeLabel(normalizedType)} className={`p-8 object-contain ${styles.thumbMedia}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             )
           ) : (
-            <span style={{ fontSize: 40, opacity: 0.3 }}>{getAssetTypeIcon(normalizedType)}</span>
+            <span className={styles.fallbackIcon}>{getAssetTypeIcon(normalizedType)}</span>
           )}
-          <span className="absolute fw-700 badge-overlay" style={{ top: 8, left: 8, backgroundColor: 'var(--color-blue-600)' }}>
+          <span className={`absolute fw-700 badge-overlay ${styles.typeBadge}`}>
             {getAssetTypeLabel(normalizedType)}
           </span>
           {isVideo && (
-            <span className="absolute fw-700 badge-overlay" style={{ top: 8, right: 8, backgroundColor: '#dc2626' }}>
+            <span className={`absolute fw-700 badge-overlay ${styles.videoBadge}`}>
               🎬 Video
             </span>
           )}
           {sportType && (
-            <span className="absolute fw-600 badge-overlay" style={{ bottom: 8, left: 8, backgroundColor: 'rgba(0,0,0,0.7)' }}>
+            <span className={`absolute fw-600 badge-overlay ${styles.sportBadge}`}>
               ⚽ {sportType}
             </span>
           )}
@@ -104,13 +105,13 @@ export function ContentCard({
           {tags.length > 0 && (
             <div className="gallery-card-verbose flex-row flex-wrap gap-4">
               {tags.slice(0, 3).map((tag, i) => (
-                <span key={i} className="rounded-6 text-secondary fs-11" style={{ padding: '1px 6px', backgroundColor: 'var(--app-surface-2, #f3f4f6)' }}>#{tag}</span>
+                <span key={i} className={`rounded-6 text-secondary fs-11 ${styles.tagChip}`}>#{tag}</span>
               ))}
               {tags.length > 3 && <span className="text-secondary fs-11">+{tags.length - 3}</span>}
             </div>
           )}
 
-          <div className="gallery-card-verbose flex-row flex-wrap gap-4" style={{ marginTop: 'auto' }}>
+          <div className={`gallery-card-verbose flex-row flex-wrap gap-4 ${styles.badgesRow}`}>
             <Badge size="sm" variant="default">{item.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}</Badge>
             {seasonKey && <Badge size="sm" variant="default">📅 {seasonKey}</Badge>}
           </div>
@@ -120,7 +121,7 @@ export function ContentCard({
             {item.file_size_bytes && item.file_size_bytes > 0 && <> &middot; {formatFileSize(item.file_size_bytes)}</>}
           </Text>
 
-          <div className="mt-8 gap-4 border-top flex-row" style={{ paddingTop: 8 }}>
+          <div className={`mt-8 gap-4 border-top flex-row ${styles.actionsRow}`}>
             <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">⬇️</button>
             <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">📤</button>
             <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">🗑️</button>
@@ -141,21 +142,10 @@ export function FilterChip({ active, onClick, label, count }: {
   return (
     <button
       onClick={onClick}
-      style={{
-        display: 'inline-flex', alignItems: 'center', gap: 4,
-        padding: '5px 12px', borderRadius: 16, fontSize: 12, fontWeight: active ? 600 : 400,
-        border: `1px solid ${active ? 'var(--color-primary, #2563eb)' : 'var(--app-border)'}`,
-        backgroundColor: active ? 'var(--color-primary-light, #dbeafe)' : 'transparent',
-        color: active ? 'var(--color-primary, #2563eb)' : 'var(--app-text-secondary)',
-        cursor: 'pointer', transition: 'all 0.15s',
-      }}
+      className={`${styles.filterChip} ${active ? styles.filterChipActive : ''}`}
     >
       {label}
-      <span style={{
-        fontSize: 10, fontWeight: 700, padding: '0 5px', borderRadius: 8,
-        backgroundColor: active ? 'var(--color-primary, #2563eb)' : 'var(--app-surface-2, #f3f4f6)',
-        color: active ? '#fff' : 'var(--app-text-secondary)',
-      }}>
+      <span className={`${styles.chipCount} ${active ? styles.chipCountActive : ''}`}>
         {count}
       </span>
     </button>
@@ -168,8 +158,8 @@ export function FilterChip({ active, onClick, label, count }: {
 
 export function EmptyState({ icon, message, sub, action }: { icon: string; message: string; sub: string; action?: React.ReactNode }) {
   return (
-    <Card className="text-center" style={{ padding: 48 }}>
-      <div className="mb-8" style={{ fontSize: 32, opacity: 0.4 }}>{icon}</div>
+    <Card className={`text-center ${styles.emptyCard}`}>
+      <div className={`mb-8 ${styles.emptyIcon}`}>{icon}</div>
       <Text color="secondary">{message}</Text>
       <Text size="sm" color="secondary" className="mt-4">{sub}</Text>
       {action && <div className="mt-16">{action}</div>}
@@ -190,15 +180,11 @@ export function ContentPreviewModal({ item, onClose }: { item: ContentItem; onCl
 
   return (
     <div
-      className="flex-center fixed inset-0 z-1000"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      }}
+      className={`flex-center fixed inset-0 z-1000 ${styles.overlay}`}
       onClick={onClose}
     >
       <div
-        className="bg-surface rounded-12 overflow-auto p-16"
-        style={{ maxWidth: '90vw', maxHeight: '90vh' }}
+        className={`bg-surface rounded-12 overflow-auto p-16 ${styles.modalContainer}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-between mb-16">
@@ -207,9 +193,9 @@ export function ContentPreviewModal({ item, onClose }: { item: ContentItem; onCl
         </div>
         {url && (
           isVideo ? (
-            <video src={url} style={{ maxWidth: '100%', maxHeight: '70vh' }} controls autoPlay playsInline />
+            <video src={url} className={styles.previewMedia} controls autoPlay playsInline />
           ) : (
-            <img src={url} alt={item.title} style={{ maxWidth: '100%', maxHeight: '70vh' }} />
+            <img src={url} alt={item.title} className={styles.previewMedia} />
           )
         )}
         <div className="mt-16 flex-row justify-end gap-8">

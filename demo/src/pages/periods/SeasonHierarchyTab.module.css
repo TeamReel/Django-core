@@ -1,0 +1,30 @@
+.headerActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.loadingMsg {
+  margin-top: 12px;
+}
+
+.verticalListSpaced {
+  margin-top: 12px;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.matchesContainer {
+  padding: 10px 12px;
+}
+
+.matchInfo {
+  min-width: 0;
+}

@@ -1,0 +1,86 @@
+/* MatchContentComponents – extracted inline styles */
+
+/* ── Thumbnail ──────────────────────────────────────────────────────────── */
+
+.thumbnailEmpty {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  background: var(--app-surface-secondary, #252526);
+  font-size: 22px;
+  color: var(--app-muted-text, #888);
+}
+
+.thumbnailWrapper {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.thumbnailMedia {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playOverlay {
+  inset: 0;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+/* ── StatusBadge ────────────────────────────────────────────────────────── */
+
+.badgeEmpty {
+  opacity: 0.5;
+}
+
+/* ── ContentRow ─────────────────────────────────────────────────────────── */
+
+.contentRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: none;
+  cursor: default;
+  transition: background 0.1s ease;
+}
+
+.contentRow[data-show-border='true'] {
+  border-bottom: 1px solid var(--app-border, #333);
+}
+
+.contentRow[data-clickable='true'] {
+  cursor: pointer;
+}
+
+.contentRow[data-clickable='true']:hover {
+  background: var(--app-surface-hover, #2a2a2a);
+}
+
+.subtitle {
+  margin-top: 2px;
+}
+
+.actionsWrapper {
+  flex-shrink: 0;
+}
+
+/* Shared icon-button / icon-link inside action bar */
+.actionBtn {
+  width: 32px;
+  height: 32px;
+  background: var(--app-surface-secondary, #252526);
+  color: var(--app-text, #fff);
+}
+
+.actionLink {
+  width: 32px;
+  height: 32px;
+  background: var(--app-surface-secondary, #252526);
+  color: var(--app-text, #fff);
+  text-decoration: none;
+}

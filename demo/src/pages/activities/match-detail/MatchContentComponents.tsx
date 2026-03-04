@@ -11,6 +11,7 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import type { ContentTemplate } from '../../identity/ContentGenerationModal';
+import styles from './MatchContentComponents.module.css';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,38 +60,26 @@ export function getSyntheticTemplate(subtype: string): ContentTemplate | undefin
 export function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo: boolean; icon?: string }) {
   if (!url) {
     return (
-      <div className="flex-center rounded-8" style={{
-        width: 56, height: 56, flexShrink: 0,
-        background: 'var(--app-surface-secondary, #252526)',
-        fontSize: 22,
-        color: 'var(--app-muted-text, #888)',
-      }}>
+      <div className={`flex-center rounded-8 ${styles.thumbnailEmpty}`}>
         {icon || '—'}
       </div>
     );
   }
 
   return (
-    <div className="rounded-8 overflow-hidden relative" style={{
-      width: 56, height: 56, flexShrink: 0,
-      background: '#000',
-    }}>
+    <div className={`rounded-8 overflow-hidden relative ${styles.thumbnailWrapper}`}>
       {isVideo ? (
         <>
           <video
             src={url}
             muted playsInline preload="metadata"
             onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.1; } catch { /* */ } }}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            className={styles.thumbnailMedia}
           />
-          <div className="absolute flex-center fs-18" style={{
-            inset: 0,
-            color: 'rgba(255,255,255,0.85)',
-            textShadow: '0 1px 6px rgba(0,0,0,0.6)', pointerEvents: 'none',
-          }}>▶</div>
+          <div className={`absolute flex-center fs-18 ${styles.playOverlay}`}>▶</div>
         </>
       ) : (
-        <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={url} alt="" className={styles.thumbnailMedia} />
       )}
     </div>
   );
@@ -105,7 +94,7 @@ export function StatusBadge({ isGenerating, isFailed, hasMedia, workflowStatus }
   if (workflowStatus === 'approved') return <Badge variant="success" size="sm">✓ Goedgekeurd</Badge>;
   if (workflowStatus === 'rejected') return <Badge variant="error" size="sm">✕ Afgekeurd</Badge>;
   if (hasMedia) return <Badge variant="success" size="sm">✓ Klaar</Badge>;
-  return <Badge variant="default" size="sm" style={{ opacity: 0.5 }}>Leeg</Badge>;
+  return <Badge variant="default" size="sm" className={styles.badgeEmpty}>Leeg</Badge>;
 }
 
 // ── ContentRow ───────────────────────────────────────────────────────────────
@@ -129,28 +118,15 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
 }) {
   return (
     <div
+      className={styles.contentRow}
+      data-show-border={showBorder ? 'true' : undefined}
+      data-clickable={(hasMedia || canGenerate) ? 'true' : undefined}
       onClick={() => {
         if (hasMedia && mediaUrl) {
           onPreview();
         } else if (canGenerate) {
           onGenerate();
         }
-      }}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '10px 12px',
-        borderBottom: showBorder ? '1px solid var(--app-border, #333)' : 'none',
-        cursor: (hasMedia || canGenerate) ? 'pointer' : 'default',
-        transition: 'background 0.1s ease',
-      }}
-      onMouseEnter={(e) => {
-        if (hasMedia || canGenerate)
-          e.currentTarget.style.background = 'var(--app-surface-hover, #2a2a2a)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'transparent';
       }}
     >
       {/* Thumbnail */}
@@ -161,7 +137,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
         <div className="fs-14 fw-600 text-primary truncate">
           {label}
         </div>
-        <div className="fs-11 text-muted" style={{ marginTop: 2 }}>
+        <div className={`fs-11 text-muted ${styles.subtitle}`}>
           {hasMedia && updatedAt
             ? new Date(updatedAt).toLocaleDateString('nl-NL', {
                 day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
@@ -171,7 +147,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
       </div>
 
       {/* Status + actions */}
-      <div className="flex-row gap-6" style={{ flexShrink: 0 }}>
+      <div className={`flex-row gap-6 ${styles.actionsWrapper}`}>
         <StatusBadge
           isGenerating={isGenerating}
           isFailed={isFailed}
@@ -187,13 +163,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
               title="Openen"
-              className="flex-center rounded-6 fs-14 cursor-pointer border-none"
-              style={{
-                width: 32, height: 32,
-                background: 'var(--app-surface-secondary, #252526)',
-                color: 'var(--app-text, #fff)',
-                textDecoration: 'none',
-              }}
+              className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionLink}`}
             >
               ↗
             </a>
@@ -203,13 +173,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
               download
               onClick={(e) => e.stopPropagation()}
               title="Downloaden"
-              className="flex-center rounded-6 fs-14 cursor-pointer border-none"
-              style={{
-                width: 32, height: 32,
-                background: 'var(--app-surface-secondary, #252526)',
-                color: 'var(--app-text, #fff)',
-                textDecoration: 'none',
-              }}
+              className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionLink}`}
             >
               ↓
             </a>
@@ -276,12 +240,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
                   }
                 }}
                 title="Delen"
-                className="flex-center rounded-6 fs-14 cursor-pointer border-none"
-                style={{
-                  width: 32, height: 32,
-                  background: 'var(--app-surface-secondary, #252526)',
-                  color: 'var(--app-text, #fff)',
-                }}
+                className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionBtn}`}
               >
                 ⤴
               </button>
@@ -294,12 +253,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
                   onGenerate();
                 }}
                 title="Vervangen"
-                className="flex-center rounded-6 fs-14 cursor-pointer border-none"
-                style={{
-                  width: 32, height: 32,
-                  background: 'var(--app-surface-secondary, #252526)',
-                  color: 'var(--app-text, #fff)',
-                }}
+                className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionBtn}`}
               >
                 ⟳
               </button>

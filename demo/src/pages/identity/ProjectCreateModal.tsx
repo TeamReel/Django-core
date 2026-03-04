@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import styles from './ProjectCreateModal.module.css';
 
 type OrgOption = { id: string; name: string; slug?: string };
 type ProjectOption = { id: string | number; name: string; slug?: string; organisation?: any };
@@ -109,13 +110,7 @@ export default function ProjectCreateModal({
   return (
     <div className="modal-backdrop">
       <div
-        className="p-24 rounded-8 shadow-lg border"
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          width: '520px',
-          maxWidth: '92%',
-          color: 'var(--app-text)',
-        }}
+        className={`p-24 rounded-8 shadow-lg border ${styles.container}`}
       >
         <div className="flex-between gap-12">
           <h2 className="mb-16 mt-0 text-primary">{title}</h2>
@@ -123,12 +118,8 @@ export default function ProjectCreateModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-4 border bg-surface-2 text-primary"
-            style={{
-              padding: '6px 10px',
-              cursor: saving ? 'not-allowed' : 'pointer',
-              height: 'fit-content',
-            }}
+            className={`rounded-4 border bg-surface-2 text-primary ${styles.closeButton}`}
+            data-saving={saving || undefined}
           >
             Close
           </button>
@@ -139,8 +130,7 @@ export default function ProjectCreateModal({
             {hasOrgSelect && (
               <div>
                 <label
-                  className="block fw-500 text-primary"
-                  style={{ marginBottom: '6px' }}
+                  className={`block fw-500 text-primary ${styles.label}`}
                   htmlFor="project-create-org"
                 >
                   Federation
@@ -169,8 +159,7 @@ export default function ProjectCreateModal({
             {hasClubSelect && (
               <div>
                 <label
-                  className="block fw-500 text-primary"
-                  style={{ marginBottom: '6px' }}
+                  className={`block fw-500 text-primary ${styles.label}`}
                   htmlFor="project-create-club"
                 >
                   Club
@@ -202,8 +191,7 @@ export default function ProjectCreateModal({
 
             <div>
               <label
-                className="block fw-500 text-primary"
-                style={{ marginBottom: '6px' }}
+                className={`block fw-500 text-primary ${styles.label}`}
                 htmlFor="project-create-name"
               >
                 Name
@@ -221,8 +209,7 @@ export default function ProjectCreateModal({
 
             <div>
               <label
-                className="block fw-500 text-primary"
-                style={{ marginBottom: '6px' }}
+                className={`block fw-500 text-primary ${styles.label}`}
                 htmlFor="project-create-description"
               >
                 Description
@@ -231,8 +218,7 @@ export default function ProjectCreateModal({
                 id="project-create-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-8 rounded-4 form-textarea"
-                style={{ minHeight: '90px' }}
+                className={`w-full p-8 rounded-4 form-textarea ${styles.textarea}`}
                 disabled={saving}
               />
             </div>
@@ -243,27 +229,22 @@ export default function ProjectCreateModal({
           </div>
 
           <div
-            className="flex-row gap-12 mt-20"
-            style={{ justifyContent: 'flex-end' }}
+            className={`flex-row gap-12 mt-20 ${styles.actionsRow}`}
           >
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              className="py-8 px-16 rounded-4 border bg-surface-2 text-primary"
-              style={{ cursor: saving ? 'not-allowed' : 'pointer' }}
+              className={`py-8 px-16 rounded-4 border bg-surface-2 text-primary ${styles.cancelButton}`}
+              data-saving={saving || undefined}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="py-8 px-16 rounded-4 border-none text-white"
-              style={{
-                backgroundColor: '#0066cc',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                opacity: saving ? 0.6 : 1,
-              }}
+              className={`py-8 px-16 rounded-4 border-none text-white ${styles.submitButton}`}
+              data-saving={saving || undefined}
             >
               {saving ? 'Creating...' : 'Create'}
             </button>

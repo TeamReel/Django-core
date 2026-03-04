@@ -5,6 +5,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { unwrapEnvelope as unwrap, extractList } from '../../utils/apiEnvelope';
+import styles from './MembershipsPage.module.css';
 
 type Period = {
   id: string;
@@ -145,8 +146,7 @@ export const MembershipsPage: React.FC = () => {
         )}
 
         <div
-          className="grid gap-20"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))' }}
+          className={`grid gap-20 ${styles.cardGrid}`}
         >
           <Card className="p-24">
             <h3 className="text-lg font-semibold mb-2">Federations</h3>
@@ -160,8 +160,7 @@ export const MembershipsPage: React.FC = () => {
                 {organisations.map((o) => (
                   <div
                     key={String(o?.id ?? o?.slug ?? Math.random())}
-                    className="flex-between rounded-8 border bg-surface"
-                    style={{ padding: '10px 12px' }}
+                    className={`flex-between rounded-8 border bg-surface ${styles.memberItem}`}
                   >
                     <div className="fw-700">{String(o?.name || o?.title || o?.slug || o?.id || '—')}</div>
                     <div className="text-xs text-gray-500">{String(o?.role || o?.membership_role || '').trim()}</div>
@@ -183,8 +182,7 @@ export const MembershipsPage: React.FC = () => {
                 {clubs.map((p) => (
                   <div
                     key={String(p?.id ?? p?.slug ?? Math.random())}
-                    className="flex-between rounded-8 border bg-surface"
-                    style={{ padding: '10px 12px' }}
+                    className={`flex-between rounded-8 border bg-surface ${styles.memberItem}`}
                   >
                     <div className="fw-700">{String(p?.name || p?.title || p?.slug || p?.id || '—')}</div>
                     <div className="text-xs text-gray-500">{String(p?.role || p?.membership_role || '').trim()}</div>
@@ -206,8 +204,7 @@ export const MembershipsPage: React.FC = () => {
                 {teams.map((p) => (
                   <div
                     key={String(p?.id ?? p?.slug ?? Math.random())}
-                    className="flex-between rounded-8 border bg-surface"
-                    style={{ padding: '10px 12px' }}
+                    className={`flex-between rounded-8 border bg-surface ${styles.memberItem}`}
                   >
                     <div className="fw-700">{String(p?.name || p?.title || p?.slug || p?.id || '—')}</div>
                     <div className="text-xs text-gray-500">{String(p?.role || p?.membership_role || '').trim()}</div>
@@ -218,7 +215,7 @@ export const MembershipsPage: React.FC = () => {
           </Card>
 
           <Card className="p-24">
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+            <div className={styles.seasonsHeader}>
               <div>
                 <h3 className="text-lg font-semibold mb-2">Seasons</h3>
                 <div className="text-sm text-gray-600 mb-12">
@@ -256,7 +253,7 @@ export const MembershipsPage: React.FC = () => {
                   const compsLoading = Boolean(loadingCompetitions[season.id]);
 
                   return (
-                    <div key={season.id} style={{ border: '1px solid var(--app-border)', borderRadius: 10, overflow: 'hidden' }}>
+                    <div key={season.id} className={styles.accordionContainer}>
                       <button
                         onClick={async () => {
                           setOpenSeasonIds((prev) => ({ ...prev, [season.id]: !isOpen }));
@@ -264,18 +261,7 @@ export const MembershipsPage: React.FC = () => {
                             await ensureCompetitionsLoaded(season.id);
                           }
                         }}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          padding: '10px 12px',
-                          background: 'var(--app-surface)',
-                          border: 'none',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 12,
-                        }}
+                        className={styles.accordionButton}
                       >
                         <div>
                           <div className="fw-800">{String(season.name || season.id)}</div>
@@ -287,7 +273,7 @@ export const MembershipsPage: React.FC = () => {
                       </button>
 
                       {isOpen && (
-                        <div style={{ padding: '10px 12px', background: 'var(--app-surface-1)' }}>
+                        <div className={styles.accordionPanel}>
                           {compsLoading ? (
                             <div className="text-sm text-gray-600">Loading competitions…</div>
                           ) : comps.length === 0 ? (
@@ -300,7 +286,7 @@ export const MembershipsPage: React.FC = () => {
                                 const matchesLoading = Boolean(loadingMatches[comp.id]);
 
                                 return (
-                                  <div key={comp.id} style={{ border: '1px solid var(--app-border)', borderRadius: 10, overflow: 'hidden' }}>
+                                  <div key={comp.id} className={styles.accordionContainer}>
                                     <button
                                       onClick={async () => {
                                         setOpenCompetitionIds((prev) => ({ ...prev, [comp.id]: !compOpen }));
@@ -308,25 +294,14 @@ export const MembershipsPage: React.FC = () => {
                                           await ensureMatchesLoaded(comp.id);
                                         }
                                       }}
-                                      style={{
-                                        width: '100%',
-                                        textAlign: 'left',
-                                        padding: '10px 12px',
-                                        background: 'var(--app-surface)',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        gap: 12,
-                                      }}
+                                      className={styles.accordionButton}
                                     >
                                       <div className="fw-700">{String(comp.name || comp.id)}</div>
                                       <div className="text-xs text-gray-500">{compOpen ? 'Hide matches' : 'Show matches'}</div>
                                     </button>
 
                                     {compOpen && (
-                                      <div style={{ padding: '10px 12px', background: 'var(--app-surface-1)' }}>
+                                      <div className={styles.accordionPanel}>
                                         {matchesLoading ? (
                                           <div className="text-sm text-gray-600">Loading matches…</div>
                                         ) : matches.length === 0 ? (
@@ -337,9 +312,7 @@ export const MembershipsPage: React.FC = () => {
                                               const label = String(m.title || m.name || m.metadata?.title || m.metadata?.name || m.id);
                                               const when = String(m.start_datetime || m.start_date || '').trim();
                                               return (
-                                                <div key={m.id} className="flex-between rounded-8 border bg-surface" style={{
-                                                  padding: '8px 10px',
-                                                }}>
+                                                <div key={m.id} className={`flex-between rounded-8 border bg-surface ${styles.matchItem}`}>
                                                   <div className="fw-600">{label}</div>
                                                   <div className="text-xs text-gray-500">{when ? when : '—'}</div>
                                                 </div>

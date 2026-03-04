@@ -1,0 +1,25 @@
+.col140 {
+  width: 140px;
+}
+
+.col260 {
+  width: 260px;
+}
+
+.col110 {
+  width: 110px;
+}
+
+.col100 {
+  width: 100px;
+}
+
+.col90 {
+  width: 90px;
+}
+
+.seasonNameBtn {
+  color: var(--app-link, #2563eb);
+  text-decoration: underline;
+  font: inherit;
+}

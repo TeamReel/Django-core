@@ -8,6 +8,7 @@
 import React, { useRef } from 'react';
 import { getAssetUrl, type BrandAsset } from '../../hooks/useBrandProfile';
 import s from './AssetsTab.module.css';
+import sc from './AssetSubComponents.module.css';
 
 // ============================================================================
 // AssetCard
@@ -73,24 +74,23 @@ export function AssetCard({
 
   return (
     <div
-      className={s.assetCard}
-      style={{ opacity: inherited ? 0.8 : 1 }}
+      className={`${s.assetCard} ${sc.cardWrap}`}
+      data-inherited={inherited ? '' : undefined}
     >
       {/* Preview area */}
       <div
-        className={s.previewArea}
+        className={`${s.previewArea} ${sc.previewDynamic}`}
+        data-has-url={url ? '' : undefined}
         style={{
-          aspectRatio,
-          background: url
-            ? `url(${url}) center/contain no-repeat`
-            : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-        }}
+          '--aspect-ratio': aspectRatio,
+          ...(url ? { '--preview-bg': `url(${url}) center/contain no-repeat` } : {}),
+        } as React.CSSProperties}
       >
         {/* Phase badge */}
         {badgeText && (
           <span
-            className={s.phaseBadge}
-            style={{ background: badgeColor }}
+            className={`${s.phaseBadge} ${sc.badgeDynamic}`}
+            style={{ '--badge-bg': badgeColor } as React.CSSProperties}
           >
             {badgeText}
           </span>
@@ -110,8 +110,8 @@ export function AssetCard({
           ].includes(assetType) && (
             <button
                 onClick={() => onShowHistory(assetType)}
-                className={s.historyBtn}
-                style={{ right: badgeText ? 80 : 6 }}
+                className={`${s.historyBtn} ${sc.historyBtnPos}`}
+                data-has-badge={badgeText ? '' : undefined}
             >
              ⏱️
             </button>
@@ -148,7 +148,7 @@ export function AssetCard({
           <>
             {/* AI processed assets with Genereer + Bewerk buttons */}
             {isProcessed && onReplace ? (
-              <div className={s.btnGrid} style={{ gridTemplateColumns: onPostProcess ? '1fr 1fr' : '1fr' }}>
+              <div className={`${s.btnGrid} ${sc.gridCols}`} data-two-cols={onPostProcess ? '' : undefined}>
                 <button
                   onClick={() => onReplace(assetType)}
                   className={s.btnPrimary}
@@ -159,12 +159,8 @@ export function AssetCard({
                   <button
                     onClick={() => onPostProcess(assetType)}
                     disabled={isProcessing}
-                    className={s.btnPrimary}
-                    style={{
-                      cursor: isProcessing ? 'not-allowed' : 'pointer',
-                      background: isProcessing ? '#555' : '#8b5cf6',
-                      opacity: isProcessing ? 0.6 : 1,
-                    }}
+                    className={`${s.btnPrimary} ${sc.editBtn}`}
+                    data-processing={isProcessing ? '' : undefined}
                   >
                     {isProcessing ? '⏳ Bezig...' : '✂️ Bewerk'}
                   </button>
@@ -172,7 +168,7 @@ export function AssetCard({
               </div>
             ) : (
               /* Upload-type assets with file picker */
-              <div className={s.btnGrid} style={{ gridTemplateColumns: url ? '1fr 1fr' : '1fr' }}>
+              <div className={`${s.btnGrid} ${sc.gridCols}`} data-two-cols={url ? '' : undefined}>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className={s.btnPrimary}
@@ -269,7 +265,7 @@ export function HistoryModal({ show, loading, list, onClose, onRestore }: Histor
           <div className={s.historyList}>
             {list.map(item => (
               <div key={item.id} className={s.historyItem}>
-                <div className={s.historyThumb} style={{ background: `url(${item.url}) center/contain no-repeat` }} />
+                <div className={`${s.historyThumb} ${sc.thumbDynamic}`} style={{ '--thumb-bg': `url(${item.url}) center/contain no-repeat` } as React.CSSProperties} />
                 <div className="flex-1">
                   <div className="fs-12 fw-600">{new Date(item.created_at).toLocaleString()}</div>
                   <div className={s.historyName}>{item.original_name}</div>

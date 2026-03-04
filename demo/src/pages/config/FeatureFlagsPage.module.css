@@ -1,0 +1,44 @@
+.superadminBadge {
+  padding: 4px 10px;
+  background-color: var(--color-blue-500);
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.colCheckbox {
+  width: 40px;
+}
+
+.colType {
+  width: 12%;
+}
+
+.colSubtype {
+  width: 15%;
+}
+
+.colStyle {
+  width: 10%;
+}
+
+.colDescription {
+  width: 30%;
+}
+
+.colGlobal {
+  width: 10%;
+}
+
+.colActions {
+  width: 10%;
+}
+
+.descriptionCell {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flagBadge {
+  padding: 2px 6px;
+}

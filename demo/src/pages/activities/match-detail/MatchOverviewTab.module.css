@@ -1,0 +1,77 @@
+/* ── TeamLogo ─────────────────────────────────────────────────── */
+.teamLogoFallback {
+  background: var(--app-surface-secondary, #252526);
+}
+
+/* ── Scoreboard ──────────────────────────────────────────────── */
+.scoreBlock {
+  min-width: 80px;
+}
+
+.scoreDisplay {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.statusBadge {
+  margin-top: 6px;
+}
+
+/* ── Quick-status cards ──────────────────────────────────────── */
+.statusCard {
+  border-radius: 10px;
+}
+
+.statusCardLabel {
+  margin-bottom: 6px;
+}
+
+/* Content count — color driven by data-attribute */
+.contentStatusValue {
+  color: var(--app-muted-text, #888);
+}
+
+.contentStatusValue[data-has-content='true'] {
+  color: var(--color-green-400);
+}
+
+/* ── Category heading ────────────────────────────────────────── */
+.categoryLabel {
+  padding-left: 2px;
+}
+
+/* ── Content checklist rows ──────────────────────────────────── */
+.contentRow {
+  border-bottom: 1px solid var(--app-border, #222);
+  cursor: default;
+}
+
+.contentRow:last-child {
+  border-bottom: none;
+}
+
+.contentRow[data-clickable='true'] {
+  cursor: pointer;
+}
+
+.actionCreate {
+  color: var(--app-primary, #3b82f6);
+}
+
+/* ── Match-event rows ────────────────────────────────────────── */
+.eventRow {
+  border-bottom: 1px solid var(--app-border, #222);
+}
+
+.eventRow:last-child {
+  border-bottom: none;
+}
+
+.eventMinute {
+  font-family: monospace;
+  min-width: 28px;
+}
+
+.eventTeamName {
+  font-size: 10px;
+}

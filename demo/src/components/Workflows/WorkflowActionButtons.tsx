@@ -2,12 +2,13 @@
  * WorkflowActionButtons — Renders available workflow transition actions.
  * Shows confirm dialog before executing destructive actions (reject/cancel).
  */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   executeTransition,
   getActionDisplay,
   type TransitionHistoryEntry,
 } from '../../hooks/useWorkflows';
+import styles from './WorkflowActionButtons.module.css';
 
 interface WorkflowActionButtonsProps {
   instanceId: number | string;
@@ -56,20 +57,13 @@ export function WorkflowActionButtons({
 
   if (!availableActions.length) return null;
 
-  const fontSize = size === 'sm' ? 11 : 13;
-  const padding = size === 'sm' ? '4px 10px' : '6px 14px';
-  const gap = size === 'sm' ? 6 : 8;
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap }}>
+    <div className={styles.container} data-size={size}>
       {/* Action buttons row */}
       <div
-        style={{
-          display: 'flex',
-          flexDirection: layout === 'stack' ? 'column' : 'row',
-          flexWrap: 'wrap',
-          gap,
-        }}
+        className={styles.actionsRow}
+        data-layout={layout}
+        data-size={size}
       >
         {availableActions.map(action => {
           const display = getActionDisplay(action);
@@ -80,28 +74,14 @@ export function WorkflowActionButtons({
               key={action}
               onClick={() => handleActionClick(action)}
               disabled={!!executing}
+              className={styles.actionButton}
+              data-size={size}
+              data-executing={isExecuting ? 'self' : executing ? 'other' : undefined}
               style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontSize,
-                fontWeight: 600,
-                color: display.color,
-                backgroundColor: isExecuting ? display.hoverBgColor : display.bgColor,
-                border: 'none',
-                borderRadius: 6,
-                padding,
-                cursor: executing ? 'wait' : 'pointer',
-                opacity: executing && !isExecuting ? 0.5 : 1,
-                transition: 'background-color 0.15s, opacity 0.15s',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={e => {
-                if (!executing) (e.target as HTMLElement).style.backgroundColor = display.hoverBgColor;
-              }}
-              onMouseLeave={e => {
-                if (!executing) (e.target as HTMLElement).style.backgroundColor = display.bgColor;
-              }}
+                '--action-color': display.color,
+                '--action-bg': display.bgColor,
+                '--action-hover-bg': display.hoverBgColor,
+              } as React.CSSProperties}
             >
               <span>{display.icon}</span>
               <span>{isExecuting ? 'Processing...' : display.label}</span>
@@ -112,18 +92,8 @@ export function WorkflowActionButtons({
 
       {/* Comment dialog for destructive actions */}
       {commentAction && (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 8,
-            padding: 12,
-            backgroundColor: 'var(--app-surface-2, #f9fafb)',
-            borderRadius: 8,
-            border: '1px solid var(--app-border, #e5e7eb)',
-          }}
-        >
-          <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--app-text-secondary, #6b7280)' }}>
+        <div className={styles.commentDialog}>
+          <label className={styles.commentLabel}>
             Reason for {commentAction} (optional):
           </label>
           <textarea
@@ -131,46 +101,19 @@ export function WorkflowActionButtons({
             onChange={e => setComment(e.target.value)}
             rows={2}
             placeholder={`Why are you ${commentAction.toLowerCase()}ing this?`}
-            style={{
-              fontSize: 13,
-              padding: '8px 10px',
-              borderRadius: 6,
-              border: '1px solid var(--app-border, #e5e7eb)',
-              backgroundColor: 'var(--app-surface, #fff)',
-              color: 'var(--app-text, #111)',
-              resize: 'vertical',
-              fontFamily: 'inherit',
-            }}
+            className={styles.commentTextarea}
           />
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className={styles.commentActions}>
             <button
               onClick={() => handleExecute(commentAction, comment)}
               disabled={!!executing}
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: '#fff',
-                backgroundColor: '#dc2626',
-                border: 'none',
-                borderRadius: 6,
-                padding: '6px 14px',
-                cursor: 'pointer',
-              }}
+              className={styles.confirmButton}
             >
               {executing ? 'Processing...' : `Confirm ${commentAction}`}
             </button>
             <button
               onClick={() => { setCommentAction(null); setComment(''); }}
-              style={{
-                fontSize: 12,
-                fontWeight: 600,
-                color: 'var(--app-text, #111)',
-                backgroundColor: 'transparent',
-                border: '1px solid var(--app-border, #e5e7eb)',
-                borderRadius: 6,
-                padding: '6px 14px',
-                cursor: 'pointer',
-              }}
+              className={styles.cancelButton}
             >
               Cancel
             </button>

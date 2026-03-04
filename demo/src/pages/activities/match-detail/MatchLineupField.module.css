@@ -1,0 +1,218 @@
+/* MatchLineupField.module.css */
+
+/* Component-level color tokens */
+.root {
+  --field-green: #16a34a;
+  --field-green-dark: #15803d;
+  --marking-color: rgba(255, 255, 255, 0.2);
+  --dropdown-bg: #1e1e1e;
+  --dropdown-text: #ccc;
+  --dropdown-text-disabled: #666;
+}
+
+/* Field pitch */
+.fieldContainer {
+  max-width: 500px;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(to bottom, var(--field-green), var(--field-green-dark));
+}
+
+/* Field markings — shared horizontal line */
+.fieldMarkingHorizontal {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: var(--marking-color);
+}
+
+.fieldMarkingTop {
+  top: 15%;
+}
+
+.fieldMarkingCenter {
+  top: 50%;
+}
+
+/* Center circle */
+.centerCircle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--marking-color);
+  border-radius: 50%;
+}
+
+/* Penalty box — bottom (defending) */
+.penaltyBoxBottom {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  bottom: 0;
+  height: 14%;
+  border-top: 1px solid var(--marking-color);
+  border-left: 1px solid var(--marking-color);
+  border-right: 1px solid var(--marking-color);
+}
+
+/* Penalty box — top (attacking) */
+.penaltyBoxTop {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  top: 0;
+  height: 14%;
+  border-bottom: 1px solid var(--marking-color);
+  border-left: 1px solid var(--marking-color);
+  border-right: 1px solid var(--marking-color);
+}
+
+/* Position node wrapper — placement via --pos-x / --pos-y custom props */
+.positionNode {
+  position: absolute;
+  left: var(--pos-x);
+  top: var(--pos-y);
+  transform: translate(-50%, -50%) scale(0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  z-index: 10;
+  width: 72px;
+}
+
+/* Position label (e.g. GK, CB, LW) */
+.positionLabel {
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* Select dropdown — base (empty) */
+.positionSelect {
+  width: 72px;
+  max-width: 72px;
+  height: 26px;
+  padding: 0 2px;
+  font-size: 11px;
+  line-height: 24px;
+  font-weight: 400;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  text-align: center;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 3px center;
+  padding-right: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* Select dropdown — filled (player selected) */
+.positionSelectFilled {
+  font-weight: 700;
+  background-color: rgba(22, 163, 74, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+}
+
+/* <option> base */
+.selectOption {
+  background: var(--dropdown-bg);
+  color: var(--dropdown-text);
+}
+
+/* <option> disabled (already used) */
+.selectOptionDisabled {
+  background: var(--dropdown-bg);
+  color: var(--dropdown-text-disabled);
+}
+
+/* Player name label beneath the dropdown */
+.playerName {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+/* Summary bar */
+.summaryBar {
+  padding: 10px 14px;
+  background: var(--app-surface-secondary, #2a2a2a);
+  max-width: 500px;
+}
+
+/* Green status text (positions filled, save success) */
+.statusGreen {
+  color: var(--color-green-400);
+}
+
+/* Save button */
+.saveButton {
+  padding: 8px 20px;
+  background: var(--field-green, #16a34a);
+}
+
+.saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Bench section */
+.benchContainer {
+  max-width: 500px;
+}
+
+.benchPool {
+  background: var(--app-surface-secondary, #2a2a2a);
+}
+
+.benchRow {
+  padding: 6px 14px;
+}
+
+/* Bench status button — base */
+.benchButton {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--app-border, #444);
+  background: transparent;
+  color: var(--app-text-secondary, #999);
+  cursor: pointer;
+}
+
+/* Wissel — active */
+.benchButtonWisselActive {
+  border: 2px solid var(--color-amber-500, #f59e0b);
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--color-amber-400);
+}
+
+/* Afwezig — active */
+.benchButtonAfwezigActive {
+  border: 2px solid var(--color-red-500, #ef4444);
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--color-red-500);
+}

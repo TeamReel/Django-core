@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
+import styles from './TransactionsPanel.module.css';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
@@ -31,10 +32,10 @@ function sourceTypeLabel(sourceType: string): string {
   return sourceType || '—';
 }
 
-function amountColor(amount: number): string {
-  if (amount > 0) return 'var(--app-success)';
-  if (amount < 0) return 'var(--app-error)';
-  return 'var(--app-text)';
+function amountSign(amount: number): string | undefined {
+  if (amount > 0) return 'positive';
+  if (amount < 0) return 'negative';
+  return undefined;
 }
 
 export type TransactionsPanelFilters = {
@@ -96,12 +97,12 @@ export default function TransactionsPanel(props: {
 
   return (
     <Card className="p-16">
-      <div className="gap-10 flex-wrap" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className={`gap-10 flex-wrap ${styles.headerRow}`}>
         <div>
           {title ? <div className="stat-value">{title}</div> : null}
           {description ? <div className="mt-4 text-muted fs-13">{description}</div> : null}
         </div>
-        <div className="gap-8 flex-wrap" style={{ display: 'flex' }}>
+        <div className={`gap-8 flex-wrap ${styles.actionsRow}`}>
           {onCreateTransaction ? (
             <Button
               variant="primary"
@@ -141,10 +142,10 @@ export default function TransactionsPanel(props: {
           <Table className="w-full">
             <thead>
               <tr>
-                <th className="text-left fs-12 opacity-80" style={{ padding: '8px 6px' }}>When</th>
-                <th className="text-right fs-12 opacity-80" style={{ padding: '8px 6px' }}>Amount</th>
-                <th className="hide-mobile text-left fs-12 opacity-80" style={{ padding: '8px 6px' }}>Type</th>
-                <th className="hide-mobile text-left fs-12 opacity-80" style={{ padding: '8px 6px' }}>Notes</th>
+                <th className={`text-left fs-12 opacity-80 ${styles.tableCell}`}>When</th>
+                <th className={`text-right fs-12 opacity-80 ${styles.tableCell}`}>Amount</th>
+                <th className={`hide-mobile text-left fs-12 opacity-80 ${styles.tableCell}`}>Type</th>
+                <th className={`hide-mobile text-left fs-12 opacity-80 ${styles.tableCell}`}>Notes</th>
               </tr>
             </thead>
             <tbody>
@@ -152,16 +153,16 @@ export default function TransactionsPanel(props: {
                 const amount = Number(t.amount);
                 return (
                   <tr key={t.id}>
-                    <td className="fs-13 whitespace-nowrap" style={{ padding: '8px 6px' }}>{formatDateTime(t.timestamp)}</td>
-                    <td className="fs-13 text-right" style={{ padding: '8px 6px', fontVariantNumeric: 'tabular-nums', color: amountColor(amount) }}>
+                    <td className={`fs-13 whitespace-nowrap ${styles.tableCell}`}>{formatDateTime(t.timestamp)}</td>
+                    <td className={`fs-13 text-right ${styles.amountCell}`} data-amount-sign={amountSign(amount)}>
                       {t.amount}
                     </td>
-                    <td className="hide-mobile fs-13" style={{ padding: '8px 6px' }}>
+                    <td className={`hide-mobile fs-13 ${styles.tableCell}`}>
                       <Badge variant={String(t.source_type).toLowerCase() === 'usage_event' ? 'primary' : 'default'}>
                         {sourceTypeLabel(t.source_type)}
                       </Badge>
                     </td>
-                    <td className="hide-mobile fs-13" style={{ padding: '8px 6px' }}>{t.notes || '—'}</td>
+                    <td className={`hide-mobile fs-13 ${styles.tableCell}`}>{t.notes || '—'}</td>
                   </tr>
                 );
               })}

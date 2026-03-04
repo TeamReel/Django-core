@@ -117,3 +117,46 @@
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
 }
+
+/* ── Access Denied ── */
+.lockIcon { font-size: 48px; }
+.accessDeniedTitle { margin: 0 0 8px; }
+.accessDeniedMessage { margin: 0 0 24px; }
+.goBackButton { padding: 8px 16px; }
+
+/* ── Active Context Button ── */
+.activeContextButton {
+  padding: 6px 12px; border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+  font-weight: 500;
+}
+.activeContextButton[data-active="true"] {
+  border-color: #10b981;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 600;
+}
+.activeContextButton[data-disabled="true"] {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+/* ── Queue Link ── */
+.queueLink { color: var(--color-blue-500); }
+
+/* ── Member Card ── */
+.memberCardBadges { margin-top: 10px; }
+.quickLinksSection { margin-top: 14px; }
+.quickLinksTitle { margin-bottom: 6px; }
+
+/* ── Video Player ── */
+.videoPlayer {
+  width: 100%; max-height: calc(100vh - 80px);
+  object-fit: contain; border-radius: 12px;
+}
+
+/* ── Mobile Action Bar ── */
+.mobileActionSave { flex: 2; }
+.mobileActionSquad { flex: 1; }

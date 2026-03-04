@@ -1,0 +1,72 @@
+.jobRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #333);
+  margin-bottom: 8px;
+  background: var(--app-surface-2, #252540);
+}
+
+.progressBarContainer {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--app-border, #333);
+  overflow: hidden;
+  flex: 1;
+  min-width: 80px;
+}
+
+.loadingState {
+  color: var(--app-muted-text, #888);
+  padding: 40px;
+}
+
+.errorAlert {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--color-red-500);
+}
+
+.emptyState {
+  color: var(--app-muted-text, #888);
+  padding: 40px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+}
+
+.jobSubtext {
+  color: var(--app-muted-text, #888);
+}
+
+.progressArea {
+  min-width: 150px;
+}
+
+.progressFill {
+  transition: width 0.3s ease;
+  background: var(--color-blue-500);
+}
+
+.progressFill[data-cancelling="true"] {
+  background: var(--color-amber-400);
+}
+
+.progressText {
+  color: var(--app-muted-text, #888);
+  min-width: 40px;
+}
+
+.cancelBtn {
+  flex-shrink: 0;
+}
+
+.infoNotice {
+  --info-notice-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--info-notice-color);
+}

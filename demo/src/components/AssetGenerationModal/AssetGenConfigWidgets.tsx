@@ -11,6 +11,7 @@ import {
   IMAGE_MODELS,
   estimateCost,
 } from './assetGenHelpers';
+import styles from './AssetGenConfigWidgets.module.css';
 
 // ── Source Picker ────────────────────────────────────────────────────
 
@@ -23,10 +24,7 @@ export function SourcePicker({
 }) {
   return (
     <div className="mb-16">
-      <label
-        className="block fs-12 fw-600"
-        style={{ marginBottom: 6, color: 'var(--vscode-foreground, #ccc)' }}
-      >
+      <label className={`block fs-12 fw-600 ${styles.sectionLabel}`}>
         Input Bron
       </label>
       <div className="flex-row gap-8">
@@ -34,29 +32,14 @@ export function SourcePicker({
           <button
             key={src}
             onClick={() => onSelect(src)}
-            style={{
-              flex: 1,
-              padding: '8px 12px',
-              border:
-                referenceSource === src
-                  ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                  : '1px solid var(--vscode-widget-border, #333)',
-              background:
-                referenceSource === src
-                  ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                  : 'transparent',
-              color: 'var(--vscode-foreground, #ccc)',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontSize: 13,
-              textAlign: 'center',
-            }}
+            className={styles.sourceButton}
+            data-selected={referenceSource === src}
           >
             {src === 'upload' ? '📤 Originele Upload' : '🎨 Huidige AI Versie'}
           </button>
         ))}
       </div>
-      <div className="fs-11 mt-4" style={{ color: '#888' }}>
+      <div className={`fs-11 mt-4 ${styles.mutedHint}`}>
         {referenceSource === 'upload'
           ? 'Gebruikt de origineel ge\u00fcploade afbeelding als basis.'
           : 'Gebruikt het huidige AI resultaat als basis voor verdere aanpassingen.'}
@@ -77,11 +60,8 @@ export function BackgroundSelector({
   onSelect: (idx: number) => void;
 }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <label
-        className="block fs-12 fw-600 mb-8"
-        style={{ color: 'var(--vscode-foreground, #ccc)' }}
-      >
+    <div className={styles.backgroundSelector}>
+      <label className={`block fs-12 fw-600 mb-8 ${styles.backgroundLabel}`}>
         Selecteer achtergrond
       </label>
       <div className="flex-row gap-8 flex-wrap">
@@ -89,54 +69,25 @@ export function BackgroundSelector({
           <button
             key={idx}
             onClick={() => onSelect(idx)}
-            style={{
-              position: 'relative',
-              width: '80px',
-              height: '80px',
-              padding: 0,
-              border:
-                idx === selectedIdx
-                  ? '3px solid #10b981'
-                  : '2px solid var(--vscode-widget-border, #333)',
-              borderRadius: 8,
-              overflow: 'hidden',
-              cursor: 'pointer',
-              background: '#1a1a1a',
-            }}
+            className={styles.backgroundButton}
+            data-selected={idx === selectedIdx}
           >
             <img
               src={bg.url}
               alt={bg.label || `Achtergrond ${idx + 1}`}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              className={styles.backgroundImage}
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
             {idx === selectedIdx && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: 2,
-                  right: 2,
-                  background: 'var(--color-green-400)',
-                  color: '#fff',
-                  borderRadius: '50%',
-                  width: '18px',
-                  height: '18px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '10px',
-                }}
-              >
-                ✓
-              </div>
+              <div className={styles.checkmark}>✓</div>
             )}
           </button>
         ))}
       </div>
       {backgrounds[selectedIdx]?.label && (
-        <div className="fs-11 mt-4" style={{ color: '#888' }}>
+        <div className={`fs-11 mt-4 ${styles.mutedHint}`}>
           {backgrounds[selectedIdx].label}
         </div>
       )}
@@ -162,10 +113,7 @@ export function ModelSelector({
 
   return (
     <div className="mb-16">
-      <label
-        className="block fs-12 fw-600"
-        style={{ marginBottom: 6, color: 'var(--vscode-foreground, #ccc)' }}
-      >
+      <label className={`block fs-12 fw-600 ${styles.sectionLabel}`}>
         {isVideo ? 'Video Model' : 'Image Model'}
       </label>
       <div className="flex-row gap-6 flex-wrap">
@@ -180,58 +128,19 @@ export function ModelSelector({
                 onSelectModel(opt.modelId);
               }
             }}
-            style={{
-              flex: '1 1 auto',
-              minWidth: 80,
-              padding: '6px 8px',
-              border:
-                selectedModel === opt.modelId
-                  ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                  : '1px solid var(--vscode-widget-border, #333)',
-              background:
-                selectedModel === opt.modelId
-                  ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                  : 'transparent',
-              color: 'var(--vscode-foreground, #ccc)',
-              borderRadius: 6,
-              cursor: 'pointer',
-              fontSize: 11,
-              textAlign: 'center',
-            }}
+            className={styles.modelButton}
+            data-selected={selectedModel === opt.modelId}
           >
             <div className="fw-600 fs-11">{opt.label}</div>
-            <div
-              style={{
-                fontSize: 9,
-                color: 'var(--vscode-descriptionForeground, #888)',
-                marginTop: 1,
-              }}
-            >
-              {opt.desc}
-            </div>
+            <div className={styles.modelDesc}>{opt.desc}</div>
             {opt.costLabel && (
-              <div
-                style={{
-                  fontSize: 9,
-                  color: 'var(--vscode-charts-green, #4ec)',
-                  marginTop: 1,
-                }}
-              >
-                {opt.costLabel}
-              </div>
+              <div className={styles.modelCostLabel}>{opt.costLabel}</div>
             )}
           </button>
         ))}
       </div>
       {costStr && (
-        <div
-          style={{
-            fontSize: 11,
-            color: 'var(--vscode-charts-green, #4ec)',
-            marginTop: 4,
-            fontWeight: 600,
-          }}
-        >
+        <div className={styles.costEstimate}>
           Geschatte kosten: {costStr}
         </div>
       )}

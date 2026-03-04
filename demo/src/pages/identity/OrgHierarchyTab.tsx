@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Card, Input } from '@django-core/design-system';
 import { Project } from '../../types';
+import styles from './OrgHierarchyTab.module.css';
 
 export interface OrgHierarchyTabProps {
   hierarchySearch: string;
@@ -140,19 +141,6 @@ export function OrgHierarchyTab({
 
   const orgKey = String(orgSlugOrId || currentOrgSlug || id || '').trim();
 
-  const pillStyle: React.CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 6,
-    padding: '2px 8px',
-    borderRadius: 999,
-    border: '1px solid var(--app-border)',
-    background: 'var(--app-surface-2)',
-    fontSize: 12,
-    color: 'var(--app-muted-text)',
-    fontWeight: 600,
-  };
-
   return (
     <Card>
       <div className="flex-between gap-12">
@@ -185,26 +173,17 @@ export function OrgHierarchyTab({
             return (
               <div
                 key={club.clubId || club.clubSlugOrId}
-                className="border overflow-hidden"
-                style={{
-                  borderRadius: 10,
-                  background: 'var(--app-surface)',
-                }}
+                className={`border overflow-hidden ${styles.clubCard}`}
               >
                 <div
-                  className="flex-between border-bottom gap-12"
-                  style={{
-                    padding: '10px 12px',
-                    background: 'var(--app-surface-2)',
-                  }}
+                  className={`flex-between border-bottom gap-12 ${styles.clubHeader}`}
                 >
                   <div className="flex-col gap-2 min-w-0">
                     {clubPath ? (
                       <button
                         type="button"
-                        className="app-unstyled-button hover:underline text-left fw-800 fs-14"
+                        className={`app-unstyled-button hover:underline text-left fw-800 fs-14 ${styles.clubLinkButton}`}
                         onClick={() => navigate(clubPath)}
-                        style={{ color: '#60a5fa' }}
                       >
                         {club.clubName}
                       </button>
@@ -213,12 +192,12 @@ export function OrgHierarchyTab({
                     )}
                   </div>
 
-                  <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
-                    <span style={pillStyle}>Teams: {club.teamCount}</span>
-                    <span style={pillStyle}>Members: {club.memberCount}</span>
-                    <span style={pillStyle}>Seasons: {club.seasonsCount ?? 0}</span>
-                    <span style={pillStyle}>Competitions: {club.competitionsCount ?? 0}</span>
-                    <span style={pillStyle}>Matches: {club.matchesCount ?? 0}</span>
+                  <div className={`flex-row gap-8 flex-wrap ${styles.pillRow}`}>
+                    <span className={styles.pill}>Teams: {club.teamCount}</span>
+                    <span className={styles.pill}>Members: {club.memberCount}</span>
+                    <span className={styles.pill}>Seasons: {club.seasonsCount ?? 0}</span>
+                    <span className={styles.pill}>Competitions: {club.competitionsCount ?? 0}</span>
+                    <span className={styles.pill}>Matches: {club.matchesCount ?? 0}</span>
                     {clubPath ? (
                       <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(clubPath)}>
                         View Club
@@ -227,7 +206,7 @@ export function OrgHierarchyTab({
                   </div>
                 </div>
 
-                <div style={{ padding: '10px 12px' }}>
+                <div className={styles.clubContent}>
                   {club.teams.length === 0 ? (
                     <div className="text-sm text-gray-500 py-2">No teams.</div>
                   ) : (
@@ -239,19 +218,14 @@ export function OrgHierarchyTab({
                         return (
                           <div
                             key={t.teamId || t.teamSlugOrId}
-                            className="flex-between gap-12 border rounded-8"
-                            style={{
-                              padding: '8px 10px',
-                              background: 'var(--app-surface)',
-                            }}
+                            className={`flex-between gap-12 border rounded-8 ${styles.teamRow}`}
                           >
                             <div className="min-w-0">
                               {teamPath ? (
                                 <button
                                   type="button"
-                                  className="app-unstyled-button hover:underline text-left fw-700 fs-13"
+                                  className={`app-unstyled-button hover:underline text-left fw-700 fs-13 ${styles.clubLinkButton}`}
                                   onClick={() => navigate(teamPath)}
-                                  style={{ color: '#60a5fa' }}
                                 >
                                   {t.teamName}
                                 </button>
@@ -260,11 +234,11 @@ export function OrgHierarchyTab({
                               )}
                             </div>
 
-                            <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
-                              <span style={pillStyle}>Members: {t.memberCount}</span>
-                              <span style={pillStyle}>Seasons: {t.seasonsCount ?? 0}</span>
-                              <span style={pillStyle}>Competitions: {t.competitionsCount ?? 0}</span>
-                              <span style={pillStyle}>Matches: {t.matchesCount ?? 0}</span>
+                            <div className={`flex-row gap-8 flex-wrap ${styles.pillRow}`}>
+                              <span className={styles.pill}>Members: {t.memberCount}</span>
+                              <span className={styles.pill}>Seasons: {t.seasonsCount ?? 0}</span>
+                              <span className={styles.pill}>Competitions: {t.competitionsCount ?? 0}</span>
+                              <span className={styles.pill}>Matches: {t.matchesCount ?? 0}</span>
                               {teamPath ? (
                                 <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => navigate(teamPath)}>
                                   View Team

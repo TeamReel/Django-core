@@ -1,0 +1,30 @@
+.routingLogsLink {
+  text-decoration: none;
+}
+
+.orgInfo {
+  margin-top: 6px;
+  color: var(--app-text-muted);
+}
+
+.formGrid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.formInput {
+  padding: 8px 10px;
+}
+
+.enabledLabel {
+  margin-top: 22px;
+}
+
+.emptyState {
+  color: var(--app-text-muted);
+}
+
+.ruleDetails {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--app-text-muted);
+}

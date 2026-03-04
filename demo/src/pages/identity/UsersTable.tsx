@@ -6,6 +6,7 @@ import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCookie, type User } from './useUsersData';
+import styles from './UsersTable.module.css';
 
 interface UsersTableProps {
   filteredUsers: any[];
@@ -51,18 +52,18 @@ export const UsersTable: React.FC<UsersTableProps> = ({
   setIsLinkModalOpen,
   fetchUsers,
 }) => (
-  <div className="overflow-x-auto">
+  <div className={`${styles.root} overflow-x-auto`}>
     <Table>
       <thead>
         <tr>
-          <th style={{ minWidth: '150px' }}>User</th>
-          <th style={{ minWidth: '200px' }}>Email</th>
-          <th style={{ minWidth: '100px' }}>Role</th>
-          <th style={{ minWidth: '100px' }}>Status</th>
-          <th style={{ minWidth: '150px' }}>Organisations</th>
-          <th style={{ minWidth: '150px' }}>Club</th>
-          <th style={{ minWidth: '150px' }}>Team</th>
-          <th className="text-right" style={{ minWidth: '150px' }}>Actions</th>
+          <th className={styles.thUser}>User</th>
+          <th className={styles.thEmail}>Email</th>
+          <th className={styles.thRole}>Role</th>
+          <th className={styles.thStatus}>Status</th>
+          <th className={styles.thOrganisations}>Organisations</th>
+          <th className={styles.thClub}>Club</th>
+          <th className={styles.thTeam}>Team</th>
+          <th className={`text-right ${styles.thActions}`}>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -147,8 +148,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
     <tr>
       <td>
         <div
-          className="fw-500 fs-sm cursor-pointer"
-          style={{ color: '#0066cc', textDecoration: 'underline' }}
+          className={`fw-500 fs-sm cursor-pointer ${styles.userNameLink}`}
           onClick={() => navigate(`/users/${user.id}`)}
         >
           {user.first_name} {user.last_name}
@@ -163,7 +163,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
         <div className="flex-row gap-4 flex-wrap">
           {userOrgs.length > 0
             ? userOrgs.map((org: any) => (
-                <span key={org.id} className="border rounded-4 fs-11 bg-surface-2 text-primary" style={{ padding: '2px 6px' }}>{org.name}</span>
+                <span key={org.id} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{org.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}
         </div>
@@ -172,7 +172,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
         <div className="flex-row gap-4 flex-wrap">
           {allParentClubs.length > 0
             ? allParentClubs.map((club: any, idx: number) => (
-                <span key={club.id || idx} className="border rounded-4 fs-11 bg-surface-2 text-primary" style={{ padding: '2px 6px' }}>{club.name}</span>
+                <span key={club.id || idx} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{club.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}
         </div>
@@ -181,7 +181,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
         <div className="flex-row gap-4 flex-wrap">
           {childProjects.length > 0
             ? childProjects.map((project: any) => (
-                <span key={project.id} className="border rounded-4 fs-11 bg-surface-2 text-primary" style={{ padding: '2px 6px' }}>{project.name}</span>
+                <span key={project.id} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{project.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}
         </div>
@@ -316,13 +316,12 @@ const UserActions: React.FC<UserActionsProps> = ({
   };
 
   return (
-    <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
+    <div className={`flex-row gap-8 ${styles.actionsRow}`}>
       {/* View */}
       {((isMembership && (orgIdParam || context.organisation)) || !isMembership) && (
         <button
           onClick={() => { setDetailUser(user); setIsDetailModalOpen(true); }}
-          className={actionBtn}
-          style={{ border: '1px solid #6c757d', color: '#6c757d' }}
+          className={`${actionBtn} ${styles.btnView}`}
         >
           View
         </button>
@@ -338,8 +337,7 @@ const UserActions: React.FC<UserActionsProps> = ({
               handleEditClick(item);
             }
           }}
-          className={actionBtn}
-          style={{ border: '1px solid var(--app-warning)', color: 'var(--app-warning)' }}
+          className={`${actionBtn} ${styles.btnEdit}`}
         >
           Edit
         </button>
@@ -347,7 +345,7 @@ const UserActions: React.FC<UserActionsProps> = ({
 
       {/* Delete */}
       {canManageUsers && (
-        <button onClick={handleDelete} className={`${actionBtn} text-error`} style={{ border: '1px solid #dc3545' }}>
+        <button onClick={handleDelete} className={`${actionBtn} text-error ${styles.btnDelete}`}>
           Delete
         </button>
       )}
@@ -356,8 +354,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       {canManageUsers && (
         <button
           onClick={() => { setLinkUser(user); setIsLinkModalOpen(true); }}
-          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-primary"
-          style={{ padding: '6px 12px', border: '1px solid #007bff' }}
+          className={`rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-primary ${styles.btnLink}`}
         >
           Link
         </button>
@@ -365,15 +362,14 @@ const UserActions: React.FC<UserActionsProps> = ({
 
       {/* Assign / Unassign */}
       {canManageUsers && effectiveOrgSlug && isInOrg && orgMembershipId && (
-        <button onClick={handleUnassign} className={`${actionBtn} text-error`} style={{ border: '1px solid #dc3545' }}>
+        <button onClick={handleUnassign} className={`${actionBtn} text-error ${styles.btnUnassign}`}>
           Unassign
         </button>
       )}
       {canManageUsers && effectiveOrgSlug && !isInOrg && (
         <button
           onClick={() => { setAssignUser(user); setIsAssignModalOpen(true); }}
-          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-success"
-          style={{ padding: '6px 12px', border: '1px solid #1e7e34' }}
+          className={`rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-success ${styles.btnAssign}`}
         >
           Assign
         </button>
@@ -381,8 +377,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       {canManageUsers && !effectiveOrgSlug && isSuperAdmin && !isMembership && (
         <button
           onClick={() => { setAssignUser(user); setIsAssignModalOpen(true); }}
-          className="rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-success"
-          style={{ padding: '6px 12px', border: '1px solid #1e7e34' }}
+          className={`rounded-4 bg-surface cursor-pointer fs-12 fw-500 text-success ${styles.btnAssign}`}
         >
           Assign
         </button>

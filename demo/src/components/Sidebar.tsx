@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import { useSidebarData } from './useSidebarData';
+import styles from './Sidebar.module.css';
 
 /* ────────────────────────────────────────────────────────────── */
 /*  Sidebar \u2013 thin JSX shell                                      */
@@ -25,21 +26,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
     } = useSidebarData();
 
     return (
-        <div className="h-full flex-row" style={{ zIndex: 90, flexShrink: 0 }}>
+        <div className={`h-full flex-row ${styles.root}`}>
 
             {/* ── PANEL A: PRIMARY SIDEBAR ── */}
             <aside
-                className="sidebar-panel-a flex-col relative"
-                style={{
-                    zIndex: 20,
-                    width: isOpen ? 240 : 72,
-                    backgroundColor: 'var(--sidebar-a-bg)',
-                    color: 'var(--sidebar-a-text)',
-                    transition: 'width 0.2s ease-in-out',
-                    flexShrink: 0,
-                    borderRight: '1px solid var(--sidebar-a-border)',
-                    paddingTop: 57,
-                }}
+                className={`sidebar-panel-a flex-col relative ${styles.panelA}`}
+                data-open={isOpen}
             >
                 <div className="flex-1 flex-col gap-4 px-12 overflow-y-auto">
                     {panelASections.map((section, sectionIndex) => {
@@ -91,7 +83,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         })();
 
                         return (
-                            <div key={section.id} style={{ marginBottom: section.bottom ? 0 : 16 }}>
+                            <div key={section.id} className={styles.section} data-bottom={!!section.bottom}>
                                 {/* Section label */}
                                 {isOpen && section.title && (
                                     <div className="flex-between gap-8">
@@ -104,18 +96,8 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                                 section.id === 'help' ? '/docs' :
                                                 '/dashboard'
                                             }
-                                            style={{
-                                                flex: 1,
-                                                padding: '0 12px',
-                                                marginBottom: 6,
-                                                fontSize: 10,
-                                                fontWeight: 700,
-                                                textTransform: 'uppercase',
-                                                opacity: sectionIsActive ? 1 : 0.5,
-                                                color: sectionIsActive ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
-                                                textDecoration: 'none',
-                                                cursor: 'pointer',
-                                            }}
+                                            className={styles.sectionTitle}
+                                            data-active={sectionIsActive}
                                         >
                                             {section.title}
                                         </Link>
@@ -126,23 +108,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                                 onClick={toggle}
                                                 title={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
                                                 aria-label={isOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-                                                className="sidebar-collapse-button rounded-6 border-none cursor-pointer flex-center"
-                                                style={{
-                                                    width: 28,
-                                                    height: 28,
-                                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                                    color: 'var(--sidebar-a-text)',
-                                                    transition: 'all 0.15s ease',
-                                                    flexShrink: 0,
-                                                    marginRight: '12px',
-                                                    marginBottom: '6px',
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                                                }}
+                                                className={`sidebar-collapse-button rounded-6 border-none cursor-pointer flex-center ${styles.collapseButton}`}
                                             >
                                                 <AppIcon icon={isOpen ? PanelLeftClose : PanelLeft} size={16} />
                                             </button>
@@ -157,8 +123,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                         to={item.path === '/approvals' && queueCounts.review > 0 ? '/approvals?tab=review' : item.path}
                                         end={section.id === 'app'}
                                         title={!isOpen ? item.label : undefined}
-                                        className="flex items-center rounded-md transition-colors"
-                                        style={({ isActive }) => {
+                                        className={({ isActive }) => {
                                             const curPath = location.pathname;
                                             const wp = new URLSearchParams(location.search || '').get('wallet');
                                             const isPW = wp === 'personal';
@@ -207,53 +172,34 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
 
                                             const active = refinedIsActive || isActiveViaItem;
 
-                                            return {
-                                                position: 'relative' as const,
-                                                minHeight: 44,
-                                                textDecoration: 'none',
-                                                padding: isOpen ? '0 12px' : '0',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: isOpen ? 'flex-start' : 'center',
-                                                borderRadius: 8,
-                                                background: active ? 'var(--sidebar-a-active-bg)' : 'transparent',
-                                                color: active ? 'var(--sidebar-a-active-text)' : 'var(--sidebar-a-text)',
-                                            };
+                                            return [
+                                                styles.navItem,
+                                                isOpen ? styles.navItemOpen : styles.navItemCollapsed,
+                                                active && styles.navItemActive,
+                                            ].filter(Boolean).join(' ');
                                         }}
                                     >
-<span className="flex-center" style={{ minWidth: 24 }}>
+<span className={`flex-center ${styles.iconWrap}`}>
                                             <AppIcon icon={item.icon} size={18} />
                                         </span>
-                                        {isOpen && <span className="fs-14 fw-500" style={{ marginLeft: 12 }}>{item.label}</span>}
+                                        {isOpen && <span className={`fs-14 fw-500 ${styles.navLabel}`}>{item.label}</span>}
 
                                         {/* Queue badge (open) */}
                                         {isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
-                                            <span className="ml-auto fw-700 text-center" style={{
-                                                backgroundColor: queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)',
-                                                color: '#fff',
-                                                borderRadius: 10,
-                                                padding: '1px 6px',
-                                                fontSize: 10,
-                                                minWidth: 18,
-                                                lineHeight: '16px',
-                                            }}>
+                                            <span
+                                                className={`ml-auto fw-700 text-center ${styles.queueBadge}`}
+                                                data-type={queueCounts.review > 0 ? 'review' : 'active'}
+                                            >
                                                 {queueCounts.review > 0 ? queueCounts.review : queueCounts.active}
                                             </span>
                                         )}
 
                                         {/* Queue badge (collapsed) */}
                                         {!isOpen && item.path === '/approvals' && (queueCounts.review > 0 || queueCounts.active > 0) && (
-                                            <span className="absolute fw-700 text-center" style={{
-                                                top: 4,
-                                                right: 4,
-                                                backgroundColor: queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)',
-                                                color: '#fff',
-                                                borderRadius: 10,
-                                                padding: '1px 5px',
-                                                fontSize: 9,
-                                                minWidth: 14,
-                                                lineHeight: '14px',
-                                            }}>
+                                            <span
+                                                className={`absolute fw-700 text-center ${styles.queueBadgeCollapsed}`}
+                                                data-type={queueCounts.review > 0 ? 'review' : 'active'}
+                                            >
                                                 {queueCounts.review > 0 ? queueCounts.review : queueCounts.active}
                                             </span>
                                         )}
@@ -270,22 +216,7 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                         onClick={toggle}
                         title="Expand Sidebar"
                         aria-label="Expand Sidebar"
-                        className="sidebar-expand-button absolute rounded-6 bg-transparent border-none cursor-pointer flex-center"
-                        style={{
-                            top: 65,
-                            right: -14,
-                            width: 32,
-                            height: 32,
-                            color: 'var(--sidebar-a-text)',
-                            transition: 'all 0.15s ease',
-                            zIndex: 25,
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
+                        className={`sidebar-expand-button absolute rounded-6 bg-transparent border-none cursor-pointer flex-center ${styles.expandButton}`}
                     >
                         <AppIcon icon={PanelLeft} size={16} />
                     </button>
@@ -295,20 +226,10 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             {/* ── PANEL B: SECONDARY CONTEXT SIDEBAR ── */}
             {panelBConfig && (
                 <aside
-                    className="sidebar-panel-b flex-col z-10"
-                    style={{
-                        width: 220,
-                        backgroundColor: 'var(--sidebar-b-bg)',
-                        borderRight: '1px solid var(--sidebar-b-border)',
-                        flexShrink: 0,
-                        paddingTop: 57,
-                    }}
+                    className={`sidebar-panel-b flex-col z-10 ${styles.panelB}`}
                 >
                     {/* Header */}
-                    <div className="flex-row fw-600 fs-11 uppercase tracking-wide" style={{
-                        padding: '12px 16px 8px',
-                        color: 'var(--sidebar-b-muted-text)',
-                    }}>
+                    <div className={`flex-row fw-600 fs-11 uppercase tracking-wide ${styles.panelBHeader}`}>
                         {panelBConfig.title}
                     </div>
 
@@ -350,22 +271,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             <Link
                                                 key={item.path}
                                                 to={item.path}
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    padding: '6px 10px',
-                                                    borderRadius: 8,
-                                                    border: `1px solid ${isActive ? 'var(--sidebar-b-border)' : 'transparent'}`,
-                                                    background: isActive ? 'var(--sidebar-b-active-bg)' : 'transparent',
-                                                    color: isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-text)',
-                                                    fontSize: 13,
-                                                    fontWeight: isActive ? 700 : 600,
-                                                    textDecoration: 'none',
-                                                    width: '100%',
-                                                }}
+                                                className={styles.panelBTabItem}
+                                                data-active={isActive}
                                             >
                                                 {item.icon && (
-                                                    <span style={{ marginRight: 10, display: 'flex' }}>
+                                                    <span className={styles.panelBTabIcon}>
                                                         <AppIcon icon={item.icon} size={16} />
                                                     </span>
                                                 )}
@@ -377,15 +287,12 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                                     const count = queueCounts[tabKey];
                                                     if (count === undefined) return null;
                                                     return (
-                                                        <span style={{
-                                                            marginLeft: 'auto',
-                                                            fontSize: 11,
-                                                            fontWeight: 600,
-                                                            opacity: count > 0 ? 0.9 : 0.4,
-                                                            color: tabKey === 'review' && count > 0
-                                                                ? 'var(--app-error)'
-                                                                : isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-muted-text)',
-                                                        }}>
+                                                            <span
+                                                                className={styles.queueCount}
+                                                                data-visible={count > 0}
+                                                                data-highlight={tabKey === 'review' && count > 0}
+                                                                data-active={isActive}
+                                                            >
                                                             ({count})
                                                         </span>
                                                     );
@@ -412,20 +319,11 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
                                             <Link
                                                 key={item.path}
                                                 to={item.path}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    padding: '8px 12px',
-                                                    borderRadius: 6,
-                                                    textDecoration: 'none',
-                                                    fontSize: 14,
-                                                    color: isActive ? 'var(--sidebar-b-active-text)' : 'var(--sidebar-b-text)',
-                                                    backgroundColor: isActive ? 'var(--sidebar-b-active-bg)' : 'transparent',
-                                                    fontWeight: isActive ? 600 : 400,
-                                                }}
+                                                className={styles.panelBItem}
+                                                data-active={isActive}
                                             >
                                                 {item.icon && (
-                                                    <span style={{ marginRight: 10, display: 'flex' }}>
+                                                    <span className={styles.panelBItemIcon}>
                                                         <AppIcon icon={item.icon} size={16} />
                                                     </span>
                                                 )}

@@ -8,6 +8,7 @@
 
 import React from 'react';
 import type { EditFormState } from './useContentTemplatesData';
+import styles from './ContentTemplateRequirementsTab.module.css';
 
 const MEMBER_ASSET_TYPES = ['profile_photo', 'in_tenue', 'full_body', 'close_up', 'short_intro', 'celebration', 'legacy'];
 
@@ -33,8 +34,8 @@ function MemberRoleRow({
   const isDisabled = !count;
 
   return (
-    <div className="grid gap-12 items-start" style={{ gridTemplateColumns: '140px 80px 1fr' }}>
-      <label className="fw-500 flex-row gap-6" style={{ paddingTop: '6px' }}>
+    <div className={`grid gap-12 items-start ${styles.memberRoleGrid}`}>
+      <label className={`fw-500 flex-row gap-6 ${styles.memberRoleLabel}`}>
         {icon} {label}
       </label>
       <select
@@ -54,8 +55,7 @@ function MemberRoleRow({
           }
           setEditForm({ ...editForm, input_requirements: newReqs });
         }}
-        style={{ padding: '6px 10px' }}
-        className="rounded-4 border bg-primary text-primary"
+        className={`rounded-4 border bg-primary text-primary ${styles.selectInput}`}
       >
         {Array.from({ length: maxCount + 1 }, (_, n) => (
           <option key={n} value={n}>{n}</option>
@@ -67,13 +67,9 @@ function MemberRoleRow({
           return (
             <label
               key={assetType}
-              className="flex-row gap-4 py-4 px-8 rounded-4 fs-13"
-              style={{
-                border: `1px solid ${isChecked ? 'var(--app-primary, #3b82f6)' : 'var(--app-border)'}`,
-                backgroundColor: isChecked ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                cursor: isDisabled ? 'not-allowed' : 'pointer',
-                opacity: isDisabled ? 0.5 : 1,
-              }}
+              className={`flex-row gap-4 py-4 px-8 rounded-4 fs-13 ${styles.assetTypeLabel}`}
+              data-checked={isChecked}
+              data-disabled={isDisabled}
             >
               <input
                 type="checkbox"
@@ -92,7 +88,8 @@ function MemberRoleRow({
                     setEditForm({ ...editForm, input_requirements: newReqs });
                   }
                 }}
-                style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                className={styles.assetTypeCheckbox}
+                data-disabled={isDisabled}
               />
               {assetType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </label>
@@ -119,7 +116,7 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
 
       {/* Members Required Section */}
       <div className="border rounded-8 p-16">
-        <h4 className="fw-600 m-0 mb-16" style={{ fontSize: '15px' }}>
+        <h4 className={`fw-600 m-0 mb-16 ${styles.sectionTitle}`}>
           Members Required
         </h4>
 
@@ -142,7 +139,7 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
                 newReqs.members.use_formation = e.target.checked;
                 setEditForm({ ...editForm, input_requirements: newReqs });
               }}
-              style={{ width: '16px', height: '16px' }}
+              className={styles.formationCheckbox}
             />
             <span className="fs-13">Use formation positions for players</span>
           </label>
@@ -165,14 +162,14 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
               }
               setEditForm({ ...editForm, input_requirements: newReqs });
             }}
-            style={{ width: '18px', height: '18px' }}
+            className={styles.sectionCheckbox}
           />
-          <label htmlFor="req_match" className="fw-600" style={{ fontSize: '15px' }}>
+          <label htmlFor="req_match" className={`fw-600 ${styles.sectionTitle}`}>
             Match Data Required
           </label>
         </div>
         {editForm.input_requirements?.match_data && (
-          <div className="text-muted fs-13" style={{ marginLeft: '26px' }}>
+          <div className={`text-muted fs-13 ${styles.indentedText}`}>
             Opponent, date, time, venue information
           </div>
         )}
@@ -194,14 +191,14 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
               }
               setEditForm({ ...editForm, input_requirements: newReqs });
             }}
-            style={{ width: '18px', height: '18px' }}
+            className={styles.sectionCheckbox}
           />
-          <label htmlFor="req_org_assets" className="fw-600" style={{ fontSize: '15px' }}>
+          <label htmlFor="req_org_assets" className={`fw-600 ${styles.sectionTitle}`}>
             Organisation Assets Required
           </label>
         </div>
         {editForm.input_requirements?.organisation_assets && (
-          <div className="text-muted fs-13" style={{ marginLeft: '26px' }}>
+          <div className={`text-muted fs-13 ${styles.indentedText}`}>
             Club logo and branding assets
           </div>
         )}
@@ -209,7 +206,7 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
 
       {/* Output Settings */}
       <div className="border rounded-8 p-16">
-        <h4 className="fw-600 m-0 mb-12" style={{ fontSize: '15px' }}>
+        <h4 className={`fw-600 m-0 mb-12 ${styles.sectionTitle}`}>
           Output Format
         </h4>
         <div className="grid-cols-2 gap-12">
@@ -222,8 +219,7 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
                 newReqs.output = { ...newReqs.output, type: e.target.value, format: e.target.value === 'image' ? 'png' : 'mp4' };
                 setEditForm({ ...editForm, input_requirements: newReqs });
               }}
-              className="w-full rounded-4 border bg-primary text-primary"
-              style={{ padding: '6px 10px' }}
+              className={`w-full rounded-4 border bg-primary text-primary ${styles.selectInput}`}
             >
               <option value="image">Image</option>
               <option value="video">Video</option>
@@ -243,8 +239,7 @@ export function ContentTemplateRequirementsTab({ editForm, setEditForm }: Requir
                 newReqs.output = { ...newReqs.output, dimensions: { width, height, aspect_ratio: ratio } };
                 setEditForm({ ...editForm, input_requirements: newReqs });
               }}
-              className="w-full rounded-4 border bg-primary text-primary"
-              style={{ padding: '6px 10px' }}
+              className={`w-full rounded-4 border bg-primary text-primary ${styles.selectInput}`}
             >
               <option value="9:16">9:16 (Story/Reels)</option>
               <option value="1:1">1:1 (Square)</option>

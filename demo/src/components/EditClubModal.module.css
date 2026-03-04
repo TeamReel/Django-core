@@ -1,0 +1,52 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal {
+  width: 500px;
+  max-width: 90%;
+  max-height: 90vh;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.heading {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.logoSection {
+  display: flex;
+  align-items: flex-start;
+}
+
+.logoPreview {
+  width: 100px;
+  height: 100px;
+  border: 2px dashed var(--app-border);
+  background-color: var(--app-surface-secondary);
+  flex-shrink: 0;
+}
+
+.logoImg {
+  object-fit: contain;
+}
+
+.placeholderText {
+  font-size: 36px;
+}
+
+.removeLogoBtn {
+  color: var(--app-error);
+  text-decoration: underline;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}

@@ -1,0 +1,47 @@
+.container {
+  background-color: var(--app-surface);
+  width: 520px;
+  max-width: 92%;
+  color: var(--app-text);
+}
+
+.closeButton {
+  padding: 6px 10px;
+  cursor: pointer;
+  height: fit-content;
+}
+
+.closeButton[data-saving] {
+  cursor: not-allowed;
+}
+
+.label {
+  margin-bottom: 6px;
+}
+
+.textarea {
+  min-height: 90px;
+}
+
+.actionsRow {
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  cursor: pointer;
+}
+
+.cancelButton[data-saving] {
+  cursor: not-allowed;
+}
+
+.submitButton {
+  background-color: var(--submit-bg, #0066cc);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.submitButton[data-saving] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

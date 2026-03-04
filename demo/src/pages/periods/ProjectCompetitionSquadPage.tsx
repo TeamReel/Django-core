@@ -5,6 +5,7 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import styles from './ProjectCompetitionSquadPage.module.css';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -210,31 +211,31 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
 
           <Card>
             {loading ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading squad…</div>
+              <div className={styles.loadingText}>Loading squad…</div>
             ) : members.length === 0 ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>No squad registrations found.</div>
+              <div className={styles.loadingText}>No squad registrations found.</div>
             ) : (
               <Table>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left' }}>Member</th>
-                    <th style={{ textAlign: 'left' }}>Role</th>
-                    <th style={{ textAlign: 'right' }}>Status</th>
+                    <th className={styles.thLeft}>Member</th>
+                    <th className={styles.thLeft}>Role</th>
+                    <th className={styles.thRight}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {members.map((p) => (
                     <tr key={p.id}>
                       <td>
-                        <div style={{ display: 'grid' }}>
-                          <span style={{ fontWeight: 600 }}>{p.member?.user_name || 'Unknown'}</span>
-                          <span style={{ fontSize: '12px', color: 'var(--app-text-secondary)' }}>
+                        <div className={styles.memberCell}>
+                          <span className={styles.memberName}>{p.member?.user_name || 'Unknown'}</span>
+                          <span className={styles.memberEmail}>
                             {p.member?.user_email || ''}
                           </span>
                         </div>
                       </td>
                       <td>{p.role}</td>
-                      <td style={{ textAlign: 'right' }}>
+                      <td className={styles.tdRight}>
                         <Badge variant="default">{p.status}</Badge>
                       </td>
                     </tr>

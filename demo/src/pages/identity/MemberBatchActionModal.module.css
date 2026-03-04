@@ -1,0 +1,146 @@
+/**
+ * MemberBatchActionModal.module.css
+ * Extracted from inline styles + memberBatchAction.styles.ts
+ */
+
+/* ── Overlay (root — hosts color tokens for children) ── */
+
+.overlay {
+    --batch-error-border: rgba(239, 68, 68, 0.27);
+    --batch-error-bg: rgba(239, 68, 68, 0.06);
+    --batch-info-border: rgba(59, 130, 246, 0.27);
+    --batch-selected-bg: rgba(59, 130, 246, 0.08);
+    --batch-chip-bg: rgba(59, 130, 246, 0.12);
+    --batch-chip-overflow-bg: rgba(255, 255, 255, 0.06);
+
+    z-index: 9000;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+/* ── Modal ── */
+
+.modal {
+    background: var(--app-surface, #1a1a2e);
+    max-width: 720px;
+    max-height: 90vh;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Close button ── */
+
+.closeButton {
+    line-height: 1;
+}
+
+/* ── Member chips ── */
+
+.memberChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: var(--batch-chip-bg);
+    color: var(--app-text, #e0e0e0);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.memberChip[data-overflow] {
+    background: var(--batch-chip-overflow-bg);
+}
+
+/* ── Radio options ── */
+
+.radioOption {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--app-border, #333);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.radioOption[data-selected="true"] {
+    border-color: var(--color-blue-500);
+    background: var(--batch-selected-bg);
+}
+
+.radioInput {
+    margin-top: 2px;
+    accent-color: var(--color-blue-500);
+}
+
+/* ── Role badge (dynamic --role-color set inline) ── */
+
+.roleBadge {
+    font-size: 10px;
+    padding: 1px 6px;
+    background: color-mix(in srgb, var(--role-color) 13%, transparent);
+    color: var(--role-color);
+    border: 1px solid color-mix(in srgb, var(--role-color) 27%, transparent);
+}
+
+/* ── Cards ── */
+
+.card {
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--app-border, #333);
+    background: var(--app-surface-2, #252540);
+}
+
+.card[data-variant="error"] {
+    border-color: var(--batch-error-border);
+    background: var(--batch-error-bg);
+}
+
+.card[data-variant="info"] {
+    border-color: var(--batch-info-border);
+}
+
+/* ── Delete warning ── */
+
+.deleteWarningContent {
+    align-items: flex-start;
+}
+
+/* ── Summary ── */
+
+.summaryLabel {
+    color: var(--color-blue-500);
+}
+
+/* ── Progress bar ── */
+
+.progressBarBg {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--app-border, #333);
+}
+
+.progressBarFill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--color-blue-500);
+    transition: width 0.3s ease;
+}
+
+/* ── Done step ── */
+
+.doneEmoji {
+    font-size: 40px;
+}
+
+/* ── Error list ── */
+
+.errorTitle {
+    margin-bottom: 6px;
+}
+
+.errorList {
+    padding-left: 18px;
+}

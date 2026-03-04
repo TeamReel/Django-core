@@ -1,0 +1,73 @@
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.emoji {
+  font-size: 72px;
+  margin-bottom: 24px;
+}
+
+.errorCode {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--app-error);
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 24px;
+  color: var(--title-color, #333);
+}
+
+.message {
+  font-size: 16px;
+  color: var(--message-color, #666);
+  margin-bottom: 32px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.dashboardLink {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--app-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.backButton {
+  padding: 12px 24px;
+  background-color: var(--back-btn-bg, #6c757d);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.infoBox {
+  margin-top: 48px;
+  padding: 20px;
+  background-color: var(--info-box-bg, #f8f9fa);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.infoTitle {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.infoList {
+  color: var(--info-list-color, #666);
+  line-height: 1.8;
+}

@@ -14,6 +14,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './NotificationRoutingLogsPage.module.css';
 
 interface RoutingLog {
   id: string;
@@ -225,42 +226,30 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           actions={
             <div className="flex-row gap-12">
               {/* Demo Helper: Show current mode */}
-              <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
-                padding: '4px 10px',
-                backgroundColor: isSuperAdmin ? 'var(--color-blue-500)' : '#a855f7',
-                color: 'white',
-                letterSpacing: '0.5px',
-              }}>
+              <div
+                className={`fs-11 rounded-6 fw-600 cursor-default ${styles.roleBadge}`}
+                data-role={isSuperAdmin ? 'admin' : 'org'}
+              >
                 {isSuperAdmin ? '👑 ADMIN' : '👤 ORG'}
               </div>
 
               {/* Scope Selector - Only for Superadmin */}
               {isSuperAdmin && (
                 <>
-                  <div className="opacity-50" style={{
-                    height: '24px',
-                    width: '1px',
-                    backgroundColor: 'var(--app-border)',
-                  }} />
-                  <div className="gap-4 bg-surface rounded-6 border" style={{ display: 'flex', padding: '3px' }}>
+                  <div className={`opacity-50 ${styles.divider}`} />
+                  <div className={`gap-4 bg-surface rounded-6 border ${styles.scopeWrapper}`}>
                     <button
-                      className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
-                      style={{
-                        transition: 'all 0.2s',
-                        backgroundColor: editMode === 'global' ? 'var(--color-blue-500)' : 'transparent',
-                        color: editMode === 'global' ? 'white' : 'var(--app-text)',
-                      }}
+                      className={`py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer ${styles.scopeBtn}`}
+                      data-active={editMode === 'global'}
+                      data-variant="global"
                       onClick={() => setEditMode('global')}
                     >
                       Global View
                     </button>
                     <button
-                      className="py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer"
-                      style={{
-                        transition: 'all 0.2s',
-                        backgroundColor: editMode === 'org' ? '#a855f7' : 'transparent',
-                        color: editMode === 'org' ? 'white' : 'var(--app-text)',
-                      }}
+                      className={`py-4 px-12 fs-12 fw-600 rounded-4 border-none cursor-pointer ${styles.scopeBtn}`}
+                      data-active={editMode === 'org'}
+                      data-variant="org"
                       onClick={() => setEditMode('org')}
                     >
                       Organisation Logs
@@ -324,7 +313,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           {!loading && !error && logs.length > 0 && (
             <Card>
               <div className="overflow-x-auto">
-                <table className="w-full text-left" style={{ borderCollapse: 'collapse' }}>
+                <table className={`w-full text-left ${styles.logsTable}`}>
                   <thead>
                     <tr className="border-bottom">
                       <th className="p-12">Timestamp</th>
@@ -354,7 +343,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
                           <Badge variant="info">{log.recipient_count}</Badge>
                         </td>
                         <td className="p-12">
-                          <div className="gap-4 flex-wrap" style={{ display: 'flex' }}>
+                          <div className={`gap-4 flex-wrap ${styles.channelsFlex}`}>
                             {log.delivery_channels.map((channel) => (
                               <Badge key={channel} variant="default">
                                 {channel}

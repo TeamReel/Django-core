@@ -5,6 +5,7 @@ import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
 import { getApiBaseUrl } from '../utils/apiBase';
 import SwipeableCard from '../components/SwipeableCard';
+import styles from './NotificationsPage.module.css';
 
 const debugLog = (...args: unknown[]) => {
   if (import.meta.env.DEV) console.log(...args);
@@ -207,7 +208,7 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <AppShell>
-        <div className="py-24 px-16 mx-auto" style={{ maxWidth: 1100 }}>
+        <div className={`py-24 px-16 mx-auto ${styles.pageContainer}`}>
           <div className="text-lg font-semibold text-primary">Notifications</div>
           <div className="text-sm text-muted">Loading notifications…</div>
         </div>
@@ -217,7 +218,7 @@ export default function NotificationsPage() {
 
   return (
     <AppShell>
-      <div className="py-24 px-16 mx-auto" style={{ maxWidth: 1100 }}>
+      <div className={`py-24 px-16 mx-auto ${styles.pageContainer}`}>
         <PageHeader
           title="Notifications"
           subtitle="View all your system notifications and updates"
@@ -250,10 +251,10 @@ export default function NotificationsPage() {
           releaseText="Laat los om te vernieuwen"
           refreshingText="Vernieuwen..."
         >
-        <div style={{ maxWidth: 900 }}>
+        <div className={styles.notificationsContainer}>
           <Card>
             <div className="fw-800 mb-4">Notification settings moved</div>
-            <div className="fs-13 text-muted" style={{ marginBottom: 10 }}>
+            <div className={`fs-13 text-muted ${styles.settingsNote}`}>
               Manage your notification channels and preferences in Preferences.
             </div>
             <Button
@@ -338,13 +339,7 @@ export default function NotificationsPage() {
                     threshold={80}
                     leftReveal={
                       <div
-                        className="flex-row gap-8 h-full py-16 px-24"
-                        style={{
-                          background: 'var(--app-success, #22c55e)',
-                          color: 'white',
-                          justifyContent: 'flex-end',
-                          minWidth: 120,
-                        }}
+                        className={`flex-row gap-8 h-full py-16 px-24 ${styles.swipeReveal}`}
                       >
                         <span className="fs-18">✓</span>
                         <span className="fw-600">Gelezen</span>
@@ -353,40 +348,25 @@ export default function NotificationsPage() {
                   >
                   <div
                     onClick={() => isUnread && markAsRead(notification.id)}
-                    className="rounded-8"
-                    style={{
-                      cursor: isUnread ? 'pointer' : 'default',
-                      borderLeft: `4px solid ${borderColor}`,
-                    }}
+                    className={`rounded-8 ${styles.notificationCard}`}
+                    data-unread={isUnread ? 'true' : undefined}
+                    style={{ '--notification-border-color': borderColor } as React.CSSProperties}
                   >
                     <Card>
                       <div
-                        className="p-0 rounded-8"
-                        style={{
-                          background: isUnread ? 'var(--app-surface-2)' : 'var(--app-surface)',
-                        }}
+                        className={`p-0 rounded-8 ${styles.notificationInner}`}
+                        data-unread={isUnread ? 'true' : undefined}
                       >
                         <div
-                          className="gap-12"
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            marginBottom: 6,
-                          }}
+                          className={`gap-12 ${styles.notificationHeader}`}
                         >
                           <div className="flex-row gap-8">
-                            <div className="fs-16 text-primary" style={{ fontWeight: isUnread ? 800 : 600 }}>
+                            <div className={`fs-16 text-primary ${styles.notificationTitle}`} data-unread={isUnread ? 'true' : undefined}>
                               {title}
                             </div>
                             {isUnread && (
                               <span
-                                className="inline-block rounded-full"
-                                style={{
-                                  width: 8,
-                                  height: 8,
-                                  backgroundColor: 'var(--app-primary)',
-                                }}
+                                className={`inline-block rounded-full ${styles.unreadDot}`}
                               />
                             )}
                           </div>
@@ -396,13 +376,13 @@ export default function NotificationsPage() {
                         </div>
 
                         {body ? (
-                          <div className="text-muted fs-14" style={{ lineHeight: 1.4 }}>
+                          <div className={`text-muted fs-14 ${styles.notificationBody}`}>
                             {body}
                           </div>
                         ) : null}
 
                         {isUnread && (
-                          <div className="mt-8 fs-12" style={{ color: 'var(--app-primary)', fontStyle: 'italic' }}>
+                          <div className={`mt-8 fs-12 ${styles.readHint}`}>
                             Swipe of klik om als gelezen te markeren
                           </div>
                         )}

@@ -1,0 +1,47 @@
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.servicesGrid {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 12px;
+}
+
+.serviceType {
+  color: var(--app-muted-text);
+}
+
+.cardDivider {
+  --divider-color: #e5e5e5;
+  border-top: 1px solid var(--divider-color);
+  padding-top: 12px;
+  font-size: 14px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.detailLabel {
+  color: var(--app-muted-text);
+}
+
+.quickLinksTitle {
+  margin: 0 0 12px 0;
+}
+
+.quickLinksRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}

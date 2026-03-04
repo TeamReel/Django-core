@@ -1,0 +1,38 @@
+/* ContentAvailabilityCard — extracted inline styles */
+
+.selectedCount {
+  color: var(--app-text-muted);
+}
+
+.colCheckbox {
+  width: 40px;
+}
+
+.colType {
+  width: 15%;
+}
+
+.colSubtype {
+  width: 18%;
+}
+
+.colStyle {
+  width: 12%;
+}
+
+.colNarrow {
+  width: 8%;
+}
+
+.colActions {
+  width: 15%;
+}
+
+.badgeCompact {
+  padding: 2px 6px;
+}
+
+.inheritText {
+  color: var(--app-text-muted);
+  font-style: italic;
+}

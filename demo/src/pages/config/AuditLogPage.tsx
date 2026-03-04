@@ -5,6 +5,7 @@ import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useAuditLogData, eventTypeColorMap, getEventOutcome } from './useAuditLogData';
 import { AuditLogDetailModal } from './AuditLogDetailModal';
 import type { AuditEvent } from '../../types';
+import styles from './AuditLogPage.module.css';
 
 /**
  * T012 - Audit Log Page
@@ -31,8 +32,8 @@ export const AuditLogPage: React.FC = () => {
       <PageContent>
         {/* Filters */}
         <Card className="mb-4 min-w-0">
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
-            <div style={{ minWidth: '180px', flex: '0 0 180px' }}>
+          <div className={styles.filterRow}>
+            <div className={styles.filterColWide}>
               <label className="block text-sm font-medium mb-1">Event Type</label>
               <select
                 value={d.eventType}
@@ -50,7 +51,7 @@ export const AuditLogPage: React.FC = () => {
                 <option value="resource.created">Resource Created</option>
               </select>
             </div>
-            <div style={{ minWidth: '180px', flex: '0 0 180px' }}>
+            <div className={styles.filterColWide}>
               <label className="block text-sm font-medium mb-1">User</label>
               <Input
                 type="text"
@@ -60,7 +61,7 @@ export const AuditLogPage: React.FC = () => {
                 data-testid="audit-user-filter"
               />
             </div>
-            <div style={{ minWidth: '150px', flex: '0 0 150px' }}>
+            <div className={styles.filterColMedium}>
               <label className="block text-sm font-medium mb-1">Outcome</label>
               <select
                 value={d.outcome}
@@ -80,7 +81,7 @@ export const AuditLogPage: React.FC = () => {
                 <option value="denied">Denied</option>
               </select>
             </div>
-            <div style={{ minWidth: '150px', flex: '0 0 150px' }}>
+            <div className={styles.filterColMedium}>
               <label className="block text-sm font-medium mb-1">From Date</label>
               <Input
                 type="date"
@@ -94,7 +95,7 @@ export const AuditLogPage: React.FC = () => {
                 data-testid="audit-date-from-filter"
               />
             </div>
-            <div style={{ minWidth: '150px', flex: '0 0 150px' }}>
+            <div className={styles.filterColMedium}>
               <label className="block text-sm font-medium mb-1">To Date</label>
               <Input
                 type="date"
@@ -108,8 +109,8 @@ export const AuditLogPage: React.FC = () => {
                 data-testid="audit-date-to-filter"
               />
             </div>
-            <div style={{ minWidth: '120px', flex: '0 0 120px' }}>
-              <label className="block text-sm font-medium mb-1" style={{ visibility: 'hidden' }}>Clear</label>
+            <div className={styles.filterColNarrow}>
+              <label className={`block text-sm font-medium mb-1 ${styles.hiddenLabel}`}>Clear</label>
               <button
                 onClick={() => {
                   d.searchParams.delete('event_type');
@@ -120,12 +121,7 @@ export const AuditLogPage: React.FC = () => {
                   d.searchParams.set('page', '1');
                   d.setSearchParams(d.searchParams);
                 }}
-                style={{
-                  padding: '8px 16px', borderRadius: '4px',
-                  border: '1px solid #6c757d', backgroundColor: 'var(--app-surface)',
-                  color: '#6c757d', cursor: 'pointer', fontSize: '14px',
-                  fontWeight: 500, width: '100%', height: '38px',
-                }}
+                className={styles.clearButton}
               >
                 Clear Filters
               </button>
@@ -169,7 +165,7 @@ export const AuditLogPage: React.FC = () => {
             </Card>
 
             {/* Pagination */}
-            <div className="flex-center gap-12" style={{ marginTop: '20px' }}>
+            <div className={`flex-center gap-12 ${styles.pagination}`}>
               <Button
                 variant="secondary"
                 onClick={() => d.handlePageChange(d.currentPage - 1)}
@@ -178,7 +174,7 @@ export const AuditLogPage: React.FC = () => {
               >
                 Previous
               </Button>
-              <span style={{ fontSize: '0.875rem', color: 'var(--app-muted-text)' }}>
+              <span className={styles.paginationText}>
                 Page {d.currentPage} of {d.totalPages} ({d.total} total events)
               </span>
               <Button
@@ -254,7 +250,7 @@ const AuditRow: React.FC<{ event: AuditEvent; onSelect: () => void }> = ({ event
       <td>
         <button
           onClick={onSelect}
-          style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--app-primary)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+          className={styles.detailsButton}
           data-testid={`audit-details-${event.id}`}
         >
           Details

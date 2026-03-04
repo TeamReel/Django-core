@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { type VideoFollowUpInfo, type PhotoCompositeFollowUpInfo } from './approvalsTypes';
 import s from './ApprovalsPage.module.css';
+import fm from './FollowUpModals.module.css';
 
 // ─── Video Follow-Up Modal ──────────────────────────────────────────
 
@@ -88,20 +89,12 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
     if (succeeded > 0) onSubmitted(succeeded);
   };
 
-  const chipStyle = (selected: boolean): React.CSSProperties => ({
-    display: 'flex', flexDirection: 'column', gap: 4,
-    padding: '12px 16px', borderRadius: 10, cursor: 'pointer',
-    border: `2px solid ${selected ? 'var(--color-blue-600)' : 'var(--app-border, #e5e7eb)'}`,
-    backgroundColor: selected ? '#eff6ff' : 'var(--app-surface, #fff)',
-    transition: 'all 0.15s',
-  });
-
   return (
     <div
       className={s.modalOverlayHigh}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className={s.modalPanel} style={{ maxWidth: 560 }}>
+      <div className={`${s.modalPanel} ${fm.modalPanelNarrow}`}>
         <div className={s.modalHeaderSimple}>
           <div className="flex-between">
             <div>
@@ -123,7 +116,8 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
                 <div
                   key={pose.value}
                   onClick={() => setSelectedIntro(prev => prev === pose.value ? null : pose.value)}
-                  style={chipStyle(selectedIntro === pose.value)}
+                  className={fm.chip}
+                  data-selected={selectedIntro === pose.value}
                 >
                   <div className={`fs-13 fw-600 ${s.chipLabel}`}>{pose.label}</div>
                   <div className={s.chipDescription}>{pose.desc}</div>
@@ -140,7 +134,8 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
                 <div
                   key={style.value}
                   onClick={() => setSelectedCelebration(prev => prev === style.value ? null : style.value)}
-                  style={chipStyle(selectedCelebration === style.value)}
+                  className={fm.chip}
+                  data-selected={selectedCelebration === style.value}
                 >
                   <div className={`fs-13 fw-600 ${s.chipLabel}`}>{style.label}</div>
                   <div className={s.chipDescription}>{style.desc}</div>
@@ -157,12 +152,8 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
           <button
             onClick={handleSubmit}
             disabled={submitting || submitCount === 0}
-            className={s.btnPrimary}
-            style={{
-              cursor: submitting ? 'wait' : submitCount > 0 ? 'pointer' : 'not-allowed',
-              opacity: submitting ? 0.7 : 1,
-              background: submitCount > 0 ? 'var(--color-blue-600)' : '#94a3b8',
-            }}
+            className={`${s.btnPrimary} ${fm.submitBtnDynamic}`}
+            data-state={submitting ? 'submitting' : submitCount > 0 ? 'active' : 'disabled'}
           >
             {submitting ? 'Bezig...' : submitCount > 0 ? `🚀 Genereer ${submitCount} video${submitCount > 1 ? "'s" : ''}` : 'Selecteer een optie'}
           </button>
@@ -232,7 +223,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
       className={s.modalOverlayHigh}
       onClick={e => { if (e.target === e.currentTarget && !submitting) onClose(); }}
     >
-      <div className={s.modalPanel} style={{ maxWidth: 480 }}>
+      <div className={`${s.modalPanel} ${fm.modalPanelSmall}`}>
         <div className={s.modalHeaderSimple}>
           <div className="flex-between">
             <div>
@@ -256,9 +247,9 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
           </div>
         )}
 
-        {error && <div className={s.errorAlert} style={{ margin: '0 24px 16px' }}>{error}</div>}
+        {error && <div className={`${s.errorAlert} ${fm.errorAlertInset}`}>{error}</div>}
 
-        <div className={s.modalFooter} style={{ justifyContent: submitted ? 'center' : 'space-between' }}>
+        <div className={`${s.modalFooter} ${fm.footerDynamic}`} data-centered={submitted}>
           {submitted ? (
             <button onClick={() => { onSubmitted(); onClose(); }} className={s.btnPrimary}>Sluiten</button>
           ) : (
@@ -266,16 +257,16 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
               <button
                 onClick={onClose}
                 disabled={submitting}
-                className={s.btnGhost}
-                style={{ cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+                className={`${s.btnGhost} ${fm.skipBtnDynamic}`}
+                data-disabled={submitting}
               >
                 Overslaan
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className={s.btnPrimary}
-                style={{ cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1 }}
+                className={`${s.btnPrimary} ${fm.submitBtnSecondary}`}
+                data-submitting={submitting}
               >
                 {submitting ? 'Bezig...' : '🚀 Genereer Video'}
               </button>

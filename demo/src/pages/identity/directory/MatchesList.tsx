@@ -14,6 +14,7 @@ import { useMatchesData } from '../../../hooks/useMatchesData';
 import { resolveRowContext } from '../../../utils/directoryHelpers';
 import { getCsrfToken } from '../../../utils/csrf';
 import type { DirectoryListProps, RowContextConfig, Activity } from '../../../utils/directoryHelpers';
+import styles from './MatchesList.module.css';
 
 // ─── MatchRow sub-component ──────────────────────────────────────────
 
@@ -384,17 +385,17 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
       >
         <thead>
           <tr>
-            {!orgLocked && <th className="hide-mobile dir-th" style={{ width: '15%' }}>Federation</th>}
-            {!clubLocked && <th className="hide-mobile dir-th" style={{ width: '15%' }}>Club</th>}
-            {!teamLocked && <th className="hide-mobile dir-th" style={{ width: '15%' }}>Team</th>}
-            <th className="dir-th" style={{ width: '15%' }}>Season</th>
-            <th className="dir-th" style={{ width: '18%' }}>Competition</th>
-            <th className="hide-mobile dir-th" style={{ width: '10%' }}>Sport</th>
-            <th className="hide-mobile dir-th" style={{ width: '12%' }}>Sport Variant</th>
-            <th className="dir-th" style={{ width: '15%' }}>Match</th>
-            <th className="hide-mobile dir-th" style={{ width: '8%' }}>Squad</th>
-            <th className="dir-th" style={{ width: '10%' }}>Status</th>
-            <th className="hide-mobile dir-th" style={{ width: '12%' }}>Actions</th>
+            {!orgLocked && <th className={`hide-mobile dir-th ${styles.thFederation}`}>Federation</th>}
+            {!clubLocked && <th className={`hide-mobile dir-th ${styles.thClub}`}>Club</th>}
+            {!teamLocked && <th className={`hide-mobile dir-th ${styles.thTeam}`}>Team</th>}
+            <th className={`dir-th ${styles.thSeason}`}>Season</th>
+            <th className={`dir-th ${styles.thCompetition}`}>Competition</th>
+            <th className={`hide-mobile dir-th ${styles.thSport}`}>Sport</th>
+            <th className={`hide-mobile dir-th ${styles.thVariant}`}>Sport Variant</th>
+            <th className={`dir-th ${styles.thMatch}`}>Match</th>
+            <th className={`hide-mobile dir-th ${styles.thSquad}`}>Squad</th>
+            <th className={`dir-th ${styles.thStatus}`}>Status</th>
+            <th className={`hide-mobile dir-th ${styles.thActions}`}>Actions</th>
           </tr>
         </thead>
         <tbody>

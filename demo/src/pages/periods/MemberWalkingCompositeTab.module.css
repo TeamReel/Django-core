@@ -1,0 +1,65 @@
+/* MemberWalkingCompositeTab — extracted inline styles */
+
+/* Hardcoded hex → CSS custom properties */
+:root {
+  --walking-bg-dark: #000;
+}
+
+/* ── Prerequisite cards ── */
+.prerequisiteCard {
+  border: 1px dashed var(--app-border);
+}
+
+.prerequisiteCard[data-ready='true'] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.missingHint {
+  color: var(--app-text-muted);
+  font-size: 11px;
+}
+
+/* ── Pipeline grid ── */
+.variantGrid {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.variantGrid[data-active='false'] {
+  opacity: 0.5;
+}
+
+/* ── Variant cards ── */
+.variantCard {
+  border: 1px solid var(--app-border);
+}
+
+.variantCard[data-ready='true'] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.variantCard[data-disabled='true'] {
+  opacity: 0.4;
+}
+
+/* ── Variant preview ── */
+.variantPreview[data-has-content='true'] {
+  background: var(--walking-bg-dark);
+}
+
+.variantPreview[data-clickable='true'] {
+  cursor: pointer;
+}
+
+.variantPreview[data-clickable='false'] {
+  cursor: default;
+}
+
+/* ── Button utilities ── */
+.fullWidth {
+  width: 100%;
+}
+
+.flexOne {
+  flex: 1;
+}

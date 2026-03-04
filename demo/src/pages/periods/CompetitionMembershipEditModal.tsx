@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import styles from './CompetitionMembershipEditModal.module.css';
 
 export function CompetitionMembershipEditModal({
   opened,
@@ -51,55 +52,23 @@ export function CompetitionMembershipEditModal({
     user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Member';
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '20px',
-          borderRadius: '8px',
-          width: '520px',
-          maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className="flex-between gap-12">
           <h2 className="m-0 fs-16 fw-700">Edit user role</h2>
           <button
             onClick={onClose}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: 'var(--app-text)',
-            }}
+            className={styles.closeButton}
             aria-label="Close"
           >
             ×
           </button>
         </div>
 
-        <div className="text-muted fs-13" style={{ marginTop: '10px' }}>{displayName}</div>
+        <div className={`text-muted fs-13 ${styles.displayName}`}>{displayName}</div>
 
         <div className="flex-col gap-10 mt-16">
-          <div className="flex-col" style={{ gap: '6px' }}>
+          <div className={`flex-col ${styles.fieldGroup}`}>
             <label className="fw-600" htmlFor="competition-membership-role">
               Access role
             </label>
@@ -107,13 +76,7 @@ export function CompetitionMembershipEditModal({
               id="competition-membership-role"
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.selectInput}
             >
               <option value="viewer">viewer</option>
               <option value="editor">editor</option>
@@ -121,26 +84,13 @@ export function CompetitionMembershipEditModal({
             </select>
           </div>
 
-          <div className="flex-col" style={{ gap: '6px' }}>
+          <div className={`flex-col ${styles.fieldGroup}`}>
             <div className="fw-600">Functional roles</div>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                gap: '8px 12px',
-                padding: '10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-              }}
-            >
+            <div className={styles.rolesGrid}>
               {FUNCTIONAL_ROLE_OPTIONS.map((opt) => {
                 const checked = functionalRoles.includes(opt.value);
                 return (
-                  <label
-                    key={opt.value}
-                    style={{ display: 'flex', gap: '8px', alignItems: 'center', cursor: 'pointer' }}
-                  >
+                  <label key={opt.value} className={styles.roleLabel}>
                     <input
                       type="checkbox"
                       checked={checked}
@@ -164,20 +114,14 @@ export function CompetitionMembershipEditModal({
             </div>
           </div>
 
-          {error && <div style={{ color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className={styles.errorMessage}>{error}</div>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+          <div className={styles.actions}>
             <button
               onClick={onClose}
               disabled={saving}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: saving ? 'not-allowed' : 'pointer',
-              }}
+              className={styles.cancelButton}
+              data-saving={saving}
             >
               Cancel
             </button>
@@ -195,14 +139,8 @@ export function CompetitionMembershipEditModal({
                 }
               }}
               disabled={saving}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-primary, #1976d2)',
-                color: '#fff',
-                cursor: saving ? 'not-allowed' : 'pointer',
-              }}
+              className={styles.saveButton}
+              data-saving={saving}
             >
               {saving ? 'Saving…' : 'Save'}
             </button>

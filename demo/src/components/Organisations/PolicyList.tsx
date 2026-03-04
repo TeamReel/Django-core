@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button, Alert } from '@django-core/design-system';
 import { useUserRole } from '../PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './PolicyList.module.css';
 
 interface PolicyListProps {
   organisationId: string;
@@ -162,15 +163,15 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
   // or simply show empty state.
 
   return (
-    <div className="grid gap-24" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
+    <div className={`grid gap-24 ${styles.grid}`}>
 
       {/* Financial Governance */}
       <Card>
         <div className="p-16">
-          <h3 className="fs-18 text-primary" style={{ margin: '0 0 16px' }}>Financial Controls</h3>
+          <h3 className={`fs-18 text-primary ${styles.sectionTitle}`}>Financial Controls</h3>
 
           {!balancePolicy ? (
-             <div className="text-muted" style={{ fontStyle: 'italic' }}>
+             <div className={`text-muted ${styles.emptyState}`}>
                No explicit balance policy found. The backend will fall back to a safe default.
              </div>
           ) : (
@@ -227,7 +228,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                       <select
                         value={balanceDraft.enforcement_mode}
                         onChange={(e) => setBalanceDraft({ ...balanceDraft, enforcement_mode: e.target.value as any })}
-                        className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
+                        className={`rounded-6 border bg-surface text-primary ${styles.formControl}`}
                       >
                         <option value="block">BLOCK</option>
                         <option value="warn">WARN</option>
@@ -241,7 +242,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                         value={balanceDraft.warn_threshold}
                         onChange={(e) => setBalanceDraft({ ...balanceDraft, warn_threshold: e.target.value })}
                         placeholder="e.g. 10"
-                        className="rounded-6 border bg-surface text-primary" style={{ padding: '8px 10px' }}
+                        className={`rounded-6 border bg-surface text-primary ${styles.formControl}`}
                       />
                     </label>
 
@@ -261,13 +262,13 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
       {/* Compliance / Notifications Mock */}
       <Card>
         <div className="p-16">
-          <h3 className="fs-18 text-primary" style={{ margin: '0 0 16px' }}>Compliance & Notifications</h3>
+          <h3 className={`fs-18 text-primary ${styles.sectionTitle}`}>Compliance & Notifications</h3>
 
           {!notificationPolicy ? (
-            <div className="text-muted" style={{ fontStyle: 'italic' }}>
+            <div className={`text-muted ${styles.emptyState}`}>
               No explicit notification policy found. Defaults apply.
               <div className="mt-12">
-                <a href="/preferences?tab=notifications" className="text-link" style={{ textDecoration: 'none' }}>
+                <a href="/preferences?tab=notifications" className={`text-link ${styles.plainLink}`}>
                   Manage notification preferences
                 </a>
               </div>
@@ -296,16 +297,16 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                 </div>
               </div>
 
-              <div className="text-muted fs-13" style={{ lineHeight: 1.5 }}>
+              <div className={`text-muted fs-13 ${styles.routingInfo}`}>
                 Routing rules decide who gets notified; per-user preferences only exist when a user deviates from defaults.
                 <div className="mt-12 flex-row gap-12 flex-wrap">
-                  <a href="/preferences?tab=notifications" className="text-link" style={{ textDecoration: 'none' }}>
+                  <a href="/preferences?tab=notifications" className={`text-link ${styles.plainLink}`}>
                     Manage notification preferences
                   </a>
-                  <a href="/routing-rules" className="text-link" style={{ textDecoration: 'none' }}>
+                  <a href="/routing-rules" className={`text-link ${styles.plainLink}`}>
                     Manage routing rules
                   </a>
-                  <a href="/routing-logs" className="text-link" style={{ textDecoration: 'none' }}>
+                  <a href="/routing-logs" className={`text-link ${styles.plainLink}`}>
                     View routing logs
                   </a>
                 </div>

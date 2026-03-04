@@ -6,6 +6,7 @@ import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
 import { getMatchParticipantsCount } from './seasonDetailUtils';
 import s from './ProjectSeasonDetailPage.module.css';
+import h from './SeasonHierarchyTab.module.css';
 
 export interface SeasonHierarchyTabProps {
   competitions: Period[];
@@ -84,7 +85,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
             Competitions \u2192 Matches
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div className={h.headerActions}>
           <Input
             value={hierarchySearch}
             onChange={(e) => setHierarchySearch(e.target.value)}
@@ -112,11 +113,11 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
       </div>
 
       {competitionsLoading && competitions.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+        <div className={`text-sm text-gray-500 py-2 ${h.loadingMsg}`}>
           Loading hierarchy...
         </div>
       ) : competitions.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+        <div className={`text-sm text-gray-500 py-2 ${h.loadingMsg}`}>
           No competitions found.
         </div>
       ) : (
@@ -137,7 +138,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
               });
 
           return (
-            <div className={s.verticalList} style={{ marginTop: 12 }}>
+            <div className={`${s.verticalList} ${h.verticalListSpaced}`}>
               {filteredCompetitions.map((competition) => {
                 const compId = String(competition.id);
                 const competitionKey = periodPathKey(competition) || compId;
@@ -176,7 +177,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <div className={h.actionRow}>
                         <span className={s.pill}>Matches: {getMatchCountForCompetition(competition)}</span>
                         <span className={s.pill}>Participants: {getCompetitionParticipantsCount(competition)}</span>
                         <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailPeriod(competition); setIsPeriodDetailModalOpen(true); }}>
@@ -216,7 +217,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                       </div>
                     </div>
 
-                    <div style={{ padding: '10px 12px' }}>
+                    <div className={h.matchesContainer}>
                       {matchesLoading ? (
                         <div className="text-sm text-gray-500 py-2">Loading matches…</div>
                       ) : visibleMatches.length === 0 ? (
@@ -233,7 +234,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                 key={match.id}
                                 className={s.matchRow}
                               >
-                                <div style={{ minWidth: 0 }}>
+                                <div className={h.matchInfo}>
                                   <button
                                     type="button"
                                     className={`app-unstyled-button hover:underline ${s.matchLink}`}
@@ -246,7 +247,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                   </div>
                                 </div>
 
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                                <div className={h.actionRow}>
                                   <span className={s.pill}>Participants: {getMatchParticipantsCount(match)}</span>
                                   <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailMatch(match); setIsMatchDetailModalOpen(true); }}>
                                     View

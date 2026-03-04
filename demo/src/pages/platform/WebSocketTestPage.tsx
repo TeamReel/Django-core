@@ -10,6 +10,7 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
+import styles from './WebSocketTestPage.module.css';
 // import AppShell from '../../components/AppShell';
 
 interface LogMessage {
@@ -145,37 +146,22 @@ export const WebSocketTestPage: React.FC = () => {
           <nav className="flex-row gap-32">
             <button
               onClick={() => setActiveTab('notifications')}
-              className="border-none bg-transparent cursor-pointer fs-14"
-              style={{
-                padding: '16px 4px',
-                borderBottom: activeTab === 'notifications' ? '2px solid var(--app-primary)' : '2px solid transparent',
-                fontWeight: activeTab === 'notifications' ? 600 : 400,
-                color: activeTab === 'notifications' ? 'var(--app-primary)' : 'var(--app-text-muted)',
-              }}
+              className={`border-none bg-transparent cursor-pointer fs-14 ${styles.tabButton}`}
+              data-active={activeTab === 'notifications'}
             >
               Notifications
             </button>
             <button
               onClick={() => setActiveTab('presence')}
-              className="border-none bg-transparent cursor-pointer fs-14"
-              style={{
-                padding: '16px 4px',
-                borderBottom: activeTab === 'presence' ? '2px solid var(--app-primary)' : '2px solid transparent',
-                fontWeight: activeTab === 'presence' ? 600 : 400,
-                color: activeTab === 'presence' ? 'var(--app-primary)' : 'var(--app-text-muted)',
-              }}
+              className={`border-none bg-transparent cursor-pointer fs-14 ${styles.tabButton}`}
+              data-active={activeTab === 'presence'}
             >
               Presence
             </button>
             <button
               onClick={() => setActiveTab('activity')}
-              className="border-none bg-transparent cursor-pointer fs-14"
-              style={{
-                padding: '16px 4px',
-                borderBottom: activeTab === 'activity' ? '2px solid var(--app-primary)' : '2px solid transparent',
-                fontWeight: activeTab === 'activity' ? 600 : 400,
-                color: activeTab === 'activity' ? 'var(--app-primary)' : 'var(--app-text-muted)',
-              }}
+              className={`border-none bg-transparent cursor-pointer fs-14 ${styles.tabButton}`}
+              data-active={activeTab === 'activity'}
             >
               Activity
             </button>
@@ -259,24 +245,17 @@ export const WebSocketTestPage: React.FC = () => {
                 <h3 className="m-0">Event Log</h3>
                 <Button size="sm" variant="ghost" onClick={() => setLogs([])}>Clear</Button>
               </div>
-              <div className="flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12" style={{
-                maxHeight: '500px',
-                fontFamily: 'monospace'
-              }}>
+              <div className={`flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12 ${styles.logContainer}`}>
                 {logs.length === 0 ? (
                   <div className="text-muted text-center p-20">
                     No events yet
                   </div>
                 ) : (
                   logs.map((log, i) => (
-                    <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
+                    <div key={i} className={`mb-8 border-bottom ${styles.logEntry}`}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
-                        <span className="fw-700" style={{
-                          color: log.type === 'sent' ? 'var(--app-info)' :
-                                 log.type === 'received' ? 'var(--app-success)' :
-                                 log.type === 'error' ? 'var(--app-error)' : 'var(--app-text)'
-                        }}>
+                        <span className={`fw-700 ${styles.logType}`} data-type={log.type}>
                           {log.type.toUpperCase()}
                         </span>
                       </div>
@@ -324,22 +303,17 @@ export const WebSocketTestPage: React.FC = () => {
                 <h3 className="m-0">Presence Log</h3>
                 <Button size="sm" variant="ghost" onClick={() => setLogs([])}>Clear</Button>
               </div>
-              <div className="flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12" style={{
-                maxHeight: '500px',
-                fontFamily: 'monospace'
-              }}>
+              <div className={`flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12 ${styles.logContainer}`}>
                 {logs.filter(l => l.data.includes('presence') || l.data.includes('"type":"presence"')).length === 0 ? (
                   <div className="text-muted text-center p-20">
                     No presence events yet
                   </div>
                 ) : (
                   logs.filter(l => l.data.includes('presence') || l.data.includes('"type":"presence"')).map((log, i) => (
-                    <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
+                    <div key={i} className={`mb-8 border-bottom ${styles.logEntry}`}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
-                        <span className="fw-700" style={{
-                          color: log.type === 'sent' ? 'var(--app-info)' : 'var(--app-success)'
-                        }}>
+                        <span className={`fw-700 ${styles.logType}`} data-type={log.type}>
                           {log.type.toUpperCase()}
                         </span>
                       </div>
@@ -387,22 +361,17 @@ export const WebSocketTestPage: React.FC = () => {
                 <h3 className="m-0">Activity Log</h3>
                 <Button size="sm" variant="ghost" onClick={() => setLogs([])}>Clear</Button>
               </div>
-              <div className="flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12" style={{
-                maxHeight: '500px',
-                fontFamily: 'monospace'
-              }}>
+              <div className={`flex-1 bg-surface-2 rounded-8 p-12 overflow-y-auto fs-12 ${styles.logContainer}`}>
                 {logs.filter(l => l.data.includes('activity') || l.data.includes('"type":"activity"')).length === 0 ? (
                   <div className="text-muted text-center p-20">
                     No activity events yet
                   </div>
                 ) : (
                   logs.filter(l => l.data.includes('activity') || l.data.includes('"type":"activity"')).map((log, i) => (
-                    <div key={i} className="mb-8 border-bottom" style={{ paddingBottom: '8px' }}>
+                    <div key={i} className={`mb-8 border-bottom ${styles.logEntry}`}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
-                        <span className="fw-700" style={{
-                          color: log.type === 'sent' ? 'var(--app-info)' : 'var(--app-success)'
-                        }}>
+                        <span className={`fw-700 ${styles.logType}`} data-type={log.type}>
                           {log.type.toUpperCase()}
                         </span>
                       </div>

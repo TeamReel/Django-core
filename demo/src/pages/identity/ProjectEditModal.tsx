@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert } from '@django-core/design-system';
+import styles from './ProjectEditModal.module.css';
 
 interface Project {
   id: string;
@@ -50,60 +51,40 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
   if (!opened || !project) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'var(--app-surface)',
-        padding: '24px',
-        borderRadius: '8px',
-        width: '500px',
-        maxWidth: '90%',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        color: 'var(--app-text)',
-        border: '1px solid var(--app-border)'
-      }}>
-        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>Edit Project</h2>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <h2 className={styles.title}>Edit Project</h2>
 
         {error && (
-          <div style={{ marginBottom: '16px' }}>
+          <div className={styles.errorWrapper}>
             <Alert variant="error">{error}</Alert>
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className={styles.fieldGroup}>
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Name</label>
+              <label className={styles.label}>Name</label>
               <input
                 type="text"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+                className={styles.input}
                 required
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: 500 }}>Description</label>
+              <label className={styles.label}>Description</label>
               <textarea
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', minHeight: '80px' }}
+                className={styles.textarea}
               />
             </div>
 
             <div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
                   checked={formData.is_active ?? true}
@@ -114,34 +95,21 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'flex-end' }}>
+          <div className={styles.actions}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: saving ? 'not-allowed' : 'pointer'
-              }}
+              className={styles.cancelButton}
+              data-disabled={saving}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
-                backgroundColor: '#0066cc',
-                color: 'white',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                opacity: saving ? 0.6 : 1
-              }}
+              className={styles.submitButton}
+              data-disabled={saving}
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

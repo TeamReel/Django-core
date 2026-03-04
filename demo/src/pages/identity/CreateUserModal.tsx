@@ -6,6 +6,7 @@ import {
 } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './CreateUserModal.module.css';
 
 interface CreateUserModalProps {
   opened: boolean;
@@ -84,56 +85,28 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
   if (!opened) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'var(--app-surface)',
-        padding: '24px',
-        borderRadius: '8px',
-        width: '100%',
-        maxWidth: '400px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-        color: 'var(--app-text)',
-        border: '1px solid var(--app-border)'
-      }}>
-        <h2 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600, color: 'var(--app-text)' }}>Create New User</h2>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <h2 className={styles.title}>Create New User</h2>
 
         {error && (
-          <div style={{
-            padding: '8px',
-            backgroundColor: 'rgba(220, 53, 69, 0.1)',
-            color: 'var(--app-error)',
-            border: '1px solid rgba(220, 53, 69, 0.3)',
-            borderRadius: '4px',
-            marginBottom: '16px',
-            fontSize: '14px'
-          }}>
+          <div className={styles.errorBox}>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>First Name</label>
+          <div className={styles.nameRow}>
+            <div className={styles.nameField}>
+                <label className={styles.label}>First Name</label>
                 <Input
                   value={formData.first_name}
                   onChange={(e) => setFormData({...formData, first_name: e.target.value})}
                   placeholder="John"
                 />
             </div>
-            <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Last Name</label>
+            <div className={styles.nameField}>
+                <label className={styles.label}>Last Name</label>
                 <Input
                   value={formData.last_name}
                   onChange={(e) => setFormData({...formData, last_name: e.target.value})}
@@ -142,8 +115,8 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
             </div>
           </div>
 
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Email Address</label>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Email Address</label>
             <Input
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -153,8 +126,8 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
             />
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Password</label>
+          <div className={styles.fieldGroupLarge}>
+            <label className={styles.label}>Password</label>
             <Input
               value={formData.password}
               onChange={(e) => {
@@ -172,7 +145,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
             />
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <div className={styles.actions}>
             <Button variant="secondary" onClick={onClose} type="button">
               Cancel
             </Button>

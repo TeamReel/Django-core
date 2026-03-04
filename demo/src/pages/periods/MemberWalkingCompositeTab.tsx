@@ -14,6 +14,7 @@ import {
 } from './memberDetailUtils';
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import styles from './MemberWalkingCompositeTab.module.css';
 
 export function MemberWalkingCompositeTab({
   videoVariants,
@@ -75,36 +76,30 @@ export function MemberWalkingCompositeTab({
 
         {/* Prerequisites */}
         <div className={s.prerequisiteRow}>
-          <div className={s.prerequisiteCard} style={{
-            border: legacyFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-          }}>
+          <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!legacyFullbodyUrl}>
             <div className="fs-12 fw-600 mb-8">🏆 Legacy Fullbody</div>
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Legacy Fullbody</div>
+              <div className={styles.missingHint}>⚠️ Genereer eerst Legacy Fullbody</div>
             )}
           </div>
-          <div className={s.prerequisiteCard} style={{
-            border: currentFullbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-          }}>
+          <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!currentFullbodyUrl}>
             <div className="fs-12 fw-600 mb-8">👕 Huidige Fullbody</div>
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div style={{ color: 'var(--app-text-muted)', fontSize: '11px' }}>⚠️ Genereer eerst Fullbody</div>
+              <div className={styles.missingHint}>⚠️ Genereer eerst Fullbody</div>
             )}
           </div>
         </div>
 
         {/* Pipeline steps */}
         <div className={s.kitSectionMargin}>
-          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
+          <div className={`${s.variantGrid} ${styles.variantGrid}`} data-active={hasBothInputs}>
             {/* Step 1: Far Image */}
-            <div className={s.variantCard} style={{
-              border: hasFarImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-            }}>
-              <div className={s.variantPreview916} style={{ background: hasFarImage ? '#000' : undefined }}>
+            <div className={`${s.variantCard} ${styles.variantCard}`} data-ready={!!hasFarImage}>
+              <div className={`${s.variantPreview916} ${styles.variantPreview}`} data-has-content={!!hasFarImage}>
                 {hasFarImage && farImageUrl ? (
                   <>
                     <img key={farImageUrl} src={farImageUrl} alt="Far composite" className={s.mediaCoverContain} />
@@ -117,7 +112,7 @@ export function MemberWalkingCompositeTab({
               <div className={s.cardFooterPadding}>
                 <div className={s.variantLabel}>📸 Ver Beeld</div>
                 <div className={s.actionButtonRow}>
-                  <Button size="sm" onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={s.btnSmall} style={{ width: '100%' }}>
+                  <Button size="sm" onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.fullWidth}`}>
                     {hasFarImage ? '🔄 Opnieuw' : '✨ Genereer'}
                   </Button>
                 </div>
@@ -125,10 +120,8 @@ export function MemberWalkingCompositeTab({
             </div>
 
             {/* Step 2: Near Image */}
-            <div className={s.variantCard} style={{
-              border: hasNearImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-            }}>
-              <div className={s.variantPreview916} style={{ background: hasNearImage ? '#000' : undefined }}>
+            <div className={`${s.variantCard} ${styles.variantCard}`} data-ready={!!hasNearImage}>
+              <div className={`${s.variantPreview916} ${styles.variantPreview}`} data-has-content={!!hasNearImage}>
                 {hasNearImage && nearImageUrl ? (
                   <>
                     <img key={nearImageUrl} src={nearImageUrl} alt="Near composite" className={s.mediaCoverContain} />
@@ -141,7 +134,7 @@ export function MemberWalkingCompositeTab({
               <div className={s.cardFooterPadding}>
                 <div className={s.variantLabel}>📸 Dichtbij Beeld</div>
                 <div className={s.actionButtonRow}>
-                  <Button size="sm" onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={s.btnSmall} style={{ width: '100%' }}>
+                  <Button size="sm" onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.fullWidth}`}>
                     {hasNearImage ? '🔄 Opnieuw' : '✨ Genereer'}
                   </Button>
                 </div>
@@ -149,17 +142,12 @@ export function MemberWalkingCompositeTab({
             </div>
 
             {/* Step 3: Walking Video */}
-            <div className={s.variantCard} style={{
-              border: hasWalkingVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-              opacity: (hasFarImage && hasNearImage) ? 1 : 0.4,
-            }}>
+            <div className={`${s.variantCard} ${styles.variantCard}`} data-ready={!!hasWalkingVideo} data-disabled={!(hasFarImage && hasNearImage)}>
               <div
                 onClick={() => { if (walkingVideoUrl) setVideoPreviewUrl(walkingVideoUrl); }}
-                className={s.variantPreview916}
-                style={{
-                  background: (hasWalkingVideo && !walkingVideoLineupReady) ? '#000' : undefined,
-                  cursor: hasWalkingVideo ? 'pointer' : 'default',
-                }}>
+                className={`${s.variantPreview916} ${styles.variantPreview}`}
+                data-has-content={!!(hasWalkingVideo && !walkingVideoLineupReady)}
+                data-clickable={!!hasWalkingVideo}>
                 {hasWalkingVideo && walkingVideoUrl ? (
                   <>
                     <video key={walkingVideoUrl} src={walkingVideoUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay />
@@ -177,7 +165,7 @@ export function MemberWalkingCompositeTab({
                 <div className={s.actionButtonRow}>
                   {hasWalkingVideo ? (
                     <>
-                      <Button size="sm" onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }} disabled={!(hasFarImage && hasNearImage)} className={s.btnSmall} style={{ flex: 1 }}>
+                      <Button size="sm" onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }} disabled={!(hasFarImage && hasNearImage)} className={`${s.btnSmall} ${styles.flexOne}`}>
                         Opnieuw
                       </Button>
                       {!walkingVideoProcessing && (
@@ -215,7 +203,7 @@ export function MemberWalkingCompositeTab({
                       {walkingVideoLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
                     </>
                   ) : (
-                    <Button size="sm" onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }} disabled={!(hasFarImage && hasNearImage)} className={s.btnSmall} style={{ width: '100%' }}>
+                    <Button size="sm" onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }} disabled={!(hasFarImage && hasNearImage)} className={`${s.btnSmall} ${styles.fullWidth}`}>
                       ✨ Genereer
                     </Button>
                   )}

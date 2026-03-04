@@ -1,0 +1,77 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: var(--app-surface);
+  padding: 24px;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--app-text);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--app-text);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 12px;
+  color: var(--app-muted-text);
+  margin-bottom: 4px;
+}
+
+.fieldValue {
+  font-weight: 500;
+  color: var(--app-text);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.closeButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+}

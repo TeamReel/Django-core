@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSignUp, useAuth } from '@django-core/auth-ui';
+import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -52,20 +53,20 @@ export default function RegisterPage() {
   const lastNameError = error?.fieldErrors?.last_name?.[0] || '';
 
   return (
-    <div className="p-20 max-w-400 mx-auto" style={{ marginTop: '100px' }}>
+    <div className={`p-20 max-w-400 mx-auto ${styles.container}`}>
       <h1>Create Account</h1>
       <p>Sign up for a new Django Core-App account</p>
 
-      <form onSubmit={handleSubmit} className="flex-col mt-32" style={{ gap: '15px' }}>
+        <form onSubmit={handleSubmit} className={`flex-col mt-32 ${styles.form}`}>
         {displayError && (
-          <div className="p-10 rounded-4" style={{ backgroundColor: '#fee', border: '1px solid #fcc', color: '#c00' }}>
+          <div className={`p-10 rounded-4 ${styles.errorBox}`}>
             {displayError}
           </div>
         )}
 
         {/* Debug: Show full error object */}
         {error && (
-          <div className="p-10 rounded-4 fs-12" style={{ backgroundColor: '#f0f0f0', border: '1px solid #ddd' }}>
+          <div className={`p-10 rounded-4 fs-12 ${styles.debugBox}`}>
             <details>
               <summary>Debug Error Info</summary>
               <pre>{JSON.stringify(error, null, 2)}</pre>
@@ -75,7 +76,7 @@ export default function RegisterPage() {
 
         <div className="flex-row gap-10">
           <div className="flex-1">
-            <label htmlFor="firstName" className="block fw-500" style={{ marginBottom: '5px' }}>
+            <label htmlFor="firstName" className={`block fw-500 ${styles.label}`}>
               First Name
             </label>
             <input
@@ -84,13 +85,12 @@ export default function RegisterPage() {
               placeholder="First name"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="w-full p-10 rounded-4 fs-16"
-              style={{ border: firstNameError ? '1px solid #f00' : '1px solid #ccc' }}
+              className={`w-full p-10 rounded-4 fs-16 ${firstNameError ? styles.inputError : styles.input}`}
             />
             {firstNameError && <div className="fs-12 text-error">{firstNameError}</div>}
           </div>
           <div className="flex-1">
-            <label htmlFor="lastName" className="block fw-500" style={{ marginBottom: '5px' }}>
+            <label htmlFor="lastName" className={`block fw-500 ${styles.label}`}>
               Last Name
             </label>
             <input
@@ -99,15 +99,14 @@ export default function RegisterPage() {
               placeholder="Last name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="w-full p-10 rounded-4 fs-16"
-              style={{ border: lastNameError ? '1px solid #f00' : '1px solid #ccc' }}
+              className={`w-full p-10 rounded-4 fs-16 ${lastNameError ? styles.inputError : styles.input}`}
             />
             {lastNameError && <div className="fs-12 text-error">{lastNameError}</div>}
           </div>
         </div>
 
         <div>
-          <label htmlFor="email" className="block fw-500" style={{ marginBottom: '5px' }}>
+          <label htmlFor="email" className={`block fw-500 ${styles.label}`}>
             Email Address
           </label>
           <input
@@ -118,14 +117,13 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
-            className="w-full p-10 rounded-4 fs-16"
-            style={{ border: emailError ? '1px solid #f00' : '1px solid #ccc' }}
+            className={`w-full p-10 rounded-4 fs-16 ${emailError ? styles.inputError : styles.input}`}
           />
           {emailError && <div className="fs-12 text-error">{emailError}</div>}
         </div>
 
         <div>
-          <label htmlFor="password" className="block fw-500" style={{ marginBottom: '5px' }}>
+          <label htmlFor="password" className={`block fw-500 ${styles.label}`}>
             Password
           </label>
           <input
@@ -136,14 +134,13 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
-            className="w-full p-10 rounded-4 fs-16"
-            style={{ border: passwordError ? '1px solid #f00' : '1px solid #ccc' }}
+            className={`w-full p-10 rounded-4 fs-16 ${passwordError ? styles.inputError : styles.input}`}
           />
           {passwordError && <div className="fs-12 text-error">{passwordError}</div>}
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block fw-500" style={{ marginBottom: '5px' }}>
+          <label htmlFor="confirmPassword" className={`block fw-500 ${styles.label}`}>
             Confirm Password
           </label>
           <input
@@ -154,26 +151,21 @@ export default function RegisterPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
-            className="w-full p-10 rounded-4 fs-16"
-            style={{ border: '1px solid #ccc' }}
+            className={`w-full p-10 rounded-4 fs-16 ${styles.input}`}
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="p-12 border-none rounded-4 fs-16 fw-500 text-white"
-          style={{
-            backgroundColor: isLoading ? '#ccc' : 'var(--app-success)',
-            cursor: isLoading ? 'not-allowed' : 'pointer'
-          }}
+          className={`p-12 border-none rounded-4 fs-16 fw-500 text-white ${isLoading ? styles.submitButtonDisabled : styles.submitButton}`}
         >
           {isLoading ? 'Creating Account...' : 'Create Account'}
         </button>
       </form>
 
-      <p className="fs-14 text-center mt-20" style={{ color: '#666' }}>
-        Already have an account? <Link to="/login" className="text-decoration-none" style={{ color: 'var(--app-primary)' }}>Sign in here</Link>
+      <p className={`fs-14 text-center mt-20 ${styles.footerText}`}>
+        Already have an account? <Link to="/login" className={`text-decoration-none ${styles.footerLink}`}>Sign in here</Link>
       </p>
     </div>
   );

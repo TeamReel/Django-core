@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSports } from '../../hooks/useSports';
+import styles from './OrganisationCreateModal.module.css';
 
 interface OrganisationCreateModalProps {
   opened: boolean;
@@ -37,116 +38,49 @@ export default function OrganisationCreateModal({
   if (!opened) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
-          width: '500px',
-          maxWidth: '90%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
-        }}
-      >
-        <h2 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--app-text)' }}>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <h2 className={styles.title}>
           Create Organisation
         </h2>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className={styles.fieldGroup}>
             <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '4px',
-                  fontWeight: 500,
-                  color: 'var(--app-text)',
-                }}
-              >
+              <label className={styles.label}>
                 Name
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                }}
+                className={styles.input}
                 required
                 disabled={saving}
               />
             </div>
 
             <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '4px',
-                  fontWeight: 500,
-                  color: 'var(--app-text)',
-                }}
-              >
+              <label className={styles.label}>
                 Description
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                  minHeight: '80px',
-                }}
+                className={styles.textarea}
                 disabled={saving}
               />
             </div>
 
             <div>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '4px',
-                  fontWeight: 500,
-                  color: 'var(--app-text)',
-                }}
-              >
+              <label className={styles.label}>
                 Sport
               </label>
               <select
                 value={sportId || ''}
                 onChange={(e) => setSportId(e.target.value || null)}
                 disabled={saving || sportsLoading}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-input-bg)',
-                  color: 'var(--app-text)',
-                }}
+                className={styles.input}
               >
                 <option value="">— Select sport —</option>
                 {categories.map((sport) => (
@@ -158,41 +92,21 @@ export default function OrganisationCreateModal({
             </div>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              gap: '12px',
-              marginTop: '24px',
-              justifyContent: 'flex-end',
-            }}
-          >
+          <div className={styles.actions}>
             <button
               type="button"
               onClick={onClose}
               disabled={saving}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                cursor: saving ? 'not-allowed' : 'pointer',
-              }}
+              className={styles.cancelButton}
+              data-saving={String(saving)}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
-                backgroundColor: '#0066cc',
-                color: 'white',
-                cursor: saving ? 'not-allowed' : 'pointer',
-                opacity: saving ? 0.6 : 1,
-              }}
+              className={styles.submitButton}
+              data-saving={String(saving)}
             >
               {saving ? 'Creating...' : 'Create'}
             </button>

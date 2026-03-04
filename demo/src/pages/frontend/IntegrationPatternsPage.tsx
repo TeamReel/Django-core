@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
+import styles from './IntegrationPatternsPage.module.css';
 
 const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?: string }) => {
   const [copied, setCopied] = useState(false);
@@ -17,10 +18,7 @@ const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?:
 
   return (
     <div className="relative mt-16 mb-16">
-      <div className="absolute z-10" style={{
-        top: '8px',
-        right: '8px',
-      }}>
+      <div className={`absolute z-10 ${styles.copyButtonWrapper}`}>
         <Button
           variant="secondary"
           size="sm"
@@ -30,13 +28,7 @@ const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?:
         </Button>
       </div>
       <pre
-        className="p-16 rounded-8 overflow-x-auto fs-14 m-0"
-        style={{
-          backgroundColor: '#1e1e1e',
-          color: '#d4d4d4',
-          fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
-          lineHeight: '1.5',
-        }}
+        className={`p-16 rounded-8 overflow-x-auto fs-14 m-0 ${styles.codeBlockPre}`}
       >
         <code>{code}</code>
       </pre>
@@ -59,20 +51,20 @@ const PatternSection = ({
   bestPractices: string[];
   pitfalls?: string[];
 }) => (
-  <section id={id} style={{ marginBottom: '48px', scrollMarginTop: '100px' }}>
+  <section id={id} className={styles.patternSection}>
     <h2 className="fs-24 fw-700 mb-16 text-primary">{title}</h2>
-    <p className="fs-16 mb-24 text-secondary" style={{ lineHeight: '1.6' }}>
+    <p className={`fs-16 mb-24 text-secondary ${styles.patternDescription}`}>
       {description}
     </p>
 
     <CodeBlock code={code} />
 
     <div className="grid gap-24 mt-24 grid-cols-2">
-      <Card className="p-20" style={{ backgroundColor: 'var(--app-surface-subtle)' }}>
+      <Card className={`p-20 ${styles.practiceCard}`}>
         <h3 className="fs-16 fw-600 mb-12 text-success">
           ✅ Best Practices
         </h3>
-        <ul className="m-0 text-secondary" style={{ paddingLeft: '20px' }}>
+        <ul className={`m-0 text-secondary ${styles.practiceList}`}>
           {bestPractices.map((practice, index) => (
             <li key={index} className="mb-8">{practice}</li>
           ))}
@@ -80,11 +72,11 @@ const PatternSection = ({
       </Card>
 
       {pitfalls && (
-        <Card className="p-20" style={{ backgroundColor: 'var(--app-surface-subtle)' }}>
+        <Card className={`p-20 ${styles.practiceCard}`}>
           <h3 className="fs-16 fw-600 mb-12 text-error">
             ⚠️ Common Pitfalls
           </h3>
-          <ul className="m-0 text-secondary" style={{ paddingLeft: '20px' }}>
+          <ul className={`m-0 text-secondary ${styles.practiceList}`}>
             {pitfalls.map((pitfall, index) => (
               <li key={index} className="mb-8">{pitfall}</li>
             ))}
@@ -380,33 +372,22 @@ export function ResilientComponent() {
 
   return (
     <AppShell>
-      <div className="flex-row" style={{ minHeight: '100vh', backgroundColor: 'var(--app-bg)' }}>
+      <div className={`flex-row ${styles.pageContainer}`}>
         {/* Sidebar Navigation */}
         <div
-          className="sticky overflow-y-auto bg-surface p-24"
-          style={{
-            width: '280px',
-            top: '64px',
-            height: 'calc(100vh - 64px)',
-            borderRight: '1px solid var(--app-border)',
-          }}
+          className={`sticky overflow-y-auto bg-surface p-24 ${styles.sidebar}`}
         >
           <h3 className="fs-18 fw-700 mb-16 text-primary">
             Patterns
           </h3>
           <nav>
-            <ul className="p-0 m-0" style={{ listStyle: 'none' }}>
+            <ul className={`p-0 m-0 ${styles.navList}`}>
               {patterns.map((pattern) => (
                 <li key={pattern.id} className="mb-8">
                   <button
                     onClick={() => scrollToSection(pattern.id)}
-                    className="w-full text-left rounded-6 border-none cursor-pointer transition"
-                    style={{
-                      padding: '8px 12px',
-                      backgroundColor: activeSection === pattern.id ? 'var(--app-primary-subtle)' : 'transparent',
-                      color: activeSection === pattern.id ? 'var(--app-primary)' : 'var(--app-text-secondary)',
-                      fontWeight: activeSection === pattern.id ? 600 : 400,
-                    }}
+                    className={`w-full text-left rounded-6 border-none cursor-pointer transition ${styles.navButton}`}
+                    data-active={activeSection === pattern.id ? 'true' : undefined}
                   >
                     {pattern.title}
                   </button>
@@ -417,12 +398,12 @@ export function ResilientComponent() {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1" style={{ padding: '48px', maxWidth: '1000px' }}>
-          <div style={{ marginBottom: '48px' }}>
-            <h1 className="fw-800 mb-16 text-primary" style={{ fontSize: '36px' }}>
+        <div className={`flex-1 ${styles.mainContent}`}>
+          <div className={styles.headerSection}>
+            <h1 className={`fw-800 mb-16 text-primary ${styles.pageTitle}`}>
               Integration Patterns
             </h1>
-            <p className="fs-18 text-secondary" style={{ lineHeight: '1.6' }}>
+            <p className={`fs-18 text-secondary ${styles.pageDescription}`}>
               Reference guide for integrating frontend components with backend services.
               Follow these patterns to ensure consistency, security, and reliability across the application.
             </p>

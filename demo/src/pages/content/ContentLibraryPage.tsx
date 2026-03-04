@@ -29,6 +29,7 @@ import { ContentCard, FilterChip, EmptyState, ContentPreviewModal } from './Cont
 import { GalleryCreateContentButton } from './GalleryCreateContentButton';
 import { useContentLibraryData } from './useContentLibraryData';
 import { getAssetTypeLabel } from './contentLibraryTypes';
+import styles from './ContentLibraryPage.module.css';
 
 // ============================================================================
 // Props Interface
@@ -106,14 +107,14 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
 
   if (!orgId) {
     return (
-      <div style={{ minHeight: embedded ? 'auto' : '100vh', backgroundColor: 'var(--app-bg)', padding: 24 }}>
+      <div className={styles.noOrgWrapper} data-embedded={String(embedded)}>
         <Alert variant="info">Selecteer een organisatie om de content library te bekijken.</Alert>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: embedded ? 'auto' : '100vh', backgroundColor: 'var(--app-bg)' }}>
+    <div className={styles.pageWrapper} data-embedded={String(embedded)}>
       {/* Header */}
       {!embedded && (
         <div className="p-24 border-bottom bg-surface">
@@ -129,7 +130,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
 
       {/* Mobile category tab bar */}
       {!embedded && (
-        <div style={{ padding: '12px 16px 0' }}>
+        <div className={styles.categoryTabBarWrapper}>
           <MobileTabBar
             tabs={[
               { id: 'all', label: 'Alles' },
@@ -153,8 +154,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
           value={data.searchQuery}
           onChange={(e) => data.setSearchQuery(e.target.value)}
           placeholder="Zoeken..."
-          className="flex-1 fs-13 rounded-6 border bg-surface"
-          style={{ minWidth: 120, padding: '8px 12px' }}
+          className={`flex-1 fs-13 rounded-6 border bg-surface ${styles.searchInput}`}
         />
         <MobileFilterSheet
           activeFilterCount={
@@ -167,7 +167,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
           }
         >
           <label className="fs-12 fw-600 text-muted">Sortering</label>
-          <select value={data.sortBy} onChange={(e) => data.setSortBy(e.target.value as any)} className="rounded-6 border bg-surface fs-13 w-full" style={{ padding: '8px 12px', minWidth: 140 }}>
+          <select value={data.sortBy} onChange={(e) => data.setSortBy(e.target.value as any)} className={`rounded-6 border bg-surface fs-13 w-full ${styles.sortSelect}`}>
             <option value="newest">Nieuwste eerst</option>
             <option value="oldest">Oudste eerst</option>
             <option value="title">A-Z op titel</option>
@@ -180,7 +180,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
               <select
                 value={data.selectedOrgId}
                 onChange={(e) => { data.setSelectedOrgId(e.target.value); data.setSelectedClubId(''); data.setSelectedTeamId(''); data.setSelectedSeasonId(''); data.setSelectedMatchId(''); }}
-                className="rounded-6 border bg-surface fs-13 w-full" style={{ padding: '8px 12px', minWidth: 160 }}
+                className={`rounded-6 border bg-surface fs-13 w-full ${styles.filterSelect}`}
               >
                 <option value="">Federation: All</option>
                 {[...data.organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
@@ -196,7 +196,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
               <select
                 value={data.selectedClubId}
                 onChange={(e) => { data.setSelectedClubId(e.target.value); data.setSelectedTeamId(''); data.setSelectedSeasonId(''); data.setSelectedMatchId(''); }}
-                className="rounded-6 border bg-surface fs-13 w-full" style={{ padding: '8px 12px', minWidth: 160 }}
+                className={`rounded-6 border bg-surface fs-13 w-full ${styles.filterSelect}`}
               >
                 <option value="">Club: All</option>
                 {[...data.clubs].sort((a, b) => a.name.localeCompare(b.name)).map((club) => (
@@ -212,7 +212,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
               <select
                 value={data.selectedTeamId}
                 onChange={(e) => { data.setSelectedTeamId(e.target.value); data.setSelectedSeasonId(''); data.setSelectedMatchId(''); }}
-                className="rounded-6 border bg-surface fs-13 w-full" style={{ padding: '8px 12px', minWidth: 160 }}
+                className={`rounded-6 border bg-surface fs-13 w-full ${styles.filterSelect}`}
               >
                 <option value="">Team: All</option>
                 {[...data.filteredTeams].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
@@ -228,7 +228,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
               <select
                 value={data.selectedSeasonId}
                 onChange={(e) => { data.setSelectedSeasonId(e.target.value); data.setSelectedMatchId(''); }}
-                className="rounded-6 border bg-surface fs-13 w-full" style={{ padding: '8px 12px', minWidth: 160 }}
+                className={`rounded-6 border bg-surface fs-13 w-full ${styles.filterSelect}`}
               >
                 <option value="">Season: All</option>
                 {data.seasons.map((season) => (
@@ -244,7 +244,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
               <select
                 value={data.selectedMatchId}
                 onChange={(e) => data.setSelectedMatchId(e.target.value)}
-                className="rounded-6 border bg-surface fs-13 w-full" style={{ padding: '8px 12px', minWidth: 200 }}
+                className={`rounded-6 border bg-surface fs-13 w-full ${styles.matchSelect}`}
               >
                 <option value="">Match: All</option>
                 {data.matches.map((match) => (
@@ -264,7 +264,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
       </div>
 
       {/* Content area */}
-      <div className="gallery-content p-24 mx-auto" style={{ maxWidth: 1400 }}>
+      <div className={`gallery-content p-24 mx-auto ${styles.contentArea}`}>
         <Stack direction="column" gap="4">
           {/* Subtype chips (category has subtypes) */}
           {data.categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.length! > 0 && (
@@ -296,12 +296,12 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
           {data.error && <Alert variant="error">{data.error}</Alert>}
 
           {data.loading && (
-            <div className="text-center" style={{ padding: 48 }}><Text color="secondary">Content laden...</Text></div>
+            <div className={`text-center ${styles.loadingArea}`}><Text color="secondary">Content laden...</Text></div>
           )}
 
           {!data.loading && (
             data.filteredContent.length > 0 ? (
-              <div className="gallery-grid grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+              <div className={`gallery-grid grid gap-16 ${styles.galleryGrid}`}>
                 {data.filteredContent.map((item) => (
                   <ContentCard key={item.id} item={item} onPreview={handlePreview} onDownload={handleDownload} onShare={handleShare} onDelete={handleDelete} />
                 ))}

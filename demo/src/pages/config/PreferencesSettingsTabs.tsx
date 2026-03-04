@@ -5,6 +5,7 @@ import React from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import type { usePreferencesData } from './usePreferencesData';
+import styles from './PreferencesSettingsTabs.module.css';
 
 type Data = ReturnType<typeof usePreferencesData>;
 
@@ -12,6 +13,8 @@ type Data = ReturnType<typeof usePreferencesData>;
 
 export function PersonalisationTab({ d }: { d: Data }) {
   const { resolvedMode, preferences, setPreferences, effectivePrefs } = d;
+  const isLightSelected = preferences?.theme === 'light' || (preferences?.theme === 'auto' && resolvedMode === 'light');
+  const isDarkSelected = preferences?.theme === 'dark' || (preferences?.theme === 'auto' && resolvedMode === 'dark');
   return (
     <>
       <Card>
@@ -27,20 +30,20 @@ export function PersonalisationTab({ d }: { d: Data }) {
             ))}
           </div>
 
-          <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            <div style={{ padding: '24px', backgroundColor: '#ffffff', border: preferences?.theme === 'light' || (preferences?.theme === 'auto' && resolvedMode === 'light') ? '2px solid #3b82f6' : '1px solid #e5e7eb', borderRadius: '8px' }}>
-              <h4 style={{ margin: '0 0 12px 0', color: '#1f2937', fontWeight: 600 }}>Light Theme</h4>
-              <div style={{ padding: '12px', backgroundColor: '#f9fafb', borderRadius: '4px', marginBottom: '12px' }}>
-                <p style={{ margin: 0, fontSize: '12px', color: '#1f2937' }}>Background: #FFFFFF</p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: 'var(--app-muted-text)' }}>Text: #1F2937</p>
+          <div className={`grid gap-24 ${styles.gridTwoCols}`}>
+            <div className={styles.lightThemeCard} data-selected={isLightSelected}>
+              <h4 className={styles.lightThemeTitle}>Light Theme</h4>
+              <div className={styles.lightPreviewBox}>
+                <p className={styles.previewTextLightPrimary}>Background: #FFFFFF</p>
+                <p className={styles.previewTextLightSecondary}>Text: #1F2937</p>
               </div>
               {preferences?.theme === 'light' && <Badge variant="success">Selected</Badge>}
             </div>
-            <div style={{ padding: '24px', backgroundColor: '#1f2937', color: '#f3f4f6', border: preferences?.theme === 'dark' || (preferences?.theme === 'auto' && resolvedMode === 'dark') ? '2px solid #3b82f6' : '1px solid #374151', borderRadius: '8px' }}>
-              <h4 style={{ margin: '0 0 12px 0', color: '#f3f4f6', fontWeight: 600 }}>Dark Theme</h4>
-              <div style={{ padding: '12px', backgroundColor: '#111827', borderRadius: '4px', marginBottom: '12px' }}>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#f3f4f6' }}>Background: #1F2937</p>
-                <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#9ca3af' }}>Text: #F3F4F6</p>
+            <div className={styles.darkThemeCard} data-selected={isDarkSelected}>
+              <h4 className={styles.darkThemeTitle}>Dark Theme</h4>
+              <div className={styles.darkPreviewBox}>
+                <p className={styles.previewTextDarkPrimary}>Background: #1F2937</p>
+                <p className={styles.previewTextDarkSecondary}>Text: #F3F4F6</p>
               </div>
               {preferences?.theme === 'dark' && <Badge variant="success">Selected</Badge>}
             </div>
@@ -53,7 +56,7 @@ export function PersonalisationTab({ d }: { d: Data }) {
 
       <Card className="mt-24">
         <h3 className="text-lg font-semibold mb-4">Localisation</h3>
-        <div className="grid gap-24" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className={`grid gap-24 ${styles.gridTwoCols}`}>
           <div>
             <label className="block text-sm font-medium mb-2">Language</label>
             <select value={preferences?.language || 'en'} className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
@@ -97,7 +100,7 @@ export function PersonalisationTab({ d }: { d: Data }) {
           <p className="text-sm text-gray-600 mb-4">
             These are the actual values used by the system, resolved from your user settings, organization defaults, or system fallbacks.
           </p>
-          <div className="grid gap-16" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className={`grid gap-16 ${styles.gridTwoCols}`}>
             {[
               { label: 'Language', value: effectivePrefs.language },
               { label: 'Timezone', value: effectivePrefs.timezone },
@@ -215,7 +218,7 @@ export function NotificationsTab({ d }: { d: Data }) {
             {channelPrefs.map((group) => (
               <div key={group.event_type} className="border-t border-gray-200 pt-4 first:border-t-0 first:pt-0">
                 <h4 className="text-sm font-semibold mb-3 text-gray-900">{formatEventType(group.event_type)}</h4>
-                <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                <div className={`grid gap-12 ${styles.gridThreeCols}`}>
                   {([['email', '📧 Email'], ['push', '🔔 Push'], ['in_app', '💬 In-App']] as const).map(([ch, label]) => (
                     <label key={ch} className="flex items-center cursor-pointer">
                       <input type="checkbox" checked={group.channels[ch]} onChange={() => handleToggleChannel(group.event_type, ch)}

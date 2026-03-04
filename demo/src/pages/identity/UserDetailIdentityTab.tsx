@@ -3,6 +3,7 @@
  */
 import { Alert, Badge, Input } from '@django-core/design-system';
 import type { UserDetailDataReturn } from './useUserDetailData';
+import styles from './UserDetailIdentityTab.module.css';
 
 interface Props {
   data: UserDetailDataReturn;
@@ -26,22 +27,20 @@ export function UserDetailIdentityTab({ data }: Props) {
     <div className="space-y-6">
       {/* Profile Photo Section */}
       <div className="card p-20">
-        <h3 className="mb-16" style={{ marginTop: 0 }}>Profile Photo</h3>
-        <div className="flex-row gap-24" style={{ alignItems: 'flex-start' }}>
+        <h3 className={`mb-16 ${styles.profilePhotoTitle}`}>Profile Photo</h3>
+        <div className={`flex-row gap-24 ${styles.photoRow}`}>
           <div
-            className="overflow-hidden flex-center rounded-full"
-            style={{ width: 120, height: 120, backgroundColor: 'var(--app-surface-alt, #f5f5f5)', border: '2px solid var(--app-border)', flexShrink: 0 }}
+            className={`overflow-hidden flex-center rounded-full ${styles.avatarContainer}`}
           >
             {(user as any).avatar_url ? (
               <img
                 src={(user as any).avatar_url}
                 alt={`${userDisplayName} avatar`}
-                className="w-full h-full"
-                style={{ objectFit: 'cover' }}
+                className={`w-full h-full ${styles.avatarImage}`}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             ) : (
-              <span style={{ fontSize: 48, color: 'var(--app-muted-text)' }}>
+              <span className={styles.avatarInitial}>
                 {String(user.first_name || user.email || '?').charAt(0).toUpperCase()}
               </span>
             )}
@@ -53,7 +52,7 @@ export function UserDetailIdentityTab({ data }: Props) {
             {(user as any).avatar_url && (
               <div className="mt-8 fs-12 text-muted">
                 <strong>URL:</strong>{' '}
-                <a href={(user as any).avatar_url} target="_blank" rel="noopener noreferrer" className="word-break-all" style={{ color: 'var(--app-primary)' }}>
+                <a href={(user as any).avatar_url} target="_blank" rel="noopener noreferrer" className={`word-break-all ${styles.avatarLink}`}>
                   {(user as any).avatar_url}
                 </a>
               </div>
@@ -89,15 +88,15 @@ export function UserDetailIdentityTab({ data }: Props) {
         {identityEditing ? (
           <div className="flex-col gap-16">
             <div>
-              <label className="block fw-600" style={{ marginBottom: 6 }}>First Name</label>
+              <label className={`block fw-600 ${styles.fieldLabel}`}>First Name</label>
               <Input value={identityFirstName} onChange={(e) => setIdentityFirstName((e.target as any).value)} placeholder="First name" disabled={identitySaving} />
             </div>
             <div>
-              <label className="block fw-600" style={{ marginBottom: 6 }}>Last Name</label>
+              <label className={`block fw-600 ${styles.fieldLabel}`}>Last Name</label>
               <Input value={identityLastName} onChange={(e) => setIdentityLastName((e.target as any).value)} placeholder="Last name" disabled={identitySaving} />
             </div>
             <div>
-              <label className="block fw-600" style={{ marginBottom: 6 }}>Email</label>
+              <label className={`block fw-600 ${styles.fieldLabel}`}>Email</label>
               <Input value={user.email || ''} disabled />
               <div className="fs-12 text-muted mt-4">Email cannot be changed here.</div>
             </div>
@@ -121,7 +120,7 @@ export function UserDetailIdentityTab({ data }: Props) {
                     setIdentitySaving(false);
                   }
                 }}
-                className="cta-btn cta-btn-primary" style={{ opacity: identitySaving ? 0.6 : 1, cursor: identitySaving ? 'not-allowed' : 'pointer' }}
+                className={`cta-btn cta-btn-primary ${styles.saveButton}`} data-saving={identitySaving}
               >
                 {identitySaving ? 'Saving…' : 'Save Changes'}
               </button>
@@ -131,7 +130,7 @@ export function UserDetailIdentityTab({ data }: Props) {
             </div>
           </div>
         ) : (
-          <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: '12px 16px' }}>
+          <div className={`grid ${styles.detailsGrid}`}>
             <div className="text-muted">First Name</div>
             <div className="fw-600">{user.first_name || '—'}</div>
             <div className="text-muted">Last Name</div>

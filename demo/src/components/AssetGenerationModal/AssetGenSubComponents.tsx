@@ -5,6 +5,7 @@
 import React from 'react';
 import type { AssetTemplate } from '../../constants/assetTemplates';
 import { getSecureMimeType } from './assetGenHelpers';
+import styles from './AssetGenSubComponents.module.css';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TemplateCard
@@ -22,33 +23,13 @@ export function TemplateCard({
   return (
     <button
       onClick={onClick}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 6,
-        padding: '16px 12px',
-        border: selected
-          ? '2px solid var(--vscode-focusBorder, #007fd4)'
-          : '1px solid var(--vscode-widget-border, #333)',
-        borderRadius: 8,
-        background: selected
-          ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-          : 'var(--vscode-editor-background, #1e1e1e)',
-        color: 'var(--vscode-foreground, #ccc)',
-        cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        minWidth: 100,
-      }}
+      className={styles.templateCard}
+      data-selected={selected}
     >
-      <span style={{ fontSize: 28 }}>{template.icon}</span>
+      <span className={styles.templateIcon}>{template.icon}</span>
       <span className="fs-12 fw-600 text-center">{template.name}</span>
       <span
-        className="text-center"
-        style={{
-          fontSize: 10,
-          color: 'var(--vscode-descriptionForeground, #888)',
-        }}
+        className={`text-center ${styles.templateCredits}`}
       >
         {template.creditsCost} credit{template.creditsCost > 1 ? 's' : ''} / variant
       </span>
@@ -74,26 +55,14 @@ export function ParameterSelect({
   return (
     <div className="mb-12">
       <label
-        className="block fs-12 fw-600 mb-4"
-        style={{
-          color: 'var(--vscode-foreground, #ccc)',
-        }}
+        className={`block fs-12 fw-600 mb-4 ${styles.parameterLabel}`}
       >
         {label}
       </label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          width: '100%',
-          padding: '6px 10px',
-          fontSize: 13,
-          background: 'var(--vscode-input-background, #3c3c3c)',
-          color: 'var(--vscode-input-foreground, #ccc)',
-          border: '1px solid var(--vscode-input-border, #3c3c3c)',
-          borderRadius: 4,
-          outline: 'none',
-        }}
+        className={styles.parameterSelect}
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
@@ -164,28 +133,14 @@ export function VariantCard({
   return (
     <button
       onClick={onClick}
-      style={{
-        position: 'relative',
-        border: selected
-          ? '3px solid #10b981'
-          : '1px solid var(--vscode-widget-border, #333)',
-        borderRadius: 8,
-        overflow: 'hidden',
-        cursor: 'pointer',
-        padding: 0,
-        background: 'transparent',
-      }}
+      className={styles.variantCard}
+      data-selected={selected}
     >
       {mediaSrc ? (
         isVideoContent ? (
           <video
             src={mediaSrc}
-            style={{
-              width: '100%',
-              aspectRatio: '9 / 16',
-              objectFit: 'cover',
-              display: 'block',
-            }}
+            className={styles.variantVideo}
             autoPlay
             loop
             muted
@@ -195,78 +150,29 @@ export function VariantCard({
           <img
             src={mediaSrc}
             alt={`Variant ${variant.variant_index + 1}`}
-            style={{
-              width: '100%',
-              height: 'auto',
-              display: 'block',
-              objectFit: 'contain',
-              background: '#1a1a1a',
-            }}
+            className={styles.variantImage}
           />
         )
       ) : (
         <div
-          className="w-full flex-center fs-12 p-8 text-center"
-          style={{
-            aspectRatio: isVideoContent ? '9 / 16' : '3 / 4',
-            background: 'var(--vscode-input-background, #3c3c3c)',
-            color: 'var(--color-red-500)',
-          }}
+          className={`w-full flex-center fs-12 p-8 text-center ${styles.variantError}`}
+          data-video={isVideoContent}
         >
           {variant.error || (isVideoContent ? 'Geen video' : 'Geen afbeelding')}
         </div>
       )}
       {selected && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 6,
-            right: 6,
-            background: 'var(--color-green-400)',
-            color: '#fff',
-            width: 24,
-            height: 24,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 14,
-            fontWeight: 700,
-          }}
-        >
+        <div className={styles.variantCheckmark}>
           {'\u2713'}
         </div>
       )}
       {/* Video indicator */}
       {isVideoContent && mediaSrc && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 6,
-            left: 6,
-            background: 'rgba(0,0,0,0.7)',
-            color: '#fff',
-            padding: '2px 6px',
-            borderRadius: 4,
-            fontSize: 10,
-          }}
-        >
+        <div className={styles.videoIndicator}>
           {'\uD83C\uDFAC'} Video
         </div>
       )}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          background: 'rgba(0,0,0,0.7)',
-          color: '#fff',
-          padding: '4px 8px',
-          fontSize: 11,
-          textAlign: 'center',
-        }}
-      >
+      <div className={styles.variantLabel}>
         Variant {variant.variant_index + 1}
       </div>
     </button>
@@ -280,20 +186,11 @@ export function VariantCard({
 export function ProgressBar({ progress }: { progress: number }) {
   return (
     <div
-      className="w-full overflow-hidden rounded-4"
-      style={{
-        height: 6,
-        background: 'var(--vscode-progressBar-background, #333)',
-      }}
+      className={`w-full overflow-hidden rounded-4 ${styles.progressBarTrack}`}
     >
       <div
-        style={{
-          width: `${progress}%`,
-          height: '100%',
-          background: 'var(--vscode-progressBar-background, #0078d4)',
-          borderRadius: 3,
-          transition: 'width 0.3s ease',
-        }}
+        className={styles.progressBarFill}
+        style={{ width: `${progress}%` }}
       />
     </div>
   );

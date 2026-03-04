@@ -5,6 +5,7 @@
 import React from 'react';
 import type { Participation } from './types';
 import { BackgroundSelector, type BackgroundItem } from './BackgroundSelector';
+import styles from './ConfirmStepGoal.module.css';
 
 const CELEB_LABELS: Record<string, string> = {
   arms_wide: 'Armen wijd',
@@ -53,19 +54,10 @@ export function ConfirmStepGoal({
   const scorerOptions = buildScorerOptions(uniqueMembers);
 
   return (
-    <div style={{
-      width: '100%', maxWidth: 480, marginTop: 20,
-      border: '1px solid var(--app-border, #e5e7eb)',
-      borderRadius: 12, overflow: 'hidden',
-      background: 'var(--app-surface, white)',
-    }}>
+    <div className={styles.wrapper}>
       {/* Header */}
-      <div style={{
-        padding: '14px 20px',
-        borderBottom: '1px solid var(--app-border, #e5e7eb)',
-        background: 'var(--app-surface-2, #f3f4f6)',
-      }}>
-        <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: 'var(--app-text, #111)' }}>
+      <div className={styles.header}>
+        <h4 className={styles.headerTitle}>
           Doelpunt Details
         </h4>
       </div>
@@ -73,10 +65,7 @@ export function ConfirmStepGoal({
       <div className="p-16 flex-col gap-16">
         {/* Score stepper */}
         <div>
-          <label className="block fs-12 fw-600" style={{
-            marginBottom: 10, color: 'var(--app-text-muted, #6b7280)',
-            textTransform: 'uppercase', letterSpacing: '0.05em',
-          }}>Nieuwe Stand</label>
+          <label className={`block fs-12 fw-600 ${styles.label}`}>Nieuwe Stand</label>
           <div className="flex-center gap-16">
             <ScoreColumn
               teamName={homeTeamName}
@@ -85,7 +74,7 @@ export function ConfirmStepGoal({
               onDecrement={() => setGoalScoreHome(Math.max(0, goalScoreHome - 1))}
               onIncrement={() => setGoalScoreHome(Math.min(99, goalScoreHome + 1))}
             />
-            <span style={{ fontSize: 24, fontWeight: 700, color: 'var(--app-text-muted, #6b7280)', marginTop: 20 }}>-</span>
+            <span className={styles.scoreSeparator}>-</span>
             <ScoreColumn
               teamName={awayTeamName}
               logoUrl={awayLogoUrl}
@@ -98,29 +87,22 @@ export function ConfirmStepGoal({
 
         {/* Goal scorer dropdown */}
         <div>
-          <label className="block fs-12 fw-600" style={{
-            marginBottom: 10, color: 'var(--app-text-muted, #6b7280)',
-            textTransform: 'uppercase', letterSpacing: '0.05em',
-          }}>Doelpuntenmaker</label>
+          <label className={`block fs-12 fw-600 ${styles.label}`}>Doelpuntenmaker</label>
           <select
+            className={styles.select}
             value={goalScorerId || ''}
             onChange={(e) => setGoalScorerId(e.target.value || null)}
-            style={{
-              width: '100%', padding: '10px 12px', fontSize: 14,
-              border: '1px solid var(--app-border, #e5e7eb)', borderRadius: 8,
-              background: 'var(--app-surface, white)', color: 'var(--app-text, #111)',
-              cursor: 'pointer',
-            }}
           >
             <option value="">-- Selecteer speler --</option>
             {scorerOptions.map(({ member, name, hasCelebration, celebType, celebLabel }) => {
               const suffix = hasCelebration ? ` \u2014 ${celebLabel}` : ' (geen celebration video)';
               return (
                 <option
+                  className={styles.option}
                   key={`${member.id}_${celebType}`}
                   value={member.id}
                   disabled={!hasCelebration}
-                  style={{ color: hasCelebration ? 'inherit' : '#999', fontWeight: hasCelebration ? 500 : 400 }}
+                  data-available={String(hasCelebration)}
                 >
                   {name}{suffix}
                 </option>
@@ -128,7 +110,7 @@ export function ConfirmStepGoal({
             })}
           </select>
           {!goalScorerId && (
-            <div className="fs-11" style={{ color: '#e11d48', marginTop: 6 }}>
+            <div className={`fs-11 ${styles.errorHint}`}>
               Selecteer een doelpuntenmaker
             </div>
           )}
@@ -160,37 +142,17 @@ interface ScoreColumnProps {
 
 function ScoreColumn({ teamName, logoUrl, score, onDecrement, onIncrement }: ScoreColumnProps) {
   return (
-    <div className="text-center" style={{ minWidth: 80 }}>
+    <div className={`text-center ${styles.scoreColumn}`}>
       {logoUrl ? (
-        <img src={logoUrl} alt="" style={{ width: 28, height: 28, objectFit: 'contain', margin: '0 auto 4px' }} />
+        <img src={logoUrl} alt="" className={styles.teamLogo} />
       ) : null}
-      <div style={{
-        fontSize: 11, fontWeight: 600, marginBottom: 6,
-        color: 'var(--app-text-muted, #6b7280)',
-        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90,
-      }}>
+      <div className={styles.teamName}>
         {teamName}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0, justifyContent: 'center' }}>
-        <button type="button" onClick={onDecrement} style={{
-          width: 32, height: 56, border: '2px solid var(--app-border, #e5e7eb)', borderRight: 'none',
-          borderRadius: '8px 0 0 8px', background: 'var(--app-surface, white)',
-          color: 'var(--app-text-muted, #6b7280)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>{'\u2212'}</button>
-        <div style={{
-          width: 48, height: 56, fontSize: 28, fontWeight: 700,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          borderTop: '2px solid var(--app-border, #e5e7eb)',
-          borderBottom: '2px solid var(--app-border, #e5e7eb)',
-          background: 'var(--app-surface, white)', color: 'var(--app-text, #111)',
-        }}>{score}</div>
-        <button type="button" onClick={onIncrement} style={{
-          width: 32, height: 56, border: '2px solid var(--app-border, #e5e7eb)', borderLeft: 'none',
-          borderRadius: '0 8px 8px 0', background: 'var(--app-surface, white)',
-          color: 'var(--app-text-muted, #6b7280)', fontSize: 18, fontWeight: 700, cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>+</button>
+      <div className={styles.stepperRow}>
+        <button type="button" onClick={onDecrement} className={styles.stepperBtn} data-side="left">{'\u2212'}</button>
+        <div className={styles.scoreDisplay}>{score}</div>
+        <button type="button" onClick={onIncrement} className={styles.stepperBtn} data-side="right">+</button>
       </div>
     </div>
   );

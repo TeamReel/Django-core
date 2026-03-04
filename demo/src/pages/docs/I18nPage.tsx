@@ -3,6 +3,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Alert } from '@django-core/design-system';
+import styles from './I18nPage.module.css';
 
 const languages = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -69,56 +70,50 @@ export function I18nPage() {
     <AppShell>
       <PageHeader title="Internationalization" subtitle="B04 i18n & B12 Language Preferences" />
       <PageContent>
-        <div className="page-container" data-testid="i18n-page">
+        <div className={`page-container ${styles.page}`} data-testid="i18n-page">
           <Card className="p-24 mb-24">
-            <h2 style={{ margin: '0 0 8px 0' }}>{t.welcome}</h2>
-            <p className="m-0 fs-14" style={{ color: 'var(--app-muted-text)' }}>{t.description}</p>
+            <h2 className={styles.welcomeHeading}>{t.welcome}</h2>
+            <p className={`m-0 fs-14 ${styles.mutedText}`}>{t.description}</p>
           </Card>
 
           {savedMessage && <Alert variant="success" className="mb-24">{savedMessage}</Alert>}
 
           <Card className="p-24 mb-24">
-            <h3 style={{ margin: '0 0 16px 0' }}>{t.currentLang}</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
-              <span style={{ fontSize: '32px' }}>{currentLangInfo?.flag}</span>
+            <h3 className={styles.sectionHeading}>{t.currentLang}</h3>
+            <div className={styles.currentLangDisplay}>
+              <span className={styles.flagIcon}>{currentLangInfo?.flag}</span>
               <div>
                 <div className="fw-600 fs-18">{currentLangInfo?.name}</div>
-                <div className="fs-14" style={{ color: 'var(--app-muted-text)' }}>Code: {language.toUpperCase()}</div>
+                <div className={`fs-14 ${styles.mutedText}`}>Code: {language.toUpperCase()}</div>
               </div>
             </div>
           </Card>
 
           <Card className="p-24 mb-24">
-            <h3 style={{ margin: '0 0 16px 0' }}>{t.selectLang}</h3>
-            <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            <h3 className={styles.sectionHeading}>{t.selectLang}</h3>
+            <div className={`grid gap-12 ${styles.langGrid}`}>
               {languages.map(lang => (
                 <button
                   key={lang.code}
                   onClick={() => handleLanguageChange(lang.code)}
                   disabled={saving}
-                  style={{
-                    padding: '16px',
-                    border: language === lang.code ? '2px solid #3b82f6' : '1px solid #e5e5e5',
-                    borderRadius: '8px',
-                    backgroundColor: language === lang.code ? '#eff6ff' : '#fff',
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s',
-                  }}
+                  className={styles.langButton}
+                  data-active={language === lang.code}
                 >
                   <div className="fs-24 mb-8">{lang.flag}</div>
                   <div className="fw-600">{lang.name}</div>
-                  <div className="fs-12" style={{ color: 'var(--app-muted-text)' }}>{lang.code.toUpperCase()}</div>
+                  <div className={`fs-12 ${styles.mutedText}`}>{lang.code.toUpperCase()}</div>
                 </button>
               ))}
             </div>
           </Card>
 
           <Card className="p-24">
-            <h3 style={{ margin: '0 0 16px 0' }}>{t.sampleText}</h3>
-            <div style={{ padding: '16px', backgroundColor: '#f9fafb', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
+            <h3 className={styles.sectionHeading}>{t.sampleText}</h3>
+            <div className={styles.sampleTextBox}>
               <p className="m-0 fs-16">{t.greeting}</p>
             </div>
-            <div className="mt-16 fs-14" style={{ color: 'var(--app-muted-text)' }}>
+            <div className={`mt-16 fs-14 ${styles.mutedText}`}>
               <p className="m-0">
                 <strong>Note:</strong> In production, this would integrate with B04 gettext utilities for comprehensive translation
                 management and B12 preferences API for persistent language storage across sessions.

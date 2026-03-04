@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button, Input, Alert } from '@django-core/design-system';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { getCsrfToken } from '../utils/csrf';
+import styles from './EditClubModal.module.css';
 
 interface Club {
   id: string;
@@ -153,30 +154,15 @@ export default function EditClubModal({
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 1000,
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="bg-surface p-24 rounded-12 overflow-auto text-primary border"
-        style={{
-          width: '500px',
-          maxWidth: '90%',
-          maxHeight: '90vh',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
-        }}
+        className={`bg-surface p-24 rounded-12 overflow-auto text-primary border ${styles.modal}`}
       >
-        <h2 className="fs-20 fw-600" style={{ marginTop: 0, marginBottom: '20px' }}>
+        <h2 className={`fs-20 fw-600 ${styles.heading}`}>
           Edit Club Settings
         </h2>
 
@@ -194,17 +180,10 @@ export default function EditClubModal({
             >
               Club Logo
             </label>
-            <div className="gap-16" style={{ display: 'flex', alignItems: 'flex-start' }}>
+            <div className={`gap-16 ${styles.logoSection}`}>
               {/* Logo Preview */}
               <div
-                className="flex-center rounded-12 overflow-hidden"
-                style={{
-                  width: 100,
-                  height: 100,
-                  border: '2px dashed var(--app-border)',
-                  backgroundColor: 'var(--app-surface-secondary)',
-                  flexShrink: 0,
-                }}
+                className={`flex-center rounded-12 overflow-hidden ${styles.logoPreview}`}
               >
                 {uploading ? (
                   <span className="fs-24">⏳</span>
@@ -212,12 +191,11 @@ export default function EditClubModal({
                   <img
                     src={previewUrl}
                     alt="Logo preview"
-                    className="w-full h-full p-8"
-                    style={{ objectFit: 'contain' }}
+                    className={`w-full h-full p-8 ${styles.logoImg}`}
                     onError={() => setPreviewUrl(null)}
                   />
                 ) : (
-                  <span className="text-muted fw-700" style={{ fontSize: 36 }}>
+                  <span className={`text-muted fw-700 ${styles.placeholderText}`}>
                     {String(club.name || '?').charAt(0).toUpperCase()}
                   </span>
                 )}
@@ -251,11 +229,7 @@ export default function EditClubModal({
                       setLogoUrl('');
                       setPreviewUrl(null);
                     }}
-                    className="mt-8 py-4 px-8 fs-11 bg-transparent border-none cursor-pointer"
-                    style={{
-                      color: 'var(--app-error)',
-                      textDecoration: 'underline',
-                    }}
+                    className={`mt-8 py-4 px-8 fs-11 bg-transparent border-none cursor-pointer ${styles.removeLogoBtn}`}
                   >
                     Remove logo
                   </button>
@@ -284,7 +258,7 @@ export default function EditClubModal({
         </div>
 
         {/* Actions */}
-        <div className="gap-12 mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className={`gap-12 mt-24 ${styles.actions}`}>
           <Button variant="outline" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

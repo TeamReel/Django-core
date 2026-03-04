@@ -1,0 +1,40 @@
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+  width: 860px;
+  max-width: 90%;
+  max-height: 90vh;
+  color: var(--app-text);
+}
+
+.formBody {
+  min-height: 0;
+}
+
+.scrollArea {
+  min-height: 0;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-width: 2px;
+  flex-shrink: 0;
+}
+
+.avatarImg {
+  object-fit: cover;
+}
+
+.justifyEnd {
+  justify-content: flex-end;
+}
+
+.addTeamBtn {
+  --add-team-bg: #17a2b8;
+  --add-team-border: #17a2b8;
+  background-color: var(--add-team-bg);
+  border-color: var(--add-team-border);
+}

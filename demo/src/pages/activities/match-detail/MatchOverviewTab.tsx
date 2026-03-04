@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { CONTENT_TYPES } from '../../identity/ContentGenerationModal';
+import styles from './MatchOverviewTab.module.css';
 import type { MatchMediaItem } from '../../../components/MediaAssetCard';
 import type {
   Organisation,
@@ -85,13 +86,8 @@ export default function MatchOverviewTab({
       />
     ) : (
       <div
-        className="flex-center rounded-6"
-        style={{
-          width: size,
-          height: size,
-          background: 'var(--app-surface-secondary, #252526)',
-          fontSize: size * 0.45,
-        }}
+        className={`flex-center rounded-6 ${styles.teamLogoFallback}`}
+        style={{ width: size, height: size, fontSize: size * 0.45 }}
       >
         {fallback}
       </div>
@@ -113,12 +109,12 @@ export default function MatchOverviewTab({
           </div>
 
           {/* Score block */}
-          <div className="text-center" style={{ minWidth: 80 }}>
-            <div className="fw-800" style={{ fontSize: 28, lineHeight: 1 }}>{scoreDisplay}</div>
+          <div className={`text-center ${styles.scoreBlock}`}>
+            <div className={`fw-800 ${styles.scoreDisplay}`}>{scoreDisplay}</div>
             <Badge
               variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}
               size="sm"
-              style={{ marginTop: 6 }}
+              className={styles.statusBadge}
             >
               {status.toUpperCase()}
             </Badge>
@@ -153,12 +149,9 @@ export default function MatchOverviewTab({
       <div className="grid-cols-2 gap-8">
         {/* Lineup status */}
         <div
-          className="border bg-surface p-12"
-          style={{
-            borderRadius: 10,
-          }}
+          className={`border bg-surface p-12 ${styles.statusCard}`}
         >
-          <div className="fs-11 fw-600 text-muted uppercase tracking-wide" style={{ marginBottom: 6 }}>
+          <div className={`fs-11 fw-600 text-muted uppercase tracking-wide ${styles.statusCardLabel}`}>
             Opstelling
           </div>
           {lineupFilledCount > 0 ? (
@@ -183,18 +176,15 @@ export default function MatchOverviewTab({
 
         {/* Content status */}
         <div
-          className="border bg-surface p-12"
-          style={{
-            borderRadius: 10,
-          }}
+          className={`border bg-surface p-12 ${styles.statusCard}`}
         >
-          <div className="fs-11 fw-600 text-muted uppercase tracking-wide" style={{ marginBottom: 6 }}>
+          <div className={`fs-11 fw-600 text-muted uppercase tracking-wide ${styles.statusCardLabel}`}>
             Content
           </div>
           <div className="flex-row gap-6">
             <span className="fs-20">{contentDone > 0 ? '🟢' : '⬜'}</span>
             <div>
-              <div className="fs-14 fw-700" style={{ color: contentDone > 0 ? 'var(--color-green-400)' : 'var(--app-muted-text, #888)' }}>
+              <div className={`fs-14 fw-700 ${styles.contentStatusValue}`} data-has-content={contentDone > 0 ? 'true' : 'false'}>
                 {contentDone}/{contentTotal}
               </div>
               <div className="fs-11 text-muted">
@@ -212,7 +202,7 @@ export default function MatchOverviewTab({
 
         return (
           <div key={categoryKey}>
-            <div className="status-label" style={{ paddingLeft: 2 }}>
+            <div className={`status-label ${styles.categoryLabel}`}>
               {category.label}
             </div>
             <div className="border overflow-hidden bg-surface rounded-8">
@@ -233,11 +223,8 @@ export default function MatchOverviewTab({
                   <div
                     key={item.id}
                     onClick={() => onContentAction?.(item.subtype, item.label)}
-                    className="flex-row gap-8 px-12 py-8 fs-13"
-                    style={{
-                      borderBottom: idx < category.items.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
-                      cursor: onContentAction ? 'pointer' : 'default',
-                    }}
+                    className={`flex-row gap-8 px-12 py-8 fs-13 ${styles.contentRow}`}
+                    data-clickable={onContentAction ? 'true' : 'false'}
                   >
                     <span className="fs-14">{statusIcon}</span>
                     <span className="fs-15">{item.icon}</span>
@@ -251,7 +238,7 @@ export default function MatchOverviewTab({
                     ) : isFailed ? (
                       <span className="fs-11 fw-600 text-error">Opnieuw ↻</span>
                     ) : (
-                      <span className="fs-11 fw-600" style={{ color: 'var(--app-primary, #3b82f6)' }}>Maak →</span>
+                      <span className={`fs-11 fw-600 ${styles.actionCreate}`}>Maak →</span>
                     )}
                   </div>
                 );
@@ -264,7 +251,7 @@ export default function MatchOverviewTab({
       {/* ── Match Events (compact) ────────────────────────────────────── */}
       {matchEvents.length > 0 && (
         <div>
-          <div className="status-label" style={{ paddingLeft: 2 }}>
+          <div className={`status-label ${styles.categoryLabel}`}>
             Wedstrijdverloop
           </div>
           <div className="border overflow-hidden bg-surface rounded-8">
@@ -283,12 +270,9 @@ export default function MatchOverviewTab({
               return (
                 <div
                   key={evt.id}
-                  className="flex-row gap-8 fs-13 px-12 py-6"
-                  style={{
-                    borderBottom: idx < matchEvents.length - 1 ? '1px solid var(--app-border, #222)' : 'none',
-                  }}
+                  className={`flex-row gap-8 fs-13 px-12 py-6 ${styles.eventRow}`}
                 >
-                  <span className="fs-12 fw-700 text-muted text-right" style={{ fontFamily: 'monospace', minWidth: 28 }}>
+                  <span className={`fs-12 fw-700 text-muted text-right ${styles.eventMinute}`}>
                     {evt.minute}'
                   </span>
                   <span>{icon}</span>
@@ -300,7 +284,7 @@ export default function MatchOverviewTab({
                       </span>
                     )}
                   </span>
-                  <span className="text-muted" style={{ fontSize: 10 }}>
+                  <span className={`text-muted ${styles.eventTeamName}`}>
                     {isHome ? homeTeamName : awayTeamName}
                   </span>
                 </div>

@@ -13,6 +13,7 @@ import {
 } from '../hooks/useVideoJobs';
 import { type ContentTypeFilter, formatVideoDuration } from './approvalsTypes';
 import s from './ApprovalsPage.module.css';
+import styles from './ApprovalsJobList.module.css';
 
 type UnifiedItem =
   | { kind: 'ai'; job: GenerationJob; sortDate: number }
@@ -20,9 +21,6 @@ type UnifiedItem =
 
 const statusIcon: Record<GenJobStatus, string> = {
   queued: '⏳', waiting: '⏳', processing: '', completed: '✅', failed: '❌', cancelled: '',
-};
-const statusColor: Record<GenJobStatus, string> = {
-  queued: 'var(--app-muted-text)', waiting: 'var(--app-muted-text)', processing: 'var(--color-blue-600)', completed: '#16a34a', failed: '#dc2626', cancelled: '#9ca3af',
 };
 
 interface ApprovalsJobListProps {
@@ -66,34 +64,30 @@ export function ApprovalsJobList({
   if (unifiedItems.length === 0) return null;
 
   return (
-    <div className="flex-col gap-8" style={{ marginBottom: hasWorkflowInstances ? 24 : 0 }}>
+    <div className={`flex-col gap-8 ${styles.root}`} data-has-workflow={hasWorkflowInstances}>
       {unifiedItems.map(item => {
         if (item.kind === 'ai') {
           const job = item.job;
           const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
           const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
-          const approvalBadge = job.approval_status === 'approved'
-            ? { label: 'Goedgekeurd', color: '#16a34a' }
+          const isClickable = job.status === 'completed';
+          const approvalData = job.approval_status === 'approved'
+            ? { label: 'Goedgekeurd', attr: 'approved' as const }
             : job.approval_status === 'rejected'
-            ? { label: 'Afgewezen', color: '#dc2626' }
-            : job.status === 'completed' ? { label: 'Te beoordelen', color: '#d97706' }
+            ? { label: 'Afgewezen', attr: 'rejected' as const }
+            : job.status === 'completed' ? { label: 'Te beoordelen', attr: 'review' as const }
             : null;
-          const typeBadgeColor = job.output_type === 'video' ? '#8b5cf6' : job.output_type === 'image' ? '#d946ef' : '#6366f1';
+          const outputType = job.output_type === 'video' ? 'video' : job.output_type === 'image' ? 'image' : 'ai';
           const typeBadgeLabel = job.output_type === 'video' ? 'AI VIDEO' : job.output_type === 'image' ? 'AI IMAGE' : 'AI';
+          const borderState = job.status === 'failed' ? 'failed' : isReviewable ? 'reviewable' : 'default';
 
           return (
             <div
               key={`ai-${job.task_id}`}
-              onClick={() => job.status === 'completed' && openModal(job)}
-              className="rounded-10 transition"
-              style={{
-                padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)',
-                border: `1px solid ${job.status === 'failed' ? '#fca5a5' : isReviewable ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
-                cursor: job.status === 'completed' ? 'pointer' : 'default',
-                display: 'flex', alignItems: 'center', gap: 14,
-              }}
-              onMouseEnter={e => { if (job.status === 'completed') e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+              onClick={() => isClickable && openModal(job)}
+              className={`${styles.aiCard} rounded-10 transition`}
+              data-clickable={isClickable}
+              data-border={borderState}
             >
               <span className={`fs-20 ${s.jobStatusIcon}`}>{statusIcon[job.status]}</span>
               <div className="flex-1 min-w-0">
@@ -106,8 +100,12 @@ export function ApprovalsJobList({
                   {(job.variant_count ?? 0) > 1 && <> · {job.variant_count} varianten</>}
                 </div>
                 {isActive && (
-                  <div className={s.progressTrack} style={{ marginTop: 6 }}>
-                    <div style={{ height: '100%', width: `${job.progress || 0}%`, backgroundColor: 'var(--color-blue-600)', borderRadius: 99, transition: 'width 0.4s ease', minWidth: job.progress ? 0 : '8%' }} />
+                  <div className={`${s.progressTrack} ${styles.aiProgressTrack}`}>
+                    <div
+                      className={styles.aiProgressBar}
+                      data-has-progress={Boolean(job.progress)}
+                      style={{ width: `${job.progress || 0}%` }}
+                    />
                   </div>
                 )}
                 {job.status === 'failed' && job.error_message && (
@@ -115,19 +113,28 @@ export function ApprovalsJobList({
                 )}
               </div>
               <div className={s.badgesCol}>
-                <span className="fw-700 rounded-full" style={{ fontSize: 10, color: typeBadgeColor, backgroundColor: `${typeBadgeColor}18`, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                <span
+                  className={`${styles.typeBadge} fw-700 rounded-full`}
+                  data-type={outputType}
+                >
                   {typeBadgeLabel}
                 </span>
-                <span className="fw-700 rounded-full uppercase" style={{ fontSize: 10, color: statusColor[job.status], backgroundColor: `${statusColor[job.status]}18`, padding: '2px 8px', letterSpacing: '0.04em' }}>
+                <span
+                  className={`${styles.aiStatusBadge} fw-700 rounded-full uppercase`}
+                  data-status={job.status}
+                >
                   {job.status}
                 </span>
-                {approvalBadge && (
-                  <span className="fw-700 rounded-full" style={{ fontSize: 10, color: approvalBadge.color, backgroundColor: `${approvalBadge.color}18`, padding: '2px 8px' }}>
-                    {approvalBadge.label}
+                {approvalData && (
+                  <span
+                    className={`${styles.approvalBadge} fw-700 rounded-full`}
+                    data-approval={approvalData.attr}
+                  >
+                    {approvalData.label}
                   </span>
                 )}
               </div>
-              {job.status === 'completed' && <span className={s.chevron}>›</span>}
+              {isClickable && <span className={s.chevron}>›</span>}
             </div>
           );
         } else {
@@ -136,20 +143,18 @@ export function ApprovalsJobList({
           const typeDisplay = getJobTypeDisplay(vJob.job_type);
           const isActive = vJob.status === 'queued' || vJob.status === 'processing';
           const isClickable = vJob.status === 'completed';
+          const videoBorderState = vJob.status === 'failed' ? 'failed'
+            : isActive ? 'active'
+            : isClickable && vJob.workflow_instance?.current_state === 'ready_for_review' ? 'review'
+            : 'default';
 
           return (
             <div
               key={`video-${vJob.id}`}
               onClick={() => isClickable && openVideoModal(vJob)}
-              className="flex-col rounded-10 transition"
-              style={{
-                padding: '14px 16px', backgroundColor: 'var(--app-surface, #fff)',
-                border: `1px solid ${vJob.status === 'failed' ? '#fca5a5' : isActive ? '#93c5fd' : isClickable && vJob.workflow_instance?.current_state === 'ready_for_review' ? '#fde68a' : 'var(--app-border, #e5e7eb)'}`,
-                gap: 10,
-                cursor: isClickable ? 'pointer' : 'default',
-              }}
-              onMouseEnter={e => { if (isClickable) e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.09)'; }}
-              onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+              className={`${styles.videoCard} flex-col rounded-10 transition`}
+              data-clickable={isClickable}
+              data-border={videoBorderState}
             >
               <div className="flex-between">
                 <div className="flex-row gap-8">
@@ -158,10 +163,13 @@ export function ApprovalsJobList({
                   <span className={s.jobShortId}>{vJob.id.slice(0, 8)}</span>
                 </div>
                 <div className="flex-row gap-6">
-                  <span className={s.pillBadge} style={{ color: '#0891b2', background: '#0891b218' }}>
+                  <span className={`${s.pillBadge} ${styles.videoTypePill}`}>
                     {vJob.job_type === 'lineup' ? 'LINEUP' : vJob.job_type === 'goal_celebration' ? 'GOAL' : 'VIDEO'}
                   </span>
-                  <span className="fw-700 rounded-full uppercase" style={{ fontSize: 10, padding: '2px 8px', color: statusDisplay.color, backgroundColor: `${statusDisplay.color}18`, letterSpacing: '0.04em' }}>
+                  <span
+                    className={`${styles.videoStatusBadge} fw-700 rounded-full uppercase`}
+                    data-status={vJob.status}
+                  >
                     {statusDisplay.icon} {statusDisplay.label}
                   </span>
                 </div>
@@ -170,7 +178,11 @@ export function ApprovalsJobList({
               {isActive && (
                 <div className="flex-row gap-8">
                   <div className={s.progressTrackThick}>
-                    <div style={{ width: `${Math.min(vJob.progress_percent, 100)}%`, height: '100%', borderRadius: 3, backgroundColor: vJob.progress_percent >= 100 ? '#059669' : 'var(--color-blue-600)', transition: 'width 0.5s ease-out' }} />
+                    <div
+                      className={styles.videoProgressBar}
+                      data-complete={vJob.progress_percent >= 100}
+                      style={{ width: `${Math.min(vJob.progress_percent, 100)}%` }}
+                    />
                   </div>
                   <span className={s.progressPercent}>{vJob.progress_percent}%</span>
                 </div>
@@ -191,13 +203,13 @@ export function ApprovalsJobList({
                 <div className={s.workflowInfo}>
                   🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
                   {vJob.workflow_instance.current_state === 'ready_for_review' && (
-                    <span className={s.pillBadge} style={{ color: '#d97706', background: '#d9770618' }}>Te beoordelen</span>
+                    <span className={`${s.pillBadge} ${styles.workflowPillReview}`}>Te beoordelen</span>
                   )}
                   {vJob.workflow_instance.current_state === 'approved' && (
-                    <span className={s.pillBadge} style={{ color: '#16a34a', background: '#16a34a18' }}>Goedgekeurd</span>
+                    <span className={`${s.pillBadge} ${styles.workflowPillApproved}`}>Goedgekeurd</span>
                   )}
                   {vJob.workflow_instance.current_state === 'rejected' && (
-                    <span className={s.pillBadge} style={{ color: '#dc2626', background: '#dc262618' }}>Afgewezen</span>
+                    <span className={`${s.pillBadge} ${styles.workflowPillRejected}`}>Afgewezen</span>
                   )}
                 </div>
               )}

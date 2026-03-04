@@ -1,0 +1,37 @@
+/* MemberPhotoCompositeTab — extracted inline styles */
+
+/* Prerequisite card border toggled by readiness */
+.prerequisiteCardDynamic {
+  border: 1px dashed var(--app-border);
+}
+
+.prerequisiteCardDynamic[data-ready="true"] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+/* Variant grid dim when inputs missing */
+.variantGridDynamic[data-faded="true"] {
+  opacity: 0.5;
+}
+
+/* Variant card border + dim */
+.variantCardDynamic {
+  border: 1px solid var(--app-border);
+}
+
+.variantCardDynamic[data-ready="true"] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.variantCardDynamic[data-dimmed="true"] {
+  opacity: 0.4;
+}
+
+/* Preview area dark background + pointer */
+.previewDynamic[data-dark="true"] {
+  background: var(--color-black, #000);
+}
+
+.previewDynamic[data-clickable="true"] {
+  cursor: pointer;
+}

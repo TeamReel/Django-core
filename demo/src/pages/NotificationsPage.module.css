@@ -1,0 +1,65 @@
+.pageContainer {
+  max-width: 1100px;
+}
+
+.settingsNote {
+  margin-bottom: 10px;
+}
+
+.notificationsContainer {
+  max-width: 900px;
+}
+
+.swipeReveal {
+  background: var(--app-success, #22c55e);
+  color: white;
+  justify-content: flex-end;
+  min-width: 120px;
+}
+
+.notificationCard {
+  cursor: default;
+  border-left: 4px solid var(--notification-border-color, var(--app-primary));
+}
+
+.notificationCard[data-unread="true"] {
+  cursor: pointer;
+}
+
+.notificationInner {
+  background: var(--app-surface);
+}
+
+.notificationInner[data-unread="true"] {
+  background: var(--app-surface-2);
+}
+
+.notificationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.notificationTitle {
+  font-weight: 600;
+}
+
+.notificationTitle[data-unread="true"] {
+  font-weight: 800;
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--app-primary);
+}
+
+.notificationBody {
+  line-height: 1.4;
+}
+
+.readHint {
+  color: var(--app-primary);
+  font-style: italic;
+}

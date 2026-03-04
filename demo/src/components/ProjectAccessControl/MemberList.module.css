@@ -1,0 +1,67 @@
+.table {
+  border-collapse: collapse;
+}
+
+.headerCell,
+.cell {
+  padding: 8px 6px;
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  background-color: var(--color-avatar-bg, #ddd);
+  flex-shrink: 0;
+}
+
+/* Role badge — default state */
+.roleBadge {
+  padding: 2px 6px;
+  background-color: var(--color-role-default-bg, #f5f5f5);
+  color: var(--color-role-default-text, #333);
+}
+
+/* Role badge — admin variant via data attribute */
+.roleBadge[data-role='admin'] {
+  background-color: var(--color-role-admin-bg, #e3f2fd);
+  color: var(--color-role-admin-text, #1976d2);
+}
+
+.removeButton {
+  background-color: var(--color-remove-bg, #ffebee);
+  color: var(--color-remove-text, #c62828);
+}
+
+/* Modal overlay */
+.modalOverlay {
+  background-color: var(--color-modal-overlay, rgba(0, 0, 0, 0.5));
+}
+
+/* Modal container */
+.modalContainer {
+  background-color: var(--color-surface, white);
+  width: 400px;
+  max-width: 90%;
+}
+
+/* Admin warning box */
+.warningBox {
+  background-color: var(--color-warning-bg, #fff3e0);
+  font-size: 0.9em;
+  color: var(--color-warning-text, #e65100);
+}
+
+/* Button row */
+.buttonRow {
+  justify-content: flex-end;
+}
+
+/* Cancel button */
+.cancelButton {
+  background: var(--color-surface, white);
+}
+
+/* Confirm / danger button */
+.confirmButton {
+  background: var(--color-danger, #d32f2f);
+}

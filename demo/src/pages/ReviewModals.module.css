@@ -1,0 +1,175 @@
+/* ReviewModals.module.css — extracted inline styles */
+
+/* ─── Custom Properties ─────────────────────────────────────── */
+:root {
+  --rm-green-600: #16a34a;
+  --rm-green-700: #15803d;
+  --rm-green-50: #f0fdf4;
+  --rm-green-200: #c6f0d4;
+  --rm-red-600: #dc2626;
+  --rm-red-100: #fee2e2;
+  --rm-red-50: #fff5f5;
+  --rm-red-300: #fca5a5;
+  --rm-gray-200: #e5e7eb;
+  --rm-slate-900: #0f172a;
+  --rm-slate-800: #1e293b;
+  --rm-slate-700: #334155;
+  --rm-slate-500: #475569;
+}
+
+/* ─── Modal Panel ────────────────────────────────────────────── */
+.modalPanel {
+  max-width: 740px;
+  max-height: 92vh;
+}
+
+.modalPanel[data-multi-variant="true"] {
+  max-width: 980px;
+}
+
+/* ─── Navigation Buttons ─────────────────────────────────────── */
+.navBtn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--rm-gray-200);
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 1;
+}
+
+.navBtn[data-disabled="true"] {
+  cursor: default;
+  opacity: 0.3;
+}
+
+/* ─── Gallery Area ───────────────────────────────────────────── */
+.galleryArea {
+  background-color: var(--rm-slate-900);
+  padding: 0;
+}
+
+.galleryArea[data-multi="true"] {
+  padding: 12px;
+}
+
+/* ─── Variant Wrapper ────────────────────────────────────────── */
+.variantWrapper {
+  width: calc(50% - 8px);
+  min-width: 260px;
+  max-width: 460px;
+}
+
+.variantWrapper[data-single="true"] {
+  width: 100%;
+}
+
+/* ─── Variant Card ───────────────────────────────────────────── */
+.variantCard {
+  background-color: var(--rm-slate-800);
+  border: 2px solid var(--rm-slate-700);
+}
+
+.variantCard[data-selection="approved"] {
+  border-color: var(--rm-green-600);
+}
+
+.variantCard[data-selection="rejected"] {
+  border-color: var(--rm-red-600);
+}
+
+/* ─── Variant Media ──────────────────────────────────────────── */
+.variantMedia {
+  width: 100%;
+  max-height: 260px;
+}
+
+.variantMedia[data-single="true"] {
+  max-height: 450px;
+}
+
+/* ─── No Preview ─────────────────────────────────────────────── */
+.noPreview {
+  min-height: 160px;
+  color: var(--rm-slate-500);
+}
+
+.noPreview[data-single="true"] {
+  min-height: 280px;
+}
+
+.noPreviewIcon {
+  font-size: 28px;
+}
+
+/* ─── Variant Approve / Reject Buttons ───────────────────────── */
+.variantApproveBtn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 7px;
+  border: 1.5px solid var(--rm-green-200);
+  background: var(--rm-green-50);
+  color: var(--rm-green-700);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.variantApproveBtn[data-selected="true"] {
+  border-color: var(--rm-green-600);
+  background: var(--rm-green-600);
+  color: #fff;
+}
+
+.variantRejectBtn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 7px;
+  border: 1.5px solid var(--rm-red-300);
+  background: var(--rm-red-50);
+  color: var(--rm-red-600);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.variantRejectBtn[data-selected="true"] {
+  border-color: var(--rm-red-600);
+  background: var(--rm-red-600);
+  color: #fff;
+}
+
+/* ─── Footer Action Buttons ──────────────────────────────────── */
+.footerRejectBtn {
+  background: var(--rm-red-50);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.footerRejectBtn[data-state="active"] {
+  background: var(--rm-red-100);
+  cursor: default;
+}
+
+.footerRejectBtn[data-state="inactive"] {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.footerApproveBtn {
+  background: var(--rm-green-600);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.footerApproveBtn[data-state="active"] {
+  background: var(--rm-green-700);
+  cursor: default;
+}
+
+.footerApproveBtn[data-state="inactive"] {
+  cursor: default;
+  opacity: 0.5;
+}

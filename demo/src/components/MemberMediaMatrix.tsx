@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { Alert, Badge } from '@django-core/design-system';
 import { MEDIA_SLOTS } from '../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots } from '../utils/mediaHelpers';
+import styles from './MemberMediaMatrix.module.css';
 
 // ============================================================================
 // Types
@@ -41,25 +42,6 @@ function getMemberName(m: any): string {
     'Member'
   );
 }
-
-// ============================================================================
-// Styles
-// ============================================================================
-
-const thStyle: React.CSSProperties = {
-  padding: '6px 8px',
-  fontSize: 11,
-  fontWeight: 600,
-  textAlign: 'left',
-  borderBottom: '2px solid var(--app-border)',
-  whiteSpace: 'nowrap',
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: '4px 8px',
-  fontSize: 12,
-  borderBottom: '1px solid var(--app-border)',
-};
 
 // ============================================================================
 // Component
@@ -100,31 +82,21 @@ export function MemberMediaMatrix({
         <>
           {/* Table */}
           <div className="overflow-x-auto">
-            <table className="w-full fs-12" style={{ borderCollapse: 'collapse' }}>
+            <table className={`w-full fs-12 ${styles.table}`}>
               <thead>
                 <tr>
-                  <th style={{ ...thStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>
+                  <th className={`${styles.th} ${styles.stickyCell}`}>
                     Member
                   </th>
                   {MEDIA_SLOTS.map((slot) => (
-                    <th key={slot.id} style={{ ...thStyle, textAlign: 'center', minWidth: 60, height: 80, verticalAlign: 'bottom', position: 'relative' }} title={slot.label}>
-                      <div className="flex-col gap-2" style={{ alignItems: 'center' }}>
-                        <span style={{
-                          display: 'block',
-                          fontSize: 9,
-                          fontWeight: 500,
-                          whiteSpace: 'nowrap',
-                          transform: 'rotate(-45deg)',
-                          transformOrigin: 'center center',
-                          marginBottom: 4,
-                          opacity: 0.8,
-                          letterSpacing: '0.02em',
-                        }}>{slot.label}</span>
+                    <th key={slot.id} className={`${styles.th} ${styles.slotHeader}`} title={slot.label}>
+                      <div className="flex-col gap-2 flex-center">
+                        <span className={styles.rotatedLabel}>{slot.label}</span>
                         <span className="fs-16">{slot.icon}</span>
                       </div>
                     </th>
                   ))}
-                  <th style={{ ...thStyle, textAlign: 'center' }}>Score</th>
+                  <th className={`${styles.th} ${styles.scoreHeader}`}>Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -137,9 +109,9 @@ export function MemberMediaMatrix({
 
                   return (
                     <tr key={mid}>
-                      <td style={{ ...tdStyle, position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1, fontWeight: 500 }}>
+                      <td className={`${styles.td} ${styles.stickyCell} ${styles.nameCell}`}>
                         {href ? (
-                          <Link to={href} style={{ textDecoration: 'none', color: '#60a5fa' }}>{name}</Link>
+                          <Link to={href} className={styles.memberLink}>{name}</Link>
                         ) : (
                           name
                         )}
@@ -147,11 +119,11 @@ export function MemberMediaMatrix({
                       {MEDIA_SLOTS.map((slot) => {
                         const has = memberHasMedia(m, slot.id);
                         return (
-                          <td key={slot.id} style={{ ...tdStyle, textAlign: 'center' }}>
+                          <td key={slot.id} className={`${styles.td} ${styles.centerCell}`}>
                             {href ? (
                               <Link
                                 to={`${href}?tab=${slot.id}`}
-                                style={{ textDecoration: 'none' }}
+                                className={styles.slotLink}
                                 title={`Edit ${slot.label}`}
                               >
                                 <span className="fs-14">{has ? '✅' : '⬜'}</span>
@@ -162,7 +134,7 @@ export function MemberMediaMatrix({
                           </td>
                         );
                       })}
-                      <td style={{ ...tdStyle, textAlign: 'center' }}>
+                      <td className={`${styles.td} ${styles.centerCell}`}>
                         <Badge variant={isComplete ? 'success' : filled > 0 ? 'warning' : 'default'}>
                           {filled}/{MEDIA_SLOTS.length}
                         </Badge>
@@ -175,7 +147,7 @@ export function MemberMediaMatrix({
           </div>
 
           {/* Legend */}
-          <div className="mt-16 p-12 rounded-8" style={{ background: 'var(--app-muted)' }}>
+          <div className={`mt-16 p-12 rounded-8 ${styles.legend}`}>
             <div className="fs-12 fw-600 mb-8">Legend</div>
             <div className="flex-wrap gap-16 fs-12">
               {MEDIA_SLOTS.map((slot) => (

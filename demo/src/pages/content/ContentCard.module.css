@@ -1,0 +1,121 @@
+/* ============================================================================
+ * ContentCard
+ * ============================================================================ */
+
+.thumbContainer {
+  height: 180px;
+  background-color: var(--app-bg);
+  flex-shrink: 0;
+}
+
+.thumbMedia {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.fallbackIcon {
+  font-size: 40px;
+  opacity: 0.3;
+}
+
+.typeBadge {
+  top: 8px;
+  left: 8px;
+  background-color: var(--color-blue-600);
+}
+
+.videoBadge {
+  top: 8px;
+  right: 8px;
+  background-color: var(--color-red-600, #dc2626);
+}
+
+.sportBadge {
+  bottom: 8px;
+  left: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.tagChip {
+  padding: 1px 6px;
+  background-color: var(--app-surface-2, #f3f4f6);
+}
+
+.badgesRow {
+  margin-top: auto;
+}
+
+.actionsRow {
+  padding-top: 8px;
+}
+
+/* ============================================================================
+ * FilterChip
+ * ============================================================================ */
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 400;
+  border: 1px solid var(--app-border);
+  background-color: transparent;
+  color: var(--app-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filterChipActive {
+  font-weight: 600;
+  border-color: var(--color-primary, #2563eb);
+  background-color: var(--color-primary-light, #dbeafe);
+  color: var(--color-primary, #2563eb);
+}
+
+.chipCount {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: 8px;
+  background-color: var(--app-surface-2, #f3f4f6);
+  color: var(--app-text-secondary);
+}
+
+.chipCountActive {
+  background-color: var(--color-primary, #2563eb);
+  color: var(--color-white, #fff);
+}
+
+/* ============================================================================
+ * EmptyState
+ * ============================================================================ */
+
+.emptyCard {
+  padding: 48px;
+}
+
+.emptyIcon {
+  font-size: 32px;
+  opacity: 0.4;
+}
+
+/* ============================================================================
+ * ContentPreviewModal
+ * ============================================================================ */
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modalContainer {
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.previewMedia {
+  max-width: 100%;
+  max-height: 70vh;
+}

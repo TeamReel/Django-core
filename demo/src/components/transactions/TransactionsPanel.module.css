@@ -1,0 +1,27 @@
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.actionsRow {
+  display: flex;
+}
+
+.tableCell {
+  padding: 8px 6px;
+}
+
+.amountCell {
+  padding: 8px 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--app-text);
+}
+
+.amountCell[data-amount-sign="positive"] {
+  color: var(--app-success);
+}
+
+.amountCell[data-amount-sign="negative"] {
+  color: var(--app-error);
+}

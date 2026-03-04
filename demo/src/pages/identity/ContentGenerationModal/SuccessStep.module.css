@@ -1,0 +1,187 @@
+/* SuccessStep — CSS Module */
+
+.checkIcon {
+  font-size: 36px;
+}
+
+.description {
+  max-width: 384px;
+}
+
+/* Multi-variant grid */
+.variantsContainer {
+  max-width: 672px;
+}
+
+.variantCard {
+  border: 2px solid var(--app-border, #e5e7eb);
+}
+
+.variantCard[data-selected] {
+  border-color: var(--color-primary, #3b82f6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.variantCard[data-saved] {
+  border-color: var(--color-success, #22c55e);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.variantMedia {
+  height: 128px;
+}
+
+.variantBadge {
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  background: var(--app-surface-2, #e5e7eb);
+  color: var(--app-text-muted, #6b7280);
+}
+
+.variantBadge[data-selected] {
+  background: var(--color-primary, #3b82f6);
+  color: var(--color-white, #ffffff);
+}
+
+.variantBadge[data-saved] {
+  background: var(--color-success, #22c55e);
+  color: var(--color-white, #ffffff);
+}
+
+.savedBadge {
+  top: 8px;
+  right: 8px;
+}
+
+.tileOverlay {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.tileSaveButton {
+  padding-top: 2px;
+  padding-bottom: 2px;
+  background: var(--app-primary, #3B8EA5);
+}
+
+/* Single video variant */
+.singleVideoWrapper {
+  width: 280px;
+  max-width: 92vw;
+}
+
+.singleVideoCard {
+  border: 2px solid var(--color-border, #e5e7eb);
+  background: var(--color-black, #000000);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.singleVideoCard[data-save-success] {
+  border-color: var(--color-success, #22c55e);
+  cursor: default;
+}
+
+.videoPreview {
+  height: 160px;
+  max-height: 160px;
+  background: var(--color-black, #000000);
+}
+
+.mediaBadge {
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  background: var(--color-primary, #3b82f6);
+}
+
+.mediaBadge[data-save-success] {
+  background: var(--color-success, #22c55e);
+}
+
+.sizeBadge {
+  bottom: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.tileFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.regenerateButton {
+  padding: 6px 12px;
+  border-color: var(--color-primary, #3b82f6);
+  color: var(--color-primary, #3b82f6);
+}
+
+.secondaryButton {
+  padding: 6px 12px;
+  border-color: var(--color-muted, #6b7280);
+}
+
+.acceptButton {
+  padding: 6px 12px;
+  border: 1px solid var(--color-success, #22c55e);
+  color: var(--color-success, #22c55e);
+  cursor: pointer;
+  opacity: 1;
+}
+
+.acceptButton[data-disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Single image variant */
+.singleImageWrapper {
+  width: 220px;
+  max-width: 92vw;
+}
+
+.singleImageCard {
+  border: 2px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface-light, #f9fafb);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.singleImageCard[data-save-success] {
+  border-color: var(--color-success, #22c55e);
+  cursor: default;
+}
+
+.imagePreview {
+  max-height: 280px;
+}
+
+.cardFooter {
+  padding: 10px 14px;
+}
+
+/* Fallback no-preview */
+.noPreview {
+  background: linear-gradient(
+    to bottom right,
+    var(--app-surface-2, #f3f4f6),
+    var(--app-border, #e5e5e5)
+  );
+  aspect-ratio: 16 / 9;
+  width: 256px;
+}
+
+/* Info blocks */
+.successMessage {
+  max-width: 448px;
+}
+
+.storageDetails {
+  max-width: 448px;
+}

@@ -3,6 +3,7 @@ import { Alert, Badge, Card } from '@django-core/design-system';
 import type { MemberTabCommonProps } from './memberDetailUtils';
 import { getUserDisplayName } from './memberDetailUtils';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import m from './MemberInputTab.module.css';
 
 export interface MemberInputTabProps extends MemberTabCommonProps {
   profilePreview: string | null;
@@ -48,18 +49,18 @@ export function MemberInputTab({
         <div className={s.inputPhotoGrid}>
           {/* Profile Photo */}
           <div>
-            <div className="fs-13 fw-700" style={{ marginBottom: '10px' }}>📷 Profielfoto</div>
+            <div className={`fs-13 fw-700 ${m.photoSectionLabel}`}>📷 Profielfoto</div>
             <div className={s.photoThumbnailSquare}>
               {(profilePreview || form.profile?.url || membership?.user?.avatar_url) ? (
                 <img
                   src={profilePreview || form.profile?.url || membership?.user?.avatar_url}
                   alt={getUserDisplayName(membership)}
-                  className={s.mediaCoverFill}
-                  style={{ opacity: profileUploading ? 0.5 : 1 }}
+                  className={`${s.mediaCoverFill} ${m.photoImg}`}
+                  data-uploading={profileUploading}
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <div style={{ fontSize: '48px', opacity: 0.3 }}>👤</div>
+                <div className={m.emptyPlaceholder}>👤</div>
               )}
             </div>
             {(profilePreview || form.profile?.url || membership?.user?.avatar_url) && (
@@ -67,11 +68,9 @@ export function MemberInputTab({
             )}
             <div
               onClick={() => userCanEditProject && !profileUploading && profileInputRef.current?.click()}
-              className={s.uploadDropZone}
-              style={{
-                opacity: userCanEditProject ? 1 : 0.5,
-                cursor: userCanEditProject && !profileUploading ? 'pointer' : 'default',
-              }}
+              className={`${s.uploadDropZone} ${m.uploadZoneOuter}`}
+              data-editable={userCanEditProject}
+              data-uploading={profileUploading}
               onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
               onDrop={(e) => {
                 e.preventDefault();
@@ -105,18 +104,18 @@ export function MemberInputTab({
 
           {/* Legacy Photo */}
           <div>
-            <div className="fs-13 fw-700" style={{ marginBottom: '10px' }}>📸 Legacy Foto</div>
+            <div className={`fs-13 fw-700 ${m.photoSectionLabel}`}>📸 Legacy Foto</div>
             <div className={s.photoThumbnailSquare}>
               {(legacyPhotoPreview || form.legacy_photo?.url) ? (
                 <img
                   src={legacyPhotoPreview || resolveDisplayUrl(form.legacy_photo?.url) || undefined}
                   alt="Legacy Photo"
-                  className={s.mediaCoverFill}
-                  style={{ opacity: legacyPhotoUploading ? 0.5 : 1 }}
+                  className={`${s.mediaCoverFill} ${m.photoImg}`}
+                  data-uploading={legacyPhotoUploading}
                   onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
               ) : (
-                <div style={{ fontSize: '48px', opacity: 0.3 }}>📸</div>
+                <div className={m.emptyPlaceholder}>📸</div>
               )}
             </div>
             {(legacyPhotoPreview || form.legacy_photo?.url) && (
@@ -124,11 +123,9 @@ export function MemberInputTab({
             )}
             <div
               onClick={() => userCanEditProject && !legacyPhotoUploading && legacyPhotoInputRef.current?.click()}
-              className={s.uploadDropZone}
-              style={{
-                opacity: userCanEditProject ? 1 : 0.5,
-                cursor: userCanEditProject && !legacyPhotoUploading ? 'pointer' : 'default',
-              }}
+              className={`${s.uploadDropZone} ${m.uploadZoneOuter}`}
+              data-editable={userCanEditProject}
+              data-uploading={legacyPhotoUploading}
               onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
               onDrop={(e) => {
                 e.preventDefault();

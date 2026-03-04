@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './Skeleton.module.css';
 
 /**
  * Skeleton - Shimmer loading placeholder component
@@ -41,33 +42,11 @@ export interface SkeletonProps {
   style?: React.CSSProperties;
 }
 
-const shimmerKeyframes = `
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+/** Convert a string | number dimension to a CSS string. */
+function toCss(value: string | number | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return typeof value === 'number' ? `${value}px` : value;
 }
-`;
-
-// Inject keyframes once
-if (typeof document !== 'undefined') {
-  const styleId = 'skeleton-shimmer-keyframes';
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.textContent = shimmerKeyframes;
-    document.head.appendChild(style);
-  }
-}
-
-const baseStyles: React.CSSProperties = {
-  background: 'linear-gradient(90deg, var(--app-surface-2) 25%, var(--app-border) 50%, var(--app-surface-2) 75%)',
-  backgroundSize: '200% 100%',
-  animation: 'shimmer 1.5s ease-in-out infinite',
-};
 
 export function Skeleton({
   variant = 'text',
@@ -116,16 +95,16 @@ export function Skeleton({
   // Multi-line text
   if (variant === 'text' && lines > 1) {
     return (
-      <div className={className} style={{ display: 'flex', flexDirection: 'column', gap: '8px', ...style }}>
+      <div className={`${styles.multiLineWrapper} ${className ?? ''}`} style={style}>
         {Array.from({ length: lines }).map((_, i) => (
           <div
             key={i}
+            className={styles.shimmer}
             style={{
-              ...baseStyles,
-              width: i === lines - 1 ? '60%' : computedWidth, // Last line shorter
-              height: computedHeight,
-              borderRadius: computedRadius,
-            }}
+              '--skeleton-w': i === lines - 1 ? '60%' : toCss(computedWidth),
+              '--skeleton-h': toCss(computedHeight),
+              '--skeleton-r': toCss(computedRadius),
+            } as React.CSSProperties}
           />
         ))}
       </div>
@@ -134,14 +113,13 @@ export function Skeleton({
 
   return (
     <div
-      className={className}
+      className={`${styles.shimmer} ${className ?? ''}`}
       style={{
-        ...baseStyles,
-        width: typeof computedWidth === 'number' ? `${computedWidth}px` : computedWidth,
-        height: typeof computedHeight === 'number' ? `${computedHeight}px` : computedHeight,
-        borderRadius: typeof computedRadius === 'number' ? `${computedRadius}px` : computedRadius,
+        '--skeleton-w': toCss(computedWidth),
+        '--skeleton-h': toCss(computedHeight),
+        '--skeleton-r': toCss(computedRadius),
         ...style,
-      }}
+      } as React.CSSProperties}
     />
   );
 }
@@ -161,28 +139,19 @@ export function SkeletonCard({
   style?: React.CSSProperties;
 }): JSX.Element {
   return (
-    <div
-      className={className}
-      style={{
-        padding: '16px',
-        backgroundColor: 'var(--app-surface)',
-        borderRadius: '12px',
-        border: '1px solid var(--app-border)',
-        ...style,
-      }}
-    >
+    <div className={`${styles.card} ${className ?? ''}`} style={style}>
       {showImage && (
         <Skeleton
           width="100%"
           height="160px"
           borderRadius="8px"
-          style={{ marginBottom: '12px' }}
+          className={styles.cardImage}
         />
       )}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+      <div className={styles.cardHeader}>
         <Skeleton variant="avatar" size={40} />
-        <div style={{ flex: 1 }}>
-          <Skeleton width="60%" height="14px" style={{ marginBottom: '6px' }} />
+        <div className={styles.flexFill}>
+          <Skeleton width="60%" height="14px" className={styles.mb6} />
           <Skeleton width="40%" height="12px" />
         </div>
       </div>
@@ -209,33 +178,17 @@ export function SkeletonList({
 }): JSX.Element {
   return (
     <div
-      className={className}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: `${gap}px`,
-        ...style,
-      }}
+      className={`${styles.list} ${className ?? ''}`}
+      style={{ '--skeleton-gap': `${gap}px`, ...style } as React.CSSProperties}
     >
       {Array.from({ length: count }).map((_, i) =>
         variant === 'card' ? (
           <SkeletonCard key={i} />
         ) : (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              padding: '12px',
-              backgroundColor: 'var(--app-surface)',
-              borderRadius: '8px',
-              border: '1px solid var(--app-border)',
-            }}
-          >
+          <div key={i} className={styles.row}>
             <Skeleton variant="avatar" size={44} />
-            <div style={{ flex: 1 }}>
-              <Skeleton width="70%" height="14px" style={{ marginBottom: '6px' }} />
+            <div className={styles.flexFill}>
+              <Skeleton width="70%" height="14px" className={styles.mb6} />
               <Skeleton width="50%" height="12px" />
             </div>
             <Skeleton width="60px" height="24px" borderRadius="12px" />
@@ -266,22 +219,18 @@ export function SkeletonGrid({
 }): JSX.Element {
   return (
     <div
-      className={className}
+      className={`${styles.grid} ${className ?? ''}`}
       style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap: `${gap}px`,
+        '--skeleton-columns': columns,
+        '--skeleton-gap': `${gap}px`,
         ...style,
-      }}
+      } as React.CSSProperties}
     >
       {Array.from({ length: count }).map((_, i) => (
         <div
           key={i}
-          style={{
-            aspectRatio: `${aspectRatio}`,
-            borderRadius: '8px',
-            overflow: 'hidden',
-          }}
+          className={styles.gridItem}
+          style={{ '--skeleton-aspect-ratio': aspectRatio } as React.CSSProperties}
         >
           <Skeleton width="100%" height="100%" borderRadius={0} />
         </div>

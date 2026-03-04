@@ -11,6 +11,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, Check } from 'lucide-react';
 import { AppIcon } from './AppIcon';
+import styles from './MobileTabBar.module.css';
 
 export interface MobileTab {
   id: string;
@@ -72,38 +73,15 @@ export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 't
   // ── Inline pills variant ──────────────────────────────────────────────
   if (variant === 'inline') {
     return (
-      <div
-        className="mobile-tab-bar mobile-tab-bar--inline"
-        style={{
-          display: 'flex',
-          gap: '6px',
-          overflowX: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          scrollbarWidth: 'none',
-          marginBottom: '12px',
-          padding: '2px 0',
-        }}
-      >
+      <div className={`mobile-tab-bar mobile-tab-bar--inline ${styles.inlineBar}`}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              className={styles.inlinePill}
+              data-active={isActive}
               onClick={() => handleTabClick(tab.id)}
-              style={{
-                flexShrink: 0,
-                padding: '10px 14px',
-                minHeight: '44px',
-                borderRadius: '20px',
-                border: isActive ? '1.5px solid rgba(99, 160, 255, 0.7)' : '1px solid var(--app-border)',
-                background: isActive ? 'rgba(59, 130, 246, 0.22)' : 'transparent',
-                color: isActive ? '#93bbff' : 'var(--app-muted-text, #888)',
-                fontSize: '13px',
-                fontWeight: isActive ? 700 : 500,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
-              }}
             >
               {tab.label}
             </button>
@@ -117,128 +95,53 @@ export default function MobileTabBar({ tabs, activeTab, basePath, paramName = 't
   return (
     <div
       ref={dropdownRef}
-      className="mobile-tab-bar"
-      style={{
-        position: 'relative',
-        marginBottom: '12px',
-      }}
+      className={`mobile-tab-bar ${styles.dropdownBar}`}
     >
       {/* Current Tab Button - triggers dropdown */}
       <button
+        className={styles.dropdownTrigger}
+        data-open={isOpen}
         onClick={() => setIsOpen(!isOpen)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          width: '100%',
-          padding: '12px 16px',
-          backgroundColor: 'var(--app-surface)',
-          border: '1px solid var(--app-border)',
-          borderRadius: '10px',
-          cursor: 'pointer',
-          transition: 'all 0.15s ease',
-          boxShadow: isOpen ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-        }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span
-            style={{
-              fontSize: '11px',
-              fontWeight: 500,
-              color: 'var(--app-muted-text)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Section
-          </span>
-          <span
-            style={{
-              fontSize: '15px',
-              fontWeight: 600,
-              color: 'var(--app-text)',
-            }}
-          >
+        <div className={styles.triggerLeft}>
+          <span className={styles.sectionLabel}>Section</span>
+          <span className={styles.currentTabLabel}>
             {currentTab?.label || 'Select'}
           </span>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            color: 'var(--app-primary)',
-          }}
-        >
-          <span style={{ fontSize: '12px', fontWeight: 500 }}>
+        <div className={styles.triggerRight}>
+          <span className={styles.optionsCount}>
             {tabs.length} options
           </span>
           <AppIcon
             icon={ChevronDown}
             size={18}
-            style={{
-              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
-            }}
+            className={styles.chevronIcon}
+            data-open={isOpen}
           />
         </div>
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 4px)',
-            left: 0,
-            right: 0,
-            backgroundColor: 'var(--app-surface)',
-            border: '1px solid var(--app-border)',
-            borderRadius: '10px',
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
-            zIndex: 100,
-            maxHeight: '300px',
-            overflowY: 'auto',
-          }}
-        >
-          {tabs.map((tab, index) => {
+        <div className={styles.dropdownMenu}>
+          {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
+                className={styles.dropdownItem}
+                data-active={isActive}
                 onClick={() => handleTabClick(tab.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  width: '100%',
-                  padding: '14px 16px',
-                  backgroundColor: isActive ? 'var(--app-surface-secondary)' : 'transparent',
-                  border: 'none',
-                  borderBottom: index < tabs.length - 1 ? '1px solid var(--app-border)' : 'none',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.1s ease',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'var(--app-surface-hover)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isActive ? 'var(--app-surface-secondary)' : 'transparent';
-                }}
               >
                 <span
-                  style={{
-                    fontSize: '15px',
-                    fontWeight: isActive ? 600 : 500,
-                    color: isActive ? 'var(--app-primary)' : 'var(--app-text)',
-                  }}
+                  className={styles.dropdownItemLabel}
+                  data-active={isActive}
                 >
                   {tab.label}
                 </span>
                 {isActive && (
-                  <AppIcon icon={Check} size={18} style={{ color: 'var(--app-primary)' }} />
+                  <AppIcon icon={Check} size={18} className={styles.checkIcon} />
                 )}
               </button>
             );

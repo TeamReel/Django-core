@@ -1,0 +1,102 @@
+/* WorkflowTimeline — Vertical timeline of transition history entries */
+
+.placeholder {
+  padding: 16px;
+  color: var(--app-text-secondary, #6b7280);
+  font-size: 13px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 4px 0;
+}
+
+.entryRow {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.entryRow[data-last='true'] {
+  padding-bottom: 0;
+}
+
+.timelineBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--dot-color);
+  border: 2px solid var(--dot-border-color);
+  margin-top: 4px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.line {
+  width: 2px;
+  flex: 1;
+  background-color: var(--app-border, #e5e7eb);
+  margin-top: 4px;
+}
+
+.content {
+  flex: 1;
+  padding-bottom: 4px;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.actionBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--action-color);
+  background-color: var(--action-bg);
+  border-radius: 10px;
+  padding: 1px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.stateTransition {
+  font-size: 12px;
+  color: var(--app-text-secondary, #6b7280);
+}
+
+.meta {
+  font-size: 11px;
+  color: var(--app-text-secondary, #9ca3af);
+  margin-top: 3px;
+  display: flex;
+  gap: 8px;
+}
+
+.actorName {
+  color: var(--app-text, #6b7280);
+}
+
+.comment {
+  font-size: 12px;
+  color: var(--app-text, #374151);
+  margin-top: 6px;
+  padding: 6px 10px;
+  background-color: var(--app-surface-2, #f9fafb);
+  border-radius: 6px;
+  border-left: 3px solid var(--comment-accent);
+  font-style: italic;
+}

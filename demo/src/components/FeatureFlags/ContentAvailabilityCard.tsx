@@ -19,6 +19,7 @@ import {
   getDisplayLabel,
   titleCase,
 } from './contentAvailabilityHelpers';
+import styles from './ContentAvailabilityCard.module.css';
 
 interface ContentAvailabilityCardProps {
   scopeType: 'ORGANISATION' | 'PROJECT';
@@ -332,7 +333,7 @@ export default function ContentAvailabilityCard({
         <div className="ml-auto flex-row gap-8">
           {someSelected && (
             <>
-              <span className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
+              <span className={`fs-13 ${styles.selectedCount}`}>
                 {selectedIds.size} selected
               </span>
               <Button
@@ -375,7 +376,7 @@ export default function ContentAvailabilityCard({
           <table className="dir-table">
             <thead>
               <tr>
-                <th className="dir-th" style={{ width: '40px' }}>
+                <th className={`dir-th ${styles.colCheckbox}`}>
                   <input
                     type="checkbox"
                     checked={allSelected}
@@ -383,20 +384,20 @@ export default function ContentAvailabilityCard({
                     className="cursor-pointer"
                   />
                 </th>
-                <th className="dir-th" style={{ width: '15%' }}>Type</th>
-                <th className="dir-th" style={{ width: '18%' }}>Subtype</th>
-                <th className="dir-th" style={{ width: '12%' }}>Style</th>
-                <th className="dir-th" style={{ width: '8%' }}>Global</th>
+                <th className={`dir-th ${styles.colType}`}>Type</th>
+                <th className={`dir-th ${styles.colSubtype}`}>Subtype</th>
+                <th className={`dir-th ${styles.colStyle}`}>Style</th>
+                <th className={`dir-th ${styles.colNarrow}`}>Global</th>
                 {scopeType === 'PROJECT' ? (
                   <>
-                    <th className="dir-th" style={{ width: '8%' }}>Org</th>
-                    <th className="dir-th" style={{ width: '8%' }}>Project</th>
+                    <th className={`dir-th ${styles.colNarrow}`}>Org</th>
+                    <th className={`dir-th ${styles.colNarrow}`}>Project</th>
                   </>
                 ) : (
-                  <th className="dir-th" style={{ width: '8%' }}>Org</th>
+                  <th className={`dir-th ${styles.colNarrow}`}>Org</th>
                 )}
-                <th className="dir-th" style={{ width: '8%' }}>Effective</th>
-                <th className="dir-th" style={{ width: '15%' }}>Actions</th>
+                <th className={`dir-th ${styles.colNarrow}`}>Effective</th>
+                <th className={`dir-th ${styles.colActions}`}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -420,15 +421,15 @@ export default function ContentAvailabilityCard({
                     <td className="dir-td">{row.subtype}</td>
                     <td className="dir-td">{row.style}</td>
                     <td className="dir-td">
-                      <Badge variant={row.globalValue ? 'success' : row.globalValue === false ? 'default' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
+                      <Badge variant={row.globalValue ? 'success' : row.globalValue === false ? 'default' : 'default'} className={`fs-11 ${styles.badgeCompact}`}>
                         {row.globalValue === null ? 'On' : row.globalValue ? 'On' : 'Off'}
                       </Badge>
                     </td>
                     <td className="dir-td">
                       {orgDisplay === null ? (
-                        <span className="fs-11" style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>Inherit</span>
+                        <span className={`fs-11 ${styles.inheritText}`}>Inherit</span>
                       ) : (
-                        <Badge variant={orgDisplay ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
+                        <Badge variant={orgDisplay ? 'success' : 'default'} className={`fs-11 ${styles.badgeCompact}`}>
                           {orgDisplay ? 'On' : 'Off'}
                         </Badge>
                       )}
@@ -436,16 +437,16 @@ export default function ContentAvailabilityCard({
                     {scopeType === 'PROJECT' && (
                       <td className="dir-td">
                         {projectDisplay === null || projectDisplay === undefined ? (
-                          <span className="fs-11" style={{ color: 'var(--app-text-muted)', fontStyle: 'italic' }}>Inherit</span>
+                          <span className={`fs-11 ${styles.inheritText}`}>Inherit</span>
                         ) : (
-                          <Badge variant={projectDisplay ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
+                          <Badge variant={projectDisplay ? 'success' : 'default'} className={`fs-11 ${styles.badgeCompact}`}>
                             {projectDisplay ? 'On' : 'Off'}
                           </Badge>
                         )}
                       </td>
                     )}
                     <td className="dir-td">
-                      <Badge variant={row.effectiveValue ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
+                      <Badge variant={row.effectiveValue ? 'success' : 'default'} className={`fs-11 ${styles.badgeCompact}`}>
                         {row.effectiveValue ? 'On' : 'Off'}
                       </Badge>
                     </td>

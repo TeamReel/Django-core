@@ -1,0 +1,114 @@
+/* ConfirmStepFlyer.module.css — extracted from inline styles */
+
+/* ── Variant picker button ── */
+
+.variantButton {
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, white);
+}
+
+.variantButton[data-selected='true'] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+/* Variant icon circle */
+
+.variantIcon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background-color: var(--app-surface-2, #f3f4f6);
+  color: var(--app-primary, #3B8EA5);
+}
+
+.variantIcon[data-selected='true'] {
+  background-color: var(--app-primary, #3B8EA5);
+  color: white;
+}
+
+/* Variant option description */
+
+.variantDesc {
+  margin-top: 1px;
+}
+
+/* Selected check-mark badge */
+
+.checkMark {
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  background: var(--color-green-400);
+  font-size: 10px;
+}
+
+/* ── Photo layout picker ── */
+
+.layoutButton {
+  line-height: 1.4;
+  transition: all 0.15s ease;
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface-2, #f3f4f6);
+  color: var(--app-text, #111);
+}
+
+.layoutButton[data-active='true'] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+  color: white;
+}
+
+.layoutIcon {
+  margin-bottom: 2px;
+}
+
+.layoutDesc {
+  font-size: 9px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* ── Select inputs ── */
+
+.selectInput {
+  padding: 8px 10px;
+  border: 1px solid var(--app-border, #e5e7eb);
+}
+
+/* Warning text */
+
+.warningText {
+  color: var(--color-amber-400);
+}
+
+/* ── Multi-slot layout ── */
+
+.slotList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slotBadge {
+  width: 22px;
+  height: 22px;
+  background: var(--app-primary, #3B8EA5);
+  flex-shrink: 0;
+}
+
+/* Slot select — base */
+
+.slotSelect {
+  padding: 6px 8px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 5px;
+}
+
+/* Slot member select (extra bottom spacing) */
+
+.slotSelectMember {
+  composes: slotSelect;
+  margin-bottom: 6px;
+}

@@ -3,6 +3,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
+import styles from './DocsPage.module.css';
 
 export function DocsPage() {
   const [modules, setModules] = useState<any[]>([]);
@@ -46,38 +47,32 @@ export function DocsPage() {
     }
   };
 
-  const linkBtnStyle: React.CSSProperties = {
-    padding: '8px 16px', borderRadius: '4px',
-    border: '1px solid #6c757d', backgroundColor: 'var(--app-surface)',
-    color: '#6c757d', cursor: 'pointer', fontSize: '14px', fontWeight: 500,
-  };
-
   return (
     <AppShell>
       <PageHeader title="Documentation Browser" subtitle="B21 Module Documentation & Status" />
       <PageContent>
         <div className="page-container" data-testid="docs-page">
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '48px' }}><Spinner /></div>
+            <div className={styles.loadingWrapper}><Spinner /></div>
           ) : (
             <>
               <Card className="p-24 mb-24 bg-surface border">
-                <h3 className="fs-18 fw-600 text-primary" style={{ margin: '0 0 16px 0' }}>Documentation Resources</h3>
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <button onClick={() => window.open('http://localhost:8001/docs', '_blank')} style={{ ...linkBtnStyle, borderColor: 'var(--app-primary)', color: 'var(--app-primary)' }}>
+                <h3 className={`fs-18 fw-600 text-primary ${styles.sectionHeading}`}>Documentation Resources</h3>
+                <div className={styles.linkButtonGroup}>
+                  <button onClick={() => window.open('http://localhost:8001/docs', '_blank')} className={styles.linkButtonPrimary}>
                     📚 MkDocs Site
                   </button>
-                  <button onClick={() => window.location.href = '/api-docs'} style={linkBtnStyle}>📖 API Documentation</button>
-                  <button onClick={() => window.open('https://github.com', '_blank')} style={linkBtnStyle}>🔗 GitHub Repository</button>
+                  <button onClick={() => window.location.href = '/api-docs'} className={styles.linkButton}>📖 API Documentation</button>
+                  <button onClick={() => window.open('https://github.com', '_blank')} className={styles.linkButton}>🔗 GitHub Repository</button>
                 </div>
               </Card>
 
               <Card className="p-24">
-                <h3 style={{ margin: '0 0 16px 0' }}>Module Status Matrix</h3>
+                <h3 className={styles.sectionHeading}>Module Status Matrix</h3>
                 <div className="overflow-x-auto">
-                  <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                  <table className={`w-full ${styles.table}`}>
                     <thead>
-                      <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e5e5' }}>
+                      <tr className={styles.tableHeadRow}>
                         <th className="p-12 text-left fs-12 fw-600">Module ID</th>
                         <th className="p-12 text-left fs-12 fw-600">Name</th>
                         <th className="p-12 text-left fs-12 fw-600">Status</th>
@@ -86,11 +81,11 @@ export function DocsPage() {
                     </thead>
                     <tbody>
                       {modules.map(module => (
-                        <tr key={module.id} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                        <tr key={module.id} className={styles.tableRow}>
                           <td className="p-12 fw-600">{module.id}</td>
                           <td className="p-12">{module.name}</td>
                           <td className="p-12">{getStatusBadge(module.status)}</td>
-                          <td className="p-12">{module.docs ? <span style={{ color: 'var(--color-green-400)' }}>✓</span> : <span style={{ color: 'var(--color-red-500)' }}>✗</span>}</td>
+                          <td className="p-12">{module.docs ? <span className={styles.checkMark}>✓</span> : <span className={styles.crossMark}>✗</span>}</td>
                         </tr>
                       ))}
                     </tbody>

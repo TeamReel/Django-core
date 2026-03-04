@@ -1,0 +1,50 @@
+/* MemberCelebrationTab — extracted inline styles */
+
+.kitHeader {
+  margin-bottom: 12px;
+}
+
+.kitIconFallback {
+  font-size: 20px;
+}
+
+.badgeAutoLeft {
+  margin-left: auto;
+}
+
+.variantGridWrapper[data-disabled] {
+  opacity: 0.5;
+}
+
+.variantCardBorder {
+  border: 1px solid var(--app-border);
+}
+
+.variantCardBorder[data-has-video] {
+  border: 2px solid var(--vscode-charts-green);
+}
+
+.variantPreviewBg {
+  background: repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px;
+  cursor: default;
+}
+
+.variantPreviewBg[data-has-video] {
+  cursor: pointer;
+}
+
+.variantPreviewBg[data-dark-bg] {
+  background: #000;
+}
+
+.btnFlex1 {
+  flex: 1;
+}
+
+.btnFullWidth {
+  width: 100%;
+}
+
+.alertWrapper {
+  margin-top: 16px;
+}

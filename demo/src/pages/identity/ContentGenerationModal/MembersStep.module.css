@@ -1,0 +1,153 @@
+/* ── Closeup style option buttons ── */
+.closeupButton {
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, white);
+}
+
+.closeupButton[data-selected="true"] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+/* ── Shared option icon (closeup & intro) ── */
+.optionIcon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background-color: var(--app-surface-2, #f3f4f6);
+  color: var(--app-primary, #3B8EA5);
+}
+
+.optionIcon[data-selected="true"] {
+  background-color: var(--app-primary, #3B8EA5);
+  color: var(--color-white, #fff);
+}
+
+/* ── Option description text ── */
+.optionDesc {
+  margin-top: 1px;
+}
+
+/* ── Check badge — standard (6px inset, 18px) ── */
+.checkBadge {
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  background: var(--color-green-400);
+  font-size: 10px;
+  color: var(--color-white, #fff);
+}
+
+/* ── Check badge — small (4px inset, 18px) ── */
+.checkBadgeSmall {
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  background: var(--color-green-400);
+  font-size: 10px;
+  color: var(--color-white, #fff);
+}
+
+/* ── Check badge — tiny (3px inset, 16px) ── */
+.checkBadgeTiny {
+  top: 3px;
+  right: 3px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-green-400);
+  font-size: 9px;
+  color: var(--color-white, #fff);
+}
+
+/* ── Animation style buttons ── */
+.animationButton {
+  flex: 1 1 calc(33% - 8px);
+  min-width: 80px;
+  align-items: center;
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, white);
+}
+
+.animationButton[data-selected="true"] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+/* ── Intro style buttons ── */
+.introButton {
+  align-items: center;
+  padding: 12px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, white);
+}
+
+.introButton[data-selected="true"] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+/* ── Intro description text ── */
+.introDesc {
+  font-size: 10px;
+}
+
+/* ── Background selector grid ── */
+.backgroundGrid {
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+}
+
+/* ── Background option buttons ── */
+.bgButton {
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, white);
+}
+
+.bgButton[data-selected="true"] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+/* ── Auto/default preview gradient ── */
+.autoPreview {
+  aspect-ratio: 9/16;
+  background: linear-gradient(
+    to bottom,
+    var(--color-green-600, #16a34a),
+    var(--color-green-900, #14532d)
+  );
+}
+
+/* ── Background image preview ── */
+.bgImagePreview {
+  aspect-ratio: 9/16;
+  background-size: cover;
+  background-position: center;
+}
+
+/* ── Background label ── */
+.bgLabel {
+  padding: 4px 0;
+  font-size: 10px;
+  color: var(--app-text, #111);
+  background: var(--app-surface-2, #f3f4f6);
+}
+
+.bgLabel[data-selected="true"] {
+  color: var(--color-white, #fff);
+  background: var(--app-primary, #3B8EA5);
+}
+
+/* ── Role section card ── */
+.roleSection {
+  box-shadow: 0 1px 2px var(--shadow-color, rgba(0, 0, 0, 0.05));
+}
+
+/* ── Member selection row ── */
+.memberRow {
+  grid-template-columns: 100px 1fr;
+}

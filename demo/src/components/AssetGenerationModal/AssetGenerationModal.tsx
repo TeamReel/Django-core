@@ -22,6 +22,7 @@ import {
 import { useAssetGenModal } from './useAssetGenModal';
 import { SourcePicker, BackgroundSelector, ModelSelector } from './AssetGenConfigWidgets';
 import { ResultsStep } from './AssetGenResultsWidgets';
+import styles from './AssetGenerationModal.module.css';
 
 export type { SavedAssetInfo, AssetGenerationModalProps } from './assetGenHelpers';
 
@@ -70,30 +71,16 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
       {/* Backdrop */}
       <div
         onClick={handleClose}
-        className="fixed inset-0 z-1000"
-        style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+        className={`fixed inset-0 z-1000 ${styles.backdrop}`}
       />
 
       {/* Modal */}
       <div
-        className="fixed flex-col overflow-hidden z-1001 rounded-12"
-        style={{
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '94vw',
-          maxWidth: 800,
-          maxHeight: '92vh',
-          background: 'var(--vscode-editor-background, #1e1e1e)',
-          border: '1px solid var(--vscode-widget-border, #333)',
-        }}
+        className={`fixed flex-col overflow-hidden z-1001 rounded-12 ${styles.modal}`}
       >
         {/* Header */}
         <div
-          className="flex-between py-16 px-20"
-          style={{
-            borderBottom: '1px solid var(--vscode-widget-border, #333)',
-          }}
+          className={`flex-between py-16 px-20 ${styles.header}`}
         >
           <div>
             <h2 className="fs-16 fw-700 m-0">
@@ -105,8 +92,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
           </div>
           <button
             onClick={handleClose}
-            className="bg-transparent border-none cursor-pointer fs-20 py-4 px-8"
-            style={{ color: 'var(--vscode-foreground, #ccc)' }}
+            className={`bg-transparent border-none cursor-pointer fs-20 py-4 px-8 ${styles.closeButton}`}
           >
             ✕
           </button>
@@ -116,7 +102,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
         <div className="flex-1 overflow-auto py-16 px-20">
           {/* ── STEP 1: Template Selection ── */}
           {modalStep === 'template' && (
-            <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))' }}>
+            <div className={`grid gap-12 ${styles.templateGrid}`}>
               {templates.map((t) => (
                 <TemplateCard
                   key={t.id}
@@ -133,13 +119,9 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
             <div>
               {/* Template info */}
               <div
-                className="flex-row gap-12 py-12 px-16 rounded-8 mb-16"
-                style={{
-                  alignItems: 'center',
-                  background: 'var(--vscode-editor-inactiveSelectionBackground, #2a2a2a)',
-                }}
+                className={`flex-row gap-12 py-12 px-16 rounded-8 mb-16 ${styles.templateInfo}`}
               >
-                <span style={{ fontSize: 32 }}>{selectedTemplate.icon}</span>
+                <span className={styles.templateIcon}>{selectedTemplate.icon}</span>
                 <div>
                   <div className="fw-600 fs-14">{selectedTemplate.name}</div>
                   <div className="fs-12 text-muted">
@@ -200,8 +182,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
               {/* Variant count */}
               <div className="mb-12">
                 <label
-                  className="block fs-12 fw-600"
-                  style={{ marginBottom: 6, color: 'var(--vscode-foreground, #ccc)' }}
+                  className={`block fs-12 fw-600 ${styles.variantLabel}`}
                 >
                   Aantal varianten
                 </label>
@@ -210,20 +191,8 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                     <button
                       key={n}
                       onClick={() => setVariantCount(n)}
-                      className="rounded-8 fs-16 fw-700 cursor-pointer"
-                      style={{
-                        width: 40,
-                        height: 40,
-                        border:
-                          variantCount === n
-                            ? '2px solid var(--vscode-focusBorder, #007fd4)'
-                            : '1px solid var(--vscode-widget-border, #333)',
-                        background:
-                          variantCount === n
-                            ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                            : 'transparent',
-                        color: 'var(--vscode-foreground, #ccc)',
-                      }}
+                      className={`rounded-8 fs-16 fw-700 cursor-pointer ${styles.variantButton}`}
+                      data-selected={variantCount === n}
                     >
                       {n}
                     </button>
@@ -247,8 +216,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                 />
 
                 <label
-                  className="block fs-12 fw-600 mb-4"
-                  style={{ color: 'var(--vscode-foreground, #ccc)' }}
+                  className={`block fs-12 fw-600 mb-4 ${styles.instructionsLabel}`}
                 >
                   Extra instructies (optioneel)
                 </label>
@@ -256,16 +224,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
                   value={extraInstructions}
                   onChange={(e) => setExtraInstructions(e.target.value)}
                   placeholder="Bijv. 'Gebruik felle kleuren', 'Geen strepen op mouwen', 'Witte sponsortekst'..."
-                  className="w-full fs-13 rounded-4"
-                  style={{
-                    padding: '8px 10px',
-                    background: 'var(--vscode-input-background, #3c3c3c)',
-                    color: 'var(--vscode-input-foreground, #ccc)',
-                    border: '1px solid var(--vscode-input-border, #3c3c3c)',
-                    outline: 'none',
-                    minHeight: 60,
-                    fontFamily: 'inherit',
-                  }}
+                  className={`w-full fs-13 rounded-4 ${styles.instructionsTextarea}`}
                 />
               </div>
             </div>
@@ -346,12 +305,7 @@ function ModalFooter({
                 if (modalStep === 'configure') setModalStep('template');
                 else if (modalStep === 'results') handleRegenerate();
               }}
-              className="fs-12 bg-transparent rounded-4 cursor-pointer"
-              style={{
-                padding: '6px 14px',
-                color: 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
-              }}
+              className={`fs-12 bg-transparent rounded-4 cursor-pointer ${styles.footerBackButton}`}
             >
               \u2190 Terug
             </button>
@@ -361,23 +315,8 @@ function ModalFooter({
       <div className="flex-row gap-8">
         <button
           onClick={handleClose}
-          className="fs-12 rounded-4 cursor-pointer"
-          style={{
-            padding: '6px 14px',
-            background:
-              generation.step === 'queued'
-                ? 'var(--vscode-button-background, #0078d4)'
-                : 'transparent',
-            color:
-              generation.step === 'queued'
-                ? 'var(--vscode-button-foreground, #fff)'
-                : 'var(--vscode-foreground, #ccc)',
-            border:
-              generation.step === 'queued'
-                ? 'none'
-                : '1px solid var(--vscode-widget-border, #333)',
-            fontWeight: generation.step === 'queued' ? 600 : 400,
-          }}
+          className={`fs-12 rounded-4 cursor-pointer ${styles.footerCloseButton}`}
+          data-queued={generation.step === 'queued'}
         >
           {generation.step === 'queued' ? '✓ Sluiten' : 'Annuleren'}
         </button>
@@ -386,14 +325,8 @@ function ModalFooter({
           <button
             onClick={handleGenerate}
             disabled={!selectedTemplate}
-            className="fs-12 fw-600 rounded-4 border-none"
-            style={{
-              padding: '6px 16px',
-              background: 'var(--vscode-button-background, #0078d4)',
-              color: 'var(--vscode-button-foreground, #fff)',
-              cursor: selectedTemplate ? 'pointer' : 'not-allowed',
-              opacity: selectedTemplate ? 1 : 0.5,
-            }}
+            className={`fs-12 fw-600 rounded-4 border-none ${styles.footerGenerateButton}`}
+            data-disabled={!selectedTemplate}
           >
             🍌 Genereren ({variantCount} variant
             {variantCount > 1 ? 'en' : ''})
@@ -404,28 +337,15 @@ function ModalFooter({
           <>
             <button
               onClick={handleRegenerate}
-              className="fs-12 bg-transparent rounded-4 cursor-pointer"
-              style={{
-                padding: '6px 14px',
-                color: 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
-              }}
+              className={`fs-12 bg-transparent rounded-4 cursor-pointer ${styles.footerRefreshButton}`}
             >
               🔄 Opnieuw
             </button>
             <button
               onClick={handleAccept}
               disabled={selectedVariantIdx === null || saving}
-              className="fs-12 fw-600 rounded-4 border-none text-white"
-              style={{
-                padding: '6px 16px',
-                background:
-                  selectedVariantIdx !== null
-                    ? 'var(--color-green-400)'
-                    : 'var(--vscode-disabledForeground, #555)',
-                cursor: selectedVariantIdx !== null ? 'pointer' : 'not-allowed',
-                opacity: selectedVariantIdx !== null ? 1 : 0.5,
-              }}
+              className={`fs-12 fw-600 rounded-4 border-none text-white ${styles.footerSaveButton}`}
+              data-disabled={selectedVariantIdx === null}
             >
               {saving ? 'Opslaan...' : '💾 Opslaan als asset'}
             </button>

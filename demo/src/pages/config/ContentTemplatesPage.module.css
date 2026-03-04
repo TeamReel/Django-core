@@ -1,0 +1,70 @@
+.filterSelect {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.searchWrapper {
+  min-width: 200px;
+}
+
+.loadingState {
+  padding: 40px;
+}
+
+.emptyState {
+  padding: 40px;
+}
+
+.colName {
+  width: 18%;
+}
+
+.colType {
+  width: 10%;
+}
+
+.colSubtype {
+  width: 10%;
+}
+
+.colSport {
+  width: 10%;
+}
+
+.colVariant {
+  width: 8%;
+}
+
+.colFormation {
+  width: 8%;
+}
+
+.colStyle {
+  width: 6%;
+}
+
+.colCredits {
+  width: 6%;
+}
+
+.colStatus {
+  width: 6%;
+}
+
+.colActions {
+  width: 18%;
+}
+
+.globalBadge {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.templateDescription {
+  margin-top: 2px;
+}

@@ -1,0 +1,176 @@
+/* ======================================================================
+   DESIGN TOKENS — Color scale, spacing, typography, motion, elevation, breakpoints
+   Extracted from index.css for maintainability.
+   ====================================================================== */
+
+/* ======================================================================
+   COLOR SCALE — Systematic palette (50–900)
+   ====================================================================== */
+:root {
+  /* Primary (Ocean Teal) */
+  --color-primary-50:  #e6f4f7;
+  --color-primary-100: #b3dfe8;
+  --color-primary-200: #80c9d9;
+  --color-primary-300: #4db3ca;
+  --color-primary-400: #3B8EA5;
+  --color-primary-500: #2e7a8f;
+  --color-primary-600: #266879;
+  --color-primary-700: #1e5563;
+  --color-primary-800: #16424d;
+  --color-primary-900: #0e2f37;
+
+  /* Neutral (Navy → Ice) */
+  --color-neutral-50:  #EDF6FF;
+  --color-neutral-100: #D6EAFF;
+  --color-neutral-200: #b8d4f0;
+  --color-neutral-300: #94a3b8;
+  --color-neutral-400: #6b7280;
+  --color-neutral-500: #475569;
+  --color-neutral-600: #334155;
+  --color-neutral-700: #2e4a6d;
+  --color-neutral-800: #1C355E;
+  --color-neutral-900: #0A192F;
+
+  /* Green (Success) */
+  --color-green-50:  #e6fbf4;
+  --color-green-100: #b3f3de;
+  --color-green-200: #80ebc8;
+  --color-green-300: #4de3b2;
+  --color-green-400: #10b981;
+  --color-green-500: #06D6A0;
+  --color-green-600: #059c75;
+  --color-green-700: #04785a;
+  --color-green-800: #035540;
+  --color-green-900: #023226;
+
+  /* Red (Error / Danger) */
+  --color-red-50:  #fde8ea;
+  --color-red-100: #f9bcc2;
+  --color-red-200: #f4909a;
+  --color-red-300: #ef6472;
+  --color-red-400: #E63946;
+  --color-red-500: #dc2626;
+  --color-red-600: #b91c1c;
+  --color-red-700: #991b1b;
+  --color-red-800: #7f1d1d;
+  --color-red-900: #651a1a;
+
+  /* Amber (Warning) */
+  --color-amber-50:  #fffbeb;
+  --color-amber-100: #fef3c7;
+  --color-amber-200: #fde68a;
+  --color-amber-300: #FFD166;
+  --color-amber-400: #f59e0b;
+  --color-amber-500: #d97706;
+  --color-amber-600: #b45309;
+  --color-amber-700: #92400e;
+  --color-amber-800: #78350f;
+  --color-amber-900: #5c2c06;
+
+  /* Blue (Info / Actions) */
+  --color-blue-50:  #eff6ff;
+  --color-blue-100: #dbeafe;
+  --color-blue-200: #bfdbfe;
+  --color-blue-300: #93c5fd;
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1e40af;
+  --color-blue-900: #1e3a8a;
+}
+
+/* ======================================================================
+   SPACING TOKENS — 4px base unit
+   ====================================================================== */
+:root {
+  --space-0:  0px;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
+
+/* ======================================================================
+   TYPOGRAPHY TOKENS — Modular scale
+   ====================================================================== */
+:root {
+  /* Font size scale */
+  --text-2xs: 0.625rem;   /* 10px */
+  --text-xs:  0.6875rem;  /* 11px */
+  --text-sm:  0.75rem;    /* 12px */
+  --text-md:  0.8125rem;  /* 13px */
+  --text-base: 0.875rem;  /* 14px */
+  --text-lg:  1rem;       /* 16px */
+  --text-xl:  1.125rem;   /* 18px */
+  --text-2xl: 1.25rem;    /* 20px */
+  --text-3xl: 1.5rem;     /* 24px */
+
+  /* Font weight scale */
+  --font-normal:   400;
+  --font-medium:   500;
+  --font-semibold: 600;
+  --font-bold:     700;
+  --font-extrabold: 800;
+
+  /* Line height */
+  --leading-tight:  1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:  12px;
+  --radius-full: 9999px;
+}
+
+/* ======================================================================
+   MOTION TOKENS — Duration + Easing
+   ====================================================================== */
+:root {
+  --duration-fast:   100ms;
+  --duration-normal: 200ms;
+  --duration-slow:   300ms;
+  --duration-slower:  500ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:      cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out:  cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ======================================================================
+   ELEVATION TOKENS — Shadows
+   ====================================================================== */
+:root {
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
+  --shadow-xs:  0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* ======================================================================
+   BREAKPOINT TOKENS — Responsive thresholds
+   ====================================================================== */
+:root {
+  --breakpoint-sm:  640px;
+  --breakpoint-md:  768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}

@@ -17,6 +17,7 @@ import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeC
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
 import MatchWizard from './MatchWizard';
+import styles from './MobileBottomNav.module.css';
 
 export default function MobileBottomNav() {
   const navigate = useNavigate();
@@ -120,27 +121,10 @@ export default function MobileBottomNav() {
         onClick={() => { haptic.light(); tab.path && navigate(tab.path); }}
         aria-label={tab.label}
         aria-current={active ? 'page' : undefined}
-        className="flex-1 flex-col flex-center cursor-pointer transition"
-        style={{
-          gap: '2px',
-          minWidth: '44px',
-          minHeight: '44px',
-          padding: '6px 4px',
-          backgroundColor: 'transparent',
-          border: 'none',
-          color: active ? 'var(--app-primary)' : 'var(--app-muted-text)',
-        }}
+        className={`flex-1 flex-col flex-center cursor-pointer transition ${styles.tab} ${active ? styles.active : ''}`}
       >
         {/* Icon with filled pill background when active */}
-        <span
-          className="flex-center rounded-12"
-          style={{
-            width: '32px',
-            height: '24px',
-            backgroundColor: active ? 'var(--app-primary)' : 'transparent',
-            transition: 'background-color 0.2s ease',
-          }}
-        >
+        <span className={`flex-center rounded-12 ${styles.iconPill}`}>
           <Icon
             size={20}
             strokeWidth={active ? 2.2 : 1.6}
@@ -148,12 +132,7 @@ export default function MobileBottomNav() {
             color={active ? 'white' : 'var(--app-muted-text)'}
           />
         </span>
-        <span style={{
-          fontSize: '10px',
-          fontWeight: active ? 700 : 400,
-          lineHeight: 1,
-          color: active ? 'var(--app-primary)' : 'var(--app-muted-text)',
-        }}>
+        <span className={styles.tabLabel}>
           {tab.label}
         </span>
       </button>
@@ -163,17 +142,7 @@ export default function MobileBottomNav() {
   return (
     <>
       <nav
-        className="mobile-bottom-nav fixed bg-surface border-top z-1000 safe-bottom"
-        style={{
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '64px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
-          padding: '0 4px',
-        }}
+        className={`mobile-bottom-nav fixed bg-surface border-top z-1000 safe-bottom ${styles.nav}`}
       >
         {/* Left tabs: Home, Season */}
         {tabs.slice(0, 2).map(renderTab)}
@@ -183,21 +152,7 @@ export default function MobileBottomNav() {
           <button
             onClick={() => setWizardOpen(true)}
             aria-label="Create content"
-            className="absolute rounded-full text-white cursor-pointer flex-center transition"
-            style={{
-              bottom: '8px',
-              width: '52px',
-              height: '52px',
-              backgroundColor: 'var(--app-primary, #3B8EA5)',
-              border: '3px solid var(--app-surface)',
-              boxShadow: '0 2px 12px rgba(0, 0, 0, 0.2)',
-            }}
-            onTouchStart={(e) => {
-              e.currentTarget.style.transform = 'scale(0.93)';
-            }}
-            onTouchEnd={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+            className={`absolute rounded-full text-white cursor-pointer flex-center ${styles.createButton}`}
           >
             <Plus size={26} strokeWidth={2.5} />
           </button>

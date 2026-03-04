@@ -1,0 +1,90 @@
+/* ActivityFeed — extracted from inline styles */
+
+.activityItem {
+  transition: background-color 0.15s ease;
+  margin: 0 -8px;
+}
+
+.activityItem[data-past="true"] {
+  opacity: 0.6;
+}
+
+.activityItem[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.activityItem[data-clickable="true"]:hover {
+  background-color: var(--app-surface-2);
+}
+
+.dateBox {
+  min-width: 50px;
+  height: 50px;
+}
+
+.dateNumber {
+  line-height: 1;
+}
+
+.dateMonth {
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.periodName {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.activityTitle {
+  margin-bottom: 2px;
+}
+
+.urgencyTime {
+  color: var(--urgency-color);
+}
+
+.locationText {
+  max-width: 150px;
+  text-overflow: ellipsis;
+}
+
+.filterBtn {
+  padding: 6px 12px;
+  transition: all 0.2s;
+}
+
+.filterBtn[data-variant="all"][data-active="true"] {
+  background-color: var(--app-primary);
+  color: white;
+}
+
+.filterBtn[data-variant="all"][data-active="false"] {
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.filterBtn[data-variant="league"][data-active="true"] {
+  background-color: var(--color-blue-500);
+  color: white;
+}
+
+.filterBtn[data-variant="league"][data-active="false"] {
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.filterBtn[data-variant="cup"][data-active="true"] {
+  background-color: var(--color-amber-400);
+  color: white;
+}
+
+.filterBtn[data-variant="cup"][data-active="false"] {
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.emptyMessage {
+  font-style: italic;
+}

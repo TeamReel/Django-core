@@ -5,6 +5,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './InviteMemberModal.module.css';
 
 interface InviteMemberModalProps {
   opened: boolean;
@@ -66,44 +67,19 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
   if (!opened) return null;
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '24px',
-        borderRadius: '8px',
-        width: '100%',
-        maxWidth: '400px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-      }}>
-        <h2 style={{ marginTop: 0, marginBottom: '16px', fontSize: '18px', fontWeight: 600 }}>Add Member</h2>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <h2 className={styles.heading}>Add Member</h2>
 
         {error && (
-          <div style={{
-            padding: '8px',
-            backgroundColor: '#fee',
-            color: '#c00',
-            borderRadius: '4px',
-            marginBottom: '16px',
-            fontSize: '14px'
-          }}>
+          <div className={styles.errorBox}>
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Email Address</label>
+          <div className={styles.formField}>
+            <label className={styles.fieldLabel}>Email Address</label>
             <Input
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -113,25 +89,19 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
             />
           </div>
 
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>Role</label>
+          <div className={styles.formFieldLarge}>
+            <label className={styles.fieldLabel}>Role</label>
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as 'admin' | 'member')}
-              style={{
-                width: '100%',
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #ccc',
-                backgroundColor: 'white'
-              }}
+              className={styles.selectInput}
             >
               <option value="member">Member</option>
               <option value="admin">Admin</option>
             </select>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <div className={styles.buttonRow}>
             <Button variant="secondary" onClick={onClose} type="button">
               Cancel
             </Button>

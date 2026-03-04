@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import styles from './SeasonPickerModal.module.css';
 
 type Season = {
   id: string;
@@ -19,49 +20,6 @@ type Props = {
   projectName?: string;
   onClose: () => void;
   onConfirm: (seasonId: string) => Promise<void>;
-};
-
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed',
-  inset: 0,
-  background: 'rgba(0,0,0,0.45)',
-  zIndex: 60,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 16,
-};
-
-const modalStyle: React.CSSProperties = {
-  width: 'min(560px, 96vw)',
-  background: '#0f172a',
-  color: 'white',
-  borderRadius: 12,
-  boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-  border: '1px solid rgba(255,255,255,0.12)',
-};
-
-const headerStyle: React.CSSProperties = {
-  padding: '14px 16px',
-  borderBottom: '1px solid rgba(255,255,255,0.10)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
-};
-
-const bodyStyle: React.CSSProperties = {
-  padding: 16,
-  display: 'grid',
-  gap: 12,
-};
-
-const footerStyle: React.CSSProperties = {
-  padding: 16,
-  borderTop: '1px solid rgba(255,255,255,0.10)',
-  display: 'flex',
-  justifyContent: 'flex-end',
-  gap: 10,
 };
 
 function getMemberProjectMemberships(member: any): any[] {
@@ -107,45 +65,37 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
 
   return (
     <div
-      style={overlayStyle}
+      className={styles.overlay}
       role="dialog"
       aria-modal="true"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div style={modalStyle} onMouseDown={(e) => e.stopPropagation()}>
-        <div style={headerStyle}>
-          <div style={{ display: 'grid', gap: 2 }}>
-            <div style={{ fontWeight: 700 }}>{title}</div>
-            {email ? <div style={{ fontSize: 12, opacity: 0.85 }}>{email}</div> : null}
-            {teamLabel ? <div style={{ fontSize: 12, opacity: 0.85 }}>Team: {teamLabel}</div> : null}
+      <div className={styles.modal} onMouseDown={(e) => e.stopPropagation()}>
+        <div className={styles.header}>
+          <div className={styles.headerInfo}>
+            <div className={styles.headerTitle}>{title}</div>
+            {email ? <div className={styles.headerSubtext}>{email}</div> : null}
+            {teamLabel ? <div className={styles.headerSubtext}>Team: {teamLabel}</div> : null}
           </div>
           <button
             type="button"
-            className="app-action-button"
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
+            className={`app-action-button ${styles.closeButton}`}
             onClick={onClose}
           >
             Close
           </button>
         </div>
 
-        <div style={bodyStyle}>
+        <div className={styles.body}>
           {availableSeasons.length ? (
-            <label style={{ display: 'grid', gap: 6 }}>
-              <div style={{ fontSize: 13, opacity: 0.9 }}>Season</div>
+            <label className={styles.seasonLabel}>
+              <div className={styles.seasonLabelText}>Season</div>
               <select
                 value={selectedSeasonId}
                 onChange={(e) => setSelectedSeasonId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '10px 10px',
-                  borderRadius: 8,
-                  border: '1px solid rgba(255,255,255,0.18)',
-                  background: 'rgba(255,255,255,0.06)',
-                  color: 'white',
-                }}
+                className={styles.seasonSelect}
               >
                 <option value="">Select…</option>
                 {availableSeasons.map((s) => (
@@ -156,17 +106,16 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
               </select>
             </label>
           ) : (
-            <div style={{ fontSize: 13, opacity: 0.9 }}>
+            <div className={styles.noSeasonsText}>
               {mode === 'assign' ? 'No assignable seasons for this user.' : 'No season assignments found for this user.'}
             </div>
           )}
         </div>
 
-        <div style={footerStyle}>
+        <div className={styles.footer}>
           <button
             type="button"
-            className="app-action-button"
-            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)' }}
+            className={`app-action-button ${styles.cancelButton}`}
             onClick={onClose}
             disabled={submitting}
           >
@@ -174,8 +123,8 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
           </button>
           <button
             type="button"
-            className="app-action-button"
-            style={{ background: mode === 'assign' ? '#16a34a' : '#334155', border: '1px solid rgba(255,255,255,0.12)' }}
+            className={`app-action-button ${styles.submitButton}`}
+            data-mode={mode}
             onClick={async () => {
               const sid = String(selectedSeasonId || '').trim();
               if (!sid) return;

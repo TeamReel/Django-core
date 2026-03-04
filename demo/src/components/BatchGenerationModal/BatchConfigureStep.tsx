@@ -6,7 +6,7 @@ import { Badge } from '@django-core/design-system';
 import type { AssetTemplate, TemplateParameter } from '../../constants/assetTemplates';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import type { BatchMember, MemberParams } from './batchTypes';
-import { selectStyle, memberRowStyle, avatarStyle } from './batchTypes';
+import styles from './BatchConfigureStep.module.css';
 
 interface BatchConfigureStepProps {
   members: BatchMember[];
@@ -46,7 +46,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
   <>
     {/* Template selector */}
     <div className="mb-20">
-      <label className="block fs-13 fw-600" style={{ marginBottom: '6px' }}>
+      <label className={`block fs-13 fw-600 ${styles.templateLabel}`}>
         Template
       </label>
       <div className="flex-row gap-8 flex-wrap">
@@ -54,17 +54,13 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
           <button
             key={t.id}
             onClick={() => setSelectedTemplateId(t.id)}
-            className="rounded-8 text-primary cursor-pointer fs-13 flex-row items-center gap-6"
-            style={{
-              padding: '8px 14px',
-              border: `2px solid ${selectedTemplateId === t.id ? 'var(--color-blue-500)' : 'var(--app-border, #444)'}`,
-              background: selectedTemplateId === t.id ? 'rgba(59,130,246,0.15)' : 'var(--app-surface-2, #252540)',
-            }}
+            className={`rounded-8 text-primary cursor-pointer fs-13 flex-row items-center gap-6 ${styles.templateButton}`}
+            data-selected={selectedTemplateId === t.id}
           >
             <span>{t.icon}</span>
             <span>{t.name}</span>
             {t.outputType === 'video' && (
-              <Badge variant="info" style={{ fontSize: '10px' }}>Video</Badge>
+              <Badge variant="info" className={styles.videoBadge}>Video</Badge>
             )}
           </button>
         ))}
@@ -74,21 +70,21 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
     {/* Default params */}
     {selectedTemplate && (
       <div className="mb-20">
-        <label className="block fs-13 fw-600" style={{ marginBottom: '6px' }}>
+        <label className={`block fs-13 fw-600 ${styles.defaultParamsLabel}`}>
           Standaard Instellingen (voor alle members)
         </label>
         <div className="flex-row flex-wrap gap-12 p-12 rounded-8 bg-surface-2 border">
           {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
             if (!isParamVisible(param, defaultParams)) return null;
             return (
-              <div key={key} style={{ minWidth: '120px' }}>
-                <label className="block fs-11 text-muted" style={{ marginBottom: '3px' }}>
+              <div key={key} className={styles.paramGroup}>
+                <label className={`block fs-11 text-muted ${styles.paramLabel}`}>
                   {param.label}
                 </label>
                 <select
                   value={defaultParams[key] || param.default}
                   onChange={(e) => setDefaultParams((prev) => ({ ...prev, [key]: e.target.value }))}
-                  style={selectStyle}
+                  className={styles.select}
                 >
                   {param.options.map((opt) => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -102,22 +98,15 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
     )}
 
     {/* Auto-processing notice */}
-    <div className="mb-20 rounded-8 fs-12 text-muted" style={{
-      padding: '10px 12px',
-      background: 'rgba(34, 197, 94, 0.1)',
-      border: '1px solid rgba(34, 197, 94, 0.25)',
-    }}>
+    <div className={`mb-20 rounded-8 fs-12 text-muted ${styles.autoProcessNotice}`}>
       ✅ Bewerking (achtergrond verwijderen, closeup crop) verloopt automatisch na goedkeuring
     </div>
 
     {/* Info box for video templates */}
     {selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
-      <div className="mb-16 p-12 rounded-8 fs-13 text-primary" style={{
-        background: 'rgba(34, 197, 94, 0.1)',
-        border: '1px solid rgba(34, 197, 94, 0.3)',
-      }}>
+      <div className={`mb-16 p-12 rounded-8 fs-13 text-primary ${styles.videoInfoBox}`}>
         <div className="fw-600 mb-4">🔄 Slimme video verwerking</div>
-        <div className="fs-12" style={{ opacity: 0.9 }}>
+        <div className={`fs-12 ${styles.videoInfoDescription}`}>
           Members met een bestaande onverwerkte video worden automatisch verwerkt in plaats van opnieuw gegenereerd.
           Alleen members zonder video krijgen een nieuwe gegenereerd.
         </div>
@@ -158,17 +147,14 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
           <div key={member.id} className="mb-4">
             <div
               onClick={() => toggleMemberExpanded(member.id)}
-              style={{
-                ...memberRowStyle,
-                cursor: 'pointer',
-                opacity: missingPerson ? 0.5 : 1,
-                borderColor: hasOverrides ? 'var(--color-blue-500)' : 'var(--app-border, #333)',
-              }}
+              className={styles.memberRow}
+              data-missing={missingPerson}
+              data-has-overrides={hasOverrides}
             >
               {member.profilePhotoUrl ? (
-                <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" style={avatarStyle} />
+                <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={styles.avatar} />
               ) : (
-                <div className="flex-center" style={{ ...avatarStyle, fontSize: '16px' }}>
+                <div className={`flex-center ${styles.avatarFallback}`}>
                   👤
                 </div>
               )}
@@ -181,36 +167,30 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                   <div className="fs-11 text-success">✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
                 )}
                 {hasOverrides && (
-                  <div className="fs-11" style={{ color: 'var(--color-blue-500)' }}>Aangepaste instellingen</div>
+                  <div className={`fs-11 ${styles.overrideText}`}>Aangepaste instellingen</div>
                 )}
               </div>
-              <span className="fs-12 text-muted transition" style={{ transform: isExpanded ? 'rotate(90deg)' : 'none' }}>
+              <span className={`fs-12 text-muted transition ${styles.expandArrow}`} data-expanded={isExpanded}>
                 ▶
               </span>
             </div>
 
             {isExpanded && selectedTemplate && (
-              <div className="mb-8 rounded-8 bg-surface-2 border" style={{ marginLeft: '52px', padding: '10px 12px' }}>
-                <div className="flex-row flex-wrap gap-10" style={{ alignItems: 'flex-end' }}>
+              <div className={`mb-8 rounded-8 bg-surface-2 border ${styles.expandedBody}`}>
+                <div className={`flex-row flex-wrap gap-10 ${styles.overrideParamsRow}`}>
                   {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
                     if (!isParamVisible(param, effectiveParams)) return null;
                     const hasOverride = memberOverrides[member.id]?.[key] !== undefined;
                     return (
-                      <div key={key} style={{ minWidth: '110px' }}>
-                        <label className="block fs-11" style={{
-                          color: hasOverride ? 'var(--color-blue-500)' : 'var(--app-muted-text)',
-                          marginBottom: '3px',
-                          fontWeight: hasOverride ? 600 : 400,
-                        }}>
+                      <div key={key} className={styles.overrideParamGroup}>
+                        <label className={`block fs-11 ${styles.overrideParamLabel}`} data-has-override={hasOverride}>
                           {param.label}
                         </label>
                         <select
                           value={effectiveParams[key] || param.default}
                           onChange={(e) => setMemberParam(member.id, key, e.target.value)}
-                          style={{
-                            ...selectStyle,
-                            borderColor: hasOverride ? 'var(--color-blue-500)' : 'var(--app-border, #555)',
-                          }}
+                          className={styles.overrideSelect}
+                          data-has-override={hasOverride}
                         >
                           {param.options.map((opt) => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -222,8 +202,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
                   {hasOverrides && (
                     <button
                       onClick={(e) => { e.stopPropagation(); resetMemberOverrides(member.id); }}
-                      className="rounded-4 border bg-transparent text-muted fs-11 cursor-pointer"
-                      style={{ padding: '4px 8px', alignSelf: 'flex-end', marginBottom: '2px' }}
+                      className={`rounded-4 border bg-transparent text-muted fs-11 cursor-pointer ${styles.resetButton}`}
                     >
                       Reset
                     </button>

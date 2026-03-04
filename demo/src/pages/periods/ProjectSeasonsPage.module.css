@@ -1,0 +1,46 @@
+/* ProjectSeasonsPage — extracted inline styles */
+
+.emptyState {
+  padding: 16px;
+  color: var(--app-text-secondary);
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thCenter {
+  text-align: center;
+}
+
+.thRight {
+  text-align: right;
+}
+
+.seasonName {
+  font-weight: 600;
+}
+
+.legendsBadge {
+  --legends-badge-bg: #fffbeb;
+  --legends-badge-color: #d97706;
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--legends-badge-bg);
+  color: var(--legends-badge-color);
+}
+
+.dateCell {
+  white-space: nowrap;
+}
+
+.centerCell {
+  text-align: center;
+}
+
+.rightCell {
+  text-align: right;
+}

@@ -1,0 +1,111 @@
+/* VideoQueuePage — CSS Module
+ * Extracted from inline styles in VideoQueuePage.tsx
+ */
+
+/* ── Custom property defaults ─────────────────────────────────────────────── */
+
+.root {
+  --vq-color-danger: #dc2626;
+  --vq-color-danger-bg: #fef2f2;
+  --vq-color-blue-primary: #2563eb;
+  --vq-color-blue-100: #dbeafe;
+  --vq-color-success: #059669;
+}
+
+/* ── Progress Bar ─────────────────────────────────────────────────────────── */
+
+.progressTrack {
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--app-border, #e5e7eb);
+}
+
+.progressFill {
+  border-radius: 3px;
+  background-color: var(--progress-color, var(--color-blue-600));
+  transition: width 0.5s ease-out;
+  width: var(--progress);
+}
+
+/* ── Job Card ─────────────────────────────────────────────────────────────── */
+
+.jobCard {
+  border-radius: 10px;
+}
+
+.jobId {
+  font-family: monospace;
+}
+
+.statusBadge {
+  padding: 3px 10px;
+  color: var(--status-color);
+  background-color: var(--status-bg);
+}
+
+.progressPercent {
+  min-width: 32px;
+}
+
+.errorMessage {
+  color: var(--vq-color-danger, #dc2626);
+  background-color: var(--vq-color-danger-bg, #fef2f2);
+  border-left: 3px solid var(--vq-color-danger, #dc2626);
+}
+
+.actionsRow {
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 5px 12px;
+  border: 1px solid var(--vq-color-danger, #dc2626);
+  color: var(--vq-color-danger, #dc2626);
+}
+
+.retryButton {
+  padding: 5px 12px;
+  border: 1px solid var(--vq-color-blue-primary, #2563eb);
+  background-color: var(--color-blue-600);
+}
+
+/* ── Main Page ────────────────────────────────────────────────────────────── */
+
+.refreshButton {
+  padding: 6px 14px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  color: var(--app-text, #111);
+}
+
+.filterButton {
+  padding: 5px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  background-color: transparent;
+  color: var(--app-text-secondary, #6b7280);
+  font-weight: 400;
+}
+
+.filterButtonActive {
+  border-color: var(--color-blue-600);
+  background-color: var(--vq-color-blue-100, #dbeafe);
+  color: var(--color-blue-600);
+  font-weight: 600;
+}
+
+.loadingState {
+  padding: 40px;
+}
+
+.errorAlert {
+  background-color: var(--vq-color-danger-bg, #fef2f2);
+  color: var(--vq-color-danger, #dc2626);
+}
+
+.emptyState {
+  padding: 60px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+}

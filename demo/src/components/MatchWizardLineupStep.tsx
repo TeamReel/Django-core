@@ -3,8 +3,9 @@
  */
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { POSITIONS, CARD_STYLE, getSquadMemberName, type SquadMember } from './matchWizardTypes';
+import { POSITIONS, getSquadMemberName, type SquadMember } from './matchWizardTypes';
 import type { useMatchWizardData } from './useMatchWizardData';
+import styles from './MatchWizardLineupStep.module.css';
 
 type Data = ReturnType<typeof useMatchWizardData>;
 
@@ -21,22 +22,22 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
     <div className="flex-col gap-8">
       {/* Progress indicator */}
       <div className="flex-between mb-8">
-        <span className="fs-14" style={{ color: 'var(--app-text-muted)' }}>
+        <span className={`fs-14 ${styles.textMuted}`}>
           {filledPositions} / {totalPositions} posities
         </span>
-        <div className="overflow-hidden" style={{ width: '100px', height: '4px', backgroundColor: 'var(--app-border)', borderRadius: '2px' }}>
-          <div className="h-full" style={{
-            width: `${(filledPositions / totalPositions) * 100}%`,
-            backgroundColor: filledPositions === totalPositions ? 'var(--color-success)' : 'var(--app-primary)',
-            transition: 'width 0.2s ease',
-          }} />
+        <div className={`overflow-hidden ${styles.progressBarTrack}`}>
+          <div
+            className={`h-full ${styles.progressBarFill}`}
+            data-complete={filledPositions === totalPositions ? 'true' : undefined}
+            style={{ width: `${(filledPositions / totalPositions) * 100}%` }}
+          />
         </div>
       </div>
 
       {squadLoading ? (
-        <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>Spelers laden...</div>
+        <div className={`text-center p-32 ${styles.textMuted}`}>Spelers laden...</div>
       ) : allPlayers.length === 0 ? (
-        <div className="text-center p-32" style={{ color: 'var(--app-text-muted)' }}>Geen spelers gevonden in het team</div>
+        <div className={`text-center p-32 ${styles.textMuted}`}>Geen spelers gevonden in het team</div>
       ) : (
         <div className="flex-col gap-6">
           {POSITIONS.map((posConfig) => {
@@ -50,16 +51,16 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
             if (isEditing) {
               return (
                 <div key={posConfig.slot} className="bg-surface-2 rounded-12 p-12">
-                  <div className="flex-between" style={{ marginBottom: '10px' }}>
+                  <div className={`flex-between ${styles.editingHeader}`}>
                     <span className="fw-600 text-primary">{posConfig.fullLabel} ({posConfig.label})</span>
                     <button onClick={() => setEditingPosition(null)}
-                      className="fs-12 rounded-6 bg-transparent border cursor-pointer" style={{ padding: '4px 12px', color: 'var(--app-text-muted)' }}>
+                      className={`fs-12 rounded-6 bg-transparent border cursor-pointer ${styles.cancelButton}`}>
                       Annuleren
                     </button>
                   </div>
-                  <div className="flex-col gap-4 overflow-y-auto" style={{ maxHeight: '180px' }}>
-                    <button onClick={() => handleSelectPlayer(positionIdx, isGoalkeeper, null)} className="fs-14"
-                      style={{ ...CARD_STYLE, padding: '10px 12px', color: 'var(--app-text-muted)' }}>
+                  <div className={`flex-col gap-4 overflow-y-auto ${styles.playerList}`}>
+                    <button onClick={() => handleSelectPlayer(positionIdx, isGoalkeeper, null)}
+                      className={`fs-14 ${styles.emptyPlayerButton}`}>
                       — Geen speler —
                     </button>
                     {allPlayers.map((member) => {
@@ -69,19 +70,14 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
                         <button key={member.id}
                           onClick={() => !isUsed && handleSelectPlayer(positionIdx, isGoalkeeper, member.id)}
                           disabled={isUsed}
-                          style={{
-                            ...CARD_STYLE, padding: '10px 12px',
-                            backgroundColor: member.id === memberId ? 'var(--app-primary)' : CARD_STYLE.backgroundColor,
-                            color: member.id === memberId ? 'white' : isUsed ? 'var(--app-text-muted)' : 'var(--app-text)',
-                            cursor: isUsed ? 'not-allowed' : 'pointer',
-                            opacity: isUsed ? 0.5 : 1,
-                          }}>
+                          className={styles.playerButton}
+                          data-selected={member.id === memberId ? 'true' : undefined}
+                          data-used={isUsed ? 'true' : undefined}>
                           {jersey && (
-                            <span className="rounded-full flex-center fs-11 fw-600" style={{
-                              width: '26px', height: '26px',
-                              backgroundColor: member.id === memberId ? 'rgba(255,255,255,0.3)' : 'var(--app-surface-2)',
-                              flexShrink: 0,
-                            }}>{jersey}</span>
+                            <span
+                              className={`rounded-full flex-center fs-11 fw-600 ${styles.jerseyBadge}`}
+                              data-selected={member.id === memberId ? 'true' : undefined}
+                            >{jersey}</span>
                           )}
                           <span className="flex-1">{getSquadMemberName(member)}</span>
                           {isUsed && <span className="fs-11 opacity-70">ingevuld</span>}
@@ -95,25 +91,25 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
 
             return (
               <button key={posConfig.slot} onClick={() => setEditingPosition(posConfig.slot)}
-                style={{ ...CARD_STYLE, backgroundColor: memberId ? 'var(--app-surface)' : 'var(--app-surface-2)' }}>
-                <div className="rounded-8 flex-center fs-11 fw-700" style={{
-                  width: '34px', height: '34px', flexShrink: 0,
-                  backgroundColor: memberId ? 'var(--color-success)' : 'var(--app-border)',
-                  color: memberId ? 'white' : 'var(--app-text-muted)',
-                }}>{posConfig.label}</div>
+                className={styles.positionButton}
+                data-filled={memberId ? 'true' : 'false'}>
+                <div
+                  className={`rounded-8 flex-center fs-11 fw-700 ${styles.positionBadge}`}
+                  data-filled={memberId ? 'true' : 'false'}
+                >{posConfig.label}</div>
                 <div className="flex-1-min">
                   {memberId ? (
                     <>
                       <div className="fw-600 fs-14 text-primary">{getMemberName(memberId)}</div>
-                      <div className="fs-12" style={{ color: 'var(--app-text-muted)' }}>
+                      <div className={`fs-12 ${styles.textMuted}`}>
                         {getMemberJersey(memberId) && `#${getMemberJersey(memberId)} \u00b7 `}{posConfig.fullLabel}
                       </div>
                     </>
                   ) : (
-                    <div className="fs-14" style={{ color: 'var(--app-text-muted)' }}>{posConfig.fullLabel}</div>
+                    <div className={`fs-14 ${styles.textMuted}`}>{posConfig.fullLabel}</div>
                   )}
                 </div>
-                <ChevronRight size={18} style={{ color: 'var(--app-text-muted)', flexShrink: 0 }} />
+                <ChevronRight size={18} className={styles.chevronIcon} />
               </button>
             );
           })}

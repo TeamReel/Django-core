@@ -9,6 +9,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { Modal } from '../ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './ActiveJobsModal.module.css';
 
 // ============================================================================
 // Types
@@ -39,27 +40,6 @@ import { getCsrfToken } from '../../utils/csrf';
 // Styles
 // ============================================================================
 
-
-
-const jobRowStyle: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '12px',
-  padding: '12px 14px',
-  borderRadius: '8px',
-  border: '1px solid var(--app-border, #333)',
-  marginBottom: '8px',
-  background: 'var(--app-surface-2, #252540)',
-};
-
-const progressBarContainerStyle: React.CSSProperties = {
-  height: '6px',
-  borderRadius: '3px',
-  background: 'var(--app-border, #333)',
-  overflow: 'hidden',
-  flex: 1,
-  minWidth: '80px',
-};
 
 // ============================================================================
 // Component
@@ -219,19 +199,14 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       }
     >
           {loading && jobs.length === 0 && (
-            <div className="text-center" style={{ color: 'var(--app-muted-text, #888)', padding: '40px' }}>
+            <div className={`text-center ${styles.loadingState}`}>
               Laden...
             </div>
           )}
 
           {error && (
             <div
-              className="py-12 px-16 rounded-8 mb-16"
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.3)',
-                color: 'var(--color-red-500)',
-              }}
+              className={`py-12 px-16 rounded-8 mb-16 ${styles.errorAlert}`}
             >
               {error}
             </div>
@@ -239,13 +214,9 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
 
           {!loading && jobs.length === 0 && !error && (
             <div
-              className="text-center"
-              style={{
-                color: 'var(--app-muted-text, #888)',
-                padding: '40px',
-              }}
+              className={`text-center ${styles.emptyState}`}
             >
-              <div className="mb-12" style={{ fontSize: '32px' }}>✅</div>
+              <div className={`mb-12 ${styles.emptyIcon}`}>✅</div>
               Geen actieve verwerkingsjobs
             </div>
           )}
@@ -257,13 +228,13 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
             const startTime = formatStartTime(job.processing_started_at);
 
             return (
-              <div key={jobKey} style={jobRowStyle}>
+              <div key={jobKey} className={styles.jobRow}>
                 {/* Info */}
                 <div className="flex-1-min">
                   <div className="fs-14 fw-500 mb-4">
                     {job.member_name}
                   </div>
-                  <div className="fs-12" style={{ color: 'var(--app-muted-text, #888)' }}>
+                  <div className={`fs-12 ${styles.jobSubtext}`}>
                     {getAssetLabel(job.asset_type)} • {job.kit_type}
                     {job.variant_id && ` • ${job.variant_id.replace(/_/g, ' ')}`}
                     {startTime && ` • ${startTime}`}
@@ -271,20 +242,17 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
                 </div>
 
                 {/* Progress */}
-                <div className="flex-row gap-10" style={{ minWidth: '150px' }}>
+                <div className={`flex-row gap-10 ${styles.progressArea}`}>
                   {progress !== null ? (
                     <>
-                      <div style={progressBarContainerStyle}>
+                      <div className={styles.progressBarContainer}>
                         <div
-                          className="h-full"
-                          style={{
-                            width: `${progress}%`,
-                            background: isCancelling ? 'var(--color-amber-400)' : 'var(--color-blue-500)',
-                            transition: 'width 0.3s ease',
-                          }}
+                          className={`h-full ${styles.progressFill}`}
+                          data-cancelling={isCancelling ? 'true' : undefined}
+                          style={{ width: `${progress}%` }}
                         />
                       </div>
-                      <span className="fs-12" style={{ color: 'var(--app-muted-text, #888)', minWidth: '40px' }}>
+                      <span className={`fs-12 ${styles.progressText}`}>
                         {progress}%
                       </span>
                     </>
@@ -302,7 +270,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
                     variant="outline"
                     onClick={() => cancelJob(job)}
                     disabled={isCancelling}
-                    style={{ flexShrink: 0 }}
+                    className={styles.cancelBtn}
                   >
                     Annuleren
                   </Button>
@@ -314,12 +282,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       {/* Info notice */}
       {jobs.length > 0 && (
         <div
-          className="mt-16 py-12 px-16 rounded-8 fs-13"
-          style={{
-            background: 'rgba(59, 130, 246, 0.1)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            color: '#60a5fa',
-          }}
+          className={`mt-16 py-12 px-16 rounded-8 fs-13 ${styles.infoNotice}`}
         >
           💡 Video processing draait op de server. Je kunt dit venster sluiten - de verwerking gaat door.
           De pagina wordt elke 5 seconden automatisch vernieuwd.

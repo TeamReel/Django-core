@@ -1,0 +1,60 @@
+/* IntegrationStatusModals — CSS Module */
+
+.modalContent {
+  background-color: var(--app-bg);
+  max-width: 700px;
+  max-height: 90vh;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--app-border);
+}
+
+.modalHeader {
+  border-bottom: 2px solid var(--app-border);
+  top: 0;
+  background-color: var(--app-bg);
+  z-index: 1;
+}
+
+.codeBadge {
+  background-color: var(--app-primary);
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  background-color: var(--status-color-bg);
+  border: 1px solid var(--status-color);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--status-color);
+}
+
+.description {
+  font-size: 15px;
+}
+
+.closeButton {
+  margin-left: 16px;
+  line-height: 1;
+}
+
+.categoryTag {
+  padding: 6px 14px;
+}
+
+.featureList {
+  padding: 0 0 0 20px;
+}
+
+.featureItem {
+  line-height: 1.5;
+}
+
+.notesText {
+  line-height: 1.6;
+}
+
+.testUrlButton {
+  padding: 10px 20px;
+  background-color: var(--app-primary);
+}

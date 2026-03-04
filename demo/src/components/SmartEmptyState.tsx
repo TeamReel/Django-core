@@ -12,6 +12,7 @@ import {
   Search,
   type LucideIcon
 } from 'lucide-react';
+import styles from './SmartEmptyState.module.css';
 
 type EmptyStateType =
   | 'content'
@@ -202,78 +203,35 @@ export default function SmartEmptyState({
 
   return (
     <div
-      className={className}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '48px 24px',
-        textAlign: 'center',
-        minHeight: '200px',
-      }}
+      className={`${styles.container} ${className || ''}`}
     >
       {/* Icon with subtle background */}
-      <div
-        style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          backgroundColor: 'var(--color-surface-2, #f5f5f5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: '24px',
-        }}
-      >
+      <div className={styles.iconWrapper}>
         <Icon
           size={36}
-          style={{ color: 'var(--color-text-muted)' }}
+          className={styles.icon}
         />
       </div>
 
       {/* Title */}
-      <h3
-        style={{
-          fontSize: '1.25rem',
-          fontWeight: 600,
-          color: 'var(--color-text)',
-          marginBottom: '8px',
-        }}
-      >
+      <h3 className={styles.title}>
         {finalTitle}
       </h3>
 
       {/* Description */}
-      <p
-        style={{
-          fontSize: '0.9375rem',
-          color: 'var(--color-text-muted)',
-          marginBottom: '24px',
-          maxWidth: '300px',
-          lineHeight: 1.5,
-        }}
-      >
+      <p className={styles.description}>
         {finalDescription}
       </p>
 
       {/* Actions */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px',
-          width: '100%',
-          maxWidth: '250px',
-        }}
-      >
+      <div className={styles.actions}>
         {finalPrimaryAction && (
           <Button
             variant="primary"
             onClick={handlePrimaryClick}
-            style={{ width: '100%' }}
+            className={styles.fullWidth}
           >
-            <Zap size={18} style={{ marginRight: '8px' }} />
+            <Zap size={18} className={styles.primaryIcon} />
             {finalPrimaryAction.label}
           </Button>
         )}
@@ -282,7 +240,7 @@ export default function SmartEmptyState({
           <Button
             variant="secondary"
             onClick={handleSecondaryClick}
-            style={{ width: '100%' }}
+            className={styles.fullWidth}
           >
             {finalSecondaryAction.label}
           </Button>

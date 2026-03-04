@@ -1,0 +1,13 @@
+/* TeamsListTable — extracted inline styles */
+
+.colFederation { width: 15%; }
+.colClub { width: 15%; }
+.colTeam { width: 18%; }
+.colSport { width: 12%; }
+.colVariant { width: 8%; }
+.colSeason { width: 8%; }
+.colCompetition { width: 8%; }
+.colMatch { width: 8%; }
+.colUsers { width: 8%; }
+.colStatus { width: 8%; }
+.colActions { width: 12%; }

@@ -1,0 +1,59 @@
+/* ObservabilityPage.module.css */
+
+/* Custom properties for hardcoded hex colors */
+.pageWrapper {
+  --color-warning-orange: #fd7e14;
+  --color-warning-yellow: #ffc107;
+  --color-purple: #6f42c1;
+}
+
+.pageWrapper {
+  background-color: var(--app-bg);
+  min-height: 100%;
+}
+
+.loadingCard {
+  padding: 48px 24px;
+}
+
+.timestampValue {
+  font-family: monospace;
+  color: var(--app-text);
+}
+
+.updatingText {
+  color: var(--app-primary);
+  margin-top: 4px;
+}
+
+.metricsGrid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.metricsGridWide {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.metricValueError {
+  color: var(--app-error);
+}
+
+.metricValueWarningOrange {
+  color: var(--color-warning-orange);
+}
+
+.metricValueSuccess {
+  color: var(--app-success);
+}
+
+.metricValueWarningYellow {
+  color: var(--color-warning-yellow);
+}
+
+.metricValuePrimary {
+  color: var(--app-primary);
+}
+
+.metricValuePurple {
+  color: var(--color-purple);
+}

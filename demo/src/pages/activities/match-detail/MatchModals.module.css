@@ -1,0 +1,82 @@
+/* ─── Shared Modal Styles ─── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: var(--overlay-backdrop, rgba(0, 0, 0, 0.7));
+}
+
+.modal {
+  background-color: var(--app-card-bg);
+  max-height: 90vh;
+  box-shadow: 0 20px 60px var(--modal-shadow, rgba(0, 0, 0, 0.3));
+}
+
+.contentModal {
+  width: 90%;
+}
+
+.assetModal {
+  max-width: 900px;
+  width: 92%;
+}
+
+.modalHeader {
+  padding: 16px 20px;
+}
+
+.closeButton {
+  background: none;
+}
+
+/* ─── Media (Content Preview) ─── */
+
+.contentVideo {
+  max-width: 100%;
+  max-height: 60vh;
+}
+
+.contentImage {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+}
+
+/* ─── Media (Saved Asset Preview) ─── */
+
+.assetVideo {
+  max-width: 100%;
+  max-height: 65vh;
+}
+
+.assetImage {
+  max-width: 100%;
+  max-height: 65vh;
+  object-fit: contain;
+}
+
+/* ─── Footer ─── */
+
+.modalFooter {
+  padding: 16px 20px;
+  background-color: var(--app-bg);
+  border-radius: 0 0 12px 12px;
+}
+
+.assetFooter {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: var(--app-bg);
+  border-radius: 0 0 12px 12px;
+}
+
+/* ─── Action Link ─── */
+
+.actionLink {
+  background-color: var(--app-primary);
+  color: var(--action-link-text, #fff);
+  text-decoration: none;
+}

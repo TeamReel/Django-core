@@ -1,0 +1,104 @@
+/* ── Custom properties (hardcoded hex → tokens) ──────────────────── */
+
+:root {
+  --color-white: #ffffff;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-400: #9ca3af;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-blue-500: #3b82f6;
+}
+
+/* ── Grid layouts ─────────────────────────────────────────────────── */
+
+.gridTwoCols {
+  grid-template-columns: 1fr 1fr;
+}
+
+.gridThreeCols {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* ── Theme preview cards ──────────────────────────────────────────── */
+
+.lightThemeCard {
+  padding: 24px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+}
+
+.lightThemeCard[data-selected='true'] {
+  border: 2px solid var(--color-blue-500);
+}
+
+.darkThemeCard {
+  padding: 24px;
+  background-color: var(--color-gray-800);
+  color: var(--color-gray-100);
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+}
+
+.darkThemeCard[data-selected='true'] {
+  border: 2px solid var(--color-blue-500);
+}
+
+/* ── Theme card titles ────────────────────────────────────────────── */
+
+.lightThemeTitle {
+  margin: 0 0 12px 0;
+  color: var(--color-gray-800);
+  font-weight: 600;
+}
+
+.darkThemeTitle {
+  margin: 0 0 12px 0;
+  color: var(--color-gray-100);
+  font-weight: 600;
+}
+
+/* ── Preview boxes ────────────────────────────────────────────────── */
+
+.lightPreviewBox {
+  padding: 12px;
+  background-color: var(--color-gray-50);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.darkPreviewBox {
+  padding: 12px;
+  background-color: var(--color-gray-900);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+/* ── Preview text ─────────────────────────────────────────────────── */
+
+.previewTextLightPrimary {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-gray-800);
+}
+
+.previewTextLightSecondary {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--app-muted-text);
+}
+
+.previewTextDarkPrimary {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--color-gray-100);
+}
+
+.previewTextDarkSecondary {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--color-gray-400);
+}

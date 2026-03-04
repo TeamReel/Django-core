@@ -1,0 +1,68 @@
+/* MatchCreateModal — extracted from inline styles + controlStyle() helper */
+
+.backdrop {
+  z-index: 1100;
+}
+
+.container {
+  width: 640px;
+  max-width: 95%;
+}
+
+.closeButton {
+  height: fit-content;
+  cursor: pointer;
+}
+
+.closeButton[data-saving='true'] {
+  cursor: not-allowed;
+}
+
+.formGrid {
+  grid-template-columns: 140px 1fr;
+  gap: 10px 16px;
+}
+
+/* ── Base form control (selects) ─────────────────────────────────────────── */
+
+.control {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  opacity: 1;
+  cursor: pointer;
+}
+
+.control[data-disabled='true'] {
+  background-color: var(--app-surface-3, #e9eef5);
+  color: var(--app-text-muted, #667085);
+  opacity: 0.9;
+  cursor: not-allowed;
+}
+
+/* ── Readonly display (always disabled look, default cursor) ─────────────── */
+
+.controlReadonly {
+  composes: control;
+  background-color: var(--app-surface-3, #e9eef5);
+  color: var(--app-text-muted, #667085);
+  opacity: 0.9;
+  cursor: default;
+}
+
+/* ── Text / date / time inputs ───────────────────────────────────────────── */
+
+.controlInput {
+  composes: control;
+  cursor: text;
+}
+
+/* ── Textarea ────────────────────────────────────────────────────────────── */
+
+.controlTextarea {
+  composes: control;
+  cursor: text;
+  resize: vertical;
+}

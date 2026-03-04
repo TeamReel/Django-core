@@ -1,0 +1,71 @@
+/* CreditsTransactionsTab.module.css — extracted inline styles */
+
+.filterRow {
+  align-items: flex-end;
+}
+
+.filterField {
+  min-width: 180px;
+  flex: 1 1 180px;
+}
+
+.filterFieldDate {
+  min-width: 150px;
+  flex: 1 1 150px;
+}
+
+.filterFieldAction {
+  min-width: 120px;
+  flex: 0 0 auto;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color, #d1d5db);
+  background-color: var(--app-surface);
+  color: var(--text-primary);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  border: 4px solid var(--spinner-track, #f3f3f3);
+  border-top: 4px solid var(--spinner-active, #3498db);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.transactionTitle {
+  margin-top: 0;
+}
+
+.transactionTable {
+  border-collapse: collapse;
+}
+
+.tableHeaderRow {
+  border-bottom: 2px solid var(--border-strong, #ddd);
+}
+
+.tableBodyRow {
+  border-bottom: 1px solid var(--border-light, #eee);
+}
+
+.amountCell[data-positive="true"] {
+  color: var(--app-success);
+}
+
+.amountCell[data-positive="false"] {
+  color: var(--app-error);
+}
+
+.testNote {
+  margin: 8px 0 0 0;
+  font-style: italic;
+}

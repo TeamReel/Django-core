@@ -26,6 +26,7 @@ import {
   EmptyState,
 } from './MediaLibCards';
 import { useMediaLibData } from './useMediaLibData';
+import styles from './index.module.css';
 
 // Level labels for header
 const LEVEL_LABELS: Record<HierarchyTab, string> = {
@@ -57,14 +58,14 @@ const MediaLibraryPage: React.FC = () => {
 
   if (!orgId) {
     return (
-      <div className="p-24 bg-primary" style={{ minHeight: '100vh' }}>
+      <div className={`p-24 bg-primary ${styles.page}`}>
         <Alert variant="info">Selecteer een organisatie om de media library te bekijken.</Alert>
       </div>
     );
   }
 
   return (
-    <div className="bg-primary" style={{ minHeight: '100vh' }}>
+    <div className={`bg-primary ${styles.page}`}>
       {/* Header */}
       <div className="p-24 border-bottom bg-surface">
         <Stack direction="column" gap="1">
@@ -83,8 +84,7 @@ const MediaLibraryPage: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Zoeken..."
-          className="flex-1 py-8 px-12 rounded-6 border bg-surface fs-13"
-          style={{ minWidth: 180 }}
+          className={`flex-1 py-8 px-12 rounded-6 border bg-surface fs-13 ${styles.searchInput}`}
         />
 
         {/* Organisation filter (only for superadmin) */}
@@ -96,8 +96,7 @@ const MediaLibraryPage: React.FC = () => {
               setSelectedClubId('');
               setSelectedTeamId('');
             }}
-            className="py-8 px-12 rounded-6 border bg-surface fs-13"
-            style={{ minWidth: 160 }}
+            className={`py-8 px-12 rounded-6 border bg-surface fs-13 ${styles.filterSelect}`}
           >
             <option value="">Federation: All</option>
             {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
@@ -114,8 +113,7 @@ const MediaLibraryPage: React.FC = () => {
               setSelectedClubId(e.target.value);
               setSelectedTeamId('');
             }}
-            className="py-8 px-12 rounded-6 border bg-surface fs-13"
-            style={{ minWidth: 160 }}
+            className={`py-8 px-12 rounded-6 border bg-surface fs-13 ${styles.filterSelect}`}
           >
             <option value="">Club: All</option>
             {[...clubs].sort((a, b) => a.name.localeCompare(b.name)).map((club) => (
@@ -129,8 +127,7 @@ const MediaLibraryPage: React.FC = () => {
           <select
             value={selectedTeamId}
             onChange={(e) => setSelectedTeamId(e.target.value)}
-            className="py-8 px-12 rounded-6 border bg-surface fs-13"
-            style={{ minWidth: 160 }}
+            className={`py-8 px-12 rounded-6 border bg-surface fs-13 ${styles.filterSelect}`}
           >
             <option value="">Team: All</option>
             {[...filteredTeams].sort((a, b) => a.name.localeCompare(b.name)).map((team) => (
@@ -151,7 +148,7 @@ const MediaLibraryPage: React.FC = () => {
       </div>
 
       {/* Content area */}
-      <div className="p-24 mx-auto" style={{ maxWidth: 1400 }}>
+      <div className={`p-24 mx-auto ${styles.contentArea}`}>
         <Stack direction="column" gap="4">
 
           {/* Sub-tabs (content type chips) */}
@@ -210,7 +207,7 @@ const MediaLibraryPage: React.FC = () => {
 
           {/* Loading */}
           {loading && (
-            <div className="text-center" style={{ padding: 48 }}>
+            <div className={`text-center ${styles.loadingContainer}`}>
               <Text color="secondary">Assets laden...</Text>
             </div>
           )}
@@ -218,9 +215,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* Brand Assets Grid (org, club, team) */}
           {activeLevel !== 'files' && activeLevel !== 'member' && !loading && (
             filteredBrandAssets.length > 0 ? (
-              <div className="card-grid grid gap-16" style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              }}>
+              <div className={`card-grid grid gap-16 ${styles.cardGrid}`}>
                 {filteredBrandAssets.map((asset) => (
                   <AssetCard
                     key={asset.id}
@@ -240,9 +235,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* Member Media Grid */}
           {activeLevel === 'member' && !loading && (
             filteredMemberMedia.length > 0 ? (
-              <div className="card-grid grid gap-16" style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              }}>
+              <div className={`card-grid grid gap-16 ${styles.cardGrid}`}>
                 {filteredMemberMedia.map((item) => (
                   <MemberMediaCard
                     key={item.id}
@@ -262,9 +255,7 @@ const MediaLibraryPage: React.FC = () => {
           {/* File Assets Grid */}
           {activeLevel === 'files' && !loading && (
             filteredFiles.length > 0 ? (
-              <div className="card-grid grid gap-16" style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              }}>
+              <div className={`card-grid grid gap-16 ${styles.cardGrid}`}>
                 {filteredFiles.map((file) => (
                   <FileCard key={file.id} file={file} onDownload={handleDownload} />
                 ))}

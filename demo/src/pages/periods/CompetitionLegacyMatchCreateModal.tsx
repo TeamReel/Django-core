@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { combineDateTime, addHoursToIsoLike } from './competitionDetailUtils';
+import styles from './CompetitionLegacyMatchCreateModal.module.css';
 
 export function CompetitionLegacyMatchCreateModal({
   opened,
@@ -124,54 +125,23 @@ export function CompetitionLegacyMatchCreateModal({
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: 'var(--app-surface)',
-          padding: '24px',
-          borderRadius: '8px',
-          width: '640px',
-          maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          color: 'var(--app-text)',
-          border: '1px solid var(--app-border)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px' }}>
-          <h2 style={{ marginTop: 0, marginBottom: '12px', color: 'var(--app-text)' }}>Create Match</h2>
+    <div className={styles.overlay}>
+      <div className={styles.modal}>
+        <div className={styles.header}>
+          <h2 className={styles.headerTitle}>Create Match</h2>
           <button
             type="button"
             onClick={onClose}
             disabled={isSaving}
-            style={{
-              padding: '6px 10px',
-              borderRadius: '4px',
-              border: '1px solid var(--app-border)',
-              backgroundColor: 'var(--app-surface-2)',
-              color: 'var(--app-text)',
-              cursor: isSaving ? 'not-allowed' : 'pointer',
-              height: 'fit-content',
-            }}
+            className={styles.closeButton}
+            data-saving={isSaving}
           >
             Close
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+          <div className={styles.formGrid}>
             <label className="fw-600" htmlFor="competition-match-venue">
               Venue
             </label>
@@ -189,13 +159,7 @@ export function CompetitionLegacyMatchCreateModal({
                 }
               }}
               disabled={isSaving}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.formControl}
             >
               <option value="Home">Home</option>
               <option value="Away">Away</option>
@@ -210,13 +174,7 @@ export function CompetitionLegacyMatchCreateModal({
               onChange={(e) => setTitle(e.target.value)}
               disabled={isSaving}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.formControl}
             />
 
             <label className="fw-600" htmlFor="competition-match-opponent">
@@ -236,13 +194,7 @@ export function CompetitionLegacyMatchCreateModal({
               }}
               disabled={isSaving || loadingOpponentTeams}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.formControl}
             >
               <option value="">{loadingOpponentTeams ? 'Loading opponents…' : 'Select opponent…'}</option>
               {opponentTeams.map((t) => (
@@ -262,13 +214,7 @@ export function CompetitionLegacyMatchCreateModal({
               onChange={(e) => setMatchDate(e.target.value)}
               disabled={isSaving}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.formControl}
             />
 
             <label className="fw-600" htmlFor="competition-match-time">
@@ -281,13 +227,7 @@ export function CompetitionLegacyMatchCreateModal({
               onChange={(e) => setMatchTime(e.target.value)}
               disabled={isSaving}
               required
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.formControl}
             />
 
             <label className="fw-600" htmlFor="competition-match-location">
@@ -298,13 +238,7 @@ export function CompetitionLegacyMatchCreateModal({
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               disabled={isSaving}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-              }}
+              className={styles.formControl}
             />
 
             <label className="fw-600" htmlFor="competition-match-description">
@@ -316,32 +250,17 @@ export function CompetitionLegacyMatchCreateModal({
               onChange={(e) => setDescription(e.target.value)}
               disabled={isSaving}
               rows={4}
-              style={{
-                padding: '8px 10px',
-                borderRadius: '6px',
-                border: '1px solid var(--app-border)',
-                backgroundColor: 'var(--app-surface-2)',
-                color: 'var(--app-text)',
-                resize: 'vertical',
-              }}
+              className={styles.formControlTextarea}
             />
           </div>
 
-          {error && <div style={{ marginTop: '12px', color: 'var(--app-danger, #d32f2f)' }}>{error}</div>}
+          {error && <div className={styles.errorMessage}>{error}</div>}
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+          <div className={styles.actions}>
             <button
               type="submit"
               disabled={isSaving}
-              style={{
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: '1px solid #1e5aa5',
-                backgroundColor: 'var(--color-blue-600)',
-                color: '#fff',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
+              className={styles.submitButton}
             >
               {isSaving ? 'Creating…' : 'Create'}
             </button>

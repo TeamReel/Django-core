@@ -14,6 +14,7 @@ import {
 } from './memberDetailUtils';
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import m from './MemberPhotoCompositeTab.module.css';
 
 export function MemberPhotoCompositeTab({
   videoVariants,
@@ -70,9 +71,7 @@ export function MemberPhotoCompositeTab({
 
         {/* Prerequisites */}
         <div className={s.prerequisiteRow}>
-          <div className={s.prerequisiteCard} style={{
-            border: legacyHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-          }}>
+          <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(legacyHalfbodyUrl)}>
             <div className="fs-12 fw-600 mb-8">🏆 Legacy Halfbody</div>
             {legacyHalfbodyUrl ? (
               <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -80,9 +79,7 @@ export function MemberPhotoCompositeTab({
               <div className="text-muted fs-11">⚠️ Genereer eerst Legacy Halfbody</div>
             )}
           </div>
-          <div className={s.prerequisiteCard} style={{
-            border: currentHalfbodyUrl ? '2px solid var(--vscode-charts-green)' : '1px dashed var(--app-border)',
-          }}>
+          <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(currentHalfbodyUrl)}>
             <div className="fs-12 fw-600 mb-8">👕 Huidige Halfbody</div>
             {currentHalfbodyUrl ? (
               <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -94,12 +91,10 @@ export function MemberPhotoCompositeTab({
 
         {/* Pipeline steps */}
         <div className={s.kitSectionMargin}>
-          <div className={s.variantGrid} style={{ opacity: hasBothInputs ? 1 : 0.5 }}>
+          <div className={`${s.variantGrid} ${m.variantGridDynamic}`} data-faded={!hasBothInputs}>
             {/* Step 1: Gemini Composite Image */}
-            <div className={s.variantCard} style={{
-              border: hasCompositeImage ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-            }}>
-              <div className={s.variantPreview916} style={{ background: hasCompositeImage ? '#000' : undefined }}>
+            <div className={`${s.variantCard} ${m.variantCardDynamic}`} data-ready={hasCompositeImage}>
+              <div className={`${s.variantPreview916} ${m.previewDynamic}`} data-dark={hasCompositeImage}>
                 {hasCompositeImage && compositeImageUrl ? (
                   <>
                     <img key={compositeImageUrl} src={compositeImageUrl} alt="Gemini Composite" className={s.mediaCoverContain} />
@@ -120,17 +115,12 @@ export function MemberPhotoCompositeTab({
             </div>
 
             {/* Step 2: MiniMax Video */}
-            <div className={s.variantCard} style={{
-              border: hasCompositeVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-              opacity: hasCompositeImage ? 1 : 0.4,
-            }}>
+            <div className={`${s.variantCard} ${m.variantCardDynamic}`} data-ready={hasCompositeVideo} data-dimmed={!hasCompositeImage}>
               <div
                 onClick={() => { if (compositeVideoUrl) setVideoPreviewUrl(compositeVideoUrl); }}
-                className={s.variantPreview916}
-                style={{
-                  background: (hasCompositeVideo && !compositeVideoLineupReady) ? '#000' : undefined,
-                  cursor: hasCompositeVideo ? 'pointer' : 'default',
-                }}>
+                className={`${s.variantPreview916} ${m.previewDynamic}`}
+                data-dark={hasCompositeVideo && !compositeVideoLineupReady}
+                data-clickable={hasCompositeVideo}>
                 {hasCompositeVideo && compositeVideoUrl ? (
                   <>
                     <video key={compositeVideoUrl} src={compositeVideoUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay />

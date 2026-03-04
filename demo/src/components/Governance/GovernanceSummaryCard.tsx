@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './GovernanceSummaryCard.module.css';
 
 type BalancePolicy = {
   id: string;
@@ -129,10 +130,10 @@ export default function GovernanceSummaryCard(props: {
   return (
     <Card>
       <div className="p-16">
-        <div className="gap-12 flex-wrap" style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div className={`gap-12 flex-wrap ${styles.header}`}>
           <div>
             <div className="fs-14 fw-800 text-primary">{title || 'Governance'}</div>
-            <div className="fs-12" style={{ color: 'var(--app-text-muted)', marginTop: 4 }}>
+            <div className={`fs-12 ${styles.description}`}>
               {description || 'Policies that apply to credits, transactions, and notifications.'}
             </div>
           </div>
@@ -162,9 +163,9 @@ export default function GovernanceSummaryCard(props: {
 
         <div className="mt-12">
           {loading ? (
-            <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>Loading balance policy…</div>
+            <div className={`fs-13 ${styles.mutedText}`}>Loading balance policy…</div>
           ) : !policy ? (
-            <div className="fs-13" style={{ color: 'var(--app-text-muted)' }}>
+            <div className={`fs-13 ${styles.mutedText}`}>
               No explicit balance policy found for this organisation. The backend may fall back to a safe default.
             </div>
           ) : (
@@ -173,12 +174,12 @@ export default function GovernanceSummaryCard(props: {
                 <div className="fs-13 fw-800 text-primary">
                   Balance policy
                   {source ? (
-                    <span className="ml-8 fs-12 fw-700" style={{ color: 'var(--app-text-muted)' }}>
+                    <span className={`ml-8 fs-12 fw-700 ${styles.sourceLabel}`}>
                       ({source === 'project' ? 'Project override' : source === 'organization' ? 'Organisation default' : 'Platform default'})
                     </span>
                   ) : null}
                 </div>
-                <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
+                <div className={`flex-row gap-8 flex-wrap ${styles.badgeRowEnd}`}>
                   {source === 'project' && (
                     <Badge variant="default" size="sm">
                       OVERRIDE
@@ -193,13 +194,13 @@ export default function GovernanceSummaryCard(props: {
                 </div>
               </div>
 
-              <div className="fs-12" style={{ color: 'var(--app-text-muted)', marginTop: 6 }}>
+              <div className={`fs-12 ${styles.policyMode}`}>
                 Mode:{' '}
                 <strong className="text-primary">
                   {policy.allow_negative ? 'Postpaid (can go negative)' : 'Prepaid (no negative balance)'}
                 </strong>
               </div>
-              <div className="fs-12 mt-4" style={{ color: 'var(--app-text-muted)' }}>
+              <div className={`fs-12 mt-4 ${styles.policyThreshold}`}>
                 Warn threshold:{' '}
                 <strong className="text-primary">{policy.warn_threshold ?? '—'}</strong>
               </div>

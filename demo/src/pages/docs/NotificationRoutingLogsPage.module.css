@@ -1,0 +1,50 @@
+/* NotificationRoutingLogsPage — extracted inline styles */
+
+.roleBadge {
+  padding: 4px 10px;
+  color: var(--color-white, white);
+  letter-spacing: 0.5px;
+}
+
+.roleBadge[data-role="admin"] {
+  background-color: var(--color-blue-500);
+}
+
+.roleBadge[data-role="org"] {
+  background-color: var(--color-purple, #a855f7);
+}
+
+.divider {
+  height: 24px;
+  width: 1px;
+  background-color: var(--app-border);
+}
+
+.scopeWrapper {
+  display: flex;
+  padding: 3px;
+}
+
+.scopeBtn {
+  transition: all 0.2s;
+  background-color: transparent;
+  color: var(--app-text);
+}
+
+.scopeBtn[data-active="true"][data-variant="global"] {
+  background-color: var(--color-blue-500);
+  color: var(--color-white, white);
+}
+
+.scopeBtn[data-active="true"][data-variant="org"] {
+  background-color: var(--color-purple, #a855f7);
+  color: var(--color-white, white);
+}
+
+.logsTable {
+  border-collapse: collapse;
+}
+
+.channelsFlex {
+  display: flex;
+}

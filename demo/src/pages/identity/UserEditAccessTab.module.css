@@ -1,0 +1,33 @@
+.fedInfoCol {
+  flex: 1 1 260px;
+}
+
+.orgRoleCol {
+  flex: 1 1 220px;
+}
+
+.orgRoleSelect {
+  flex: 1 1 140px;
+  width: auto;
+}
+
+.inviteCol {
+  flex: 1 1 360px;
+}
+
+.autoWidthSelect {
+  width: auto;
+}
+
+.addFedButton {
+  cursor: pointer;
+}
+
+.addFedButton[data-busy="true"] {
+  cursor: not-allowed;
+}
+
+.accessRoleSelect {
+  flex: 1 1 200px;
+  width: auto;
+}

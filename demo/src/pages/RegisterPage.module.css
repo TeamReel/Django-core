@@ -1,0 +1,51 @@
+/* RegisterPage — CSS Module
+   Migrated from inline styles. Uses design-system custom properties. */
+
+.container {
+  margin-top: 100px;
+}
+
+.form {
+  gap: 15px;
+}
+
+.errorBox {
+  background-color: var(--color-red-50);
+  border: 1px solid var(--color-red-100);
+  color: var(--app-error);
+}
+
+.debugBox {
+  background-color: var(--app-surface-2);
+  border: 1px solid var(--app-border);
+}
+
+.label {
+  margin-bottom: 5px;
+}
+
+.input {
+  border: 1px solid var(--app-border);
+}
+
+.inputError {
+  border: 1px solid var(--app-error);
+}
+
+.submitButton {
+  background-color: var(--app-success);
+  cursor: pointer;
+}
+
+.submitButtonDisabled {
+  background-color: var(--app-border);
+  cursor: not-allowed;
+}
+
+.footerText {
+  color: var(--app-muted-text);
+}
+
+.footerLink {
+  color: var(--app-primary);
+}

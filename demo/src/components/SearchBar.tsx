@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearch, useDebounce, type GroupedSearchResults, type SearchResult } from '../hooks/useSearch';
+import styles from './SearchBar.module.css';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -111,8 +112,8 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
     : 0;
 
   return (
-    <div ref={searchRef} className={`search-bar ${className} relative`} style={{ width: '100%', maxWidth: '600px' }}>
-      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+    <div ref={searchRef} className={`search-bar ${className} relative ${styles.container}`}>
+      <form onSubmit={handleSubmit} className={styles.form}>
         <input
           type="text"
           value={query}
@@ -122,34 +123,13 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
             onQueryChange?.(next);
           }}
           placeholder={placeholder}
-          style={{
-            width: '100%',
-            padding: '8px 12px 8px 36px',
-            fontSize: '16px',
-            border: '1px solid var(--app-border, var(--color-border))',
-            borderRadius: '6px',
-            backgroundColor: 'var(--app-surface, var(--color-background-secondary))',
-            color: 'var(--app-text, var(--color-text-primary))',
-            outline: 'none',
-            transition: 'border-color 0.2s, box-shadow 0.2s',
-          }}
-          onFocus={(e) => {
-            e.currentTarget.style.borderColor = 'var(--app-primary, var(--color-primary))';
-            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(59, 130, 246, 0.1)';
+          className={styles.input}
+          onFocus={() => {
             query.trim().length >= 2 && setIsOpen(true);
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.borderColor = 'var(--app-border, var(--color-border))';
-            e.currentTarget.style.boxShadow = 'none';
           }}
         />
         <span
-          className="absolute fs-16 text-secondary"
-          style={{
-            left: '12px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-          }}
+          className={`absolute fs-16 text-secondary ${styles.searchIcon}`}
         >
           🔍
         </span>
@@ -157,15 +137,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
       {isOpen && query.trim().length >= 2 && (
         <div
-          className="absolute rounded-8 shadow-lg overflow-y-auto z-1000"
-          style={{
-            top: 'calc(100% + 8px)',
-            left: 0,
-            right: 0,
-            backgroundColor: 'var(--app-surface, var(--color-background-primary))',
-            border: '1px solid var(--app-border, var(--color-border))',
-            maxHeight: '70vh',
-          }}
+          className={`absolute rounded-8 shadow-lg overflow-y-auto z-1000 ${styles.dropdown}`}
         >
           {isSearching && (
             <div className="p-16 text-center text-secondary">
@@ -190,21 +162,14 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                 return (
                   <div key={category} className="border-bottom">
                     <div
-                      className="flex-between py-12 px-16 fw-600 fs-13 text-primary"
-                      style={{ backgroundColor: 'var(--color-background-secondary)' }}
+                      className={`flex-between py-12 px-16 fw-600 fs-13 text-primary ${styles.categoryHeader}`}
                     >
                       <span>
                         {getCategoryIcon(category)} {getCategoryLabel(category)}
                       </span>
                       <button
                         onClick={() => handleViewAll(category)}
-                        className="fs-12 cursor-pointer"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--color-primary)',
-                          padding: '4px 8px',
-                        }}
+                        className={`fs-12 cursor-pointer ${styles.viewAllButton}`}
                       >
                         View All →
                       </button>
@@ -213,27 +178,14 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                       <button
                         key={result.id}
                         onClick={() => handleResultClick(result)}
-                        className="text-left cursor-pointer transition"
-                        style={{
-                          width: '100%',
-                          padding: '12px 16px',
-                          border: 'none',
-                          background: 'none',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = 'var(--color-background-secondary)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        }}
+                        className={`text-left cursor-pointer transition ${styles.resultButton}`}
                       >
                         <div className="fw-500 text-primary mb-4">
                           {result.title}
                         </div>
                         {result.highlight && (
                           <div
-                            className="fs-13 text-secondary"
-                            style={{ lineHeight: '1.4' }}
+                            className={`fs-13 text-secondary ${styles.highlight}`}
                             dangerouslySetInnerHTML={{ __html: result.highlight }}
                           />
                         )}

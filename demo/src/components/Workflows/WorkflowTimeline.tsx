@@ -3,6 +3,7 @@
  * Shows who did what, when, with optional comments.
  */
 import { type TransitionHistoryEntry, getStateDisplay, getActionDisplay } from '../../hooks/useWorkflows';
+import styles from './WorkflowTimeline.module.css';
 
 interface WorkflowTimelineProps {
   history: TransitionHistoryEntry[];
@@ -27,7 +28,7 @@ function formatRelativeTime(dateStr: string): string {
 export function WorkflowTimeline({ history, loading }: WorkflowTimelineProps) {
   if (loading) {
     return (
-      <div style={{ padding: 16, color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
+      <div className={styles.placeholder}>
         Loading history...
       </div>
     );
@@ -35,14 +36,14 @@ export function WorkflowTimeline({ history, loading }: WorkflowTimelineProps) {
 
   if (!history.length) {
     return (
-      <div style={{ padding: 16, color: 'var(--app-text-secondary, #6b7280)', fontSize: 13 }}>
+      <div className={styles.placeholder}>
         No transitions recorded yet.
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, padding: '4px 0' }}>
+    <div className={styles.container}>
       {history.map((entry, idx) => {
         const actionDisplay = getActionDisplay(entry.action);
         const toStateDisplay = getStateDisplay(entry.to_state);
@@ -51,84 +52,45 @@ export function WorkflowTimeline({ history, loading }: WorkflowTimelineProps) {
         return (
           <div
             key={entry.id}
-            style={{
-              display: 'flex',
-              gap: 12,
-              position: 'relative',
-              paddingBottom: isLast ? 0 : 20,
-            }}
+            className={styles.entryRow}
+            data-last={isLast}
           >
             {/* Timeline bar */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                width: 24,
-                flexShrink: 0,
-              }}
-            >
+            <div className={styles.timelineBar}>
               {/* Dot */}
               <div
+                className={styles.dot}
                 style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  backgroundColor: toStateDisplay.color,
-                  border: `2px solid ${toStateDisplay.bgColor}`,
-                  marginTop: 4,
-                  flexShrink: 0,
-                  zIndex: 1,
-                }}
+                  '--dot-color': toStateDisplay.color,
+                  '--dot-border-color': toStateDisplay.bgColor,
+                } as React.CSSProperties}
               />
               {/* Line */}
-              {!isLast && (
-                <div
-                  style={{
-                    width: 2,
-                    flex: 1,
-                    backgroundColor: 'var(--app-border, #e5e7eb)',
-                    marginTop: 4,
-                  }}
-                />
-              )}
+              {!isLast && <div className={styles.line} />}
             </div>
 
             {/* Content */}
-            <div style={{ flex: 1, paddingBottom: 4 }}>
+            <div className={styles.content}>
               {/* Action + actor */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <div className={styles.actionRow}>
                 <span
+                  className={styles.actionBadge}
                   style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: actionDisplay.bgColor,
-                    backgroundColor: `${actionDisplay.bgColor}15`,
-                    borderRadius: 10,
-                    padding: '1px 8px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.02em',
-                  }}
+                    '--action-color': actionDisplay.bgColor,
+                    '--action-bg': `${actionDisplay.bgColor}15`,
+                  } as React.CSSProperties}
                 >
                   {actionDisplay.icon} {entry.action.replace(/_/g, ' ')}
                 </span>
-                <span style={{ fontSize: 12, color: 'var(--app-text-secondary, #6b7280)' }}>
+                <span className={styles.stateTransition}>
                   {entry.from_state} → {entry.to_state}
                 </span>
               </div>
 
               {/* By whom + when */}
-              <div
-                style={{
-                  fontSize: 11,
-                  color: 'var(--app-text-secondary, #9ca3af)',
-                  marginTop: 3,
-                  display: 'flex',
-                  gap: 8,
-                }}
-              >
+              <div className={styles.meta}>
                 {entry.actor_username && (
-                  <span>by <strong style={{ color: 'var(--app-text, #6b7280)' }}>{entry.actor_username}</strong></span>
+                  <span>by <strong className={styles.actorName}>{entry.actor_username}</strong></span>
                 )}
                 <span title={new Date(entry.created_at).toLocaleString()}>
                   {formatRelativeTime(entry.created_at)}
@@ -138,16 +100,10 @@ export function WorkflowTimeline({ history, loading }: WorkflowTimelineProps) {
               {/* Comment */}
               {entry.comment && (
                 <div
+                  className={styles.comment}
                   style={{
-                    fontSize: 12,
-                    color: 'var(--app-text, #374151)',
-                    marginTop: 6,
-                    padding: '6px 10px',
-                    backgroundColor: 'var(--app-surface-2, #f9fafb)',
-                    borderRadius: 6,
-                    borderLeft: `3px solid ${toStateDisplay.color}`,
-                    fontStyle: 'italic',
-                  }}
+                    '--comment-accent': toStateDisplay.color,
+                  } as React.CSSProperties}
                 >
                   "{entry.comment}"
                 </div>

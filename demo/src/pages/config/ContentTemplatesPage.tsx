@@ -6,6 +6,7 @@ import { Table } from '../../shims/design-system';
 import { TYPE_LABELS, SUBTYPE_LABELS, TEMPLATE_CATEGORIES } from './contentTemplatesData';
 import { useContentTemplatesData } from './useContentTemplatesData';
 import { ContentTemplateModal } from './ContentTemplateModal';
+import styles from './ContentTemplatesPage.module.css';
 
 export default function ContentTemplatesPage() {
   const {
@@ -35,16 +36,6 @@ export default function ContentTemplatesPage() {
     pageTitle, navigate,
   } = useContentTemplatesData();
 
-  const filterSelectStyle: React.CSSProperties = {
-    padding: '8px 12px',
-    borderRadius: '6px',
-    border: '1px solid var(--app-border)',
-    backgroundColor: 'var(--app-bg)',
-    color: 'var(--app-text)',
-    fontSize: '14px',
-    cursor: 'pointer',
-  };
-
   return (
     <AppShell>
       <PageHeader
@@ -61,7 +52,7 @@ export default function ContentTemplatesPage() {
         <Card>
           {/* Search & Filters */}
           <div className="flex-row gap-12 flex-wrap mb-16">
-            <div className="flex-1" style={{ minWidth: '200px' }}>
+            <div className={`flex-1 ${styles.searchWrapper}`}>
               <Input
                 placeholder="Search templates..."
                 value={searchQuery}
@@ -76,7 +67,7 @@ export default function ContentTemplatesPage() {
                   setSelectedType(e.target.value);
                   setSelectedSubtype('all');
                 }}
-                style={filterSelectStyle}
+                className={styles.filterSelect}
               >
                 <option value="all">All Types</option>
                 {availableTypes.map(t => (
@@ -89,7 +80,7 @@ export default function ContentTemplatesPage() {
               <select
                 value={selectedSport}
                 onChange={(e) => setSelectedSport(e.target.value)}
-                style={filterSelectStyle}
+                className={styles.filterSelect}
               >
                 <option value="all">All Sports</option>
                 {availableSports.map(s => (
@@ -102,7 +93,7 @@ export default function ContentTemplatesPage() {
               <select
                 value={selectedSubtype}
                 onChange={(e) => setSelectedSubtype(e.target.value)}
-                style={filterSelectStyle}
+                className={styles.filterSelect}
               >
                 <option value="all">All Subtypes</option>
                 {availableSubtypes.map(st => (
@@ -115,7 +106,7 @@ export default function ContentTemplatesPage() {
               <select
                 value={selectedFormation}
                 onChange={(e) => setSelectedFormation(e.target.value)}
-                style={filterSelectStyle}
+                className={styles.filterSelect}
               >
                 <option value="all">All Formations</option>
                 {availableFormations.map(f => (
@@ -128,7 +119,7 @@ export default function ContentTemplatesPage() {
               <select
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
-                style={filterSelectStyle}
+                className={styles.filterSelect}
               >
                 <option value="all">All Styles</option>
                 {availableStyles.map(s => (
@@ -148,13 +139,13 @@ export default function ContentTemplatesPage() {
           </div>
 
           {loading ? (
-            <div className="text-center text-muted" style={{ padding: '40px' }}>
+            <div className={`text-center text-muted ${styles.loadingState}`}>
               Loading templates...
             </div>
           ) : error ? (
             <Alert variant="error">{error}</Alert>
           ) : filteredTemplates.length === 0 ? (
-            <div className="text-center text-muted" style={{ padding: '40px' }}>
+            <div className={`text-center text-muted ${styles.emptyState}`}>
               No templates found
               {selectedCategory !== 'all' && (
                 <div className="mt-8">
@@ -168,16 +159,16 @@ export default function ContentTemplatesPage() {
             <Table>
               <thead>
                 <tr>
-                  <th style={{ width: '18%' }}>Name</th>
-                  <th style={{ width: '10%' }}>Type</th>
-                  <th style={{ width: '10%' }}>Subtype</th>
-                  <th style={{ width: '10%' }}>Sport</th>
-                  <th style={{ width: '8%' }}>Variant</th>
-                  <th style={{ width: '8%' }}>Formation</th>
-                  <th style={{ width: '6%' }}>Style</th>
-                  <th style={{ width: '6%' }}>Credits</th>
-                  <th style={{ width: '6%' }}>Status</th>
-                  <th className="text-right" style={{ width: '18%' }}>Actions</th>
+                  <th className={styles.colName}>Name</th>
+                  <th className={styles.colType}>Type</th>
+                  <th className={styles.colSubtype}>Subtype</th>
+                  <th className={styles.colSport}>Sport</th>
+                  <th className={styles.colVariant}>Variant</th>
+                  <th className={styles.colFormation}>Formation</th>
+                  <th className={styles.colStyle}>Style</th>
+                  <th className={styles.colCredits}>Credits</th>
+                  <th className={styles.colStatus}>Status</th>
+                  <th className={`text-right ${styles.colActions}`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,11 +185,11 @@ export default function ContentTemplatesPage() {
                           <div className="fw-500 flex-row gap-8">
                             {template.name}
                             {template.organisation === null && (
-                              <Badge variant="warning" style={{ fontSize: '10px', padding: '2px 6px' }}>Global</Badge>
+                              <Badge variant="warning" className={styles.globalBadge}>Global</Badge>
                             )}
                           </div>
                           {template.description && (
-                            <div className="fs-12 text-muted" style={{ marginTop: '2px' }}>
+                            <div className={`fs-12 text-muted ${styles.templateDescription}`}>
                               {template.description.substring(0, 40)}
                               {template.description.length > 40 && '...'}
                             </div>

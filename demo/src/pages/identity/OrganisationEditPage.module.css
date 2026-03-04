@@ -1,0 +1,42 @@
+.form {
+  max-width: 600px;
+}
+
+.errorAlert {
+  margin-bottom: 1rem;
+}
+
+.fieldGroup {
+  margin-bottom: 1rem;
+}
+
+.fieldGroupLarge {
+  margin-bottom: 1.5rem;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.checkboxGroup {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+}
+
+.checkboxLabel {
+  font-weight: 500;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+}

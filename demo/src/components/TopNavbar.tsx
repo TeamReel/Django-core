@@ -33,7 +33,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
     <div className={s.wrapper}>
       <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
       <nav className={s.nav}>
-        <div className={s.navContainer} style={{ padding: isMobile ? '0 12px' : '0 24px', gap: isMobile ? '8px' : '16px' }}>
+        <div className={s.navContainer} data-mobile={isMobile}>
           {/* Mobile hamburger */}
           {isMobile && (
             <button
@@ -76,11 +76,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     aria-expanded={isOpen}
                     aria-controls="mega-menu-panel"
                     className={s.groupTrigger}
-                    style={{
-                      color: isActive ? 'var(--color-blue-600)' : 'var(--app-text)',
-                      backgroundColor: isActive || isOpen ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                      fontWeight: isActive ? 600 : 500,
-                    }}
+                    data-active={isActive}
+                    data-open={isOpen}
                   >
                     <span>{group.label}</span>
                     <AppIcon icon={isOpen ? ChevronUp : ChevronDown} size={12} />
@@ -96,9 +93,8 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                       className={s.megaPanel}
                     >
                       <div className={s.megaPanelInner}>
-                        <div className="grid" style={{
+                        <div className={`grid ${s.megaGrid}`} style={{
                           gridTemplateColumns: `repeat(${getColumnCount(group.items.length)}, minmax(0, 1fr))`,
-                          columnGap: 40, rowGap: 10,
                         }}>
                           {group.items.map((item) => (
                             <Link
@@ -107,16 +103,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                               role="menuitem"
                               onClick={() => d.setOpenDropdown(null)}
                               className={s.megaItem}
-                              style={{
-                                color: d.isItemActive(item.path) ? 'var(--color-blue-600)' : 'var(--app-text)',
-                                backgroundColor: d.isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                              }}
-                              onMouseEnter={(e) => { if (!d.isItemActive(item.path)) e.currentTarget.style.backgroundColor = 'var(--app-surface-2)'; }}
-                              onMouseLeave={(e) => { if (!d.isItemActive(item.path)) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                              data-active={d.isItemActive(item.path)}
                             >
                               {item.icon && <span className={s.megaItemIcon}><AppIcon icon={item.icon} size={16} /></span>}
                               <div className={s.megaItemTextWrap}>
-                                <span className={s.megaItemLabel} style={{ fontWeight: d.isItemActive(item.path) ? 600 : 500 }}>{item.label}</span>
+                                <span className={s.megaItemLabel}>{item.label}</span>
                                 {item.description && <span className={s.megaItemDescription}>{item.description}</span>}
                               </div>
                             </Link>
@@ -132,12 +123,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
           {/* Right: User controls */}
           {d.user ? (
-            <div className={s.userControls} style={{ gap: isMobile ? 8 : 16 }}>
+            <div className={s.userControls} data-mobile={isMobile}>
               {/* Search Bar */}
               {!isMobile && (
                 <div
                   className={`nav-search-container${d.navSearchHasQuery ? ' has-query' : ''} ${s.searchWrap}`}
-                  style={{ flex: '1 1 360px' }}
                 >
                   <SearchBar placeholder="Search..." onQueryChange={(q) => d.setNavSearchHasQuery(Boolean(String(q || '').trim()))} />
                 </div>
@@ -164,7 +154,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     onClick={() => d.navigate('/content')}
                     className={`nav-icon-button ${s.createMainBtn}`}
                     title="Create content" aria-label="Create content"
-                    style={{ background: d.createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent' }}
+                    data-open={d.createMenuOpen}
                   >
                     <AppIcon icon={Plus} size={18} />
                     <span className="fs-13 fw-800">Create</span>
@@ -174,7 +164,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                     onClick={() => d.setCreateMenuOpen((v) => !v)}
                     className={`nav-icon-button ${s.createChevronBtn}`}
                     title="More create options" aria-label="More create options"
-                    style={{ background: d.createMenuOpen ? 'rgba(59, 130, 246, 0.12)' : 'transparent' }}
+                    data-open={d.createMenuOpen}
                   >
                     <AppIcon icon={d.createMenuOpen ? ChevronUp : ChevronDown} size={12} />
                   </button>
@@ -187,8 +177,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                           type="button"
                           onClick={() => { d.setCreateMenuOpen(false); d.navigate(item.path); }}
                           className={s.createMenuItem}
-                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2)'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                         >
                           <span className="fs-14 fw-700">{item.label}</span>
                           <span className="fs-12 text-muted">{item.hint}</span>
@@ -228,14 +216,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                           key={lang}
                           onClick={() => d.handleLanguageChange(lang)}
                           className={s.langItem}
-                          style={{
-                            backgroundColor: d.language === lang ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                            color: d.language === lang ? 'var(--app-link)' : 'var(--app-text)',
-                            fontWeight: d.language === lang ? 600 : 400,
-                            borderBottom: lang !== 'FR' ? '1px solid var(--app-border)' : 'none',
-                          }}
-                          onMouseEnter={(e) => { if (d.language !== lang) e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)'; }}
-                          onMouseLeave={(e) => { if (d.language !== lang) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                          data-selected={d.language === lang}
                         >
                           {lang}
                         </button>
@@ -265,7 +246,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               >
                 <AppIcon icon={Bell} size={20} />
                 {d.unreadCount > 0 && (
-                  <span className={s.badge} style={{ backgroundColor: 'var(--app-error)' }}>{d.unreadCount}</span>
+                  <span className={`${s.badge} ${s.badgeError}`}>{d.unreadCount}</span>
                 )}
               </button>
 
@@ -362,11 +343,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           <Link
             to={d.dashboardItem.path}
             className={s.mobileDashLink}
-            style={{
-              color: d.isItemActive(d.dashboardItem.path) ? 'var(--color-blue-600)' : 'var(--app-text)',
-              backgroundColor: d.isItemActive(d.dashboardItem.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-              fontWeight: d.isItemActive(d.dashboardItem.path) ? 600 : 500,
-            }}
+            data-active={d.isItemActive(d.dashboardItem.path)}
           >
             <AppIcon icon={d.dashboardItem.icon} size={16} />
             <span>{d.dashboardItem.label}</span>
@@ -379,11 +356,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                   key={item.path}
                   to={item.path}
                   className={s.mobileGroupItem}
-                  style={{
-                    color: d.isItemActive(item.path) ? 'var(--color-blue-600)' : 'var(--app-text)',
-                    backgroundColor: d.isItemActive(item.path) ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                    fontWeight: d.isItemActive(item.path) ? 600 : 400,
-                  }}
+                  data-active={d.isItemActive(item.path)}
                 >
                   {item.icon && <AppIcon icon={item.icon} size={16} />}
                   <span>{item.label}</span>

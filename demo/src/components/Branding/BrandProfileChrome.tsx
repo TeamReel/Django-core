@@ -4,6 +4,7 @@ import {
   Sparkles, Edit, Plus, Loader2, AlertCircle, CheckCircle, XCircle, Wand2, Palette,
 } from 'lucide-react';
 import type { BrandProfile } from './brandIdentity.types';
+import styles from './BrandProfileChrome.module.css';
 
 // ── ProfileHeader ────────────────────────────────────────────
 export function ProfileHeader({
@@ -24,20 +25,19 @@ export function ProfileHeader({
 
   return (
     <Card className="p-24">
-      <div className="flex-between" style={{ alignItems: 'flex-start' }}>
-        <div className="flex-row gap-16" style={{ alignItems: 'flex-start' }}>
+      <div className={`flex-between ${styles.headerWrapper}`}>
+        <div className={`flex-row gap-16 ${styles.headerContent}`}>
           {logoUrl ? (
-            <div className="rounded-12 border flex-center p-8 overflow-hidden" style={{ width: '80px', height: '80px', backgroundColor: 'var(--app-surface-alt, #f8f8f8)' }}>
+            <div className={`rounded-12 border flex-center p-8 overflow-hidden ${styles.logoContainer}`}>
               <img
                 src={logoUrl}
                 alt={logoAsset?.alt_text || `${entityName} logo`}
-                className="object-contain"
-                style={{ maxWidth: '100%', maxHeight: '100%' }}
+                className={`object-contain ${styles.logoImage}`}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             </div>
           ) : (
-            <div className="rounded-12 flex-center text-white" style={{ width: '64px', height: '64px', background: 'linear-gradient(135deg, var(--app-primary) 0%, var(--app-primary-dark, var(--app-primary)) 100%)' }}>
+            <div className={`rounded-12 flex-center text-white ${styles.iconFallback}`}>
               <Sparkles size={28} />
             </div>
           )}
@@ -101,12 +101,12 @@ export function EmptyState({
   onCreateProfile?: () => void;
 }) {
   return (
-    <Card className="text-center" style={{ padding: '48px' }}>
-      <div className="rounded-full flex-center mx-auto mb-24" style={{ width: '80px', height: '80px', background: 'linear-gradient(135deg, var(--app-surface-alt) 0%, var(--app-border) 100%)' }}>
-        <Palette size={36} style={{ opacity: 0.4 }} />
+    <Card className={`text-center ${styles.emptyCard}`}>
+      <div className={`rounded-full flex-center mx-auto mb-24 ${styles.emptyIconWrapper}`}>
+        <Palette size={36} className={styles.emptyIcon} />
       </div>
       <Text weight="bold" size="lg">No Brand Profile</Text>
-      <Text color="secondary" className="mt-8 mx-auto" style={{ maxWidth: '400px' }}>
+      <Text color="secondary" className={`mt-8 mx-auto ${styles.emptyDescription}`}>
         {entityName} doesn't have a brand identity configured yet.
         {entityType === 'organisation'
           ? ' Create a brand profile to define colors, typography, and visual assets.'
@@ -120,9 +120,9 @@ export function EmptyState({
       )}
 
       {entityType !== 'organisation' && (
-        <div className="mt-24 p-16 rounded-8 inline-block" style={{ backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))' }}>
+        <div className={`mt-24 p-16 rounded-8 inline-block ${styles.inheritNotice}`}>
           <Text size="xs" color="secondary">
-            <AlertCircle size={14} style={{ verticalAlign: 'middle', marginRight: '6px' }} />
+            <AlertCircle size={14} className={styles.alertIcon} />
             Brand profiles are inherited from the parent organisation
           </Text>
         </div>

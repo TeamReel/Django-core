@@ -5,8 +5,9 @@
  * Route: /workflow-templates
  * Sidebar: SETTINGS section (staff only)
  */
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { PageContent, PageHeader } from '@django-core/page-templates';
+import styles from './WorkflowTemplatesPage.module.css';
 import { useWorkflowTemplates, type WorkflowTemplate, getStateDisplay, getActionDisplay } from '../../hooks/useWorkflows';
 import { WorkflowStatusBadge } from '../../components/Workflows/WorkflowStatusBadge';
 
@@ -23,23 +24,22 @@ export default function WorkflowTemplatesPage() {
 
       <PageContent>
         {error && (
-          <div className="rounded-8 fs-13 mb-16" style={{ padding: '10px 14px', backgroundColor: '#fee2e2', color: '#dc2626' }}>
+          <div className={`rounded-8 fs-13 mb-16 ${styles.errorBanner}`}>
             {error}
           </div>
         )}
 
         {loading && (
-          <div className="text-center text-secondary fs-13" style={{ padding: 40 }}>
+          <div className={`text-center text-secondary fs-13 ${styles.loadingText}`}>
             Loading templates...
           </div>
         )}
 
         {!loading && templates.length === 0 && (
           <div
-            className="text-center text-secondary bg-surface-2 rounded-12"
-            style={{ padding: 48, border: '1px dashed var(--app-border, #e5e7eb)' }}
+            className={`text-center text-secondary bg-surface-2 rounded-12 ${styles.emptyState}`}
           >
-            <div className="mb-8" style={{ fontSize: 32 }}>📋</div>
+            <div className={`mb-8 ${styles.emptyStateIcon}`}>📋</div>
                         <div className="fw-600 mb-4 fs-15">No workflow templates</div>
             <div className="fs-12">Create workflow templates via the API to define approval flows.</div>
           </div>
@@ -64,18 +64,14 @@ export default function WorkflowTemplatesPage() {
                   >
                     <div>
                         <div className="flex-row gap-8">
-                        <span className="fw-600 fs-15" style={{ color: 'var(--app-text, #111)' }}>
+                        <span className={`fw-600 fs-15 ${styles.templateName}`}>
                           {template.name}
                         </span>
-                        <span className="fs-11 fw-600 text-muted rounded-4" style={{
-                            backgroundColor: '#f3f4f6',
-                            padding: '2px 6px',
-                          }}
-                        >
+                        <span className={`fs-11 fw-600 text-muted rounded-4 ${styles.versionBadge}`}>
                           v{template.version}
                         </span>
                         {template.is_active && (
-                          <span className="fs-11 fw-600 rounded-4" style={{ color: '#059669', backgroundColor: '#d1fae5', padding: '2px 6px' }}>
+                          <span className={`fs-11 fw-600 rounded-4 ${styles.activeBadge}`}>
                             Active
                           </span>
                         )}
@@ -90,7 +86,7 @@ export default function WorkflowTemplatesPage() {
                       <span className="fs-11 text-muted">
                         {states.length} states · {transitions.length} transitions
                       </span>
-                      <span className="fs-16 text-muted transition" style={{ transform: isExpanded ? 'rotate(180deg)' : 'none' }}>▾</span>
+                      <span className={`fs-16 text-muted transition ${styles.chevron}`} data-expanded={isExpanded || undefined}>▾</span>
                     </div>
                   </button>
 
@@ -122,8 +118,7 @@ export default function WorkflowTemplatesPage() {
                           Transitions
                         </div>
                         <div
-                          className="grid gap-8"
-                          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+                          className={`grid gap-8 ${styles.transitionsGrid}`}
                         >
                           {transitions.map((t, idx) => {
                             const actionStyle = getActionDisplay(t.action);
@@ -137,30 +132,18 @@ export default function WorkflowTemplatesPage() {
                               >
                                 <div className="flex-row gap-6 mb-6">
                                   <span
-                                    className="fw-600 fs-11"
-                                    style={{
-                                      color: actionStyle.bgColor,
-                                    }}
+                                    className={`fw-600 fs-11 ${styles.actionLabel}`}
+                                    style={{ '--action-color': actionStyle.bgColor } as CSSProperties}
                                   >
                                     {actionStyle.icon} {t.action.replace(/_/g, ' ').toUpperCase()}
                                   </span>
                                 </div>
                                 <div className="flex-row gap-6">
-                                  <span className="rounded-4 fw-600" style={{
-                                    padding: '1px 6px',
-                                    backgroundColor: fromStyle.bgColor,
-                                    color: fromStyle.color,
-                                    fontSize: 10,
-                                  }}>
+                                  <span className={`rounded-4 fw-600 ${styles.stateBadge}`} style={{ '--state-bg': fromStyle.bgColor, '--state-color': fromStyle.color } as CSSProperties}>
                                     {t.from_state}
                                   </span>
                                   <span className="text-muted">→</span>
-                                  <span className="rounded-4 fw-600" style={{
-                                    padding: '1px 6px',
-                                    backgroundColor: toStyle.bgColor,
-                                    color: toStyle.color,
-                                    fontSize: 10,
-                                  }}>
+                                  <span className={`rounded-4 fw-600 ${styles.stateBadge}`} style={{ '--state-bg': toStyle.bgColor, '--state-color': toStyle.color } as CSSProperties}>
                                     {t.to_state}
                                   </span>
                                 </div>

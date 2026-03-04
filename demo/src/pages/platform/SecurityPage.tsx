@@ -12,6 +12,7 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './SecurityPage.module.css';
 // import AppShell from '../../components/AppShell';
 
 /**
@@ -70,19 +71,8 @@ const FilterButton: React.FC<{ active: boolean; onClick: () => void; children: R
   <button
     type="button"
     onClick={onClick}
-    style={{
-      padding: '6px 16px',
-      borderRadius: '20px',
-      border: '1px solid',
-      borderColor: active ? 'var(--app-primary)' : 'var(--app-border)',
-      backgroundColor: active ? 'var(--app-surface-active)' : 'var(--app-surface)',
-      color: active ? 'var(--app-primary)' : 'var(--app-text)',
-      cursor: 'pointer',
-      fontSize: '13px',
-      fontWeight: 500,
-      transition: 'all 0.2s',
-      outline: 'none',
-    }}
+    className={styles.filterButton}
+    data-active={active}
   >
     {children}
   </button>
@@ -269,8 +259,7 @@ export const SecurityPage: React.FC = () => {
               <select
                 value={currentOrgSlug}
                 onChange={handleOrgChange}
-                className="p-8 rounded-4"
-                style={{ border: '1px solid #ccc' }}
+                className={`p-8 rounded-4 ${styles.orgSelect}`}
               >
                 <option value="">All Organisations</option>
                 {organisations.map(org => (
@@ -283,22 +272,22 @@ export const SecurityPage: React.FC = () => {
       <PageContent>
         <Card data-testid="security-summary" className="mb-16">
           <div className="p-24">
-            <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            <div className={`grid gap-16 ${styles.summaryGrid}`}>
               <div className="p-16 border rounded-8 bg-surface">
                 <div className="fs-14 text-muted">Total Events</div>
-                <div className="fw-700 text-primary" style={{ fontSize: '30px' }}>{security?.total_events || 0}</div>
+                <div className={`fw-700 text-primary ${styles.statValue}`}>{security?.total_events || 0}</div>
               </div>
               <div className="p-16 border rounded-8 bg-surface">
                 <div className="fs-14 text-muted">Resolved</div>
-                <div className="fw-700 text-success" style={{ fontSize: '30px' }}>{security?.resolved_events || 0}</div>
+                <div className={`fw-700 text-success ${styles.statValue}`}>{security?.resolved_events || 0}</div>
               </div>
               <div className="p-16 border rounded-8 bg-surface">
                 <div className="fs-14 text-muted">Unresolved</div>
-                <div className="fw-700" style={{ fontSize: '30px', color: 'var(--color-warning)' }}>{unresolvedEvents}</div>
+                <div className={`fw-700 ${styles.unresolvedValue}`}>{unresolvedEvents}</div>
               </div>
               <div className="p-16 border rounded-8 bg-surface">
                 <div className="fs-14 text-muted">Critical</div>
-                <div className="fw-700 text-error" style={{ fontSize: '30px' }}>{criticalEvents}</div>
+                <div className={`fw-700 text-error ${styles.statValue}`}>{criticalEvents}</div>
               </div>
             </div>
           </div>
@@ -308,10 +297,10 @@ export const SecurityPage: React.FC = () => {
           <Card data-testid="asvs-scorecard" className="mb-16">
             <div className="p-24">
               <h3 className="fs-18 fw-600 m-0 mb-16">ASVS Scorecard</h3>
-              <div className="grid gap-16" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))' }}>
+              <div className={`grid gap-16 ${styles.asvsGrid}`}>
                 <div className="p-16 border rounded-8">
                   <div className="fs-14 text-muted">Level 1 (Completeness)</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-primary)' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.asvsLevelValue}`}>
                     {security.asvs_scorecard.level1}%
                   </div>
                 </div>
@@ -323,7 +312,7 @@ export const SecurityPage: React.FC = () => {
                 </div>
                 <div className="p-16 border rounded-8">
                   <div className="fs-14 text-muted">Level 3 (Advanced)</div>
-                  <div className="fs-24 fw-700 mt-8" style={{ color: 'var(--app-primary)' }}>
+                  <div className={`fs-24 fw-700 mt-8 ${styles.asvsLevelValue}`}>
                     {security.asvs_scorecard.level3}%
                   </div>
                 </div>
@@ -345,7 +334,7 @@ export const SecurityPage: React.FC = () => {
                 <div className="flex-col gap-12 p-16 bg-surface-2 rounded-8 border">
                   {/* Status Row */}
                   <div className="flex-row gap-12">
-                    <span className="fs-13 fw-600 text-muted" style={{ minWidth: '60px' }}>Status:</span>
+                    <span className={`fs-13 fw-600 text-muted ${styles.filterLabel}`}>Status:</span>
                     <div className="flex-row flex-wrap gap-8">
                       {['all', 'open', 'resolved'].map(status => (
                         <FilterButton
@@ -365,7 +354,7 @@ export const SecurityPage: React.FC = () => {
 
                   {/* Severity Row */}
                   <div className="flex-row gap-12">
-                    <span className="fs-13 fw-600 text-muted" style={{ minWidth: '60px' }}>Severity:</span>
+                    <span className={`fs-13 fw-600 text-muted ${styles.filterLabel}`}>Severity:</span>
                     <div className="flex-row flex-wrap gap-8">
                       {['all', 'critical', 'high', 'medium', 'low'].map(sev => (
                         <FilterButton

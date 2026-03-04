@@ -1,0 +1,41 @@
+.loadingText {
+  color: var(--vscode-descriptionForeground, #888);
+}
+
+.errorText {
+  color: var(--vscode-errorForeground, #f44);
+}
+
+.warningBox {
+  padding: 16px;
+  background: var(--vscode-inputValidation-warningBackground, #5a4000);
+  border: 1px solid var(--vscode-inputValidation-warningBorder, #856d00);
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 12px;
+}
+
+.sponsorModeToggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sponsorModeBtn {
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--vscode-widget-border, #333);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vscode-foreground, #ccc);
+}
+
+.sponsorModeBtn[data-active="true"] {
+  background: var(--vscode-button-background, #0078d4);
+  color: var(--vscode-button-foreground, #fff);
+}
+
+.sectionLabel {
+  margin-bottom: 6px;
+}

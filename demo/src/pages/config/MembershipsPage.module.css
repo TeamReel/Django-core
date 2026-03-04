@@ -1,0 +1,44 @@
+/* MembershipsPage — extracted from inline styles */
+
+.cardGrid {
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+}
+
+.memberItem {
+  padding: 10px 12px;
+}
+
+.seasonsHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.accordionContainer {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.accordionButton {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--app-surface);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.accordionPanel {
+  padding: 10px 12px;
+  background: var(--app-surface-1);
+}
+
+.matchItem {
+  padding: 8px 10px;
+}

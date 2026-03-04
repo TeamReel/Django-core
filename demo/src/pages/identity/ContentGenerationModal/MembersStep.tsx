@@ -3,6 +3,7 @@ import { FormationPicker } from '../content-generation';
 import type { ContentTemplate, Participation, FormationPosition } from './types';
 import { ASSET_TYPE_LABELS, FORMATION_LAYOUTS } from './constants';
 import { memberHasRequiredAssets, getMissingAssets, getMemberName, renderRoleLabel } from './utils';
+import styles from './MembersStep.module.css';
 
 interface MembersStepProps {
   selectedType: { type: string; subtype: string; label: string } | null;
@@ -80,28 +81,16 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupCloseupStyle(opt.value)}
-                        className="relative flex-row gap-12 py-12 px-16 rounded-12 cursor-pointer text-left text-primary transition"
-                        style={{
-                          border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                        }}
+                        className={`relative flex-row gap-12 py-12 px-16 rounded-12 cursor-pointer text-left text-primary transition ${styles.closeupButton}`}
+                        data-selected={isSelected}
                       >
-                        <div className="flex-center fs-14 fw-700 rounded-10" style={{
-                          width: 36, height: 36, flexShrink: 0,
-                          backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                          color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
-                        }}>{opt.icon}</div>
+                        <div className={`flex-center fs-14 fw-700 rounded-10 ${styles.optionIcon}`} data-selected={isSelected}>{opt.icon}</div>
                         <div>
                         <div className="fw-600 fs-13">{opt.label}</div>
-                        <div className="fs-11 text-muted" style={{ marginTop: 1 }}>{opt.desc}</div>
+                        <div className={`fs-11 text-muted ${styles.optionDesc}`}>{opt.desc}</div>
                         </div>
                         {isSelected && (
-                          <div className="absolute rounded-full flex-center fw-700" style={{
-                            top: 6, right: 6,
-                            width: 18, height: 18,
-                            background: 'var(--color-green-400)',
-                            fontSize: 10, color: '#fff',
-                          }}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadge}`}>✓</div>
                         )}
                       </button>
                     );
@@ -127,24 +116,12 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupAnimationStyle(opt.value as typeof lineupAnimationStyle)}
-                        className="relative flex-col gap-4 cursor-pointer text-primary transition"
-                        style={{
-                          flex: '1 1 calc(33% - 8px)', minWidth: 80,
-                          alignItems: 'center',
-                          padding: '10px 6px',
-                          border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          borderRadius: 10,
-                          background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                        }}
+                        className={`relative flex-col gap-4 cursor-pointer text-primary transition ${styles.animationButton}`}
+                        data-selected={isSelected}
                       >
                         <span className="fs-13 fw-600">{opt.label}</span>
                         {isSelected && (
-                          <div className="absolute rounded-full flex-center fw-700" style={{
-                            top: 4, right: 4,
-                            width: 18, height: 18,
-                            background: 'var(--color-green-400)',
-                            fontSize: 10, color: '#fff',
-                          }}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeSmall}`}>✓</div>
                         )}
                       </button>
                     );
@@ -167,29 +144,14 @@ export function MembersStep({
                       <button
                         key={opt.value}
                         onClick={() => setLineupIntroStyle(opt.value as typeof lineupIntroStyle)}
-                        className="relative flex-col flex-1 gap-6 cursor-pointer text-primary transition"
-                        style={{
-                          alignItems: 'center',
-                          padding: '12px 8px',
-                          border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          borderRadius: 10,
-                          background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                        }}
+                        className={`relative flex-col flex-1 gap-6 cursor-pointer text-primary transition ${styles.introButton}`}
+                        data-selected={isSelected}
                       >
-                        <div className="flex-center fs-14 fw-700 rounded-10" style={{
-                          width: 36, height: 36,
-                          backgroundColor: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                          color: isSelected ? 'white' : 'var(--app-primary, #3B8EA5)',
-                        }}>{opt.icon}</div>
+                        <div className={`flex-center fs-14 fw-700 rounded-10 ${styles.optionIcon}`} data-selected={isSelected}>{opt.icon}</div>
                         <span className="fs-12 fw-600">{opt.label}</span>
-                        <span className="text-muted" style={{ fontSize: 10 }}>{opt.desc}</span>
+                        <span className={`text-muted ${styles.introDesc}`}>{opt.desc}</span>
                         {isSelected && (
-                          <div className="absolute rounded-full flex-center fw-700" style={{
-                            top: 4, right: 4,
-                            width: 18, height: 18,
-                            background: 'var(--color-green-400)',
-                            fontSize: 10, color: '#fff',
-                          }}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeSmall}`}>✓</div>
                         )}
                       </button>
                     );
@@ -202,33 +164,21 @@ export function MembersStep({
             {appBackgrounds.length > 0 && (
               <div>
                 <label className="form-label-upper">Achtergrond / Locatie</label>
-                <div className="grid gap-8" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))' }}>
+                <div className={`grid gap-8 ${styles.backgroundGrid}`}>
                   {/* Default option */}
                   <button
                     onClick={() => setSelectedBackgroundUrl(null)}
-                    className="relative overflow-hidden cursor-pointer p-0 rounded-10 transition"
-                    style={{
-                      border: !selectedBackgroundUrl ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                      background: !selectedBackgroundUrl ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                    }}
+                    className={`relative overflow-hidden cursor-pointer p-0 rounded-10 transition ${styles.bgButton}`}
+                    data-selected={!selectedBackgroundUrl}
                   >
-                    <div className="w-full flex-center" style={{ aspectRatio: '9/16', background: 'linear-gradient(to bottom, #16a34a, #14532d)' }}>
+                    <div className={`w-full flex-center ${styles.autoPreview}`}>
                       <span className="fs-14 fw-700 text-inverse">Auto</span>
                     </div>
-                    <div className="text-center fw-600" style={{
-                      padding: '4px 0', fontSize: 10,
-                      color: !selectedBackgroundUrl ? 'white' : 'var(--app-text, #111)',
-                      background: !selectedBackgroundUrl ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                    }}>
+                    <div className={`text-center fw-600 ${styles.bgLabel}`} data-selected={!selectedBackgroundUrl}>
                       Standaard
                     </div>
                     {!selectedBackgroundUrl && (
-                      <div className="absolute rounded-full flex-center fw-700" style={{
-                        top: 3, right: 3,
-                        width: 16, height: 16,
-                        background: 'var(--color-green-400)',
-                        fontSize: 9, color: '#fff',
-                      }}>✓</div>
+                      <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>✓</div>
                     )}
                   </button>
 
@@ -239,27 +189,15 @@ export function MembersStep({
                       <button
                         key={bg.id}
                         onClick={() => setSelectedBackgroundUrl(bg.url)}
-                        className="relative overflow-hidden cursor-pointer p-0 rounded-10 transition"
-                        style={{
-                          border: isSelected ? '2px solid var(--app-primary, #3B8EA5)' : '1px solid var(--app-border, #e5e7eb)',
-                          background: isSelected ? 'var(--app-primary-light, rgba(59,142,165,0.08))' : 'var(--app-surface, white)',
-                        }}
+                        className={`relative overflow-hidden cursor-pointer p-0 rounded-10 transition ${styles.bgButton}`}
+                        data-selected={isSelected}
                       >
-                        <div className="w-full" style={{ aspectRatio: '9/16', background: `url(${bg.url}) center/cover` }} />
-                        <div className="text-center fw-600 truncate" style={{
-                          padding: '4px 0', fontSize: 10,
-                          color: isSelected ? 'white' : 'var(--app-text, #111)',
-                          background: isSelected ? 'var(--app-primary, #3B8EA5)' : 'var(--app-surface-2, #f3f4f6)',
-                        }}>
+                        <div className={`w-full ${styles.bgImagePreview}`} style={{ backgroundImage: `url(${bg.url})` }} />
+                        <div className={`text-center fw-600 truncate ${styles.bgLabel}`} data-selected={isSelected}>
                           {bg.label || bg.profile_name || 'Locatie'}
                         </div>
                         {isSelected && (
-                          <div className="absolute rounded-full flex-center fw-700" style={{
-                            top: 3, right: 3,
-                            width: 16, height: 16,
-                            background: 'var(--color-green-400)',
-                            fontSize: 9, color: '#fff',
-                          }}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>✓</div>
                         )}
                       </button>
                     );
@@ -286,7 +224,7 @@ export function MembersStep({
         const assetTypes = req.asset_types || [];
 
         return (
-          <div key={role} className="border rounded-8 p-16" style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+          <div key={role} className={`border rounded-8 p-16 ${styles.roleSection}`}>
             <div className="mb-12 border-bottom pb-12">
               <span className="fw-600 fs-16 text-primary">{renderRoleLabel(role)}</span>
             </div>
@@ -316,7 +254,7 @@ export function MembersStep({
                 const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                 return (
-                    <div key={idx} className="grid gap-12 items-center" style={{ gridTemplateColumns: '100px 1fr' }}>
+                    <div key={idx} className={`grid gap-12 items-center ${styles.memberRow}`}>
                     <label className="fs-14 text-secondary fw-500 truncate" title={positionLabel}>
                       {positionLabel}
                     </label>

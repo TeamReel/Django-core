@@ -3,6 +3,7 @@ import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-cor
 import type { FileUploadFile } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './index.module.css';
 
 interface FileAsset {
   id: string;
@@ -279,10 +280,10 @@ const FilesPage: React.FC = () => {
 
   return (
     <AppShell>
-      <div className="bg-primary" style={{ minHeight: '100vh' }}>
+      <div className={`bg-primary ${styles.page}`}>
         {/* Page Header */}
         <div className="p-24 border-bottom bg-surface">
-          <h1 className="fw-700 text-primary" style={{ margin: '0 0 8px 0', fontSize: '28px' }}>File Management Demo</h1>
+          <h1 className={`fw-700 text-primary ${styles.pageTitle}`}>File Management Demo</h1>
           <p className="m-0 fs-14 text-muted">
             Upload, view, download, and delete files using the File & Media Management system.
           </p>
@@ -343,33 +344,15 @@ const FilesPage: React.FC = () => {
                         fetchFiles();
                         setSuccess('Demo data cleared! Default files restored.');
                       }}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        border: '1px solid #6c757d',
-                        backgroundColor: 'var(--app-surface)',
-                        color: '#6c757d',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                      }}
+                      className={styles.actionButton}
                     >
                       Clear Demo Data
                     </button>
                     <button
                       onClick={fetchFiles}
                       disabled={loading}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        border: '1px solid #6c757d',
-                        backgroundColor: 'var(--app-surface)',
-                        color: '#6c757d',
-                        cursor: loading ? 'not-allowed' : 'pointer',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        opacity: loading ? 0.6 : 1,
-                      }}
+                      className={styles.actionButton}
+                      data-disabled={loading ? 'true' : 'false'}
                     >
                       {loading ? 'Refreshing...' : 'Refresh'}
                     </button>
@@ -381,28 +364,20 @@ const FilesPage: React.FC = () => {
                 ) : files.length === 0 ? (
                   <p className="text-muted m-0">No files uploaded yet. Upload some files to get started!</p>
                 ) : (
-                  <div className="grid gap-16" style={{
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))'
-                  }}>
+                  <div className={`grid gap-16 ${styles.fileGrid}`}>
                     {files.map((file) => (
                       <Card key={file.id} className="p-16 bg-surface border">
                         <div className="flex-col gap-12">
                           {/* File thumbnail or icon */}
-                          <div className="w-full bg-surface-2 rounded-8 flex-center overflow-hidden" style={{
-                            height: '120px'
-                          }}>
+                          <div className={`w-full bg-surface-2 rounded-8 flex-center overflow-hidden ${styles.thumbnailContainer}`}>
                             {file.thumbnail_url ? (
                               <img
                                 src={file.thumbnail_url}
                                 alt={file.original_filename}
-                                style={{
-                                  maxWidth: '100%',
-                                  maxHeight: '100%',
-                                  objectFit: 'cover'
-                                }}
+                                className={styles.thumbnailImage}
                               />
                             ) : (
-                              <span style={{ fontSize: '48px' }}>
+                              <span className={styles.fileIcon}>
                                 {file.content_type.startsWith('image/') ? '🖼️' : '📄'}
                               </span>
                             )}
@@ -435,33 +410,13 @@ const FilesPage: React.FC = () => {
                           <div className="flex-row gap-8">
                             <button
                               onClick={() => handleDownload(file)}
-                              style={{
-                                flex: 1,
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                border: '1px solid #007bff',
-                                backgroundColor: 'var(--app-surface)',
-                                color: 'var(--app-primary)',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                              }}
+                              className={styles.downloadButton}
                             >
                               Download
                             </button>
                             <button
                               onClick={() => handleDelete(file)}
-                              style={{
-                                flex: 1,
-                                padding: '6px 12px',
-                                borderRadius: '4px',
-                                border: '1px solid #dc3545',
-                                backgroundColor: 'var(--app-surface)',
-                                color: 'var(--app-error)',
-                                cursor: 'pointer',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                              }}
+                              className={styles.deleteButton}
                             >
                               Delete
                             </button>

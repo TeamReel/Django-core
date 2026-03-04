@@ -1,0 +1,32 @@
+/* GovernanceSummaryCard.module.css — extracted from inline styles */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.description {
+  color: var(--app-text-muted);
+  margin-top: 4px;
+}
+
+.mutedText {
+  color: var(--app-text-muted);
+}
+
+.sourceLabel {
+  color: var(--app-text-muted);
+}
+
+.policyMode {
+  color: var(--app-text-muted);
+  margin-top: 6px;
+}
+
+.policyThreshold {
+  color: var(--app-text-muted);
+}
+
+.badgeRowEnd {
+  justify-content: flex-end;
+}

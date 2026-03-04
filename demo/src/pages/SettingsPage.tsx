@@ -1,6 +1,7 @@
 import { Settings } from '@django-core/page-templates';
 import AppShell from '../components/AppShell';
 import { useSettingsPage } from './useSettingsPage';
+import styles from './SettingsPage.module.css';
 
 export default function SettingsPage() {
   const {
@@ -16,7 +17,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <div style={{ height: 'calc(100vh - 120px)' }}>
+      <div className={styles.settingsContainer}>
         <Settings
           sections={sections}
           activeSection={activeSection}
@@ -40,8 +41,7 @@ export default function SettingsPage() {
                     type="text"
                     value={profile.fullName}
                     onChange={(e) => handleProfileChange('fullName', e.target.value)}
-                    className="w-full border rounded-4 fs-14"
-                    style={{ padding: '10px 12px' }}
+                    className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   />
                 </div>
 
@@ -53,8 +53,7 @@ export default function SettingsPage() {
                     type="email"
                     value={profile.email}
                     onChange={(e) => handleProfileChange('email', e.target.value)}
-                    className="w-full border rounded-4 fs-14"
-                    style={{ padding: '10px 12px' }}
+                    className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   />
                   <small className="text-muted fs-12 mt-4 block">
                     Your email is used for notifications and account recovery
@@ -69,11 +68,7 @@ export default function SettingsPage() {
                     value={profile.bio}
                     onChange={(e) => handleProfileChange('bio', e.target.value)}
                     rows={4}
-                    className="w-full border rounded-4 fs-14 font-inherit"
-                    style={{
-                      padding: '10px 12px',
-                      resize: 'vertical'
-                    }}
+                    className={`w-full border rounded-4 fs-14 font-inherit ${styles.formTextarea}`}
                   />
                 </div>
 
@@ -81,17 +76,8 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={profileSaveStatus === 'saving'}
-                    className="border-none rounded-4 fs-14 fw-600 text-white"
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor:
-                        profileSaveStatus === 'success' ? 'var(--app-success)' :
-                        profileSaveStatus === 'error' ? 'var(--app-error)' :
-                        profileSaveStatus === 'saving' ? '#6c757d' :
-                        'var(--app-primary)',
-                      cursor: profileSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
-                      transition: 'background-color 0.2s'
-                    }}
+                    className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.saveButton}`}
+                    data-status={profileSaveStatus}
                   >
                     {profileSaveStatus === 'saving' ? 'Saving...' :
                      profileSaveStatus === 'success' ? '✓ Saved!' :
@@ -119,11 +105,7 @@ export default function SettingsPage() {
                   </p>
                   <button
                     onClick={handleChangePassword}
-                    className="py-8 px-16 border rounded-4 fs-14 cursor-pointer fw-600"
-                    style={{
-                      backgroundColor: 'white',
-                      color: '#333'
-                    }}
+                    className={`py-8 px-16 border rounded-4 fs-14 cursor-pointer fw-600 ${styles.changePasswordButton}`}
                   >
                     Change Password
                   </button>
@@ -136,15 +118,13 @@ export default function SettingsPage() {
                   </p>
                   <div className="flex-row gap-12">
                     <span
-                      className="inline-block py-4 px-12 fs-12 fw-600 rounded-full text-error"
-                      style={{ backgroundColor: '#dc354520' }}
+                      className={`inline-block py-4 px-12 fs-12 fw-600 rounded-full text-error ${styles.badgeDanger}`}
                     >
                       Not Enabled
                     </span>
                     <button
                       onClick={handleEnable2FA}
-                      className="py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600 text-white"
-                      style={{ backgroundColor: 'var(--app-success)' }}
+                      className={`py-8 px-16 border-none rounded-4 fs-14 cursor-pointer fw-600 text-white ${styles.enable2faButton}`}
                     >
                       Enable 2FA
                     </button>
@@ -163,8 +143,7 @@ export default function SettingsPage() {
                         <div className="fs-12 text-muted">Last active: Just now</div>
                       </div>
                       <span
-                        className="py-4 px-12 fs-12 fw-600 rounded-full text-success"
-                        style={{ backgroundColor: '#28a74520' }}
+                        className={`py-4 px-12 fs-12 fw-600 rounded-full text-success ${styles.badgeSuccess}`}
                       >
                         Current
                       </span>
@@ -212,17 +191,8 @@ export default function SettingsPage() {
                 <button
                   onClick={handleSaveNotifications}
                   disabled={notificationsSaveStatus === 'saving'}
-                  className="border-none rounded-4 fs-14 fw-600 text-white"
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor:
-                      notificationsSaveStatus === 'success' ? 'var(--app-success)' :
-                      notificationsSaveStatus === 'error' ? 'var(--app-error)' :
-                      notificationsSaveStatus === 'saving' ? '#6c757d' :
-                      'var(--app-primary)',
-                    cursor: notificationsSaveStatus === 'saving' ? 'not-allowed' : 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
+                  className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.saveButton}`}
+                  data-status={notificationsSaveStatus}
                 >
                   {notificationsSaveStatus === 'saving' ? 'Saving...' :
                    notificationsSaveStatus === 'success' ? '✓ Saved!' :
@@ -249,8 +219,7 @@ export default function SettingsPage() {
                   <select
                     value={preferences.theme}
                     onChange={(e) => handlePreferenceChange('theme', e.target.value)}
-                    className="w-full border rounded-4 fs-14"
-                    style={{ padding: '10px 12px' }}
+                    className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   >
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
@@ -265,8 +234,7 @@ export default function SettingsPage() {
                   <select
                     value={preferences.language}
                     onChange={(e) => handlePreferenceChange('language', e.target.value)}
-                    className="w-full border rounded-4 fs-14"
-                    style={{ padding: '10px 12px' }}
+                    className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   >
                     <option value="en">English</option>
                     <option value="es">Spanish</option>
@@ -284,8 +252,7 @@ export default function SettingsPage() {
                   <select
                     value={preferences.timezone}
                     onChange={(e) => handlePreferenceChange('timezone', e.target.value)}
-                    className="w-full border rounded-4 fs-14"
-                    style={{ padding: '10px 12px' }}
+                    className={`w-full border rounded-4 fs-14 ${styles.formInput}`}
                   >
                     <option value="utc">UTC</option>
                     <option value="est">Eastern Time (ET)</option>
@@ -298,17 +265,8 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSavePreferences}
                     disabled={saveStatus === 'saving'}
-                    className="border-none rounded-4 fs-14 fw-600 text-white"
-                    style={{
-                      padding: '10px 20px',
-                      backgroundColor:
-                        saveStatus === 'success' ? 'var(--app-success)' :
-                        saveStatus === 'error' ? 'var(--app-error)' :
-                        saveStatus === 'saving' ? '#6c757d' :
-                        'var(--app-primary)',
-                      cursor: saveStatus === 'saving' ? 'not-allowed' : 'pointer',
-                      transition: 'background-color 0.2s'
-                    }}
+                    className={`border-none rounded-4 fs-14 fw-600 text-white ${styles.saveButton}`}
+                    data-status={saveStatus}
                   >
                     {saveStatus === 'saving' ? 'Saving...' :
                      saveStatus === 'success' ? '✓ Saved!' :

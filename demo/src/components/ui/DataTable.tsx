@@ -8,6 +8,7 @@
  */
 import React, { useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import styles from './DataTable.module.css';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,24 +97,22 @@ export function DataTable<T>({
 
   return (
     <div className={`overflow-auto ${className}`}>
-      <table style={tableStyle}>
+      <table className={styles.table}>
         <thead>
           <tr>
             {columns.map((col) => (
               <th
                 key={col.key}
-                style={{
-                  ...thStyle,
-                  width: col.width,
-                  textAlign: col.align ?? 'left',
-                  cursor: col.sortable ? 'pointer' : 'default',
-                }}
+                className={styles.th}
+                data-sortable={col.sortable ? "true" : undefined}
+                data-align={col.align}
+                style={col.width ? { width: col.width } : undefined}
                 onClick={col.sortable ? () => handleSort(col.key) : undefined}
               >
-                <span className="flex-row gap-4" style={{ alignItems: 'center' }}>
+                <span className={`flex-row gap-4 ${styles.thContent}`}>
                   {col.header}
                   {col.sortable && (
-                    <span style={{ opacity: sortKey === col.key ? 1 : 0.3, lineHeight: 0 }}>
+                    <span className={styles.sortIcon} data-active={sortKey === col.key ? "true" : undefined}>
                       {sortKey === col.key && sortDir === 'asc' && <ChevronUp size={14} />}
                       {sortKey === col.key && sortDir === 'desc' && <ChevronDown size={14} />}
                       {sortKey !== col.key && <ChevronsUpDown size={14} />}
@@ -127,15 +126,15 @@ export function DataTable<T>({
         <tbody>
           {loading && (
             <tr>
-              <td colSpan={columns.length} style={{ ...cellStyle, textAlign: 'center', padding: 32 }}>
-                <span style={{ color: 'var(--app-text-secondary)', fontSize: 14 }}>Loading…</span>
+              <td colSpan={columns.length} className={`${styles.cell} ${styles.statusCell}`}>
+                <span className={styles.statusText}>Loading…</span>
               </td>
             </tr>
           )}
           {!loading && sortedData.length === 0 && (
             <tr>
-              <td colSpan={columns.length} style={{ ...cellStyle, textAlign: 'center', padding: 32 }}>
-                <span style={{ color: 'var(--app-text-secondary)', fontSize: 14 }}>{emptyMessage}</span>
+              <td colSpan={columns.length} className={`${styles.cell} ${styles.statusCell}`}>
+                <span className={styles.statusText}>{emptyMessage}</span>
               </td>
             </tr>
           )}
@@ -144,13 +143,11 @@ export function DataTable<T>({
               <tr
                 key={rowKey(row, i)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                style={{
-                  cursor: onRowClick ? 'pointer' : 'default',
-                  borderBottom: '1px solid var(--app-border)',
-                }}
+                className={styles.row}
+                data-clickable={onRowClick ? "true" : undefined}
               >
                 {columns.map((col) => (
-                  <td key={col.key} style={{ ...cellStyle, textAlign: col.align ?? 'left' }}>
+                  <td key={col.key} className={styles.cell} data-align={col.align}>
                     {col.render(row, i)}
                   </td>
                 ))}
@@ -161,30 +158,3 @@ export function DataTable<T>({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
-const tableStyle: React.CSSProperties = {
-  width: '100%',
-  borderCollapse: 'collapse',
-  fontSize: 14,
-};
-
-const thStyle: React.CSSProperties = {
-  padding: '10px 12px',
-  fontWeight: 600,
-  fontSize: 12,
-  textTransform: 'uppercase',
-  letterSpacing: '0.04em',
-  color: 'var(--app-text-secondary)',
-  borderBottom: '2px solid var(--app-border)',
-  whiteSpace: 'nowrap',
-  userSelect: 'none',
-};
-
-const cellStyle: React.CSSProperties = {
-  padding: '10px 12px',
-  color: 'var(--app-text)',
-};

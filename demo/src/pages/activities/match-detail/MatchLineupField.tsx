@@ -1,5 +1,6 @@
 import React from 'react';
 import { FORMATION_LAYOUTS } from '../../identity/content-generation';
+import styles from './MatchLineupField.module.css';
 
 const getSquadMemberName = (p: any): string => {
   const user = p.user || p.member;
@@ -64,72 +65,16 @@ export function FieldVisualization({
   const playerSelected = lineupSlots.player || [];
 
   return (
-    <div className="flex-col gap-16">
+    <div className={`flex-col gap-16 ${styles.root}`}>
       <div
-        className="relative w-full overflow-hidden rounded-12 mx-auto border"
-        style={{
-          maxWidth: 500,
-          aspectRatio: '3 / 4',
-          background: 'linear-gradient(to bottom, #16a34a, #15803d)',
-        }}
+        className={`relative w-full overflow-hidden rounded-12 mx-auto border ${styles.fieldContainer}`}
       >
         {/* Field markings */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 16,
-            right: 16,
-            top: '15%',
-            height: 1,
-            background: 'rgba(255,255,255,0.2)',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: 16,
-            right: 16,
-            top: '50%',
-            height: 1,
-            background: 'rgba(255,255,255,0.2)',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: '50%',
-            top: '50%',
-            width: 48,
-            height: 48,
-            transform: 'translate(-50%, -50%)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '50%',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: '22%',
-            right: '22%',
-            bottom: 0,
-            height: '14%',
-            borderTop: '1px solid rgba(255,255,255,0.2)',
-            borderLeft: '1px solid rgba(255,255,255,0.2)',
-            borderRight: '1px solid rgba(255,255,255,0.2)',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            left: '22%',
-            right: '22%',
-            top: 0,
-            height: '14%',
-            borderBottom: '1px solid rgba(255,255,255,0.2)',
-            borderLeft: '1px solid rgba(255,255,255,0.2)',
-            borderRight: '1px solid rgba(255,255,255,0.2)',
-          }}
-        />
+        <div className={`${styles.fieldMarkingHorizontal} ${styles.fieldMarkingTop}`} />
+        <div className={`${styles.fieldMarkingHorizontal} ${styles.fieldMarkingCenter}`} />
+        <div className={styles.centerCircle} />
+        <div className={styles.penaltyBoxBottom} />
+        <div className={styles.penaltyBoxTop} />
 
         {/* Position nodes */}
         {formationLayout.positions.map((pos) => {
@@ -149,29 +94,11 @@ export function FieldVisualization({
           return (
             <div
               key={pos.slot}
-              style={{
-                position: 'absolute',
-                left: `${pos.x}%`,
-                top: `${pos.y}%`,
-                transform: 'translate(-50%, -50%) scale(0.55)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 0,
-                zIndex: 10,
-                width: 72,
-              }}
+              className={styles.positionNode}
+              style={{ '--pos-x': `${pos.x}%`, '--pos-y': `${pos.y}%` } as React.CSSProperties}
             >
               {/* Position label */}
-              <div
-                className="fs-11 fw-700"
-                style={{
-                  color: 'rgba(255,255,255,0.5)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.02em',
-                  lineHeight: 1,
-                }}
-              >
+              <div className={`fs-11 fw-700 ${styles.positionLabel}`}>
                 {pos.label}
               </div>
 
@@ -184,42 +111,9 @@ export function FieldVisualization({
                   newSelected[idx] = e.target.value;
                   setLineupSlots({ ...lineupSlots, [role]: [...newSelected] });
                 }}
-                style={{
-                  width: 72,
-                  maxWidth: 72,
-                  height: 26,
-                  padding: '0 2px',
-                  fontSize: 11,
-                  lineHeight: '24px',
-                  fontWeight: currentId ? 700 : 400,
-                  background: currentId
-                    ? 'rgba(22,163,74,0.6)'
-                    : 'rgba(0,0,0,0.6)',
-                  color: '#fff',
-                  border: currentId
-                    ? '1.5px solid rgba(255,255,255,0.7)'
-                    : '1px solid rgba(255,255,255,0.3)',
-                  borderRadius: 4,
-                  outline: 'none',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'none' as any,
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E")`,
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'right 3px center',
-                  paddingRight: 13,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  boxSizing: 'border-box',
-                }}
+                className={`${styles.positionSelect} ${currentId ? styles.positionSelectFilled : ''}`}
               >
-                <option
-                  value=""
-                  style={{ background: '#1e1e1e', color: '#ccc' }}
-                >
+                <option value="" className={styles.selectOption}>
                   —
                 </option>
                 {pool.map((p: any) => {
@@ -236,10 +130,7 @@ export function FieldVisualization({
                       key={p.id}
                       value={p.id}
                       disabled={isAlreadyUsed}
-                      style={{
-                        background: '#1e1e1e',
-                        color: isAlreadyUsed ? '#666' : '#ccc',
-                      }}
+                      className={isAlreadyUsed ? styles.selectOptionDisabled : styles.selectOption}
                     >
                       {jersey ? `#${jersey} ` : ''}
                       {name}
@@ -251,21 +142,7 @@ export function FieldVisualization({
 
               {/* Selected name display */}
               {currentMember && (
-                <div
-                  style={{
-                    fontSize: 10,
-                    fontWeight: 600,
-                    color: '#fff',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-                    maxWidth: 70,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    textAlign: 'center',
-                    lineHeight: 1,
-                    marginTop: 1,
-                  }}
-                >
+                <div className={styles.playerName}>
                   {getSquadMemberName(currentMember)}
                 </div>
               )}
@@ -275,14 +152,7 @@ export function FieldVisualization({
       </div>
 
       {/* Summary bar + Save button */}
-      <div
-        className="flex-between rounded-8 fs-13 w-full mx-auto"
-        style={{
-          padding: '10px 14px',
-          background: 'var(--app-surface-secondary, #2a2a2a)',
-          maxWidth: 500,
-        }}
-      >
+      <div className={`flex-between rounded-8 fs-13 w-full mx-auto ${styles.summaryBar}`}>
         <span className="text-secondary">
           Formatie:{' '}
           <strong className="text-primary">
@@ -295,7 +165,7 @@ export function FieldVisualization({
             ).length;
             const total = formationLayout.positions.length;
             return filled === total ? (
-              <span style={{ color: 'var(--color-green-400)' }}>
+              <span className={styles.statusGreen}>
                 ✓ Alle {total} posities ingevuld
               </span>
             ) : (
@@ -307,23 +177,14 @@ export function FieldVisualization({
         </span>
         <div className="flex-row gap-8">
           {lineupSaveSuccess && (
-            <span
-              className="fs-12 fw-600"
-              style={{ color: 'var(--color-green-400)' }}
-            >
+            <span className={`fs-12 fw-600 ${styles.statusGreen}`}>
               ✓ Opgeslagen!
             </span>
           )}
           <button
             onClick={saveLineup}
             disabled={lineupSaving}
-            className="fs-13 fw-600 border-none rounded-6 text-white cursor-pointer"
-            style={{
-              padding: '8px 20px',
-              background: '#16a34a',
-              cursor: lineupSaving ? 'not-allowed' : undefined,
-              opacity: lineupSaving ? 0.7 : 1,
-            }}
+            className={`fs-13 fw-600 border-none rounded-6 text-white cursor-pointer ${styles.saveButton}`}
           >
             {lineupSaving ? 'Opslaan...' : '💾 Opstelling opslaan'}
           </button>
@@ -343,21 +204,13 @@ export function FieldVisualization({
         if (benchMembers.length === 0) return null;
 
         return (
-          <div
-            className="w-full mx-auto"
-            style={{ maxWidth: 500 }}
-          >
+          <div className={`w-full mx-auto ${styles.benchContainer}`}>
             <div
               className="fs-14 fw-700 mb-8 text-primary"
             >
               Overige selectie ({benchMembers.length})
             </div>
-            <div
-              className="flex-col gap-4 rounded-8 py-8"
-              style={{
-                background: 'var(--app-surface-secondary, #2a2a2a)',
-              }}
-            >
+            <div className={`flex-col gap-4 rounded-8 py-8 ${styles.benchPool}`}>
               {benchMembers.map((p: any) => {
                 const name = getSquadMemberName(p);
                 const jersey =
@@ -366,8 +219,7 @@ export function FieldVisualization({
                 return (
                   <div
                     key={p.id}
-                    className="flex-between gap-8"
-                    style={{ padding: '6px 14px' }}
+                    className={`flex-between gap-8 ${styles.benchRow}`}
                   >
                     <span
                       className="fs-13 fw-500 text-primary"
@@ -388,25 +240,7 @@ export function FieldVisualization({
                             return next;
                           })
                         }
-                        style={{
-                          padding: '3px 10px',
-                          fontSize: 11,
-                          fontWeight: 600,
-                          borderRadius: 4,
-                          border:
-                            status === 'wissel'
-                              ? '2px solid #f59e0b'
-                              : '1px solid var(--app-border, #444)',
-                          background:
-                            status === 'wissel'
-                              ? 'rgba(245,158,11,0.15)'
-                              : 'transparent',
-                          color:
-                            status === 'wissel'
-                              ? 'var(--color-amber-400)'
-                              : 'var(--app-text-secondary, #999)',
-                          cursor: 'pointer',
-                        }}
+                        className={`${styles.benchButton} ${status === 'wissel' ? styles.benchButtonWisselActive : ''}`}
                       >
                         Wissel
                       </button>
@@ -422,25 +256,7 @@ export function FieldVisualization({
                             return next;
                           })
                         }
-                        style={{
-                          padding: '3px 10px',
-                          fontSize: 11,
-                          fontWeight: 600,
-                          borderRadius: 4,
-                          border:
-                            status === 'afwezig'
-                              ? '2px solid #ef4444'
-                              : '1px solid var(--app-border, #444)',
-                          background:
-                            status === 'afwezig'
-                              ? 'rgba(239,68,68,0.15)'
-                              : 'transparent',
-                          color:
-                            status === 'afwezig'
-                              ? 'var(--color-red-500)'
-                              : 'var(--app-text-secondary, #999)',
-                          cursor: 'pointer',
-                        }}
+                        className={`${styles.benchButton} ${status === 'afwezig' ? styles.benchButtonAfwezigActive : ''}`}
                       >
                         Afwezig
                       </button>

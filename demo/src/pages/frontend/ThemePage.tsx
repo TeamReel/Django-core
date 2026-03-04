@@ -1,6 +1,7 @@
 import { Button, Card, Badge } from '@django-core/design-system';
 import { useTheme, themeVars } from '@django-core/theme-system';
 import AppShell from '../../components/AppShell';
+import styles from './ThemePage.module.css';
 
 export function ThemePage() {
   const { mode, resolvedMode, brand, setTheme, toggleMode } = useTheme();
@@ -8,9 +9,9 @@ export function ThemePage() {
 
   return (
     <AppShell>
-    <div className="bg-primary" style={{ minHeight: '100vh', transition: 'background-color 0.2s' }} data-testid="theme-page">
+    <div className={`bg-primary ${styles.pageWrapper}`} data-testid="theme-page">
       <div className="p-24 border-bottom bg-surface">
-        <h1 className="fw-700 text-primary m-0 mb-8" style={{ fontSize: '28px' }}>Theme System</h1>
+        <h1 className={`fw-700 text-primary m-0 mb-8 ${styles.pageTitle}`}>Theme System</h1>
         <p className="m-0 fs-14 text-muted">F07 Light/Dark Theme Toggle & Persistence</p>
       </div>
       <div className="page-container">
@@ -50,15 +51,12 @@ export function ThemePage() {
 
         <div className="grid gap-24 grid-cols-2">
           <Card
-            className="p-24"
-            style={{
-              backgroundColor: '#ffffff',
-              border: !isDarkMode ? '2px solid var(--app-link)' : '1px solid var(--app-border)',
-            }}
+            className={`p-24 ${styles.lightCard}`}
+            data-active={!isDarkMode}
           >
-            <h4 className="m-0 mb-12" style={{ color: '#1f2937' }}>Light Theme Preview</h4>
-            <div className="p-12 rounded-4 mb-12" style={{ backgroundColor: '#f9fafb' }}>
-              <p className="m-0 fs-12" style={{ color: '#1f2937' }}>Background: #FFFFFF</p>
+            <h4 className={`m-0 mb-12 ${styles.lightHeading}`}>Light Theme Preview</h4>
+            <div className={`p-12 rounded-4 mb-12 ${styles.lightPreview}`}>
+              <p className={`m-0 fs-12 ${styles.lightPreviewText}`}>Background: #FFFFFF</p>
               <p className="fs-12 m-0 mt-4 text-muted">Text: #1F2937</p>
             </div>
             <div className="gap-8 flex-row">
@@ -66,22 +64,15 @@ export function ThemePage() {
             </div>
           </Card>
           <Card
-            className="p-24"
-            style={{
-              backgroundColor: '#1a1a1a',
-              color: '#e5e5e5',
-              border: isDarkMode ? '2px solid var(--app-link)' : '1px solid var(--app-border)',
-            }}
+            className={`p-24 ${styles.darkCard}`}
+            data-active={isDarkMode}
           >
-            <h4 className="m-0 mb-12" style={{ color: '#e5e5e5' }}>Dark Theme Preview</h4>
+            <h4 className={`m-0 mb-12 ${styles.darkHeading}`}>Dark Theme Preview</h4>
             <div
-              className="p-12 rounded-4 mb-12"
-              style={{
-                backgroundColor: '#0f0f0f',
-              }}
+              className={`p-12 rounded-4 mb-12 ${styles.darkPreview}`}
             >
-              <p className="m-0 fs-12" style={{ color: '#e5e5e5' }}>Background: #1A1A1A</p>
-              <p className="fs-12 m-0 mt-4" style={{ color: '#9ca3af' }}>Text: #E5E5E5</p>
+              <p className={`m-0 fs-12 ${styles.darkPreviewText}`}>Background: #1A1A1A</p>
+              <p className={`fs-12 m-0 mt-4 ${styles.darkPreviewMuted}`}>Text: #E5E5E5</p>
             </div>
             <div className="gap-8 flex-row">
               <Badge variant="success">{isDarkMode ? '✓ Active' : 'Inactive'}</Badge>

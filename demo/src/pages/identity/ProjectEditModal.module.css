@@ -1,0 +1,104 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  --input-border: #ccc;
+  --submit-bg: #0066cc;
+
+  background-color: var(--app-surface);
+  padding: 24px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--app-text);
+}
+
+.errorWrapper {
+  margin-bottom: 16px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+}
+
+.textarea {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--input-border);
+  min-height: 80px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+}
+
+.cancelButton[data-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.submitButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background-color: var(--submit-bg);
+  color: white;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.submitButton[data-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './PeriodDetailModal.module.css';
 
 export interface PeriodLike {
   id: string;
@@ -31,30 +32,15 @@ export default function PeriodDetailModal({ opened, onClose, period }: PeriodDet
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 1000,
-      }}
+      className={`flex-center ${styles.overlay}`}
       onClick={onClose}
     >
       <div
-        className="bg-surface p-24 rounded-8 overflow-auto text-primary border"
-        style={{
-          width: '640px',
-          maxWidth: '95%',
-          maxHeight: '80vh',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-        }}
+        className={`bg-surface p-24 rounded-8 overflow-auto text-primary border ${styles.modal}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="gap-12" style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>Period Details</h2>
+        <div className={`gap-12 ${styles.headerRow}`}>
+          <h2 className={`mb-12 text-primary ${styles.title}`}>Period Details</h2>
           <button
             onClick={onClose}
             className="bg-transparent border-none fs-18 cursor-pointer text-primary"
@@ -70,7 +56,7 @@ export default function PeriodDetailModal({ opened, onClose, period }: PeriodDet
             <div className="fw-600">{period.name}</div>
           </div>
 
-          <div className="grid gap-10" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div className={`grid gap-10 ${styles.grid2}`}>
             <div>
               <div className="fs-12 opacity-80">Start</div>
               <div>{period.start_date || '—'}</div>
@@ -81,7 +67,7 @@ export default function PeriodDetailModal({ opened, onClose, period }: PeriodDet
             </div>
           </div>
 
-          <div className="grid gap-10" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+          <div className={`grid gap-10 ${styles.grid3}`}>
             <div>
               <div className="fs-12 opacity-80">Children</div>
               <div>{(period.children_count ?? 0).toString()}</div>
@@ -104,15 +90,14 @@ export default function PeriodDetailModal({ opened, onClose, period }: PeriodDet
           {period.description ? (
             <div>
               <div className="fs-12 opacity-80">Description</div>
-              <div style={{ whiteSpace: 'pre-wrap' }}>{period.description}</div>
+              <div className={styles.descriptionText}>{period.description}</div>
             </div>
           ) : null}
 
-          <div className="mt-12" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`mt-12 ${styles.footer}`}>
             <button
               onClick={onClose}
-              className="rounded-6 border bg-surface-2 text-primary cursor-pointer"
-              style={{ padding: '8px 14px' }}
+              className={`rounded-6 border bg-surface-2 text-primary cursor-pointer ${styles.closeButton}`}
             >
               Close
             </button>

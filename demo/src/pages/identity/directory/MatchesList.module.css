@@ -1,0 +1,13 @@
+/* MatchesList – extracted inline styles */
+
+.thFederation  { width: 15%; }
+.thClub        { width: 15%; }
+.thTeam        { width: 15%; }
+.thSeason      { width: 15%; }
+.thCompetition { width: 18%; }
+.thSport       { width: 10%; }
+.thVariant     { width: 12%; }
+.thMatch       { width: 15%; }
+.thSquad       { width: 8%; }
+.thStatus      { width: 10%; }
+.thActions     { width: 12%; }

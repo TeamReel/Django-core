@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import type { ContentItem } from './useMatchDetailData';
+import styles from './MatchDetailModals.module.css';
 
 /* ------------------------------------------------------------------ */
 /*  Content Preview Modal                                              */
@@ -17,21 +18,11 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
 
   return (
     <div
-      className="fixed inset-0 z-1000 flex-center"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      }}
+      className={`fixed inset-0 z-1000 flex-center ${styles.contentPreviewOverlay}`}
       onClick={onClose}
     >
       <div
-        className="rounded-12 overflow-auto shadow-lg"
-        style={{
-          backgroundColor: 'var(--app-card-bg)',
-          maxWidth: '800px',
-          width: '90%',
-          maxHeight: '90vh',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        }}
+        className={`rounded-12 overflow-auto shadow-lg ${styles.contentPreviewCard}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
@@ -62,21 +53,13 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
                 <video
                   src={selectedContentItem.output_file.url}
                   controls
-                  className="rounded-8"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '60vh',
-                  }}
+                  className={`rounded-8 ${styles.contentPreviewMedia}`}
                 />
               ) : (
                 <img
                   src={selectedContentItem.output_file.url}
                   alt={selectedContentItem.template?.name || 'Generated content'}
-                  className="rounded-8 object-contain"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '60vh',
-                  }}
+                  className={`rounded-8 object-contain ${styles.contentPreviewMedia}`}
                 />
               )}
             </div>
@@ -91,8 +74,7 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
 
         {/* Modal Footer */}
         <div
-          className="flex-between border-top bg-primary py-16 px-20"
-          style={{ borderRadius: '0 0 12px 12px' }}
+          className={`flex-between border-top bg-primary py-16 px-20 ${styles.modalFooter}`}
         >
           <Badge
             variant={['completed', 'approved'].includes(selectedContentItem.status) ? 'success' : 'warning'}
@@ -106,11 +88,7 @@ export function ContentPreviewModal({ isOpen, selectedContentItem, onClose }: Co
                 download={selectedContentItem.output_file.file_name || 'content'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 text-white"
-                style={{
-                  alignItems: 'center',
-                  backgroundColor: 'var(--app-primary)',
-                }}
+                className={`inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 text-white ${styles.primaryActionLink}`}
               >
                 {'\u2b07\ufe0f'} Download
               </a>
@@ -139,23 +117,11 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
 
   return (
     <div
-      className="fixed inset-0 flex-center"
-      style={{
-        zIndex: 1100,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        padding: '16px 8px 80px',
-      }}
+      className={`fixed inset-0 flex-center ${styles.savedAssetOverlay}`}
       onClick={onClose}
     >
       <div
-        className="rounded-12 overflow-auto shadow-lg"
-        style={{
-          backgroundColor: 'var(--app-card-bg)',
-          maxWidth: '900px',
-          width: '92%',
-          maxHeight: 'calc(90vh - 80px)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-        }}
+        className={`rounded-12 overflow-auto shadow-lg ${styles.savedAssetCard}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div
@@ -183,26 +149,20 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
               <video
                 src={preview.url}
                 controls
-                className="rounded-8"
-                style={{ maxWidth: '100%', maxHeight: '65vh' }}
+                className={`rounded-8 ${styles.savedAssetMedia}`}
               />
             ) : (
               <img
                 src={preview.url}
                 alt={preview.title}
-                className="rounded-8 object-contain"
-                style={{ maxWidth: '100%', maxHeight: '65vh' }}
+                className={`rounded-8 object-contain ${styles.savedAssetMedia}`}
               />
             )}
           </div>
         </div>
 
         <div
-          className="flex-row flex-wrap gap-8 border-top bg-primary py-12 px-16"
-          style={{
-            justifyContent: 'flex-end',
-            borderRadius: '0 0 12px 12px',
-          }}
+          className={`flex-row flex-wrap gap-8 border-top bg-primary py-12 px-16 ${styles.savedAssetFooter}`}
         >
           {/* Share (Web Share API) */}
           {typeof navigator !== 'undefined' && 'share' in navigator && (
@@ -222,12 +182,7 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
           <a
             href={preview.url}
             download
-            className="inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 border"
-            style={{
-              alignItems: 'center',
-              backgroundColor: 'var(--app-surface-secondary)',
-              color: 'var(--app-text)',
-            }}
+            className={`inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 border ${styles.savedDownloadLink}`}
           >
             {'\u2913'} Download
           </a>
@@ -236,11 +191,7 @@ export function SavedAssetPreviewModal({ preview, onClose }: SavedAssetPreviewMo
             href={preview.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 text-white"
-            style={{
-              alignItems: 'center',
-              backgroundColor: 'var(--app-primary)',
-            }}
+            className={`inline-flex gap-6 py-8 px-16 rounded-6 text-decoration-none fs-14 fw-500 text-white ${styles.primaryActionLink}`}
           >
             {'\u2917'} Openen
           </a>
@@ -266,21 +217,17 @@ export function ToastNotifications({ toasts, onDismiss }: ToastNotificationsProp
   if (toasts.length === 0) return null;
 
   return (
-    <div className="flex-col gap-8 fixed" style={{ top: 16, right: 16, zIndex: 9999, maxWidth: 420 }}>
+    <div className={`flex-col gap-8 fixed ${styles.toastContainer}`}>
       {toasts.map(toast => (
         <div
           key={toast.id}
-          className="flex-row gap-12 rounded-8 text-white fs-14 fw-500 shadow-lg py-12 px-16"
-          style={{
-            background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
-            animation: 'slideInRight 0.3s ease-out',
-          }}
+          className={`flex-row gap-12 rounded-8 text-white fs-14 fw-500 shadow-lg py-12 px-16 ${styles.toastItem}`}
+          data-toast-type={toast.type}
         >
           <span className="flex-1">{toast.message}</span>
           <button
             onClick={() => onDismiss(toast.id)}
-            className="bg-transparent border-none text-white cursor-pointer fs-18 p-0"
-            style={{ lineHeight: 1, opacity: 0.7 }}
+            className={`bg-transparent border-none text-white cursor-pointer fs-18 p-0 ${styles.toastDismiss}`}
           >
             {'\u00d7'}
           </button>

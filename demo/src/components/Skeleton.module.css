@@ -1,0 +1,94 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ── Base shimmer element ── */
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--app-surface-2) 25%,
+    var(--app-border) 50%,
+    var(--app-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  width: var(--skeleton-w);
+  height: var(--skeleton-h);
+  border-radius: var(--skeleton-r);
+}
+
+/* ── Multi-line text wrapper ── */
+
+.multiLineWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── SkeletonCard ── */
+
+.card {
+  padding: 16px;
+  background-color: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+}
+
+.cardImage {
+  margin-bottom: 12px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* ── SkeletonList ── */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--skeleton-gap);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--app-surface);
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+}
+
+/* ── SkeletonGrid ── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--skeleton-columns), 1fr);
+  gap: var(--skeleton-gap);
+}
+
+.gridItem {
+  aspect-ratio: var(--skeleton-aspect-ratio);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* ── Shared utilities ── */
+
+.flexFill {
+  flex: 1;
+}
+
+.mb6 {
+  margin-bottom: 6px;
+}

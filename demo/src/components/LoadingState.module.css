@@ -1,0 +1,104 @@
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Inline spinner (small, for buttons/forms) */
+.inlineSpinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--spinner-track, #f3f3f3);
+  border-top-color: var(--spinner-accent, #007bff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  vertical-align: middle;
+}
+
+/* Skeleton screen */
+.skeletonContainer {
+  padding: 20px;
+}
+
+.skeletonLine {
+  height: 20px;
+  background-color: var(--skeleton-bg, #e0e0e0);
+  border-radius: 4px;
+  margin-bottom: 12px;
+  animation: pulse 1.5s ease-in-out infinite;
+  width: 100%;
+}
+
+.skeletonLine[data-variant="first"] {
+  height: 32px;
+  width: 60%;
+}
+
+.skeletonLine[data-variant="last"] {
+  width: 80%;
+}
+
+/* Default centered spinner */
+.spinnerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 40px 20px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--spinner-track, #f3f3f3);
+  border-top-color: var(--spinner-accent, #007bff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.message {
+  margin-top: 16px;
+  color: var(--loading-text, #666);
+  font-size: 16px;
+}
+
+/* Full-screen overlay */
+.overlayBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.overlayContent {
+  text-align: center;
+}
+
+.overlaySpinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid var(--spinner-track, #f3f3f3);
+  border-top-color: var(--spinner-accent, #007bff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+.overlayMessage {
+  margin-top: 24px;
+  color: var(--overlay-text, #333);
+  font-size: 18px;
+  font-weight: 500;
+}

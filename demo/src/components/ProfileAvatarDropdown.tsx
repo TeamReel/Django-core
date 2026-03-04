@@ -22,6 +22,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
+import styles from './ProfileAvatarDropdown.module.css';
 
 interface ProfileAvatarDropdownProps {
   /** Optional callback after logout */
@@ -137,7 +138,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
   };
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div className={styles.wrapper}>
       {/* Avatar Button */}
       <button
         ref={buttonRef}
@@ -145,44 +146,14 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
         onKeyDown={handleButtonKeyDown}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="nav-keep-border"
-        style={{
-          width: '36px',
-          height: '36px',
-          borderRadius: '50%',
-          border: '2px solid var(--app-border)',
-          backgroundColor: 'var(--app-surface-secondary)',
-          color: 'var(--app-text)',
-          fontSize: '14px',
-          fontWeight: 600,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all var(--duration-normal) var(--ease-default)',
-          padding: 0,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--app-surface-hover)';
-          e.currentTarget.style.borderColor = 'var(--app-primary)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-          e.currentTarget.style.borderColor = 'var(--app-border)';
-        }}
+        className={`nav-keep-border ${styles.avatarButton}`}
         title="User menu"
       >
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt="Profile"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-              borderRadius: '50%',
-            }}
+            className={styles.avatarImage}
           />
         ) : (
           getInitials()
@@ -195,43 +166,14 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           ref={dropdownRef}
           role="menu"
           onKeyDown={handleKeyDown}
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            right: 0,
-            minWidth: '240px',
-            backgroundColor: 'var(--app-surface)',
-            border: '1px solid var(--app-border)',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-lg)',
-            padding: '8px 0',
-            zIndex: 1000,
-          }}
+          className={styles.dropdown}
         >
           {/* User info header */}
-          <div
-            style={{
-              padding: '12px 16px',
-              borderBottom: '1px solid var(--app-border)',
-              marginBottom: '8px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                color: 'var(--app-text)',
-                marginBottom: '4px',
-              }}
-            >
+          <div className={styles.userInfoHeader}>
+            <div className={styles.userName}>
               {getUserDisplayName()}
             </div>
-            <div
-              style={{
-                fontSize: '12px',
-                color: 'var(--app-muted-text)',
-              }}
-            >
+            <div className={styles.userEmail}>
               {user.email}
             </div>
           </div>
@@ -240,25 +182,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           <button
             role="menuitem"
             onClick={() => handleNavigate('/preferences?tab=profile')}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className={styles.menuItem}
           >
             <span>👤</span>
             <span>My Profile</span>
@@ -267,25 +191,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           <button
             role="menuitem"
             onClick={() => handleNavigate('/preferences')}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className={styles.menuItem}
           >
             <span>⚙️</span>
             <span>Preferences</span>
@@ -294,25 +200,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           <button
             role="menuitem"
             onClick={() => handleNavigate('/credits?wallet=personal')}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className={styles.menuItem}
           >
             <span>💳</span>
             <span>Credits</span>
@@ -322,66 +210,22 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
           <button
             role="menuitem"
             onClick={toggleTheme}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: 'var(--app-text)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'var(--app-surface-secondary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className={styles.menuItem}
           >
             <span>{mode === 'light' ? '🌙' : '☀️'}</span>
             <span>{mode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
           </button>
 
           {/* Divider */}
-          <div
-            style={{
-              height: '1px',
-              backgroundColor: 'var(--app-border)',
-              margin: '8px 0',
-            }}
-          />
+          <div className={styles.divider} />
 
           {/* Sign Out */}
           <button
             role="menuitem"
             onClick={handleLogout}
             disabled={signOutLoading}
-            style={{
-              width: '100%',
-              padding: '10px 16px',
-              backgroundColor: 'transparent',
-              border: 'none',
-              textAlign: 'left',
-              fontSize: '14px',
-              color: signOutLoading ? 'var(--app-muted-text)' : 'var(--app-error)',
-              cursor: signOutLoading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              fontWeight: 500,
-            }}
-            onMouseEnter={(e) => {
-              if (!signOutLoading) {
-                e.currentTarget.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            className={styles.signOutItem}
+            data-loading={signOutLoading || undefined}
           >
             <span>🚪</span>
             <span>{signOutLoading ? 'Logging out...' : 'Sign out'}</span>

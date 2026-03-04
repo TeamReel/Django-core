@@ -1,0 +1,38 @@
+/* RecentsPage — extracted inline styles */
+
+.page {
+  min-height: 100%;
+}
+
+.favoritesLink {
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.clearButton {
+  padding: 8px 10px;
+}
+
+.itemRow {
+  padding: 12px 14px;
+}
+
+.itemLink {
+  text-decoration: none;
+}
+
+.favoriteButton {
+  padding: 6px 8px;
+}
+
+.favoriteButton[data-active="true"] {
+  color: var(--color-amber-400);
+}
+
+.favoriteButton[data-active="false"] {
+  color: var(--app-text);
+}
+
+.removeButton {
+  padding: 6px 8px;
+}

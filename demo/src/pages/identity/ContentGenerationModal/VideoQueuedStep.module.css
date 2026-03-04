@@ -1,0 +1,123 @@
+.container {
+  /* Color tokens */
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34, 197, 94, 0.15);
+  --color-success-bg-active: rgba(34, 197, 94, 0.3);
+  --color-success-border: rgba(34, 197, 94, 0.3);
+  --color-error: #f87171;
+  --color-error-bg: rgba(239, 68, 68, 0.15);
+  --color-error-bg-light: rgba(239, 68, 68, 0.1);
+  --color-error-bg-active: rgba(239, 68, 68, 0.3);
+  --color-error-border: rgba(239, 68, 68, 0.25);
+  --color-info: #3b82f6;
+  --color-info-light: #60a5fa;
+  --color-info-bg: rgba(59, 130, 246, 0.12);
+  --color-info-ring: rgba(59, 130, 246, 0.25);
+  --color-video-bg: #000;
+  --color-progress-track: rgba(255, 255, 255, 0.08);
+}
+
+.contentWrapper {
+  max-width: 448px;
+}
+
+.statusIcon {
+  width: 56px;
+  height: 56px;
+}
+
+.statusIcon[data-variant='success'] {
+  background: var(--color-success-bg);
+}
+
+.statusIcon[data-variant='error'] {
+  background: var(--color-error-bg);
+}
+
+.statusIcon[data-variant='info'] {
+  background: var(--color-info-bg);
+}
+
+.videoContainer {
+  background: var(--color-video-bg);
+}
+
+.videoPlayer {
+  max-height: 340px;
+}
+
+.approvalError {
+  color: var(--color-error);
+}
+
+.approveButton {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+  cursor: pointer;
+}
+
+.approveButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.approveButton[data-loading='true'] {
+  background: var(--color-success-bg-active);
+}
+
+.rejectButton {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: var(--color-error-bg-light);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border);
+  cursor: pointer;
+}
+
+.rejectButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.rejectButton[data-loading='true'] {
+  background: var(--color-error-bg-active);
+}
+
+.resultText[data-result='approved'] {
+  color: var(--color-success);
+}
+
+.resultText[data-result='rejected'] {
+  color: var(--color-error);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.progressTrack {
+  background: var(--color-progress-track);
+  height: 8px;
+}
+
+.progressFill {
+  height: 8px;
+  background: linear-gradient(90deg, var(--color-info), var(--color-info-light));
+}
+
+.approvalsLink {
+  color: var(--color-info-light);
+  background: var(--color-info-bg);
+}

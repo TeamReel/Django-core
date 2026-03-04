@@ -1,0 +1,66 @@
+/* ContentTemplateRequirementsTab — extracted inline styles */
+
+/* ── Custom properties ─────────────────────────────────────── */
+.assetTypeLabel {
+  --checked-border: var(--app-primary);
+  --checked-bg: color-mix(in srgb, var(--app-primary) 10%, transparent);
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+.memberRoleGrid {
+  grid-template-columns: 140px 80px 1fr;
+}
+
+.memberRoleLabel {
+  padding-top: 6px;
+}
+
+/* ── Inputs ────────────────────────────────────────────────── */
+.selectInput {
+  padding: 6px 10px;
+}
+
+.formationCheckbox {
+  width: 16px;
+  height: 16px;
+}
+
+.sectionCheckbox {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Asset-type chip (dynamic via data-attrs) ──────────────── */
+.assetTypeLabel {
+  border: 1px solid var(--app-border);
+  background-color: transparent;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.assetTypeLabel[data-checked='true'] {
+  border-color: var(--checked-border);
+  background-color: var(--checked-bg);
+}
+
+.assetTypeLabel[data-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.assetTypeCheckbox {
+  cursor: pointer;
+}
+
+.assetTypeCheckbox[data-disabled='true'] {
+  cursor: not-allowed;
+}
+
+/* ── Typography / Sections ─────────────────────────────────── */
+.sectionTitle {
+  font-size: 15px;
+}
+
+.indentedText {
+  margin-left: 26px;
+}

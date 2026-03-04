@@ -88,15 +88,13 @@ export default function ProjectSeasonMemberDetailPage() {
   if (isPlayer && !loading && membership && !isOwnProfile) {
     return (
       <AppShell>
-        <div className="text-center" style={{ padding: '48px 24px' }}>
-          <div className="mb-16" style={{ fontSize: '48px' }}>🔒</div>
-          <h2 className="text-primary" style={{ margin: '0 0 8px' }}>Geen toegang</h2>
-          <p className="text-secondary" style={{ margin: '0 0 24px' }}>
+        <div className={s.accessDeniedPage}>
+          <div className={`mb-16 ${s.lockIcon}`}>🔒</div>
+          <h2 className={`text-primary ${s.accessDeniedTitle}`}>Geen toegang</h2>
+          <p className={`text-secondary ${s.accessDeniedMessage}`}>
             Je kunt alleen je eigen profiel bekijken.
           </p>
-          <button type="button" onClick={() => navigate(-1)} className="rounded-6 border bg-surface-2 text-primary cursor-pointer fs-14" style={{
-            padding: '8px 16px',
-          }}>
+          <button type="button" onClick={() => navigate(-1)} className={`rounded-6 border bg-surface-2 text-primary cursor-pointer fs-14 ${s.goBackButton}`}>
             Ga terug
           </button>
         </div>
@@ -138,18 +136,11 @@ export default function ProjectSeasonMemberDetailPage() {
                 String((membership as any)?.user?.id ?? '') === String((user as any)?.id ?? '');
               return (
                 <button
-                  type="button" className="app-action-button"
+                  type="button" className={`app-action-button ${s.activeContextButton}`}
                   onClick={handleSetActiveContext}
                   disabled={!canMakeActive || activatingContext || isActive}
-                  style={{
-                    padding: '6px 12px', borderRadius: 8,
-                    border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
-                    background: isActive ? '#dcfce7' : 'var(--app-surface)',
-                    color: isActive ? '#166534' : 'var(--app-text)',
-                    fontWeight: isActive ? 600 : 500,
-                    opacity: !canMakeActive || activatingContext || isActive ? 0.8 : 1,
-                    cursor: !canMakeActive || activatingContext || isActive ? 'not-allowed' : 'pointer',
-                  }}
+                  data-active={isActive ? 'true' : undefined}
+                  data-disabled={!canMakeActive || activatingContext || isActive ? 'true' : undefined}
                   title={canMakeActive ? 'Set this member as your active context' : 'You can only set your own membership as active context'}
                 >
                   {isActive ? '✓ Active Context' : 'Make active'}
@@ -204,7 +195,7 @@ export default function ProjectSeasonMemberDetailPage() {
                       {memberActiveJobs.map(j => j.label || j.template_id).join(', ')}
                       {'. Je krijgt een melding zodra het klaar is.'}
                     </div>
-                    <a href="/approvals?tab=ai_queue" className="text-decoration-none fw-600 whitespace-nowrap fs-12" style={{ color: 'var(--color-blue-500)' }}>
+                    <a href="/approvals?tab=ai_queue" className={`text-decoration-none fw-600 whitespace-nowrap fs-12 ${s.queueLink}`}>
                       Bekijk queue →
                     </a>
                   </div>
@@ -250,12 +241,12 @@ export default function ProjectSeasonMemberDetailPage() {
                   <div className={s.cardPadding}>
                     <div className={s.sectionTitleLarge}>Member</div>
                     <div className="fs-13">{getUserDisplayName(membership)}</div>
-                    <div className="flex-row gap-8 flex-wrap" style={{ marginTop: '10px' }}>
+                    <div className={`flex-row gap-8 flex-wrap ${s.memberCardBadges}`}>
                       <Badge variant="default">Membership: {String(membership?.id || '').slice(0, 8)}…</Badge>
                       {season && <Badge variant="default">Season: {season.name}</Badge>}
                     </div>
-                    <div style={{ marginTop: '14px' }}>
-                      <div className="fs-12 fw-700" style={{ marginBottom: '6px' }}>Quick links</div>
+                    <div className={s.quickLinksSection}>
+                      <div className={`fs-12 fw-700 ${s.quickLinksTitle}`}>Quick links</div>
                       {seasonKeyForLinks ? (
                         <div className="flex-col gap-6">
                           <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`} className="text-blue-600 hover:underline text-decoration-none">Season squad</Link>
@@ -277,10 +268,10 @@ export default function ProjectSeasonMemberDetailPage() {
       {/* Mobile sticky action bar */}
       {!loading && !error && membership && userCanEditProject && (
         <div className="mobile-action-bar show-mobile-only">
-          <Button variant="primary" onClick={() => save(media.form, media.videoVariants)} disabled={saving} style={{ flex: 2 }}>
+          <Button variant="primary" onClick={() => save(media.form, media.videoVariants)} disabled={saving} className={s.mobileActionSave}>
             {saving ? 'Saving…' : '💾 Save'}
           </Button>
-          <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`); }} style={{ flex: 1 }}>
+          <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`); }} className={s.mobileActionSquad}>
             ← Squad
           </Button>
         </div>
@@ -302,7 +293,7 @@ export default function ProjectSeasonMemberDetailPage() {
       {videoPreviewUrl && (
         <div onClick={() => setVideoPreviewUrl(null)} className={s.videoModalOverlay}>
           <div onClick={e => e.stopPropagation()} className={s.videoModalContent}>
-            <video src={videoPreviewUrl} style={{ width: '100%', maxHeight: 'calc(100vh - 80px)', objectFit: 'contain', borderRadius: '12px' }} controls autoPlay loop playsInline />
+            <video src={videoPreviewUrl} className={s.videoPlayer} controls autoPlay loop playsInline />
             <button onClick={() => setVideoPreviewUrl(null)} className={s.videoModalClose}>✕</button>
           </div>
         </div>

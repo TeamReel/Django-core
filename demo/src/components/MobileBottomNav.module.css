@@ -1,0 +1,68 @@
+/* MobileBottomNav — CSS Module */
+
+/* ── Nav bar container ───────────────────────────────────────────────── */
+.nav {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+}
+
+/* ── Tab button ──────────────────────────────────────────────────────── */
+.tab {
+  gap: 2px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 4px;
+  background-color: transparent;
+  border: none;
+  color: var(--app-muted-text);
+}
+
+.tab.active {
+  color: var(--app-primary);
+}
+
+/* ── Icon pill (filled when active) ──────────────────────────────────── */
+.iconPill {
+  width: 32px;
+  height: 24px;
+  background-color: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.active .iconPill {
+  background-color: var(--app-primary);
+}
+
+/* ── Tab label ───────────────────────────────────────────────────────── */
+.tabLabel {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--app-muted-text);
+}
+
+.active .tabLabel {
+  font-weight: 700;
+  color: var(--app-primary);
+}
+
+/* ── Center create button ────────────────────────────────────────────── */
+.createButton {
+  bottom: 8px;
+  width: 52px;
+  height: 52px;
+  background-color: var(--app-primary, #3B8EA5);
+  border: 3px solid var(--app-surface);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.createButton:active {
+  transform: scale(0.93);
+}

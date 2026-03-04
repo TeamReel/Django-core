@@ -1,0 +1,64 @@
+/* ContentLibraryPage — extracted inline styles */
+
+/* ── Page wrappers ── */
+
+.noOrgWrapper {
+  min-height: 100vh;
+  background-color: var(--app-bg);
+  padding: 24px;
+}
+
+.noOrgWrapper[data-embedded='true'] {
+  min-height: auto;
+}
+
+.pageWrapper {
+  min-height: 100vh;
+  background-color: var(--app-bg);
+}
+
+.pageWrapper[data-embedded='true'] {
+  min-height: auto;
+}
+
+/* ── Category tab bar ── */
+
+.categoryTabBarWrapper {
+  padding: 12px 16px 0;
+}
+
+/* ── Toolbar inputs ── */
+
+.searchInput {
+  min-width: 120px;
+  padding: 8px 12px;
+}
+
+.sortSelect {
+  padding: 8px 12px;
+  min-width: 140px;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  min-width: 160px;
+}
+
+.matchSelect {
+  padding: 8px 12px;
+  min-width: 200px;
+}
+
+/* ── Content area ── */
+
+.contentArea {
+  max-width: 1400px;
+}
+
+.loadingArea {
+  padding: 48px;
+}
+
+.galleryGrid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSignIn, useAuth } from '@django-core/auth-ui';
+import styles from './LoginPage.module.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,19 +23,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mx-auto p-20" style={{ maxWidth: '400px', marginTop: '100px' }}>
+    <div className={`mx-auto p-20 ${styles.container}`}>
       <h1>Django Core-App Demo</h1>
       <p>Log in to access the demo shell</p>
 
-        <form onSubmit={handleSubmit} className="flex-col" style={{ gap: '15px', marginTop: '30px' }}>
+        <form onSubmit={handleSubmit} className={`flex-col ${styles.form}`}>
         {error && (
-          <div className="rounded-4" style={{ padding: '10px', backgroundColor: '#fee', border: '1px solid #fcc', color: '#c00' }}>
+          <div className={`rounded-4 ${styles.errorBox}`}>
             {error.formErrors[0] || 'Login failed. Please try again.'}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block fw-500" style={{ marginBottom: '5px' }}>
+          <label htmlFor="email" className={`block fw-500 ${styles.label}`}>
             Email
           </label>
           <input
@@ -50,7 +51,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block fw-500" style={{ marginBottom: '5px' }}>
+          <label htmlFor="password" className={`block fw-500 ${styles.label}`}>
             Password
           </label>
           <input
@@ -68,20 +69,15 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="text-white rounded-4 fs-16 fw-500"
-          style={{
-            padding: '12px',
-            backgroundColor: isLoading ? '#ccc' : 'var(--app-primary)',
-            border: 'none',
-            cursor: isLoading ? 'not-allowed' : 'pointer'
-          }}
+          className={`text-white rounded-4 fs-16 fw-500 ${styles.submitBtn}`}
+          data-loading={isLoading ? '' : undefined}
         >
           {isLoading ? 'Logging in...' : 'Log In'}
         </button>
       </form>
 
-      <p className="fs-14 text-muted text-center" style={{ marginTop: '15px' }}>
-        Don't have an account? <Link to="/register" className="text-decoration-none" style={{ color: 'var(--app-primary)' }}>Create one here</Link>
+      <p className={`fs-14 text-muted text-center ${styles.registerPrompt}`}>
+        Don't have an account? <Link to="/register" className={`text-decoration-none ${styles.registerLink}`}>Create one here</Link>
       </p>
     </div>
   );

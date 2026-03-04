@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import { Card, Text, Badge, Button, Stack } from '@django-core/design-system';
 import { Copy, Check, Upload, Image } from 'lucide-react';
 import { formatTokenKey, getContrastColor, TOKEN_TYPE_ICONS, TOKEN_TYPE_LABELS, ASSET_TYPE_LABELS } from './brandIdentity.types';
 import type { DesignToken, BrandAsset } from './brandIdentity.types';
 import { ResponsiveGrid } from '../ui/ResponsiveGrid';
+import styles from './BrandTokenSections.module.css';
 
 // ── CopyableValue ────────────────────────────────────────────
 export function CopyableValue({ value, label }: { value: string; label?: string }) {
@@ -23,11 +25,10 @@ export function CopyableValue({ value, label }: { value: string; label?: string 
     <button
       onClick={handleCopy}
       title={`Copy ${label || value}`}
-      className="inline-flex gap-4 rounded-4 cursor-pointer fs-12 border text-secondary"
-      style={{ padding: '2px 6px', background: 'var(--app-surface-alt, rgba(0,0,0,0.03))', fontFamily: 'monospace' }}
+      className={`inline-flex gap-4 rounded-4 cursor-pointer fs-12 border text-secondary ${styles.copyableButton}`}
     >
       {value}
-      {copied ? <Check size={12} color="green" /> : <Copy size={12} />}
+      {copied ? <Check size={12} className={styles.copiedIcon} /> : <Copy size={12} />}
     </button>
   );
 }
@@ -46,14 +47,14 @@ export function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
 
         <ResponsiveGrid minWidth="180px" gap={16}>
           {colors.map((token) => (
-            <div key={token.id} className="rounded-12 overflow-hidden border" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              <div className="flex-center" style={{ height: '100px', backgroundColor: token.value }}>
-                <Text weight="bold" size="lg" style={{ color: getContrastColor(token.value), textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>Aa</Text>
+            <div key={token.id} className={`rounded-12 overflow-hidden border ${styles.colorCard}`}>
+              <div className={`flex-center ${styles.colorSwatch}`} style={{ '--swatch-bg': token.value } as CSSProperties}>
+                <Text weight="bold" size="lg" className={styles.colorSwatchLabel} style={{ '--contrast-color': getContrastColor(token.value) } as CSSProperties}>Aa</Text>
               </div>
               <div className="p-12 bg-surface">
                 <Text weight="medium" size="sm">{formatTokenKey(token.key)}</Text>
-                <div style={{ marginTop: '6px' }}><CopyableValue value={token.value} label={token.key} /></div>
-                {token.description && <Text size="xs" color="secondary" style={{ marginTop: '6px' }}>{token.description}</Text>}
+                <div className={styles.colorTokenValue}><CopyableValue value={token.value} label={token.key} /></div>
+                {token.description && <Text size="xs" color="secondary" className={styles.colorTokenDescription}>{token.description}</Text>}
               </div>
             </div>
           ))}
@@ -61,9 +62,9 @@ export function ColorPaletteSection({ colors }: { colors: DesignToken[] }) {
 
         <div className="mt-8">
           <Text weight="bold" size="xs" color="secondary" className="mb-8 uppercase">Combined Preview</Text>
-          <div className="rounded-8 overflow-hidden border flex-row" style={{ height: '48px' }}>
+          <div className={`rounded-8 overflow-hidden border flex-row ${styles.combinedPreviewBar}`}>
             {colors.map((token) => (
-              <div key={token.id} className="flex-1" style={{ backgroundColor: token.value }} title={`${formatTokenKey(token.key)}: ${token.value}`} />
+              <div key={token.id} className={`flex-1 ${styles.combinedPreviewSegment}`} style={{ '--swatch-bg': token.value } as CSSProperties} title={`${formatTokenKey(token.key)}: ${token.value}`} />
             ))}
           </div>
         </div>
@@ -85,15 +86,15 @@ export function TypographySection({ fonts }: { fonts: DesignToken[] }) {
         </div>
         <div className="grid gap-16">
           {fonts.map((token) => (
-            <div key={token.id} className="p-20 rounded-12 border" style={{ backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))' }}>
+            <div key={token.id} className={`p-20 rounded-12 border ${styles.typographyCard}`}>
               <div className="flex-between mb-12">
                 <Text size="sm" color="secondary">{formatTokenKey(token.key)}</Text>
                 <CopyableValue value={token.value} label={token.key} />
               </div>
-              <div style={{ fontFamily: token.value, lineHeight: 1.4 }}>
+              <div className={styles.typographyPreview} style={{ '--font-family': token.value, '--font-weight': token.key.includes('heading') ? 700 : 400 } as CSSProperties}>
                 <Text size="xs" color="secondary" className="mb-4">Preview:</Text>
-                <div style={{ fontSize: '28px', fontWeight: token.key.includes('heading') ? 700 : 400 }}>The quick brown fox jumps</div>
-                <div className="fs-16 mt-8" style={{ fontWeight: token.key.includes('heading') ? 700 : 400 }}>ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
+                <div className={styles.typographyLargePreview}>The quick brown fox jumps</div>
+                <div className={`fs-16 mt-8 ${styles.typographyUppercase}`}>ABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
                 <div className="fs-14 mt-4 text-secondary">abcdefghijklmnopqrstuvwxyz 0123456789</div>
               </div>
             </div>
@@ -126,7 +127,7 @@ export function OtherTokensSection({ tokens }: { tokens: Map<string, DesignToken
                 </div>
                 <ResponsiveGrid minWidth="200px" gap={12}>
                   {typeTokens.map((token) => (
-                    <div key={token.id} className="flex-between rounded-8 border py-12 px-16" style={{ backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))' }}>
+                    <div key={token.id} className={`flex-between rounded-8 border py-12 px-16 ${styles.tokenRow}`}>
                       <Text size="sm" weight="medium">{formatTokenKey(token.key)}</Text>
                       <CopyableValue value={token.value} label={token.key} />
                     </div>
@@ -155,22 +156,21 @@ export function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
         </div>
 
         {assets.length === 0 ? (
-          <div className="text-center rounded-12" style={{ padding: '48px', backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))', border: '2px dashed var(--app-border)' }}>
-            <Image size={48} className="mb-16" style={{ opacity: 0.2 }} />
+          <div className={`text-center rounded-12 ${styles.emptyState}`}>
+            <Image size={48} className={`mb-16 ${styles.emptyStateIcon}`} />
             <Text color="secondary" size="sm">No brand assets uploaded yet</Text>
             <Text color="secondary" size="xs" className="mt-8">Upload logos, icons, banners and other visual assets</Text>
           </div>
         ) : (
           <ResponsiveGrid minWidth="180px" gap={16}>
             {assets.map((asset) => (
-              <div key={asset.id} className="rounded-12 overflow-hidden border bg-surface" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                <div className="flex-center p-16" style={{ aspectRatio: '1', backgroundColor: 'var(--app-surface-alt, #f8f8f8)' }}>
+              <div key={asset.id} className={`rounded-12 overflow-hidden border bg-surface ${styles.assetCard}`}>
+                <div className={`flex-center p-16 ${styles.assetPreview}`}>
                   {asset.url ? (
                     <img
                       src={asset.url}
                       alt={asset.alt_text || asset.asset_type}
-                      className="object-contain"
-                      style={{ maxWidth: '100%', maxHeight: '100%' }}
+                      className={`object-contain ${styles.assetImage}`}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.display = 'none';
                         ((e.target as HTMLImageElement).parentNode as HTMLElement).innerHTML = `
@@ -182,7 +182,7 @@ export function BrandAssetsSection({ assets }: { assets: BrandAsset[] }) {
                       }}
                     />
                   ) : (
-                    <Image size={48} style={{ opacity: 0.2 }} />
+                    <Image size={48} className={styles.assetPlaceholderIcon} />
                   )}
                 </div>
                 <div className="p-12">

@@ -1,0 +1,54 @@
+.pageRoot {
+  min-height: 100%;
+}
+
+.lowBalanceBanner {
+  border: 1px solid var(--low-balance-border, #ffc107);
+}
+
+.lowBalanceText {
+  margin: 4px 0 0 0;
+}
+
+.upgradeButton {
+  padding: 8px 16px;
+  background-color: var(--low-balance-border, #ffc107);
+  color: #000;
+}
+
+.viewAllLink {
+  padding: 8px 12px;
+}
+
+.recentPill {
+  padding: 8px 10px;
+  max-width: 260px;
+}
+
+.dashboardGrid {
+  grid-template-columns: 1fr;
+}
+
+.projectsLink {
+  padding: 10px 16px;
+  background-color: var(--app-primary);
+  flex: 1 1 auto;
+}
+
+.teamLink {
+  padding: 10px 16px;
+  flex: 1 1 auto;
+}
+
+.quickCreateGrid {
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+}
+
+.quickCreateButton {
+  padding: 12px 8px;
+  min-height: 64px;
+}
+
+.quickCreateLabel {
+  line-height: 1.2;
+}

@@ -6,6 +6,7 @@ import { Button, Text } from '@django-core/design-system';
 import { Loader2 } from 'lucide-react';
 import type { EntityType, EntityData } from './entityEditTypes';
 import { ENTITY_LABELS } from './entityEditTypes';
+import styles from './EntityGeneralTab.module.css';
 
 interface GeneralTabProps {
   entityType: EntityType;
@@ -44,13 +45,6 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
     }));
   };
 
-  const inputStyle = (extra?: React.CSSProperties): React.CSSProperties => ({
-    padding: '10px 12px',
-    background: disabled ? 'var(--app-surface-alt)' : 'var(--app-surface)',
-    opacity: disabled ? 0.7 : 1,
-    ...extra,
-  });
-
   return (
     <div className="grid gap-16">
       <label className="grid gap-6">
@@ -60,8 +54,8 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
           value={formData.name || ''}
           onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
           disabled={disabled}
-          className="rounded-6 border text-primary fs-14"
-          style={inputStyle()}
+          className={`rounded-6 border text-primary fs-14 ${styles.formInput}`}
+          data-disabled={disabled ? '' : undefined}
         />
       </label>
 
@@ -73,8 +67,8 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
             value={formData.slug || ''}
             onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
             disabled={disabled}
-            className="rounded-6 border text-primary fs-14"
-            style={inputStyle({ fontFamily: 'monospace' })}
+            className={`rounded-6 border text-primary fs-14 ${styles.formInput} ${styles.monoInput}`}
+            data-disabled={disabled ? '' : undefined}
           />
         </label>
       )}
@@ -86,8 +80,8 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
           onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
           disabled={disabled}
           rows={3}
-          className="rounded-6 border text-primary fs-14"
-          style={inputStyle({ resize: 'vertical' })}
+          className={`rounded-6 border text-primary fs-14 ${styles.formInput} ${styles.resizable}`}
+          data-disabled={disabled ? '' : undefined}
         />
       </label>
 
@@ -95,17 +89,16 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
       {(entityType === 'club' || entityType === 'team') && (
         <div className="grid gap-6">
           <Text size="sm" weight="bold">Logo</Text>
-          <div className="gap-16" style={{ display: 'flex', alignItems: 'flex-start' }}>
+          <div className={`gap-16 ${styles.logoRow}`}>
             <div
-              className="flex-center rounded-8 overflow-hidden"
-              style={{ width: 80, height: 80, border: '2px dashed var(--app-border)', backgroundColor: 'var(--app-surface-alt)', flexShrink: 0 }}
+              className={`flex-center rounded-8 overflow-hidden ${styles.logoPreview}`}
             >
               {uploading ? (
-                <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} />
+                <Loader2 size={24} className={styles.spinner} />
               ) : logoUrl ? (
-                <img src={logoUrl} alt="Logo preview" className="w-full h-full p-4" style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src={logoUrl} alt="Logo preview" className={`w-full h-full p-4 ${styles.logoImg}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               ) : (
-                <span className="text-muted fw-700" style={{ fontSize: 28 }}>{String(formData.name || '?').charAt(0).toUpperCase()}</span>
+                <span className={`text-muted fw-700 ${styles.logoPlaceholder}`}>{String(formData.name || '?').charAt(0).toUpperCase()}</span>
               )}
             </div>
             <div className="flex-1">
@@ -118,8 +111,7 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
                 <button
                   type="button"
                   onClick={() => updateIdentity('logo_url', '')}
-                  className="mt-4 fs-11 border-none cursor-pointer bg-transparent"
-                  style={{ padding: '2px 6px', color: 'var(--app-error, #dc2626)', textDecoration: 'underline' }}
+                  className={`mt-4 fs-11 border-none cursor-pointer bg-transparent ${styles.removeBtn}`}
                 >
                   Remove logo
                 </button>
@@ -139,20 +131,20 @@ export function EntityGeneralTab({ entityType, formData, setFormData, disabled, 
             onChange={(e) => updateIdentity('default_location', e.target.value)}
             disabled={disabled}
             placeholder="e.g., Johan Cruijff ArenA, Amsterdam"
-            className="rounded-6 border text-primary fs-14"
-            style={inputStyle()}
+            className={`rounded-6 border text-primary fs-14 ${styles.formInput}`}
+            data-disabled={disabled ? '' : undefined}
           />
           <Text size="sm" color="secondary">Used to prefill the location when creating new matches</Text>
         </label>
       )}
 
-      <label className="flex-row gap-12" style={{ cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.7 : 1 }}>
+      <label className={`flex-row gap-12 ${styles.checkboxLabel}`} data-disabled={disabled ? '' : undefined}>
         <input
           type="checkbox"
           checked={formData.is_active ?? true}
           onChange={(e) => setFormData((prev) => ({ ...prev, is_active: e.target.checked }))}
           disabled={disabled}
-          style={{ width: '18px', height: '18px' }}
+          className={styles.checkbox}
         />
         <div>
           <Text weight="bold">Active</Text>

@@ -1,0 +1,41 @@
+/* HealthCheckPage — extracted inline styles */
+
+.errorBox {
+  padding: 16px;
+  background-color: var(--app-error);
+  opacity: 0.9;
+  border: 1px solid var(--app-error);
+  border-radius: 4px;
+  color: var(--color-white, #fff);
+}
+
+.autoFitGrid {
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+}
+
+.sectionHeading {
+  margin-top: 0;
+  padding-bottom: 12px;
+}
+
+.statusBadge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: var(--status-bg);
+  color: var(--status-color);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+}
+
+.integrityCount {
+  padding: 4px 12px;
+  border-radius: 12px;
+  background-color: var(--status-bg);
+  color: var(--status-color);
+  font-weight: bold;
+  min-width: 40px;
+  text-align: center;
+}

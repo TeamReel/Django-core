@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Alert, Card } from '@django-core/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
+import styles from './CompetitionContentTab.module.css';
 
 export interface CompetitionContentTabProps {
   matches: any[];
@@ -54,36 +55,17 @@ export function CompetitionContentTab({
           <Alert variant="info">Geen wedstrijden gevonden.</Alert>
         ) : (
           <div className="overflow-x-auto">
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+            <table className={styles.table}>
               <thead>
                 <tr>
-                  <th style={{
-                    textAlign: 'left', padding: '8px 10px', borderBottom: '2px solid var(--app-border, #333)',
-                    fontWeight: 700, color: 'var(--app-text-secondary, #999)', fontSize: 11,
-                    position: 'sticky', left: 0, background: 'var(--app-surface, #1a1a1a)', zIndex: 1,
-                    minWidth: 160,
-                  }}>Wedstrijd</th>
-                  <th style={{
-                    textAlign: 'left', padding: '8px 6px', borderBottom: '2px solid var(--app-border, #333)',
-                    fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11,
-                    minWidth: 80,
-                  }}>Datum</th>
+                  <th className={styles.thMatch}>Wedstrijd</th>
+                  <th className={styles.thDate}>Datum</th>
                   {matchContentTypes.map(ct => (
-                    <th key={ct.id} style={{
-                      textAlign: 'center', padding: '8px 4px',
-                      borderBottom: '2px solid var(--app-border, #333)',
-                      fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 10,
-                      minWidth: 36, maxWidth: 50,
-                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                    }} title={ct.label}>
+                    <th key={ct.id} className={styles.thContentType} title={ct.label}>
                       {ct.icon}
                     </th>
                   ))}
-                  <th style={{
-                    textAlign: 'center', padding: '8px 6px',
-                    borderBottom: '2px solid var(--app-border, #333)',
-                    fontWeight: 600, color: 'var(--app-text-secondary, #999)', fontSize: 11,
-                  }}>Score</th>
+                  <th className={styles.thScore}>Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,12 +73,8 @@ export function CompetitionContentTab({
                   const matchId = String(match.id);
                   const done = matchContentTypes.filter(ct => getMediaForMatch(matchId, ct.subtype)).length;
                   return (
-                    <tr key={matchId} style={{ borderBottom: '1px solid var(--app-border, #222)' }}>
-                      <td style={{
-                        padding: '6px 10px', fontWeight: 600, fontSize: 12,
-                        position: 'sticky', left: 0, background: 'var(--app-surface, #1a1a1a)', zIndex: 1,
-                        maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
+                    <tr key={matchId} className={styles.matchRow}>
+                      <td className={styles.tdMatch}>
                         {(() => {
                           const compId = String((match as any).period_id || match.period?.id || '').trim();
                           const compKey = periodPathKey((match as any).period || null) || compId;
@@ -105,26 +83,26 @@ export function CompetitionContentTab({
                             ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}/${compKey}/${String(matchKey)}`
                             : `/matches/${String(matchKey)}`;
                           return (
-                            <Link to={matchPath} style={{ textDecoration: 'none', color: '#60a5fa' }} className="hover:underline">
+                            <Link to={matchPath} className={styles.matchLink}>
                               {matchDisplayTitle(match)}
                             </Link>
                           );
                         })()}
                       </td>
-                      <td style={{ padding: '6px 6px', fontSize: 11, color: 'var(--app-text-secondary, #999)', whiteSpace: 'nowrap' }}>
+                      <td className={styles.tdDate}>
                         {match.start_time ? new Date(match.start_time).toLocaleDateString('nl-NL', { day: '2-digit', month: '2-digit' }) : '—'}
                       </td>
                       {matchContentTypes.map(ct => {
                         const media = getMediaForMatch(matchId, ct.subtype);
                         return (
-                          <td key={ct.id} style={{ textAlign: 'center', padding: '6px 4px' }}>
-                            <span title={media ? 'Gereed' : 'Niet gemaakt'} style={{ cursor: 'default', fontSize: 14 }}>
+                          <td key={ct.id} className={styles.tdContentType}>
+                            <span title={media ? 'Gereed' : 'Niet gemaakt'} className={styles.statusIcon}>
                               {media ? '✅' : '⬜'}
                             </span>
                           </td>
                         );
                       })}
-                      <td style={{ textAlign: 'center', padding: '6px 6px', fontSize: 11, fontWeight: 600, color: done > 0 ? 'var(--color-green-400)' : 'var(--app-text-secondary, #999)' }}>
+                      <td className={styles.tdScore} data-has-content={done > 0}>
                         {done}/{matchContentTypes.length}
                       </td>
                     </tr>
@@ -133,7 +111,7 @@ export function CompetitionContentTab({
               </tbody>
             </table>
             {/* Legend */}
-            <div className="mt-12 flex-row gap-16 flex-wrap" style={{ fontSize: 11, color: 'var(--app-text-secondary, #999)' }}>
+            <div className={`mt-12 flex-row gap-16 flex-wrap ${styles.legend}`}>
               <span>✅ = Gereed</span>
               <span>⬜ = Niet gemaakt</span>
               {matchContentTypes.map(ct => (

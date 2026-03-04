@@ -1,0 +1,54 @@
+/* AssetSubComponents.module.css — extracted from inline styles */
+
+.cardWrap[data-inherited] {
+  opacity: 0.8;
+}
+
+.previewDynamic {
+  --checker-dark: #2a2a2a;
+  --checker-light: #1e1e1e;
+  aspect-ratio: var(--aspect-ratio, 3 / 4);
+  background: repeating-conic-gradient(var(--checker-dark) 0% 25%, var(--checker-light) 0% 50%) 50% / 20px 20px;
+}
+
+.previewDynamic[data-has-url] {
+  background: var(--preview-bg);
+}
+
+.badgeDynamic {
+  background: var(--badge-bg);
+}
+
+.historyBtnPos {
+  right: 6px;
+}
+
+.historyBtnPos[data-has-badge] {
+  right: 80px;
+}
+
+.gridCols {
+  grid-template-columns: 1fr;
+}
+
+.gridCols[data-two-cols] {
+  grid-template-columns: 1fr 1fr;
+}
+
+.editBtn {
+  --edit-btn-bg: #8b5cf6;
+  --edit-btn-bg-disabled: #555555;
+  cursor: pointer;
+  background: var(--edit-btn-bg);
+  opacity: 1;
+}
+
+.editBtn[data-processing] {
+  cursor: not-allowed;
+  background: var(--edit-btn-bg-disabled);
+  opacity: 0.6;
+}
+
+.thumbDynamic {
+  background: var(--thumb-bg);
+}

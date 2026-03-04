@@ -1,0 +1,81 @@
+/* ── CSS Variables for hex/rgba literals ──────────────────────── */
+:root {
+  --ds-success-bg: #f0fdf4;
+  --ds-error-bg: #fef2f2;
+  --ds-overlay-bg: rgba(0, 0, 0, 0.5);
+}
+
+/* ── Form Validation States ──────────────────────────────────── */
+
+.normalInputHint {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  margin: 4px 0 0 0;
+}
+
+.successInput {
+  border-color: var(--color-green-400);
+  background-color: var(--ds-success-bg);
+}
+
+.successInputHint {
+  color: var(--color-green-400);
+}
+
+.errorInput {
+  border-color: var(--color-red-500);
+  background-color: var(--ds-error-bg);
+}
+
+.errorInputHint {
+  color: var(--color-red-500);
+}
+
+/* ── Layout Components ───────────────────────────────────────── */
+
+.orgAvatar {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-blue-500);
+  color: white;
+}
+
+.heading1 {
+  font-size: 32px;
+}
+
+/* ── Interactive Components ──────────────────────────────────── */
+
+.dropdown {
+  top: 100%;
+  left: 0;
+  min-width: 120px;
+  display: none;
+}
+
+.modalOverlay {
+  background-color: var(--ds-overlay-bg);
+  display: none;
+}
+
+.modalContent {
+  width: 90%;
+}
+
+.modalActions {
+  justify-content: flex-end;
+}
+
+/* ── Animation Demos ─────────────────────────────────────────── */
+
+.bounceDot {
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-blue-500);
+}
+
+.fadeDot {
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-green-400);
+}

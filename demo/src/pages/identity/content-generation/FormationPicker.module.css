@@ -1,0 +1,117 @@
+/* FormationPicker — CSS Module */
+
+.label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--vscode-foreground, #ccc);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.formationButton {
+  position: relative;
+  border: 1px solid var(--vscode-widget-border, #333);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: var(--vscode-editor-background, #1e1e1e);
+  transition: all 0.15s ease;
+}
+
+.formationButton[data-selected="true"] {
+  border: 2px solid var(--vscode-focusBorder, #007fd4);
+  background: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+.miniField {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/3.5;
+  background: linear-gradient(to bottom, #166534, #14532d);
+}
+
+.formationButton[data-selected="true"] .miniField {
+  background: linear-gradient(to bottom, #16a34a, #15803d);
+}
+
+.fieldMarkingTop {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 15%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.fieldMarkingMid {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.centerCircle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+}
+
+.positionDot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transform: translate(-50%, -50%);
+}
+
+.formationButton[data-selected="true"] .positionDot {
+  background: #fff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+}
+
+.checkBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-green-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.formationLabel {
+  padding: 2px 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--vscode-foreground, #ccc);
+  background: var(--vscode-editor-inactiveSelectionBackground, #2a2a2a);
+}
+
+.formationButton[data-selected="true"] .formationLabel {
+  color: #fff;
+  background: var(--vscode-focusBorder, #007fd4);
+}

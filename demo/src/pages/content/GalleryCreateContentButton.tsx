@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { useUserRole } from '../../components/PermissionGuards';
+import styles from './GalleryCreateContentButton.module.css';
 
 const GALLERY_QUICK_TYPES = [
   { key: 'flyer', label: 'Match Flyer', icon: '📣', desc: 'Wedstrijdposter voor social media' },
@@ -40,8 +41,7 @@ export function GalleryCreateContentButton() {
       <button
         type="button"
         onClick={() => setShowModal(true)}
-        className="flex-row gap-6 rounded-8 border-none fs-14 fw-600 cursor-pointer whitespace-nowrap py-8 px-16"
-        style={{ background: 'var(--app-primary, #3b82f6)', color: '#fff' }}
+        className={`flex-row gap-6 rounded-8 border-none fs-14 fw-600 cursor-pointer whitespace-nowrap py-8 px-16 ${styles.createBtn}`}
       >
         + Create
       </button>
@@ -49,25 +49,16 @@ export function GalleryCreateContentButton() {
       {showModal && (
         <>
           <div
-            style={{ position: 'fixed', inset: 0, zIndex: 998, background: 'rgba(0,0,0,0.5)' }}
+            className={styles.overlay}
             onClick={() => setShowModal(false)}
           />
-          <div style={{
-            position: 'fixed', zIndex: 999,
-            top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            background: 'var(--app-surface)', borderRadius: 16,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-            width: 'min(420px, calc(100vw - 32px))',
-            maxHeight: 'calc(100vh - 64px)', overflowY: 'auto',
-            padding: '24px 20px',
-          }}>
+          <div className={styles.modal}>
             <div className="flex-between mb-16">
               <h3 className="m-0 fs-18 fw-700 text-primary">Content aanmaken</h3>
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="bg-transparent border-none fs-20 cursor-pointer text-muted p-4"
-                style={{ lineHeight: 1 }}
+                className={`bg-transparent border-none fs-20 cursor-pointer text-muted p-4 ${styles.closeBtn}`}
               >
                 &times;
               </button>
@@ -83,18 +74,12 @@ export function GalleryCreateContentButton() {
                     setShowModal(false);
                     navigate(`/matches/${matchId}?tab=content`);
                   }}
-                  className="flex-row gap-12 w-full cursor-pointer text-left border"
-                  style={{
-                    padding: '14px 16px', borderRadius: 10,
-                    background: 'var(--app-surface)', transition: 'background 0.15s',
-                  }}
-                  onMouseOver={(e) => (e.currentTarget.style.background = 'var(--app-surface-2)')}
-                  onMouseOut={(e) => (e.currentTarget.style.background = 'var(--app-surface)')}
+                  className={`flex-row gap-12 w-full cursor-pointer text-left border ${styles.typeBtn}`}
                 >
-                  <span style={{ fontSize: 28, lineHeight: 1 }}>{ct.icon}</span>
+                  <span className={styles.typeIcon}>{ct.icon}</span>
                   <div>
                     <div className="fs-14 fw-600 text-primary">{ct.label}</div>
-                    <div className="fs-12 text-muted" style={{ marginTop: 2 }}>{ct.desc}</div>
+                    <div className={`fs-12 text-muted ${styles.typeDesc}`}>{ct.desc}</div>
                   </div>
                 </button>
               ))}

@@ -19,6 +19,7 @@ import {
   type BrandAsset,
 } from '../../hooks/useBrandProfile';
 import { AssetCard, Section, AssetGrid } from './IdentityTabComponents';
+import styles from './IdentityTab.module.css';
 
 // ============================================================================
 // Types
@@ -106,7 +107,7 @@ export function IdentityTab({
 
   if (loading || parentBrand.loading) {
     return (
-      <div className="p-24 text-center" style={{ color: 'var(--vscode-descriptionForeground, #888)' }}>
+      <div className={`p-24 text-center ${styles.loadingText}`}>
         Brand identity laden...
       </div>
     );
@@ -114,7 +115,7 @@ export function IdentityTab({
 
   if (error) {
     return (
-      <div className="p-24" style={{ color: 'var(--vscode-errorForeground, #f44)' }}>
+      <div className={`p-24 ${styles.errorText}`}>
         Fout bij laden: {error}
       </div>
     );
@@ -211,16 +212,7 @@ export function IdentityTab({
         </Section>
 
         {!profile && (
-          <div
-            style={{
-              padding: 16,
-              background: 'var(--vscode-inputValidation-warningBackground, #5a4000)',
-              border: '1px solid var(--vscode-inputValidation-warningBorder, #856d00)',
-              borderRadius: 8,
-              marginTop: 16,
-              fontSize: 12,
-            }}
-          >
+          <div className={styles.warningBox}>
             ⚠️ Nog geen brand profiel aangemaakt voor deze club. Assets worden opgeslagen zodra er een brand profiel is.
           </div>
         )}
@@ -243,32 +235,18 @@ export function IdentityTab({
 
         {/* Sponsor choice */}
         <Section title="Sponsor" description="Kies of dit team de club-sponsor erft, of een eigen sponsor heeft.">
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+          <div className={styles.sponsorModeToggle}>
             <button
+              className={styles.sponsorModeBtn}
+              data-active={sponsorMode === 'club'}
               onClick={() => onSponsorModeChange?.('club')}
-              style={{
-                padding: '6px 12px',
-                fontSize: 12,
-                cursor: 'pointer',
-                background: sponsorMode === 'club' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                color: sponsorMode === 'club' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 4,
-              }}
             >
               Erven van club
             </button>
             <button
+              className={styles.sponsorModeBtn}
+              data-active={sponsorMode === 'custom'}
               onClick={() => onSponsorModeChange?.('custom')}
-              style={{
-                padding: '6px 12px',
-                fontSize: 12,
-                cursor: 'pointer',
-                background: sponsorMode === 'custom' ? 'var(--vscode-button-background, #0078d4)' : 'transparent',
-                color: sponsorMode === 'custom' ? 'var(--vscode-button-foreground, #fff)' : 'var(--vscode-foreground, #ccc)',
-                border: '1px solid var(--vscode-widget-border, #333)',
-                borderRadius: 4,
-              }}
             >
               Eigen sponsor
             </button>
@@ -297,7 +275,7 @@ export function IdentityTab({
 
             return (
               <div key={role.id} className="mb-12">
-                <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>{role.icon} {role.label}</div>
+                <div className={`fs-12 fw-600 ${styles.sectionLabel}`}>{role.icon} {role.label}</div>
                 <AssetGrid>
                   <AssetCard
                     label={`${role.label} (bewerkt)`}
@@ -331,7 +309,7 @@ export function IdentityTab({
         <Section title="Seizoen Identiteit" description="Snapshot van de team-identiteit voor dit seizoen. Tenue en sponsor kunnen per seizoen wijzigen.">
           {/* Logo - always inherited */}
           <div className="mb-16">
-            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Logo</div>
+            <div className={`fs-12 fw-600 ${styles.sectionLabel}`}>Logo</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('logo'); return (
                 <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited={e.inherited} inheritedFrom="Club" readOnly aspectRatio="1 / 1" />
@@ -341,7 +319,7 @@ export function IdentityTab({
 
           {/* Sponsor - can override */}
           <div className="mb-16">
-            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Sponsor</div>
+            <div className={`fs-12 fw-600 ${styles.sectionLabel}`}>Sponsor</div>
             <AssetGrid>
               {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
                 <AssetCard
@@ -368,7 +346,7 @@ export function IdentityTab({
 
           {/* Kits - combined with this season's sponsor */}
           <div>
-            <div className="fs-12 fw-600" style={{ marginBottom: 6 }}>Tenues (dit seizoen)</div>
+            <div className={`fs-12 fw-600 ${styles.sectionLabel}`}>Tenues (dit seizoen)</div>
             <AssetGrid>
               {KIT_ROLES.slice(0, 4).map((role) => {
                 const combinedType = `kit_${role.id}_combined`;

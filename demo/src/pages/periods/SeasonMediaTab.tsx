@@ -10,6 +10,7 @@ import { BatchGenerationModal, type BatchMember } from '../../components/BatchGe
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
 import s from './ProjectSeasonDetailPage.module.css';
+import styles from './SeasonMediaTab.module.css';
 
 export interface SeasonMediaTabProps {
   members: any[];
@@ -174,7 +175,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
   return (
     <div className="grid grid-cols-1 gap-6">
       <Card>
-        <div style={{ padding: '16px 16px 0 16px' }}>
+        <div className={styles.cardPaddingTop}>
           <div className="flex-row gap-12 flex-wrap">
             <h3 className={s.sectionTitle}> Media Completion Matrix</h3>
             <Badge variant="default">
@@ -183,8 +184,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
             <Button
               variant="outline"
               onClick={() => setIsActiveJobsModalOpen(true)}
-              className={s.mediaHeaderBtn}
-              style={{ marginLeft: batchSelectedMemberIds.size > 0 ? undefined : 'auto' }}
+              className={`${s.mediaHeaderBtn} ${batchSelectedMemberIds.size === 0 ? styles.pushRight : ''}`}
             >
               {'\u2699\uFE0F'} Actieve Jobs
             </Button>
@@ -213,7 +213,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
               <Table className="detail-table">
                 <thead>
                   <tr>
-                    <th className="detail-th text-center" style={{ width: '36px' }}>
+                    <th className={`detail-th text-center ${styles.checkboxCol}`}>
                       <input
                         type="checkbox"
                         checked={batchSelectedMemberIds.size === members.length && members.length > 0}
@@ -229,16 +229,11 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         title="Selecteer alles"
                       />
                     </th>
-                    <th className="detail-th" style={{ position: 'sticky', left: 0, background: 'var(--app-surface)', zIndex: 1 }}>Member</th>
+                    <th className={`detail-th ${styles.stickyCol}`}>Member</th>
                     {MEDIA_SLOTS.map((slot) => (
-                      <th key={slot.id} className="detail-th text-center relative" style={{ minWidth: '60px', height: '80px', verticalAlign: 'bottom' }} title={slot.label}>
+                      <th key={slot.id} className={`detail-th text-center relative ${styles.slotColHeader}`} title={slot.label}>
                         <div className="flex-col items-center gap-2">
-                          <span className="block whitespace-nowrap fw-500 opacity-80 mb-4" style={{
-                            fontSize: '9px',
-                            transform: 'rotate(-45deg)',
-                            transformOrigin: 'center center',
-                            letterSpacing: '0.02em',
-                          }}>{slot.label}</span>
+                          <span className={`block whitespace-nowrap fw-500 opacity-80 mb-4 ${styles.rotatedLabel}`}>{slot.label}</span>
                           <span className={s.slotIcon}>{slot.icon}</span>
                         </div>
                       </th>
@@ -252,7 +247,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                     <td className="detail-td text-center">
                       {/* No batch checkbox for guest */}
                     </td>
-                    <td className="detail-td-text" style={{ position: 'sticky', left: 0, background: 'rgba(167, 139, 250, 0.06)', zIndex: 1 }}>
+                    <td className={`detail-td-text ${styles.guestStickyCol}`}>
                       <span className={s.guestLabel}>{'\uD83C\uDFC3'} Gast Speler</span>
                     </td>
                     {MEDIA_SLOTS.map((slot) => {
@@ -315,7 +310,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                     const isBatchSelected = batchSelectedMemberIds.has(membershipId);
 
                     return (
-                      <tr key={String(m.id)} style={{ background: isBatchSelected ? 'rgba(59,130,246,0.06)' : undefined }}>
+                      <tr key={String(m.id)} className={styles.memberRow} data-selected={isBatchSelected || undefined}>
                         <td className="detail-td text-center">
                           <input
                             type="checkbox"
@@ -331,7 +326,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             className="cursor-pointer"
                           />
                         </td>
-                        <td className="detail-td-text" style={{ position: 'sticky', left: 0, background: isBatchSelected ? 'rgba(59,130,246,0.06)' : 'var(--app-surface)', zIndex: 1 }}>
+                        <td className={`detail-td-text ${styles.memberStickyCol}`}>
                           {href ? (
                             <Link
                               to={href}

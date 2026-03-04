@@ -1,0 +1,42 @@
+/* SeasonTeamTab.module.css — extracted from inline styles */
+
+.cardHeader {
+  padding: 16px 16px 0 16px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cardBody {
+  padding: 16px;
+}
+
+.filterBar {
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.searchInput {
+  width: 280px;
+}
+
+.checkboxCol {
+  width: 44px;
+}
+
+.actionCol {
+  width: 120px;
+}
+
+.badgeList {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}

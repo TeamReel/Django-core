@@ -5,6 +5,7 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
+import styles from './ProjectCompetitionMatchesPage.module.css';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -224,18 +225,18 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
 
           <Card>
             {loading ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>Loading matches…</div>
+              <div className={styles.emptyState}>Loading matches…</div>
             ) : matches.length === 0 ? (
-              <div style={{ padding: '16px', color: 'var(--app-text-secondary)' }}>No matches found.</div>
+              <div className={styles.emptyState}>No matches found.</div>
             ) : (
               <Table>
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left' }}>Date</th>
-                    <th style={{ textAlign: 'left' }}>Match</th>
-                    <th style={{ textAlign: 'center' }}>Score</th>
-                    <th style={{ textAlign: 'right' }}>Status</th>
-                    <th style={{ textAlign: 'right' }}>Action</th>
+                    <th className={styles.thLeft}>Date</th>
+                    <th className={styles.thLeft}>Match</th>
+                    <th className={styles.thCenter}>Score</th>
+                    <th className={styles.thRight}>Status</th>
+                    <th className={styles.thRight}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -247,21 +248,21 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
                       const status = match.metadata.status || 'scheduled';
                       return (
                         <tr key={match.id}>
-                          <td style={{ whiteSpace: 'nowrap' }}>{date.toLocaleString()}</td>
+                          <td className={styles.dateCell}>{date.toLocaleString()}</td>
                           <td>
-                            <div style={{ display: 'grid' }}>
-                              <span style={{ fontWeight: 600 }}>{match.title}</span>
-                              <span style={{ fontSize: '12px', color: 'var(--app-text-secondary)' }}>
+                            <div className={styles.matchInfo}>
+                              <span className={styles.matchTitle}>{match.title}</span>
+                              <span className={styles.matchOpponent}>
                                 vs {match.opponent_project?.name || 'Unknown Opponent'}
                               </span>
                             </div>
                           </td>
-                          <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                          <td className={styles.scoreCell}>
                             {status === 'finished'
                               ? `${match.metadata.home_score ?? 0} - ${match.metadata.away_score ?? 0}`
                               : '—'}
                           </td>
-                          <td style={{ textAlign: 'right' }}>
+                          <td className={styles.statusCell}>
                             <Badge
                               variant={
                                 status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'
@@ -270,7 +271,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
                               {status}
                             </Badge>
                           </td>
-                          <td style={{ textAlign: 'right' }}>
+                          <td className={styles.actionCell}>
                             <Button
                               size="sm"
                               variant="secondary"

@@ -1,0 +1,141 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  color: var(--app-text);
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.themeToggle {
+  padding: 8px;
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.languageMenuContainer {
+  position: relative;
+}
+
+.languageTrigger {
+  padding: 8px 12px;
+  background-color: transparent;
+  border: 1px solid var(--app-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--app-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.languageArrow {
+  font-size: 10px;
+}
+
+.languageDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  box-shadow: var(--shadow-md);
+  min-width: 120px;
+  z-index: 1000;
+}
+
+.languageOption {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  border: none;
+  background-color: transparent;
+  color: var(--app-text);
+  font-weight: 400;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.languageOption:hover {
+  background-color: var(--app-surface-secondary);
+}
+
+.languageOption[data-active="true"] {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--color-blue-600);
+  font-weight: 600;
+}
+
+.languageOption[data-active="true"]:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.notificationButton {
+  position: relative;
+  padding: 8px;
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.unreadBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: var(--app-error);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.userEmail {
+  font-size: 14px;
+  color: var(--app-text);
+  opacity: 0.7;
+}
+
+.signOutButton {
+  padding: 8px 16px;
+  background-color: var(--app-error);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.signOutButton:disabled {
+  background-color: var(--color-gray-500, #6c757d);
+  cursor: not-allowed;
+}

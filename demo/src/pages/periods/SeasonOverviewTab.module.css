@@ -1,0 +1,23 @@
+.statCard {
+  padding: 16px;
+}
+
+.compNameLink {
+  text-decoration: none;
+  background-color: transparent;
+  color: #60a5fa;
+}
+
+.sportBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sportName {
+  font-size: 12px;
+}
+
+.mutedDash {
+  color: var(--app-muted-text);
+}

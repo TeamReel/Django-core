@@ -1,0 +1,135 @@
+/* ======================================================================
+   SEMANTIC TOKENS + SIDEBAR THEME — Light/Dark theme variables
+   Extracted from index.css for maintainability.
+   ====================================================================== */
+
+/* ======================================================================
+   SEMANTIC TOKENS — Light Theme
+   ====================================================================== */
+:root {
+  /* Brand: Light Theme */
+  --app-bg: var(--color-neutral-50);         /* Ice White */
+  --app-text: var(--color-neutral-800);      /* Deep Navy */
+  --app-muted-text: var(--color-neutral-400); /* Neutral gray */
+  --app-surface: #ffffff;
+  --app-surface-2: #F0F4F8;
+  --app-surface-secondary: #f8f9fa;
+  --app-border: #e5e5e5;
+  --app-link: var(--color-primary-400);      /* Ocean Teal */
+  --app-table-header-bg: #ffffff;
+  --app-table-row-bg: #ffffff;
+  --app-table-row-hover-bg: var(--color-neutral-50);
+  --app-input-bg: #ffffff;
+  --app-input-text: var(--color-neutral-800);
+  --app-input-border: #d1d5db;
+  --app-focus-ring: #4CA1FF;
+  --app-success: var(--color-green-500);     /* Team Green */
+  --app-warning: var(--color-amber-300);     /* Focus Amber */
+  --app-error: var(--color-red-400);         /* Signal Red */
+  --app-info: var(--color-primary-400);      /* Ocean Teal */
+  --app-text-muted: var(--color-neutral-400);
+  --app-surface-active: var(--color-neutral-100);
+
+  /* Derived aliases — referenced in code but previously undefined */
+  --app-primary: var(--app-link);               /* Ocean Teal — alias for link/action color */
+  --app-primary-light: rgba(59, 142, 165, 0.08); /* Teal tint for hover/active states */
+  --app-danger: var(--app-error);               /* Signal Red — alias for error */
+  --app-text-secondary: var(--app-muted-text);  /* Alias for muted text */
+  --app-muted: var(--app-muted-text);           /* Alias for muted text */
+  --app-background: var(--app-bg);              /* Alias for page background */
+  --app-surface-1: var(--app-surface);          /* Alias for primary surface */
+  --app-surface-elevated: #ffffff;              /* Elevated surface (popover/dropdown) */
+  --app-surface-hover: var(--app-surface-2);    /* Surface hover state */
+
+  /* Mapping for SearchBar and other components using design system tokens */
+  --color-text-primary: var(--app-text);
+  --color-text-secondary: var(--app-muted-text);
+  --color-background-primary: var(--app-surface);
+  --color-background-secondary: var(--app-surface-2);
+  --color-border: var(--app-border);
+  --color-primary: var(--app-link);
+}
+
+[data-theme="dark"] {
+  /* Brand: Dark Theme */
+  --app-bg: var(--color-neutral-900);        /* Midnight Navy */
+  --app-text: var(--color-neutral-50);       /* Ice White */
+  --app-muted-text: var(--color-neutral-300);
+  --app-surface: var(--color-neutral-800);   /* Deep Navy surface */
+  --app-surface-2: #243f6e;
+  --app-surface-secondary: #243f6e;
+  --app-border: var(--color-neutral-700);
+  --app-link: var(--color-blue-400);         /* Sky Blue */
+  --app-table-header-bg: var(--color-neutral-800);
+  --app-table-row-bg: var(--color-neutral-900);
+  --app-table-row-hover-bg: var(--color-neutral-800);
+  --app-input-bg: var(--color-neutral-800);
+  --app-input-text: var(--color-neutral-50);
+  --app-input-border: var(--color-primary-400);
+  --app-focus-ring: #FF8C42;
+  --app-success: var(--color-green-500);
+  --app-warning: var(--color-amber-300);
+  --app-error: var(--color-red-400);
+  --app-info: var(--color-blue-400);
+  --app-text-muted: var(--color-neutral-300);
+  --app-surface-active: var(--color-blue-900);
+
+  /* Derived aliases — dark mode */
+  --app-primary: var(--app-link);               /* Sky Blue in dark mode */
+  --app-primary-light: rgba(76, 161, 255, 0.12); /* Blue tint for hover/active */
+  --app-danger: var(--app-error);               /* Signal Red */
+  --app-text-secondary: var(--app-muted-text);  /* Alias for muted text */
+  --app-muted: var(--app-muted-text);           /* Alias for muted text */
+  --app-background: var(--app-bg);              /* Alias for page background */
+  --app-surface-1: var(--app-surface);          /* Alias for primary surface */
+  --app-surface-elevated: #243f6e;              /* Elevated surface (popover/dropdown) */
+  --app-surface-hover: #2e4a6d;                 /* Surface hover state */
+
+  /* Reset border for dark mode to be less aggressive than Teal if needed */
+  --app-border: #2e4a6d;
+}
+
+/* ======================================================================
+   SIDEBAR THEME VARIABLES
+   ====================================================================== */
+:root {
+  /* Light Mode Sidebars */
+  /* Panel A: The Primary Navigation strip */
+  --sidebar-a-bg: #ffffff;
+  --sidebar-a-text: #1C355E;
+  --sidebar-a-border: #e2e8f0;
+  --sidebar-a-active-bg: #EDF6FF;
+  --sidebar-a-active-text: #3B8EA5;
+
+  /* Panel B: The Context/Sub-navigation strip */
+  --sidebar-b-bg: #F8FAFC; /* Slightly darker than white */
+  --sidebar-b-text: #475569;
+  --sidebar-b-border: #e2e8f0;
+  --sidebar-b-active-bg: #EDF6FF;
+  --sidebar-b-active-text: #1C355E;
+
+  /* Top navbar icon buttons (GitHub-like) */
+  --nav-icon-border: rgba(0, 0, 0, 0.14);
+  --nav-icon-hover-bg: rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] {
+  /* Dark Mode Sidebars */
+  /* Panel A: Deep Navy to match Brand Surface */
+  --sidebar-a-bg: #1C355E;
+  --sidebar-a-text: #94a3b8;
+  --sidebar-a-border: #2e4a6d;
+  --sidebar-a-active-bg: rgba(255, 255, 255, 0.1);
+  --sidebar-a-active-text: #EDF6FF;
+
+  /* Panel B: Distinct from A, but dark */
+  --sidebar-b-bg: #0b1d35; /* Brand navy (not gray) */
+  --sidebar-b-text: #94a3b8;
+  --sidebar-b-border: rgba(148, 163, 184, 0.22);
+  --sidebar-b-active-bg: rgba(59, 142, 165, 0.22); /* teal accent wash */
+  --sidebar-b-active-text: #EDF6FF;
+
+  /* Top navbar icon buttons (GitHub-like) */
+  --nav-icon-border: rgba(255, 255, 255, 0.18);
+  --nav-icon-hover-bg: rgba(255, 255, 255, 0.06);
+}

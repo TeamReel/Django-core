@@ -10,6 +10,7 @@ import {
 } from './seasonDetailUtils';
 import EditMemberModal from './EditMemberModal';
 import s from './ProjectSeasonDetailPage.module.css';
+import st from './SeasonSquadTab.module.css';
 
 export interface SeasonSquadTabProps {
   members: any[];
@@ -81,28 +82,28 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-3">
         <Card>
-          <div style={{ padding: '16px 16px 0 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Season Squad</h3>
+          <div className={st.cardHeader}>
+            <div className={st.cardHeaderRow}>
+              <h3 className={st.cardTitle}>Season Squad</h3>
               <Badge variant="default">{members.length} Members</Badge>
             </div>
-            <div style={{ marginTop: '4px', color: 'var(--app-muted-text)', fontSize: '13px' }}>
+            <div className={st.cardSubtitle}>
               Players and staff assigned to this season. Use the Team tab to add new members.
             </div>
           </div>
 
-          <div style={{ padding: '16px' }}>
+          <div className={st.cardBody}>
             {membersLoading && <Alert variant="info">Loading squad…</Alert>}
             {membersError && <Alert variant="error">{membersError}</Alert>}
 
             {userCanEditProject && (
-              <div style={{ marginBottom: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div className={st.toolbarRow}>
+                <div className={st.toolbarGroup}>
                   <Input
                     value={squadSearch}
                     onChange={(e) => setSquadSearch(e.target.value)}
                     placeholder="Search squad"
-                    style={{ width: '220px' }}
+                    className={st.searchInput}
                   />
                   <Button
                     variant="secondary"
@@ -127,7 +128,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                     })()}
                   </Button>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className={st.toolbarGroup}>
                   <button
                     type="button"
                     className="app-action-button cta-btn cta-btn-neutral"
@@ -165,14 +166,14 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                     <Table className="detail-table">
                       <thead>
                         <tr>
-                          <th className="detail-th" style={{ width: '44px' }}></th>
+                          <th className={`detail-th ${st.checkboxCol}`}></th>
                           <th className="detail-th">Name</th>
                           <th className="detail-th">Email</th>
                           <th className="detail-th">Access</th>
                           <th className="detail-th">Functional</th>
                           <th className="detail-th">Position</th>
                           <th className="detail-th">#</th>
-                          <th className="detail-th text-right" style={{ width: '180px' }}>
+                          <th className={`detail-th text-right ${st.actionCol}`}>
                             Action
                           </th>
                         </tr>
@@ -229,7 +230,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                               </td>
                               <td className="detail-td">
                                 {functionalRoles.length ? (
-                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                  <div className={st.badgeGroup}>
                                     {functionalRoles.map((r: string) => (
                                       <Badge key={r} variant="default">
                                         {r}
@@ -336,7 +337,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                               </td>
                               <td className="detail-td">
                                 {functionalRoles.length ? (
-                                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                  <div className={st.badgeGroup}>
                                     {functionalRoles.map((r: string) => (
                                       <Badge key={r} variant="default">
                                         {r}

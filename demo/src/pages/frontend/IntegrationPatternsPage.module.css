@@ -1,0 +1,88 @@
+/* IntegrationPatternsPage.module.css */
+
+/* Custom properties for code block theming */
+:root {
+  --code-bg: #1e1e1e;
+  --code-text: #d4d4d4;
+  --code-font: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+}
+
+/* CodeBlock */
+.copyButtonWrapper {
+  top: 8px;
+  right: 8px;
+}
+
+.codeBlockPre {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  font-family: var(--code-font);
+  line-height: 1.5;
+}
+
+/* PatternSection */
+.patternSection {
+  margin-bottom: 48px;
+  scroll-margin-top: 100px;
+}
+
+.patternDescription {
+  line-height: 1.6;
+}
+
+.practiceCard {
+  background-color: var(--app-surface-subtle);
+}
+
+.practiceList {
+  padding-left: 20px;
+}
+
+/* Page layout */
+.pageContainer {
+  min-height: 100vh;
+  background-color: var(--app-bg);
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  top: 64px;
+  height: calc(100vh - 64px);
+  border-right: 1px solid var(--app-border);
+}
+
+.navList {
+  list-style: none;
+}
+
+.navButton {
+  padding: 8px 12px;
+  background-color: transparent;
+  color: var(--app-text-secondary);
+  font-weight: 400;
+}
+
+.navButton[data-active="true"] {
+  background-color: var(--app-primary-subtle);
+  color: var(--app-primary);
+  font-weight: 600;
+}
+
+/* Main content */
+.mainContent {
+  padding: 48px;
+  max-width: 1000px;
+}
+
+.headerSection {
+  margin-bottom: 48px;
+}
+
+.pageTitle {
+  font-size: 36px;
+}
+
+.pageDescription {
+  line-height: 1.6;
+}

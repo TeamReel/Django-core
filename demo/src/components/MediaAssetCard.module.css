@@ -1,0 +1,207 @@
+/* ============================================================================
+ * MediaAssetCard — Extracted component styles.
+ *
+ * Dynamic state styling via data-attributes:
+ *   data-status="generating" | "failed" | "saved"
+ *   data-clickable    — card is clickable (pointer cursor + hover lift)
+ *   data-offset="true" — workflow badge shifts down when status badge present
+ * ============================================================================ */
+
+/* --------------------------------------------------------------------------
+ * Card container
+ * -------------------------------------------------------------------------- */
+
+.card {
+  border: 1px solid var(--vscode-widget-border, #333);
+  background: var(--vscode-editor-background, #1e1e1e);
+  transition: all var(--duration-normal) var(--ease-default);
+  cursor: default;
+}
+
+.card[data-status='generating'] {
+  border-color: var(--color-amber-400);
+}
+
+.card[data-status='failed'] {
+  border-color: var(--color-red-500);
+}
+
+.card[data-status='saved'] {
+  border-color: var(--color-green-500, #22c55e);
+}
+
+.card[data-clickable] {
+  cursor: pointer;
+}
+
+.card[data-clickable]:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+ * Preview area
+ * -------------------------------------------------------------------------- */
+
+.previewArea {
+  min-height: 100px;
+}
+
+.previewBgMedia {
+  background: #000;
+}
+
+.previewBgEmpty {
+  background:
+    repeating-conic-gradient(
+      #2a2a2a 0% 25%,
+      var(--vscode-editor-background, #1e1e1e) 0% 50%
+    )
+    50% / 20px 20px;
+}
+
+/* --------------------------------------------------------------------------
+ * Overlays & badges
+ * -------------------------------------------------------------------------- */
+
+.playOverlay {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 28px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+}
+
+.generatingState {
+  color: var(--color-amber-400);
+}
+
+/* Status badge — positioned top-right */
+
+.statusBadge {
+  top: 6px;
+  right: 6px;
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.statusBadge[data-status='generating'] {
+  background: var(--color-amber-400);
+}
+
+.statusBadge[data-status='failed'] {
+  background: var(--color-red-500);
+}
+
+.statusBadge[data-status='saved'] {
+  background: var(--color-green-400);
+}
+
+/* Workflow badge */
+
+.workflowBadge {
+  top: 6px;
+  right: 6px;
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+.workflowBadge[data-offset='true'] {
+  top: 28px;
+}
+
+/* History button — positioned top-left */
+
+.historyButton {
+  top: 6px;
+  left: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 2px 6px;
+}
+
+/* --------------------------------------------------------------------------
+ * Info section & actions
+ * -------------------------------------------------------------------------- */
+
+.infoSection {
+  padding: 8px 10px;
+}
+
+.errorMessage {
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.actionGrid {
+  grid-template-columns: 1fr;
+}
+
+.actionGridDual {
+  grid-template-columns: 1fr 1fr;
+}
+
+.replaceButton {
+  padding: 4px 8px;
+  background: var(--vscode-button-background, #0078d4);
+  color: var(--vscode-button-foreground, #fff);
+}
+
+.improveButton {
+  padding: 4px 8px;
+  background: var(--color-violet-500, #8b5cf6);
+}
+
+.deleteButton {
+  padding: 4px 8px;
+  border: 1px solid var(--color-red-500, #ef4444);
+}
+
+.updatedDate {
+  font-size: 10px;
+}
+
+/* --------------------------------------------------------------------------
+ * History modal
+ * -------------------------------------------------------------------------- */
+
+.modalBackdrop {
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1100;
+}
+
+.modalContent {
+  background: var(--vscode-editor-background, #1e1e1e);
+  border: 1px solid var(--vscode-widget-border, #333);
+  width: 500px;
+  max-height: 80vh;
+}
+
+.modalCloseButton {
+  color: var(--color-gray-300, #ccc);
+}
+
+.historyRow {
+  background: var(--color-bg-secondary, #252526);
+}
+
+.historyThumbnail {
+  width: 80px;
+  height: 50px;
+  flex-shrink: 0;
+  background: #000;
+}
+
+.historyEmptyThumb {
+  font-size: 10px;
+}
+
+.restoreButton {
+  padding: 6px 12px;
+  background: var(--color-blue-700, #094771);
+}
+
+/* --------------------------------------------------------------------------
+ * Grid wrapper
+ * -------------------------------------------------------------------------- */
+
+.assetGrid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}

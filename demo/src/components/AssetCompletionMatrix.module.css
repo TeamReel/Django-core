@@ -1,0 +1,108 @@
+/* AssetCompletionMatrix.module.css — extracted from inline styles */
+
+.table {
+  border-collapse: collapse;
+}
+
+/* ── Table header cells ── */
+
+.th {
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 2px solid var(--app-border);
+  white-space: nowrap;
+}
+
+.thContentType {
+  composes: th;
+  text-align: left;
+  min-width: 160px;
+}
+
+.phaseBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--phase-color);
+  font-size: 10px;
+}
+
+/* ── Table body cells ── */
+
+.td {
+  padding: 6px 10px;
+  font-size: 12px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.tdLabel {
+  composes: td;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tdCenter {
+  composes: td;
+  text-align: center;
+}
+
+.rowIcon {
+  margin-right: 6px;
+}
+
+/* ── Thumbnails ── */
+
+.thumbnail {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: contain;
+  background: var(--app-surface-secondary);
+  border: 1px solid var(--app-border);
+  vertical-align: middle;
+}
+
+/* ── Misc ── */
+
+.dimmed {
+  opacity: 0.3;
+}
+
+/* ── Progress bar ── */
+
+.progressWrapper {
+  background: var(--app-muted);
+}
+
+.progressLabel {
+  margin-bottom: 6px;
+}
+
+.progressTrack {
+  --progress-track-bg: #e5e7eb;
+  height: 8px;
+  background: var(--progress-track-bg);
+}
+
+.progressBar {
+  height: 100%;
+}
+
+.progressBar[data-complete='true'] {
+  background: var(--color-green-400);
+}
+
+.progressBar[data-complete='false'] {
+  background: var(--color-amber-400);
+}
+
+/* ── Legend ── */
+
+.legendSwatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--phase-color);
+}

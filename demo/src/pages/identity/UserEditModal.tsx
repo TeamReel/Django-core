@@ -9,6 +9,7 @@ import { type FormEvent } from 'react';
 import type { UserEditModalProps } from './userEditTypes';
 import { useUserEditData } from './useUserEditData';
 import { UserEditAccessTab } from './UserEditAccessTab';
+import styles from './UserEditModal.module.css';
 
 export default function UserEditModal({
   opened, onClose, user, onSave, onSaved, organisationSlug, scopeProjectKey,
@@ -38,8 +39,8 @@ export default function UserEditModal({
   const isBusy = d.saving || d.addingToOrg || d.addingToProject;
 
   return (
-    <div className="flex-center fixed inset-0 z-1000" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="flex-col rounded-8 bg-surface border shadow-lg" style={{ width: '860px', maxWidth: '90%', maxHeight: '90vh', color: 'var(--app-text)' }}>
+    <div className={`flex-center fixed inset-0 z-1000 ${styles.overlay}`}>
+      <div className={`flex-col rounded-8 bg-surface border shadow-lg ${styles.modal}`}>
 
         {/* Header + tabs */}
         <div className="border-bottom px-16 py-16">
@@ -57,8 +58,8 @@ export default function UserEditModal({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-col flex-1" style={{ minHeight: 0 }}>
-          <div className="overflow-y-auto flex-1 p-16" style={{ minHeight: 0 }}>
+        <form onSubmit={handleSubmit} className={`flex-col flex-1 ${styles.formBody}`}>
+          <div className={`overflow-y-auto flex-1 p-16 ${styles.scrollArea}`}>
 
             {/* ── Personal tab ── */}
             {d.activeTab === 'personal' ? (
@@ -67,9 +68,9 @@ export default function UserEditModal({
 
                 {/* Avatar */}
                 <div className="flex-row gap-16">
-                  <div className="rounded-full overflow-hidden border bg-surface-2 flex-center" style={{ width: '72px', height: '72px', borderWidth: '2px', flexShrink: 0 }}>
+                  <div className={`rounded-full overflow-hidden border bg-surface-2 flex-center ${styles.avatar}`}>
                     {d.avatarPreview || (user as any)?.avatar_url ? (
-                      <img src={d.avatarPreview || (user as any)?.avatar_url} alt="Avatar" className="w-full h-full" style={{ objectFit: 'cover' }} />
+                      <img src={d.avatarPreview || (user as any)?.avatar_url} alt="Avatar" className={`w-full h-full ${styles.avatarImg}`} />
                     ) : (
                       <span className="fs-24 text-muted">
                         {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
@@ -193,11 +194,11 @@ export default function UserEditModal({
                   </div>
                 </div>
 
-                <div className="flex-row gap-10 mt-8" style={{ justifyContent: 'flex-end' }}>
+                <div className={`flex-row gap-10 mt-8 ${styles.justifyEnd}`}>
                   <button type="button" disabled={d.addingToProject || !d.linkClubKey} onClick={() => d.performLinkToProject(d.linkClubKey, d.linkAccessRole, 'club')} className="btn-modal btn-modal-primary">
                     {d.addingToProject && !d.linkTeamKey ? 'Adding...' : 'Add to Club'}
                   </button>
-                  <button type="button" disabled={d.addingToProject || !d.linkTeamKey} onClick={() => d.performLinkToProject(d.linkTeamKey, d.linkAccessRole, 'team')} className="btn-modal btn-modal-primary" style={{ backgroundColor: '#17a2b8', borderColor: '#17a2b8' }}>
+                  <button type="button" disabled={d.addingToProject || !d.linkTeamKey} onClick={() => d.performLinkToProject(d.linkTeamKey, d.linkAccessRole, 'team')} className={`btn-modal btn-modal-primary ${styles.addTeamBtn}`}>
                     {d.addingToProject && d.linkTeamKey ? 'Adding...' : 'Add to Team'}
                   </button>
                 </div>
@@ -210,7 +211,7 @@ export default function UserEditModal({
           </div>
 
           {/* Footer */}
-          <div className="border-top flex-row gap-12 px-16 py-12" style={{ justifyContent: 'flex-end' }}>
+          <div className={`border-top flex-row gap-12 px-16 py-12 ${styles.justifyEnd}`}>
             <button type="button" onClick={onClose} disabled={isBusy} className="btn-modal btn-modal-secondary">Cancel</button>
             <button type="submit" disabled={isBusy} className="btn-modal btn-modal-primary">
               {d.saving ? 'Saving…' : 'Save changes'}

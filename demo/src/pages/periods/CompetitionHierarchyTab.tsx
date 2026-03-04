@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
+import styles from './CompetitionHierarchyTab.module.css';
 
 export interface CompetitionHierarchyTabProps {
   hierarchySearch: string;
@@ -47,6 +48,7 @@ export function CompetitionHierarchyTab({
 }: CompetitionHierarchyTabProps) {
   return (
     <Card>
+      <div className={styles.root}>
       <div className="flex-between gap-12">
         <div>
           <div className="fs-16 fw-700">Hierarchy</div>
@@ -68,42 +70,28 @@ export function CompetitionHierarchyTab({
 
       {/* Breadcrumb */}
       <div className="mt-12 flex-row gap-8 flex-wrap">
-        <span className="text-muted" style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, fontWeight: 600 }}>Season</span>
+        <span className={`text-muted ${styles.breadcrumbPill}`}>Season</span>
         <Link
           to={`${seasonsBasePath}/${seasonKeyOrId}`}
-          className="hover:underline fw-600 fs-13"
-          style={{ textDecoration: 'none', color: '#60a5fa' }}
+          className={`hover:underline fw-600 fs-13 ${styles.seasonLink}`}
         >
           {season?.name || 'Season'}
         </Link>
         <span className="text-muted">→</span>
-        <span className="text-muted" style={{ padding: '2px 8px', borderRadius: 999, border: '1px solid var(--app-border)', background: 'var(--app-surface-2)', fontSize: 12, fontWeight: 600 }}>Competition</span>
-        <span className="fw-600 fs-13" style={{ color: 'var(--app-text)' }}>{competition?.name || 'Competition'}</span>
+        <span className={`text-muted ${styles.breadcrumbPill}`}>Competition</span>
+        <span className={`fw-600 fs-13 ${styles.competitionName}`}>{competition?.name || 'Competition'}</span>
       </div>
 
       {matchesLoading && filteredMatches.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+        <div className={`text-sm text-gray-500 py-2 ${styles.statusMessage}`}>
           Loading matches...
         </div>
       ) : filteredMatches.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2" style={{ marginTop: 12 }}>
+        <div className={`text-sm text-gray-500 py-2 ${styles.statusMessage}`}>
           No matches found.
         </div>
       ) : (
         (() => {
-          const pillStyle: React.CSSProperties = {
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '2px 8px',
-            borderRadius: 999,
-            border: '1px solid var(--app-border)',
-            background: 'var(--app-surface-2)',
-            fontSize: 12,
-            color: 'var(--app-muted-text)',
-            fontWeight: 600,
-          };
-
           // Group by date
           const groups = new Map<string, { label: string; rows: any[] }>();
           for (const m of filteredMatches) {
@@ -128,50 +116,29 @@ export function CompetitionHierarchyTab({
           });
 
           return (
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className={styles.matchesContainer}>
               {ordered.map(([key, group]) => (
                 <div
                   key={key}
-                  style={{
-                    border: '1px solid var(--app-border)',
-                    borderRadius: 10,
-                    background: 'var(--app-surface)',
-                    overflow: 'hidden',
-                  }}
+                  className={styles.dateGroup}
                 >
-                  <div
-                    style={{
-                      padding: '10px 12px',
-                      borderBottom: '1px solid var(--app-border)',
-                      background: 'var(--app-surface-2)',
-                    }}
-                  >
+                  <div className={styles.dateGroupHeader}>
                     <div className="fw-800 fs-14">{group.label}</div>
                     <div className="fs-12 text-muted">{group.rows.length} match{group.rows.length !== 1 ? 'es' : ''}</div>
                   </div>
 
-                  <div style={{ padding: '10px 12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div className={styles.dateGroupBody}>
+                    <div className={styles.matchesList}>
                       {group.rows.map((m: any) => (
                         <div
                           key={String(m.id)}
-                          style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            gap: 12,
-                            padding: '8px 10px',
-                            border: '1px solid var(--app-border)',
-                            borderRadius: 8,
-                            background: 'var(--app-surface)',
-                          }}
+                          className={styles.matchRow}
                         >
-                          <div style={{ minWidth: 0 }}>
+                          <div className={styles.matchInfo}>
                             <button
                               type="button"
-                              className="app-unstyled-button hover:underline"
+                              className={`app-unstyled-button hover:underline ${styles.matchButton}`}
                               onClick={() => navigate(matchDetailPath(String(m.id)))}
-                              style={{ textAlign: 'left', fontWeight: 700, fontSize: 13, color: '#60a5fa' }}
                             >
                               {matchDisplayTitle(m)}
                             </button>
@@ -180,8 +147,8 @@ export function CompetitionHierarchyTab({
                             </div>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                            <span style={pillStyle}>Participants: {m.participations_count ?? '—'}</span>
+                          <div className={styles.actionsRow}>
+                            <span className={styles.pill}>Participants: {m.participations_count ?? '—'}</span>
                             <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }}>
                               View
                             </button>
@@ -223,6 +190,7 @@ export function CompetitionHierarchyTab({
           );
         })()
       )}
+      </div>
     </Card>
   );
 }

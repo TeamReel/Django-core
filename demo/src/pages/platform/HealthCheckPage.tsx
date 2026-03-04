@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './HealthCheckPage.module.css';
 // import AppShell from '../../components/AppShell';
 
 interface DemoHealthResponse {
@@ -113,14 +114,7 @@ export const HealthCheckPage: React.FC = () => {
       <>
         <div className="p-24">
           <h1 className="text-primary">System Health</h1>
-          <div style={{
-            padding: '16px',
-            backgroundColor: 'var(--app-error)',
-            opacity: 0.9,
-            border: '1px solid var(--app-error)',
-            borderRadius: '4px',
-            color: '#fff'
-          }}>
+          <div className={styles.errorBox}>
             <strong>❌ Error:</strong> Unable to fetch health data ({error})
           </div>
         </div>
@@ -147,11 +141,11 @@ export const HealthCheckPage: React.FC = () => {
           This environment uses controlled demo data to validate application behaviour and data consistency.
         </p>
 
-        <div className="grid gap-24" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))' }}>
+        <div className={`grid gap-24 ${styles.autoFitGrid}`}>
 
           {/* Core Service Checks */}
           <div className="border rounded-8 p-20 bg-surface-2">
-            <h2 className="border-bottom text-primary" style={{ marginTop: 0, paddingBottom: '12px' }}>Core Services</h2>
+            <h2 className={`border-bottom text-primary ${styles.sectionHeading}`}>Core Services</h2>
             <div className="flex-col gap-12">
               <ServiceRow label="Database Connectivity" status={data.core_services.database?.status} detail={data.core_services.database?.latency_ms ? `${data.core_services.database.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
               <ServiceRow label="Cache Availability" status={data.core_services.cache?.status} detail={data.core_services.cache?.latency_ms ? `${data.core_services.cache.latency_ms}ms` : undefined} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
@@ -162,7 +156,7 @@ export const HealthCheckPage: React.FC = () => {
 
           {/* Data Integrity */}
           <div className="border rounded-8 p-20 bg-surface-2">
-            <h2 className="border-bottom text-primary" style={{ marginTop: 0, paddingBottom: '12px' }}>Data Integrity</h2>
+            <h2 className={`border-bottom text-primary ${styles.sectionHeading}`}>Data Integrity</h2>
             {data.data_integrity.error ? (
                <div className="text-error">{data.data_integrity.error}</div>
             ) : (
@@ -179,7 +173,7 @@ export const HealthCheckPage: React.FC = () => {
 
           {/* Feature Availability */}
           <div className="border rounded-8 p-20 bg-surface-2">
-            <h2 className="border-bottom text-primary" style={{ marginTop: 0, paddingBottom: '12px' }}>Feature Availability</h2>
+            <h2 className={`border-bottom text-primary ${styles.sectionHeading}`}>Feature Availability</h2>
             <div className="flex-col gap-12">
               <ServiceRow label="Identity & Context" status={data.features.identity_context} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
               <ServiceRow label="Projects & Memberships" status={data.features.projects_memberships} getIcon={getStatusIcon} getColor={getStatusColor} getTextColor={getStatusTextColor} />
@@ -201,17 +195,10 @@ function ServiceRow({ label, status, detail, getIcon, getColor, getTextColor }: 
       <span className="fw-500 text-primary">{label}</span>
       <div className="flex-row gap-8">
         {detail && <span className="fs-12 text-muted">{detail}</span>}
-        <span style={{
-          padding: '4px 8px',
-          borderRadius: '12px',
-          backgroundColor: getColor(status),
-          color: getTextColor(status),
-          fontSize: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '4px',
-          fontWeight: 'bold'
-        }}>
+        <span
+          className={styles.statusBadge}
+          style={{ '--status-bg': getColor(status), '--status-color': getTextColor(status) } as React.CSSProperties}
+        >
           {getIcon(status)} {status?.toUpperCase() || 'UNKNOWN'}
         </span>
       </div>
@@ -238,15 +225,10 @@ function IntegrityRow({ label, count, min }: { label: string, count?: number, mi
   return (
     <div className="flex-between p-8 bg-surface rounded-4 border">
       <span className="fw-500 text-primary">{label}</span>
-      <span style={{
-        padding: '4px 12px',
-        borderRadius: '12px',
-        backgroundColor: color,
-        color: textColor,
-        fontWeight: 'bold',
-        minWidth: '40px',
-        textAlign: 'center'
-      }}>
+      <span
+        className={styles.integrityCount}
+        style={{ '--status-bg': color, '--status-color': textColor } as React.CSSProperties}
+      >
         {count ?? 0}
       </span>
     </div>

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import type { HierarchyNode, HierarchyData } from '../hooks/useSearch';
+import styles from './HierarchyTreeView.module.css';
 
 interface HierarchyTreeViewProps {
   hierarchy: HierarchyData;
@@ -35,91 +36,38 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
     return icons[type.toLowerCase()] || '📄';
   };
 
-  const getTypeColor = (type: string): string => {
-    const colors: Record<string, string> = {
-      organisation: '#9333ea',
-      federation: '#9333ea',
-      club: '#dc2626',
-      team: 'var(--color-blue-600)',
-      season: '#059669',
-      competition: '#d97706',
-      match: '#0891b2',
-    };
-    return colors[type.toLowerCase()] || 'var(--app-muted-text)';
-  };
-
-  // Determine styling based on anchor status
-  const getNodeStyle = () => {
-    if (isAnchor) {
-      return {
-        background: 'var(--color-primary, #3b82f6)',
-        border: '2px solid var(--color-primary, #3b82f6)',
-        color: '#fff',
-      };
-    }
-    if (isInPath) {
-      return {
-        background: 'var(--color-bg-highlight, #fef3c7)',
-        border: '2px solid var(--color-warning, #f59e0b)',
-      };
-    }
-    return {
-      background: 'var(--color-bg-surface)',
-      border: '1px solid var(--color-border)',
-    };
-  };
-
-  const nodeStyle = getNodeStyle();
+  const anchor = isAnchor ? 'true' : undefined;
+  const inPath = isInPath ? 'true' : undefined;
 
   return (
-    <div style={{ marginLeft: depth > 0 ? '24px' : 0 }}>
+    <div
+      className={styles.treeNode}
+      style={depth > 0 ? { marginLeft: 24 } : undefined}
+    >
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '8px 12px',
-          borderRadius: '6px',
-          marginBottom: '4px',
-          ...nodeStyle,
-        }}
+        className={styles.nodeRow}
+        data-anchor={anchor}
+        data-in-path={inPath}
       >
         {/* Expand/Collapse Toggle */}
-        {hasChildren && (
+        {hasChildren ? (
           <button
+            className={styles.toggleButton}
             onClick={() => setIsExpanded(!isExpanded)}
-            style={{
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              background: isAnchor ? 'rgba(255,255,255,0.2)' : 'none',
-              border: isAnchor ? '1px solid rgba(255,255,255,0.3)' : '1px solid var(--color-border)',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              color: isAnchor ? '#fff' : 'var(--color-text-secondary)',
-            }}
+            data-anchor={anchor}
             aria-label={isExpanded ? 'Collapse' : 'Expand'}
           >
             {isExpanded ? '−' : '+'}
           </button>
+        ) : (
+          <span className={styles.spacer} />
         )}
-        {!hasChildren && <span style={{ width: '24px' }} />}
 
         {/* Type Badge */}
         <span
-          style={{
-            fontSize: '11px',
-            fontWeight: '600',
-            textTransform: 'uppercase',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            background: isAnchor ? 'rgba(255,255,255,0.2)' : `${getTypeColor(node.type)}20`,
-            color: isAnchor ? '#fff' : getTypeColor(node.type),
-            letterSpacing: '0.5px',
-          }}
+          className={styles.typeBadge}
+          data-type={node.type.toLowerCase()}
+          data-anchor={anchor}
         >
           {getTypeIcon(node.type)} {node.type}
         </span>
@@ -128,23 +76,18 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
         {node.url ? (
           <Link
             to={node.url}
-            style={{
-              color: isAnchor ? '#fff' : 'var(--color-text-primary)',
-              textDecoration: 'none',
-              fontWeight: isAnchor || isInPath ? '600' : '500',
-              flex: 1,
-            }}
+            className={styles.nodeTitle}
+            data-anchor={anchor}
+            data-in-path={inPath}
           >
             {node.title}
             {isAnchor && ' ← Search Result'}
           </Link>
         ) : (
           <span
-            style={{
-              color: isAnchor ? '#fff' : 'var(--color-text-primary)',
-              fontWeight: isAnchor || isInPath ? '600' : '500',
-              flex: 1,
-            }}
+            className={styles.nodeTitle}
+            data-anchor={anchor}
+            data-in-path={inPath}
           >
             {node.title}
             {isAnchor && ' ← Search Result'}
@@ -154,11 +97,8 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
         {/* Truncation Indicator */}
         {node.is_truncated && (
           <span
-            style={{
-              fontSize: '11px',
-              color: isAnchor ? 'rgba(255,255,255,0.7)' : 'var(--color-text-tertiary)',
-              fontStyle: 'italic',
-            }}
+            className={styles.truncationIndicator}
+            data-anchor={anchor}
           >
             (more...)
           </span>
@@ -168,11 +108,8 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
       {/* Children */}
       {hasChildren && isExpanded && (
         <div
-          style={{
-            borderLeft: isInPath ? '2px solid var(--color-primary, #3b82f6)' : '2px solid var(--color-border)',
-            marginLeft: '12px',
-            paddingLeft: '12px',
-          }}
+          className={styles.childrenContainer}
+          data-in-path={inPath}
         >
           {node.children.map((child) => (
             <TreeNode
@@ -188,13 +125,7 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
 
       {/* Description */}
       {node.description && depth === 0 && (
-        <p
-          style={{
-            fontSize: '13px',
-            color: 'var(--color-text-secondary)',
-            margin: '4px 0 8px 32px',
-          }}
-        >
+        <p className={styles.description}>
           {node.description}
         </p>
       )}
@@ -225,40 +156,12 @@ export default function HierarchyTreeView({ hierarchy }: HierarchyTreeViewProps)
   }
 
   return (
-    <div
-      style={{
-        padding: '16px',
-        background: 'var(--color-bg-secondary)',
-        borderRadius: '12px',
-        border: '1px solid var(--color-border)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '16px',
-        }}
-      >
-        <h3
-          style={{
-            fontSize: '16px',
-            fontWeight: '600',
-            color: 'var(--color-text-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <h3 className={styles.headerTitle}>
           🌳 Context Hierarchy
         </h3>
-        <span
-          style={{
-            fontSize: '12px',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
+        <span className={styles.headerInfo}>
           {totalNodes} items • Showing "{hierarchy.anchor?.title}"
         </span>
       </div>

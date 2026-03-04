@@ -1,0 +1,46 @@
+/* LoginPage.module.css — extracted from inline styles */
+
+.container {
+  max-width: 400px;
+  margin-top: 100px;
+}
+
+.form {
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.errorBox {
+  --error-bg: #ffeeee;
+  --error-border: #ffcccc;
+  --error-text: #cc0000;
+  padding: 10px;
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+.label {
+  margin-bottom: 5px;
+}
+
+.submitBtn {
+  --submit-bg-disabled: #cccccc;
+  padding: 12px;
+  background-color: var(--app-primary);
+  border: none;
+  cursor: pointer;
+}
+
+.submitBtn[data-loading] {
+  background-color: var(--submit-bg-disabled);
+  cursor: not-allowed;
+}
+
+.registerPrompt {
+  margin-top: 15px;
+}
+
+.registerLink {
+  color: var(--app-primary);
+}

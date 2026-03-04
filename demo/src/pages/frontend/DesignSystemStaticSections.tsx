@@ -1,4 +1,5 @@
 import { Button, Card, Badge, Input } from '@django-core/design-system';
+import styles from './DesignSystemStaticSections.module.css';
 
 /* ── Form Components ─────────────────────────────────────────── */
 
@@ -47,23 +48,23 @@ export function FormComponentsSection() {
               placeholder="Normal state"
               className="glow-input"
             />
-            <p style={{ fontSize: '12px', color: 'var(--app-muted-text)', margin: '4px 0 0 0' }}>Normal input</p>
+            <p className={styles.normalInputHint}>Normal input</p>
           </div>
           <div>
             <Input
               type="text"
               placeholder="Success state"
-              style={{ borderColor: 'var(--color-green-400)', backgroundColor: '#f0fdf4' }}
+              className={styles.successInput}
             />
-            <p className="fs-12 mt-4 m-0" style={{ color: 'var(--color-green-400)' }}>✓ Valid input</p>
+            <p className={`fs-12 mt-4 m-0 ${styles.successInputHint}`}>✓ Valid input</p>
           </div>
           <div>
             <Input
               type="text"
               placeholder="Error state"
-              style={{ borderColor: 'var(--color-red-500)', backgroundColor: '#fef2f2' }}
+              className={styles.errorInput}
             />
-            <p className="fs-12 mt-4 m-0" style={{ color: 'var(--color-red-500)' }}>✗ Invalid input</p>
+            <p className={`fs-12 mt-4 m-0 ${styles.errorInputHint}`}>✗ Invalid input</p>
           </div>
         </div>
       </Card>
@@ -82,7 +83,7 @@ export function LayoutComponentsSection() {
           <h3 className="ds-subsection-title">📊 Organization Layout</h3>
           <div className="border rounded-8 p-12 bg-surface">
             <div className="flex-row gap-12 mb-8">
-              <div className="flex-center rounded-6 fs-14 fw-600" style={{ width: '32px', height: '32px', backgroundColor: 'var(--color-blue-500)', color: 'white' }}>
+              <div className={`flex-center rounded-6 fs-14 fw-600 ${styles.orgAvatar}`}>
                 DL
               </div>
               <div>
@@ -114,7 +115,7 @@ export function LayoutComponentsSection() {
       <Card variant="filled" className="p-16">
         <h3 className="ds-subsection-title">📏 Typography Scale</h3>
         <div className="flex-col gap-8">
-          <h1 className="fw-700 m-0" style={{ fontSize: '32px' }}>Heading 1 - 32px</h1>
+          <h1 className={`fw-700 m-0 ${styles.heading1}`}>Heading 1 - 32px</h1>
           <h2 className="fs-24 fw-600 m-0">Heading 2 - 24px</h2>
           <h3 className="fs-20 fw-600 m-0">Heading 3 - 20px</h3>
           <h4 className="fs-16 fw-600 m-0">Heading 4 - 16px</h4>
@@ -160,8 +161,7 @@ export function InteractiveComponentsSection() {
               </Button>
               <div
                 id="demo-dropdown"
-                className="absolute mt-4 bg-primary border rounded-6 shadow-md p-8 z-10"
-                style={{ top: '100%', left: 0, minWidth: '120px', display: 'none' }}
+                className={`absolute mt-4 bg-primary border rounded-6 shadow-md p-8 z-10 ${styles.dropdown}`}
               >
                 <div className="px-8 py-4 fs-12 cursor-pointer">Option 1</div>
                 <div className="px-8 py-4 fs-12 cursor-pointer">Option 2</div>
@@ -186,20 +186,19 @@ export function InteractiveComponentsSection() {
           </Button>
           <div
             id="demo-modal"
-            className="fixed inset-0 flex-center z-1000"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'none' }}
+            className={`fixed inset-0 flex-center z-1000 ${styles.modalOverlay}`}
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 (e.target as HTMLElement).style.display = 'none';
               }
             }}
           >
-            <div className="bg-primary rounded-8 p-24 max-w-400 shadow-xl" style={{ width: '90%' }}>
+            <div className={`bg-primary rounded-8 p-24 max-w-400 shadow-xl ${styles.modalContent}`}>
               <h3 className="fs-18 fw-600 m-0 mb-12">Demo Modal</h3>
               <p className="fs-14 text-muted m-0 mb-16">
                 This is a simple modal dialog demonstration. Click outside or the close button to dismiss.
               </p>
-              <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
+              <div className={`flex-row gap-8 ${styles.modalActions}`}>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -251,8 +250,7 @@ export function InteractiveComponentsSection() {
           </Button>
           <div
             id="bounce-demo"
-            className="rounded-full"
-            style={{ width: '24px', height: '24px', backgroundColor: 'var(--color-blue-500)' }}
+            className={`rounded-full ${styles.bounceDot}`}
           ></div>
           <Button
             variant="secondary"
@@ -269,8 +267,7 @@ export function InteractiveComponentsSection() {
           </Button>
           <div
             id="fade-demo"
-            className="rounded-4 transition"
-            style={{ width: '24px', height: '24px', backgroundColor: 'var(--color-green-400)' }}
+            className={`rounded-4 transition ${styles.fadeDot}`}
           ></div>
         </div>
       </Card>

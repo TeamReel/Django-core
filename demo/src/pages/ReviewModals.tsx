@@ -11,6 +11,7 @@ import {
   getJobTypeDisplay,
 } from '../hooks/useVideoJobs';
 import s from './ApprovalsPage.module.css';
+import styles from './ReviewModals.module.css';
 
 // ─── AI Review Modal ─────────────────────────────────────────────
 
@@ -73,7 +74,7 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
       className={s.modalOverlay}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className={s.modalPanel} style={{ maxWidth: variants.length > 1 ? 980 : 740, maxHeight: '92vh' }}>
+      <div className={`${s.modalPanel} ${styles.modalPanel}`} data-multi-variant={variants.length > 1}>
 
         {/* Header */}
         <div className={s.modalHeader}>
@@ -93,14 +94,14 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
             )}
           </div>
           <div className="flex-row gap-6">
-            <button disabled={!hasPrev} onClick={() => onReviewed('__prev__', 'approve')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasPrev ? 'pointer' : 'default', opacity: hasPrev ? 1 : 0.3, fontSize: 16 }}>&#8249;</button>
-            <button disabled={!hasNext} onClick={() => onReviewed('__next__', 'reject')} style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid #e5e7eb', background: 'transparent', cursor: hasNext ? 'pointer' : 'default', opacity: hasNext ? 1 : 0.3, fontSize: 16 }}>&#8250;</button>
+            <button disabled={!hasPrev} onClick={() => onReviewed('__prev__', 'approve')} className={styles.navBtn} data-disabled={!hasPrev}>&#8249;</button>
+            <button disabled={!hasNext} onClick={() => onReviewed('__next__', 'reject')} className={styles.navBtn} data-disabled={!hasNext}>&#8250;</button>
           </div>
           <button onClick={onClose} className={s.closeBtn}>&times;</button>
         </div>
 
         {/* Variants gallery */}
-        <div className="flex-1 overflow-y-auto" style={{ backgroundColor: '#0f172a', padding: variants.length > 1 ? 12 : 0 }}>
+        <div className={`flex-1 overflow-y-auto ${styles.galleryArea}`} data-multi={variants.length > 1}>
           {variants.length === 0 && (
             <div className={s.emptyGallery}>
               <div className={s.emptyIcon}>&#128679;</div>
@@ -113,19 +114,18 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
               {variants.map(v => {
                 const url = v.presigned_url || '';
                 const sel = selections[v.variant_index];
-                const borderColor = sel === true ? '#16a34a' : sel === false ? '#dc2626' : '#334155';
                 return (
-                  <div key={v.variant_index} className="flex-col" style={{ width: variants.length === 1 ? '100%' : 'calc(50% - 8px)', minWidth: 260, maxWidth: 460 }}>
-                    <div className="relative rounded-8 overflow-hidden transition" style={{ backgroundColor: '#1e293b', border: `2px solid ${borderColor}` }}>
+                  <div key={v.variant_index} className={`flex-col ${styles.variantWrapper}`} data-single={variants.length === 1}>
+                    <div className={`relative rounded-8 overflow-hidden transition ${styles.variantCard}`} data-selection={sel === true ? 'approved' : sel === false ? 'rejected' : 'none'}>
                       {url ? (
                         isVideo(v) ? (
-                          <video src={url} controls autoPlay={variants.length === 1} loop className="block" style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260 }} />
+                          <video src={url} controls autoPlay={variants.length === 1} loop className={`block ${styles.variantMedia}`} data-single={variants.length === 1} />
                         ) : (
-                          <img src={url} alt={`Variant ${v.variant_index + 1}`} className="block object-contain" style={{ width: '100%', maxHeight: variants.length === 1 ? 450 : 260 }} />
+                          <img src={url} alt={`Variant ${v.variant_index + 1}`} className={`block object-contain ${styles.variantMedia}`} data-single={variants.length === 1} />
                         )
                       ) : (
-                        <div className="flex-col flex-center gap-6 fs-12" style={{ minHeight: variants.length === 1 ? 280 : 160, color: '#475569' }}>
-                          <div style={{ fontSize: 28 }}>&#128679;</div>
+                        <div className={`flex-col flex-center gap-6 fs-12 ${styles.noPreview}`} data-single={variants.length === 1}>
+                          <div className={styles.noPreviewIcon}>&#128679;</div>
                           <div>Geen preview</div>
                           {v.storage_path && <div className={s.storagePath}>{v.storage_path}</div>}
                         </div>
@@ -138,13 +138,15 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
                       <div className={s.variantBtnRow}>
                         <button
                           onClick={() => toggleVariant(v.variant_index, true)}
-                          style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: `1.5px solid ${sel === true ? '#16a34a' : '#c6f0d4'}`, background: sel === true ? '#16a34a' : '#f0fdf4', color: sel === true ? '#fff' : '#15803d', fontWeight: 600, fontSize: 12, cursor: 'pointer', transition: 'all 0.12s' }}
+                          className={styles.variantApproveBtn}
+                          data-selected={sel === true}
                         >
                           {sel === true ? '✔ Geselecteerd' : '✔ Kies'}
                         </button>
                         <button
                           onClick={() => toggleVariant(v.variant_index, false)}
-                          style={{ flex: 1, padding: '7px 0', borderRadius: 7, border: `1.5px solid ${sel === false ? '#dc2626' : '#fca5a5'}`, background: sel === false ? '#dc2626' : '#fff5f5', color: sel === false ? '#fff' : '#dc2626', fontWeight: 600, fontSize: 12, cursor: 'pointer', transition: 'all 0.12s' }}
+                          className={styles.variantRejectBtn}
+                          data-selected={sel === false}
                         >
                           {sel === false ? '✘ Afgewezen' : '✘ Afwijzen'}
                         </button>
@@ -177,16 +179,16 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
               <button
                 onClick={() => handleSubmit('reject')}
                 disabled={!!reviewing}
-                className={s.btnReject}
-                style={{ background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
+                className={`${s.btnReject} ${styles.footerRejectBtn}`}
+                data-state={reviewing === 'reject' ? 'active' : reviewing ? 'inactive' : 'idle'}
               >
                 {reviewing === 'reject' ? '...' : '✘ Afwijzen'}
               </button>
               <button
                 onClick={() => handleSubmit('approve')}
                 disabled={!!reviewing}
-                className={s.btnApprove}
-                style={{ background: reviewing === 'approve' ? '#15803d' : '#16a34a', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
+                className={`${s.btnApprove} ${styles.footerApproveBtn}`}
+                data-state={reviewing === 'approve' ? 'active' : reviewing ? 'inactive' : 'idle'}
               >
                 {reviewing === 'approve' ? '...' : '✔ Goedkeuren'}
               </button>
@@ -245,7 +247,7 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
       className={s.modalOverlay}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className={s.modalPanel} style={{ maxWidth: 740, maxHeight: '92vh' }}>
+      <div className={`${s.modalPanel} ${styles.modalPanel}`}>
         <div className={s.modalHeader}>
           <div className="flex-1">
             <div className={s.modalTitle15}>{typeDisplay.icon} {typeDisplay.label}</div>
@@ -287,16 +289,16 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
               <button
                 onClick={() => handleAction('reject')}
                 disabled={!!reviewing}
-                className={s.btnReject}
-                style={{ background: reviewing === 'reject' ? '#fee2e2' : '#fff5f5', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'reject' ? 0.5 : 1 }}
+                className={`${s.btnReject} ${styles.footerRejectBtn}`}
+                data-state={reviewing === 'reject' ? 'active' : reviewing ? 'inactive' : 'idle'}
               >
                 {reviewing === 'reject' ? '...' : '✘ Afwijzen'}
               </button>
               <button
                 onClick={() => handleAction('approve')}
                 disabled={!!reviewing}
-                className={s.btnApprove}
-                style={{ background: reviewing === 'approve' ? '#15803d' : '#16a34a', cursor: reviewing ? 'default' : 'pointer', opacity: reviewing && reviewing !== 'approve' ? 0.5 : 1 }}
+                className={`${s.btnApprove} ${styles.footerApproveBtn}`}
+                data-state={reviewing === 'approve' ? 'active' : reviewing ? 'inactive' : 'idle'}
               >
                 {reviewing === 'approve' ? '...' : '✔ Goedkeuren'}
               </button>

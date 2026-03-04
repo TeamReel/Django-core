@@ -1,0 +1,75 @@
+/* BackgroundSelector — CSS Module */
+
+.label {
+  color: var(--app-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--column-min, 72px), 1fr));
+  gap: 6px;
+}
+
+.bgButton {
+  position: relative;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: var(--app-surface, white);
+}
+
+.bgButton[data-selected="true"] {
+  border: 2px solid var(--app-primary, #3B8EA5);
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+.defaultGradient {
+  width: 100%;
+  aspect-ratio: 9/16;
+  background: linear-gradient(to bottom, #16a34a, #14532d);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thumbnail {
+  width: 100%;
+  aspect-ratio: 9/16;
+}
+
+.bgLabel {
+  padding: 2px 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 9px;
+  color: var(--app-text, #111);
+  background: var(--app-surface-2, #f3f4f6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bgButton[data-selected="true"] .bgLabel {
+  color: #fff;
+  background: var(--app-primary, #3B8EA5);
+}
+
+.checkBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-green-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #fff;
+  font-weight: 700;
+}

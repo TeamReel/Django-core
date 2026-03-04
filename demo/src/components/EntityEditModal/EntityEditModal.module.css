@@ -1,0 +1,70 @@
+/* EntityEditModal — extracted inline styles */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal {
+  width: 95%;
+  max-height: 90vh;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.header {
+  padding: 16px 20px;
+}
+
+.headerIcon {
+  width: 40px;
+  height: 40px;
+  background: var(--app-primary);
+  color: white;
+}
+
+.closeButton {
+  color: var(--app-text-secondary);
+}
+
+.mainLayout {
+  display: flex;
+}
+
+.sidebar {
+  padding: 16px 12px;
+  border-right: 1px solid var(--app-border);
+  background: var(--app-surface-alt, rgba(0, 0, 0, 0.02));
+  min-width: 160px;
+}
+
+.tabButton {
+  padding: 10px 12px;
+  font-weight: 400;
+  background-color: transparent;
+  color: var(--app-text-secondary);
+}
+
+.tabButton[data-active="true"] {
+  font-weight: 600;
+  background-color: var(--app-primary, #3b82f6);
+  color: white;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.footer {
+  padding: 16px 20px;
+  background: var(--app-surface-alt, rgba(0, 0, 0, 0.02));
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

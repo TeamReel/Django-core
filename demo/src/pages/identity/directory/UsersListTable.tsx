@@ -8,12 +8,8 @@ import React from 'react';
 import { Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 
-import {
-  linkButtonStyle,
-  badgeButtonStyle,
-  badgeNoBorderStyle,
-} from './usersListTypes';
 import { isUuid, getUserRoleDisplay } from './usersListHelpers';
+import styles from './UsersListTable.module.css';
 import type { UsersListData } from './useUsersListData';
 
 interface UsersListTableProps {
@@ -59,10 +55,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
       {/* ── Batch action bar ────────────────────────────── */}
       {someSelected && (
         <div
-          className="flex-row flex-wrap gap-8 py-8 px-12 mb-4 rounded-6 border"
-          style={{
-            background: 'var(--app-surface-alt, rgba(59,130,246,0.08))',
-          }}
+          className={`flex-row flex-wrap gap-8 py-8 px-12 mb-4 rounded-6 border ${styles.batchBar}`}
         >
           <span
             className="fs-13 fw-500 text-primary"
@@ -77,11 +70,8 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
             ⚡ Batch Actie ({selectedIds.size})
           </Button>
           <button
-            className="ml-auto border-none cursor-pointer fs-13 bg-transparent text-muted"
+            className={`ml-auto border-none cursor-pointer fs-13 bg-transparent text-muted ${styles.deselectButton}`}
             onClick={() => setSelectedIds(new Set())}
-            style={{
-              textDecoration: 'underline',
-            }}
           >
             Deselecteren
           </button>
@@ -89,42 +79,39 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
       )}
 
       <div
-        className="overflow-x-auto"
-        style={{ WebkitOverflowScrolling: 'touch', maxWidth: '100%' }}
+        className={`overflow-x-auto ${styles.scrollContainer}`}
       >
         <Table className="dir-table">
           <thead>
             <tr>
               <th
-                className="dir-th text-center"
-                style={{ width: 36, padding: '4px' }}
+                className={`dir-th text-center ${styles.checkboxCell}`}
               >
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={handleSelectAll}
-                  className="cursor-pointer"
-                  style={{ accentColor: 'var(--color-blue-500)' }}
+                  className={`cursor-pointer ${styles.checkbox}`}
                   title={allSelected ? 'Deselecteer alles' : 'Selecteer alles'}
                 />
               </th>
               {!orgLocked && (
-                <th className="dir-th" style={{ width: '14%' }}>Federation</th>
+                <th className={`dir-th ${styles.colW14}`}>Federation</th>
               )}
               {!clubLocked && (
-                <th className="dir-th" style={{ width: '14%' }}>Club</th>
+                <th className={`dir-th ${styles.colW14}`}>Club</th>
               )}
               {!teamLocked && (
-                <th className="dir-th" style={{ width: '14%' }}>Team</th>
+                <th className={`dir-th ${styles.colW14}`}>Team</th>
               )}
-              <th className="dir-th" style={{ width: '12%' }}>Username</th>
-              <th className="dir-th" style={{ width: '14%' }}>Email</th>
-              <th className="dir-th" style={{ width: '10%' }}>Season</th>
-              <th className="dir-th" style={{ width: '10%' }}>Competition</th>
-              <th className="dir-th" style={{ width: '10%' }}>Match</th>
-              <th className="dir-th" style={{ width: '8%' }}>Role</th>
-              <th className="dir-th" style={{ width: '10%' }}>Status</th>
-              <th className="dir-th" style={{ width: '10%' }}>Actions</th>
+              <th className={`dir-th ${styles.colW12}`}>Username</th>
+              <th className={`dir-th ${styles.colW14}`}>Email</th>
+              <th className={`dir-th ${styles.colW10}`}>Season</th>
+              <th className={`dir-th ${styles.colW10}`}>Competition</th>
+              <th className={`dir-th ${styles.colW10}`}>Match</th>
+              <th className={`dir-th ${styles.colW8}`}>Role</th>
+              <th className={`dir-th ${styles.colW10}`}>Status</th>
+              <th className={`dir-th ${styles.colW10}`}>Actions</th>
             </tr>
           </thead>
 
@@ -183,22 +170,17 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
               return (
                 <tr
                   key={u.id}
-                  style={
-                    selectedIds.has(String(u.id))
-                      ? { backgroundColor: 'rgba(59,130,246,0.08)' }
-                      : undefined
-                  }
+                  className={styles.row}
+                  data-selected={selectedIds.has(String(u.id)) || undefined}
                 >
                   <td
-                    className="dir-td text-center"
-                    style={{ padding: '4px', width: 36 }}
+                    className={`dir-td text-center ${styles.checkboxCell}`}
                   >
                     <input
                       type="checkbox"
                       checked={selectedIds.has(String(u.id))}
                       onChange={() => handleSelectOne(String(u.id))}
-                      className="cursor-pointer"
-                      style={{ accentColor: 'var(--color-blue-500)' }}
+                      className={`cursor-pointer ${styles.checkbox}`}
                     />
                   </td>
 
@@ -207,7 +189,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                     <td className="dir-td-text" title={orgName}>
                       {orgHref && orgName !== '-' ? (
                         <button
-                          style={linkButtonStyle}
+                          className={styles.linkButton}
                           onClick={() => navigate(orgHref)}
                         >
                           {orgName}
@@ -223,7 +205,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                     <td className="dir-td-text" title={scoped.club.title}>
                       {clubHref && scoped.club.label !== '-' ? (
                         <button
-                          style={linkButtonStyle}
+                          className={styles.linkButton}
                           onClick={() => navigate(clubHref)}
                         >
                           {scoped.club.label}
@@ -239,7 +221,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                     <td className="dir-td-text" title={scoped.team.title}>
                       {teamHref && scoped.team.label !== '-' ? (
                         <button
-                          style={linkButtonStyle}
+                          className={styles.linkButton}
                           onClick={() => navigate(teamHref)}
                         >
                           {scoped.team.label}
@@ -254,7 +236,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   <td className="dir-td-text font-medium">
                     {u?.id ? (
                       <button
-                        style={linkButtonStyle}
+                        className={styles.linkButton}
                         onClick={() => {
                           const href = getUserDetailHrefForRow(u);
                           if (href) navigate(href);
@@ -280,7 +262,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   <td className="dir-td">
                     <button
                       type="button"
-                      style={badgeButtonStyle}
+                      className={styles.badgeButton}
                       title="View seasons"
                       onClick={() => {
                         const href = buildOrgScopedDirectoryHref('seasons', u);
@@ -289,7 +271,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                     >
                       <Badge
                         variant="default"
-                        style={scopedLocked ? badgeNoBorderStyle : undefined}
+                        className={scopedLocked ? styles.badgeNoBorder : undefined}
                       >
                         {counts.seasonsCount}
                       </Badge>
@@ -300,7 +282,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   <td className="dir-td">
                     <button
                       type="button"
-                      style={badgeButtonStyle}
+                      className={styles.badgeButton}
                       title="View competitions"
                       onClick={() => {
                         const href = buildOrgScopedDirectoryHref(
@@ -312,7 +294,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                     >
                       <Badge
                         variant="default"
-                        style={scopedLocked ? badgeNoBorderStyle : undefined}
+                        className={scopedLocked ? styles.badgeNoBorder : undefined}
                       >
                         {counts.competitionsCount}
                       </Badge>
@@ -323,7 +305,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   <td className="dir-td">
                     <button
                       type="button"
-                      style={badgeButtonStyle}
+                      className={styles.badgeButton}
                       title="View matches"
                       onClick={() => {
                         const href = buildOrgScopedDirectoryHref('matches', u);
@@ -332,7 +314,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                     >
                       <Badge
                         variant="default"
-                        style={scopedLocked ? badgeNoBorderStyle : undefined}
+                        className={scopedLocked ? styles.badgeNoBorder : undefined}
                       >
                         {counts.matchesCount}
                       </Badge>
@@ -343,7 +325,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   <td className="dir-td" title={roleDisplay.title}>
                     <Badge
                       variant="default"
-                      style={scopedLocked ? badgeNoBorderStyle : undefined}
+                      className={scopedLocked ? styles.badgeNoBorder : undefined}
                     >
                       {roleDisplay.label}
                     </Badge>
@@ -353,7 +335,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                   <td className="dir-td">
                     <Badge
                       variant={u.is_active ? 'success' : 'warning'}
-                      style={scopedLocked ? badgeNoBorderStyle : undefined}
+                      className={scopedLocked ? styles.badgeNoBorder : undefined}
                     >
                       {u.is_active ? 'Active' : 'Inactive'}
                     </Badge>

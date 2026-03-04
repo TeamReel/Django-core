@@ -16,6 +16,7 @@ import {
 } from './memberDetailUtils';
 import { ProcessingBadge } from './MemberProcessingBadge';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import styles from './MemberCelebrationTab.module.css';
 
 export function MemberCelebrationTab({
   membership,
@@ -67,18 +68,18 @@ export function MemberCelebrationTab({
 
           return (
             <div key={`celebration-kit-${kit.id}`} className={s.kitSectionMargin}>
-              <div className={s.flexCenterGap8} style={{ marginBottom: '12px' }}>
+              <div className={`${s.flexCenterGap8} ${styles.kitHeader}`}>
                 {kit.url ? (
                   <img src={kit.url} alt={kit.label} className={s.kitIconImg} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
-                  <span style={{ fontSize: '20px' }}>{kit.icon}</span>
+                  <span className={styles.kitIconFallback}>{kit.icon}</span>
                 )}
                 <div className={s.sectionTitle}>{kit.label}</div>
-                {hasPlayerInTenue && <Badge variant="default" style={{ marginLeft: 'auto' }}>✓ Player in Tenue</Badge>}
-                {!hasPlayerInTenue && <Badge variant="info" style={{ marginLeft: 'auto' }}>⚠️ Genereer eerst Player in Tenue</Badge>}
+                {hasPlayerInTenue && <Badge variant="default" className={styles.badgeAutoLeft}>✓ Player in Tenue</Badge>}
+                {!hasPlayerInTenue && <Badge variant="info" className={styles.badgeAutoLeft}>⚠️ Genereer eerst Player in Tenue</Badge>}
               </div>
 
-              <div className={s.variantGrid} style={{ opacity: hasPlayerInTenue ? 1 : 0.5 }}>
+              <div className={`${s.variantGrid} ${styles.variantGridWrapper}`} data-disabled={!hasPlayerInTenue || undefined}>
                 {celebrationVariantDefs.map((variant) => {
                   const compositeKey = `${kit.id}_${variant.id}`;
                   const variantRaw = videoVariants.celebration[compositeKey];
@@ -93,18 +94,12 @@ export function MemberCelebrationTab({
                     normalizedVariant?.processing_state === 'cancelling';
 
                   return (
-                    <div key={variant.id} className={s.variantCard} style={{
-                      border: hasVideo ? '2px solid var(--vscode-charts-green)' : '1px solid var(--app-border)',
-                    }}>
+                    <div key={variant.id} className={`${s.variantCard} ${styles.variantCardBorder}`} data-has-video={hasVideo || undefined}>
                       <div
                         onClick={() => { if (resolvedUrl) setVideoPreviewUrl(resolvedUrl); }}
-                        className={s.variantPreview916}
-                        style={{
-                          background: (hasVideo && !variantLineupReady)
-                            ? '#000'
-                            : 'repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px',
-                          cursor: hasVideo ? 'pointer' : 'default',
-                        }}>
+                        className={`${s.variantPreview916} ${styles.variantPreviewBg}`}
+                        data-has-video={hasVideo || undefined}
+                        data-dark-bg={(hasVideo && !variantLineupReady) || undefined}>
                         {hasVideo && resolvedUrl ? (
                           <>
                             <video key={resolvedUrl} src={resolvedUrl} className={s.mediaCoverContain} muted loop playsInline autoPlay onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} />
@@ -122,7 +117,7 @@ export function MemberCelebrationTab({
                         <div className={s.actionButtonRow}>
                           {hasVideo ? (
                             <>
-                              <Button size="sm" onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={s.btnSmall} style={{ flex: 1 }}>
+                              <Button size="sm" onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={`${s.btnSmall} ${styles.btnFlex1}`}>
                                 Opnieuw
                               </Button>
                               {!variantProcessing && (
@@ -170,7 +165,7 @@ export function MemberCelebrationTab({
                               }} className={s.btnDelete}>🗑️</Button>
                             </>
                           ) : (
-                            <Button size="sm" onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={s.btnSmall} style={{ width: '100%' }}>
+                            <Button size="sm" onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={`${s.btnSmall} ${styles.btnFullWidth}`}>
                               ✨ Genereer
                             </Button>
                           )}
@@ -185,7 +180,7 @@ export function MemberCelebrationTab({
         })}
 
         {!userCanEditProject && (
-          <div style={{ marginTop: '16px' }}>
+          <div className={styles.alertWrapper}>
             <Alert variant="info">Je hebt geen toestemming om media van dit lid te bewerken.</Alert>
           </div>
         )}

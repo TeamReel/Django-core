@@ -1,11 +1,11 @@
 import React from 'react';
 import type { SeasonSquadAddMemberModalProps, SeasonSquadAddMemberPayload } from './seasonSquadAddMember.types';
 import { useSeasonSquadAddMemberData } from './useSeasonSquadAddMemberData';
+import styles from './SeasonSquadAddMemberModal.module.css';
 
 // Re-export payload type so existing imports keep working.
 export type { SeasonSquadAddMemberPayload };
 
-const inputStyle = { padding: '8px 10px' };
 const inputClass = 'rounded-6 border bg-surface-2 text-primary';
 
 export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberModalProps) {
@@ -16,25 +16,20 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000,
-      }}
+      className={`flex-center ${styles.overlay}`}
     >
       <div
-        className="p-24 rounded-8 border bg-surface text-primary"
-        style={{ width: '720px', maxWidth: '95%', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+        className={`p-24 rounded-8 border bg-surface text-primary ${styles.modal}`}
       >
         {/* Header */}
         <div className="flex-between gap-12">
-          <h2 className="mb-12 text-primary" style={{ marginTop: 0 }}>Add User to Squad</h2>
+          <h2 className={`mb-12 text-primary ${styles.heading}`}>Add User to Squad</h2>
           <button
             type="button"
             onClick={onClose}
             disabled={d.saving}
-            className="rounded-4 border bg-surface-2 text-primary"
-            style={{ padding: '6px 10px', cursor: d.saving ? 'not-allowed' : 'pointer', height: 'fit-content' }}
+            className={`rounded-4 border bg-surface-2 text-primary ${styles.closeButton}`}
+            data-disabled={d.saving ? "true" : undefined}
           >
             Close
           </button>
@@ -42,7 +37,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
 
         {/* Form */}
         <form onSubmit={d.handleSubmit}>
-          <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: '10px 16px' }}>
+          <div className={`grid ${styles.formGrid}`}>
 
             {/* Federation */}
             <label className="fw-600" htmlFor="squad-add-org">Federation</label>
@@ -51,7 +46,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               value={d.selectedOrganisationId}
               onChange={(e) => d.applyOrganisationSelection(e.target.value)}
               disabled={d.saving || d.loadingOrganisations}
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             >
               <option value="">Select federation…</option>
               {d.sortedOrganisations.map((o) => (
@@ -66,7 +61,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               value={d.selectedClubId}
               onChange={(e) => d.applyClubSelection(e.target.value)}
               disabled={d.saving || d.loadingClubs}
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             >
               <option value="">Select club…</option>
               {d.filteredClubs.map((c) => (
@@ -81,7 +76,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               value={d.selectedTeamId}
               onChange={(e) => d.applyTeamSelection(e.target.value)}
               disabled={d.saving || d.loadingTeams}
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             >
               <option value="">Select team…</option>
               {d.filteredTeams.map((t) => (
@@ -97,7 +92,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               onChange={(e) => d.setUserSearch(e.target.value)}
               disabled={d.saving || (!d.selectedOrganisationId && !d.selectedClubId && !d.selectedTeamId)}
               placeholder="Filter users (optional)…"
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             />
 
             {/* User select */}
@@ -107,7 +102,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               value={d.selectedUserId}
               onChange={(e) => d.setSelectedUserId(e.target.value)}
               disabled={d.saving || d.loadingUsers || (!d.selectedOrganisationId && !d.selectedClubId && !d.selectedTeamId)}
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             >
               <option value="">
                 {d.loadingUsers
@@ -133,7 +128,7 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               onChange={(e) => d.setPosition(e.target.value)}
               disabled={d.saving}
               placeholder="e.g. Keeper"
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             />
 
             {/* Shirt # */}
@@ -144,16 +139,16 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
               onChange={(e) => d.setShirtNumber(e.target.value)}
               disabled={d.saving}
               placeholder="10"
-              className={inputClass} style={inputStyle}
+              className={`${inputClass} ${styles.formInput}`}
             />
           </div>
 
           {/* Error */}
-          {d.error && <div className="mt-12" style={{ color: 'var(--app-danger, #d32f2f)' }}>{d.error}</div>}
+          {d.error && <div className={`mt-12 ${styles.errorText}`}>{d.error}</div>}
 
           {/* Validation hint */}
           {!d.canSubmit && !d.saving && (
-            <div className="fs-13" style={{ marginTop: '10px', color: 'var(--app-text-muted, #6b7280)' }}>
+            <div className={`fs-13 ${styles.validationHint}`}>
               {d.missingTeam && d.missingUser
                 ? 'Select a team and a user to enable "Add to squad".'
                 : d.missingTeam
@@ -165,17 +160,12 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
           )}
 
           {/* Submit */}
-          <div className="mt-16 gap-10" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`mt-16 gap-10 ${styles.submitRow}`}>
             <button
               type="submit"
               disabled={!d.canSubmit}
-              className="py-8 px-12 rounded-6 fw-600"
-              style={{
-                border: '1px solid #1e5aa5',
-                backgroundColor: 'var(--color-blue-600)', color: '#fff',
-                cursor: !d.canSubmit ? 'not-allowed' : 'pointer',
-                opacity: !d.canSubmit ? 0.7 : 1,
-              }}
+              className={`py-8 px-12 rounded-6 fw-600 ${styles.submitButton}`}
+              data-disabled={!d.canSubmit ? "true" : undefined}
             >
               {d.saving ? 'Adding…' : 'Add to squad'}
             </button>

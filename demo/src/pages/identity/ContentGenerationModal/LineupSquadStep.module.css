@@ -1,0 +1,158 @@
+/* ── Field ─────────────────────────────────────────── */
+
+.field {
+  aspect-ratio: 3 / 4;
+  max-height: calc(100vh - 340px);
+  background: linear-gradient(
+    to bottom,
+    var(--field-green-light, #16a34a),
+    var(--field-green-dark, #15803d)
+  );
+}
+
+/* ── Field markings ────────────────────────────────── */
+
+.fieldMarkingHorizontal {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: var(--field-marking-color, rgba(255, 255, 255, 0.2));
+}
+
+.fieldMarkingHorizontal[data-position="top"] {
+  top: 15%;
+}
+
+.fieldMarkingHorizontal[data-position="mid"] {
+  top: 50%;
+}
+
+.centerCircle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--field-marking-color, rgba(255, 255, 255, 0.2));
+  border-radius: 50%;
+}
+
+.penaltyBox {
+  position: absolute;
+  left: 22%;
+  right: 22%;
+  height: 14%;
+  border-left: 1px solid var(--field-marking-color, rgba(255, 255, 255, 0.2));
+  border-right: 1px solid var(--field-marking-color, rgba(255, 255, 255, 0.2));
+}
+
+.penaltyBox[data-position="bottom"] {
+  bottom: 0;
+  border-top: 1px solid var(--field-marking-color, rgba(255, 255, 255, 0.2));
+}
+
+.penaltyBox[data-position="top"] {
+  top: 0;
+  border-bottom: 1px solid var(--field-marking-color, rgba(255, 255, 255, 0.2));
+}
+
+/* ── Position nodes ────────────────────────────────── */
+
+.positionNode {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 10;
+  min-width: 100px;
+}
+
+.positionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--field-label-color, rgba(255, 255, 255, 0.7));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Select (dropdown) ─────────────────────────────── */
+
+.positionSelect {
+  width: 120px;
+  padding: 4px 6px;
+  font-size: 11px;
+  font-weight: 400;
+  background-color: var(--select-bg, rgba(0, 0, 0, 0.6));
+  color: var(--select-text, #fff);
+  border: 1px solid var(--select-border, rgba(255, 255, 255, 0.3));
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  text-align: center;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.6)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  padding-right: 20px;
+}
+
+.positionSelect[data-selected="true"] {
+  font-weight: 700;
+  background-color: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+  border: 2px solid var(--app-primary, #3B8EA5);
+}
+
+/* ── Options ───────────────────────────────────────── */
+
+.option {
+  background: var(--option-bg, #1e1e1e);
+  color: var(--option-text, #ccc);
+}
+
+.optionGuest {
+  background: var(--option-bg, #1e1e1e);
+  color: var(--guest-color, #a78bfa);
+}
+
+.optionUsed {
+  background: var(--option-bg, #1e1e1e);
+  color: var(--option-text-disabled, #666);
+}
+
+.optionDisabled {
+  background: var(--option-bg, #1e1e1e);
+  color: var(--option-text-disabled, #666);
+}
+
+/* ── Selected name below dropdown ──────────────────── */
+
+.selectedName {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--select-text, #fff);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.selectedName[data-guest="true"] {
+  color: var(--guest-color, #a78bfa);
+}
+
+/* ── Summary bar ───────────────────────────────────── */
+
+.summaryBar {
+  color: var(--app-text, #111);
+}
+
+.allFilled {
+  color: var(--color-green-400);
+}

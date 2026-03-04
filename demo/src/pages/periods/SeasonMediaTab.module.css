@@ -1,0 +1,55 @@
+/* SeasonMediaTab — extracted inline styles */
+
+.cardPaddingTop {
+  padding: 16px 16px 0 16px;
+}
+
+.pushRight {
+  margin-left: auto;
+}
+
+.checkboxCol {
+  width: 36px;
+}
+
+.stickyCol {
+  position: sticky;
+  left: 0;
+  background: var(--app-surface);
+  z-index: 1;
+}
+
+.slotColHeader {
+  min-width: 60px;
+  height: 80px;
+  vertical-align: bottom;
+}
+
+.rotatedLabel {
+  font-size: 9px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  letter-spacing: 0.02em;
+}
+
+.guestStickyCol {
+  position: sticky;
+  left: 0;
+  background: rgba(167, 139, 250, 0.06);
+  z-index: 1;
+}
+
+.memberRow[data-selected] {
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.memberStickyCol {
+  position: sticky;
+  left: 0;
+  background: var(--app-surface);
+  z-index: 1;
+}
+
+.memberRow[data-selected] .memberStickyCol {
+  background: rgba(59, 130, 246, 0.06);
+}

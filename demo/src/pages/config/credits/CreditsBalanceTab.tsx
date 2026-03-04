@@ -4,6 +4,7 @@
 import React from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import type { CreditsBalance, Transaction } from './creditsTypes';
+import styles from './CreditsBalanceTab.module.css';
 
 interface CreditsBalanceTabProps {
   loading: boolean;
@@ -27,22 +28,8 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
   if (loading) {
     return (
       <div className="p-24 text-center">
-        <div className="spinner" style={{
-          border: '4px solid #f3f3f3',
-          borderTop: '4px solid #3498db',
-          borderRadius: '50%',
-          width: '30px',
-          height: '30px',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 16px'
-        }} />
+        <div className={styles.spinner} />
         <p>Loading credits...</p>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -89,17 +76,11 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       )}
 
       {/* Hero Balance Card */}
-      <Card className="p-32 mb-24 text-center" style={{
-        background: 'linear-gradient(135deg, var(--app-surface) 0%, var(--app-surface-2) 100%)',
-      }}>
+      <Card className={`p-32 mb-24 text-center ${styles.heroCard}`}>
         <div className="fs-14 opacity-60 mb-8 uppercase tracking-wide">
           Current Balance
         </div>
-        <div className="fw-700" style={{
-          fontSize: '64px',
-          margin: '8px 0',
-          color: balance < 500 ? 'var(--app-warning)' : 'var(--app-success)',
-        }}>
+        <div className={`fw-700 ${styles.balanceNumber}`} data-low={balance < 500 ? 'true' : 'false'}>
           {balance.toLocaleString()}
         </div>
         <div className="fs-20 opacity-70 mb-12">credits</div>
@@ -110,14 +91,12 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       </Card>
 
       {/* Summary Statistics Grid */}
-      <div className="grid gap-16 mb-24" style={{
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      }}>
+      <div className={`grid gap-16 mb-24 ${styles.statsGrid}`}>
         <Card className="p-20 text-center">
           <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
             ➕ Total Added
           </div>
-          <div className="fw-700 text-success" style={{ fontSize: '32px' }}>
+          <div className={`fw-700 text-success ${styles.statValue}`}>
             +{totalAdded.toLocaleString()}
           </div>
           <div className="fs-11 opacity-50 mt-4">{addedCount} transactions</div>
@@ -127,7 +106,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
           <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
             ➖ Total Used
           </div>
-          <div className="fw-700 text-error" style={{ fontSize: '32px' }}>
+          <div className={`fw-700 text-error ${styles.statValue}`}>
             {totalUsed.toLocaleString()}
           </div>
           <div className="fs-11 opacity-50 mt-4">{usedCount} transactions</div>
@@ -137,10 +116,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
           <div className="fs-12 opacity-60 mb-8 uppercase tracking-wide">
             📊 Net Total
           </div>
-          <div className="fw-700" style={{
-            fontSize: '32px',
-            color: netTotal >= 0 ? 'var(--app-success)' : 'var(--app-error)',
-          }}>
+          <div className={`fw-700 ${styles.netTotalValue}`} data-negative={netTotal < 0 ? 'true' : 'false'}>
             {netTotal >= 0 ? '+' : ''}{netTotal.toLocaleString()}
           </div>
           <div className="fs-11 opacity-50 mt-4">{allTransactions.length} total transactions</div>
@@ -165,29 +141,21 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
 
                 return (
                   <div key={txn.id} className="flex-row gap-12">
-                    <div className="text-right fs-12 opacity-70" style={{ minWidth: '120px' }}>
+                    <div className={`text-right fs-12 opacity-70 ${styles.timelineDate}`}>
                       {new Date(txn.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </div>
-                    <div className="flex-1 relative flex-row" style={{ height: '32px' }}>
-                      <div style={{
-                        width: `${barWidth}%`,
-                        height: '24px',
-                        backgroundColor: isPositive ? 'var(--app-success)' : 'var(--app-error)',
-                        borderRadius: '4px',
-                        opacity: 0.8,
-                        transition: 'all 0.3s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        paddingLeft: '8px',
-                        paddingRight: '8px',
-                        minWidth: '60px',
-                      }}>
+                    <div className={`flex-1 relative flex-row ${styles.timelineBarContainer}`}>
+                      <div
+                        className={styles.timelineBar}
+                        data-negative={!isPositive ? 'true' : 'false'}
+                        style={{ width: `${barWidth}%` }}
+                      >
                         <span className="fs-12 fw-700 text-inverse whitespace-nowrap">
                           {isPositive ? '+' : ''}{amount.toLocaleString()}
                         </span>
                       </div>
                     </div>
-                    <div className="truncate fs-12 opacity-60" style={{ minWidth: '150px' }}>
+                    <div className={`truncate fs-12 opacity-60 ${styles.timelineNotes}`}>
                       {txn.notes || 'Adjustment'}
                     </div>
                   </div>
@@ -221,7 +189,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
                 className="flex-between p-16 rounded-8 bg-surface-2 border transition"
               >
                 <div className="flex-1">
-                  <div className="fw-500" style={{ fontSize: '15px', marginBottom: '6px' }}>
+                  <div className={`fw-500 ${styles.recentTxnTitle}`}>
                     {txn.notes || 'Credit adjustment'}
                   </div>
                   <div className="fs-13 opacity-60">
@@ -229,10 +197,10 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
                     {new Date(txn.timestamp).toLocaleTimeString()}
                   </div>
                 </div>
-                <div className="fs-20 fw-700 text-right" style={{
-                  color: parseFloat(txn.amount) > 0 ? 'var(--app-success)' : 'var(--app-error)',
-                  minWidth: '100px',
-                }}>
+                <div
+                  className={`fs-20 fw-700 text-right ${styles.recentTxnAmount}`}
+                  data-negative={parseFloat(txn.amount) <= 0 ? 'true' : 'false'}
+                >
                   {parseFloat(txn.amount) > 0 ? '+' : ''}{parseFloat(txn.amount).toLocaleString()}
                 </div>
               </div>

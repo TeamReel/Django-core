@@ -1,0 +1,127 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.container[data-size="sm"] {
+  gap: 6px;
+}
+
+.container[data-size="md"] {
+  gap: 8px;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.actionsRow[data-layout="stack"] {
+  flex-direction: column;
+}
+
+.actionsRow[data-layout="inline"] {
+  flex-direction: row;
+}
+
+.actionsRow[data-size="sm"] {
+  gap: 6px;
+}
+
+.actionsRow[data-size="md"] {
+  gap: 8px;
+}
+
+.actionButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--action-color);
+  background-color: var(--action-bg);
+  border: none;
+  border-radius: 6px;
+  transition: background-color 0.15s, opacity 0.15s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.actionButton[data-size="sm"] {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+.actionButton[data-size="md"] {
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
+.actionButton[data-executing="self"] {
+  background-color: var(--action-hover-bg);
+  cursor: wait;
+}
+
+.actionButton[data-executing="other"] {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+.actionButton:not([data-executing]):hover {
+  background-color: var(--action-hover-bg);
+}
+
+.commentDialog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--app-surface-2, #f9fafb);
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #e5e7eb);
+}
+
+.commentLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-secondary, #6b7280);
+}
+
+.commentTextarea {
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  background-color: var(--app-surface, #fff);
+  color: var(--app-text, #111);
+  resize: vertical;
+  font-family: inherit;
+}
+
+.commentActions {
+  display: flex;
+  gap: 8px;
+}
+
+.confirmButton {
+  --confirm-bg: #dc2626;
+  --confirm-color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--confirm-color);
+  background-color: var(--confirm-bg);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text, #111);
+  background-color: transparent;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}

@@ -4,6 +4,7 @@ import { Card, Badge, Button } from '@django-core/design-system';
 import { useActivities, Activity } from '../../hooks/useActivities';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { SkeletonList } from '../Skeleton';
+import styles from './ActivityFeed.module.css';
 
 interface ActivityFeedProps {
   projectId?: string;
@@ -69,27 +70,14 @@ const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ 
   return (
     <div
       onClick={onClick}
-      className="flex-row gap-12 py-12 px-8 border-bottom rounded-8"
-      style={{
-        opacity: isPast ? 0.6 : 1,
-        cursor: onClick ? 'pointer' : 'default',
-        transition: 'background-color 0.15s ease',
-        margin: '0 -8px',
-      }}
-      onMouseEnter={e => {
-        if (onClick) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--app-surface-2)';
-      }}
-      onMouseLeave={e => {
-        if (onClick) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
-      }}
+      className={`flex-row gap-12 py-12 px-8 border-bottom rounded-8 ${styles.activityItem}`}
+      data-past={isPast}
+      data-clickable={Boolean(onClick)}
     >
       {/* Date Box */}
-      <div className="flex-center flex-col p-4 bg-surface-2 rounded-8 border fs-12" style={{
-        minWidth: '50px',
-        height: '50px',
-      }}>
-        <span className="fw-700 fs-16 text-primary" style={{ lineHeight: 1 }}>{startDate.getDate()}</span>
-        <span className="fw-600 opacity-80 text-primary" style={{ textTransform: 'uppercase', fontSize: '10px' }}>
+      <div className={`flex-center flex-col p-4 bg-surface-2 rounded-8 border fs-12 ${styles.dateBox}`}>
+        <span className={`fw-700 fs-16 text-primary ${styles.dateNumber}`}>{startDate.getDate()}</span>
+        <span className={`fw-600 opacity-80 text-primary ${styles.dateMonth}`}>
           {startDate.toLocaleDateString('en-US', { month: 'short' })}
         </span>
       </div>
@@ -101,29 +89,25 @@ const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ 
             {activity.activity_type}
           </Badge>
           {cleanPeriodName && (
-            <span className="text-muted fw-600 truncate" style={{
-              fontSize: '10px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}>
+            <span className={`text-muted fw-600 truncate ${styles.periodName}`}>
               {cleanPeriodName}
             </span>
           )}
         </div>
 
-        <div className="fw-600 fs-14 text-primary truncate" style={{ marginBottom: '2px' }}>
+        <div className={`fw-600 fs-14 text-primary truncate ${styles.activityTitle}`}>
           {displayTitle}
         </div>
 
         <div className="flex-row gap-12 fs-11 text-muted">
-          <span className="flex-row gap-4 fw-600" style={{ color: urgencyColor }}>
+          <span className={`flex-row gap-4 fw-600 ${styles.urgencyTime}`} style={{ '--urgency-color': urgencyColor } as React.CSSProperties}>
             {relativeTime}
           </span>
           <span className="flex-row gap-4">
             <span>🕒</span> {timeStr}
           </span>
           {activity.location && (
-             <span className="flex-row gap-4 overflow-hidden" style={{ maxWidth: '150px', textOverflow: 'ellipsis' }}>
+             <span className={`flex-row gap-4 overflow-hidden ${styles.locationText}`}>
                <span>📍</span> {activity.location}
              </span>
           )}
@@ -195,37 +179,25 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
           <div className="flex-row gap-8">
             <button
               onClick={() => setFilter('all')}
-              className="fs-12 fw-600 border rounded-4 cursor-pointer"
-              style={{
-                padding: '6px 12px',
-                backgroundColor: filter === 'all' ? 'var(--app-primary)' : 'var(--app-surface-2)',
-                color: filter === 'all' ? 'white' : 'var(--app-text)',
-                transition: 'all 0.2s'
-              }}
+              className={`fs-12 fw-600 border rounded-4 cursor-pointer ${styles.filterBtn}`}
+              data-variant="all"
+              data-active={filter === 'all'}
             >
               All
             </button>
             <button
               onClick={() => setFilter('league')}
-              className="fs-12 fw-600 border rounded-4 cursor-pointer"
-              style={{
-                padding: '6px 12px',
-                backgroundColor: filter === 'league' ? 'var(--color-blue-500)' : 'var(--app-surface-2)',
-                color: filter === 'league' ? 'white' : 'var(--app-text)',
-                transition: 'all 0.2s'
-              }}
+              className={`fs-12 fw-600 border rounded-4 cursor-pointer ${styles.filterBtn}`}
+              data-variant="league"
+              data-active={filter === 'league'}
             >
               ⚽ League
             </button>
             <button
               onClick={() => setFilter('cup')}
-              className="fs-12 fw-600 border rounded-4 cursor-pointer"
-              style={{
-                padding: '6px 12px',
-                backgroundColor: filter === 'cup' ? 'var(--color-amber-400)' : 'var(--app-surface-2)',
-                color: filter === 'cup' ? 'white' : 'var(--app-text)',
-                transition: 'all 0.2s'
-              }}
+              className={`fs-12 fw-600 border rounded-4 cursor-pointer ${styles.filterBtn}`}
+              data-variant="cup"
+              data-active={filter === 'cup'}
             >
               🏆 Cup
             </button>
@@ -234,7 +206,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
 
         <div>
           {activities.length === 0 ? (
-            <div className="opacity-50 py-24" style={{ fontStyle: 'italic' }}>
+            <div className={`opacity-50 py-24 ${styles.emptyMessage}`}>
               No activities found for this filter.
             </div>
           ) : (

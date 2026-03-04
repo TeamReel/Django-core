@@ -20,6 +20,7 @@ import {
 } from '../../types';
 
 import { canPerformAction } from '../../utils/permissions';
+import styles from './OrganisationsPage.module.css';
 import OrganisationDetailModal from './OrganisationDetailModal';
 import OrganisationEditModal from './OrganisationEditModal';
 import OrganisationCreateModal from './OrganisationCreateModal';
@@ -181,13 +182,12 @@ export const OrganisationsPage: React.FC = () => {
           { label: 'Federations', current: true },
         ]}
         actions={
-          <div className="flex-row flex-wrap" style={{ gap: '10px', alignItems: 'center' }}>
+          <div className={`flex-row flex-wrap ${styles.headerActions}`}>
             <label className="fs-14 fw-500">Status:</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="p-8 rounded-4"
-              style={{ border: '1px solid #ccc' }}
+              className={`p-8 rounded-4 ${styles.statusSelect}`}
             >
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
@@ -245,20 +245,20 @@ export const OrganisationsPage: React.FC = () => {
               <Table>
             <thead>
               <tr>
-                <th onClick={() => handleSort('name')} className="cursor-pointer" style={{ minWidth: '150px' }}>
+                <th onClick={() => handleSort('name')} className={`cursor-pointer ${styles.colWide}`}>
                   Name {sort === 'name' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('member_count')} className="cursor-pointer" style={{ minWidth: '100px' }}>
+                <th onClick={() => handleSort('member_count')} className={`cursor-pointer ${styles.colNarrow}`}>
                   Members {sort === 'member_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('project_count')} className="cursor-pointer" style={{ minWidth: '100px' }}>
+                <th onClick={() => handleSort('project_count')} className={`cursor-pointer ${styles.colNarrow}`}>
                   Projects {sort === 'project_count' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={() => handleSort('credit_balance')} className="cursor-pointer" style={{ minWidth: '100px' }}>
+                <th onClick={() => handleSort('credit_balance')} className={`cursor-pointer ${styles.colNarrow}`}>
                   Credits {sort === 'credit_balance' && (order === 'asc' ? '↑' : '↓')}
                 </th>
-                <th style={{ minWidth: '100px' }}>Status</th>
-                <th style={{ minWidth: '150px' }}>Actions</th>
+                <th className={styles.colNarrow}>Status</th>
+                <th className={styles.colWide}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -276,15 +276,8 @@ export const OrganisationsPage: React.FC = () => {
                   <tr key={org.id}>
                     <td>
                       <span
-                        className="cursor-pointer"
-                        style={{
-                          color: 'var(--color-blue-600)',
-                          textDecoration: 'underline',
-                          fontSize: '0.85rem'
-                        }}
+                        className={`cursor-pointer ${styles.orgNameLink}`}
                         onClick={() => navigate(`/organisations/${org.slug || org.id}`)}
-                        onMouseEnter={(e) => e.currentTarget.style.color = '#1d4ed8'}
-                        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-blue-600)'}
                       >
                         {org.name}
                       </span>
@@ -301,10 +294,9 @@ export const OrganisationsPage: React.FC = () => {
                     </td>
                     <td>
                       <span
-                        className={
+                        className={`${styles.creditBalance} ${
                           (org.credit_balance || 0) < 100 ? 'text-red-600 font-semibold' : ''
-                        }
-                        style={{ fontSize: '0.85rem' }}
+                        }`}
                         data-testid={`org-credits-${org.id}`}
                       >
                         {org.credit_balance || 0}
@@ -325,13 +317,7 @@ export const OrganisationsPage: React.FC = () => {
                             setDetailOrganisation(org);
                             setIsDetailModalOpen(true);
                           }}
-                          className="rounded-4 cursor-pointer fs-12 fw-500"
-                          style={{
-                              padding: '6px 12px',
-                              border: '1px solid var(--app-border)',
-                              backgroundColor: 'var(--app-surface-2)',
-                              color: 'var(--app-text)',
-                          }}
+                          className={`rounded-4 cursor-pointer fs-12 fw-500 ${styles.viewBtn}`}
                         >
                           View
                         </button>
@@ -341,13 +327,7 @@ export const OrganisationsPage: React.FC = () => {
                               setEditOrganisation(org);
                               setIsEditModalOpen(true);
                             }}
-                            className="rounded-4 cursor-pointer fs-12 fw-500"
-                            style={{
-                                padding: '6px 12px',
-                                border: '1px solid var(--app-warning)',
-                                backgroundColor: 'var(--app-surface)',
-                                color: 'var(--app-warning)',
-                            }}
+                            className={`rounded-4 cursor-pointer fs-12 fw-500 ${styles.editBtn}`}
                           >
                             Edit
                           </button>
@@ -355,13 +335,7 @@ export const OrganisationsPage: React.FC = () => {
                         {userCanDelete && (
                           <button
                             onClick={() => handleDelete(org.slug || org.id)}
-                            className="rounded-4 cursor-pointer fs-12 fw-500"
-                            style={{
-                                padding: '6px 12px',
-                                border: '1px solid #bd2130',
-                                backgroundColor: 'var(--app-surface)',
-                                color: 'var(--app-error)',
-                            }}
+                            className={`rounded-4 cursor-pointer fs-12 fw-500 ${styles.deleteBtn}`}
                           >
                             Delete
                           </button>

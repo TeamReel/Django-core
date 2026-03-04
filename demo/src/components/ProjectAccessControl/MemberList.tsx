@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { fetchWithCSRF } from '@django-core/api-client';
 import { User } from '../../types';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './MemberList.module.css';
 
 interface ProjectMembership {
   id: string;
@@ -90,21 +91,21 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
   return (
     <div className="member-list-container p-16">
       <h3>Project Members</h3>
-      <table className="w-full mt-10" style={{ borderCollapse: 'collapse' }}>
+      <table className={`w-full mt-10 ${styles.table}`}>
         <thead>
           <tr className="border-bottom text-left">
-            <th style={{ padding: '8px 6px' }}>User</th>
-            <th style={{ padding: '8px 6px' }}>Role</th>
-            <th className="hide-mobile" style={{ padding: '8px 6px' }}>Joined</th>
-            <th style={{ padding: '8px 6px' }}>Actions</th>
+            <th className={styles.headerCell}>User</th>
+            <th className={styles.headerCell}>Role</th>
+            <th className={`hide-mobile ${styles.headerCell}`}>Joined</th>
+            <th className={styles.headerCell}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {members.map((member) => (
             <tr key={member.id} className="border-bottom">
-              <td style={{ padding: '8px 6px' }}>
+              <td className={styles.cell}>
                 <div className="flex-row gap-8">
-                  <div className="flex-center rounded-full fs-12" style={{ width: '28px', height: '28px', backgroundColor: '#ddd', flexShrink: 0 }}>
+                  <div className={`flex-center rounded-full fs-12 ${styles.avatar}`}>
                     {member.user.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
@@ -113,21 +114,19 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
                   </div>
                 </div>
               </td>
-              <td style={{ padding: '8px 6px' }}>
-                <span className="fs-11 rounded-12" style={{
-                  padding: '2px 6px',
-                  backgroundColor: member.role === 'admin' ? '#e3f2fd' : '#f5f5f5',
-                  color: member.role === 'admin' ? '#1976d2' : '#333'
-                }}>
+              <td className={styles.cell}>
+                <span
+                  className={`fs-11 rounded-12 ${styles.roleBadge}`}
+                  data-role={member.role}
+                >
                   {member.role}
                 </span>
               </td>
-              <td className="hide-mobile fs-12" style={{ padding: '8px 6px' }}>{member.joined_at}</td>
-              <td style={{ padding: '8px 6px' }}>
+              <td className={`hide-mobile fs-12 ${styles.cell}`}>{member.joined_at}</td>
+              <td className={styles.cell}>
                 <button
                   onClick={() => handleRemoveClick(member)}
-                  className="py-4 px-8 border-none rounded-4 cursor-pointer fs-12"
-                  style={{ backgroundColor: '#ffebee', color: '#c62828' }}
+                  className={`py-4 px-8 border-none rounded-4 cursor-pointer fs-12 ${styles.removeButton}`}
                 >
                   Remove
                 </button>
@@ -138,38 +137,28 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
       </table>
 
       {isRemoveModalOpen && memberToRemove && (
-        <div className="flex-center fixed inset-0 z-1000" style={{
-          backgroundColor: 'rgba(0,0,0,0.5)',
-        }}>
-          <div className="p-24 rounded-8" style={{
-            backgroundColor: 'white',
-            width: '400px',
-            maxWidth: '90%'
-          }}>
+        <div className={`flex-center fixed inset-0 z-1000 ${styles.modalOverlay}`}>
+          <div className={`p-24 rounded-8 ${styles.modalContainer}`}>
             <h4 className="mt-0">Remove Member?</h4>
             <p>
               Are you sure you want to remove <strong>{memberToRemove.user.name}</strong> from this project?
               They will lose all access immediately.
             </p>
             {memberToRemove.role === 'admin' && (
-              <div className="p-10 rounded-4 mb-16" style={{
-                backgroundColor: '#fff3e0',
-                fontSize: '0.9em',
-                color: '#e65100'
-              }}>
+              <div className={`p-10 rounded-4 mb-16 ${styles.warningBox}`}>
                 Warning: Removing an admin. Ensure there is at least one other admin remaining.
               </div>
             )}
-            <div className="flex-row gap-10 mt-20" style={{ justifyContent: 'flex-end' }}>
+            <div className={`flex-row gap-10 mt-20 ${styles.buttonRow}`}>
               <button
                 onClick={cancelRemove}
-                className="py-8 px-16 rounded-4 cursor-pointer border" style={{ background: 'white' }}
+                className={`py-8 px-16 rounded-4 cursor-pointer border ${styles.cancelButton}`}
               >
                 Cancel
               </button>
               <button
                 onClick={confirmRemove}
-                className="py-8 px-16 border-none rounded-4 cursor-pointer text-white" style={{ background: '#d32f2f' }}
+                className={`py-8 px-16 border-none rounded-4 cursor-pointer text-white ${styles.confirmButton}`}
               >
                 Remove Member
               </button>

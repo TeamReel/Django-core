@@ -16,6 +16,7 @@ import {
 } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useFeatureFlagsData } from './useFeatureFlagsData';
+import styles from './FeatureFlagsPage.module.css';
 
 export const FeatureFlagsPage: React.FC = () => {
   const d = useFeatureFlagsData();
@@ -54,12 +55,7 @@ export const FeatureFlagsPage: React.FC = () => {
         ]}
         actions={
           <div className="flex-row gap-12">
-            <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
-              padding: '4px 10px',
-              backgroundColor: 'var(--color-blue-500)',
-              color: 'white',
-              letterSpacing: '0.5px',
-            }}>
+            <div className={`fs-11 rounded-6 fw-600 cursor-default ${styles.superadminBadge}`}>
               👑 SUPERADMIN
             </div>
           </div>
@@ -177,7 +173,7 @@ export const FeatureFlagsPage: React.FC = () => {
               <table className="dir-table">
                 <thead>
                   <tr>
-                    <th className="dir-th" style={{ width: '40px' }}>
+                    <th className={`dir-th ${styles.colCheckbox}`}>
                       <input
                         type="checkbox"
                         checked={d.allSelected}
@@ -185,12 +181,12 @@ export const FeatureFlagsPage: React.FC = () => {
                         className="cursor-pointer"
                       />
                     </th>
-                    <th className="dir-th" style={{ width: '12%' }}>Type</th>
-                    <th className="dir-th" style={{ width: '15%' }}>Subtype</th>
-                    <th className="dir-th" style={{ width: '10%' }}>Style</th>
-                    <th className="dir-th" style={{ width: '30%' }}>Description</th>
-                    <th className="dir-th" style={{ width: '10%' }}>Global</th>
-                    <th className="dir-th" style={{ width: '10%' }}>Actions</th>
+                    <th className={`dir-th ${styles.colType}`}>Type</th>
+                    <th className={`dir-th ${styles.colSubtype}`}>Subtype</th>
+                    <th className={`dir-th ${styles.colStyle}`}>Style</th>
+                    <th className={`dir-th ${styles.colDescription}`}>Description</th>
+                    <th className={`dir-th ${styles.colGlobal}`}>Global</th>
+                    <th className={`dir-th ${styles.colActions}`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -216,11 +212,11 @@ export const FeatureFlagsPage: React.FC = () => {
                         <td className="dir-td">{type || '—'}</td>
                         <td className="dir-td">{subtype || '—'}</td>
                         <td className="dir-td">{style || '—'}</td>
-                        <td className="dir-td" style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <td className={`dir-td ${styles.descriptionCell}`}>
                           {flag.description || '—'}
                         </td>
                         <td className="dir-td">
-                          <Badge variant={displayEnabled ? 'success' : 'default'} className="fs-11" style={{ padding: '2px 6px' }}>
+                          <Badge variant={displayEnabled ? 'success' : 'default'} className={`fs-11 ${styles.flagBadge}`}>
                             {displayEnabled ? 'On' : 'Off'}
                           </Badge>
                         </td>

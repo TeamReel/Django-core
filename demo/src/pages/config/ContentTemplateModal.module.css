@@ -1,0 +1,48 @@
+.modalCard {
+  width: 700px;
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.tabButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px 6px 0 0;
+}
+
+.tabButton[data-active="true"] {
+  background: var(--app-primary);
+  color: white;
+}
+
+.tabButton[data-active="false"] {
+  background: transparent;
+  color: var(--app-text);
+}
+
+.resizableTextarea {
+  resize: vertical;
+}
+
+.formSelect[data-disabled="true"] {
+  background-color: var(--app-bg-muted);
+  opacity: 0.6;
+}
+
+.formSelect[data-disabled="false"] {
+  background-color: var(--app-bg);
+  opacity: 1;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+}
+
+.creditsInput {
+  width: 100px;
+}
+
+.modalActions {
+  justify-content: flex-end;
+}
