@@ -1,179 +1,153 @@
-# Demo Integration Documentation
+# TeamReel Web Application — Documentation
 
 **Last Updated:** 2026-03-04
-**Purpose:** Enable smooth integration of new backend modules with TeamReel
-**Status:** Restructured (v3.0)
+**Status:** v4.0
 
 ---
 
-## 📖 Overview
+## Overview
 
-This documentation provides everything needed to integrate new backend modules with the existing TeamReel demo data on Railway production.
+Complete documentation for the TeamReel web application — frontend design system, feature specs, media pipeline, infrastructure, and data reference.
 
 ---
 
-## 📚 Documentation Structure
+## Documentation Map
 
-### Frontend Design System ⭐
+### Getting Started
 
 | Document | Purpose |
 |----------|---------|
-| [frontend-design/index.md](frontend-design/index.md) | **Design system overview** — architecture, principles, quick reference |
-| [frontend-design/css-architecture.md](frontend-design/css-architecture.md) | Tokens, utilities, CSS Modules, file structure, breakpoints |
+| [getting-started.md](getting-started.md) | Integration guide, domain glossary, FK hierarchy, seeding patterns |
+
+### Frontend Design System
+
+| Document | Purpose |
+|----------|---------|
+| [frontend-design/index.md](frontend-design/index.md) | **Overview** — architecture diagram, key principles, quick reference |
+| [frontend-design/css-architecture.md](frontend-design/css-architecture.md) | Tokens, utility classes, CSS Modules, file structure |
 | [frontend-design/theming.md](frontend-design/theming.md) | Light/dark themes, semantic tokens, brand palette |
 | [frontend-design/component-library.md](frontend-design/component-library.md) | 15 UI primitives catalog, usage patterns |
 | [frontend-design/mobile-patterns.md](frontend-design/mobile-patterns.md) | Touch targets, gestures, safe areas, responsive layouts |
-| [frontend-design/code-conventions.md](frontend-design/code-conventions.md) | Quality gates, review checklist, metrics |
+| [frontend-design/code-conventions.md](frontend-design/code-conventions.md) | Quality gates, review checklist, current metrics |
 
-### Core Documentation
+### Features & Architecture
 
 | Document | Purpose |
 |----------|---------|
-| [README.md](README.md) | **Start here** - Quick integration guide |
-| [glossary.md](glossary.md) | Domain concepts, naming conventions, canonical data |
-| [generation-queue.md](generation-queue.md) | AI Generation Queue — GenerationJob, workflow tab, toasts |
-| [media/media-architecture.md](media/media-architecture.md) | 4-laags media opslag (FileAsset → MediaItem → BrandAsset → VideoJob) |
-| [media/media-templates.md](media/media-templates.md) | Content generation: lineup, match updates, multi-sport templates |
-| [media/lineup-architecture.md](media/lineup-architecture.md) | Lineup video & flyer: modulaire opbouw, assets, pipeline |
-| [media/rvm-alpha-pipeline.md](media/rvm-alpha-pipeline.md) | RVM background removal: MOV alpha → MP4 preview pipeline |
+| [features/application-architecture.md](features/application-architecture.md) | **Full app architecture** — 33 apps, 67 models, API surface, Celery tasks |
+| [features/generation-queue.md](features/generation-queue.md) | AI Generation Queue — GenerationJob lifecycle, Celery pipeline |
+| [features/member-asset-save-flow.md](features/member-asset-save-flow.md) | Asset save flow + stale closure fix pattern |
+| [features/members-batch-actions.md](features/members-batch-actions.md) | Batch operations on members + RBAC mapping |
+| [features/mobile-ux-gamification-analyse.md](features/mobile-ux-gamification-analyse.md) | Mobile UX analysis + gamification recommendations |
+
+### Media & AI Pipeline
+
+| Document | Purpose |
+|----------|---------|
+| [media/media-architecture.md](media/media-architecture.md) | 4-layer media storage (FileAsset → MediaItem → BrandAsset → VideoJob) |
+| [media/media-templates.md](media/media-templates.md) | Content generation templates (lineup, match updates, multi-sport) |
+| [media/lineup-architecture.md](media/lineup-architecture.md) | Lineup video & flyer: modular pipeline, FFmpeg compositor |
+| [media/rvm-alpha-pipeline.md](media/rvm-alpha-pipeline.md) | RVM background removal: MOV alpha → MP4 preview |
+| [media/ai-providers.md](media/ai-providers.md) | Provider cascade architecture (MiniMax → Runway → Pika → Veo) |
+| [media/ai-models-pricing.md](media/ai-models-pricing.md) | AI model pricing reference |
 
 ### Infrastructure
 
 | Document | Purpose |
-|----------|----------|
-| [infrastructure/railway-services.md](infrastructure/railway-services.md) | Railway services, 3-worker setup, queue routing, troubleshooting |
+|----------|---------|
+| [infrastructure/railway-services.md](infrastructure/railway-services.md) | Railway production: 6 services, worker queues, environment |
 
-### Schema Reference
+### Data Reference
 
-| Document | Purpose | Auto-Generated |
+| Document | Purpose | Auto-generated |
 |----------|---------|----------------|
-| [schema/tables.md](schema/tables.md) | Table structure + FK relations | ✅ Yes |
+| [data/tables.md](data/tables.md) | Database schema + FK relations | ✅ |
+| [data/seeding-guide.md](data/seeding-guide.md) | Idempotent seeding patterns | ❌ |
+| [data/counts.md](data/counts.md) | Model counts snapshot | ✅ |
+| [data/hierarchy-compact.md](data/hierarchy-compact.md) | Org → Club → Team hierarchy | ✅ |
+| [data/frontend-integration.md](data/frontend-integration.md) | Feature → UI implementation status | ❌ |
 
-### Seeding Guides
+### Plans
 
-| Document | Purpose | Auto-Generated |
-|----------|---------|----------------|
-| [seeding/guide.md](seeding/guide.md) | Idempotent patterns, best practices | ❌ No |
-
-### Current State (Auto-Generated)
-
-| Document | Purpose | Generated By |
-|----------|---------|--------------|
-| [state/counts.md](state/counts.md) | Model counts (OK/THIN/EMPTY) | `generate_demo_docs.py` |
-| [state/hierarchy-compact.md](state/hierarchy-compact.md) | Compact org→club→team hierarchy | `generate_demo_docs.py` |
-| [state/frontend-integration.md](state/frontend-integration.md) | Frontend integration status matrix | Manual |
+| Document | Purpose |
+|----------|---------|
+| [plans/frontend-refactoring-phases.md](plans/frontend-refactoring-phases.md) | Master frontend refactoring plan (phases 1-46) |
+| [plans/package-audit-report.md](plans/package-audit-report.md) | Package relevance audit (keep/archive) |
+| [plans/season-hub-refactor.md](plans/season-hub-refactor.md) | Season hub decomposition plan |
 
 ---
 
-## 🔄 Regenerating Documentation
+## Folder Structure
 
-Run against production to update auto-generated files:
+```
+05-demo/
+├── index.md                  # This file
+├── getting-started.md        # Integration guide + domain glossary
+├── frontend-design/          # Frontend design system (6 docs)
+│   ├── index.md
+│   ├── css-architecture.md
+│   ├── theming.md
+│   ├── component-library.md
+│   ├── mobile-patterns.md
+│   └── code-conventions.md
+├── features/                 # Features & architecture (5 docs)
+│   ├── application-architecture.md
+│   ├── generation-queue.md
+│   ├── member-asset-save-flow.md
+│   ├── members-batch-actions.md
+│   └── mobile-ux-gamification-analyse.md
+├── media/                    # Media & AI pipeline (6 docs)
+│   ├── media-architecture.md
+│   ├── media-templates.md
+│   ├── lineup-architecture.md
+│   ├── rvm-alpha-pipeline.md
+│   ├── ai-providers.md
+│   └── ai-models-pricing.md
+├── infrastructure/           # Deployment & ops (1 doc)
+│   └── railway-services.md
+├── data/                     # Data reference (5 docs)
+│   ├── tables.md
+│   ├── seeding-guide.md
+│   ├── counts.md
+│   ├── hierarchy-compact.md
+│   └── frontend-integration.md
+├── plans/                    # Active plans (3 docs)
+│   ├── frontend-refactoring-phases.md
+│   ├── package-audit-report.md
+│   └── season-hub-refactor.md
+└── archive/                  # Historical reference
+```
+
+---
+
+## Regenerating Auto-Generated Docs
 
 ```powershell
-# Set Railway DATABASE_URL
 $env:DATABASE_URL="postgresql://postgres:<PASSWORD>@switchback.proxy.rlwy.net:17304/railway"
-
-# Generate all docs
 python scripts/generate_demo_docs.py
 ```
 
 ---
 
-## 📁 Folder Structure
+## Archive
 
-```
-05-demo/
-├── index.md              # This file
-├── README.md             # Quick start integration guide
-├── glossary.md           # Domain concepts + naming conventions
-├── generation-queue.md   # AI Generation Queue lifecycle
-├── member-asset-save-flow.md  # Asset save flow + stale closure fix
-├── members-batch-actions.md   # Batch operations + RBAC
-├── mobile-ux-gamification-analyse.md  # Mobile UX analysis
-├── frontend-design/           # ⭐ Frontend design system
-│   ├── index.md               # Overview + architecture diagram
-│   ├── css-architecture.md    # Tokens, utilities, CSS Modules
-│   ├── theming.md             # Light/dark themes, brand palette
-│   ├── component-library.md   # 15 UI primitives catalog
-│   ├── mobile-patterns.md     # Touch, gestures, responsive
-│   └── code-conventions.md    # Quality gates, review checklist
-├── infrastructure/
-│   └── railway-services.md    # Railway setup, workers, queues
-├── media/
-│   ├── media-architecture.md  # 4-layer media storage model
-│   ├── media-templates.md     # Content generation templates
-│   ├── lineup-architecture.md # Lineup video & flyer pipeline
-│   ├── rvm-alpha-pipeline.md  # RVM background removal + alpha
-│   ├── ai-models-pricing.md   # AI providers & pricing overview
-│   └── ai-providers.md        # Provider cascade architecture
-├── plans/
-│   ├── frontend-refactoring-phases.md  # Master refactoring plan
-│   ├── package-audit-report.md         # Package relevance audit
-│   └── season-hub-refactor.md          # Season hub decomposition plan
-├── schema/
-│   └── tables.md              # Auto-gen: Tables + FK relations
-├── seeding/
-│   └── guide.md               # Idempotent seeding patterns
-├── state/
-│   ├── counts.md              # Auto-gen: Model counts
-│   ├── hierarchy-compact.md   # Compact data hierarchy
-│   └── frontend-integration.md  # Feature→UI status matrix
-└── archive/                   # Archived plans + historical data
-```
+Archived docs in [archive/](archive/) — implemented plans, superseded data dumps, legacy docs.
 
 ---
 
-## 🚀 Quick Start
+## Related
 
-### Accessing TeamReel
-
-- **Live Demo**: [https://demo.teamreel.app](https://demo.teamreel.app) (Railway)
-- **API Root**: [https://api.teamreel.app/api/v1/](https://api.teamreel.app/api/v1/)
-- **Local Dev**: `pnpm dev` (Frontend) + `python manage.py runserver` (Backend)
-
-### Key API Endpoints
-
-- **Organisations**: `/api/v1/organisations/` - Football federations
-- **Projects**: `/api/v1/projects/` - Clubs and teams
-- **Periods**: `/api/v1/periods/` - Seasons and competitions
-- **Activities**: `/api/v1/activities/` - Matches and events
-- **Memberships**: `/api/v1/project-memberships/` - Players and staff
+- [../02-roadmap/](../02-roadmap/) — Planned modules
+- [../04-modules/](../04-modules/) — Module-specific documentation
 
 ---
 
-## 📜 Archive
-
-Old documentation is preserved in [archive/](archive/) for historical reference:
-
-| Document | Original location | Archived reason |
-|----------|-------------------|-----------------|
-| `clubs-plan.md` | plans/ | Plan implemented |
-| `teams-plan.md` | plans/ | Plan implemented |
-| `organisation-detail-plan.md` | plans/ | Plan implemented |
-| `content-library-plan.md` | plans/ | Self-declared IMPLEMENTED |
-| `media-seeding-proposal.md` | seeding/ | Proposal — status unclear |
-| `hierarchy.md` | state/ | Raw data dump (1785 lines) — use hierarchy-compact.md instead |
-| `teamreel-data-strategy.md` | (legacy) | Original architecture |
-| `teamreel-seeding-plan.md` | (legacy) | Original seeding procedures |
-| `teamreel-db-audit.md` | (legacy) | Previous audit format |
-| `teamreel-rbac-config.md` | (legacy) | RBAC configuration |
-| `teamreel-navigation-model.md` | (legacy) | Navigation specs |
-
----
-
-## 🔗 Related Documentation
-
-- [../02-roadmap/](../02-roadmap/) - Planned modules with specs
-- [../04-modules/](../04-modules/) - Module-specific documentation
-- [../../.kittify/memory/constitution.md](../../.kittify/memory/constitution.md) - Article XIII: Delivery Checklist
-
----
-
-## 🔄 Version History
+## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 3.0.0 | 2026-03-04 | Added frontend-design/ (5 docs), archived 6 obsolete plans, updated folder structure |
+| 4.0.0 | 2026-03-04 | Reorganized: 7 root files → 2, merged schema+seeding+state → data/, added features/ |
+| 3.0.0 | 2026-03-04 | Added frontend-design/ (6 docs), archived 6 obsolete plans |
 | 2.0.0 | 2026-02-04 | Complete restructure: README, glossary, schema/, seeding/, state/ |
 | 1.x | 2026-01 | Original structure with teamreel-*.md files |
 
