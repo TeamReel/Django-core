@@ -1,8 +1,8 @@
-/* ProfileHubPage — CSS Module */
+/* ProfileHubPage — iOS Settings-style CSS Module */
 
 /* ── Page container ──────────────────────────────────────────────────── */
 .page {
-  padding: 24px 16px 120px; /* 120px bottom for bottom nav clearance */
+  padding: 16px 16px 120px;
   max-width: 480px;
   margin: 0 auto;
 }
@@ -13,7 +13,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 24px 0 32px;
+  padding: 16px 0 24px;
 }
 
 .avatar {
@@ -26,7 +26,12 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  cursor: pointer;
+  position: relative;
+  transition: opacity 0.15s;
 }
+
+.avatar:hover { opacity: 0.85; }
 
 .avatarImg {
   width: 100%;
@@ -39,6 +44,21 @@
   font-weight: 800;
   color: white;
   line-height: 1;
+}
+
+.avatarBadge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--app-surface);
+  border: 2px solid var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--app-muted-text);
 }
 
 .headerText {
@@ -59,22 +79,33 @@
   margin: 4px 0 0;
 }
 
-/* ── Menu sections ───────────────────────────────────────────────────── */
+/* ── Section label ───────────────────────────────────────────────────── */
+.sectionLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--app-muted-text);
+  padding: 0 4px;
+  margin: 20px 0 6px;
+}
+
+/* ── Card section ────────────────────────────────────────────────────── */
 .section {
   background: var(--app-surface);
   border-radius: 12px;
   border: 1px solid var(--app-border);
   overflow: hidden;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 }
 
-/* ── Menu item ───────────────────────────────────────────────────────── */
-.menuItem {
+/* ── Row (menu item / setting row) ───────────────────────────────────── */
+.row {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 14px 16px;
+  padding: 13px 16px;
   border: none;
   background: transparent;
   color: var(--app-text);
@@ -84,24 +115,24 @@
   transition: background 0.15s ease;
 }
 
-.menuItem:not(:last-child) {
+.row:not(:last-child) {
   border-bottom: 1px solid var(--app-border);
 }
 
-.menuItem:hover {
+button.row:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.03));
 }
 
-.menuItem:active {
+button.row:active {
   background: var(--app-active-bg, rgba(0, 0, 0, 0.06));
 }
 
-.menuLabel {
+.rowLabel {
   flex: 1;
   font-weight: 500;
 }
 
-.menuValue {
+.rowValue {
   font-size: 13px;
   color: var(--app-muted-text);
   font-weight: 500;
@@ -112,7 +143,128 @@
   flex-shrink: 0;
 }
 
-/* ── Danger (sign out) ───────────────────────────────────────────────── */
+/* ── Theme pills (inline toggle) ─────────────────────────────────────── */
+.themePills {
+  display: flex;
+  gap: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+}
+
+.themePill {
+  flex: 1;
+  padding: 7px 0;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.themePill:not(:last-child) {
+  border-right: 1px solid var(--app-border);
+}
+
+.themePillActive {
+  background: var(--app-primary);
+  color: white;
+}
+
+/* ── Inline select ───────────────────────────────────────────────────── */
+.inlineSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+  text-align: right;
+  cursor: pointer;
+  padding: 0 2px;
+  max-width: 160px;
+}
+
+.inlineSelect:focus {
+  outline: none;
+}
+
+/* ── Toggle switch ───────────────────────────────────────────────────── */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  border: none;
+  cursor: pointer;
+  background: var(--app-border);
+  transition: background 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+
+.toggleOn {
+  background: var(--app-primary, #3B8EA5);
+}
+
+.toggleOn::after {
+  transform: translateX(18px);
+}
+
+/* ── Collapsible content ─────────────────────────────────────────────── */
+.collapseContent {
+  padding: 4px 16px 16px;
+}
+
+.cascadeRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.cascadeRow:not(:last-child) {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.cascadeLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.cascadeSelect {
+  width: 100%;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.cascadeSelect:disabled {
+  opacity: 0.5;
+}
+
+/* ── Danger row (sign out) ───────────────────────────────────────────── */
 .danger {
   color: var(--app-error, #dc2626);
 }
@@ -120,6 +272,16 @@
 .danger:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Loading shimmer ─────────────────────────────────────────────────── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--app-muted-text);
+  font-size: 14px;
 }
 
 /* ── Desktop: wider layout ───────────────────────────────────────────── */
@@ -132,7 +294,7 @@
   .header {
     flex-direction: row;
     gap: 20px;
-    padding: 32px 0;
+    padding: 24px 0;
   }
 
   .headerText {
