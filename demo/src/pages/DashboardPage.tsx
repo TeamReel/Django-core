@@ -3,6 +3,10 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  AlertTriangle, Megaphone, ClipboardList, PersonStanding,
+  Music, Target, Flag, Film, FolderOpen, Users, ChevronRight,
+} from 'lucide-react';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
@@ -14,27 +18,27 @@ import styles from './DashboardPage.module.css';
 
 /** Content types available from the dashboard quick-create */
 const QUICK_CREATE_TYPES = [
-  { key: 'flyer', label: 'Match Flyer', icon: '📣' },
-  { key: 'lineup', label: 'Lineup', icon: '📋' },
-  { key: 'walkon', label: 'Walk-on Video', icon: '🚶' },
-  { key: 'anthem', label: 'Anthem Video', icon: '🎵' },
-  { key: 'goal', label: 'Goal Celebration', icon: '⚽' },
-  { key: 'end_score', label: 'Final Score', icon: '🏁' },
-  { key: 'highlights', label: 'Highlights', icon: '🎬' },
+  { key: 'flyer', label: 'Match Flyer', Icon: Megaphone },
+  { key: 'lineup', label: 'Lineup', Icon: ClipboardList },
+  { key: 'walkon', label: 'Walk-on Video', Icon: PersonStanding },
+  { key: 'anthem', label: 'Anthem Video', Icon: Music },
+  { key: 'goal', label: 'Goal Celebration', Icon: Target },
+  { key: 'end_score', label: 'Final Score', Icon: Flag },
+  { key: 'highlights', label: 'Highlights', Icon: Film },
 ];
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const organisation = context.organisation as any;
+  const org = context.organisation as any;
   const recents = useNavRecents();
   const { matchId } = useAppSelection();
   const { isPlayer } = useUserRole();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
-    context.organisation?.slug,
-    context.organisation?.id?.toString()
+    org?.slug,
+    org?.id?.toString(),
   );
 
   // Pull-to-refresh: increment key to force child widgets to re-mount and refetch
@@ -43,213 +47,160 @@ export default function DashboardPage() {
     setRefreshKey(k => k + 1);
   }, []);
 
-  // Determine activity filter scope based on user role
-  const isSuperadmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
-
-  // For now, assume org-level context means user has org-level visibility
-  // TODO: Once membership role is available in context, use: context.membership?.role === 'admin'
+  // Activity filter scope
+  const isSuperadmin =
+    Boolean((user as any)?.is_superuser) ||
+    String((user as any)?.role || '').toLowerCase() === 'superadmin';
   const hasProjectContext = !!context.project;
 
-  // Filter logic:
-  // - Superadmin: No filter (see all activities across all orgs)
-  // - Org-level context (no project selected): Filter by organisation_id
-  // - Project-level context: Filter by project_id (member sees only their team's activities)
   const activityFilterProps = isSuperadmin
-    ? {} // No filters for superadmin
+    ? {}
     : hasProjectContext
-    ? { projectId: context.project?.id?.toString() }
-    : { organisationId: context.organisation?.id?.toString() };
+      ? { projectId: context.project?.id?.toString() }
+      : { organisationId: org?.id?.toString() };
 
   return (
-      <PullToRefresh
-        onRefresh={handleRefresh}
-        pullText="Trek om te vernieuwen"
-        releaseText="Laat los om te vernieuwen"
-        refreshingText="Vernieuwen..."
-      >
-      <div key={refreshKey} className={`bg-primary ${styles.pageRoot}`}>
+    <PullToRefresh
+      onRefresh={handleRefresh}
+      pullText="Trek om te vernieuwen"
+      releaseText="Laat los om te vernieuwen"
+      refreshingText="Vernieuwen..."
+    >
+      <div key={refreshKey} className={styles.page}>
+        {/* ── Greeting ──────────────────────────────────────────── */}
+        <h1 className={styles.greeting}>
+          Welkom, {user?.first_name || 'there'}
+        </h1>
+        <p className={styles.orgSubtitle}>
+          {org ? org.name : 'Selecteer een organisatie'}
+        </p>
+
+        {/* ── Low balance banner ────────────────────────────────── */}
         {lowBalanceAlert && (
-          <div className={`flex-row flex-wrap gap-12 mb-24 p-16 bg-surface-2 text-primary rounded-4 ${styles.lowBalanceBanner}`}>
-            <span className="fs-24">⚠️</span>
-            <div className="flex-1">
-              <strong>Low Credits Warning</strong>
-              <p className={`fs-14 ${styles.lowBalanceText}`}>
-                Your credit balance is low ({balance} remaining). The threshold is {threshold}. Consider upgrading or top up.
-              </p>
+          <div className={styles.lowBanner}>
+            <AlertTriangle size={20} />
+            <div className={styles.lowBannerText}>
+              <strong>Laag tegoed</strong>
+              Nog {balance} credits (drempel: {threshold}).
             </div>
-            <button className={`fs-14 fw-500 rounded-4 border-none cursor-pointer ${styles.upgradeButton}`}>
-              Upgrade Plan
+            <button className={styles.lowBannerBtn} onClick={() => navigate('/credits')}>
+              Opwaarderen
             </button>
           </div>
         )}
 
-        <h1 className="mb-24 text-primary">Welcome back!</h1>
+        {/* ── Two-column wrapper (desktop only) ─────────────────── */}
+        <div className={styles.twoCol}>
+          {/* ── Main column ──────────────────────────────────────── */}
+          <div>
+            {/* Upcoming Matches — most actionable, goes first */}
+            <UpcomingMatchesWidget />
 
-        <div className="mb-24 p-16 bg-surface rounded-8 border text-primary">
-          <div className="flex-between gap-12">
-            <div>
-              <h3 className="m-0 fs-16">Recents</h3>
-              <div className="fs-12 mt-4 opacity-70">Jump back to recently visited items.</div>
-            </div>
-            <Link
-              to="/recents"
-              className={`fw-600 fs-13 bg-surface-2 text-primary border rounded-6 text-decoration-none ${styles.viewAllLink}`}
-            >
-              View all
-            </Link>
-          </div>
-
-          {recents.length === 0 ? (
-            <div className="mt-12 opacity-70 fs-13">
-              No recents yet.
-            </div>
-          ) : (
-            <div className="mt-12 flex-row flex-wrap gap-8">
-              {recents.slice(0, 6).map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`fw-600 fs-13 bg-surface-2 text-primary border rounded-full truncate text-decoration-none ${styles.recentPill}`}
-                  title={item.label}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Activity Feed and Welcome row */}
-        <div className={`dashboard-grid grid gap-24 mb-32 ${styles.dashboardGrid}`}>
-          {/* Main Welcome Card */}
-          <div className="dashboard-main">
-            <div className="p-24 bg-surface rounded-8 border text-primary">
-              <h2 className="fs-20 mt-0">
-                {context.organisation ? context.organisation.name : 'Select an Organisation'}
-              </h2>
-              {context.organisation ? (
-                <div>
-                   <p className="opacity-80 fs-14">
-                     Viewing <strong>{context.organisation.name}</strong>.
-                   </p>
-
-                   {/* Stats Row - 2x2 on mobile */}
-                   <div className="stats-grid grid gap-12 mt-16 grid-cols-2">
-                      <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20 fw-700">{(context.organisation as any).clubs_count || (context.organisation as any).project_count || 0}</div>
-                          <div className="fs-12 opacity-70">Clubs</div>
-                      </div>
-                      <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20 fw-700">{(context.organisation as any).teams_count || 0}</div>
-                          <div className="fs-12 opacity-70">Teams</div>
-                      </div>
-                      <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20 fw-700">{(context.organisation as any).matches_count || 0}</div>
-                          <div className="fs-12 opacity-70">Matches</div>
-                      </div>
-                      <div className="text-center p-12 bg-surface-2 rounded-8">
-                          <div className="fs-20 fw-700">{(context.organisation as any).member_count || 0}</div>
-                          <div className="fs-12 opacity-70">Members</div>
-                      </div>
-                   </div>
-                   <div className="flex-row flex-wrap gap-8 mt-16">
-                     <Link
-                       to={`/organisations/${context.organisation.slug}/projects`}
-                       className={`fw-500 fs-14 text-white text-decoration-none rounded-4 ${styles.projectsLink}`}
-                     >
-                       Projects
-                     </Link>
-                     <Link
-                       to={`/organisations/${context.organisation.slug}`}
-                       className={`fw-500 fs-14 text-primary bg-surface-2 border text-decoration-none rounded-4 ${styles.teamLink}`}
-                     >
-                       Team
-                     </Link>
-                   </div>
-                </div>
-              ) : (
-                <p>
-                  No organisation selected. <Link to="/federations">Browse organisations</Link> to get started.
-                </p>
-              )}
-            </div>
-
-            <div className="mt-24">
-              <UpcomingMatchesWidget />
-
-              {/* Create Content — quick access to content generation */}
-              {!isPlayer && (
-                <div className="mt-16 mb-16 p-16 bg-surface rounded-8 border text-primary">
-                  <div className="flex-between mb-12">
-                    <h3 className="m-0 fs-16">Create Content</h3>
-                    {matchId && (
-                      <Link
-                        to={`/matches/${matchId}?tab=content`}
-                        className="fs-12 fw-600 text-link text-decoration-none"
-                      >
-                        View all &rarr;
-                      </Link>
-                    )}
-                  </div>
-                  {matchId ? (
-                    <div className={`grid gap-8 ${styles.quickCreateGrid}`}>
-                      {QUICK_CREATE_TYPES.map((ct) => (
-                        <button
-                          key={ct.key}
-                          onClick={() => navigate(`/matches/${matchId}?tab=content`)}
-                          className={`flex-col flex-center gap-4 fs-12 fw-500 text-primary bg-surface-2 border rounded-8 cursor-pointer ${styles.quickCreateButton}`}
-                        >
-                          <span className="fs-24">{ct.icon}</span>
-                          <span className={`text-center ${styles.quickCreateLabel}`}>{ct.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="m-0 fs-13 opacity-70">
-                      Set a match as active to generate content. Go to a match and tap "Make active".
-                    </p>
+            {/* Quick Create Content */}
+            {!isPlayer && (
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.cardTitle}>Content maken</h3>
+                  {matchId && (
+                    <Link to={`/matches/${matchId}?tab=content`} className={styles.cardLink}>
+                      Alles <ChevronRight size={14} style={{ verticalAlign: 'middle' }} />
+                    </Link>
                   )}
                 </div>
-              )}
+                {matchId ? (
+                  <div className={styles.quickGrid}>
+                    {QUICK_CREATE_TYPES.map((ct) => (
+                      <button
+                        key={ct.key}
+                        className={styles.quickBtn}
+                        onClick={() => navigate(`/matches/${matchId}?tab=content`)}
+                      >
+                        <ct.Icon size={22} />
+                        <span>{ct.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>
+                    Stel een wedstrijd als actief in om content te genereren.
+                  </p>
+                )}
+              </div>
+            )}
 
-              <h3 className="text-primary fs-16">Your Profile</h3>
-              <div className="p-12 bg-surface-2 rounded-8 border text-primary">
-                <div className="flex-row flex-wrap gap-16">
-                   <div>
-                     <div className="fs-11 opacity-60 uppercase">Name</div>
-                     <div className="fw-500 fs-14">{user?.first_name || 'Not set'}</div>
-                   </div>
-                   <div>
-                     <div className="fs-11 opacity-60 uppercase">Email</div>
-                     <div className="fw-500 fs-14">{user?.email}</div>
-                   </div>
-                   <div className="hide-mobile">
-                     <div className="fs-11 opacity-60 uppercase">Role</div>
-                     <div className="fw-500 fs-14">{(user as any)?.role || 'Member'}</div>
-                   </div>
+            {/* Recents */}
+            {recents.length > 0 && (
+              <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                  <h3 className={styles.cardTitle}>Recent bezocht</h3>
+                  <Link to="/recents" className={styles.cardLink}>Alles</Link>
+                </div>
+                <div className={styles.recentsList}>
+                  {recents.slice(0, 6).map((item) => (
+                    <Link key={item.path} to={item.path} className={styles.recentPill} title={item.label}>
+                      {item.label}
+                    </Link>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Stats (compact 4-col row) */}
+            {org && (
+              <div className={styles.card}>
+                <div className={styles.statsRow}>
+                  <div className={styles.statBox}>
+                    <div className={styles.statNumber}>{org.clubs_count || org.project_count || 0}</div>
+                    <div className={styles.statLabel}>Clubs</div>
+                  </div>
+                  <div className={styles.statBox}>
+                    <div className={styles.statNumber}>{org.teams_count || 0}</div>
+                    <div className={styles.statLabel}>Teams</div>
+                  </div>
+                  <div className={styles.statBox}>
+                    <div className={styles.statNumber}>{org.matches_count || 0}</div>
+                    <div className={styles.statLabel}>Wedstrijden</div>
+                  </div>
+                  <div className={styles.statBox}>
+                    <div className={styles.statNumber}>{org.member_count || 0}</div>
+                    <div className={styles.statLabel}>Leden</div>
+                  </div>
+                </div>
+                <div className={styles.ctaRow}>
+                  <Link
+                    to={`/organisations/${org.slug}/projects`}
+                    className={`${styles.ctaBtn} ${styles.ctaPrimary}`}
+                  >
+                    <FolderOpen size={16} /> Projects
+                  </Link>
+                  <Link
+                    to={`/organisations/${org.slug}`}
+                    className={`${styles.ctaBtn} ${styles.ctaSecondary}`}
+                  >
+                    <Users size={16} /> Team
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Activity Sidebar */}
-          <div className="dashboard-sidebar flex-col gap-16">
-             <ActivityFeed
-                title="Upcoming Activities"
-                limit={5}
-                {...activityFilterProps}
-             />
+          {/* ── Sidebar (stacks below on mobile) ─────────────────── */}
+          <div>
+            <ActivityFeed
+              title="Activiteiten"
+              limit={5}
+              {...activityFilterProps}
+            />
 
-             {/* Transaction Widget - Only show if organisation context exists */}
-             {context.organisation?.id && (
-               <TransactionWidget
-                 organisationId={context.organisation.id.toString()}
-                 limit={3}
-               />
-             )}
+            {org?.id && (
+              <TransactionWidget
+                organisationId={org.id.toString()}
+                limit={3}
+              />
+            )}
           </div>
         </div>
       </div>
-      </PullToRefresh>
+    </PullToRefresh>
   );
 }
