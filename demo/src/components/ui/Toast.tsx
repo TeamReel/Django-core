@@ -12,6 +12,7 @@
  *   <ToastContainer />
  */
 import React, { createContext, useCallback, useContext, useState, useRef, useEffect } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -24,6 +25,8 @@ export interface ToastItem {
   id: string;
   message: string;
   type: ToastType;
+  /** Optional lucide icon rendered before the message. */
+  icon?: LucideIcon;
   /** Optional action buttons rendered below the message. */
   actions?: ToastAction[];
 }
@@ -116,7 +119,10 @@ export function ToastContainer() {
             animation: 'toast-slide-in 0.2s ease-out',
           }}
         >
-          {t.message}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {t.icon && <t.icon size={16} strokeWidth={2} style={{ flexShrink: 0 }} />}
+            <span>{t.message}</span>
+          </div>
           {t.actions && t.actions.length > 0 && (
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
               {t.actions.map((action, i) => (

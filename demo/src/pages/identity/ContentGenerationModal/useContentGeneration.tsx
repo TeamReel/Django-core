@@ -31,6 +31,7 @@ import {
 } from './contentGenerationVideoApi';
 import { useContentOptions } from './useContentOptions';
 import { useToast } from '../../../components/ui/Toast';
+import { CheckCircle, Clock, Eye, ListChecks } from 'lucide-react';
 
 export function useContentGeneration({
   isOpen,
@@ -282,6 +283,7 @@ export function useContentGeneration({
         pushToast({
           message: labels[subtype],
           type: 'info',
+          icon: Clock,
           actions: [{ label: 'Naar queue', onClick: () => navigate('/approvals') }],
         });
         window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
@@ -346,8 +348,9 @@ export function useContentGeneration({
         setSaveSuccess(true);
         const previewUrl = variant.presigned_url || generatedOutput?.presigned_url;
         pushToast({
-          message: `${selectedType?.label || 'Content'} opgeslagen! 🎉`,
+          message: `${selectedType?.label || 'Content'} opgeslagen!`,
           type: 'success',
+          icon: CheckCircle,
           actions: [
             ...(previewUrl ? [{ label: 'Bekijk', onClick: () => window.open(previewUrl, '_blank') }] : []),
             { label: 'Naar queue', onClick: () => navigate('/approvals') },
@@ -380,8 +383,9 @@ export function useContentGeneration({
     setSavingAsset(false);
     const previewUrl = generatedVariants[0]?.presigned_url || generatedOutput?.presigned_url;
     pushToast({
-      message: `${generatedVariants.length} varianten opgeslagen! 🎉`,
+      message: `${generatedVariants.length} varianten opgeslagen!`,
       type: 'success',
+      icon: CheckCircle,
       actions: [
         ...(previewUrl ? [{ label: 'Bekijk', onClick: () => window.open(previewUrl, '_blank') }] : []),
         { label: 'Naar queue', onClick: () => navigate('/approvals') },
