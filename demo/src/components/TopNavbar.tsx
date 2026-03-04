@@ -226,11 +226,11 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 </div>
               )}
 
-              {/* Queue Icon */}
+              {/* Approvals Icon */}
               <button
                 onClick={d.openQuickReview}
                 className={`nav-right-fixed nav-icon-button ${s.navIconBtn}`}
-                aria-label="Queue" title="Queue"
+                aria-label="Approvals" title="Approvals"
               >
                 <AppIcon icon={ListChecks} size={20} />
                 {d.queueBadgeCount > 0 && (
@@ -264,10 +264,12 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 </button>
               ) : null}
 
-              {/* Profile Avatar */}
-              <div className={`nav-right-fixed ${s.profileWrap}`}>
-                <ProfileAvatarDropdown isMobile={isMobile} onOpenSearch={() => d.setCommandOpen(true)} />
-              </div>
+              {/* Profile Avatar — desktop only (mobile uses bottom nav Profile tab) */}
+              {!isMobile && (
+                <div className={`nav-right-fixed ${s.profileWrap}`}>
+                  <ProfileAvatarDropdown isMobile={isMobile} onOpenSearch={() => d.setCommandOpen(true)} />
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-row gap-12">

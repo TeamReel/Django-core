@@ -51,6 +51,9 @@ export const ContentTemplatesPage = lazy(() => import('./pages/config/ContentTem
 export const WorkflowTemplatesPage = lazy(() => import('./pages/config/WorkflowTemplatesPage'));
 export const ApprovalsPage = lazy(() => import('./pages/ApprovalsPage'));
 
+// Profile Hub
+export const ProfileHubPage = lazy(() => import('./pages/ProfileHubPage'));
+
 // Section Landing Pages
 export const AppsPage = lazy(() => import('./pages/AppsPage'));
 export const ContentPage = lazy(() => import('./pages/ContentPage'));

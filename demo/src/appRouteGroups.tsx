@@ -62,6 +62,7 @@ import {
   WorkflowTemplatesPage,
   ApprovalsPage,
   PreferencesPage,
+  ProfileHubPage,
   MembershipsPage,
   BillingPage,
   UsageEventsPage,
@@ -222,8 +223,8 @@ export function getIdentityRoutes(): React.ReactNode[] {
     <Route key="i-users" path="/users" element={<OrgAdminRoute><UsersPage /></OrgAdminRoute>} />,
     <Route key="i-user-detail" path="/users/:userId" element={<OrgAdminRoute><UserDetailPage /></OrgAdminRoute>} />,
 
-    // Profile redirect
-    <Route key="i-profile" path="/profile" element={<ProtectedRoute><Navigate to="/preferences?tab=profile" replace /></ProtectedRoute>} />,
+    // Profile hub
+    <Route key="i-profile" path="/profile" element={<ProtectedRoute><ProfileHubPage /></ProtectedRoute>} />,
   ];
 }
 

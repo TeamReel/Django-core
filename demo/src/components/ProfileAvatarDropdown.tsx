@@ -20,6 +20,7 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { User, Settings, Wallet, Moon, Sun, LogOut } from 'lucide-react';
 import { useAuth, useSignOut } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
 import styles from './ProfileAvatarDropdown.module.css';
@@ -184,7 +185,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             onClick={() => handleNavigate('/preferences?tab=profile')}
             className={styles.menuItem}
           >
-            <span>👤</span>
+            <User size={16} />
             <span>My Profile</span>
           </button>
 
@@ -193,7 +194,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             onClick={() => handleNavigate('/preferences')}
             className={styles.menuItem}
           >
-            <span>⚙️</span>
+            <Settings size={16} />
             <span>Preferences</span>
           </button>
 
@@ -202,7 +203,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             onClick={() => handleNavigate('/credits?wallet=personal')}
             className={styles.menuItem}
           >
-            <span>💳</span>
+            <Wallet size={16} />
             <span>Credits</span>
           </button>
 
@@ -212,7 +213,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             onClick={toggleTheme}
             className={styles.menuItem}
           >
-            <span>{mode === 'light' ? '🌙' : '☀️'}</span>
+            {mode === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             <span>{mode === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
           </button>
 
@@ -227,7 +228,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
             className={styles.signOutItem}
             data-loading={signOutLoading || undefined}
           >
-            <span>🚪</span>
+            <LogOut size={16} />
             <span>{signOutLoading ? 'Logging out...' : 'Sign out'}</span>
           </button>
         </div>

@@ -1,18 +1,19 @@
 /**
  * MobileBottomNav - Bottom tab bar for mobile navigation (4 + 1 pattern)
  *
- * Layout: [ Home ] [ Season ] [ + Create ] [ Match ] [ Gallery ]
+ * Layout: [ Home ] [ Season ] [ + Create ] [ Gallery ] [ Profile ]
  *
  * The center + button is raised above the bar and opens the MatchWizard
  * as a modal bottom sheet. The other 4 tabs navigate to core destinations.
  * Active tab shows a filled pill background in the theme primary color.
  *
- * Uses the active context API to resolve match and season paths.
+ * Uses the active context API to resolve season paths.
+ * Match access: via Dashboard card + floating banner on matchday.
  * Only visible on mobile (<640px).
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, CalendarDays, Plus, Swords, Clapperboard } from 'lucide-react';
+import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
 import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
@@ -23,19 +24,16 @@ export default function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const haptic = useHapticFeedback();
-  const { orgSlug, clubSlugOrId, teamSlugOrId, matchId: urlMatchId } = useAppSelection();
+  const { orgSlug, clubSlugOrId, teamSlugOrId } = useAppSelection();
 
-  const [activeMatchSlug, setActiveMatchSlug] = useState<string | null>(null);
   const [activeSeasonSlug, setActiveSeasonSlug] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
 
   const fetchContext = useCallback(async () => {
     try {
       const ctx = await getActiveContext();
-      setActiveMatchSlug(ctx?.match?.slug || ctx?.match?.id || null);
       setActiveSeasonSlug(ctx?.season?.slug || ctx?.season?.id || null);
     } catch {
-      setActiveMatchSlug(null);
       setActiveSeasonSlug(null);
     }
   }, []);
@@ -61,13 +59,6 @@ export default function MobileBottomNav() {
       ? `/${orgSlug}/${clubSlugOrId}`
       : '/dashboard';
 
-  const resolvedMatchSlug = activeMatchSlug || urlMatchId;
-  const matchPath = resolvedMatchSlug
-    ? `/matches/${resolvedMatchSlug}`
-    : teamPath !== '/dashboard'
-      ? teamPath
-      : '/dashboard';
-
   // Season tab: active season under the current team, or fallback to team page
   const seasonPath = activeSeasonSlug && teamPath !== '/dashboard'
     ? `${teamPath}/${activeSeasonSlug}`
@@ -78,8 +69,8 @@ export default function MobileBottomNav() {
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
     { id: 'season', icon: CalendarDays, label: 'Season', path: seasonPath },
     // center + button is rendered separately
-    { id: 'match', icon: Swords, label: 'Match', path: matchPath },
-    { id: 'gallery', icon: Clapperboard, label: 'Gallery', path: '/studio' },
+    { id: 'gallery', icon: Images, label: 'Gallery', path: '/studio' },
+    { id: 'profile', icon: UserCircle, label: 'Profile', path: '/profile' },
   ];
 
   const isActive = (tab: typeof tabs[0]) => {
@@ -91,20 +82,18 @@ export default function MobileBottomNav() {
     }
 
     if (tab.id === 'season') {
-      // Active when on a team page that has a season segment (4-5 path segments)
+      // Active when on a team/season/competition path (4-6 path segments in vanity URLs)
       const segs = currentPath.split('/').filter(Boolean);
-      if (segs.length === 4 || segs.length === 5) return true;
+      if (segs.length >= 4 && segs.length <= 6) return true;
       return false;
-    }
-
-    if (tab.id === 'match') {
-      if (currentPath.startsWith('/matches/')) return true;
-      const segs = currentPath.split('/').filter(Boolean);
-      return segs.length >= 6;
     }
 
     if (tab.id === 'gallery') {
       return currentPath.startsWith('/studio');
+    }
+
+    if (tab.id === 'profile') {
+      return currentPath.startsWith('/profile') || currentPath.startsWith('/preferences') || currentPath.startsWith('/credits');
     }
 
     return currentPath.startsWith(tab.path);
@@ -158,7 +147,7 @@ export default function MobileBottomNav() {
           </button>
         </div>
 
-        {/* Right tabs: Match, Gallery */}
+        {/* Right tabs: Gallery, Profile */}
         {tabs.slice(2).map(renderTab)}
       </nav>
 
