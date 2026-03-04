@@ -14,7 +14,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
-import LoadingState from '../../components/LoadingState';
+import { SkeletonDetailPage } from '../../components/Skeleton';
 import MobileTabBar from '../../components/MobileTabBar';
 import { WorkflowPanel } from '../../components/Workflows';
 import { useGenerationJobs } from '../../hooks/useGenerationJobs';
@@ -177,7 +177,7 @@ export default function ProjectSeasonMemberDetailPage() {
       />
 
       <PageContent>
-        {loading && <LoadingState message="Loading member…" />}
+        {loading && <SkeletonDetailPage tabCount={0} contentLines={5} />}
         {!loading && error && <Alert variant="error">{error}</Alert>}
 
         {!loading && !error && membership && (

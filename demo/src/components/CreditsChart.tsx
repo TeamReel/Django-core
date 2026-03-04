@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect, useState } from 'react';
-import LoadingState from './LoadingState';
+import Skeleton from './Skeleton';
 import { LazyChartBoundary } from './LazyChartBoundary';
 import type { ChartData, ChartOptions, CreditsTransaction } from '../types/chart';
 
@@ -126,7 +126,7 @@ export const CreditsChart: React.FC<CreditsChartProps> = ({
   }, [transactions]);
 
   if (!chartData || !chartOptions) {
-    return <LoadingState message="Preparing chart..." />;
+    return <Skeleton variant="card" width="100%" height="256px" />;
   }
 
   return (

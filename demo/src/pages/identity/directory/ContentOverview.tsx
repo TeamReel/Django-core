@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
+import { SkeletonList } from '../../../components/Skeleton';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
 
@@ -114,7 +114,7 @@ export const ContentOverview: React.FC = () => {
     };
   }, [jobs]);
 
-  if (loading) return <LoadingState message="Loading content overview…" />;
+  if (loading) return <SkeletonList count={3} variant="card" />;
   if (error) return <div className="p-20 text-error">Error: {error}</div>;
 
   return (

@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import LoadingState from './LoadingState';
+import { SkeletonDashboard } from './Skeleton';
 
 interface PermissionGuardProps {
   children: React.ReactNode;
@@ -49,7 +49,7 @@ export function AdminOnlyRoute({ children }: PermissionGuardProps) {
   const { isSystemAdmin, isLandAdmin } = useUserRole();
 
   if (isLoading) {
-    return <LoadingState message="Checking permissions..." />;
+    return <SkeletonDashboard />;
   }
 
   if (!user) {
@@ -72,7 +72,7 @@ export function OrgAdminRoute({ children }: PermissionGuardProps) {
   const { isSystemAdmin, isOrgAdmin } = useUserRole();
 
   if (isLoading) {
-    return <LoadingState message="Checking permissions..." />;
+    return <SkeletonDashboard />;
   }
 
   if (!user) {
@@ -94,7 +94,7 @@ export function SecurityRoute({ children }: PermissionGuardProps) {
   const { isSystemAdmin, hasOrgRole } = useUserRole();
 
   if (isLoading) {
-    return <LoadingState message="Checking permissions..." />;
+    return <SkeletonDashboard />;
   }
 
   if (!user) {
@@ -116,7 +116,7 @@ export function ProtectedRoute({ children }: PermissionGuardProps) {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return <LoadingState message="Checking authentication..." />;
+    return <SkeletonDashboard />;
   }
 
   if (!user) {

@@ -8,7 +8,7 @@
  */
 import React from 'react';
 import { Alert } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
+import { SkeletonList } from '../../../components/Skeleton';
 import UserDetailModal from '../UserDetailModal';
 import UserEditModal from '../UserEditModal';
 import AddMemberModal from '../AddMemberModal';
@@ -84,7 +84,7 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
         teamProjectId={preselectedTeamId}
       />
 
-      {isLoading && <LoadingState message="Loading users..." />}
+      {isLoading && <SkeletonList count={5} variant="row" />}
       {error && <Alert variant="error">{error}</Alert>}
       {!isLoading && !error && !hasUsers && (
         <Alert variant="info">No users found.</Alert>

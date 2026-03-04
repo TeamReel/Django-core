@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Alert, Card } from '@django-core/design-system';
-import LoadingState from './LoadingState';
+import { SkeletonTablePage } from './Skeleton';
 import { Table } from '@/shims/design-system';
 
 export interface DirectoryTableShellProps {
@@ -31,17 +31,16 @@ export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
   isLoading,
   error,
   domainLoading,
-  domainLoadingMessage,
   emptyMessage,
   itemCount,
   children,
 }) => (
   <>
-    {isLoading && <LoadingState message="Loading options..." />}
+    {isLoading && <SkeletonTablePage rows={4} columns={4} showFilters={false} />}
     {error && <Alert variant="error">{error}</Alert>}
 
     {!isLoading && !error && domainLoading && (
-      <LoadingState message={domainLoadingMessage} />
+      <SkeletonTablePage rows={3} columns={4} showFilters={false} />
     )}
 
     {!isLoading && !error && !domainLoading && itemCount === 0 && (

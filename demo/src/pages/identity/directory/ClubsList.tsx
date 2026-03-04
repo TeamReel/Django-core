@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert, Card, Button, Badge } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
+import { SkeletonList } from '../../../components/Skeleton';
 import { Table } from '@/shims/design-system';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
@@ -68,7 +68,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       </div>
 
       {/* Loading / Error / Empty */}
-      {d.isLoading && <LoadingState message="Loading clubs..." />}
+      {d.isLoading && <SkeletonList count={4} variant="row" />}
       {d.error && <Alert variant="error">{d.error}</Alert>}
       {!d.isLoading && !d.error && d.filteredClubs.length === 0 && (
         <Alert variant="info">No clubs match the current filters.</Alert>

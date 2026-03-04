@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core/page-templates';
 
-import LoadingState from '../../components/LoadingState';
+import { SkeletonList } from '../../components/Skeleton';
 import { Table } from '../../shims/design-system';
 import PeriodEditModal from '../identity/PeriodEditModal';
 import { periodPathKey } from '../../utils/periodPath';
@@ -120,7 +120,7 @@ export default function ProjectSeasonSquadPage() {
         />
 
         <PageContent>
-          {d.loading && <LoadingState message="Loading squad..." />}
+          {d.loading && <SkeletonList count={5} variant="row" />}
           {!d.loading && d.error && <Alert variant="error">{d.error}</Alert>}
 
           {!d.loading && !d.error && (

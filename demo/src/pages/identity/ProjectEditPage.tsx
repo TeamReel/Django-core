@@ -13,6 +13,7 @@ import {
   BreadcrumbContextSwitcher,
   useBreadcrumbContextSwitcher,
 } from '../../shims/page-templates';
+import { SkeletonDetailPage } from '../../components/Skeleton';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Project } from '../../types';
@@ -165,19 +166,7 @@ export const ProjectEditPage: React.FC = () => {
   if (loading || context.isLoading) {
     return (
       <div className="p-6">
-        <PageHeader
-          title="Edit Project"
-          breadcrumbs={[
-            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: resolvedOrg?.name || 'Federation', onClick: () => navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}`) },
-            { label: 'Edit', current: true },
-          ]}
-        />
-        <PageContent>
-          <Card>
-            <div className="text-center py-8 text-gray-500">Loading...</div>
-          </Card>
-        </PageContent>
+        <SkeletonDetailPage tabCount={0} contentLines={6} />
       </div>
     );
   }

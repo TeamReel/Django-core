@@ -239,4 +239,161 @@ export function SkeletonGrid({
   );
 }
 
+/**
+ * SkeletonPageHeader - Matches PageHeader layout (title + subtitle + actions).
+ */
+export function SkeletonPageHeader({
+  showBreadcrumbs = true,
+  showSubtitle = true,
+  showActions = true,
+  className,
+}: {
+  showBreadcrumbs?: boolean;
+  showSubtitle?: boolean;
+  showActions?: boolean;
+  className?: string;
+}): JSX.Element {
+  return (
+    <div className={className}>
+      {showBreadcrumbs && (
+        <div className={styles.breadcrumbs}>
+          <Skeleton width="60px" height="12px" />
+          <Skeleton width="4px" height="12px" borderRadius="2px" />
+          <Skeleton width="80px" height="12px" />
+          <Skeleton width="4px" height="12px" borderRadius="2px" />
+          <Skeleton width="100px" height="12px" />
+        </div>
+      )}
+      <div className={styles.headerRow}>
+        <div className={styles.flexFill}>
+          <Skeleton width="240px" height="28px" borderRadius="6px" className={styles.mb6} />
+          {showSubtitle && <Skeleton width="180px" height="14px" />}
+        </div>
+        {showActions && (
+          <div className={styles.headerActions}>
+            <Skeleton variant="button" width="80px" />
+            <Skeleton variant="button" width="80px" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * SkeletonTabBar - Horizontal tab bar placeholder.
+ */
+export function SkeletonTabBar({
+  count = 4,
+  className,
+}: {
+  count?: number;
+  className?: string;
+}): JSX.Element {
+  return (
+    <div className={`${styles.tabBar} ${className ?? ''}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <Skeleton key={i} width={`${60 + Math.random() * 40}px`} height="32px" borderRadius="6px" />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * SkeletonDetailPage - Full detail page skeleton (header + tabs + content card).
+ * Matches the layout of ClubOrganisationDetailPage, MemberDetailPage, etc.
+ */
+export function SkeletonDetailPage({
+  tabCount = 5,
+  contentLines = 4,
+  showImage = false,
+  className,
+}: {
+  tabCount?: number;
+  contentLines?: number;
+  showImage?: boolean;
+  className?: string;
+}): JSX.Element {
+  return (
+    <div className={`${styles.detailPage} ${className ?? ''}`}>
+      <SkeletonPageHeader />
+      <SkeletonTabBar count={tabCount} />
+      <div className={styles.detailContent}>
+        {showImage && (
+          <Skeleton width="100%" height="200px" borderRadius="12px" className={styles.mb6} />
+        )}
+        <SkeletonList count={2} variant="row" gap={12} />
+        <div style={{ marginTop: 16 }}>
+          <Skeleton variant="text" lines={contentLines} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * SkeletonTablePage - Table/list page skeleton (header + filters + table rows).
+ * Matches DirectoryTableShell layout.
+ */
+export function SkeletonTablePage({
+  rows = 5,
+  columns = 4,
+  showFilters = true,
+  className,
+}: {
+  rows?: number;
+  columns?: number;
+  showFilters?: boolean;
+  className?: string;
+}): JSX.Element {
+  return (
+    <div className={`${styles.tablePage} ${className ?? ''}`}>
+      {showFilters && (
+        <div className={styles.filterBar}>
+          <Skeleton width="200px" height="36px" borderRadius="6px" />
+          <Skeleton width="120px" height="36px" borderRadius="6px" />
+          <Skeleton width="120px" height="36px" borderRadius="6px" />
+        </div>
+      )}
+      <div className={styles.tableContainer}>
+        {/* Table header */}
+        <div className={styles.tableRow} style={{ opacity: 0.7 }}>
+          {Array.from({ length: columns }).map((_, i) => (
+            <Skeleton key={i} width={i === 0 ? '30%' : `${70 / (columns - 1)}%`} height="14px" />
+          ))}
+        </div>
+        {/* Table rows */}
+        {Array.from({ length: rows }).map((_, rowIdx) => (
+          <div key={rowIdx} className={styles.tableRow}>
+            {Array.from({ length: columns }).map((_, colIdx) => (
+              <Skeleton
+                key={colIdx}
+                width={colIdx === 0 ? '30%' : `${70 / (columns - 1)}%`}
+                height="16px"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * SkeletonDashboard - Dashboard page skeleton (widgets grid).
+ */
+export function SkeletonDashboard({ className }: { className?: string }): JSX.Element {
+  return (
+    <div className={`${styles.dashboard} ${className ?? ''}`}>
+      <SkeletonPageHeader showBreadcrumbs={false} showActions={false} />
+      <div className={styles.dashboardGrid}>
+        <SkeletonCard showImage={false} lines={3} />
+        <SkeletonCard showImage={false} lines={2} />
+        <SkeletonCard showImage lines={2} />
+        <SkeletonCard showImage={false} lines={4} />
+      </div>
+    </div>
+  );
+}
+
 export default Skeleton;

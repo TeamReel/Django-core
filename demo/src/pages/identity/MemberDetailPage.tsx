@@ -13,7 +13,7 @@ import {
   useBreadcrumbContextSwitcher,
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import LoadingState from '../../components/LoadingState';
+import { SkeletonDetailPage } from '../../components/Skeleton';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
 export const MemberDetailPage: React.FC = () => {
@@ -160,7 +160,7 @@ export const MemberDetailPage: React.FC = () => {
   if (waitingForOrgContext) {
     return (
       <div className="p-6">
-        <LoadingState message="Loading organisation context..." />
+        <SkeletonDetailPage tabCount={4} />
       </div>
     );
   }
@@ -217,23 +217,7 @@ export const MemberDetailPage: React.FC = () => {
   };
 
   if (loading) {
-    return (
-      <>
-        <div>
-          <PageHeader
-            title="Member Details"
-            breadcrumbs={[
-              { label: 'Home', onClick: () => navigate('/') },
-              { label: 'Organisations', onClick: () => navigate('/federations') },
-              { label: 'Loading...', current: true },
-            ]}
-          />
-          <PageContent>
-            <Card>Loading...</Card>
-          </PageContent>
-        </div>
-      </>
-    );
+    return <SkeletonDetailPage tabCount={4} />;
   }
 
   if (error || !member) {

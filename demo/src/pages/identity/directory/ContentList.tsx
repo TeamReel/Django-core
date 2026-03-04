@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
+import { SkeletonList } from '../../../components/Skeleton';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
 
@@ -152,7 +152,7 @@ export const ContentList: React.FC = () => {
 
   const totalCost = useMemo(() => filtered.reduce((s, j) => s + (j.estimated_cost_eur ?? 0), 0), [filtered]);
 
-  if (loading) return <LoadingState message="Loading content…" />;
+  if (loading) return <SkeletonList count={4} variant="card" />;
   if (error) return <div className="p-20 text-error">Error: {error}</div>;
 
   return (

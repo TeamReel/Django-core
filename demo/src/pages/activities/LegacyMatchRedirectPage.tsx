@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button } from '@django-core/design-system';
 import { PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
-import LoadingState from '../../components/LoadingState';
+import { SkeletonDetailPage } from '../../components/Skeleton';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
@@ -262,7 +262,7 @@ export default function LegacyMatchRedirectPage() {
     return (
       <div className="p-6">
         <PageContent>
-          <LoadingState message="Redirecting to match…" />
+          <SkeletonDetailPage tabCount={3} />
         </PageContent>
       </div>
     );

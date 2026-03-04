@@ -92,3 +92,126 @@
 .mb6 {
   margin-bottom: 6px;
 }
+
+/* ── SkeletonPageHeader ── */
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── SkeletonTabBar ── */
+
+.tabBar {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--app-border);
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+/* ── SkeletonDetailPage ── */
+
+.detailPage {
+  padding: 24px;
+}
+
+.detailContent {
+  padding: 20px;
+  background-color: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+}
+
+/* ── SkeletonTablePage ── */
+
+.tablePage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterBar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tableContainer {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  overflow: hidden;
+}
+
+.tableRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+/* ── SkeletonDashboard ── */
+
+.dashboard {
+  padding: 24px;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .detailPage {
+    padding: 16px;
+  }
+
+  .dashboard {
+    padding: 16px;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .headerActions {
+    display: none;
+  }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer {
+    animation: none;
+    opacity: 0.6;
+  }
+}

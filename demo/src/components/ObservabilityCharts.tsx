@@ -1,6 +1,6 @@
 import React, { lazy, useEffect, useState } from 'react';
 import { LazyChartBoundary } from './LazyChartBoundary';
-import LoadingState from './LoadingState';
+import Skeleton from './Skeleton';
 import type { ChartData, ChartOptions, ObservabilityMetrics } from '../types/chart';
 
 // Lazy load Chart.js components
@@ -209,7 +209,7 @@ export const ObservabilityCharts: React.FC<ObservabilityChartsProps> = ({
   }, [metricsHistory, currentMetrics]);
 
   if (!responseTimeData || !errorRateData || !connectionsData || !chartOptions) {
-    return <LoadingState message="Preparing charts..." />;
+    return <Skeleton variant="card" width="100%" height="300px" />;
   }
 
   return (

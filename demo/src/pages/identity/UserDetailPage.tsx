@@ -6,7 +6,7 @@ import React from 'react';
 import { Alert, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 
-import LoadingState from '../../components/LoadingState';
+import { SkeletonDetailPage } from '../../components/Skeleton';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
 import { useUserDetailData } from './useUserDetailData';
 import { UserDetailModals } from './UserDetailModals';
@@ -26,7 +26,7 @@ const UserDetailPage: React.FC = () => {
     handleDeleteUser, currentUserIdForTxn, targetUserIdForTxn,
   } = data;
 
-  if (loading) return <LoadingState message="Loading user..." />;
+  if (loading) return <SkeletonDetailPage tabCount={5} />;
   if (error) return <Alert variant="error" title="Error">{error}</Alert>;
   if (!user) return <div>User not found</div>;
 

@@ -10,7 +10,7 @@ import InviteMemberModal from './InviteMemberModal';
 import AddMemberModal from './AddMemberModal';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LinkUserModal from './LinkUserModal';
-import LoadingState from '../../components/LoadingState';
+import { SkeletonTablePage } from '../../components/Skeleton';
 import { useUsersData } from './useUsersData';
 import { UsersFilterBar } from './UsersFilterBar';
 import { UsersTable } from './UsersTable';
@@ -19,7 +19,7 @@ export default function UsersPage() {
   const d = useUsersData();
 
   if (d.waitingForOrgContext) {
-    return <LoadingState message="Loading organisation context..." />;
+    return <SkeletonTablePage rows={5} columns={4} />;
   }
 
   return (
@@ -77,7 +77,7 @@ export default function UsersPage() {
       )}
 
       {d.isLoading ? (
-        <div>Loading users...</div>
+        <SkeletonTablePage rows={5} columns={4} showFilters={false} />
       ) : (
         <Card>
           <UsersTable

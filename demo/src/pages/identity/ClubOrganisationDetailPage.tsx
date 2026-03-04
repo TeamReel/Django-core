@@ -19,6 +19,7 @@ import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
 import { ClubOverviewTab } from './ClubOverviewTab';
 import { ClubHierarchyTab } from './ClubHierarchyTab';
 import { AssetsTab } from '../../components/AssetsTab';
+import { SkeletonDetailPage } from '../../components/Skeleton';
 import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
 import { ClubKitsTab } from './ClubKitsTab';
 import { getCsrfToken } from './clubOrgDetailHelpers';
@@ -56,14 +57,7 @@ export default function ClubOrganisationDetailPage() {
   if (loading) {
     return (
       <div className="p-6 club-detail-page">
-        <div>
-          <PageHeader title="Club" />
-          <PageContent>
-            <Card>
-              <div className="text-center py-8 text-gray-500">Loading club details...</div>
-            </Card>
-          </PageContent>
-        </div>
+        <SkeletonDetailPage tabCount={6} />
       </div>
     );
   }

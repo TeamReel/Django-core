@@ -1,6 +1,6 @@
 import React from 'react';
 import { Alert } from '@django-core/design-system';
-import LoadingState from '../../../components/LoadingState';
+import { SkeletonList } from '../../../components/Skeleton';
 import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
@@ -45,7 +45,7 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
         onCreateTeam={() => d.setIsCreateModalOpen(true)}
       />
 
-      {d.isLoading && <LoadingState message="Loading teams..." />}
+      {d.isLoading && <SkeletonList count={4} variant="row" />}
       {d.error && <Alert variant="error">{d.error}</Alert>}
 
       {!d.isLoading && !d.error && d.filteredTeams.length === 0 && (

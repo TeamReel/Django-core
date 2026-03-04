@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import { useAuth } from '@django-core/auth-ui';
-import LoadingState from './components/LoadingState';
+import { SkeletonDashboard } from './components/Skeleton';
 import { ProtectedRoute } from './components/PermissionGuards';
 
 // Critical pages (eager load for first-paint performance)
@@ -45,7 +45,7 @@ export default function App() {
   const { user } = useAuth();
 
   return (
-    <Suspense fallback={<LoadingState message="Loading..." />}>
+    <Suspense fallback={<SkeletonDashboard />}>
     <Routes>
       {/* Redirect root based on auth state */}
       <Route

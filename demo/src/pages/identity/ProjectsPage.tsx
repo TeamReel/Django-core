@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Alert, Card } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import LoadingState from '../../components/LoadingState';
+import { SkeletonTablePage } from '../../components/Skeleton';
 import WorkFilterBar from '../work/WorkFilterBar';
 import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -33,7 +33,7 @@ export const ProjectsPage: React.FC = () => {
 
   // Guard: wait for context switcher to load org
   if (orgId && context.isLoading) {
-    return <LoadingState message="Loading organisation context..." />;
+    return <SkeletonTablePage rows={5} columns={4} />;
   }
 
   const filtered = filterProjects(d);

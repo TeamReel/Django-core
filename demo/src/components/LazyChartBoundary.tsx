@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import LoadingState from './LoadingState';
+import Skeleton from './Skeleton';
 
 interface LazyChartBoundaryProps {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ interface LazyChartBoundaryProps {
  */
 export const LazyChartBoundary: React.FC<LazyChartBoundaryProps> = ({
   children,
-  fallback = <LoadingState message="Loading chart..." />
+  fallback = <Skeleton variant="card" width="100%" height="200px" />
 }) => {
   return (
     <Suspense fallback={fallback}>
