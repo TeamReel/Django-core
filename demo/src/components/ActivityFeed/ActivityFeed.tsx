@@ -104,11 +104,11 @@ const ActivityItem: React.FC<{ activity: Activity; onClick?: () => void }> = ({ 
             {relativeTime}
           </span>
           <span className="flex-row gap-4">
-            <span>🕒</span> {timeStr}
+            <span></span> {timeStr}
           </span>
           {activity.location && (
              <span className={`flex-row gap-4 overflow-hidden ${styles.locationText}`}>
-               <span>📍</span> {activity.location}
+               <span></span> {activity.location}
              </span>
           )}
         </div>

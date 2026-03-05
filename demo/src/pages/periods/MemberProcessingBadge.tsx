@@ -1,4 +1,5 @@
 import React from 'react';
+import SlotIcon from '../../components/SlotIcon';
 import {
   normalizeVariantValue,
   getProcessingStateLabel,
@@ -27,7 +28,7 @@ export function ProcessingBadge({ value }: { value: AssetVariantRaw | null | und
       color: color,
       border: `1px solid ${color}44`,
     }}>
-      {icon} {label}
+      <SlotIcon name={icon} size={12} /> {label}
     </span>
   );
 }

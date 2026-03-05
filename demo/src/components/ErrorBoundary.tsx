@@ -98,7 +98,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
         <div className={`flex-col ${styles.root}`}>
           <div className={`max-w-800 mx-auto ${styles.content}`}>
             <div className={`text-center ${styles.header}`}>
-              <div className={`mb-24 ${styles.icon}`}>⚠️</div>
+              <div className={`mb-24 ${styles.icon}`}></div>
 
               <h1 className={`mb-16 text-error ${styles.statusCode}`}>
                 500

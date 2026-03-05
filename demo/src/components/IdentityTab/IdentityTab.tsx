@@ -380,13 +380,13 @@ export function IdentityTab({
               <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited readOnly aspectRatio="1 / 1" />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_home_combined'); return (
-              <AssetCard label="🏠 Thuistenue" assetType="kit_home_combined" asset={e.asset} inherited readOnly />
+              <AssetCard label="Thuistenue" assetType="kit_home_combined" asset={e.asset} inherited readOnly />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_away_combined'); return (
-              <AssetCard label="✈️ Uittenue" assetType="kit_away_combined" asset={e.asset} inherited readOnly />
+              <AssetCard label="Uittenue" assetType="kit_away_combined" asset={e.asset} inherited readOnly />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_goalkeeper_combined'); return (
-              <AssetCard label="🧤 Keeper" assetType="kit_goalkeeper_combined" asset={e.asset} inherited readOnly />
+              <AssetCard label="Keeper" assetType="kit_goalkeeper_combined" asset={e.asset} inherited readOnly />
             ); })()}
           </AssetGrid>
         </Section>
@@ -404,7 +404,7 @@ export function IdentityTab({
               <AssetCard label="Logo" assetType="logo" asset={e.asset} inherited inheritedFrom="Team" readOnly aspectRatio="1 / 1" />
             ); })()}
             {(() => { const e = getEffectiveAsset('kit_home_combined'); return (
-              <AssetCard label="🏠 Tenue (compleet)" assetType="kit_home_combined" asset={e.asset} inherited inheritedFrom="Seizoen" readOnly />
+              <AssetCard label="Tenue (compleet)" assetType="kit_home_combined" asset={e.asset} inherited inheritedFrom="Seizoen" readOnly />
             ); })()}
             {(() => { const e = getEffectiveAsset('sponsor_logo'); return (
               <AssetCard label="Sponsor" assetType="sponsor_logo" asset={e.asset} inherited inheritedFrom="Team" readOnly aspectRatio="1 / 1" />

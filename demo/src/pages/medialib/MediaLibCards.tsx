@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Text, Badge } from '@django-core/design-system';
 import { getContentType, getHierarchyLevel, CONTENT_TYPE_LABELS, type BrandAsset } from '../../hooks/useBrandAssets';
+import SlotIcon from '../../components/SlotIcon';
 import { getFileIcon, formatFileSize, type FileAsset } from '../../hooks/useFileAssets';
 import {
   type PreviewItem,
@@ -193,7 +194,7 @@ export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (i
   return (
     <Card className="p-0 overflow-hidden flex-col">
       <div className={`flex-center border-bottom ${styles.fileIconContainer}`}>
-        <span className={styles.fileIcon}>{getFileIcon(file.mime_type)}</span>
+        <span className={styles.fileIcon}><SlotIcon name={getFileIcon(file.mime_type)} size={24} /></span>
       </div>
       <div className="p-12 flex-col gap-6 flex-1">
         <Text weight="bold" size="sm" className="truncate">

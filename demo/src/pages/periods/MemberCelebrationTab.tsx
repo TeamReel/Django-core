@@ -60,10 +60,10 @@ export function MemberCelebrationTab({
           const hasPlayerInTenue = Boolean(playerInTenueUrl);
 
           const celebrationVariantDefs = [
-            { id: 'arms_wide', icon: '🙌', label: 'Armen wijd' },
-            { id: 'fist_pump', icon: '✊', label: 'Vuist omhoog' },
-            { id: 'point_to_sky', icon: '☝️', label: 'Wijs naar hemel' },
-            { id: 'slide', icon: '🛝', label: 'Knieën slide' },
+            { id: 'arms_wide', icon: 'move', label: 'Armen wijd' },
+            { id: 'fist_pump', icon: 'hand', label: 'Vuist omhoog' },
+            { id: 'point_to_sky', icon: 'arrow-up', label: 'Wijs naar hemel' },
+            { id: 'slide', icon: 'arrow-down-right', label: 'Knieën slide' },
           ];
 
           return (
@@ -75,8 +75,8 @@ export function MemberCelebrationTab({
                   <span className={styles.kitIconFallback}>{kit.icon}</span>
                 )}
                 <div className={s.sectionTitle}>{kit.label}</div>
-                {hasPlayerInTenue && <Badge variant="default" className={styles.badgeAutoLeft}>✓ Player in Tenue</Badge>}
-                {!hasPlayerInTenue && <Badge variant="info" className={styles.badgeAutoLeft}>⚠️ Genereer eerst Player in Tenue</Badge>}
+                {hasPlayerInTenue && <Badge variant="default" className={styles.badgeAutoLeft}>Player in Tenue</Badge>}
+                {!hasPlayerInTenue && <Badge variant="info" className={styles.badgeAutoLeft}>Genereer eerst Player in Tenue</Badge>}
               </div>
 
               <div className={`${s.variantGrid} ${styles.variantGridWrapper}`} data-disabled={!hasPlayerInTenue || undefined}>
@@ -130,7 +130,7 @@ export function MemberCelebrationTab({
                                     startProcessingPoll('celebration', kit.id, variant.id);
                                   }
                                 }} className={s.btnProcess}>
-                                  {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                  {variantLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                                 </Button>
                               )}
                               {isCancellingOrProcessing && (
@@ -151,10 +151,10 @@ export function MemberCelebrationTab({
                                     }
                                   }
                                 }} className={s.btnCancelOrange}>
-                                  {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                                  {normalizedVariant?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
                                 </Button>
                               )}
-                              {variantLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                              {variantLineupReady && <span className={s.readyIndicator}>Ready</span>}
                               <Button size="sm" variant="ghost" onClick={async () => {
                                 if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
                                 const newVV: VideoVariantsMap = { ...videoVariants, celebration: { ...videoVariants.celebration } };
@@ -162,7 +162,7 @@ export function MemberCelebrationTab({
                                 setVideoVariants(newVV);
                                 const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                 await handleMetadataUpdate(updatedMeta);
-                              }} className={s.btnDelete}>🗑️</Button>
+                              }} className={s.btnDelete}>Verwijder</Button>
                             </>
                           ) : (
                             <Button size="sm" onClick={() => openAiModal('member_goal_celebration', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={`${s.btnSmall} ${styles.btnFullWidth}`}>

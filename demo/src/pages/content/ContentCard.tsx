@@ -86,7 +86,7 @@ export function ContentCard({
 
           {(clubName || teamName || projectName || activityTitle) && (
             <div className="gallery-card-verbose flex-row flex-wrap gap-4">
-              {clubName && <span className="flex-row gap-2 fs-11 text-secondary">🏟️ {clubName}</span>}
+              {clubName && <span className="flex-row gap-2 fs-11 text-secondary">{clubName}</span>}
               {teamName && <span className="flex-row gap-2 fs-11 text-secondary">👕 {teamName}</span>}
               {!clubName && !teamName && projectName && <span className="fs-11 text-secondary">{projectName}</span>}
             </div>
@@ -124,7 +124,7 @@ export function ContentCard({
           <div className={`mt-8 gap-4 border-top flex-row ${styles.actionsRow}`}>
             <button onClick={(e) => { e.stopPropagation(); onDownload?.(item); }} title="Download" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">⬇️</button>
             <button onClick={(e) => { e.stopPropagation(); onShare?.(item); }} title="Share" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">📤</button>
-            <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">🗑️</button>
+            <button onClick={(e) => { e.stopPropagation(); onDelete?.(item); }} title="Delete" className="flex-center flex-1 gap-4 rounded-4 cursor-pointer fs-12 border bg-surface p-6 px-8">Verwijder</button>
           </div>
         </div>
       </div>

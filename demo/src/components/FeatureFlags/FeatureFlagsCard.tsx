@@ -211,7 +211,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
                 <div>
                   <Badge variant="default">Disabled</Badge>
                   <div className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
-                    <span>⚠️</span>
+                    <span></span>
                     <span>Overridden by global</span>
                   </div>
                 </div>

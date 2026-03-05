@@ -327,7 +327,7 @@ export default function SearchPage() {
                 {getCategoryLabel(category)}
               </span>
               {types.includes(category) && (
-                <span className={`ml-auto ${styles.checkMark}`}>✓</span>
+                <span className={`ml-auto ${styles.checkMark}`}>OK</span>
               )}
             </button>
           ))}

@@ -102,7 +102,7 @@ export function MediaAssetCard({
   // Determine status badge
   let badgeText = '';
   if (isGenerating) {
-    badgeText = '⏳ Bezig';
+    badgeText = 'Bezig';
   } else if (isFailed) {
     badgeText = '✕ Mislukt';
   } else if (mediaItem) {
@@ -164,7 +164,7 @@ export function MediaAssetCard({
           {/* Generating state */}
           {isGenerating && !url && (
             <div className={`text-center fs-12 ${styles.generatingState}`}>
-              <div className="mb-4 fs-24">⏳</div>
+              <div className="mb-4 fs-24"></div>
               <div>Bezig met genereren...</div>
             </div>
           )}

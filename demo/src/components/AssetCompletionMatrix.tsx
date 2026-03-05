@@ -47,13 +47,13 @@ interface AssetRow {
 const ASSET_ROWS: AssetRow[] = [
   {
     label: 'Logo',
-    icon: '🖼️',
+    icon: 'image',
     uploadType: 'logo_upload',
     processedType: 'logo',
   },
   {
     label: 'Sponsor',
-    icon: '🤝',
+    icon: 'handshake',
     uploadType: 'sponsor_logo_upload',
     processedType: 'sponsor_logo',
   },
@@ -65,7 +65,7 @@ const ASSET_ROWS: AssetRow[] = [
   })),
   {
     label: 'Locatie',
-    icon: '📍',
+    icon: 'map-pin',
     uploadType: 'location_photo',
     processedType: null,
   },
@@ -184,7 +184,7 @@ export function AssetCompletionMatrix({
                   <td className={styles.tdCenter}>
                     {row.uploadType ? (
                       <div className="flex-center gap-6">
-                        <span className="fs-14">{upload.exists ? '✅' : '⬜'}</span>
+                        <span className="fs-14">{upload.exists ? 'OK' : '—'}</span>
                         {upload.url && (
                           <img src={upload.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
@@ -198,7 +198,7 @@ export function AssetCompletionMatrix({
                   <td className={styles.tdCenter}>
                     {row.processedType ? (
                       <div className="flex-center gap-6">
-                        <span className="fs-14">{processed.exists ? '✅' : '⬜'}</span>
+                        <span className="fs-14">{processed.exists ? 'OK' : '—'}</span>
                         {processed.url && (
                           <img src={processed.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
@@ -236,7 +236,7 @@ export function AssetCompletionMatrix({
             </div>
           ))}
           <div className="flex-row gap-4">
-            <span>✅</span> <span>Aanwezig</span>
+            <span></span> <span>Aanwezig</span>
           </div>
           <div className="flex-row gap-4">
             <span>⬜</span> <span>Ontbreekt</span>

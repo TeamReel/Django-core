@@ -23,17 +23,17 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
 
   const getTypeIcon = (type: string): string => {
     const icons: Record<string, string> = {
-      organisation: '🏛️',
-      federation: '🏛️',
-      club: '🏟️',
-      team: '👕',
-      season: '🗓️',
-      competition: '🏆',
-      match: '🎯',
-      period: '📅',
-      activity: '📋',
+      organisation: 'landmark',
+      federation: 'landmark',
+      club: 'landmark',
+      team: 'shirt',
+      season: 'calendar',
+      competition: 'trophy',
+      match: 'target',
+      period: 'calendar',
+      activity: 'clipboard-list',
     };
-    return icons[type.toLowerCase()] || '📄';
+    return icons[type.toLowerCase()] || 'file-text';
   };
 
   const anchor = isAnchor ? 'true' : undefined;

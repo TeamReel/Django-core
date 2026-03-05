@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar } from 'lucide-react';
+import { Calendar, CheckCircle2, Circle } from 'lucide-react';
+import SlotIcon from '../../components/SlotIcon';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import { getMediaProcessingState } from '../../utils/mediaHelpers';
 import { periodPathKey } from '../../utils/periodPath';
@@ -135,7 +136,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
       if (batchBrandKits.home !== undefined) items.push({ label: 'Thuis tenue', icon: '👕', present: !!batchBrandKits.home });
       if (batchBrandKits.away !== undefined) items.push({ label: 'Uit tenue', icon: '👕', present: !!batchBrandKits.away });
       if (batchBrandKits.third !== undefined) items.push({ label: 'Derde tenue', icon: '👕', present: !!batchBrandKits.third });
-      if (batchBrandKits.keeper !== undefined) items.push({ label: 'Keeper tenue', icon: '🧤', present: !!batchBrandKits.keeper });
+      if (batchBrandKits.keeper !== undefined) items.push({ label: 'Keeper tenue', icon: 'shield', present: !!batchBrandKits.keeper });
     }
     return items;
   }, [brandLogoUrl, brandSponsorUrl, batchBrandKits]);
@@ -185,7 +186,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
           <div className={ov.brandGrid}>
             {brandAssets.map((a) => (
               <div key={a.label} className={ov.brandItem} data-present={a.present ? 'true' : 'false'}>
-                <span className={ov.brandIcon}>{a.present ? '✅' : '⬜'}</span>
+                <span className={ov.brandIcon}>{a.present ? <CheckCircle2 size={14} color="#22c55e" /> : <Circle size={14} color="#d1d5db" />}</span>
                 <span className={ov.brandLabel}>{a.label}</span>
               </div>
             ))}
@@ -206,7 +207,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
             {assetStats.map((slot) => (
               <div key={slot.id} className={ov.assetRow}>
                 <div className={ov.assetInfo}>
-                  <span className={ov.assetIcon}>{slot.icon}</span>
+                  <span className={ov.assetIcon}><SlotIcon name={slot.icon} size={14} /></span>
                   <span className={ov.assetLabel}>{slot.label}</span>
                 </div>
                 <div className={ov.assetRight}>

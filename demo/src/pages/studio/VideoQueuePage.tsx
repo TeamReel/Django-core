@@ -24,12 +24,12 @@ import styles from './VideoQueuePage.module.css';
 type FilterStatus = 'all' | VideoJobStatus;
 
 const STATUS_FILTERS: { value: FilterStatus; label: string; icon: string }[] = [
-  { value: 'all', label: 'All', icon: '📋' },
-  { value: 'queued', label: 'Queued', icon: '⏳' },
-  { value: 'processing', label: 'Processing', icon: '🔄' },
-  { value: 'completed', label: 'Completed', icon: '✅' },
-  { value: 'failed', label: 'Failed', icon: '❌' },
-  { value: 'cancelled', label: 'Cancelled', icon: '🚫' },
+  { value: 'all', label: 'All', icon: 'clipboard-list' },
+  { value: 'queued', label: 'Queued', icon: 'clock' },
+  { value: 'processing', label: 'Processing', icon: 'refresh-cw' },
+  { value: 'completed', label: 'Completed', icon: 'check-circle-2' },
+  { value: 'failed', label: 'Failed', icon: 'x-circle' },
+  { value: 'cancelled', label: 'Cancelled', icon: 'ban' },
 ];
 
 function formatDuration(start: string | null | undefined, end: string | null | undefined): string {
@@ -141,7 +141,7 @@ function JobCard({
       {/* Workflow info */}
       {job.workflow_instance && (
         <div className="fs-11 text-secondary flex-row gap-6">
-          🔄 Workflow: {job.workflow_instance.template_name} — {job.workflow_instance.current_state}
+          Workflow: {job.workflow_instance.template_name} — {job.workflow_instance.current_state}
         </div>
       )}
 

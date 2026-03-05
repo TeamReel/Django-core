@@ -7,7 +7,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'logo_standardize',
     name: 'Logo Standaardiseren',
-    icon: '🏛️',
+    icon: 'landmark',
     category: 'logo',
     description: 'Zet een clublogo om naar vierkant formaat met transparante achtergrond.',
     inputRequirements: ['logo'],
@@ -40,7 +40,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'sponsor_standardize',
     name: 'Sponsor Standaardiseren',
-    icon: '💼',
+    icon: 'briefcase',
     category: 'sponsor',
     description: 'Zet een sponsorlogo om naar standaard formaat met transparante achtergrond.',
     inputRequirements: ['sponsor'],
@@ -71,7 +71,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'location_standardize',
     name: 'Locatie Achtergrond',
-    icon: '📍',
+    icon: 'map-pin',
     category: 'location',
     description: 'Zet een voetbalveld/stadion foto om naar portrait formaat voor lineup video en flyer.',
     inputRequirements: ['location'],
@@ -115,7 +115,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'background_standardize',
     name: 'Achtergrond Optimaliseren',
-    icon: '🖼️',
+    icon: 'image',
     category: 'location',
     description: 'Optimaliseer een achtergrond voor portrait video compositing. De AI past de afbeelding aan zodat een speler er realistisch op geplakt kan worden.',
     inputRequirements: ['source'],
@@ -128,7 +128,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'logo_postprocess',
     name: 'Logo Bewerken',
-    icon: '✂️',
+    icon: 'scissors',
     category: 'postprocess',
     description: 'Achtergrond verwijderen en logo optimaliseren voor print en flyers.',
     inputRequirements: ['source'],
@@ -151,7 +151,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'sponsor_postprocess',
     name: 'Sponsor Logo Bewerken',
-    icon: '✂️',
+    icon: 'scissors',
     category: 'postprocess',
     description: 'Achtergrond verwijderen en sponsorlogo optimaliseren.',
     inputRequirements: ['source'],
@@ -173,7 +173,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'kit_postprocess',
     name: 'Tenue Bewerken',
-    icon: '✂️',
+    icon: 'scissors',
     category: 'postprocess',
     description: 'Achtergrond verwijderen en tenue-afbeelding optimaliseren voor print.',
     inputRequirements: ['source'],
@@ -195,7 +195,7 @@ export const BRAND_TEMPLATES: AssetTemplate[] = [
   {
     id: 'location_postprocess',
     name: 'Locatie Bewerken',
-    icon: '✂️',
+    icon: 'scissors',
     category: 'postprocess',
     description: 'Locatiefoto optimaliseren als achtergrond voor video compositing.',
     inputRequirements: ['source'],

@@ -32,12 +32,12 @@ export function OfflineBanner() {
     >
       {isOnline ? (
         <>
-          <span>✅</span>
+          <span></span>
           <span>Verbinding hersteld</span>
         </>
       ) : (
         <>
-          <span>📡</span>
+          <span></span>
           <span>Geen internetverbinding — sommige functies zijn beperkt</span>
         </>
       )}

@@ -92,7 +92,7 @@ export default function MatchContentTab({
   if (matchMediaLoading) {
     return (
       <div className="text-center text-muted" style={{ padding: '32px 0' }}>
-        <div className="mb-8" style={{ fontSize: 28 }}>⏳</div>
+        <div className="mb-8" style={{ fontSize: 28 }}></div>
         <div>Media laden...</div>
       </div>
     );

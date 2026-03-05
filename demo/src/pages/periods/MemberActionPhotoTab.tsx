@@ -27,13 +27,13 @@ export function MemberActionPhotoTab({
   const actionVariants = videoVariants.action_photo || {};
   const styleVariants = ['dribbling', 'shooting', 'ball_at_feet', 'celebrating', 'heading', 'sliding_tackle', 'karate_kick'];
   const styleLabels: Record<string, string> = {
-    dribbling: '🏃 Dribbelen',
-    shooting: '⚽ Schieten',
-    ball_at_feet: '🦶 Bal aan de voet',
-    celebrating: '🎉 Vieren',
-    heading: '🤕 Koppen',
-    sliding_tackle: '🦵 Sliding',
-    karate_kick: '🥋 Karatetrap',
+    dribbling: 'Dribbelen',
+    shooting: 'Schieten',
+    ball_at_feet: 'Bal aan de voet',
+    celebrating: 'Vieren',
+    heading: 'Koppen',
+    sliding_tackle: 'Sliding',
+    karate_kick: 'Karatetrap',
   };
 
   return (
@@ -122,10 +122,10 @@ export function MemberActionPhotoTab({
                             <Button size="sm" variant="secondary" onClick={async () => {
                               await triggerAssetProcessing(apiBaseUrl, membershipId!, 'action_photo', variantKey, null);
                             }} className={s.btnProcess}>
-                              {isProcessed ? '🔄 Opnieuw' : '🔧 Bewerken'}
+                              {isProcessed ? 'Opnieuw' : 'Bewerken'}
                             </Button>
                           )}
-                          {isProcessed && <span className={s.readyIndicator}>✓ Ready</span>}
+                          {isProcessed && <span className={s.readyIndicator}>Ready</span>}
                           {url && userCanEditProject && (
                             <Button size="sm" variant="ghost" onClick={async () => {
                               if (!confirm('Weet je zeker dat je deze actiefoto wilt verwijderen?')) return;
@@ -134,7 +134,7 @@ export function MemberActionPhotoTab({
                               setVideoVariants(newVV);
                               const updated = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                               await handleMetadataUpdate(updated);
-                            }} className={s.btnDelete}>🗑️</Button>
+                            }} className={s.btnDelete}>Verwijder</Button>
                           )}
                         </div>
                       </div>

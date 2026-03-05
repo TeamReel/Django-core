@@ -7,6 +7,7 @@
  */
 import { useState, type CSSProperties } from 'react';
 import { PageContent, PageHeader } from '@django-core/page-templates';
+import SlotIcon from '../../components/SlotIcon';
 import styles from './WorkflowTemplatesPage.module.css';
 import { useWorkflowTemplates, type WorkflowTemplate, getStateDisplay, getActionDisplay } from '../../hooks/useWorkflows';
 import { WorkflowStatusBadge } from '../../components/Workflows/WorkflowStatusBadge';
@@ -135,7 +136,7 @@ export default function WorkflowTemplatesPage() {
                                     className={`fw-600 fs-11 ${styles.actionLabel}`}
                                     style={{ '--action-color': actionStyle.bgColor } as CSSProperties}
                                   >
-                                    {actionStyle.icon} {t.action.replace(/_/g, ' ').toUpperCase()}
+                                    <SlotIcon name={actionStyle.icon} size={12} /> {t.action.replace(/_/g, ' ').toUpperCase()}
                                   </span>
                                 </div>
                                 <div className="flex-row gap-6">
@@ -149,7 +150,7 @@ export default function WorkflowTemplatesPage() {
                                 </div>
                                 {t.required_permission && (
                                   <div className="mt-4 fs-11 text-muted">
-                                    🔒 Requires: {t.required_permission}
+                                    <SlotIcon name="lock" size={11} /> Requires: {t.required_permission}
                                   </div>
                                 )}
                                 {t.validators && t.validators.length > 0 && (

@@ -60,9 +60,9 @@ export function MemberIntroTab({
           const hasPlayerInTenue = Boolean(playerInTenueUrl);
 
           const introVariantDefs = [
-            { id: 'arms_crossed', icon: '🙅', label: 'Armen over elkaar' },
-            { id: 'hand_up', icon: '✋', label: 'Hand omhoog' },
-            { id: 'thumbs_up', icon: '👍', label: 'Duim omhoog' },
+            { id: 'arms_crossed', icon: 'shield', label: 'Armen over elkaar' },
+            { id: 'hand_up', icon: 'hand', label: 'Hand omhoog' },
+            { id: 'thumbs_up', icon: 'thumbs-up', label: 'Duim omhoog' },
           ];
 
           return (
@@ -80,10 +80,10 @@ export function MemberIntroTab({
                 )}
                 <div className={s.sectionTitle}>{kit.label}</div>
                 {hasPlayerInTenue && (
-                  <Badge variant="default" className={styles.badgeAutoLeft}>✓ Player in Tenue</Badge>
+                  <Badge variant="default" className={styles.badgeAutoLeft}>Player in Tenue</Badge>
                 )}
                 {!hasPlayerInTenue && (
-                  <Badge variant="info" className={styles.badgeAutoLeft}>⚠️ Genereer eerst Player in Tenue</Badge>
+                  <Badge variant="info" className={styles.badgeAutoLeft}>Genereer eerst Player in Tenue</Badge>
                 )}
               </div>
 
@@ -144,7 +144,7 @@ export function MemberIntroTab({
                                     startProcessingPoll('intro', kit.id, variant.id);
                                   }
                                 }} className={s.btnProcess}>
-                                  {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                                  {variantLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                                 </Button>
                               )}
                               {isCancellingOrProcessing && (
@@ -165,10 +165,10 @@ export function MemberIntroTab({
                                     }
                                   }
                                 }} className={s.btnCancelOrange}>
-                                  {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                                  {normalizedVariant?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
                                 </Button>
                               )}
-                              {variantLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                              {variantLineupReady && <span className={s.readyIndicator}>Ready</span>}
                               <Button size="sm" variant="ghost" onClick={async () => {
                                 if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
                                 const newVV: VideoVariantsMap = { ...videoVariants, intro: { ...videoVariants.intro } };
@@ -176,7 +176,7 @@ export function MemberIntroTab({
                                 setVideoVariants(newVV);
                                 const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                                 await handleMetadataUpdate(updatedMeta);
-                              }} className={s.btnDelete}>🗑️</Button>
+                              }} className={s.btnDelete}>Verwijder</Button>
                             </>
                           ) : (
                             <Button size="sm" onClick={() => openAiModal('member_intro', kit.id, playerInTenueUrl, variant.id)} disabled={!hasPlayerInTenue} className={`${s.btnSmall} ${styles.btnFullWidth}`}>

@@ -152,7 +152,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         workflowTemplateId: params.workflowTemplateId,
         label: params.label,
       };
-      console.log('📝 Storing context for save:', saveContext);
+      console.log('[Log] Storing context for save:', saveContext);
 
       setContext(saveContext);
 
@@ -212,7 +212,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           const taskId = asyncData.task_id;
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
-          console.log(`🎬 Video generation queued. task_id=${taskId}`);
+          console.log(`[Video] Generation queued. task_id=${taskId}`);
 
           // Store task_id in context so acceptVariant can auto-approve the job
           setContext(prev => prev ? { ...prev, taskId } : prev);
@@ -309,7 +309,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       const assetType = context?.outputAssetType;
       const memberId = context?.membershipId;
 
-      console.log('💾 Accepting variant:', {
+      console.log('[Save] Accepting variant:', {
         variantIndex,
         context,
         orgId,
@@ -395,7 +395,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         // Parse save response to get authoritative storage_path
         const saveJson = await response.json();
         const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
-        console.log('💾 Save response:', saveData);
+        console.log('[Save] Save response:', saveData);
 
         const result: SaveResult = {
           file_asset_id: saveData?.file_asset_id,
@@ -422,13 +422,13 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
                   brand_asset_id: result.brand_asset_id,
                 },
               });
-              console.log('🔄 Auto-created workflow instance for', context.workflowContentType, context.workflowObjectId);
+              console.log('[Refresh] Auto-created workflow instance for', context.workflowContentType, context.workflowObjectId);
               // Notify other components to refresh workflow data
               window.dispatchEvent(new Event('workflowChanged'));
             }
           } catch (wfErr) {
             // Non-blocking: workflow creation failure should not break the save flow
-            console.warn('⚠️ Auto-workflow creation failed (non-blocking):', wfErr);
+            console.warn('[Workflow] Auto-workflow creation failed (non-blocking):', wfErr);
           }
         }
 

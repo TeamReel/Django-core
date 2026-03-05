@@ -256,7 +256,7 @@ export function KitsTab({
                 >
                   {uploadingType === kitType.id ? (
                     <div className="text-center text-muted">
-                      <div className="fs-24 mb-8">⏳</div>
+                      <div className="fs-24 mb-8"></div>
                       <div className="fs-12">Uploading...</div>
                     </div>
                   ) : imageUrl ? (
@@ -269,7 +269,7 @@ export function KitsTab({
                     />
                   ) : (
                     <div className="text-center text-muted">
-                      <div className="mb-8" style={{ fontSize: 48, opacity: 0.3 }}>👕</div>
+                      <div className="mb-8" style={{ fontSize: 48, opacity: 0.3 }}></div>
                       <div className="fs-12">No image uploaded</div>
                     </div>
                   )}

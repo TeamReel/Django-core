@@ -47,7 +47,7 @@ export function FormationPicker({
                 ))}
 
                 {/* Selected check badge */}
-                {isSelected && <div className={styles.checkBadge}>✓</div>}
+                {isSelected && <div className={styles.checkBadge}>OK</div>}
               </div>
               {/* Formation code label */}
               <div className={styles.formationLabel}>

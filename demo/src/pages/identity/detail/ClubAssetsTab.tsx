@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Button, Card, Input } from '@django-core/design-system';
+import SlotIcon from '../../../components/SlotIcon';
 import {
   CLUB_ASSET_SLOTS,
   type ClubAssets,
@@ -165,7 +166,7 @@ export default function ClubAssetsTab({
           {inputSlots.map((slot) => (
             <div key={slot.id} className="space-y-1">
               <label htmlFor={`asset-${slot.id}`} className="block text-sm font-medium text-gray-700">
-                {slot.icon} {slot.label}
+                <SlotIcon name={slot.icon} size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> {slot.label}
                 {slot.required && <span className="text-red-500 ml-1">*</span>}
               </label>
               <Input
@@ -236,12 +237,12 @@ export default function ClubAssetsTab({
                       }}
                     />
                   ) : (
-                    <span className="text-2xl opacity-30">{slot.icon}</span>
+                    <span className="text-2xl opacity-30"><SlotIcon name={slot.icon} size={24} /></span>
                   )}
                 </div>
                 <div className="flex-1">
                   <div className="font-medium">
-                    {slot.icon} {slot.label}
+                    <SlotIcon name={slot.icon} size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> {slot.label}
                   </div>
                   <p className="text-sm text-gray-500">{slot.description}</p>
                   {missingDeps.length > 0 && (

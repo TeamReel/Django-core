@@ -84,18 +84,18 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
 
   const getCategoryIcon = (category: string): string => {
     const icons: Record<string, string> = {
-      organisations: '🏛️',
-      clubs: '🏟️',
-      teams: '👕',
-      seasons: '🗓️',
-      competitions: '🏆',
-      matches: '🎯',
-      users: '👥',
-      periods: '🗓️',
-      activities: '📅',
-      projects: '📁',
+      organisations: 'landmark',
+      clubs: 'landmark',
+      teams: 'shirt',
+      seasons: 'calendar',
+      competitions: 'trophy',
+      matches: 'target',
+      users: 'users',
+      periods: 'calendar',
+      activities: 'calendar',
+      projects: 'folder',
     };
-    return icons[category] || '📄';
+    return icons[category] || 'file-text';
   };
 
   const totalResults = results

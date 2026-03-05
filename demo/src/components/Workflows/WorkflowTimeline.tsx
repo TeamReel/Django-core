@@ -2,6 +2,7 @@
  * WorkflowTimeline — Vertical timeline of transition history entries.
  * Shows who did what, when, with optional comments.
  */
+import SlotIcon from '../SlotIcon';
 import { type TransitionHistoryEntry, getStateDisplay, getActionDisplay } from '../../hooks/useWorkflows';
 import styles from './WorkflowTimeline.module.css';
 
@@ -80,7 +81,7 @@ export function WorkflowTimeline({ history, loading }: WorkflowTimelineProps) {
                     '--action-bg': `${actionDisplay.bgColor}15`,
                   } as React.CSSProperties}
                 >
-                  {actionDisplay.icon} {entry.action.replace(/_/g, ' ')}
+                  <SlotIcon name={actionDisplay.icon} size={12} /> {entry.action.replace(/_/g, ' ')}
                 </span>
                 <span className={styles.stateTransition}>
                   {entry.from_state} → {entry.to_state}

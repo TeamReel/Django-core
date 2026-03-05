@@ -123,7 +123,7 @@ export default function TopNavigation() {
               title={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
               aria-label={`Switch to ${currentThemeMode === 'light' ? 'dark' : 'light'} mode`}
             >
-              {currentThemeMode === 'light' ? '🌙' : '☀️'}
+              {currentThemeMode === 'light' ? 'Dark' : 'Light'}
             </button>
           )}
 

@@ -134,17 +134,17 @@ export function getJobStatusDisplay(status: VideoJobStatus): {
 } {
   switch (status) {
     case 'queued':
-      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: '⏳', label: 'Queued' };
+      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: 'clock', label: 'Queued' };
     case 'processing':
-      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: '🔄', label: 'Processing' };
+      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: 'refresh-cw', label: 'Processing' };
     case 'completed':
-      return { color: '#059669', bgColor: '#d1fae5', icon: '✅', label: 'Completed' };
+      return { color: '#059669', bgColor: '#d1fae5', icon: 'check-circle-2', label: 'Completed' };
     case 'failed':
-      return { color: '#dc2626', bgColor: '#fee2e2', icon: '❌', label: 'Failed' };
+      return { color: '#dc2626', bgColor: '#fee2e2', icon: 'x-circle', label: 'Failed' };
     case 'cancelled':
-      return { color: '#9ca3af', bgColor: '#f3f4f6', icon: '🚫', label: 'Cancelled' };
+      return { color: '#9ca3af', bgColor: '#f3f4f6', icon: 'ban', label: 'Cancelled' };
     default:
-      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: '❓', label: status || 'Unknown' };
+      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: 'file-question', label: status || 'Unknown' };
   }
 }
 
@@ -154,21 +154,21 @@ export function getJobTypeDisplay(type: VideoJobType): {
 } {
   switch (type) {
     case 'transcode':
-      return { icon: '🎬', label: 'Transcode' };
+      return { icon: 'clapperboard', label: 'Transcode' };
     case 'thumbnail':
-      return { icon: '🖼️', label: 'Thumbnail' };
+      return { icon: 'image', label: 'Thumbnail' };
     case 'compose':
-      return { icon: '🎨', label: 'Compose' };
+      return { icon: 'palette', label: 'Compose' };
     case 'lineup':
-      return { icon: '📋', label: 'Lineup' };
+      return { icon: 'clipboard-list', label: 'Lineup' };
     case 'goal_celebration':
-      return { icon: '⚽', label: 'Goal Celebration' };
+      return { icon: 'circle-dot', label: 'Goal Celebration' };
     case 'match_intro':
-      return { icon: '🎬', label: 'Match Intro' };
+      return { icon: 'clapperboard', label: 'Match Intro' };
     case 'then_vs_now':
-      return { icon: '🔄', label: 'Transformation' };
+      return { icon: 'refresh-cw', label: 'Transformation' };
     default:
-      return { icon: '📦', label: type || 'Unknown' };
+      return { icon: 'package', label: type || 'Unknown' };
   }
 }
 

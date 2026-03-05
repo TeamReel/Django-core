@@ -156,7 +156,7 @@ const ClubBackgrounds: React.FC<{ d: AssetsTabData }> = ({ d }) => {
             cursor: d.uploading === 'club_background_upload' ? 'not-allowed' : 'pointer',
           }}
         >
-          {d.uploading === 'club_background_upload' ? '⏳ Uploaden...' : '📤 Achtergrond Uploaden'}
+          {d.uploading === 'club_background_upload' ? 'Uploaden...' : 'Achtergrond Uploaden'}
         </button>
       </div>
 
@@ -166,7 +166,7 @@ const ClubBackgrounds: React.FC<{ d: AssetsTabData }> = ({ d }) => {
           {bgPairs.map((pair) => (
             <div key={pair.label} className={s.sectionBoxSmall}>
               <div className={s.kitHeader}>
-                <span className={s.kitIcon}>🖼️</span>
+                <span className={s.kitIcon}></span>
                 <span className={s.kitLabel}>{pair.label}</span>
               </div>
               <AssetGrid>

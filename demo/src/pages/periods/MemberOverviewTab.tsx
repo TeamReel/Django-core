@@ -26,13 +26,13 @@ export function MemberOverviewTab({
   const hasLegacyFullbody = hasVariantContent(videoVariants.fullbody?.legacy);
 
   const inputItems = [
-    { key: 'profile', icon: '👤', label: 'Profielfoto', tab: 'input', hasContent: Boolean(form.profile?.url) },
-    { key: 'legacy_photo', icon: '📸', label: 'Legacy Foto', tab: 'input', hasContent: Boolean(form.legacy_photo?.url) },
+    { key: 'profile', icon: 'user', label: 'Profielfoto', tab: 'input', hasContent: Boolean(form.profile?.url) },
+    { key: 'legacy_photo', icon: 'camera', label: 'Legacy Foto', tab: 'input', hasContent: Boolean(form.legacy_photo?.url) },
   ];
   const assetItems = [
-    { key: 'kit', icon: '👕', label: 'In Tenue', tab: 'assets', hasContent: Boolean(form.kit?.url) },
-    { key: 'closeup', icon: '🔍', label: 'Close-up', tab: 'assets', hasContent: Boolean(form.closeup?.url) },
-    { key: 'legacy', icon: '🏆', label: 'Legacy in Tenue', tab: 'assets', hasContent: Boolean(form.legacy?.url) || hasLegacyFullbody },
+    { key: 'kit', icon: 'shirt', label: 'In Tenue', tab: 'assets', hasContent: Boolean(form.kit?.url) },
+    { key: 'closeup', icon: 'scan-face', label: 'Close-up', tab: 'assets', hasContent: Boolean(form.closeup?.url) },
+    { key: 'legacy', icon: 'trophy', label: 'Legacy in Tenue', tab: 'assets', hasContent: Boolean(form.legacy?.url) || hasLegacyFullbody },
   ];
 
   const hasAnyIntro = Object.values(videoVariants.intro || {}).some(hasVariantContent);
@@ -43,12 +43,12 @@ export function MemberOverviewTab({
   const hasAnyActionPhoto = Object.values(videoVariants.action_photo || {}).some(hasVariantContent);
 
   const videoItems = [
-    { key: 'intro', icon: '🎬', label: 'Short Intro', tab: 'intro', hasContent: hasAnyIntro },
-    { key: 'celebration', icon: '🎉', label: 'Celebration', tab: 'celebration', hasContent: hasAnyCelebration },
-    { key: 'then_vs_now', icon: '⏳', label: 'Transformation', tab: 'then_vs_now', hasContent: hasAnyThenVsNow },
-    { key: 'duo_portret', icon: '👥', label: 'Duo Portret', tab: 'photo_composite', hasContent: hasAnyDuoPortret },
-    { key: 'walking', icon: '🚶', label: 'Walking Composite', tab: 'walking_composite', hasContent: hasAnyWalking },
-    { key: 'action_photo', icon: '⚡', label: 'Actiefoto', tab: 'action_photo', hasContent: hasAnyActionPhoto },
+    { key: 'intro', icon: 'clapperboard', label: 'Short Intro', tab: 'intro', hasContent: hasAnyIntro },
+    { key: 'celebration', icon: 'party-popper', label: 'Celebration', tab: 'celebration', hasContent: hasAnyCelebration },
+    { key: 'then_vs_now', icon: 'clock', label: 'Transformation', tab: 'then_vs_now', hasContent: hasAnyThenVsNow },
+    { key: 'duo_portret', icon: 'users', label: 'Duo Portret', tab: 'photo_composite', hasContent: hasAnyDuoPortret },
+    { key: 'walking', icon: 'footprints', label: 'Walking Composite', tab: 'walking_composite', hasContent: hasAnyWalking },
+    { key: 'action_photo', icon: 'zap', label: 'Actiefoto', tab: 'action_photo', hasContent: hasAnyActionPhoto },
   ];
 
   const allItems = [...inputItems, ...assetItems, ...videoItems];

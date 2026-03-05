@@ -42,13 +42,13 @@ export function MemberThenVsNowTab({
   const hasBothInputs = Boolean(legacyFullbodyUrl) && Boolean(currentFullbodyUrl);
 
   const transformationVariantDefs = [
-    { id: 'hands_on_head', icon: '🤯', label: 'Handen op hoofd' },
-    { id: 'spin', icon: '🔄', label: '360° Spin' },
-    { id: 'clap', icon: '👏', label: 'Klap' },
-    { id: 'jersey_pull', icon: '👕', label: 'Shirt trekken' },
-    { id: 'arms_wide', icon: '🙌', label: 'Armen wijd' },
-    { id: 'fist_pump', icon: '✊', label: 'Vuist omhoog' },
-    { id: 'snap', icon: '🫰', label: 'Vingerknip' },
+    { id: 'hands_on_head', icon: 'circle-alert', label: 'Handen op hoofd' },
+    { id: 'spin', icon: 'rotate-cw', label: '360° Spin' },
+    { id: 'clap', icon: 'hand', label: 'Klap' },
+    { id: 'jersey_pull', icon: 'shirt', label: 'Shirt trekken' },
+    { id: 'arms_wide', icon: 'move', label: 'Armen wijd' },
+    { id: 'fist_pump', icon: 'hand', label: 'Vuist omhoog' },
+    { id: 'snap', icon: 'zap', label: 'Vingerknip' },
   ];
 
   return (
@@ -75,7 +75,7 @@ export function MemberThenVsNowTab({
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy in Tenue" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className={styles.prerequisiteMissing}>⚠️ Genereer eerst een Legacy in Tenue</div>
+              <div className={styles.prerequisiteMissing}>Genereer eerst een Legacy in Tenue</div>
             )}
           </div>
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={Boolean(currentFullbodyUrl)}>
@@ -83,7 +83,7 @@ export function MemberThenVsNowTab({
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className={styles.prerequisiteMissing}>⚠️ Genereer eerst Player in Tenue</div>
+              <div className={styles.prerequisiteMissing}>Genereer eerst Player in Tenue</div>
             )}
           </div>
         </div>
@@ -146,7 +146,7 @@ export function MemberThenVsNowTab({
                                 startProcessingPoll('then_vs_now', 'transformation', variant.id);
                               }
                             }} className={s.btnProcess}>
-                              {variantLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                              {variantLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                             </Button>
                           )}
                           {isCancellingOrProcessing && (
@@ -167,10 +167,10 @@ export function MemberThenVsNowTab({
                                 }
                               }
                             }} className={s.btnCancelOrange}>
-                              {normalizedVariant?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                              {normalizedVariant?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
                             </Button>
                           )}
-                          {variantLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                          {variantLineupReady && <span className={s.readyIndicator}>Ready</span>}
                           <Button size="sm" variant="ghost" onClick={async () => {
                             if (!confirm('Weet je zeker dat je deze video wilt verwijderen?')) return;
                             const newVV: VideoVariantsMap = { ...videoVariants, then_vs_now: { ...videoVariants.then_vs_now } };
@@ -178,7 +178,7 @@ export function MemberThenVsNowTab({
                             setVideoVariants(newVV);
                             const updatedMeta = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                             await handleMetadataUpdate(updatedMeta);
-                          }} className={s.btnDelete}>🗑️</Button>
+                          }} className={s.btnDelete}>Verwijder</Button>
                         </>
                       ) : (
                         <Button size="sm" onClick={() => openAiModal('then_vs_now_transformation', 'home', legacyFullbodyUrl, variant.id, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.btnFullWidth}`}>

@@ -7,7 +7,7 @@ export const KIT_TEMPLATES: AssetTemplate[] = [
   {
     id: 'tenue_generate',
     name: 'Tenue Genereren',
-    icon: '👕',
+    icon: 'shirt',
     category: 'tenue',
     description: 'Genereer een realistisch voetbaltenue met logo en sponsor.',
     inputRequirements: ['logo', 'sponsor', 'reference'],
@@ -111,7 +111,7 @@ export const KIT_TEMPLATES: AssetTemplate[] = [
   {
     id: 'legacy_tenue_generate',
     name: 'Legacy Tenue',
-    icon: '🕰️',
+    icon: 'history',
     category: 'tenue',
     description: 'Genereer een retro/legacy tenue gebaseerd op een historisch shirt. Kies een tijdperk voor de stijl.',
     inputRequirements: ['logo', 'sponsor', 'reference'],
@@ -154,7 +154,7 @@ export const KIT_TEMPLATES: AssetTemplate[] = [
   {
     id: 'keeper_tenue',
     name: 'Keeperstenue',
-    icon: '🧤',
+    icon: 'shield',
     category: 'keeper',
     description: 'Genereer een keeperstenue in contrasterende kleuren.',
     inputRequirements: ['logo', 'sponsor', 'reference'],
@@ -224,7 +224,7 @@ export const KIT_TEMPLATES: AssetTemplate[] = [
   {
     id: 'tracksuit_generate',
     name: 'Trainingspak',
-    icon: '🏃',
+    icon: 'activity',
     category: 'tracksuit',
     description: 'Genereer een trainingspak met clublogo.',
     inputRequirements: ['logo', 'reference'],
@@ -275,7 +275,7 @@ export const KIT_TEMPLATES: AssetTemplate[] = [
   {
     id: 'coach_outfit',
     name: 'Coach Outfit',
-    icon: '👔',
+    icon: 'briefcase',
     category: 'coach',
     description: 'Genereer een coach/trainer outfit: net pak, sweater, coltrui, polo of windbreaker.',
     inputRequirements: ['logo', 'sponsor', 'reference'],

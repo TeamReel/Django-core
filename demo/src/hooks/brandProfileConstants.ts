@@ -101,14 +101,14 @@ export const COMBINED_ASSET_TYPES = [
 
 /** Kit role groups for display */
 export const KIT_ROLES = [
-  { id: 'home', label: 'Thuis', icon: '🏠' },
-  { id: 'away', label: 'Uit', icon: '✈️' },
-  { id: 'third', label: 'Derde', icon: '3️⃣' },
-  { id: 'goalkeeper', label: 'Keeper', icon: '🧤' },
-  { id: 'coach', label: 'Trainer', icon: '📋' },
-  { id: 'assistant', label: 'Assistent', icon: '🤝' },
-  { id: 'training', label: 'Training', icon: '🏋️' },
-  { id: 'legacy', label: 'Legacy', icon: '🕰️' },
+  { id: 'home', label: 'Thuis', icon: 'home' },
+  { id: 'away', label: 'Uit', icon: 'plane' },
+  { id: 'third', label: 'Derde', icon: 'hash' },
+  { id: 'goalkeeper', label: 'Keeper', icon: 'shield' },
+  { id: 'coach', label: 'Trainer', icon: 'clipboard-list' },
+  { id: 'assistant', label: 'Assistent', icon: 'handshake' },
+  { id: 'training', label: 'Training', icon: 'activity' },
+  { id: 'legacy', label: 'Legacy', icon: 'history' },
 ] as const;
 
 /** Asset display labels */

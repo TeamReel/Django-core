@@ -48,7 +48,7 @@ export function CompetitionContentTab({
   };
 
   return (
-    <Card title="📊 Content Matrix">
+    <Card title="Content Matrix">
       <div className="p-16">
         {matchMediaLoading ? (
           <Alert variant="info">Media laden…</Alert>
@@ -113,8 +113,8 @@ export function CompetitionContentTab({
             </table>
             {/* Legend */}
             <div className={`mt-12 flex-row gap-16 flex-wrap ${styles.legend}`}>
-              <span>✅ = Gereed</span>
-              <span>⬜ = Niet gemaakt</span>
+              <span>Gereed</span>
+              <span>Niet gemaakt</span>
               {matchContentTypes.map(ct => (
                 <span key={ct.id} title={ct.label}>{ct.icon} {ct.label}</span>
               ))}

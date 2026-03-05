@@ -19,7 +19,7 @@ export const CLUB_ASSET_SLOTS = [
   {
     id: 'logo',
     label: 'Club Logo',
-    icon: '🏛️',
+    icon: 'landmark',
     description: 'Official club logo/crest',
     isInput: true,
     required: true,
@@ -27,7 +27,7 @@ export const CLUB_ASSET_SLOTS = [
   {
     id: 'tenue',
     label: 'Tenue (Kit)',
-    icon: '👕',
+    icon: 'shirt',
     description: 'Team kit/jersey template for photo generation',
     isInput: true,
     required: true,
@@ -35,7 +35,7 @@ export const CLUB_ASSET_SLOTS = [
   {
     id: 'sponsor',
     label: 'Sponsor',
-    icon: '💼',
+    icon: 'briefcase',
     description: 'Main sponsor logo (optional)',
     isInput: true,
     required: false,
@@ -44,7 +44,7 @@ export const CLUB_ASSET_SLOTS = [
   {
     id: 'tenue_with_logo',
     label: 'Tenue + Logo',
-    icon: '🎽',
+    icon: 'shirt',
     description: 'Generated: Kit with club logo applied',
     isInput: false,
     dependsOn: ['tenue', 'logo'],
@@ -52,7 +52,7 @@ export const CLUB_ASSET_SLOTS = [
   {
     id: 'tenue_full',
     label: 'Tenue Complete',
-    icon: '⭐',
+    icon: 'star',
     description: 'Generated: Kit with logo and sponsor',
     isInput: false,
     dependsOn: ['tenue', 'logo', 'sponsor'],
@@ -67,7 +67,7 @@ export const SEASON_ASSET_SLOTS = [
   {
     id: 'sponsor',
     label: 'Season Sponsor',
-    icon: '💼',
+    icon: 'briefcase',
     description: 'Override sponsor for this season (inherits from club if empty)',
     isInput: true,
     required: false,
@@ -76,7 +76,7 @@ export const SEASON_ASSET_SLOTS = [
   {
     id: 'tenue_full',
     label: 'Season Tenue',
-    icon: '⭐',
+    icon: 'star',
     description: 'Effective tenue for this season (auto-generated with season sponsor)',
     isInput: false,
     dependsOn: ['club.tenue', 'club.logo', 'sponsor'],

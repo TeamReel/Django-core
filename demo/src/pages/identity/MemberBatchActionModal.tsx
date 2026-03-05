@@ -42,7 +42,7 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
                     <div className="flex-row gap-12">
                         <h2 className="m-0 fs-18 fw-600">
                             {d.step === 'configure' && '⚡ Batch Actie'}
-                            {d.step === 'running' && '⏳ Bezig...'}
+                            {d.step === 'running' && 'Bezig...'}
                             {d.step === 'done' && '✅ Voltooid'}
                         </h2>
                         <Badge variant="default">{members.length} member{members.length !== 1 ? 's' : ''}</Badge>

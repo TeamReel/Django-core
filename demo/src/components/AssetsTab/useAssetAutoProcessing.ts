@@ -58,26 +58,26 @@ export function useAssetAutoProcessing({
         try {
           const variant = postProcessGen.variants[0];
           if (variant?.error) {
-            console.error('❌ Postprocess variant has error:', variant.error);
+            console.error('[Error] Postprocess variant has error:', variant.error);
             alert(`Bewerken mislukt: ${variant.error}`);
             return;
           }
           if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
-            console.error('❌ Postprocess variant has no content:', variant);
+            console.error('[Error] Postprocess variant has no content:', variant);
             alert('Bewerken mislukt: geen resultaat ontvangen van de server.');
             return;
           }
-          console.log('📝 Postprocess auto-accept starting for', postProcessingAsset);
+          console.log('[Log] Postprocess auto-accept starting for', postProcessingAsset);
           const result = await postProcessGen.acceptVariant(0);
           if (result) {
-            console.log('✅ Postprocess auto-saved:', postProcessingAsset, result);
+            console.log('[OK] Postprocess auto-saved:', postProcessingAsset, result);
             await refresh();
-            console.log('🔄 Profile refreshed after postprocess save');
+            console.log('[Refresh] Profile refreshed after postprocess save');
           } else {
-            console.error('❌ Postprocess save failed for', postProcessingAsset);
+            console.error('[Error] Postprocess save failed for', postProcessingAsset);
           }
         } catch (err) {
-          console.error('❌ Postprocess auto-accept error:', err);
+          console.error('[Error] Postprocess auto-accept error:', err);
         } finally {
           setPostProcessingAsset(null);
           setPostProcessOutputType(null);
@@ -86,7 +86,7 @@ export function useAssetAutoProcessing({
         }
       })();
     } else if (postProcessGen.step === 'error' && postProcessingAsset) {
-      console.error('❌ Postprocess failed:', postProcessGen.error);
+      console.error('[Error] Postprocess failed:', postProcessGen.error);
       alert(`Bewerken mislukt: ${postProcessGen.error || 'Onbekende fout'}`);
       setPostProcessingAsset(null);
       setPostProcessOutputType(null);
@@ -109,24 +109,24 @@ export function useAssetAutoProcessing({
         try {
           const variant = uploadAutoGen.variants[0];
           if (variant?.error) {
-            console.error('❌ Upload auto-process variant has error:', variant.error);
+            console.error('[Error] Upload auto-process variant has error:', variant.error);
             return;
           }
           if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
-            console.error('❌ Upload auto-process variant has no content:', variant);
+            console.error('[Error] Upload auto-process variant has no content:', variant);
             return;
           }
-          console.log('📝 Upload auto-accept starting for', uploadProcessingAsset);
+          console.log('[Log] Upload auto-accept starting for', uploadProcessingAsset);
           const result = await uploadAutoGen.acceptVariant(0);
           if (result) {
-            console.log('✅ Upload auto-saved:', uploadProcessingAsset, result);
+            console.log('[OK] Upload auto-saved:', uploadProcessingAsset, result);
             await refresh();
-            console.log('🔄 Profile refreshed after upload auto-process');
+            console.log('[Refresh] Profile refreshed after upload auto-process');
           } else {
-            console.error('❌ Upload auto-save failed for', uploadProcessingAsset);
+            console.error('[Error] Upload auto-save failed for', uploadProcessingAsset);
           }
         } catch (err) {
-          console.error('❌ Upload auto-accept error:', err);
+          console.error('[Error] Upload auto-accept error:', err);
         } finally {
           setUploadProcessingAsset(null);
           uploadAutoGen.reset();
@@ -134,7 +134,7 @@ export function useAssetAutoProcessing({
         }
       })();
     } else if (uploadAutoGen.step === 'error' && uploadProcessingAsset) {
-      console.error('❌ Upload auto-process failed:', uploadAutoGen.error);
+      console.error('[Error] Upload auto-process failed:', uploadAutoGen.error);
       setUploadProcessingAsset(null);
       uploadAutoGen.reset();
       uploadAutoSavingRef.current = false;

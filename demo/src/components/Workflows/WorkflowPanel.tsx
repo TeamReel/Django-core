@@ -84,7 +84,7 @@ export function WorkflowPanel({ projectId, contentTypeName, objectId, title }: W
         <div
           className={`p-24 text-center fs-13 rounded-8 ${styles.emptyState}`}
         >
-          <div className="fs-24 mb-8">📋</div>
+          <div className="fs-24 mb-8"></div>
           <div>No workflow attached to this item yet.</div>
           <div className="fs-11 mt-4">Workflows are automatically created when content enters the approval pipeline.</div>
         </div>

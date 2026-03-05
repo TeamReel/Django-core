@@ -196,7 +196,7 @@ export const PermissionsPage: React.FC = () => {
 
               <Card>
                 <div className="text-sm text-gray-600">
-                  <p><strong>✓</strong> = Permission granted | <strong>—</strong> = Permission denied</p>
+                  <p><strong>OK</strong> = Permission granted | <strong>—</strong> = Permission denied</p>
                   <p className="mt-2 text-xs">Note: Higher roles typically inherit permissions from lower roles.</p>
                 </div>
               </Card>

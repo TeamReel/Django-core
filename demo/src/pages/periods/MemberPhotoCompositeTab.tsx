@@ -76,7 +76,7 @@ export function MemberPhotoCompositeTab({
             {legacyHalfbodyUrl ? (
               <img src={legacyHalfbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className="text-muted fs-11">⚠️ Genereer eerst Legacy Halfbody</div>
+              <div className="text-muted fs-11">Genereer eerst Legacy Halfbody</div>
             )}
           </div>
           <div className={`${s.prerequisiteCard} ${m.prerequisiteCardDynamic}`} data-ready={Boolean(currentHalfbodyUrl)}>
@@ -84,7 +84,7 @@ export function MemberPhotoCompositeTab({
             {currentHalfbodyUrl ? (
               <img src={currentHalfbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className="text-muted fs-11">⚠️ Genereer eerst Halfbody</div>
+              <div className="text-muted fs-11">Genereer eerst Halfbody</div>
             )}
           </div>
         </div>
@@ -108,7 +108,7 @@ export function MemberPhotoCompositeTab({
                 <div className={s.variantLabel}>📸 Gemini Composite</div>
                 <div className={s.actionButtonRow}>
                   <Button size="sm" onClick={() => openAiModal('photo_composite_gemini', 'home', legacyHalfbodyUrl, null, currentHalfbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} w-full`}>
-                    {hasCompositeImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                    {hasCompositeImage ? 'Opnieuw' : 'Genereer'}
                   </Button>
                 </div>
               </div>
@@ -150,7 +150,7 @@ export function MemberPhotoCompositeTab({
                             startProcessingPoll('photo_composite', 'default');
                           }
                         }} className={s.btnProcess}>
-                          {compositeVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                          {compositeVideoLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                         </Button>
                       )}
                       {compositeVideoCancellingOrProcessing && (
@@ -170,10 +170,10 @@ export function MemberPhotoCompositeTab({
                             }
                           }
                         }} className={s.btnCancelOrange}>
-                          {compositeVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                          {compositeVideoNormalized?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
                         </Button>
                       )}
-                      {compositeVideoLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                      {compositeVideoLineupReady && <span className={s.readyIndicator}>Ready</span>}
                     </>
                   ) : (
                     <Button size="sm" onClick={() => { if (compositeImageUrl) openAiModal('photo_composite_video', 'home', compositeImageUrl, null, null); }} disabled={!hasCompositeImage} className={`${s.btnSmall} w-full`}>

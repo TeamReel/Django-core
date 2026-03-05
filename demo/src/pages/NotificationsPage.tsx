@@ -339,7 +339,7 @@ export default function NotificationsPage() {
                       <div
                         className={`flex-row gap-8 h-full py-16 px-24 ${styles.swipeReveal}`}
                       >
-                        <span className="fs-18">✓</span>
+                        <span className="fs-18">OK</span>
                         <span className="fw-600">Gelezen</span>
                       </div>
                     }

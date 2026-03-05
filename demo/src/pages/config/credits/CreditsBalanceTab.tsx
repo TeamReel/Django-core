@@ -68,7 +68,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       {/* Low Balance Alert */}
       {balance < 500 && (
         <Alert variant="warning" className="mb-24">
-          <strong>⚠️ Low Credit Balance</strong>
+          <strong>Low Credit Balance</strong>
           <p className="fs-14 m-0 mt-8">
             Your balance is {credits.current_balance} credits. Consider adding more credits to avoid service interruption.
           </p>
@@ -125,7 +125,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
 
       {/* Transaction Timeline Chart */}
       <Card className="p-24 mb-24">
-        <h3 className="fs-18 m-0 mb-20">📊 Transaction Timeline</h3>
+        <h3 className="fs-18 m-0 mb-20">Transaction Timeline</h3>
         {allTransactions.length === 0 ? (
           <div className="text-center p-20 opacity-60">No transactions recorded yet.</div>
         ) : (
@@ -174,7 +174,7 @@ export const CreditsBalanceTab: React.FC<CreditsBalanceTabProps> = ({
       {/* Recent Transactions List */}
       <Card className="p-24">
         <div className="flex-between mb-20">
-          <h3 className="m-0 fs-18">📋 Recent Activity</h3>
+          <h3 className="m-0 fs-18">Recent Activity</h3>
           <Button variant="ghost" size="sm" onClick={onViewAllTransactions}>
             View All Transactions →
           </Button>

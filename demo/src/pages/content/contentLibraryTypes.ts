@@ -91,7 +91,7 @@ export const SUB_TABS: Record<HierarchyTab, { key: string; label: string }[]> = 
 export const CONTENT_TYPE_FILTERS: { key: string; label: string; icon: string }[] = [
   { key: 'all', label: 'All', icon: '📚' },
   { key: 'flyer', label: 'Match Flyer', icon: '📣' },
-  { key: 'lineup', label: 'Lineup', icon: '📋' },
+  { key: 'lineup', label: 'Lineup', icon: 'clipboard-list' },
   { key: 'walkon', label: 'Walk-on', icon: '🚶' },
   { key: 'anthem', label: 'Anthem', icon: '🎵' },
   { key: 'goal', label: 'Goal Celebration', icon: '⚽' },
@@ -99,7 +99,7 @@ export const CONTENT_TYPE_FILTERS: { key: string; label: string; icon: string }[
   { key: 'end_score', label: 'Final Score', icon: '🏁' },
   { key: 'match_summary', label: 'Match Summary', icon: '📊' },
   { key: 'highlights', label: 'Highlights', icon: '🎬' },
-  { key: 'transformation', label: 'Transformation', icon: '🔄' },
+  { key: 'transformation', label: 'Transformation', icon: 'refresh-cw' },
   { key: 'season_recap', label: 'Season Recap', icon: '📅' },
   { key: 'member_intro', label: 'Member Intro', icon: '👋' },
   { key: 'member_goal_celebration', label: 'Member Goal', icon: '⚽' },

@@ -40,7 +40,7 @@ export function SuccessStep({
 }: SuccessStepProps) {
   return (
     <div className="flex-col flex-center h-full text-center overflow-y-auto py-32">
-      <div className={`mb-8 ${styles.checkIcon}`}>✓</div>
+      <div className={`mb-8 ${styles.checkIcon}`}>OK</div>
       <h3 className="fs-20 fw-700 mb-4">
         {generatedVariants.length > 1
           ? (savedVariantIndices.size === generatedVariants.length ? 'Alles opgeslagen!' : 'Content klaar!')

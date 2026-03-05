@@ -105,7 +105,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
     {/* Info box for video templates */}
     {selectedTemplate && (selectedTemplate.category === 'intro' || selectedTemplate.category === 'celebration') && (
       <div className={`mb-16 p-12 rounded-8 fs-13 text-primary ${styles.videoInfoBox}`}>
-        <div className="fw-600 mb-4">🔄 Slimme video verwerking</div>
+        <div className="fw-600 mb-4">Slimme video verwerking</div>
         <div className={`fs-12 ${styles.videoInfoDescription}`}>
           Members met een bestaande onverwerkte video worden automatisch verwerkt in plaats van opnieuw gegenereerd.
           Alleen members zonder video krijgen een nieuwe gegenereerd.
@@ -161,10 +161,10 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
               <div className="flex-1-min">
                 <div className="fs-14 fw-500">{member.name}</div>
                 {missingPerson && (
-                  <div className="fs-11 text-error">⚠️ Geen input foto beschikbaar</div>
+                  <div className="fs-11 text-error">Geen input foto beschikbaar</div>
                 )}
                 {existingVideoVariant && (
-                  <div className="fs-11 text-success">✅ Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
+                  <div className="fs-11 text-success">Bestaande {existingVideoVariant.replace(/_/g, ' ')} wordt verwerkt</div>
                 )}
                 {hasOverrides && (
                   <div className={`fs-11 ${styles.overrideText}`}>Aangepaste instellingen</div>

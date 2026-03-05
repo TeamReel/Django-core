@@ -70,7 +70,7 @@ export function DesignSystemPage() {
                 >
                   Delete Item
                 </Button>
-                <p className="ds-caption">⚠️ Hover for danger state</p>
+                <p className="ds-caption">Hover for danger state</p>
               </Card>
             </div>
           </div>
@@ -213,7 +213,7 @@ export function DesignSystemPage() {
           </div>
           <div className="grid-cols-2 gap-16 mb-16">
             <Card variant="filled" className="p-16">
-              <h3 className="ds-subsection-title">📊 Progress Bar</h3>
+              <h3 className="ds-subsection-title">Progress Bar</h3>
               <div className="mb-8">
                 <div className="progress-bar">
                   <div className="progress-bar-fill"></div>

@@ -201,7 +201,7 @@ export function ApprovalsJobList({
 
               {vJob.workflow_instance && (
                 <div className={s.workflowInfo}>
-                  🔄 Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
+                  Workflow: {vJob.workflow_instance.template_name} — {vJob.workflow_instance.current_state}
                   {vJob.workflow_instance.current_state === 'ready_for_review' && (
                     <span className={`${s.pillBadge} ${styles.workflowPillReview}`}>Te beoordelen</span>
                   )}

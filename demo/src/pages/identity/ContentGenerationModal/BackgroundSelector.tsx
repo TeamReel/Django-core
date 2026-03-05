@@ -33,7 +33,7 @@ export function BackgroundSelector({
         <button onClick={() => onSelect(null)} className={styles.bgButton} data-selected={!selectedUrl}>
           <div className={styles.defaultGradient} />
           <div className={styles.bgLabel}>Standaard</div>
-          {!selectedUrl && <div className={styles.checkBadge}>✓</div>}
+          {!selectedUrl && <div className={styles.checkBadge}>OK</div>}
         </button>
 
         {backgrounds.map((bg) => {
@@ -42,7 +42,7 @@ export function BackgroundSelector({
             <button key={bg.id} onClick={() => onSelect(bg.url)} className={styles.bgButton} data-selected={isSel}>
               <div className={styles.thumbnail} style={{ background: `url(${bg.url}) center/cover` }} />
               <div className={styles.bgLabel}>{bg.label || bg.profile_name || 'Locatie'}</div>
-              {isSel && <div className={styles.checkBadge}>✓</div>}
+              {isSel && <div className={styles.checkBadge}>OK</div>}
             </button>
           );
         })}

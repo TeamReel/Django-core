@@ -3,6 +3,7 @@
  * Shows confirm dialog before executing destructive actions (reject/cancel).
  */
 import React, { useState } from 'react';
+import SlotIcon from '../SlotIcon';
 import {
   executeTransition,
   getActionDisplay,
@@ -83,7 +84,7 @@ export function WorkflowActionButtons({
                 '--action-hover-bg': display.hoverBgColor,
               } as React.CSSProperties}
             >
-              <span>{display.icon}</span>
+              <span><SlotIcon name={display.icon} size={14} /></span>
               <span>{isExecuting ? 'Processing...' : display.label}</span>
             </button>
           );

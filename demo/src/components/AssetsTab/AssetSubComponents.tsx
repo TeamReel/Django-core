@@ -162,7 +162,7 @@ export function AssetCard({
                     className={`${s.btnPrimary} ${sc.editBtn}`}
                     data-processing={isProcessing ? '' : undefined}
                   >
-                    {isProcessing ? '⏳ Bezig...' : '✂️ Bewerk'}
+                    {isProcessing ? 'Bezig...' : 'Bewerk'}
                   </button>
                 )}
               </div>

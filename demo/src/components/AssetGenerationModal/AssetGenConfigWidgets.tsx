@@ -35,7 +35,7 @@ export function SourcePicker({
             className={styles.sourceButton}
             data-selected={referenceSource === src}
           >
-            {src === 'upload' ? '📤 Originele Upload' : '🎨 Huidige AI Versie'}
+            {src === 'upload' ? 'Originele Upload' : 'Huidige AI Versie'}
           </button>
         ))}
       </div>
@@ -81,7 +81,7 @@ export function BackgroundSelector({
               }}
             />
             {idx === selectedIdx && (
-              <div className={styles.checkmark}>✓</div>
+              <div className={styles.checkmark}>OK</div>
             )}
           </button>
         ))}

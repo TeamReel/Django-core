@@ -110,10 +110,10 @@ export function MemberAssetsTab({
                     {fbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
                   </div>
                   <div className={s.cardFooterPadding}>
-                    <div className={s.variantLabel}>👕 Fullbody</div>
+                    <div className={s.variantLabel}>Fullbody</div>
                     <div className={s.actionButtonRow}>
                       <Button size="sm" onClick={() => openAiModal('fullbody_in_tenue', kit.id)} className={s.btnSmall}>
-                        {fbUrl ? '🔄 Opnieuw' : '✨ Genereer'}
+                        {fbUrl ? 'Opnieuw' : 'Genereer'}
                       </Button>
                       {fbUrl && !fbProcessing && (
                         <Button size="sm" variant="secondary" onClick={async () => {
@@ -124,10 +124,10 @@ export function MemberAssetsTab({
                             startProcessingPoll('fullbody', kit.id, null);
                           }
                         }} className={s.btnProcess}>
-                          {fbLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                          {fbLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                         </Button>
                       )}
-                      {fbUrl && fbLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                      {fbUrl && fbLineupReady && <span className={s.readyIndicator}>Ready</span>}
                       {fbUrl && (
                         <Button size="sm" variant="ghost" onClick={async () => {
                           if (!confirm('Weet je zeker dat je deze asset wilt verwijderen?')) return;
@@ -138,7 +138,7 @@ export function MemberAssetsTab({
                           if (kit.id === 'home') setForm(newForm);
                           const updated = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVV);
                           await handleMetadataUpdate(updated);
-                        }} className={s.btnDelete}>🗑️</Button>
+                        }} className={s.btnDelete}>Verwijder</Button>
                       )}
                     </div>
                   </div>
@@ -161,10 +161,10 @@ export function MemberAssetsTab({
                     {hbProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
                   </div>
                   <div className={s.cardFooterPadding}>
-                    <div className={s.variantLabel}>👤 Halfbody</div>
+                    <div className={s.variantLabel}>Halfbody</div>
                     <div className={s.actionButtonRow}>
                       <Button size="sm" onClick={() => cropHalfbodyFromFullbody(kit.id)} disabled={croppingHalfbody[kit.id] || !fullbodyRef} className={s.btnSmall} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
-                        {croppingHalfbody[kit.id] ? '⏳...' : hbUrl ? '🔄 Opnieuw' : '✂️ Crop'}
+                        {croppingHalfbody[kit.id] ? '...' : hbUrl ? 'Opnieuw' : 'Crop'}
                       </Button>
                       {hbUrl && (
                         <Button size="sm" variant="ghost" onClick={async () => {
@@ -174,7 +174,7 @@ export function MemberAssetsTab({
                           setVideoVariants(newVV);
                           const updated = mergeAssetsIntoMetadata(membership?.metadata, form, newVV);
                           await handleMetadataUpdate(updated);
-                        }} className={s.btnDelete}>🗑️</Button>
+                        }} className={s.btnDelete}>Verwijder</Button>
                       )}
                     </div>
                   </div>
@@ -197,10 +197,10 @@ export function MemberAssetsTab({
                     {cuProcessing && <div className={s.processingOverlay}>⏳ Bezig...</div>}
                   </div>
                   <div className={s.cardFooterPadding}>
-                    <div className={s.variantLabel}>📸 Close-up</div>
+                    <div className={s.variantLabel}>Close-up</div>
                     <div className={s.actionButtonRow}>
                       <Button size="sm" onClick={() => cropCloseupFromFullbody(kit.id)} disabled={croppingCloseup[kit.id] || !fullbodyRef} className={s.btnSmall} title={!fullbodyRef ? 'Genereer eerst een fullbody' : ''}>
-                        {croppingCloseup[kit.id] ? '⏳...' : cuUrl ? '🔄 Opnieuw' : '✂️ Crop'}
+                        {croppingCloseup[kit.id] ? '...' : cuUrl ? 'Opnieuw' : 'Crop'}
                       </Button>
                       {cuUrl && !cuProcessing && (
                         <Button size="sm" variant="secondary" onClick={async () => {
@@ -211,7 +211,7 @@ export function MemberAssetsTab({
                             startProcessingPoll('closeup', kit.id, null);
                           }
                         }} className={s.btnProcess}>
-                          {cuLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                          {cuLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                         </Button>
                       )}
                       {cuUrl && (
@@ -224,7 +224,7 @@ export function MemberAssetsTab({
                           if (kit.id === 'home') setForm(newForm);
                           const updated = mergeAssetsIntoMetadata(membership?.metadata, newForm, newVV);
                           await handleMetadataUpdate(updated);
-                        }} className={s.btnDelete}>🗑️</Button>
+                        }} className={s.btnDelete}>Verwijder</Button>
                       )}
                     </div>
                   </div>
@@ -236,7 +236,7 @@ export function MemberAssetsTab({
 
         {/* Team/Club Assets Section */}
         <div className={`pt-24 border-top ${m.inheritedSection}`}>
-          <h4 className="fs-14 fw-600 mb-8">🏟️ Geërfde Team Assets</h4>
+          <h4 className="fs-14 fw-600 mb-8">Geërfde Team Assets</h4>
           <p className={`fs-12 mb-16 ${m.inheritedDescription}`}>
             Deze assets worden geërfd van het team/seizoen en worden gebruikt als basis voor generatie.
           </p>

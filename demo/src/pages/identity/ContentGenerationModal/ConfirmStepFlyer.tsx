@@ -126,7 +126,7 @@ export function ConfirmStepFlyer({
                 <div className={`fs-12 text-muted ${css.variantDesc}`}>{opt.desc}</div>
               </div>
               {isSelected && (
-                <div className={`absolute rounded-full flex-center fw-700 text-white ${css.checkMark}`}>✓</div>
+                <div className={`absolute rounded-full flex-center fw-700 text-white ${css.checkMark}`}>OK</div>
               )}
             </button>
           );

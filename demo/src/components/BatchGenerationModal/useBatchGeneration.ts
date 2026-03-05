@@ -115,7 +115,7 @@ export function useBatchGeneration(
       } else if (kitType === 'legacy') {
         const tr = member.metadata?.teamreel_assets;
         const legacyUrl = tr?.media?.legacy_photo?.url || tr?.old?.profile_photo_url;
-        console.log(`🔍 Batch legacy photo for ${member.name}: legacyUrl=${legacyUrl}, profilePhotoUrl=${member.profilePhotoUrl}`);
+        console.log(`[Batch] legacy photo for ${member.name}: legacyUrl=${legacyUrl}, profilePhotoUrl=${member.profilePhotoUrl}`);
         personUrl = legacyUrl || member.profilePhotoUrl;
       } else {
         personUrl = member.profilePhotoUrl;

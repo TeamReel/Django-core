@@ -1,5 +1,9 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  CheckCircle2, Circle, Clock, AlertTriangle, Minus,
+  Settings, Zap, UserRound, ChevronUp, ChevronDown,
+} from 'lucide-react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
@@ -10,6 +14,7 @@ import { BatchGenerationModal, type BatchMember } from '../../components/BatchGe
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import SlotIcon from '../../components/SlotIcon';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './SeasonMediaTab.module.css';
 
@@ -197,7 +202,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                 onClick={() => setIsBatchModalOpen(true)}
                 className={s.mediaHeaderBtn}
               >
-                {'\uD83D\uDE80'} Batch Genereer ({batchSelectedMemberIds.size})
+                <Zap size={14} /> Batch Genereer ({batchSelectedMemberIds.size})
               </Button>
             )}
           </div>
@@ -239,7 +244,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                       <th key={slot.id} className={`detail-th text-center relative ${styles.slotColHeader}`} title={slot.label}>
                         <div className="flex-col items-center gap-2">
                           <span className={`block whitespace-nowrap fw-500 opacity-80 mb-4 ${styles.rotatedLabel}`}>{slot.label}</span>
-                          <span className={s.slotIcon}>{slot.icon}</span>
+                          <span className={s.slotIcon}><SlotIcon name={slot.icon} size={14} /></span>
                         </div>
                       </th>
                     ))}
@@ -253,7 +258,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                       {/* No batch checkbox for guest */}
                     </td>
                     <td className={`detail-td-text ${styles.guestStickyCol}`}>
-                      <span className={s.guestLabel}>{'\uD83C\uDFC3'} Gast Speler</span>
+                      <span className={s.guestLabel}><UserRound size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> Gast Speler</span>
                     </td>
                     {MEDIA_SLOTS.map((slot) => {
                       const guestSlotMap: Record<string, { has: boolean; templateId: string; label: string }> = {
@@ -274,14 +279,14 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                               title={guestSlot.has ? `${guestSlot.label}: Beschikbaar \u2014 klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
                               onClick={handleClick}
                             >
-                              {guestSlot.has ? '\u2705' : '\u2B1C'}
+                              {guestSlot.has ? <CheckCircle2 size={16} color="#22c55e" /> : <Circle size={16} color="#d1d5db" />}
                             </span>
                           </td>
                         );
                       }
                       return (
                         <td key={slot.id} className="detail-td text-center">
-                          <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}>\u2014</span>
+                          <span className={s.indicatorDisabled} title={`${slot.label}: N.v.t. voor gast`}><Minus size={16} color="#d1d5db" /></span>
                         </td>
                       );
                     })}
@@ -345,12 +350,12 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         </td>
                         {MEDIA_SLOTS.map((slot) => {
                           const procState = getMediaProcessingState(m, slot.id);
-                          const indicator = procState === 'processed' ? '\u2705'
-                            : procState === 'processing' ? '\u23F3'
-                            : procState === 'raw' ? '\uD83D\uDD36'
-                            : '\u2B1C';
+                          const indicatorNode = procState === 'processed' ? <CheckCircle2 size={16} color="#22c55e" />
+                            : procState === 'processing' ? <Clock size={16} color="#f59e0b" />
+                            : procState === 'raw' ? <AlertTriangle size={16} color="#f97316" />
+                            : <Circle size={16} color="#d1d5db" />;
                           const title = procState === 'processed' ? `${slot.label}: Lineup-ready`
-                            : procState === 'processing' ? `${slot.label}: Bezig met bewerken\u2026`
+                            : procState === 'processing' ? `${slot.label}: Bezig met bewerken…`
                             : procState === 'raw' ? `${slot.label}: Ruw (nog niet bewerkt)`
                             : `${slot.label}: Ontbreekt`;
                           const slotTabMap: Record<string, string> = {
@@ -369,10 +374,10 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                                   className="text-decoration-none"
                                   title={title}
                                 >
-                                  <span className={s.indicatorIcon}>{indicator}</span>
+                                  <span className={s.indicatorIcon}>{indicatorNode}</span>
                                 </Link>
                               ) : (
-                                <span className={s.indicatorIcon} title={title}>{indicator}</span>
+                                <span className={s.indicatorIcon} title={title}>{indicatorNode}</span>
                               )}
                             </td>
                           );
@@ -431,7 +436,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                   <div className={`${styles.mediaCard} ${styles.mediaCardGuest}`}>
                     <div className={styles.mediaCardBody}>
                       <div className={styles.mediaCardRow}>
-                        <span className={styles.mediaCardName}>{'\uD83C\uDFC3'} Gast Speler</span>
+                        <span className={styles.mediaCardName}><UserRound size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> Gast</span>
                         <span className={styles.mediaCardIndicators}>
                           {MEDIA_SLOTS.map((slot) => {
                             const guestSlot = guestSlots.find(gs => gs.id === slot.id);
@@ -453,7 +458,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             return next;
                           })}
                           aria-label={guestExpanded ? 'Hide' : 'Details'}
-                        >{guestExpanded ? '\u25B2' : '\u25BC'}</button>
+                        >{guestExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
                       </div>
                       {guestExpanded && (
                         <div className={styles.mediaCardDetails}>
@@ -465,7 +470,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                               { id: 'celebration', label: 'Viering', has: guestPlayer.has_celebration },
                             ].map((gs) => (
                               <div key={gs.id} className={styles.mediaCardSlot}>
-                                <span className={styles.mediaCardSlotIcon}>{gs.has ? '\u2705' : '\u2B1C'}</span>
+                                <span className={styles.mediaCardSlotIcon}>{gs.has ? <CheckCircle2 size={13} color="#22c55e" /> : <Circle size={13} color="#d1d5db" />}</span>
                                 <span className={styles.mediaCardSlotLabel}>{gs.label}</span>
                               </div>
                             ))}
@@ -541,17 +546,17 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             return next;
                           })}
                           aria-label={isExpanded ? 'Hide' : 'Details'}
-                        >{isExpanded ? '\u25B2' : '\u25BC'}</button>
+                        >{isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
                       </div>
                       {isExpanded && (
                         <div className={styles.mediaCardDetails}>
                           <div className={styles.mediaCardSlots}>
                             {MEDIA_SLOTS.map((slot) => {
                               const procState = getMediaProcessingState(m, slot.id);
-                              const indicator = procState === 'processed' ? '\u2705'
-                                : procState === 'processing' ? '\u23F3'
-                                : procState === 'raw' ? '\uD83D\uDD36'
-                                : '\u2B1C';
+                              const indicator = procState === 'processed' ? <CheckCircle2 size={13} color="#22c55e" />
+                                : procState === 'processing' ? <Clock size={13} color="#f59e0b" />
+                                : procState === 'raw' ? <AlertTriangle size={13} color="#f97316" />
+                                : <Circle size={13} color="#d1d5db" />;
                               const slotTabMap: Record<string, string> = {
                                 profile: 'input', legacy_photo: 'input',
                                 kit: 'assets', closeup: 'assets', legacy: 'assets',
@@ -585,26 +590,26 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
             <div className={s.legendRow}>
               {MEDIA_SLOTS.map((slot) => (
                 <div key={slot.id} className={s.legendItem}>
-                  <span>{slot.icon}</span>
+                  <span><SlotIcon name={slot.icon} size={14} /></span>
                   <span className={s.legendLabel}>{slot.label}</span>
                 </div>
               ))}
             </div>
             <div className={s.legendRowDivided}>
               <div className={s.legendItem}>
-                <span>{'\u2705'}</span>
+                <CheckCircle2 size={14} color="#22c55e" />
                 <span className={s.legendLabel}>Lineup-ready (bewerkt)</span>
               </div>
               <div className={s.legendItem}>
-                <span>{'\uD83D\uDD36'}</span>
+                <AlertTriangle size={14} color="#f97316" />
                 <span className={s.legendLabel}>Ruw (niet bewerkt)</span>
               </div>
               <div className={s.legendItem}>
-                <span>{'\u23F3'}</span>
+                <Clock size={14} color="#f59e0b" />
                 <span className={s.legendLabel}>Bezig met bewerken</span>
               </div>
               <div className={s.legendItem}>
-                <span>{'\u2B1C'}</span>
+                <Circle size={14} color="#d1d5db" />
                 <span className={s.legendLabel}>Ontbreekt</span>
               </div>
             </div>

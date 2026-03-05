@@ -39,12 +39,12 @@ export function getFileTypeFilter(mimeType: string): FileTypeFilter {
 }
 
 export function getFileIcon(mimeType: string): string {
-  if (mimeType.startsWith('image/')) return '🖼️';
-  if (mimeType.startsWith('video/')) return '🎬';
-  if (mimeType.startsWith('audio/')) return '🎵';
-  if (mimeType.includes('pdf')) return '📄';
-  if (mimeType.startsWith('font/')) return '🔤';
-  return '📁';
+  if (mimeType.startsWith('image/')) return 'image';
+  if (mimeType.startsWith('video/')) return 'film';
+  if (mimeType.startsWith('audio/')) return 'music';
+  if (mimeType.includes('pdf')) return 'file-text';
+  if (mimeType.startsWith('font/')) return 'type';
+  return 'folder';
 }
 
 export function formatFileSize(bytes: number): string {

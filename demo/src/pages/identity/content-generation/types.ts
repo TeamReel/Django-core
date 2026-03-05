@@ -238,8 +238,8 @@ export const CONTENT_TYPES = {
     label: 'Season',
     sportRequired: true,
     items: [
-      { id: 'duo_portret_cover', label: 'Duo Portret Cover', icon: '👥', subtype: 'duo_portret_cover' },
-      { id: 'duo_portret_overlay', label: 'Duo Portret Overlay', icon: '👥', subtype: 'duo_portret_overlay' },
+      { id: 'duo_portret_cover', label: 'Duo Portret Cover', icon: 'users', subtype: 'duo_portret_cover' },
+      { id: 'duo_portret_overlay', label: 'Duo Portret Overlay', icon: 'users', subtype: 'duo_portret_overlay' },
       { id: 'sidebyside_cover', label: 'Then vs Now Cover', icon: '⏪', subtype: 'sidebyside_cover' },
       { id: 'sidebyside_overlay', label: 'Then vs Now Overlay', icon: '⏪', subtype: 'sidebyside_overlay' },
       { id: 'transformation', label: 'Transformation', icon: '🔄', subtype: 'transformation' },

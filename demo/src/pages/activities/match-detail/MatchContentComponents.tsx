@@ -76,7 +76,7 @@ export function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo:
             onLoadedMetadata={(e) => { try { e.currentTarget.currentTime = 0.1; } catch { /* */ } }}
             className={styles.thumbnailMedia}
           />
-          <div className={`absolute flex-center fs-18 ${styles.playOverlay}`}>▶</div>
+          <div className={`absolute flex-center fs-18 ${styles.playOverlay}`}></div>
         </>
       ) : (
         <img src={url} alt="" className={styles.thumbnailMedia} />
@@ -89,7 +89,7 @@ export function Thumbnail({ url, isVideo, icon }: { url: string | null; isVideo:
 export function StatusBadge({ isGenerating, isFailed, hasMedia, workflowStatus }: {
   isGenerating: boolean; isFailed: boolean; hasMedia: boolean; workflowStatus: string | null;
 }) {
-  if (isGenerating) return <Badge variant="warning" size="sm">⏳ Bezig</Badge>;
+  if (isGenerating) return <Badge variant="warning" size="sm">Bezig</Badge>;
   if (isFailed) return <Badge variant="error" size="sm">✕ Mislukt</Badge>;
   if (workflowStatus === 'approved') return <Badge variant="success" size="sm">✓ Goedgekeurd</Badge>;
   if (workflowStatus === 'rejected') return <Badge variant="error" size="sm">✕ Afgekeurd</Badge>;

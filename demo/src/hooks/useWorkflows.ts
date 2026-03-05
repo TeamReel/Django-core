@@ -313,15 +313,15 @@ export function getStateDisplay(stateName: string): { color: string; bgColor: st
 
   switch (category) {
     case 'initial':
-      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: '📝', label };
+      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: 'file-text', label };
     case 'active':
-      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: '🔄', label };
+      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: 'refresh-cw', label };
     case 'review':
-      return { color: '#d97706', bgColor: '#fef3c7', icon: '👀', label };
+      return { color: '#d97706', bgColor: '#fef3c7', icon: 'eye', label };
     case 'terminal_success':
-      return { color: '#059669', bgColor: '#d1fae5', icon: '✅', label };
+      return { color: '#059669', bgColor: '#d1fae5', icon: 'check-circle-2', label };
     case 'terminal_failure':
-      return { color: '#dc2626', bgColor: '#fee2e2', icon: '❌', label };
+      return { color: '#dc2626', bgColor: '#fee2e2', icon: 'x-circle', label };
   }
 }
 
@@ -331,17 +331,17 @@ export function getActionDisplay(action: string): { color: string; bgColor: stri
   const label = action.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   if (a === 'approve' || a === 'publish' || a === 'resolve' || a === 'complete') {
-    return { color: '#fff', bgColor: '#059669', hoverBgColor: '#047857', icon: '✅', label };
+    return { color: '#fff', bgColor: '#059669', hoverBgColor: '#047857', icon: 'check-circle-2', label };
   }
   if (a === 'reject' || a === 'cancel' || a === 'close') {
-    return { color: '#fff', bgColor: '#dc2626', hoverBgColor: '#b91c1c', icon: '❌', label };
+    return { color: '#fff', bgColor: '#dc2626', hoverBgColor: '#b91c1c', icon: 'x-circle', label };
   }
   if (a === 'submit' || a === 'request_review') {
-    return { color: '#fff', bgColor: 'var(--color-blue-600)', hoverBgColor: '#1d4ed8', icon: '📤', label };
+    return { color: '#fff', bgColor: 'var(--color-blue-600)', hoverBgColor: '#1d4ed8', icon: 'send', label };
   }
   if (a === 'revise' || a === 'reopen' || a === 'resubmit') {
-    return { color: '#fff', bgColor: '#d97706', hoverBgColor: '#b45309', icon: '🔄', label };
+    return { color: '#fff', bgColor: '#d97706', hoverBgColor: '#b45309', icon: 'refresh-cw', label };
   }
   // Default
-  return { color: '#fff', bgColor: 'var(--app-muted-text)', hoverBgColor: '#4b5563', icon: '▶️', label };
+  return { color: '#fff', bgColor: 'var(--app-muted-text)', hoverBgColor: '#4b5563', icon: 'play', label };
 }

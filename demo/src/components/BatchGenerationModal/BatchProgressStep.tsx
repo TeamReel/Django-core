@@ -74,11 +74,11 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
     {members.map((member) => {
       const job = jobStatuses[member.id];
       const statusIcon =
-        job?.status === 'running' ? '⏳' :
-        job?.status === 'success' ? '✅' :
-        job?.status === 'error' ? '❌' :
-        job?.status === 'skipped' ? '⏭️' :
-        '⬜';
+        job?.status === 'running' ? 'P' :
+        job?.status === 'success' ? 'OK' :
+        job?.status === 'error' ? 'X' :
+        job?.status === 'skipped' ? 'S' :
+        '—';
 
       return (
         <div key={member.id} style={memberRowStyle}>

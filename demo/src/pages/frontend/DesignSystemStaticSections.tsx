@@ -80,7 +80,7 @@ export function LayoutComponentsSection() {
       <h2 className="ds-section-title">Layout Components</h2>
       <div className="grid-cols-2 gap-16 mb-16">
         <Card variant="filled" className="p-16">
-          <h3 className="ds-subsection-title">📊 Organization Layout</h3>
+          <h3 className="ds-subsection-title">Organization Layout</h3>
           <div className="border rounded-8 p-12 bg-surface">
             <div className="flex-row gap-12 mb-8">
               <div className={`flex-center rounded-6 fs-14 fw-600 ${styles.orgAvatar}`}>

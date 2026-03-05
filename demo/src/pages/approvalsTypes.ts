@@ -12,7 +12,7 @@ export type FilterState = 'all' | 'review' | 'active' | 'completed' | 'rejected'
 export type ContentTypeFilter = 'all' | 'ai_video' | 'ai_image' | 'lineup_video' | 'video_processing';
 
 export const CONTENT_TYPE_CHIPS: { key: ContentTypeFilter; label: string; icon: string }[] = [
-  { key: 'all', label: 'Alles', icon: '📋' },
+  { key: 'all', label: 'Alles', icon: 'clipboard-list' },
   { key: 'ai_video', label: 'AI Video', icon: '🎬' },
   { key: 'ai_image', label: 'AI Image', icon: '🖼️' },
   { key: 'lineup_video', label: 'Lineup Video', icon: '⚽' },

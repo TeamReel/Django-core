@@ -60,7 +60,7 @@ export function useMemberBatchAction({
             {
                 key: 'role',
                 label: 'Rol wijzigen',
-                icon: '🔐',
+                icon: 'lock',
                 description: isTeamContext
                     ? 'Wijzig de rol van geselecteerde members binnen het team'
                     : 'Wijzig de rol van geselecteerde members binnen de club',
@@ -69,14 +69,14 @@ export function useMemberBatchAction({
             {
                 key: 'assign_team',
                 label: 'Toewijzen aan team',
-                icon: '👥',
+                icon: 'users',
                 description: 'Voeg geselecteerde members toe aan een team als Team Member',
                 available: isClubContext && teams.length > 0,
             },
             {
                 key: 'delete',
                 label: 'Verwijderen',
-                icon: '🗑️',
+                icon: 'trash-2',
                 description: isTeamContext
                     ? 'Verwijder geselecteerde members uit het team'
                     : 'Verwijder geselecteerde members uit de organisatie',

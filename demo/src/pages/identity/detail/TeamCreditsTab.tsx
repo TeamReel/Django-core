@@ -116,7 +116,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
               {/* Transaction Timeline + Recent Activity */}
               <div className="mt-16">
                 <Card className="p-24 mb-12">
-                  <h3 className="m-0 mb-16 fs-18">📊 Transaction Timeline</h3>
+                  <h3 className="m-0 mb-16 fs-18">Transaction Timeline</h3>
                   {transactionsLoading ? (
                     <div className="text-center p-20 opacity-60">Loading transactions…</div>
                   ) : transactions.length === 0 ? (
@@ -176,7 +176,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
 
                 <Card className="p-24">
                   <div className="flex-between mb-16">
-                    <h3 className="m-0 fs-18">📋 Recent Activity</h3>
+                    <h3 className="m-0 fs-18">Recent Activity</h3>
                   </div>
 
                   {transactionsLoading ? (
@@ -259,7 +259,7 @@ export default function TeamCreditsTab(props: TeamCreditsTabProps) {
                   </div>
                 </Card>
                 <Card className="p-16 text-center">
-                  <div className="fs-12 opacity-60 uppercase">📊 Net</div>
+                  <div className="fs-12 opacity-60 uppercase">Net</div>
                   <div
                     className={`fw-800 ${styles.netValue}`}
                     data-positive={totals.net >= 0}

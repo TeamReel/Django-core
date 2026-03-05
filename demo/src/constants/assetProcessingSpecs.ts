@@ -222,19 +222,19 @@ export function isProcessing(value: string | AssetVariantValue | null | undefine
 export function getProcessingStateLabel(state: AssetProcessingState | null | undefined): { label: string; color: string; icon: string } {
   switch (state) {
     case 'raw':
-      return { label: 'Ruw', color: 'var(--color-amber-400)', icon: '🔶' };
+      return { label: 'Ruw', color: 'var(--color-amber-400)', icon: 'alert-triangle' };
     case 'processing':
-      return { label: 'Bezig...', color: 'var(--color-blue-500)', icon: '⏳' };
+      return { label: 'Bezig...', color: 'var(--color-blue-500)', icon: 'clock' };
     case 'cancelling':
-      return { label: 'Annuleren...', color: 'var(--color-blue-500)', icon: '⏹️' };
+      return { label: 'Annuleren...', color: 'var(--color-blue-500)', icon: 'square' };
     case 'cancelled':
-      return { label: 'Geannuleerd', color: 'var(--color-amber-400)', icon: '⏹️' };
+      return { label: 'Geannuleerd', color: 'var(--color-amber-400)', icon: 'square' };
     case 'processed':
-      return { label: 'Lineup-ready', color: 'var(--color-green-400)', icon: '✅' };
+      return { label: 'Lineup-ready', color: 'var(--color-green-400)', icon: 'check-circle-2' };
     case 'failed':
-      return { label: 'Fout', color: 'var(--color-red-500)', icon: '❌' };
+      return { label: 'Fout', color: 'var(--color-red-500)', icon: 'x-circle' };
     default:
       // null/undefined means no processing state yet - treat as raw
-      return { label: 'Ruw', color: 'var(--color-amber-400)', icon: '🔶' };
+      return { label: 'Ruw', color: 'var(--color-amber-400)', icon: 'alert-triangle' };
   }
 }

@@ -31,7 +31,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
         {/* Header */}
         <div style={headerStyle}>
           <div className="flex-row gap-12">
-            <span className="fs-24">🚀</span>
+
             <div>
               <h2 className="m-0 fs-18 fw-600">Batch AI Generatie</h2>
               <span className="fs-12 text-muted">
@@ -112,14 +112,14 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
               <div className="fs-13 text-muted">
                 ⏳ {batch.completedCount}/{members.length} verwerkt...
               </div>
-              <Button variant="secondary" onClick={batch.cancelBatch}>⏹ Stop</Button>
+              <Button variant="secondary" onClick={batch.cancelBatch}>Stop</Button>
             </>
           )}
 
           {batch.step === 'done' && (
             <>
               <div className="fs-13">
-                {batch.errorCount === 0 ? '✅ Batch voltooid!' : `⚠️ ${batch.errorCount} van ${members.length} mislukt`}
+                {batch.errorCount === 0 ? 'Batch voltooid!' : `${batch.errorCount} van ${members.length} mislukt`}
               </div>
               <Button variant="primary" onClick={() => { onBatchComplete?.(); onClose(); }}>
                 Sluiten

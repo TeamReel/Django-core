@@ -1,13 +1,14 @@
 /**
  * MemberMediaMatrix — Shared media completion matrix
  *
- * Shows a table of squad members × media slots with ✅/⬜ indicators.
+ * Shows a table of squad members × media slots with icon indicators.
  * Used on Season and Team detail pages (media tab).
  */
 
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Alert, Badge } from '@django-core/design-system';
+import SlotIcon from './SlotIcon';
 import SmartEmptyState from './SmartEmptyState';
 import { MEDIA_SLOTS } from '../constants/mediaSlots';
 import { memberHasMedia, countFilledMediaSlots } from '../utils/mediaHelpers';
@@ -93,7 +94,7 @@ export function MemberMediaMatrix({
                     <th key={slot.id} className={`${styles.th} ${styles.slotHeader}`} title={slot.label}>
                       <div className="flex-col gap-2 flex-center">
                         <span className={styles.rotatedLabel}>{slot.label}</span>
-                        <span className="fs-16">{slot.icon}</span>
+                        <span className="fs-16"><SlotIcon name={slot.icon} size={16} /></span>
                       </div>
                     </th>
                   ))}
@@ -127,10 +128,10 @@ export function MemberMediaMatrix({
                                 className={styles.slotLink}
                                 title={`Edit ${slot.label}`}
                               >
-                                <span className="fs-14">{has ? '✅' : '⬜'}</span>
+                                <span className="fs-14">{has ? 'OK' : '—'}</span>
                               </Link>
                             ) : (
-                              <span className="fs-14">{has ? '✅' : '⬜'}</span>
+                              <span className="fs-14">{has ? 'OK' : '—'}</span>
                             )}
                           </td>
                         );
@@ -153,7 +154,7 @@ export function MemberMediaMatrix({
             <div className="flex-wrap gap-16 fs-12">
               {MEDIA_SLOTS.map((slot) => (
                 <div key={slot.id} className="flex-row gap-4">
-                  <span>{slot.icon}</span>
+                  <span><SlotIcon name={slot.icon} size={14} /></span>
                   <span className="opacity-80">{slot.label}</span>
                 </div>
               ))}

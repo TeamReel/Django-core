@@ -36,10 +36,10 @@ import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 
 const KIT_ROLE_META = [
-  { id: 'home', label: 'Home', icon: '🏠' },
-  { id: 'away', label: 'Away', icon: '✈️' },
-  { id: 'third', label: 'Third', icon: '3️⃣' },
-  { id: 'keeper', label: 'Keeper', icon: '🧤' },
+  { id: 'home', label: 'Home', icon: 'home' },
+  { id: 'away', label: 'Away', icon: 'plane' },
+  { id: 'third', label: 'Third', icon: 'hash' },
+  { id: 'keeper', label: 'Keeper', icon: 'shield' },
 ];
 
 export default function ProjectSeasonMemberDetailPage() {
@@ -104,7 +104,7 @@ export default function ProjectSeasonMemberDetailPage() {
     return (
       <AppShell>
         <div className={s.accessDeniedPage}>
-          <div className={`mb-16 ${s.lockIcon}`}>🔒</div>
+          <div className={`mb-16 ${s.lockIcon}`}></div>
           <h2 className={`text-primary ${s.accessDeniedTitle}`}>Geen toegang</h2>
           <p className={`text-secondary ${s.accessDeniedMessage}`}>
             Je kunt alleen je eigen profiel bekijken.

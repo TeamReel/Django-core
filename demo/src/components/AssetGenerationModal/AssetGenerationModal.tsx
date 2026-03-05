@@ -347,7 +347,7 @@ function ModalFooter({
               className={`fs-12 fw-600 rounded-4 border-none text-white ${styles.footerSaveButton}`}
               data-disabled={selectedVariantIdx === null}
             >
-              {saving ? 'Opslaan...' : '💾 Opslaan als asset'}
+              {saving ? 'Opslaan...' : 'Opslaan als asset'}
             </button>
           </>
         )}

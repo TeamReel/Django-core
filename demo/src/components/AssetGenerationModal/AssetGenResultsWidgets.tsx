@@ -36,7 +36,7 @@ export function ResultsStep({
       {generation.step === 'submitting' && (
         <div className={`text-center ${styles.centeredSection}`}>
           <div className={`mb-16 ${styles.emojiIcon}`}>
-            {selectedTemplate?.outputType === 'video' ? '🎬' : '🎨'}
+            {selectedTemplate?.outputType === 'video' ? 'V' : 'A'}
           </div>
           <div className="fs-14 fw-600 mb-8">
             {selectedTemplate?.outputType === 'video'
@@ -53,7 +53,7 @@ export function ResultsStep({
       {/* Polling */}
       {generation.step === 'polling' && (
         <div className={`text-center ${styles.centeredSection}`}>
-          <div className={`mb-16 ${styles.emojiIcon}`}>🎬</div>
+          <div className={`mb-16 ${styles.emojiIcon}`}></div>
           <div className="fs-14 fw-600 mb-8">Video wordt gegenereerd...</div>
           <ProgressBar progress={generation.progress} />
           <div
@@ -82,7 +82,7 @@ export function ResultsStep({
                 : 'De afbeelding wordt op de achtergrond gegenereerd. Je krijgt een melding zodra hij klaar is.'}
           </div>
           <div className={styles.queuedInfoBox}>
-            <span>📥</span>
+            <span></span>
             <span>{requireApproval ? 'Keur goed via' : 'Volg de voortgang in'}</span>
             <a
               href={requireApproval ? '/approvals' : '/approvals?tab=ai_queue'}
@@ -99,7 +99,7 @@ export function ResultsStep({
         <div
           className={`text-center ${styles.errorSection}`}
         >
-          <div className={`mb-16 ${styles.emojiIcon}`}>❌</div>
+          <div className={`mb-16 ${styles.emojiIcon}`}></div>
           <div className="fs-14 fw-600 mb-8">Generatie mislukt</div>
           <div className="fs-12 mb-16">{generation.error}</div>
           <Button onClick={handleRegenerate}>Opnieuw proberen</Button>

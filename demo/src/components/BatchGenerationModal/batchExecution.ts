@@ -108,7 +108,7 @@ async function tryProcessExistingVariant(
 
   if (!existingVariant) return false;
 
-  console.log(`🔄 Batch: Found existing ${selectedTemplate.category} for ${member.name}: ${existingVariant.key}`);
+  console.log(`[Batch]: Found existing ${selectedTemplate.category} for ${member.name}: ${existingVariant.key}`);
   setJobStatuses((prev) => ({
     ...prev,
     [member.id]: { status: 'running', error: `Bestaande ${existingVariant!.key} verwerken…` },
@@ -237,7 +237,7 @@ async function generateForMember(
     if (!val) continue;
     let safeVal = val;
     if (!isValidUrl(safeVal)) safeVal = encodeURI(safeVal);
-    if (!isValidUrl(safeVal)) { console.warn(`⚠️ Batch: skipping invalid URL for ${key}:`, val); continue; }
+    if (!isValidUrl(safeVal)) { console.warn(`Batch: skipping invalid URL for ${key}:`, val); continue; }
 
     if (key === 'person') inputImageUrls['person_photo'] = safeVal;
     else if (key === 'reference') inputImageUrls['reference_photo'] = safeVal;
@@ -273,13 +273,13 @@ async function generateForMember(
     if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
     if (routedToApproval) {
-      console.log(`📋 Batch: image task ${taskId} for ${member.name} → approval queue`);
+      console.log(`[Batch]: image task ${taskId} for ${member.name} → approval queue`);
       setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'success', error: '→ Approvals wachtrij' } }));
       return;
     }
 
     // Video: poll for completion
-    console.log(`🎬 Batch: async video task ${taskId} for ${member.name}`);
+    console.log(`[Batch]: async video task ${taskId} for ${member.name}`);
     setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running', error: 'Video wordt gegenereerd…' } }));
 
     const POLL_INTERVAL = 5_000;

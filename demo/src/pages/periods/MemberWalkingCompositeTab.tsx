@@ -81,7 +81,7 @@ export function MemberWalkingCompositeTab({
             {legacyFullbodyUrl ? (
               <img src={legacyFullbodyUrl} alt="Legacy" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className={styles.missingHint}>⚠️ Genereer eerst Legacy Fullbody</div>
+              <div className={styles.missingHint}>Genereer eerst Legacy Fullbody</div>
             )}
           </div>
           <div className={`${s.prerequisiteCard} ${styles.prerequisiteCard}`} data-ready={!!currentFullbodyUrl}>
@@ -89,7 +89,7 @@ export function MemberWalkingCompositeTab({
             {currentFullbodyUrl ? (
               <img src={currentFullbodyUrl} alt="Current" className={s.prereqThumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             ) : (
-              <div className={styles.missingHint}>⚠️ Genereer eerst Fullbody</div>
+              <div className={styles.missingHint}>Genereer eerst Fullbody</div>
             )}
           </div>
         </div>
@@ -113,7 +113,7 @@ export function MemberWalkingCompositeTab({
                 <div className={s.variantLabel}>📸 Ver Beeld</div>
                 <div className={s.actionButtonRow}>
                   <Button size="sm" onClick={() => openAiModal('walking_composite_far', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.fullWidth}`}>
-                    {hasFarImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                    {hasFarImage ? 'Opnieuw' : 'Genereer'}
                   </Button>
                 </div>
               </div>
@@ -135,7 +135,7 @@ export function MemberWalkingCompositeTab({
                 <div className={s.variantLabel}>📸 Dichtbij Beeld</div>
                 <div className={s.actionButtonRow}>
                   <Button size="sm" onClick={() => openAiModal('walking_composite_near', 'home', legacyFullbodyUrl, null, currentFullbodyUrl)} disabled={!hasBothInputs} className={`${s.btnSmall} ${styles.fullWidth}`}>
-                    {hasNearImage ? '🔄 Opnieuw' : '✨ Genereer'}
+                    {hasNearImage ? 'Opnieuw' : 'Genereer'}
                   </Button>
                 </div>
               </div>
@@ -177,7 +177,7 @@ export function MemberWalkingCompositeTab({
                             startProcessingPoll('walking_composite', 'default');
                           }
                         }} className={s.btnProcess}>
-                          {walkingVideoLineupReady ? '🔄 Opnieuw bewerken' : '🔧 Bewerken'}
+                          {walkingVideoLineupReady ? 'Opnieuw bewerken' : 'Bewerken'}
                         </Button>
                       )}
                       {walkingVideoCancellingOrProcessing && (
@@ -197,10 +197,10 @@ export function MemberWalkingCompositeTab({
                             }
                           }
                         }} className={s.btnCancelOrange}>
-                          {walkingVideoNormalized?.processing_state === 'cancelling' ? '❌ Force Cancel' : '⏹️ Cancel'}
+                          {walkingVideoNormalized?.processing_state === 'cancelling' ? 'Force Cancel' : 'Cancel'}
                         </Button>
                       )}
-                      {walkingVideoLineupReady && <span className={s.readyIndicator}>✓ Ready</span>}
+                      {walkingVideoLineupReady && <span className={s.readyIndicator}>Ready</span>}
                     </>
                   ) : (
                     <Button size="sm" onClick={() => { if (farImageUrl) openAiModal('walking_composite_video', 'home', farImageUrl, null, nearImageUrl); }} disabled={!(hasFarImage && hasNearImage)} className={`${s.btnSmall} ${styles.fullWidth}`}>

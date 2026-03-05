@@ -90,7 +90,7 @@ export function MembersStep({
                         <div className={`fs-11 text-muted ${styles.optionDesc}`}>{opt.desc}</div>
                         </div>
                         {isSelected && (
-                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadge}`}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadge}`}>OK</div>
                         )}
                       </button>
                     );
@@ -121,7 +121,7 @@ export function MembersStep({
                       >
                         <span className="fs-13 fw-600">{opt.label}</span>
                         {isSelected && (
-                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeSmall}`}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeSmall}`}>OK</div>
                         )}
                       </button>
                     );
@@ -151,7 +151,7 @@ export function MembersStep({
                         <span className="fs-12 fw-600">{opt.label}</span>
                         <span className={`text-muted ${styles.introDesc}`}>{opt.desc}</span>
                         {isSelected && (
-                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeSmall}`}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeSmall}`}>OK</div>
                         )}
                       </button>
                     );
@@ -178,7 +178,7 @@ export function MembersStep({
                       Standaard
                     </div>
                     {!selectedBackgroundUrl && (
-                      <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>✓</div>
+                      <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>OK</div>
                     )}
                   </button>
 
@@ -197,7 +197,7 @@ export function MembersStep({
                           {bg.label || bg.profile_name || 'Locatie'}
                         </div>
                         {isSelected && (
-                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>✓</div>
+                          <div className={`absolute rounded-full flex-center fw-700 ${styles.checkBadgeTiny}`}>OK</div>
                         )}
                       </button>
                     );

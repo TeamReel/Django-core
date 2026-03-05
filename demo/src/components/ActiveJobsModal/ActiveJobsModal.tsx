@@ -216,7 +216,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
             <div
               className={`text-center ${styles.emptyState}`}
             >
-              <div className={`mb-12 ${styles.emptyIcon}`}>✅</div>
+              <div className={`mb-12 ${styles.emptyIcon}`}></div>
               Geen actieve verwerkingsjobs
             </div>
           )}

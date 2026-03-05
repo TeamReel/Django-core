@@ -40,7 +40,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
       const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(membershipId);
 
-      console.log('💾 Member data check:', {
+      console.log('[Save] Member data check:', {
         membershipId,
         isValidUuid,
         memberData: member,
@@ -62,7 +62,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         return;
       }
 
-      console.log('💾 Saving member roles:', {
+      console.log('[Save] Saving member roles:', {
         membershipId,
         projectId,
         functionalRoles,
@@ -90,12 +90,12 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
       if (!res.ok) {
         const text = await res.text();
-        console.error('❌ Save failed:', text);
+        console.error('[Error] Save failed:', text);
         throw new Error(text || 'Failed to update member');
       }
 
       const responseData = await res.json();
-      console.log('✅ Save response:', responseData);
+      console.log('[OK] Save response:', responseData);
 
       onSaved(membershipId, editAccessRole, functionalRoles);
     } catch (err: any) {
@@ -123,7 +123,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
         {/* Access Role Section */}
         <div style={{ marginBottom: '24px' }}>
-          <label className={s.fieldLabel}>🔐 Access Role</label>
+          <label className={s.fieldLabel}>Access Role</label>
           <div className={s.radioGroup}>
             {accessRoleOptions.map((opt) => {
               const isSelected = editAccessRole === opt.value;

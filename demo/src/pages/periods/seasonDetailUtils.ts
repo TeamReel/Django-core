@@ -52,12 +52,12 @@ export type AccessRoleOption = {
 export const getAccessRoleOptions = (isTeamRoute: boolean): AccessRoleOption[] =>
   isTeamRoute
     ? [
-        { value: 'admin', label: 'Team Admin', description: 'Volledige toegang: wedstrijden, content, lineups, profielen', icon: '🛡️' },
-        { value: 'viewer', label: 'Team Member', description: 'Beperkt: eigen content & profiel bewerken, rest alleen bekijken', icon: '👤' },
+        { value: 'admin', label: 'Team Admin', description: 'Volledige toegang: wedstrijden, content, lineups, profielen', icon: 'shield' },
+        { value: 'viewer', label: 'Team Member', description: 'Beperkt: eigen content & profiel bewerken, rest alleen bekijken', icon: 'user' },
       ]
     : [
-        { value: 'admin', label: 'Club Admin', description: 'Volledige toegang: club, teams, wedstrijden, content', icon: '🏛️' },
-        { value: 'viewer', label: 'Supporter', description: 'Alleen-lezen: wedstrijden bekijken', icon: '👀' },
+        { value: 'admin', label: 'Club Admin', description: 'Volledige toegang: club, teams, wedstrijden, content', icon: 'landmark' },
+        { value: 'viewer', label: 'Supporter', description: 'Alleen-lezen: wedstrijden bekijken', icon: 'eye' },
       ];
 
 // ─── Functional-role helpers ─────────────────────────────────────────

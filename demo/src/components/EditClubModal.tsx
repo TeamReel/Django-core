@@ -186,7 +186,7 @@ export default function EditClubModal({
                 className={`flex-center rounded-12 overflow-hidden ${styles.logoPreview}`}
               >
                 {uploading ? (
-                  <span className="fs-24">⏳</span>
+                  <span className="text-muted fs-12">Laden...</span>
                 ) : previewUrl ? (
                   <img
                     src={previewUrl}

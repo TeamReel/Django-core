@@ -85,7 +85,7 @@ export function DocsPage() {
                           <td className="p-12 fw-600">{module.id}</td>
                           <td className="p-12">{module.name}</td>
                           <td className="p-12">{getStatusBadge(module.status)}</td>
-                          <td className="p-12">{module.docs ? <span className={styles.checkMark}>✓</span> : <span className={styles.crossMark}>✗</span>}</td>
+                          <td className="p-12">{module.docs ? <span className={styles.checkMark}>OK</span> : <span className={styles.crossMark}>✗</span>}</td>
                         </tr>
                       ))}
                     </tbody>
