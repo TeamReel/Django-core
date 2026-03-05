@@ -41,7 +41,7 @@
   flex-wrap: wrap;
 }
 
-/* ── Desktop-only table ─────────────────────────────────────────────── */
+/* ── Desktop / mobile toggle ─────────────────────────────────────────── */
 .desktopTable {
   display: block;
 }
@@ -50,10 +50,73 @@
   display: none;
 }
 
-/* ── Mobile card list ───────────────────────────────────────────────── */
+/* ── Member card (base styles — hidden on desktop via .mobileList) ── */
+.memberCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--app-surface, #fff);
+}
+
+.memberCard[data-selected='true'] {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.memberCardCheckbox {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.memberCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberCardName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--app-text);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberCardEmail {
+  font-size: 12px;
+  color: var(--app-muted-text, #6b7280);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberCardBadges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.memberCardActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.memberCardActions button {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+/* ── Mobile overrides ───────────────────────────────────────────────── */
 @media (max-width: 639px) {
   .desktopTable {
-    display: none;
+    display: none !important;
   }
 
   .mobileList {
@@ -66,7 +129,6 @@
     padding: 12px;
   }
 
-  /* Toolbar stacked */
   .filterBar {
     flex-direction: column;
     align-items: stretch;
@@ -74,68 +136,5 @@
 
   .searchInput {
     width: 100%;
-  }
-
-  /* Member card */
-  .memberCard {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--app-border, #e5e7eb);
-    border-radius: 10px;
-    background: var(--app-surface, #fff);
-  }
-
-  .memberCard[data-selected='true'] {
-    background: rgba(59, 130, 246, 0.06);
-    border-color: rgba(59, 130, 246, 0.25);
-  }
-
-  .memberCardCheckbox {
-    margin-top: 3px;
-    flex-shrink: 0;
-  }
-
-  .memberCardBody {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .memberCardName {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--app-text);
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .memberCardEmail {
-    font-size: 12px;
-    color: var(--app-muted-text, #6b7280);
-    margin-top: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .memberCardBadges {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-  }
-
-  .memberCardActions {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-  }
-
-  .memberCardActions button {
-    font-size: 12px;
-    padding: 4px 10px;
   }
 }

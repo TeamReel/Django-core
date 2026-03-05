@@ -54,7 +54,7 @@
   background: rgba(59, 130, 246, 0.06);
 }
 
-/* ── Desktop-only table ─────────────────────────────────────────────── */
+/* ── Desktop / mobile toggle ─────────────────────────────────────────── */
 .desktopTable {
   display: block;
 }
@@ -63,10 +63,92 @@
   display: none;
 }
 
-/* ── Mobile card list ───────────────────────────────────────────────── */
+/* ── Media card (base styles — hidden on desktop via .mobileList) ── */
+.mediaCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--app-surface, #fff);
+}
+
+.mediaCard[data-selected='true'] {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.mediaCardCheckbox {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.mediaCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.mediaCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.mediaCardName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--app-text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.mediaCardName:hover {
+  text-decoration: underline;
+}
+
+.mediaCardSlots {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px 4px;
+  margin-top: 8px;
+}
+
+.mediaCardSlot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 10px;
+  color: var(--app-muted-text, #6b7280);
+  text-decoration: none;
+}
+
+.mediaCardSlotIcon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.mediaCardSlotLabel {
+  font-size: 9px;
+  text-align: center;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.mediaCardGuest {
+  background: rgba(167, 139, 250, 0.06);
+  border-color: rgba(167, 139, 250, 0.25);
+}
+
+/* ── Mobile overrides ───────────────────────────────────────────────── */
 @media (max-width: 639px) {
   .desktopTable {
-    display: none;
+    display: none !important;
   }
 
   .mobileList {
@@ -77,93 +159,5 @@
 
   .cardPaddingTop {
     padding: 12px 12px 0 12px;
-  }
-
-  /* Header buttons wrap */
-  .cardPaddingTop .flex-row {
-    flex-wrap: wrap;
-  }
-
-  /* Member media card */
-  .mediaCard {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--app-border, #e5e7eb);
-    border-radius: 10px;
-    background: var(--app-surface, #fff);
-  }
-
-  .mediaCard[data-selected='true'] {
-    background: rgba(59, 130, 246, 0.06);
-    border-color: rgba(59, 130, 246, 0.25);
-  }
-
-  .mediaCardCheckbox {
-    margin-top: 3px;
-    flex-shrink: 0;
-  }
-
-  .mediaCardBody {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .mediaCardTop {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .mediaCardName {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--app-text);
-    text-decoration: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0;
-  }
-
-  .mediaCardName:hover {
-    text-decoration: underline;
-  }
-
-  .mediaCardSlots {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 2px 4px;
-    margin-top: 8px;
-  }
-
-  .mediaCardSlot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1px;
-    font-size: 10px;
-    color: var(--app-muted-text, #6b7280);
-    text-decoration: none;
-  }
-
-  .mediaCardSlotIcon {
-    font-size: 16px;
-    line-height: 1;
-  }
-
-  .mediaCardSlotLabel {
-    font-size: 9px;
-    text-align: center;
-    line-height: 1.1;
-    letter-spacing: -0.01em;
-  }
-
-  /* Guest card highlight */
-  .mediaCardGuest {
-    background: rgba(167, 139, 250, 0.06);
-    border-color: rgba(167, 139, 250, 0.25);
   }
 }
