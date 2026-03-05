@@ -115,3 +115,98 @@
   font-weight: 700;
   color: var(--app-text);
 }
+
+/* ────────────────── Mobile (≤ 768px) ────────────────── */
+@media (max-width: 768px) {
+  .tabBar {
+    gap: 0;
+  }
+
+  .tabButton {
+    flex: 1;
+    min-height: 44px;
+    text-align: center;
+    font-size: 0.8125rem;
+    padding: 10px 8px;
+  }
+
+  .tableWrapper {
+    max-height: calc(100dvh - 280px);
+    border-radius: 6px;
+    /* Hint that content scrolls horizontally */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .colFeature {
+    width: 180px;
+    min-width: 150px;
+  }
+
+  .colRole {
+    width: 60px;
+    min-width: 52px;
+  }
+
+  .thFeature {
+    min-width: 150px;
+    font-size: 0.75rem;
+    position: static;
+    z-index: auto;
+  }
+
+  .thRole {
+    font-size: 0.6875rem;
+    position: static;
+    z-index: auto;
+    padding: 6px 4px;
+  }
+
+  .permissionNameTd {
+    position: static;
+    z-index: auto;
+    font-size: 0.8125rem;
+    min-width: 150px;
+  }
+
+  .permissionDesc {
+    font-size: 0.6875rem;
+  }
+
+  .permissionKey {
+    display: none; /* Hide raw key on mobile */
+  }
+
+  .roleCell {
+    font-size: 0.875rem;
+    padding: 6px 4px;
+  }
+
+  .categoryLabel {
+    font-size: 0.6875rem;
+  }
+
+  .categoryCount {
+    font-size: 0.6875rem;
+  }
+
+  .categoryBar {
+    padding: 6px 8px;
+  }
+}
+
+/* ────────────────── Small phones (≤ 480px) ────────────────── */
+@media (max-width: 480px) {
+  .colFeature {
+    width: 140px;
+    min-width: 120px;
+  }
+
+  .colRole {
+    width: 48px;
+    min-width: 44px;
+  }
+
+  .permissionNameTd {
+    min-width: 120px;
+  }
+}

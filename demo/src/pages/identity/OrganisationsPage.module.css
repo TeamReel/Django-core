@@ -55,3 +55,59 @@
   background-color: var(--app-surface);
   color: var(--app-error);
 }
+
+/* ────────────────── Mobile (≤ 768px) ────────────────── */
+@media (max-width: 768px) {
+  .headerActions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .headerActions > * {
+    width: 100%;
+  }
+
+  .colWide {
+    min-width: 100px;
+  }
+
+  .colNarrow {
+    min-width: 64px;
+  }
+
+  .orgNameLink {
+    font-size: 0.8125rem;
+  }
+
+  .creditBalance {
+    font-size: 0.8125rem;
+  }
+
+  .actionBtn {
+    padding: 8px 10px;
+    min-height: 36px;
+    font-size: 0.6875rem;
+  }
+
+  .statusSelect {
+    min-height: 44px;
+    width: 100%;
+  }
+}
+
+/* ────────────────── Small phones (≤ 480px) ────────────────── */
+@media (max-width: 480px) {
+  .colWide {
+    min-width: 80px;
+  }
+
+  .colNarrow {
+    min-width: 52px;
+  }
+
+  .actionBtn {
+    padding: 6px 8px;
+    font-size: 0.625rem;
+  }
+}
