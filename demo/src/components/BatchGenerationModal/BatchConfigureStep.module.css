@@ -1,28 +1,36 @@
 /* BatchConfigureStep.module.css */
 
 .templateLabel {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
-.templateButton {
-  padding: 6px 10px;
-  border: 2px solid var(--app-border, #444);
+.templateSelect {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #555);
   background: var(--app-surface-2, #252540);
-  white-space: nowrap;
-  flex-shrink: 0;
+  color: var(--app-text, #e0e0e0);
+  font-size: 13px;
+  appearance: auto;
+  cursor: pointer;
 }
 
-.templateButton[data-selected='true'] {
-  border-color: var(--color-blue-500);
-  background: var(--color-blue-500-alpha-15, rgba(59, 130, 246, 0.15));
+.templateInfo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 4px 0;
 }
 
 .videoBadge {
   font-size: 10px;
+  flex-shrink: 0;
 }
 
 .defaultParamsLabel {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .paramGroup {
@@ -146,9 +154,9 @@
 
 /* ── Mobile-specific tweaks ── */
 @media (max-width: 767px) {
-  .templateButton {
-    padding: 5px 8px;
-    font-size: 12px !important;
+  .templateSelect {
+    font-size: 12px;
+    padding: 6px 10px;
   }
 
   .memberRow {

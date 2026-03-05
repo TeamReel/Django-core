@@ -5,6 +5,7 @@ import React from 'react';
 import { Badge } from '@django-core/design-system';
 import type { AssetTemplate, TemplateParameter } from '../../constants/assetTemplates';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
+import SlotIcon from '../SlotIcon';
 import type { BatchMember, MemberParams } from './batchTypes';
 import styles from './BatchConfigureStep.module.css';
 
@@ -45,33 +46,35 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
 }) => (
   <>
     {/* Template selector */}
-    <div className="mb-20">
-      <label className={`block fs-13 fw-600 ${styles.templateLabel}`}>
+    <div className="mb-16">
+      <label className={`block fs-12 fw-600 ${styles.templateLabel}`}>
         Template
       </label>
-      <div className="flex-row gap-8 flex-wrap">
+      <select
+        value={selectedTemplateId}
+        onChange={(e) => setSelectedTemplateId(e.target.value)}
+        className={styles.templateSelect}
+      >
         {memberTemplates.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setSelectedTemplateId(t.id)}
-            className={`rounded-8 text-primary cursor-pointer fs-13 flex-row items-center gap-6 ${styles.templateButton}`}
-            data-selected={selectedTemplateId === t.id}
-          >
-            <span>{t.icon}</span>
-            <span>{t.name}</span>
-            {t.outputType === 'video' && (
-              <Badge variant="info" className={styles.videoBadge}>Video</Badge>
-            )}
-          </button>
+          <option key={t.id} value={t.id}>
+            {t.name}{t.outputType === 'video' ? ' (Video)' : ''}
+          </option>
         ))}
-      </div>
+      </select>
+      {selectedTemplate && (
+        <div className={styles.templateInfo}>
+          <SlotIcon name={selectedTemplate.icon} size={14} />
+          <span className="fs-11 text-muted">{selectedTemplate.description}</span>
+          {selectedTemplate.outputType === 'video' && <Badge variant="info" className={styles.videoBadge}>Video</Badge>}
+        </div>
+      )}
     </div>
 
     {/* Default params */}
     {selectedTemplate && (
-      <div className="mb-20">
-        <label className={`block fs-13 fw-600 ${styles.defaultParamsLabel}`}>
-          Standaard Instellingen (voor alle members)
+      <div className="mb-16">
+        <label className={`block fs-12 fw-600 ${styles.defaultParamsLabel}`}>
+          Instellingen
         </label>
         <div className="flex-row flex-wrap gap-12 p-12 rounded-8 bg-surface-2 border">
           {Object.entries(selectedTemplate.parameters).map(([key, param]) => {
@@ -115,9 +118,9 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
 
     {/* Member list */}
     <div>
-      <div className="flex-between mb-8">
-        <label className="fs-13 fw-600">Members ({members.length})</label>
-        <span className="fs-11 text-muted">Klik op een member om instellingen aan te passen</span>
+      <div className="flex-between mb-6">
+        <label className="fs-12 fw-600">Members ({members.length})</label>
+        <span className="fs-10 text-muted">Tik om aan te passen</span>
       </div>
 
       {members.map((member) => {
