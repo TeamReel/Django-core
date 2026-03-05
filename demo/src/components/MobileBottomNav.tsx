@@ -78,22 +78,29 @@ export default function MobileBottomNav() {
     const currentPath = location.pathname;
 
     if (tab.id === 'home') {
-      return currentPath === '/' || currentPath === '/dashboard' || currentPath === '/recents' || currentPath === '/favorites';
+      return ['/', '/dashboard', '/recents', '/favorites', '/directory'].includes(currentPath);
     }
 
     if (tab.id === 'season') {
-      // Active when on a team/season/competition path (4-6 path segments in vanity URLs)
-      const segs = currentPath.split('/').filter(Boolean);
-      if (segs.length >= 4 && segs.length <= 6) return true;
-      return false;
+      // Active when on team, season, competition, or match page under current team path
+      if (teamPath === '/dashboard') return false;
+      return currentPath === teamPath || currentPath.startsWith(teamPath + '/');
     }
 
     if (tab.id === 'gallery') {
-      return currentPath.startsWith('/studio');
+      return currentPath.startsWith('/studio') || currentPath.startsWith('/approvals');
     }
 
     if (tab.id === 'profile') {
-      return currentPath.startsWith('/profile') || currentPath.startsWith('/preferences') || currentPath.startsWith('/credits');
+      return (
+        currentPath.startsWith('/profile') ||
+        currentPath.startsWith('/preferences') ||
+        currentPath.startsWith('/credits') ||
+        currentPath.startsWith('/memberships') ||
+        currentPath.startsWith('/billing') ||
+        currentPath.startsWith('/notifications') ||
+        currentPath === '/settings'
+      );
     }
 
     return currentPath.startsWith(tab.path);
@@ -110,10 +117,10 @@ export default function MobileBottomNav() {
         onClick={() => { haptic.light(); tab.path && navigate(tab.path); }}
         aria-label={tab.label}
         aria-current={active ? 'page' : undefined}
-        className={`flex-1 flex-col flex-center cursor-pointer transition ${styles.tab} ${active ? styles.active : ''}`}
+        className={`${styles.tab} ${active ? styles.active : ''}`}
       >
         {/* Icon with filled pill background when active */}
-        <span className={`flex-center rounded-12 ${styles.iconPill}`}>
+        <span className={styles.iconPill}>
           <Icon
             size={20}
             strokeWidth={active ? 2.2 : 1.6}
@@ -130,18 +137,16 @@ export default function MobileBottomNav() {
 
   return (
     <>
-      <nav
-        className={`mobile-bottom-nav fixed bg-surface border-top z-1000 safe-bottom ${styles.nav}`}
-      >
+      <nav className={styles.nav}>
         {/* Left tabs: Home, Season */}
         {tabs.slice(0, 2).map(renderTab)}
 
         {/* Center: raised + Create button */}
-        <div className="flex-1 flex-center relative">
+        <div className={styles.createWrap}>
           <button
             onClick={() => setWizardOpen(true)}
             aria-label="Create content"
-            className={`absolute rounded-full text-white cursor-pointer flex-center ${styles.createButton}`}
+            className={styles.createButton}
           >
             <Plus size={26} strokeWidth={2.5} />
           </button>

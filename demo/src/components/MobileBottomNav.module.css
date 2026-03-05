@@ -2,6 +2,7 @@
 
 /* ── Nav bar container ───────────────────────────────────────────────── */
 .nav {
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -10,16 +11,27 @@
   align-items: center;
   justify-content: space-around;
   padding: 0 4px;
+  background-color: var(--app-surface, #fff);
+  border-top: 1px solid var(--app-border, #e5e7eb);
+  z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Tab button ──────────────────────────────────────────────────────── */
 .tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 2px;
   min-width: 44px;
   min-height: 44px;
   padding: 6px 4px;
   background-color: transparent;
   border: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
   color: var(--app-muted-text);
 }
 
@@ -29,8 +41,12 @@
 
 /* ── Icon pill (filled when active) ──────────────────────────────────── */
 .iconPill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 24px;
+  border-radius: 12px;
   background-color: transparent;
   transition: background-color 0.2s ease;
 }
@@ -52,13 +68,29 @@
   color: var(--app-primary);
 }
 
+/* ── Center create wrap ──────────────────────────────────────────────── */
+.createWrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
 /* ── Center create button ────────────────────────────────────────────── */
 .createButton {
+  position: absolute;
   bottom: 8px;
   width: 52px;
   height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
   background-color: var(--app-primary, #3B8EA5);
-  border: 3px solid var(--app-surface);
+  border: 3px solid var(--app-surface, #fff);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.15s ease;
 }
