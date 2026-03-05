@@ -1,0 +1,272 @@
+/* ============================================================================
+   TeamOverviewTab — Premium mobile-first overview (Season-style)
+   ============================================================================ */
+
+.overviewRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Hero card ── */
+.heroCard {
+  background: linear-gradient(135deg, var(--app-surface-2, #1e293b) 0%, var(--app-surface, #0f172a) 100%);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.heroTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--app-text);
+  margin-bottom: 4px;
+}
+
+.heroSubtitle {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  margin-bottom: 20px;
+}
+
+.heroStats {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+}
+
+.heroStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.heroStatValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1;
+}
+
+.heroStatLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Section card (shared) ── */
+.sectionCard {
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--app-border, #334155);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.sectionLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: #818cf8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Member list ── */
+.memberList {
+  display: flex;
+  flex-direction: column;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.memberRow:last-child {
+  border-bottom: none;
+}
+
+.memberAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--app-surface, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.memberName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Season list ── */
+.seasonList {
+  display: flex;
+  flex-direction: column;
+}
+
+.seasonRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+  text-decoration: none;
+  color: var(--app-text);
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+
+.seasonRow:last-child {
+  border-bottom: none;
+}
+
+.seasonRow:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+.seasonInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.seasonName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seasonMeta {
+  font-size: 12px;
+  color: var(--app-muted-text);
+}
+
+.seasonArrow {
+  font-size: 18px;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+/* ── Competition list ── */
+.compList {
+  display: flex;
+  flex-direction: column;
+}
+
+.compRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.compRow:last-child {
+  border-bottom: none;
+}
+
+.compInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.compName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.compSport {
+  font-size: 12px;
+  color: var(--app-muted-text);
+}
+
+/* ── Details card ── */
+.detailList {
+  display: flex;
+  flex-direction: column;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+}
+
+.detailValue {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+  text-align: right;
+  max-width: 60%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Empty / loading ── */
+.emptyText {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--app-muted-text);
+}
+
+.loadingText {
+  padding: 16px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--app-muted-text);
+}

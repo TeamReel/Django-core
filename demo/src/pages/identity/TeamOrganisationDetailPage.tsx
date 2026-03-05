@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card } from '@django-core/design-system';
-import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core/page-templates';
+import {
+  Check, Pencil, Eye, Trash2, MoreHorizontal,
+} from 'lucide-react';
 
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
@@ -12,7 +14,6 @@ import { CompetitionsList } from './directory/CompetitionsList';
 import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
-import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -25,6 +26,7 @@ import { useTeamDetailData } from './useTeamDetailData';
 import { useTeamTabData } from './useTeamTabData';
 import { TeamOverviewTab } from './TeamOverviewTab';
 import { TeamHierarchyTab } from './TeamHierarchyTab';
+import s from './TeamOrganisationDetailPage.module.css';
 
 /**
  * Lazy-loading wrapper for MemberMediaMatrix on the team page.
@@ -122,16 +124,30 @@ export default function TeamOrganisationDetailPage() {
     orgSlugForDirectoryLists,
   });
 
+  /* ── Overflow menu ── */
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [overflowOpen]);
+
   if (loading) {
     return (
-      <div className="p-6 team-detail-page">
-        <div>
-          <PageHeader title="Team" />
-          <PageContent>
-            <Card>
-              <div className="text-center py-8 text-gray-500">Loading team details...</div>
-            </Card>
-          </PageContent>
+      <div className={s.page}>
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}><h1>Team</h1></div>
+        </div>
+        <div className={s.skeleton}>
+          <div className={s.skeletonBar} />
+          <div className={s.skeletonBarShort} />
+          <div className={s.skeletonBarFull} />
+          <div className={s.skeletonCard} />
+          <div className={s.skeletonCard} />
         </div>
       </div>
     );
@@ -139,177 +155,149 @@ export default function TeamOrganisationDetailPage() {
 
   if (error || !org || !club || !team) {
     return (
-      <div className="p-6 team-detail-page">
-        <div>
-          <PageHeader title="Team" />
-          <PageContent>
-            <Alert variant="error">{error || 'Team not found'}</Alert>
-            <Button variant="secondary" onClick={() => navigate(backToClubHref)}>
-              Back
-            </Button>
-          </PageContent>
+      <div className={s.page}>
+        <div className={s.errorBox}>
+          <div className={s.errorMsg}>{error || 'Team not found'}</div>
+          <button type="button" className={s.backBtn} onClick={() => navigate(backToClubHref)}>
+            Terug
+          </button>
         </div>
       </div>
     );
   }
 
+  const isActive = !!team && String(activeContextState?.team?.id ?? '') === String(team.id ?? '');
+
   return (
     <>
-      <div className="team-detail-page">
-        <PageHeader
-          title={team.name}
-          subtitle={`${(team as any)?.team_type === 'legends' ? 'Legends' : 'Regulier'} Team`}
-          breadcrumbs={[
-            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: org?.name || 'Federation', onClick: () => navigate(federationClubsHref) },
-            { label: club?.name || 'Club', onClick: () => navigate(backToClubHref) },
-            {
-              label: (
-                <BreadcrumbContextSwitcher
-                  currentId={String(team.id)}
-                  options={teamBreadcrumbOptions}
-                  onSelect={handleTeamSwitch}
-                  hasDropdown={!clubTeamsForSwitcherLoading && teamBreadcrumbOptions.length > 1}
-                  type="project"
-                />
-              ),
-              current: true,
-            },
-          ]}
-          actions={
-            <div className="flex-row gap-8 flex-wrap">
-              {!isPlayer && (
-              <select
-                value={(team as any)?.team_type || 'regular'}
-                onChange={async (e) => {
-                  const newType = e.target.value;
-                  try {
-                    const res = await fetch(
-                      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`,
-                      {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                        credentials: 'include',
-                        body: JSON.stringify({ team_type: newType }),
-                      },
-                    );
-                    if (!res.ok) throw new Error('Failed to update team type');
-                    setTeam((prev: any) => prev ? { ...prev, team_type: newType } : prev);
-                  } catch (err) {
-                    console.error('Failed to update team type:', err);
-                    alert('Kon team type niet opslaan');
-                  }
-                }}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 6,
-                  padding: '4px 10px',
-                  background: (team as any)?.team_type === 'legends' ? '#fffbeb' : 'white',
-                  cursor: 'pointer',
-                  color: (team as any)?.team_type === 'legends' ? '#d97706' : '#374151',
-                }}
-              >
-                <option value="regular">Regulier</option>
-                <option value="legends">Legends</option>
-              </select>
-              )}
-              {(() => {
-                const isActive = !!team && String(activeContextState?.team?.id ?? '') === String(team.id ?? '');
-                return (
-                  <Button
-                    variant={isActive ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={async () => {
-                      if (!team || isActive) return;
-                      try {
-                        setActivatingContext(true);
-                        await setActiveContext('team', String(team.id));
-                        const context = await getActiveContext();
-                        setActiveContextState(context);
-                      } finally {
-                        setActivatingContext(false);
-                      }
-                    }}
-                    disabled={activatingContext || isActive}
-                    title={isActive ? 'This team is already your active context' : 'Set this team as your active context'}
-                    style={{
-                      backgroundColor: isActive ? '#dcfce7' : undefined,
-                      color: isActive ? '#166534' : undefined,
-                      border: isActive ? '1px solid #10b981' : undefined,
-                      cursor: (activatingContext || isActive) ? 'not-allowed' : 'pointer',
-                      opacity: (activatingContext || isActive) ? 0.8 : 1,
-                      fontWeight: isActive ? 600 : undefined,
-                    }}
-                  >
-                    {isActive ? '✓ Active Context' : 'Make active'}
-                  </Button>
-                );
-              })()}
+      <div className={s.page}>
+        {/* ── Header ── */}
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}>
+            <h1>{team.name}</h1>
+            <p>{(team as any)?.team_type === 'legends' ? 'Legends Team' : 'Team'}</p>
+          </div>
 
-              <Button variant="secondary" size="sm" onClick={() => navigate(backToClubHref)}>
-                Back
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setIsProjectDetailModalOpen(true)}>
-                View
-              </Button>
-              {!isPlayer && (
-              <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>
-                Edit
-              </Button>
-              )}
-              {!isPlayer && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={async () => {
-                  if (!team) return;
-                  if (!window.confirm(`Are you sure you want to delete team ${team.name}?`)) return;
-                  try {
-                    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-                      method: 'DELETE',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken(),
-                      },
-                      credentials: 'include',
-                    });
-                    if (!res.ok) throw new Error('Failed to delete team');
-                    navigate(backToClubHref);
-                  } catch (e) {
-                    console.error('Delete failed:', e);
-                    alert('Failed to delete team');
-                  }
-                }}
-                style={{ color: '#dc2626' }}
+          <div className={s.actions}>
+            <button
+              type="button"
+              className={`${s.activeBtn} ${isActive ? s.activeBtnOn : ''}`}
+              disabled={activatingContext || isActive}
+              onClick={async () => {
+                if (!team || isActive) return;
+                try {
+                  setActivatingContext(true);
+                  await setActiveContext('team', String(team.id));
+                  const context = await getActiveContext();
+                  setActiveContextState(context);
+                } finally {
+                  setActivatingContext(false);
+                }
+              }}
+              title="Stel dit team in als actieve context"
+            >
+              {isActive && <Check size={14} />}
+              {isActive ? 'Actief' : 'Activeren'}
+            </button>
+
+            {!isPlayer && (
+              <button
+                type="button"
+                className={s.iconBtn}
+                onClick={() => setIsProjectEditModalOpen(true)}
+                title="Bewerken"
               >
-                Delete
-              </Button>
+                <Pencil size={16} />
+              </button>
+            )}
+
+            <div className={s.overflowWrap} ref={overflowRef}>
+              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+                <MoreHorizontal size={16} />
+              </button>
+              {overflowOpen && (
+                <div className={s.overflowMenu}>
+                  <button type="button" onClick={() => { setIsProjectDetailModalOpen(true); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Bekijken
+                  </button>
+                  <button type="button" onClick={() => { navigate(backToClubHref); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Terug naar club
+                  </button>
+                  {!isPlayer && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const newType = (team as any)?.team_type === 'legends' ? 'regular' : 'legends';
+                        try {
+                          const res = await fetch(
+                            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`,
+                            {
+                              method: 'PATCH',
+                              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                              credentials: 'include',
+                              body: JSON.stringify({ team_type: newType }),
+                            },
+                          );
+                          if (!res.ok) throw new Error('Failed');
+                          setTeam((prev: any) => prev ? { ...prev, team_type: newType } : prev);
+                        } catch {
+                          alert('Kon team type niet opslaan');
+                        }
+                        setOverflowOpen(false);
+                      }}
+                    >
+                      {(team as any)?.team_type === 'legends' ? '⚽ Maak Regulier' : '⭐ Maak Legends'}
+                    </button>
+                  )}
+                  {!isPlayer && (
+                    <button
+                      type="button"
+                      className={s.overflowDanger}
+                      onClick={async () => {
+                        if (!window.confirm(`Weet je zeker dat je team ${team.name} wilt verwijderen?`)) return;
+                        try {
+                          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                            credentials: 'include',
+                          });
+                          if (!res.ok) throw new Error('Failed');
+                          navigate(backToClubHref);
+                        } catch {
+                          alert('Kon team niet verwijderen');
+                        }
+                        setOverflowOpen(false);
+                      }}
+                    >
+                      <Trash2 size={14} /> Verwijderen
+                    </button>
+                  )}
+                </div>
               )}
             </div>
-          }
-        />
+          </div>
+        </div>
 
-        {/* Mobile Tab Bar */}
+        {/* ── Tab Bar ── */}
         <MobileTabBar
           tabs={[
             ...(!isPlayer ? [{ id: 'overview', label: 'Overview' }] : []),
             { id: 'hierarchy', label: 'Hierarchy' },
             ...(!isPlayer ? [{ id: 'seasons', label: 'Seasons' }] : []),
-            ...(!isPlayer ? [{ id: 'competitions', label: 'Competitions' }] : []),
+            ...(!isPlayer ? [{ id: 'competitions', label: 'Competities' }] : []),
             { id: 'matches', label: 'Matches' },
-            ...(!isPlayer ? [{ id: 'members', label: 'Squad' }] : []),
+            ...(!isPlayer ? [{ id: 'members', label: 'Selectie' }] : []),
             ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
             ...(!isPlayer ? [{ id: 'balance', label: 'Balance' }] : []),
-            ...(!isPlayer ? [{ id: 'transactions', label: 'Transactions' }] : []),
+            ...(!isPlayer ? [{ id: 'transactions', label: 'Transacties' }] : []),
             ...(!isPlayer ? [{ id: 'assets', label: 'Assets' }] : []),
             ...(!isPlayer ? [{ id: 'kits', label: 'Kits' }] : []),
           ]}
           activeTab={activeTabFromUrl}
         />
 
-        <PageContent>
+        {/* ── Tab Content ── */}
+        <div className={s.tabContent}>
           {activeTabFromUrl === 'overview' && (
             <TeamOverviewTab
               hierarchySeasons={tabData.hierarchySeasons}
@@ -394,7 +382,7 @@ export default function TeamOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'media' && team && org && (
-            <div className="space-y-6">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <AssetCompletionMatrix
                 projectId={team.slug || String(team.id)}
                 entityName={team.name}
@@ -403,12 +391,9 @@ export default function TeamOrganisationDetailPage() {
 
               <Card>
                 <div style={{ padding: '16px 16px 0 16px' }}>
-                  <div className="flex-row gap-12 mb-4">
-                    <span className="fs-24">👥</span>
-                    <h3 className="m-0 fs-16 fw-600">Member Media Matrix</h3>
-                  </div>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Member Media Matrix</h3>
                 </div>
-                <div className="p-16">
+                <div style={{ padding: 16 }}>
                   <MediaMatrixLoader
                     apiBaseUrl={apiBaseUrl}
                     teamId={team.slug || String(team.id)}
@@ -452,7 +437,7 @@ export default function TeamOrganisationDetailPage() {
               orgId={String(org.id)}
             />
           )}
-        </PageContent>
+        </div>
       </div>
 
       <ProjectDetailModal
