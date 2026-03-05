@@ -396,13 +396,71 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
 
             {/* ── Mobile card list ── */}
             {isMobile && <div className={styles.mobileList}>
-              {/* ── Color legend ── */}
-              <div className={styles.mobileLegend}>
-                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="processed" /> OK</span>
-                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="processing" /> Bezig</span>
-                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="raw" /> Raw</span>
-                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="missing" /> Mist</span>
-              </div>
+              {/* ── Overall progress + legend ── */}
+              {(() => {
+                const totalSlots = members.length * MEDIA_SLOTS.length;
+                const totalDone = members.reduce((sum, m) => sum + countProcessedMediaSlots(m), 0);
+                const pct = totalSlots > 0 ? Math.round((totalDone / totalSlots) * 100) : 0;
+                return (
+                  <div className={styles.mobileHeader}>
+                    <div className={styles.mobileOverallRow}>
+                      <span className={styles.mobileOverallLabel}>{pct}% compleet</span>
+                      <span className={styles.mobileOverallCount}>{totalDone}/{totalSlots} assets</span>
+                    </div>
+                    <div className={styles.mobileOverallBar}>
+                      <div className={styles.mobileOverallFill} style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className={styles.mobileLegend}>
+                      <span className={styles.mobileLegendKey}><span className={styles.legendDot} data-status="processed" /> Klaar</span>
+                      <span className={styles.mobileLegendKey}><span className={styles.legendDot} data-status="processing" /> Bezig</span>
+                      <span className={styles.mobileLegendKey}><span className={styles.legendDot} data-status="raw" /> Ruw</span>
+                      <span className={styles.mobileLegendKey}><span className={styles.legendDot} data-status="missing" /> Ontbreekt</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Smart batch suggestions ── */}
+              {(() => {
+                // Count members that have kit (fullbody) but missing each downstream slot
+                const hasKit = (m: any) => getMediaProcessingState(m, 'kit') === 'processed';
+                const missingSlot = (m: any, slotId: string) => getMediaProcessingState(m, slotId as any) === 'empty';
+                const suggestions = [
+                  { slotId: 'intro', label: "Intro's", templateId: 'member_intro', count: members.filter(m => hasKit(m) && missingSlot(m, 'intro')).length },
+                  { slotId: 'celebration', label: 'Celebrations', templateId: 'member_goal_celebration', count: members.filter(m => hasKit(m) && missingSlot(m, 'celebration')).length },
+                  { slotId: 'closeup', label: 'Close-ups', templateId: 'closeup_in_tenue', count: members.filter(m => hasKit(m) && missingSlot(m, 'closeup')).length },
+                  { slotId: 'action_photo', label: 'Actiefoto\'s', templateId: 'action_photo', count: members.filter(m => hasKit(m) && missingSlot(m, 'action_photo')).length },
+                  { slotId: 'kit', label: 'In Tenue', templateId: 'fullbody_in_tenue', count: members.filter(m => missingSlot(m, 'kit') && getMediaProcessingState(m, 'profile') === 'processed').length },
+                ].filter(s => s.count > 0);
+
+                if (suggestions.length === 0) return null;
+                return (
+                  <div className={styles.smartBatchRow}>
+                    <span className={styles.smartBatchLabel}>Snel genereren:</span>
+                    <div className={styles.smartBatchChips}>
+                      {suggestions.map(s => (
+                        <button
+                          key={s.slotId}
+                          type="button"
+                          className={styles.smartBatchChip}
+                          onClick={() => {
+                            // Select the eligible members and open batch modal
+                            const eligible = members.filter(m =>
+                              s.slotId === 'kit'
+                                ? missingSlot(m, 'kit') && getMediaProcessingState(m, 'profile') === 'processed'
+                                : hasKit(m) && missingSlot(m, s.slotId),
+                            );
+                            setBatchSelectedMemberIds(new Set(eligible.map(m => String(m.id))));
+                            setIsBatchModalOpen(true);
+                          }}
+                        >
+                          <Zap size={10} /> {s.label} ({s.count})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* ── Select all checkbox row ── */}
               <div className={styles.mobileSelectAll}>
@@ -419,7 +477,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                     }
                   }}
                 />
-                <span className={styles.mobileSelectAllLabel}>Alles</span>
+                <span className={styles.mobileSelectAllLabel}>Alles selecteren</span>
               </div>
 
               {/* Guest player card */}
@@ -449,12 +507,12 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           aria-label={guestExpanded ? 'Hide' : 'Details'}
                         >{guestExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
                       </div>
-                      <div className={styles.mediaCardIndicators}>
+                      <div className={styles.progressBar}>
                         {MEDIA_SLOTS.map((slot) => {
                           const guestSlot = guestSlots.find(gs => gs.id === slot.id);
                           const status = guestSlot ? (guestSlot.has ? 'processed' : 'missing') : 'na';
                           return (
-                            <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
+                            <span key={slot.id} className={styles.progressSeg} data-status={status} title={slot.label} />
                           );
                         })}
                       </div>
@@ -532,7 +590,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           aria-label={isExpanded ? 'Hide' : 'Details'}
                         >{isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
                       </div>
-                      <div className={styles.mediaCardIndicators}>
+                      <div className={styles.progressBar}>
                         {MEDIA_SLOTS.map((slot) => {
                           const procState = getMediaProcessingState(m, slot.id);
                           const status = procState === 'processed' ? 'processed'
@@ -540,7 +598,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                             : procState === 'raw' ? 'raw'
                             : 'missing';
                           return (
-                            <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
+                            <span key={slot.id} className={styles.progressSeg} data-status={status} title={slot.label} />
                           );
                         })}
                       </div>

@@ -76,23 +76,114 @@
   padding: 0 !important;
 }
 
-/* ── Mobile legend strip ── */
+/* ── Mobile header: overall progress + legend ── */
+.mobileHeader {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, #fff);
+}
+
+.mobileOverallRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.mobileOverallLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-text, #1a1a1a);
+}
+
+.mobileOverallCount {
+  font-size: 10px;
+  color: var(--app-muted-text, #6b7280);
+}
+
+.mobileOverallBar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--app-border, #e5e7eb);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.mobileOverallFill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+  transition: width 0.3s ease;
+  min-width: 0;
+}
+
+/* ── Compact inline legend ── */
 .mobileLegend {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 3px 4px;
-  background: var(--app-muted, #f3f4f6);
-  border-bottom: 1px solid var(--app-border, #e5e7eb);
+  gap: 10px;
 }
 
 .mobileLegendKey {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 8px;
+  gap: 4px;
+  font-size: 9px;
   color: var(--app-muted-text, #6b7280);
   white-space: nowrap;
+}
+
+.legendDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legendDot[data-status="processed"] { background: #22c55e; }
+.legendDot[data-status="processing"] { background: #f59e0b; }
+.legendDot[data-status="raw"] { background: #f97316; }
+.legendDot[data-status="missing"] { background: var(--app-border, #e5e7eb); outline: 1px solid #d1d5db; outline-offset: -1px; }
+
+/* ── Smart batch suggestion row ── */
+.smartBatchRow {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--app-border, #e5e7eb);
+  background: rgba(34, 197, 94, 0.04);
+}
+
+.smartBatchLabel {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--app-muted-text, #6b7280);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.smartBatchChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.smartBatchChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #16a34a;
+  background: rgba(34, 197, 94, 0.10);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.smartBatchChip:hover {
+  background: rgba(34, 197, 94, 0.20);
 }
 
 .mobileLegendItem {
@@ -202,7 +293,31 @@
   flex-shrink: 0;
 }
 
-/* ── Inline status indicator strip (own row) ── */
+/* ── Segmented progress bar (replaces dot strip) ── */
+.progressBar {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.progressSeg {
+  flex: 1;
+  height: 100%;
+  min-width: 0;
+  transition: background 0.2s;
+}
+.progressSeg[data-status="processed"] { background: #22c55e; }
+.progressSeg[data-status="processing"] { background: #f59e0b; }
+.progressSeg[data-status="raw"] { background: #f97316; }
+.progressSeg[data-status="missing"] { background: var(--app-border, #e5e7eb); }
+.progressSeg[data-status="na"] { background: var(--app-border, #d1d5db); opacity: 0.4; }
+
+/* Legacy dot indicators (keep for desktop legend) */
 .mediaCardIndicators {
   display: flex;
   align-items: center;
