@@ -82,6 +82,44 @@
 .iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
 .iconBtn:active { background: var(--app-active-bg, rgba(0, 0, 0, 0.08)); }
 
+/* ── Overflow menu ── */
+.overflowWrap { position: relative; }
+
+.overflowMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 170px;
+  background: var(--app-surface, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  z-index: 200;
+  overflow: hidden;
+}
+
+.overflowMenu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  color: var(--app-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.overflowMenu button:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.06));
+}
+
+.overflowDanger { color: #ef4444 !important; }
+
 /* ── Loading skeleton ── */
 .skeleton { padding: 16px; }
 

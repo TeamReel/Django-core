@@ -28,7 +28,7 @@ export function useSeasonDetailPageData() {
     error: providerError,
     competitionsLoading: providerCompetitionsLoading,
     isTeamRoute, orgSlugOrId,
-    effectiveSeasonId, seasonsBasePath, seasonPathKey, memberDetailHref,
+    effectiveSeasonId, seasonsBasePath, projectDetailPath, seasonPathKey, memberDetailHref,
     clubBrand, teamBrand, batchBrandKits, brandLogoUrl, brandSponsorUrl,
     apiBaseUrl, userCanEditProject, userCanDeleteProject, isPlayer, isSupporter,
   } = ctx;
@@ -54,7 +54,7 @@ export function useSeasonDetailPageData() {
       ? new Set(['overview', 'matches'])
       : isPlayer
         ? new Set(['overview', 'matches', 'squad', 'media', 'content'])
-        : new Set(['overview', 'content', 'hierarchy', 'competitions', 'matches', 'squad', 'team', 'media', 'transactions', 'assets', 'workflow']);
+          : new Set(['overview', 'content', 'competitions', 'matches', 'squad', 'team', 'media', 'assets']);
     return allowed.has(raw) ? raw : defaultTab;
   }, [location.search, isPlayer, isSupporter]);
 
@@ -138,7 +138,7 @@ export function useSeasonDetailPageData() {
     // Provider data
     org, project, club,
     resolvedSeasonId, effectiveSeasonId,
-    seasonsBasePath, seasonPathKey, isTeamRoute, orgSlugOrId,
+    seasonsBasePath, projectDetailPath, seasonPathKey, isTeamRoute, orgSlugOrId,
     memberDetailHref, clubBrand, teamBrand, batchBrandKits,
     brandLogoUrl, brandSponsorUrl, apiBaseUrl,
     userCanEditProject, userCanDeleteProject, isPlayer, isSupporter,

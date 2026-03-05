@@ -1,29 +1,43 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Alert } from '@django-core/design-system';
 import {
-  Eye, Pencil, Trash2, Receipt, Check, ChevronLeft,
+  Eye, Pencil, Trash2, Check, MoreHorizontal,
 } from 'lucide-react';
 import MobileTabBar from '../../components/MobileTabBar';
 import { isSeasonPeriod } from '../../providers/SeasonProvider';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import s from './ProjectSeasonDetailPage.module.css';
 import { useSeasonDetailPageData } from './useSeasonDetailPageData';
 import SeasonDetailModals from './SeasonDetailModals';
 import SeasonOverviewTab from './SeasonOverviewTab';
 import SeasonContentTab from './SeasonContentTab';
-import SeasonHierarchyTab from './SeasonHierarchyTab';
 import SeasonSquadTab from './SeasonSquadTab';
 import SeasonTeamTab from './SeasonTeamTab';
 import SeasonMediaTab from './SeasonMediaTab';
 import SeasonCompetitionsTab from './SeasonCompetitionsTab';
 import SeasonMatchesTab from './SeasonMatchesTab';
-import SeasonWorkflowTab from './SeasonWorkflowTab';
-import SeasonTransactionsTab from './SeasonTransactionsTab';
 import SeasonAssetsSettingsTab from './SeasonAssetsSettingsTab';
 
 // ---------------------------------------------------------------------------
 
 export const ProjectSeasonDetailPage: React.FC = () => {
   const d = useSeasonDetailPageData();
+
+  /* ---- back navigation ---- */
+  const backPath = d.projectDetailPath || d.seasonsBasePath || '/';
+  useSetBackNavigation({ label: 'Team', path: backPath });
+
+  /* ---- overflow menu ---- */
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [overflowOpen]);
 
   const isActive =
     d.activeContext &&
@@ -40,7 +54,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           </div>
 
           <div className={s.actions}>
-            {/* Activate context */}
+            {/* Activate context — always visible */}
             <button
               type="button"
               className={`${s.activeBtn} ${isActive ? s.activeBtnOn : ''}`}
@@ -52,25 +66,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               {isActive ? 'Actief' : 'Activeren'}
             </button>
 
-            {/* Back */}
-            <button type="button" className={s.iconBtn} onClick={() => d.navigate(d.seasonsBasePath)} title="Terug">
-              <ChevronLeft size={16} />
-            </button>
-
-            {/* View */}
-            <button
-              type="button"
-              className={s.iconBtn}
-              onClick={() => {
-                d.setSelectedDetailPeriod(d.season);
-                d.setIsPeriodDetailModalOpen(true);
-              }}
-              title="Bekijken"
-            >
-              <Eye size={16} />
-            </button>
-
-            {/* Edit (admin) */}
+            {/* Edit (admin) — always visible */}
             {d.userCanEditProject && (
               <button
                 type="button"
@@ -85,19 +81,24 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               </button>
             )}
 
-            {/* Delete (admin) */}
-            {d.userCanDeleteProject && (
-              <button type="button" className={s.iconBtn} onClick={d.handleDeleteSeason} title="Verwijderen">
-                <Trash2 size={16} />
+            {/* Overflow menu — View + Delete */}
+            <div className={s.overflowWrap} ref={overflowRef}>
+              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+                <MoreHorizontal size={16} />
               </button>
-            )}
-
-            {/* Create transaction (admin) */}
-            {d.userCanEditProject && (
-              <button type="button" className={s.iconBtn} onClick={() => d.setIsCreateTxnModalOpen(true)} title="Transactie aanmaken">
-                <Receipt size={16} />
-              </button>
-            )}
+              {overflowOpen && (
+                <div className={s.overflowMenu}>
+                  <button type="button" onClick={() => { d.setSelectedDetailPeriod(d.season); d.setIsPeriodDetailModalOpen(true); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Bekijken
+                  </button>
+                  {d.userCanDeleteProject && (
+                    <button type="button" className={s.overflowDanger} onClick={() => { d.handleDeleteSeason(); setOverflowOpen(false); }}>
+                      <Trash2 size={14} /> Verwijderen
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -158,20 +159,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           squadSeasonId={String(d.resolvedSeasonId || '').trim()}
         />
 
-        {/* Mobile Tab Bar — RBAC: Supporter (2), Member (5), Admin (all 11) */}
+        {/* Mobile Tab Bar — RBAC: Supporter (2), Member (5), Admin (8) */}
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            ...(!d.isSupporter ? [{ id: 'matches', label: 'Matches' }] : [{ id: 'matches', label: 'Matches' }]),
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'hierarchy', label: 'Hierarchy' }] : []),
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'competitions', label: 'Competitions' }] : []),
+            { id: 'matches', label: 'Matches' },
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'competitions', label: 'Competities' }] : []),
             ...(!d.isSupporter ? [{ id: 'squad', label: 'Squad' }] : []),
             ...(!d.isPlayer && !d.isSupporter ? [{ id: 'team', label: 'Team' }] : []),
             ...(!d.isSupporter ? [{ id: 'media', label: 'Media' }] : []),
             ...(!d.isSupporter ? [{ id: 'content', label: 'Content' }] : []),
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'transactions', label: 'Transactions' }] : []),
             ...(!d.isPlayer && !d.isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'workflow', label: 'Workflow' }] : []),
           ]}
           activeTab={d.activeTab}
         />
@@ -220,36 +218,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   apiBaseUrl={d.apiBaseUrl}
                   members={d.members}
                   pushToast={d.pushToast}
-                />
-              )}
-
-              {d.activeTab === 'hierarchy' && (
-                <SeasonHierarchyTab
-                  competitions={d.competitions}
-                  competitionsLoading={d.competitionsLoading}
-                  matches={d.matches}
-                  matchesLoading={d.matchesLoading}
-                  isTeamRoute={d.isTeamRoute}
-                  seasonsBasePath={d.seasonsBasePath}
-                  seasonPathKey={d.seasonPathKey}
-                  userCanEditProject={d.userCanEditProject}
-                  userCanDeleteProject={d.userCanDeleteProject}
-                  apiBaseUrl={d.apiBaseUrl}
-                  matchDisplayTitle={d.matchDisplayTitle}
-                  getMatchCountForCompetition={d.getMatchCountForCompetition}
-                  getCompetitionParticipantsCount={d.getCompetitionParticipantsCount}
-                  setIsCreateCompetitionModalOpen={d.setIsCreateCompetitionModalOpen}
-                  setIsCreateMatchModalOpen={d.setIsCreateMatchModalOpen}
-                  setSelectedDetailPeriod={d.setSelectedDetailPeriod}
-                  setIsPeriodDetailModalOpen={d.setIsPeriodDetailModalOpen}
-                  setSelectedEditPeriod={d.setSelectedEditPeriod}
-                  setIsPeriodEditModalOpen={d.setIsPeriodEditModalOpen}
-                  setSelectedDetailMatch={d.setSelectedDetailMatch}
-                  setIsMatchDetailModalOpen={d.setIsMatchDetailModalOpen}
-                  setSelectedEditMatch={d.setSelectedEditMatch}
-                  setIsMatchEditModalOpen={d.setIsMatchEditModalOpen}
-                  setCompetitions={d.setCompetitions}
-                  setMatches={d.setMatches}
                 />
               )}
 
@@ -342,14 +310,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             </>
           )}
 
-          {d.activeTab === 'transactions' && (
-            <SeasonTransactionsTab
-              orgId={String(d.org?.id || '')}
-              projectId={String(d.project?.id || '')}
-              seasonId={String(d.resolvedSeasonId || d.effectiveSeasonId || '')}
-            />
-          )}
-
           {d.activeTab === 'assets' && d.season && d.project && (
             <SeasonAssetsSettingsTab
               season={d.season}
@@ -363,12 +323,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
             />
           )}
 
-          {d.activeTab === 'workflow' && d.season && d.project && (
-            <SeasonWorkflowTab
-              projectId={String(d.project.id)}
-              seasonId={String(d.season.id)}
-            />
-          )}
         </div>
       </div>
 
