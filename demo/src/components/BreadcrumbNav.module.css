@@ -1,0 +1,129 @@
+/* BreadcrumbNav — CSS Module */
+
+/* ── Container ─────────────────────────────────────────────────────── */
+.breadcrumbNav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Ordered list ──────────────────────────────────────────────────── */
+.list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Each breadcrumb item ──────────────────────────────────────────── */
+.item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-width: 0;
+}
+
+/* ── Separator ─────────────────────────────────────────────────────── */
+.separator {
+  margin: 0 8px;
+  font-size: 14px;
+  color: var(--app-muted-text, #9ca3af);
+  flex-shrink: 0;
+}
+
+/* ── Link / text ───────────────────────────────────────────────────── */
+.link {
+  font-size: 14px;
+  white-space: nowrap;
+  text-decoration: none;
+  color: var(--app-muted-text, #6b7280);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link:hover {
+  color: var(--app-text, #1f2937);
+}
+
+.linkCurrent {
+  color: var(--app-text, #1f2937);
+  font-weight: 600;
+}
+
+.inlineLabel {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--app-muted-text, #6b7280);
+  font-weight: 400;
+}
+
+.inlineLabelCurrent {
+  color: var(--app-text, #1f2937);
+  font-weight: 600;
+}
+
+/* ── Mobile back button ────────────────────────────────────────────── */
+.backButton {
+  display: none; /* hidden on desktop */
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--app-text, #1f2937);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-right: 4px;
+  padding: 0;
+  transition: background-color 0.15s;
+}
+
+.backButton:active {
+  background-color: var(--app-surface-2, #f3f4f6);
+}
+
+/* ── Ellipsis (collapsed middle items) ─────────────────────────────── */
+.ellipsis {
+  font-size: 14px;
+  color: var(--app-muted-text, #9ca3af);
+  letter-spacing: 2px;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+/* ── Mobile: compact breadcrumbs ───────────────────────────────────── */
+@media (max-width: 639px) {
+  .backButton {
+    display: flex;
+  }
+
+  /* Hide middle items on mobile — JS handles which items are visible */
+  .hiddenMobile {
+    display: none;
+  }
+
+  .link,
+  .inlineLabel {
+    max-width: 120px;
+    font-size: 13px;
+  }
+
+  .separator {
+    margin: 0 4px;
+    font-size: 12px;
+  }
+}
