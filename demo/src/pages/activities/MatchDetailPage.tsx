@@ -1,7 +1,7 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { Alert, Button } from '@django-core/design-system';
-import { PageContent, PageHeader } from '@django-core/page-templates';
+import {
+  Eye, Pencil, Trash2, Sparkles, Receipt, Check, ArrowLeft,
+} from 'lucide-react';
 import { MatchOverviewTab, MatchContentTab, MatchTransactionsTab, MatchLineupTab } from './match-detail';
 import CreateTransactionModal from '../../components/transactions/CreateTransactionModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
@@ -12,6 +12,7 @@ import MobileTabBar from '../../components/MobileTabBar';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { useMatchDetailData } from './useMatchDetailData';
 import { ContentPreviewModal, SavedAssetPreviewModal, ToastNotifications } from './MatchDetailModals';
+import styles from './MatchDetailPage.module.css';
 
 export default function HierarchyMatchDetailPage() {
   const d = useMatchDetailData();
@@ -20,23 +21,23 @@ export default function HierarchyMatchDetailPage() {
 
   if (d.loading) {
     return (
-      <div className="p-6">
-        <PageContent>
-          <div className="text-center py-8 text-gray-500">Loading match…</div>
-        </PageContent>
+      <div className={styles.skeleton}>
+        <div className={styles.skeletonBar} />
+        <div className={styles.skeletonBarShort} />
+        <div className={styles.skeletonBarFull} />
+        <div className={styles.skeletonCard} />
+        <div className={styles.skeletonCard} />
       </div>
     );
   }
 
   if (d.error || !d.match) {
     return (
-      <div className="p-6">
-        <PageContent>
-          <Alert variant="error">{d.error || 'Match not found'}</Alert>
-          <Button variant="secondary" onClick={() => d.navigate(-1)} className="mt-4">
-            Go Back
-          </Button>
-        </PageContent>
+      <div className={styles.errorBox}>
+        <div className={styles.errorMsg}>{d.error || 'Wedstrijd niet gevonden'}</div>
+        <button className={styles.backBtn} onClick={() => d.navigate(-1)}>
+          <ArrowLeft size={16} /> Terug
+        </button>
       </div>
     );
   }
@@ -50,99 +51,75 @@ export default function HierarchyMatchDetailPage() {
 
   return (
     <>
-      <div>
-        <PageHeader
-          title={match.title}
-          actions={
-            <div className="flex-row gap-8 flex-wrap">
-              {(() => {
-                const isActive = !!match && String(d.activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
-                const headerButtonStyle: React.CSSProperties = {
-                  padding: '6px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--app-border)',
-                  backgroundColor: 'var(--app-surface-2)',
-                  color: 'var(--app-text)',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                };
-                return (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!match || isActive) return;
-                      try {
-                        d.setActivatingContext(true);
-                        await setActiveContext('match', String(match.id));
-                        const context = await getActiveContext();
-                        d.setActiveContextState(context);
-                      } finally {
-                        d.setActivatingContext(false);
-                      }
-                    }}
-                    disabled={d.activatingContext || isActive}
-                    style={{
-                      ...headerButtonStyle,
-                      border: isActive ? '1px solid #10b981' : headerButtonStyle.border,
-                      backgroundColor: isActive ? '#dcfce7' : headerButtonStyle.backgroundColor,
-                      color: isActive ? '#166534' : headerButtonStyle.color,
-                      fontWeight: isActive ? 600 : headerButtonStyle.fontWeight,
-                      opacity: d.activatingContext || isActive ? 0.8 : 1,
-                      cursor: d.activatingContext || isActive ? 'not-allowed' : 'pointer',
-                    }}
-                    title="Set this match as your active context"
-                  >
-                    {isActive ? '\u2713 Active Context' : 'Make active'}
-                  </button>
-                );
-              })()}
-              <button
-                type="button"
-                onClick={() => d.setIsMatchDetailModalOpen(true)}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
-              >
-                View
+      <div className={styles.page}>
+        {/* ── Match header ────────────────────────────────── */}
+        <div className={styles.headerRow}>
+          <div className={styles.titleBlock}>
+            <h1>{match.title}</h1>
+          </div>
+
+          <div className={styles.actions}>
+            {/* Make active — always visible, primary action */}
+            {(() => {
+              const isActive = !!match && String(d.activeContext?.match?.id ?? '') === String((match as any)?.id ?? '');
+              return (
+                <button
+                  type="button"
+                  className={`${styles.activeBtn} ${isActive ? styles.activeBtnOn : ''}`}
+                  disabled={d.activatingContext || isActive}
+                  onClick={async () => {
+                    if (!match || isActive) return;
+                    try {
+                      d.setActivatingContext(true);
+                      await setActiveContext('match', String(match.id));
+                      const ctx = await getActiveContext();
+                      d.setActiveContextState(ctx);
+                    } finally {
+                      d.setActivatingContext(false);
+                    }
+                  }}
+                  title="Stel deze wedstrijd in als actieve context"
+                >
+                  {isActive && <Check size={14} />}
+                  {isActive ? 'Actief' : 'Activeren'}
+                </button>
+              );
+            })()}
+
+            {/* View */}
+            <button type="button" className={styles.iconBtn} onClick={() => d.setIsMatchDetailModalOpen(true)} title="Bekijken">
+              <Eye size={16} />
+            </button>
+
+            {/* Edit (admin) */}
+            {!d.isPlayer && (
+              <button type="button" className={styles.iconBtn} onClick={() => d.setIsMatchEditModalOpen(true)} title="Bewerken">
+                <Pencil size={16} />
               </button>
-              {!d.isPlayer && (
-              <button
-                type="button"
-                onClick={() => d.setIsMatchEditModalOpen(true)}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
-              >
-                Edit
+            )}
+
+            {/* Delete (admin) */}
+            {!d.isPlayer && (
+              <button type="button" className={styles.iconBtn} onClick={d.handleDeleteMatch} title="Verwijderen">
+                <Trash2 size={16} />
               </button>
-              )}
-              {!d.isPlayer && (
-              <button
-                type="button"
-                onClick={d.handleDeleteMatch}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
-              >
-                Delete
+            )}
+
+            {/* Generate Content (admin) */}
+            {!d.isPlayer && (
+              <button type="button" className={styles.iconBtn} onClick={() => d.openContentModal()} title="Content genereren (AI)">
+                <Sparkles size={16} />
               </button>
-              )}
-              {!d.isPlayer && (
-              <button
-                type="button"
-                onClick={() => d.openContentModal()}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
-              >
-                Generate Content (AI)
+            )}
+
+            {/* Create transaction (admin) */}
+            {!d.isPlayer && (
+              <button type="button" className={styles.iconBtn} onClick={() => d.setIsCreateTxnModalOpen(true)} title="Transactie aanmaken">
+                <Receipt size={16} />
               </button>
-              )}
-              {!d.isPlayer && (
-              <button
-                type="button"
-                onClick={() => d.setIsCreateTxnModalOpen(true)}
-                className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500 py-4 px-12"
-              >
-                Create transaction
-              </button>
-              )}
-            </div>
-          }
-        />
+            )}
+          </div>
+        </div>
 
         <CreateTransactionModal
           isOpen={d.isCreateTxnModalOpen}
@@ -216,7 +193,7 @@ export default function HierarchyMatchDetailPage() {
           activeTab={d.activeTab}
         />
 
-        <PageContent>
+        <div className={styles.tabContent}>
           {d.activeTab === 'overview' && (
             <MatchOverviewTab
               match={match}
@@ -305,7 +282,7 @@ export default function HierarchyMatchDetailPage() {
               saveLineup={d.saveLineup}
             />
           )}
-        </PageContent>
+        </div>
       </div>
 
       <ToastNotifications toasts={d.toasts} onDismiss={d.dismissToast} />
