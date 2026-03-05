@@ -1,5 +1,6 @@
 import { Settings } from '@django-core/page-templates';
 import AppShell from '../components/AppShell';
+import { BreadcrumbNav } from '../components/BreadcrumbNav';
 import { useSettingsPage } from './useSettingsPage';
 import styles from './SettingsPage.module.css';
 
@@ -18,6 +19,10 @@ export default function SettingsPage() {
   return (
     <AppShell>
       <div className={styles.settingsContainer}>
+        <BreadcrumbNav items={[
+          { label: 'Profile', path: '/profile' },
+          { label: 'Settings', path: '/settings', isLeaf: true },
+        ]} />
         <Settings
           className={styles.settingsGrid}
           sections={sections}

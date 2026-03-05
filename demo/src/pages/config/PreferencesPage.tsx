@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
+import { BreadcrumbNav } from '../../components/BreadcrumbNav';
 import { usePreferencesData } from './usePreferencesData';
 import { PreferencesModals } from './PreferencesModals';
 import { PreferencesProfileTab } from './PreferencesProfileTab';
@@ -24,11 +25,14 @@ export const PreferencesPage: React.FC = () => {
   if (loading) {
     return (
       <div className="p-6">
+        <BreadcrumbNav items={[
+          { label: 'Profile', path: '/profile' },
+          { label: 'Preferences', path: '/preferences', isLeaf: true },
+        ]} />
         <PageHeader
           title="Preferences"
           breadcrumbs={[
-            { label: 'Home', href: '/' },
-            { label: 'Config' },
+            { label: 'Profile', href: '/profile' },
             { label: 'Preferences' },
           ]}
         />
@@ -45,11 +49,14 @@ export const PreferencesPage: React.FC = () => {
 
   return (
     <>
+      <BreadcrumbNav items={[
+        { label: 'Profile', path: '/profile' },
+        { label: 'Preferences', path: '/preferences', isLeaf: true },
+      ]} />
       <PageHeader
         title="Preferences"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Config' },
+          { label: 'Profile', href: '/profile' },
           { label: 'Preferences' },
         ]}
       />

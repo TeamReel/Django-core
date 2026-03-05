@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
+import { BreadcrumbNav } from '../../components/BreadcrumbNav';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../utils/apiBase';
@@ -130,12 +131,15 @@ export const MembershipsPage: React.FC = () => {
 
   return (
     <>
+      <BreadcrumbNav items={[
+        { label: 'Profile', path: '/profile' },
+        { label: 'Memberships', path: '/memberships', isLeaf: true },
+      ]} />
       <PageHeader
         title="Memberships"
-        subtitle="Where you’re a member across federations/clubs/teams"
+        subtitle="Where you're a member across federations/clubs/teams"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Preferences' },
+          { label: 'Profile', href: '/profile' },
           { label: 'Memberships' },
         ]}
       />

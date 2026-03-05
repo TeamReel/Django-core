@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
+import { BreadcrumbNav } from '../../components/BreadcrumbNav';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
@@ -85,7 +86,11 @@ export const PermissionsPage: React.FC = () => {
   if (loading) {
     return (
       <div>
-        <PageHeader title="Permissions" breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Identity' }, { label: 'Permissions' }]} />
+        <BreadcrumbNav items={[
+          { label: 'Profile', path: '/profile' },
+          { label: 'Permissions', path: '/permissions', isLeaf: true },
+        ]} />
+        <PageHeader title="Permissions" breadcrumbs={[{ label: 'Profile', href: '/profile' }, { label: 'Permissions' }]} />
         <PageContent>
           <Card><div className="text-center py-8 text-gray-500">Loading permissions...</div></Card>
         </PageContent>
@@ -96,8 +101,12 @@ export const PermissionsPage: React.FC = () => {
   return (
     <>
       <div>
+        <BreadcrumbNav items={[
+          { label: 'Profile', path: '/profile' },
+          { label: 'Permissions', path: '/permissions', isLeaf: true },
+        ]} />
         <PageHeader title="Permissions & Access Control"
-          breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'Identity' }, { label: 'Permissions' }]} />
+          breadcrumbs={[{ label: 'Profile', href: '/profile' }, { label: 'Permissions' }]} />
 
         <PageContent>
           {error && (

@@ -1,16 +1,20 @@
 import React from 'react';
 import { Card, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
+import { BreadcrumbNav } from '../../components/BreadcrumbNav';
 
 export const BillingPage: React.FC = () => {
   return (
     <>
+      <BreadcrumbNav items={[
+        { label: 'Profile', path: '/profile' },
+        { label: 'Billing', path: '/billing', isLeaf: true },
+      ]} />
       <PageHeader
         title="Billing & Licensing"
         subtitle="Plans, invoices, and usage (coming soon)"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Preferences' },
+          { label: 'Profile', href: '/profile' },
           { label: 'Billing & Licensing' },
         ]}
       />

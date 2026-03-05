@@ -3,6 +3,7 @@ import AppShell from '../components/AppShell';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
+import { BreadcrumbNav } from '../components/BreadcrumbNav';
 import { getApiBaseUrl } from '../utils/apiBase';
 import SwipeableCard from '../components/SwipeableCard';
 import styles from './NotificationsPage.module.css';
@@ -209,6 +210,10 @@ export default function NotificationsPage() {
     return (
       <AppShell>
         <div className={`py-24 px-16 mx-auto ${styles.pageContainer}`}>
+          <BreadcrumbNav items={[
+            { label: 'Profile', path: '/profile' },
+            { label: 'Notifications', path: '/notifications', isLeaf: true },
+          ]} />
           <div className="text-lg font-semibold text-primary">Notifications</div>
           <div className="text-sm text-muted">Loading notifications…</div>
         </div>
@@ -219,6 +224,10 @@ export default function NotificationsPage() {
   return (
     <AppShell>
       <div className={`py-24 px-16 mx-auto ${styles.pageContainer}`}>
+        <BreadcrumbNav items={[
+          { label: 'Profile', path: '/profile' },
+          { label: 'Notifications', path: '/notifications', isLeaf: true },
+        ]} />
         <PageHeader
           title="Notifications"
           subtitle="View all your system notifications and updates"

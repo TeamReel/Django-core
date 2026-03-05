@@ -1,6 +1,7 @@
 import React from 'react';
 import { Settings, Palette, Users, Activity, Shield } from 'lucide-react';
 import { SectionPageLayout } from '../components/SectionPageLayout';
+import { BreadcrumbNav } from '../components/BreadcrumbNav';
 import { TileGrid, TileItem } from '../components/TileGrid';
 import { useUserRole } from '../components/PermissionGuards';
 
@@ -57,11 +58,17 @@ export default function SettingsLandingPage() {
   }
 
   return (
-    <SectionPageLayout
-      title="Settings"
-      description="Configure your account and platform settings"
-    >
-      <TileGrid items={tiles} columns={2} />
-    </SectionPageLayout>
+    <>
+      <BreadcrumbNav items={[
+        { label: 'Profile', path: '/profile' },
+        { label: 'Settings', path: '/settings', isLeaf: true },
+      ]} />
+      <SectionPageLayout
+        title="Settings"
+        description="Configure your account and platform settings"
+      >
+        <TileGrid items={tiles} columns={2} />
+      </SectionPageLayout>
+    </>
   );
 }

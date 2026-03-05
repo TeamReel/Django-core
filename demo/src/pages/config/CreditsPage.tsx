@@ -15,6 +15,7 @@ import {
   BreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
 
+import { BreadcrumbNav } from '../../components/BreadcrumbNav';
 import { useCreditsData } from './credits/useCreditsData';
 import { CreditsBalanceTab } from './credits/CreditsBalanceTab';
 import { CreditsTransactionsTab } from './credits/CreditsTransactionsTab';
@@ -24,12 +25,15 @@ export const CreditsPage: React.FC = () => {
 
   return (
     <>
+      <BreadcrumbNav items={[
+        { label: 'Profile', path: '/profile' },
+        { label: 'Credits', path: '/credits', isLeaf: true },
+      ]} />
       <PageHeader
         title="Credits"
         subtitle="View your organisation's credit balance"
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Config' },
+          { label: 'Profile', href: '/profile' },
           { label: 'Credits' },
           {
             label: data.isSuperAdmin ? (
