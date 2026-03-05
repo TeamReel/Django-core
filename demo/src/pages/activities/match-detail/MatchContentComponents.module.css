@@ -73,20 +73,73 @@
 
 .actionsWrapper {
   flex-shrink: 0;
+  align-items: center;
 }
 
-/* Shared icon-button / icon-link inside action bar */
-.actionBtn {
-  width: 32px;
-  height: 32px;
-  background: var(--app-surface-secondary, #252526);
-  color: var(--app-text, #fff);
+/* ── Overflow (⋯) menu per content row ──────────────────────────────── */
+.overflowWrap {
+  position: relative;
 }
 
-.actionLink {
+.overflowBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 32px;
   height: 32px;
+  border-radius: 8px;
+  border: none;
   background: var(--app-surface-secondary, #252526);
   color: var(--app-text, #fff);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.overflowBtn:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.12));
+}
+
+.overflowMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 200;
+  min-width: 200px;
+  background: var(--app-surface, #1e1e1e);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.overflowMenu button,
+.overflowMenu a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  color: var(--app-text);
+  cursor: pointer;
   text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.overflowMenu button:active,
+.overflowMenu a:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.08));
+}
+
+.overflowMenu button + button,
+.overflowMenu button + a,
+.overflowMenu a + button,
+.overflowMenu a + a {
+  border-top: 1px solid var(--app-border);
 }

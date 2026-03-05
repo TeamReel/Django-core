@@ -8,7 +8,7 @@
  * - getSyntheticTemplate: fallback template definitions
  */
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Badge } from '@django-core/design-system';
 import type { ContentTemplate } from '../../identity/ContentGenerationModal';
 import styles from './MatchContentComponents.module.css';
@@ -116,12 +116,73 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
   itemLabel: string;
   updatedAt?: string | null;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [menuOpen]);
+
+  const handleShare = async () => {
+    if (!mediaUrl) return;
+    setMenuOpen(false);
+    try {
+      let shared = false;
+      try {
+        const resp = await fetch(mediaUrl);
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const ext = isVideo ? 'mp4' : (mediaUrl.match(/\.(png|jpg|jpeg|webp)/i)?.[1] || 'jpg');
+          const mimeType = isVideo ? 'video/mp4' : (blob.type || `image/${ext}`);
+          const fileName = `${itemLabel.replace(/\s+/g, '_')}.${ext}`;
+          const file = new File([blob], fileName, { type: mimeType });
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: itemLabel });
+            shared = true;
+          }
+        }
+      } catch { /* CORS */ }
+      if (!shared && !isVideo) {
+        try {
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.naturalWidth;
+              canvas.height = img.naturalHeight;
+              canvas.getContext('2d')!.drawImage(img, 0, 0);
+              canvas.toBlob((b) => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
+            };
+            img.onerror = () => reject(new Error('img load failed'));
+            img.src = mediaUrl;
+          });
+          const fileName = `${itemLabel.replace(/\s+/g, '_')}.png`;
+          const file = new File([blob], fileName, { type: 'image/png' });
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: itemLabel });
+            shared = true;
+          }
+        } catch { /* canvas tainted */ }
+      }
+      if (!shared) {
+        await navigator.share({ title: itemLabel, url: mediaUrl });
+      }
+    } catch { /* user cancelled */ }
+  };
+
   return (
     <div
       className={styles.contentRow}
       data-show-border={showBorder ? 'true' : undefined}
       data-clickable={(hasMedia || canGenerate) ? 'true' : undefined}
       onClick={() => {
+        if (menuOpen) return;
         if (hasMedia && mediaUrl) {
           onPreview();
         } else if (canGenerate) {
@@ -146,7 +207,7 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
         </div>
       </div>
 
-      {/* Status + actions */}
+      {/* Status + overflow */}
       <div className={`flex-row gap-6 ${styles.actionsWrapper}`}>
         <StatusBadge
           isGenerating={isGenerating}
@@ -154,115 +215,51 @@ export function ContentRow({ label, icon, mediaUrl, isVideo, hasMedia, isGenerat
           hasMedia={hasMedia}
           workflowStatus={workflowStatus}
         />
-        {hasMedia && mediaUrl && (
-          <div className="flex-row gap-2">
-            {/* Open in new tab */}
-            <a
-              href={mediaUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              title="Openen"
-              className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionLink}`}
+        {hasMedia && mediaUrl ? (
+          <div className={styles.overflowWrap} ref={menuRef}>
+            <button
+              type="button"
+              className={styles.overflowBtn}
+              onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
             >
-              ↗
-            </a>
-            {/* Download */}
-            <a
-              href={mediaUrl}
-              download
-              onClick={(e) => e.stopPropagation()}
-              title="Downloaden"
-              className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionLink}`}
-            >
-              ↓
-            </a>
-            {/* Share actual file (Web Share API) */}
-            {typeof navigator !== 'undefined' && 'share' in navigator && (
-              <button
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  try {
-                    // Try fetching the file as a blob for native file sharing
-                    let shared = false;
-
-                    // Strategy 1: direct fetch (works when CORS is configured)
-                    try {
-                      const resp = await fetch(mediaUrl);
-                      if (resp.ok) {
-                        const blob = await resp.blob();
-                        const ext = isVideo ? 'mp4' : (mediaUrl.match(/\.(png|jpg|jpeg|webp)/i)?.[1] || 'jpg');
-                        const mimeType = isVideo ? 'video/mp4' : (blob.type || `image/${ext}`);
-                        const fileName = `${itemLabel.replace(/\s+/g, '_')}.${ext}`;
-                        const file = new File([blob], fileName, { type: mimeType });
-                        if (navigator.canShare?.({ files: [file] })) {
-                          await navigator.share({ files: [file], title: itemLabel });
-                          shared = true;
-                        }
-                      }
-                    } catch {
-                      /* CORS or network error — try next strategy */
-                    }
-
-                    // Strategy 2: for images, load via <img> → canvas → blob
-                    if (!shared && !isVideo) {
-                      try {
-                        const blob = await new Promise<Blob>((resolve, reject) => {
-                          const img = new Image();
-                          img.crossOrigin = 'anonymous';
-                          img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.naturalWidth;
-                            canvas.height = img.naturalHeight;
-                            canvas.getContext('2d')!.drawImage(img, 0, 0);
-                            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
-                          };
-                          img.onerror = () => reject(new Error('img load failed'));
-                          img.src = mediaUrl;
-                        });
-                        const fileName = `${itemLabel.replace(/\s+/g, '_')}.png`;
-                        const file = new File([blob], fileName, { type: 'image/png' });
-                        if (navigator.canShare?.({ files: [file] })) {
-                          await navigator.share({ files: [file], title: itemLabel });
-                          shared = true;
-                        }
-                      } catch {
-                        /* canvas tainted or img blocked — fall through */
-                      }
-                    }
-
-                    // Strategy 3: fallback to sharing the URL
-                    if (!shared) {
-                      await navigator.share({ title: itemLabel, url: mediaUrl });
-                    }
-                  } catch {
-                    /* user cancelled or share failed */
-                  }
-                }}
-                title="Delen"
-                className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionBtn}`}
-              >
-                ⤴
-              </button>
-            )}
-            {/* Replace / regenerate */}
-            {canGenerate && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onGenerate();
-                }}
-                title="Vervangen"
-                className={`flex-center rounded-6 fs-14 cursor-pointer border-none ${styles.actionBtn}`}
-              >
-                ⟳
-              </button>
+              ⋯
+            </button>
+            {menuOpen && (
+              <div className={styles.overflowMenu}>
+                <button type="button" onClick={(e) => { e.stopPropagation(); onPreview(); setMenuOpen(false); }}>
+                  👁 Bekijken
+                </button>
+                <a
+                  href={mediaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
+                >
+                  ↗ Openen in nieuw tabblad
+                </a>
+                <a
+                  href={mediaUrl}
+                  download
+                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
+                >
+                  ↓ Downloaden
+                </a>
+                {typeof navigator !== 'undefined' && 'share' in navigator && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); handleShare(); }}>
+                    ⤴ Delen
+                  </button>
+                )}
+                {canGenerate && (
+                  <button type="button" onClick={(e) => { e.stopPropagation(); onGenerate(); setMenuOpen(false); }}>
+                    ⟳ Opnieuw genereren
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
-        {!hasMedia && canGenerate && (
+        ) : !hasMedia && canGenerate ? (
           <span className="text-muted fs-16">›</span>
-        )}
+        ) : null}
       </div>
     </div>
   );
