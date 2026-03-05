@@ -258,6 +258,9 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   batchBrandKits={d.batchBrandKits}
                   clubBrand={d.clubBrand}
                   onMembersReload={() => d.setMembersReloadToken(t => t + 1)}
+                  isTeamRoute={d.isTeamRoute}
+                  userCanEditProject={d.userCanEditProject}
+                  teamBrand={d.teamBrand}
                 />
               )}
 

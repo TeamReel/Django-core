@@ -13,6 +13,7 @@ import { getCsrfToken } from '../../utils/csrf';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
+import { MemberDetailPanel } from './MemberDetailPanel';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import SlotIcon from '../../components/SlotIcon';
 import s from './ProjectSeasonDetailPage.module.css';
@@ -31,6 +32,10 @@ export interface SeasonMediaTabProps {
   batchBrandKits: Record<string, any>;
   clubBrand: any;
   onMembersReload: () => void;
+  /** Additional props for inline member detail panel */
+  isTeamRoute?: boolean;
+  userCanEditProject?: boolean;
+  teamBrand?: any;
 }
 
 const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
@@ -46,12 +51,19 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
   batchBrandKits,
   clubBrand,
   onMembersReload,
+  isTeamRoute = false,
+  userCanEditProject = false,
+  teamBrand = null,
 }) => {
   // ── Tab-local state ──
   const [batchSelectedMemberIds, setBatchSelectedMemberIds] = useState<Set<string>>(new Set());
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isActiveJobsModalOpen, setIsActiveJobsModalOpen] = useState(false);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
+  // ── Inline member detail panel ──
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const memberIds = useMemo(() => members.map((m: any) => String(m.id || '')).filter(Boolean), [members]);
 
   // Guest player state
   const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: any } | null>(null);
@@ -179,6 +191,28 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
       })
       .filter(Boolean) as BatchMember[];
   }, [batchSelectedMemberIds, members]);
+
+  // When a member is selected, show the detail panel instead of the list
+  if (selectedMemberId) {
+    return (
+      <MemberDetailPanel
+        membershipId={selectedMemberId}
+        memberIds={memberIds}
+        project={project}
+        org={org}
+        club={club}
+        apiBaseUrl={apiBaseUrl}
+        isTeamRoute={isTeamRoute}
+        userCanEditProject={userCanEditProject}
+        clubBrand={clubBrand}
+        teamBrand={teamBrand}
+        batchBrandKits={batchBrandKits}
+        onClose={() => setSelectedMemberId(null)}
+        onNavigate={(mid) => setSelectedMemberId(mid)}
+        onMemberUpdated={onMembersReload}
+      />
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6">
@@ -598,11 +632,13 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                     )}
                     <div className={styles.mediaCardBody}>
                       <div className={styles.mediaCardTop}>
-                        {href ? (
-                          <Link to={href} className={styles.mediaCardName}>{name}</Link>
-                        ) : (
-                          <span className={styles.mediaCardName}>{name}</span>
-                        )}
+                        <button
+                          type="button"
+                          className={styles.mediaCardName}
+                          onClick={() => setSelectedMemberId(membershipId)}
+                        >
+                          {name}
+                        </button>
                         <span className={styles.mediaCardScore}>{filledCount}/{MEDIA_SLOTS.length}</span>
                         <button
                           type="button"
