@@ -73,6 +73,23 @@ export default function MobileBottomNav() {
     { id: 'profile', icon: UserCircle, label: 'Profile', path: '/profile' },
   ];
 
+  /** Reserved top-level paths that are NOT hierarchy (org/club/team/…) routes */
+  const reservedPrefixes = new Set([
+    'dashboard', 'login', 'register', 'studio', 'approvals', 'profile',
+    'preferences', 'credits', 'memberships', 'billing', 'notifications',
+    'settings', 'search', 'recents', 'favorites', 'directory', 'matches',
+    'organisations', 'federations', 'clubs', 'teams', 'seasons',
+    'competitions', 'users', 'permissions', 'content', 'contentlib',
+    'apps', 'docs', '403', '404',
+  ]);
+
+  /** Check if a pathname looks like a hierarchy (vanity) route: /:org/:club/:team/… */
+  const looksLikeHierarchyPath = (pathname: string): boolean => {
+    const segs = pathname.split('/').filter(Boolean);
+    if (segs.length < 3) return false; // need at least org/club/team
+    return !reservedPrefixes.has(segs[0].toLowerCase());
+  };
+
   const isActive = (tab: typeof tabs[0]) => {
     if (!tab.path) return false;
     const currentPath = location.pathname;
@@ -82,9 +99,12 @@ export default function MobileBottomNav() {
     }
 
     if (tab.id === 'season') {
-      // Active when on team, season, competition, or match page under current team path
-      if (teamPath === '/dashboard') return false;
-      return currentPath === teamPath || currentPath.startsWith(teamPath + '/');
+      // Primary: teamPath resolved from useAppSelection
+      if (teamPath !== '/dashboard') {
+        return currentPath === teamPath || currentPath.startsWith(teamPath + '/');
+      }
+      // Fallback for cold deeplinks: detect vanity hierarchy paths before useAppSelection resolves
+      return looksLikeHierarchyPath(currentPath);
     }
 
     if (tab.id === 'gallery') {

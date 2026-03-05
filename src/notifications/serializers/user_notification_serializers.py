@@ -10,6 +10,7 @@ class UserNotificationSerializer(serializers.ModelSerializer):
 
     is_read = serializers.SerializerMethodField()
     level = serializers.SerializerMethodField()
+    action_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Notification
@@ -19,6 +20,7 @@ class UserNotificationSerializer(serializers.ModelSerializer):
             "message",
             "level",
             "is_read",
+            "action_url",
             "created_at",
         ]
         read_only_fields = ["id", "created_at"]
@@ -30,6 +32,10 @@ class UserNotificationSerializer(serializers.ModelSerializer):
     def get_level(self, obj):
         """Extract level/severity from metadata."""
         return obj.metadata.get("level", "info")
+
+    def get_action_url(self, obj):
+        """Extract optional navigation target from payload."""
+        return obj.payload.get("action_url", None) if obj.payload else None
 
     def get_title(self, obj):
         """Extract title from payload."""

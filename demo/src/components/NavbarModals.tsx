@@ -436,6 +436,9 @@ export function NavbarNotificationsModal({ notificationsList, onClose, onNavigat
                   key={notif.id}
                   className={`p-12 rounded-8 ${styles.notifItem}`}
                   data-read={notif.read}
+                  onClick={notif.action_url ? () => { onClose(); onNavigate(notif.action_url); } : undefined}
+                  style={notif.action_url ? { cursor: 'pointer' } : undefined}
+                  role={notif.action_url ? 'link' : undefined}
                 >
                   <div className={`${s.notifMessage} ${styles.notifMessageText}`} data-read={notif.read}>
                     {notif.title || notif.message}
