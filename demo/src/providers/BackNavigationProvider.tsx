@@ -55,10 +55,12 @@ export function BackNavigationProvider({ children }: { children: React.ReactNode
       target.onBack();
       return;
     }
-    // Explicit path takes priority — deterministic navigation
-    if (target?.path) {
+    // Prefer browser history for scroll position preservation
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else if (target?.path) {
       navigate(target.path);
-    } else if (window.history.length > 1) {
+    } else {
       navigate(-1);
     }
   }, [navigate]);

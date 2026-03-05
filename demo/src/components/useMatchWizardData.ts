@@ -47,17 +47,50 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
   // ── Effects ──────────────────────────────────────────────────
 
-  // Auto-select match
+  // Auto-select match (and skip to content step when initialMatchId provided)
   useEffect(() => {
     if (isOpen && !selectedMatch) {
       if (initialMatchId) {
         const m = activities.find(a => a.id === initialMatchId || (a as any).slug === initialMatchId);
-        if (m) setSelectedMatch(m);
+        if (m) {
+          setSelectedMatch(m);
+          setCurrentStep('content');
+        } else if (!matchesLoading) {
+          // Match not in initial fetch — load it directly from API
+          (async () => {
+            try {
+              const res = await fetch(
+                `${apiBaseUrl}/api/v1/activities/${encodeURIComponent(initialMatchId)}/`,
+                { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+              );
+              if (res.ok) {
+                const raw = await res.json();
+                const data = raw?.data || raw;
+                if (data?.id) {
+                  setSelectedMatch(data as Activity);
+                  setCurrentStep('content');
+                }
+              }
+            } catch (err) {
+              console.error('[MatchWizard] Failed to fetch match by id:', err);
+            }
+          })();
+        }
       } else if (upcomingMatches.length > 0) {
         setSelectedMatch(upcomingMatches[0]);
       }
     }
-  }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch]);
+  }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch, matchesLoading, apiBaseUrl]);
+
+  // Reset to initial state when wizard closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedMatch(null);
+      setCurrentStep('match');
+      setSelectedContentPhase('pre');
+      setIsContentModalOpen(false);
+    }
+  }, [isOpen]);
 
   // Load saved lineup from match metadata
   useEffect(() => {

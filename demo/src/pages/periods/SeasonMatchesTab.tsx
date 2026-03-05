@@ -468,9 +468,18 @@ const MatchCard: React.FC<MatchCardProps> = ({
             <Link to={matchPath} className={styles.actionBtn}>
               <Eye size={14} /> Bekijk
             </Link>
-            <Link to={`${matchPath}?tab=content`} className={styles.actionBtnPrimary}>
+            <button
+              type="button"
+              className={styles.actionBtnPrimary}
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent('teamreel:open-quick-create', {
+                  detail: { matchId: String(match.id) },
+                }));
+              }}
+            >
               <Zap size={14} /> Content
-            </Link>
+            </button>
           </div>
         </div>
       )}

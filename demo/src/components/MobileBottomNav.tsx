@@ -28,6 +28,7 @@ export default function MobileBottomNav() {
 
   const [activeSeasonSlug, setActiveSeasonSlug] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardMatchId, setWizardMatchId] = useState<string | undefined>(undefined);
 
   const fetchContext = useCallback(async () => {
     try {
@@ -45,9 +46,13 @@ export default function MobileBottomNav() {
     return () => window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, handler);
   }, [fetchContext]);
 
-  // Listen for external open-quick-create events (e.g. SmartEmptyState)
+  // Listen for external open-quick-create events (e.g. SmartEmptyState, match cards)
   useEffect(() => {
-    const handler = () => setWizardOpen(true);
+    const handler = (e: Event) => {
+      const matchId = (e as CustomEvent)?.detail?.matchId;
+      setWizardMatchId(matchId || undefined);
+      setWizardOpen(true);
+    };
     window.addEventListener('teamreel:open-quick-create', handler);
     return () => window.removeEventListener('teamreel:open-quick-create', handler);
   }, []);
@@ -179,7 +184,8 @@ export default function MobileBottomNav() {
       {/* MatchWizard — opened by center + button */}
       <MatchWizard
         isOpen={wizardOpen}
-        onClose={() => setWizardOpen(false)}
+        onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); }}
+        initialMatchId={wizardMatchId}
       />
     </>
   );
