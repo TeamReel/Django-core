@@ -5,7 +5,7 @@
  * active context (collapsible), memberships, sign out.
  * No navigating away — modals for edit profile, password, avatar upload.
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User, KeyRound, Camera, Wallet, Sun, Moon,
@@ -15,6 +15,7 @@ import {
 import { useSignOut } from '@django-core/auth-ui';
 import { usePreferencesData } from './config/usePreferencesData';
 import { PreferencesModals } from './config/PreferencesModals';
+import { useBackNavigation } from '../providers/BackNavigationProvider';
 import s from './ProfileHubPage.module.css';
 
 /* ── Language / timezone option maps ─────────────────────────────────── */
@@ -41,9 +42,26 @@ export default function ProfileHubPage() {
   const d = usePreferencesData();
   const { signOut, loading: signingOut } = useSignOut();
   const navigate = useNavigate();
+  const { setBackTarget } = useBackNavigation();
   const [contextOpen, setContextOpen] = useState(false);
 
   const { user, preferences, setPreferences, handleSavePreferences } = d;
+
+  /* ── Show "← Profile" back button in TopNavbar when any modal is open ── */
+  const anyModalOpen = d.isProfileModalOpen || d.isPasswordModalOpen || d.isAvatarModalOpen;
+  useEffect(() => {
+    if (anyModalOpen) {
+      const closeAll = () => {
+        d.setIsProfileModalOpen(false);
+        d.setIsPasswordModalOpen(false);
+        d.setIsAvatarModalOpen(false);
+      };
+      setBackTarget({ label: 'Profile', path: '/profile', onBack: closeAll });
+    } else {
+      setBackTarget(null);
+    }
+  }, [anyModalOpen, setBackTarget]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   /* ── Derived user info ─────────────────────────────────────────────── */
   const fullName = user

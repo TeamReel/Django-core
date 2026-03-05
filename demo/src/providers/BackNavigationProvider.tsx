@@ -16,6 +16,8 @@ export interface BackTarget {
   label: string;
   /** Fallback path when history is empty */
   path: string;
+  /** Optional custom handler — called instead of navigate when provided */
+  onBack?: () => void;
 }
 
 interface BackNavigationContextValue {
@@ -23,7 +25,7 @@ interface BackNavigationContextValue {
   backTarget: BackTarget | null;
   /** Called by pages to declare their parent */
   setBackTarget: (target: BackTarget | null) => void;
-  /** Navigate back — uses history.back() with fallback to path */
+  /** Navigate back — uses onBack callback, history.back(), or fallback path */
   goBack: () => void;
 }
 
@@ -48,6 +50,11 @@ export function BackNavigationProvider({ children }: { children: React.ReactNode
 
   const goBack = useCallback(() => {
     const target = targetRef.current;
+    // Custom callback takes priority (e.g. close a modal)
+    if (target?.onBack) {
+      target.onBack();
+      return;
+    }
     if (window.history.length > 1) {
       navigate(-1);
     } else if (target?.path) {
