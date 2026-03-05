@@ -55,7 +55,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     const [selectedVariantIdxs, setSelectedVariantIdxs] = useState<Set<number>>(new Set());
     const [photoCompositeFollowUp, setPhotoCompositeFollowUp] = useState<PhotoCompositeFollowUpInfo | null>(null);
     const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
-    const [notificationsList, setNotificationsList] = useState<Array<{ id: string; message: string; is_read: boolean; created_at: string }>>([]);
+    const [notificationsList, setNotificationsList] = useState<Array<{ id: string; title?: string; message: string; is_read: boolean; read?: boolean; action_url?: string | null; created_at: string }>>([]);
     const [creditsModalOpen, setCreditsModalOpen] = useState(false);
 
     // ── Quick-review jobs ──
@@ -190,8 +190,11 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
                     if (Array.isArray(notifications)) {
                         setNotificationsList(notifications.slice(0, 10).map((n: any) => ({
                             id: n.id,
+                            title: n.title || '',
                             message: n.message || n.content || 'Notification',
                             is_read: n.is_read ?? false,
+                            read: n.is_read ?? false,
+                            action_url: n.action_url || null,
                             created_at: n.created_at || new Date().toISOString(),
                         })));
                     }
@@ -208,6 +211,13 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
         window.addEventListener('notificationChanged', handleNotificationChange);
         return () => { clearInterval(interval); window.removeEventListener('notificationChanged', handleNotificationChange); };
     }, [user]);
+
+    // Reset badge counts when navigating to the full-page equivalents
+    useEffect(() => {
+        if (location.pathname === '/notifications' || location.pathname.startsWith('/notifications/')) {
+            setUnreadCount(0);
+        }
+    }, [location.pathname]);
 
     // Fetch credits balance
     useEffect(() => {

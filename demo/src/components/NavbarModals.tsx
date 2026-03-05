@@ -303,7 +303,7 @@ export function NavbarQuickReviewModal({
               In Progress ({inProgressJobs.length})
             </button>
             <button
-              onClick={() => { onClose(); onNavigate('/queue'); }}
+              onClick={() => { onClose(); onNavigate('/approvals'); }}
               className={`ml-auto ${s.btnGhost}`}
             >
               Volledige Queue {'\u2192'}
