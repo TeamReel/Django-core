@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import AppShell from '../components/AppShell';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
@@ -208,29 +207,24 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <AppShell>
-        <div className={`py-24 px-16 mx-auto ${styles.pageContainer}`}>
-          <BreadcrumbNav items={[
-            { label: 'Profile', path: '/profile' },
-            { label: 'Notifications', path: '/notifications', isLeaf: true },
-          ]} />
-          <div className="text-lg font-semibold text-primary">Notifications</div>
-          <div className="text-sm text-muted">Loading notifications…</div>
-        </div>
-      </AppShell>
+      <div className={styles.pageContainer}>
+        <BreadcrumbNav items={[
+          { label: 'Profile', path: '/profile' },
+        ]} />
+        <div className="text-lg font-semibold text-primary">Notifications</div>
+        <div className="text-sm text-muted">Loading notifications…</div>
+      </div>
     );
   }
 
   return (
-    <AppShell>
-      <div className={`py-24 px-16 mx-auto ${styles.pageContainer}`}>
-        <BreadcrumbNav items={[
-          { label: 'Profile', path: '/profile' },
-          { label: 'Notifications', path: '/notifications', isLeaf: true },
-        ]} />
-        <PageHeader
-          title="Notifications"
-          subtitle="View all your system notifications and updates"
+    <div className={styles.pageContainer}>
+      <BreadcrumbNav items={[
+        { label: 'Profile', path: '/profile' },
+      ]} />
+      <PageHeader
+        title="Notifications"
+        subtitle="View all your system notifications and updates"
           className="mb-16"
           actions={
             <div className={`flex-row gap-8 flex-wrap ${styles.headerActions}`}>
@@ -407,6 +401,5 @@ export default function NotificationsPage() {
         </div>
         </PullToRefresh>
       </div>
-    </AppShell>
   );
 }

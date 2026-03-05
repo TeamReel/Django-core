@@ -27,7 +27,6 @@ export const PreferencesPage: React.FC = () => {
       <div className="p-6">
         <BreadcrumbNav items={[
           { label: 'Profile', path: '/profile' },
-          { label: 'Preferences', path: '/preferences', isLeaf: true },
         ]} />
         <PageHeader
           title="Preferences"
@@ -51,7 +50,6 @@ export const PreferencesPage: React.FC = () => {
     <>
       <BreadcrumbNav items={[
         { label: 'Profile', path: '/profile' },
-        { label: 'Preferences', path: '/preferences', isLeaf: true },
       ]} />
       <PageHeader
         title="Preferences"

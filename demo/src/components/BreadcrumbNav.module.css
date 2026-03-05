@@ -1,129 +1,60 @@
-/* BreadcrumbNav — CSS Module */
+/* BreadcrumbNav — iOS-style back-link */
 
 /* ── Container ─────────────────────────────────────────────────────── */
 .breadcrumbNav {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  min-width: 0;
-  overflow: hidden;
+  margin-bottom: 8px;
 }
 
-/* ── Ordered list ──────────────────────────────────────────────────── */
-.list {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-wrap: nowrap;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  min-width: 0;
-  overflow: hidden;
-}
-
-/* ── Each breadcrumb item ──────────────────────────────────────────── */
-.item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  min-width: 0;
-}
-
-/* ── Separator ─────────────────────────────────────────────────────── */
-.separator {
-  margin: 0 8px;
-  font-size: 14px;
-  color: var(--app-muted-text, #9ca3af);
-  flex-shrink: 0;
-}
-
-/* ── Link / text ───────────────────────────────────────────────────── */
-.link {
-  font-size: 14px;
-  white-space: nowrap;
-  text-decoration: none;
-  color: var(--app-muted-text, #6b7280);
-  font-weight: 400;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.link:hover {
-  color: var(--app-text, #1f2937);
-}
-
-.linkCurrent {
-  color: var(--app-text, #1f2937);
-  font-weight: 600;
-}
-
-.inlineLabel {
+/* ── Back link ─────────────────────────────────────────────────────── */
+.backLink {
   display: inline-flex;
   align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--app-primary, #2563eb);
   font-size: 14px;
+  font-weight: 400;
+  padding: 6px 8px 6px 2px;
+  margin-left: -6px;
+  border-radius: 8px;
+  transition: background-color 0.15s, opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.backLink:hover {
+  background-color: var(--app-surface-2, rgba(0, 0, 0, 0.04));
+}
+
+.backLink:active {
+  opacity: 0.7;
+}
+
+/* ── Icon ──────────────────────────────────────────────────────────── */
+.backIcon {
+  flex-shrink: 0;
+  margin-top: 0.5px;
+}
+
+/* ── Label ─────────────────────────────────────────────────────────── */
+.backLabel {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--app-muted-text, #6b7280);
-  font-weight: 400;
+  max-width: 200px;
 }
 
-.inlineLabelCurrent {
-  color: var(--app-text, #1f2937);
-  font-weight: 600;
-}
-
-/* ── Mobile back button ────────────────────────────────────────────── */
-.backButton {
-  display: none; /* hidden on desktop */
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: none;
-  border-radius: 8px;
-  background-color: transparent;
-  color: var(--app-text, #1f2937);
-  cursor: pointer;
-  flex-shrink: 0;
-  margin-right: 4px;
-  padding: 0;
-  transition: background-color 0.15s;
-}
-
-.backButton:active {
-  background-color: var(--app-surface-2, #f3f4f6);
-}
-
-/* ── Ellipsis (collapsed middle items) ─────────────────────────────── */
-.ellipsis {
-  font-size: 14px;
-  color: var(--app-muted-text, #9ca3af);
-  letter-spacing: 2px;
-  flex-shrink: 0;
-  padding: 0 2px;
-}
-
-/* ── Mobile: compact breadcrumbs ───────────────────────────────────── */
+/* ── Mobile: larger touch target ───────────────────────────────────── */
 @media (max-width: 639px) {
-  .backButton {
-    display: flex;
+  .backLink {
+    min-height: 44px;
+    font-size: 15px;
+    padding: 10px 12px 10px 4px;
   }
 
-  /* Hide middle items on mobile — JS handles which items are visible */
-  .hiddenMobile {
-    display: none;
-  }
-
-  .link,
-  .inlineLabel {
-    max-width: 120px;
-    font-size: 13px;
-  }
-
-  .separator {
-    margin: 0 4px;
-    font-size: 12px;
+  .backLabel {
+    max-width: 160px;
   }
 }

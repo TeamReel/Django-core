@@ -61,7 +61,6 @@ export default function SettingsLandingPage() {
     <>
       <BreadcrumbNav items={[
         { label: 'Profile', path: '/profile' },
-        { label: 'Settings', path: '/settings', isLeaf: true },
       ]} />
       <SectionPageLayout
         title="Settings"

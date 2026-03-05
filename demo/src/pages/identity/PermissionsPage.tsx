@@ -88,7 +88,6 @@ export const PermissionsPage: React.FC = () => {
       <div>
         <BreadcrumbNav items={[
           { label: 'Profile', path: '/profile' },
-          { label: 'Permissions', path: '/permissions', isLeaf: true },
         ]} />
         <PageHeader title="Permissions" breadcrumbs={[{ label: 'Profile', href: '/profile' }, { label: 'Permissions' }]} />
         <PageContent>
@@ -103,7 +102,6 @@ export const PermissionsPage: React.FC = () => {
       <div>
         <BreadcrumbNav items={[
           { label: 'Profile', path: '/profile' },
-          { label: 'Permissions', path: '/permissions', isLeaf: true },
         ]} />
         <PageHeader title="Permissions & Access Control"
           breadcrumbs={[{ label: 'Profile', href: '/profile' }, { label: 'Permissions' }]} />

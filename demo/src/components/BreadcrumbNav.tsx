@@ -1,14 +1,13 @@
 /**
- * BreadcrumbNav — Shared breadcrumb `<nav><ol>` renderer.
+ * BreadcrumbNav — iOS-style back-link for sub-pages.
  *
- * Desktop: full crumb trail (Dashboard / Org / Club / Team / Season / …)
- * Mobile (<640px): back arrow + collapsed trail — show first, ellipsis, last 2.
- *   e.g.  ‹  Dashboard / … / Season / Match
+ * Shows "← Parent" as a subtle, tappable back link.
+ * For deep hierarchies (3+ items), shows collapsed trail on desktop.
+ * Mobile: always shows just the back arrow + immediate parent name.
  */
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { useNavigateBack } from '../hooks/useNavigateBack';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 import s from './BreadcrumbNav.module.css';
 
 export interface BreadcrumbItem {
@@ -17,73 +16,36 @@ export interface BreadcrumbItem {
   isLeaf?: boolean;
 }
 
-/**
- * Max visible items on mobile before collapsing middle segments.
- * When items.length > MAX_MOBILE, we show: first + … + last (MAX_MOBILE - 1).
- */
-const MAX_MOBILE = 3;
-
 export function BreadcrumbNav({ items }: { items: BreadcrumbItem[] }) {
-  if (items.length === 0) return null;
+  // Filter out leaf items — we only show parents (current page is in PageHeader)
+  const parents = items.filter(i => !i.isLeaf);
+  if (parents.length === 0) return null;
 
-  const goBack = useNavigateBack();
-  const shouldCollapse = items.length > MAX_MOBILE;
+  const navigate = useNavigate();
+  // The immediate parent is the last parent item
+  const parent = parents[parents.length - 1];
 
   return (
-    <nav aria-label="Breadcrumb" className={s.breadcrumbNav}>
-      {/* Mobile back button */}
-      <button
-        className={s.backButton}
-        onClick={goBack}
-        aria-label="Go back"
-        type="button"
+    <nav aria-label="Back" className={s.breadcrumbNav}>
+      <Link
+        to={parent.path}
+        className={s.backLink}
+        onClick={(e) => {
+          // Use navigate(-1) if possible for natural back behaviour,
+          // fallback to the parent path
+          e.preventDefault();
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate(parent.path);
+          }
+        }}
       >
-        <ArrowLeft size={18} strokeWidth={2} />
-      </button>
-
-      <ol className={s.list}>
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
-          const isFirst = index === 0;
-
-          // On mobile: hide middle items when collapsing
-          // Show first item, last (MAX_MOBILE - 1) items, hide the rest
-          const isHiddenOnMobile = shouldCollapse && !isFirst && index < items.length - (MAX_MOBILE - 1);
-
-          return (
-            <React.Fragment key={`${index}:${item.path}`}>
-              {/* Show ellipsis before the first visible-after-collapse item */}
-              {shouldCollapse && index === items.length - (MAX_MOBILE - 1) && (
-                <li className={s.item}>
-                  <span className={s.separator}>/</span>
-                  <span className={s.ellipsis}>…</span>
-                </li>
-              )}
-              <li className={`${s.item} ${isHiddenOnMobile ? s.hiddenMobile : ''}`}>
-                {index > 0 && !(shouldCollapse && index === items.length - (MAX_MOBILE - 1)) && (
-                  <span className={s.separator}>/</span>
-                )}
-                {typeof item.label === 'string' ? (
-                  <Link
-                    to={item.path}
-                    className={`${s.link} ${isLast ? s.linkCurrent : ''}`}
-                    aria-current={isLast ? 'page' : undefined}
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span
-                    className={`${s.inlineLabel} ${isLast ? s.inlineLabelCurrent : ''}`}
-                    aria-current={isLast ? 'page' : undefined}
-                  >
-                    {item.label}
-                  </span>
-                )}
-              </li>
-            </React.Fragment>
-          );
-        })}
-      </ol>
+        <ChevronLeft size={18} strokeWidth={2} className={s.backIcon} />
+        <span className={s.backLabel}>
+          {typeof parent.label === 'string' ? parent.label : parent.label}
+        </span>
+      </Link>
     </nav>
   );
 }

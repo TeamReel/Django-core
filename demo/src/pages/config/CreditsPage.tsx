@@ -27,7 +27,6 @@ export const CreditsPage: React.FC = () => {
     <>
       <BreadcrumbNav items={[
         { label: 'Profile', path: '/profile' },
-        { label: 'Credits', path: '/credits', isLeaf: true },
       ]} />
       <PageHeader
         title="Credits"

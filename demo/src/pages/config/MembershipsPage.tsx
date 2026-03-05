@@ -133,7 +133,6 @@ export const MembershipsPage: React.FC = () => {
     <>
       <BreadcrumbNav items={[
         { label: 'Profile', path: '/profile' },
-        { label: 'Memberships', path: '/memberships', isLeaf: true },
       ]} />
       <PageHeader
         title="Memberships"

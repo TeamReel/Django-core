@@ -8,7 +8,6 @@ export const BillingPage: React.FC = () => {
     <>
       <BreadcrumbNav items={[
         { label: 'Profile', path: '/profile' },
-        { label: 'Billing', path: '/billing', isLeaf: true },
       ]} />
       <PageHeader
         title="Billing & Licensing"
