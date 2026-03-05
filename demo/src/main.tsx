@@ -11,6 +11,7 @@ import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ConfirmProvider } from './components/ui/ConfirmDialog';
 import { ToastProvider, ToastContainer } from './components/ui/Toast';
+import { BackNavigationProvider } from './providers/BackNavigationProvider';
 import App from './App';
 import '@django-core/design-system/tokens.css';
 import '@django-core/theme-system/dist/style.css';
@@ -67,9 +68,11 @@ function AppWithProviders() {
         <ContextSwitcherProvider config={contextConfig}>
           <ToastProvider>
             <ConfirmProvider>
-              <ErrorBoundary location={location}>
-                <App />
-              </ErrorBoundary>
+              <BackNavigationProvider>
+                <ErrorBoundary location={location}>
+                  <App />
+                </ErrorBoundary>
+              </BackNavigationProvider>
               <ToastContainer />
             </ConfirmProvider>
           </ToastProvider>

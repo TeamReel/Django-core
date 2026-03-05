@@ -1,14 +1,13 @@
 import React from 'react';
 import { Card, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import { BreadcrumbNav } from '../../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 
 export const BillingPage: React.FC = () => {
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
+
   return (
     <>
-      <BreadcrumbNav items={[
-        { label: 'Profile', path: '/profile' },
-      ]} />
       <PageHeader
         title="Billing & Licensing"
         subtitle="Plans, invoices, and usage (coming soon)"

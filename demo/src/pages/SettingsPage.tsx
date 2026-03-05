@@ -1,5 +1,5 @@
 import { Settings } from '@django-core/page-templates';
-import { BreadcrumbNav } from '../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../providers/BackNavigationProvider';
 import { useSettingsPage } from './useSettingsPage';
 import styles from './SettingsPage.module.css';
 
@@ -14,12 +14,10 @@ export default function SettingsPage() {
     handleChangePassword, handleEnable2FA,
     handleNotificationChange, handleSaveNotifications,
   } = useSettingsPage();
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   return (
     <div className={styles.settingsContainer}>
-      <BreadcrumbNav items={[
-        { label: 'Profile', path: '/profile' },
-      ]} />
       <Settings
         className={styles.settingsGrid}
         sections={sections}

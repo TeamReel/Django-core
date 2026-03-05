@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import { BreadcrumbNav } from '../../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { usePreferencesData } from './usePreferencesData';
 import { PreferencesModals } from './PreferencesModals';
 import { PreferencesProfileTab } from './PreferencesProfileTab';
@@ -21,13 +21,11 @@ import { PersonalisationTab, AuditTab, NotificationsTab } from './PreferencesSet
 export const PreferencesPage: React.FC = () => {
   const data = usePreferencesData();
   const { loading, success, activeTab } = data;
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   if (loading) {
     return (
       <div className="p-6">
-        <BreadcrumbNav items={[
-          { label: 'Profile', path: '/profile' },
-        ]} />
         <PageHeader
           title="Preferences"
           breadcrumbs={[
@@ -48,9 +46,6 @@ export const PreferencesPage: React.FC = () => {
 
   return (
     <>
-      <BreadcrumbNav items={[
-        { label: 'Profile', path: '/profile' },
-      ]} />
       <PageHeader
         title="Preferences"
         breadcrumbs={[

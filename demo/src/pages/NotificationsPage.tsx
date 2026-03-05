@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
-import { BreadcrumbNav } from '../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../providers/BackNavigationProvider';
 import { getApiBaseUrl } from '../utils/apiBase';
 import SwipeableCard from '../components/SwipeableCard';
 import styles from './NotificationsPage.module.css';
@@ -52,6 +52,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   useEffect(() => {
     const params = safeSearchParams(location.search);
@@ -208,9 +209,6 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className={styles.pageContainer}>
-        <BreadcrumbNav items={[
-          { label: 'Profile', path: '/profile' },
-        ]} />
         <div className="text-lg font-semibold text-primary">Notifications</div>
         <div className="text-sm text-muted">Loading notifications…</div>
       </div>
@@ -219,9 +217,6 @@ export default function NotificationsPage() {
 
   return (
     <div className={styles.pageContainer}>
-      <BreadcrumbNav items={[
-        { label: 'Profile', path: '/profile' },
-      ]} />
       <PageHeader
         title="Notifications"
         subtitle="View all your system notifications and updates"

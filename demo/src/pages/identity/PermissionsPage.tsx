@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import { BreadcrumbNav } from '../../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { Table } from '../../shims/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
@@ -27,6 +27,7 @@ export const PermissionsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'hierarchy' | 'permissions'>('hierarchy');
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   useEffect(() => {
     const fetchPermissionsData = async () => {
@@ -86,9 +87,6 @@ export const PermissionsPage: React.FC = () => {
   if (loading) {
     return (
       <div>
-        <BreadcrumbNav items={[
-          { label: 'Profile', path: '/profile' },
-        ]} />
         <PageHeader title="Permissions" breadcrumbs={[{ label: 'Profile', href: '/profile' }, { label: 'Permissions' }]} />
         <PageContent>
           <Card><div className="text-center py-8 text-gray-500">Loading permissions...</div></Card>
@@ -100,9 +98,6 @@ export const PermissionsPage: React.FC = () => {
   return (
     <>
       <div>
-        <BreadcrumbNav items={[
-          { label: 'Profile', path: '/profile' },
-        ]} />
         <PageHeader title="Permissions & Access Control"
           breadcrumbs={[{ label: 'Profile', href: '/profile' }, { label: 'Permissions' }]} />
 

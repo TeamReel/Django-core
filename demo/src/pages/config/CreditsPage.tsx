@@ -15,7 +15,7 @@ import {
   BreadcrumbContextSwitcher,
 } from '@django-core/page-templates';
 
-import { BreadcrumbNav } from '../../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { useCreditsData } from './credits/useCreditsData';
 import { CreditsBalanceTab } from './credits/CreditsBalanceTab';
 import { CreditsTransactionsTab } from './credits/CreditsTransactionsTab';
@@ -23,12 +23,10 @@ import styles from './CreditsPage.module.css';
 
 export const CreditsPage: React.FC = () => {
   const data = useCreditsData();
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   return (
     <div className={styles.creditsWrapper}>
-      <BreadcrumbNav items={[
-        { label: 'Profile', path: '/profile' },
-      ]} />
       <PageHeader
         title="Credits"
         subtitle="View your organisation's credit balance"

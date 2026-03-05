@@ -9,7 +9,8 @@
 import { Link } from 'react-router-dom';
 import {
   Menu, ChevronDown, ChevronUp, Sun, Moon,
-  Globe, Bell, Coins, PanelLeftOpen, PanelLeftClose, Command, Plus, ListChecks
+  Globe, Bell, Coins, PanelLeftOpen, PanelLeftClose, Command, Plus, ListChecks,
+  ChevronLeft
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
@@ -19,6 +20,7 @@ import Breadcrumbs from './Breadcrumbs';
 import CommandPalette from './CommandPalette';
 import { useTopNavbarData } from './useTopNavbarData';
 import { getColumnCount, CREATE_MENU_ITEMS, type TopNavbarProps } from './topNavbarHelpers';
+import { useBackNavigation } from '../providers/BackNavigationProvider';
 import {
   NavbarPhotoCompositeFollowUpModal,
   NavbarQuickReviewModal,
@@ -28,14 +30,15 @@ import {
 
 export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const d = useTopNavbarData(onOpenSearchRef);
+  const { backTarget, goBack } = useBackNavigation();
 
   return (
     <div className={s.wrapper}>
       <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
       <nav className={s.nav}>
         <div className={s.navContainer} data-mobile={isMobile}>
-          {/* Mobile hamburger */}
-          {isMobile && (
+          {/* Mobile: hamburger OR back button */}
+          {isMobile && !backTarget && (
             <button
               className={`${s.mobileMenuBtn} mobile-menu-button`}
               onClick={onToggleSidebar}
@@ -44,9 +47,31 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               <AppIcon icon={Menu} size={22} strokeWidth={2.5} />
             </button>
           )}
+          {isMobile && backTarget && (
+            <button
+              className={s.backBtn}
+              onClick={goBack}
+              aria-label={`Back to ${backTarget.label}`}
+            >
+              <ChevronLeft size={20} strokeWidth={2.5} className={s.backBtnIcon} />
+              <span className={s.backBtnLabel}>{backTarget.label}</span>
+            </button>
+          )}
 
           {/* Left: Navigation items */}
           <div className={`desktop-nav flex-row gap-4 flex-1 h-full ${s.desktopNavWrap}`}>
+            {/* Desktop: back button when navigating a sub-page */}
+            {!isMobile && backTarget && (
+              <button
+                className={s.backBtn}
+                onClick={goBack}
+                aria-label={`Back to ${backTarget.label}`}
+              >
+                <ChevronLeft size={18} strokeWidth={2.5} className={s.backBtnIcon} />
+                <span className={s.backBtnLabel}>{backTarget.label}</span>
+              </button>
+            )}
+
             {/* Logo */}
             <Link
               to={d.dashboardItem.path}

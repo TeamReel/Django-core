@@ -1,13 +1,14 @@
 import React from 'react';
 import { Settings, Palette, Users, Activity, Shield } from 'lucide-react';
 import { SectionPageLayout } from '../components/SectionPageLayout';
-import { BreadcrumbNav } from '../components/BreadcrumbNav';
+import { useSetBackNavigation } from '../providers/BackNavigationProvider';
 import { TileGrid, TileItem } from '../components/TileGrid';
 import { useUserRole } from '../components/PermissionGuards';
 
 export default function SettingsLandingPage() {
   const { isSystemAdmin, isOrgAdmin, isLandAdmin } = useUserRole();
   const isStaff = isSystemAdmin || isLandAdmin;
+  useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
   const tiles: TileItem[] = [
     {
@@ -59,9 +60,6 @@ export default function SettingsLandingPage() {
 
   return (
     <>
-      <BreadcrumbNav items={[
-        { label: 'Profile', path: '/profile' },
-      ]} />
       <SectionPageLayout
         title="Settings"
         description="Configure your account and platform settings"
