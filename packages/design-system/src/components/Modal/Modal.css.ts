@@ -37,7 +37,8 @@ export const modalContent = style({
   '@media': {
     '(max-width: 639px)': {
       maxWidth: '100%',
-      maxHeight: '100%',
+      /* Constrained to overlay height so header never scrolls out of view */
+      maxHeight: 'calc(100vh - 57px - 64px - env(safe-area-inset-bottom, 0px))',
       borderRadius: '16px 16px 0 0',
       boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
     },
@@ -71,6 +72,7 @@ export const modalHeader = style({
   justifyContent: 'space-between',
   padding: themeVars.spacing['6'],
   borderBottom: `1px solid ${themeVars.color.border.primary}`,
+  flexShrink: 0,
 });
 
 globalStyle(`${modalHeader} h2`, {
@@ -102,6 +104,7 @@ export const modalBody = style({
   padding: themeVars.spacing['6'],
   overflow: 'auto',
   flex: 1,
+  minHeight: 0,
 });
 
 export const modalFooter = style({
@@ -111,4 +114,5 @@ export const modalFooter = style({
   gap: themeVars.spacing['3'],
   padding: themeVars.spacing['6'],
   borderTop: `1px solid ${themeVars.color.border.primary}`,
+  flexShrink: 0,
 });
