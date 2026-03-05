@@ -13,6 +13,12 @@ export const modalOverlay = style({
   justifyContent: 'center',
   zIndex: 1000,
   padding: themeVars.spacing['4'],
+  '@media': {
+    '(max-width: 639px)': {
+      alignItems: 'flex-end',
+      padding: 0,
+    },
+  },
 });
 
 export const modalContent = style({
@@ -25,6 +31,14 @@ export const modalContent = style({
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
+  '@media': {
+    '(max-width: 639px)': {
+      maxWidth: '100%',
+      maxHeight: '85vh',
+      borderRadius: '16px 16px 0 0',
+      boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
+    },
+  },
 });
 
 export const modalHeader = style({
@@ -73,4 +87,9 @@ export const modalFooter = style({
   gap: themeVars.spacing['3'],
   padding: themeVars.spacing['6'],
   borderTop: `1px solid ${themeVars.color.border.primary}`,
+  '@media': {
+    '(max-width: 639px)': {
+      paddingBottom: `calc(${themeVars.spacing['6']} + env(safe-area-inset-bottom, 0px))`,
+    },
+  },
 });
