@@ -2,7 +2,8 @@
 
 .inlineWrap {
   position: relative;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  padding: 0 16px;
 }
 
 /* Right-edge fade hint when more pills are scrollable */
@@ -34,16 +35,17 @@
 .inlinePill {
   flex-shrink: 0;
   padding: 8px 16px;
-  min-height: 36px;
-  border-radius: 18px;
+  min-height: 40px;
+  border-radius: 20px;
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-muted-text, #888);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .inlinePill[data-active="true"] {

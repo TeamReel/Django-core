@@ -44,9 +44,11 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
+  min-height: 44px;
   border-bottom: none;
   cursor: default;
   transition: background 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .contentRow[data-show-border='true'] {
@@ -55,6 +57,10 @@
 
 .contentRow[data-clickable='true'] {
   cursor: pointer;
+}
+
+.contentRow[data-clickable='true']:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.06));
 }
 
 .contentRow[data-clickable='true']:hover {

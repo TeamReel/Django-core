@@ -101,9 +101,9 @@ export default function MatchOverviewTab({
       >
         <div className="flex-center gap-12">
           {/* Home */}
-          <div className="flex-col gap-4 flex-1 items-center">
+          <div className="flex-col gap-4 flex-1 items-center" style={{ minWidth: 0 }}>
             <TeamLogo url={homeLogoUrl} fallback="🏠" size={44} />
-            <span className="fs-13 fw-700 text-center leading-tight">
+            <span className={`fs-13 fw-700 text-center leading-tight ${styles.teamName}`}>
               {homeTeamName}
             </span>
           </div>
@@ -128,9 +128,9 @@ export default function MatchOverviewTab({
           </div>
 
           {/* Away */}
-          <div className="flex-col gap-4 flex-1 items-center">
+          <div className="flex-col gap-4 flex-1 items-center" style={{ minWidth: 0 }}>
             <TeamLogo url={awayLogoUrl} fallback="⚽" size={44} />
-            <span className="fs-13 fw-700 text-center leading-tight">
+            <span className={`fs-13 fw-700 text-center leading-tight ${styles.teamName}`}>
               {awayTeamName}
             </span>
           </div>
