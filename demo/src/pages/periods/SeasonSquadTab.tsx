@@ -162,7 +162,9 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                 {!membersLoading && !membersError && members.length === 0 ? (
                   <Alert variant="info">No members in this season squad. Go to the Team tab to assign team members.</Alert>
                 ) : !membersLoading && !membersError ? (
-                  <div className="overflow-x-auto">
+                  <>
+                  {/* ── Desktop table ── */}
+                  <div className={`overflow-x-auto ${st.desktopTable}`}>
                     <Table className="detail-table">
                       <thead>
                         <tr>
@@ -279,6 +281,76 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                       </tbody>
                     </Table>
                   </div>
+
+                  {/* ── Mobile card list ── */}
+                  <div className={st.mobileList}>
+                    {visibleSquadMembers.map((m: any) => {
+                      const memberUser = m.user || m;
+                      const name =
+                        memberUser.name ||
+                        `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                        memberUser.email ||
+                        '\u2014';
+                      const position = m.metadata?.position || '';
+                      const shirtNumber = m.metadata?.shirt_number ?? '';
+                      const rbacLabel = getRbacLabel(m.role || 'viewer', isTeamRoute);
+                      const role = normalizeAccessRole(m.role || 'viewer');
+                      const functionalRoles = getFunctionalRolesFromMembership(m);
+                      const membershipId = String(m.id || '').trim();
+                      const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
+                      const href = memberDetailHref(membershipId);
+                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ') || memberUser.email || '';
+                      return (
+                        <div
+                          key={membershipId}
+                          className={st.memberCard}
+                          data-selected={checked ? 'true' : undefined}
+                        >
+                          <input
+                            type="checkbox"
+                            className={st.memberCardCheckbox}
+                            checked={checked}
+                            disabled={!membershipId || bulkSubmitting}
+                            onChange={() => { if (membershipId) toggleSquadMembership(membershipId); }}
+                          />
+                          <div className={st.memberCardBody}>
+                            {href ? (
+                              <Link to={href} className={st.memberCardName}>{name}</Link>
+                            ) : (
+                              <span className={st.memberCardName}>{name}</span>
+                            )}
+                            {meta && <div className={st.memberCardMeta}>{meta}</div>}
+                            <div className={st.memberCardBadges}>
+                              <Badge variant={role === 'admin' ? 'warning' : 'default'}>{rbacLabel}</Badge>
+                              {functionalRoles.map((r: string) => (
+                                <Badge key={r} variant="default">{r}</Badge>
+                              ))}
+                            </div>
+                            <div className={st.memberCardActions}>
+                              <button
+                                type="button"
+                                className="app-action-button action-btn action-btn-primary"
+                                disabled={!membershipId || bulkSubmitting}
+                                onClick={() => {
+                                  if (!membershipId) return;
+                                  setSelectedEditMember(m);
+                                  setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
+                                  setIsEditMemberModalOpen(true);
+                                }}
+                              >Edit</button>
+                              <button
+                                type="button"
+                                className="app-action-button action-btn action-btn-danger"
+                                disabled={!membershipId || bulkSubmitting}
+                                onClick={async () => { if (membershipId) await unassignMembershipsFromSeasonSquad([membershipId]); }}
+                              >Unassign</button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  </>
                 ) : null}
               </>
             ) : (
@@ -287,7 +359,9 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                 {!membersLoading && !membersError && members.length === 0 ? (
                   <Alert variant="info">No members found for this season.</Alert>
                 ) : !membersLoading && !membersError ? (
-                  <div className="overflow-x-auto">
+                  <>
+                  {/* Desktop table */}
+                  <div className={`overflow-x-auto ${st.desktopTable}`}>
                     <Table className="detail-table">
                       <thead>
                         <tr>
@@ -356,6 +430,43 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                       </tbody>
                     </Table>
                   </div>
+
+                  {/* Mobile card list (read-only) */}
+                  <div className={st.mobileList}>
+                    {members.map((m: any) => {
+                      const memberUser = m.user || m;
+                      const name =
+                        memberUser.name ||
+                        `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                        memberUser.email ||
+                        '\u2014';
+                      const position = m.metadata?.position || '';
+                      const shirtNumber = m.metadata?.shirt_number ?? '';
+                      const role = normalizeAccessRole(m.role || 'viewer');
+                      const functionalRoles = getFunctionalRolesFromMembership(m);
+                      const href = memberDetailHref(String(m.id || '').trim());
+                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ') || memberUser.email || '';
+                      return (
+                        <div key={String(m.id || memberUser.email)} className={st.memberCard}>
+                          <div className={st.memberCardBody}>
+                            {href ? (
+                              <Link to={href} className={st.memberCardName}>{name}</Link>
+                            ) : (
+                              <span className={st.memberCardName}>{name}</span>
+                            )}
+                            {meta && <div className={st.memberCardMeta}>{meta}</div>}
+                            <div className={st.memberCardBadges}>
+                              <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(m.role || 'viewer', isTeamRoute)}</Badge>
+                              {functionalRoles.map((r: string) => (
+                                <Badge key={r} variant="default">{r}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  </>
                 ) : null}
               </>
             )}

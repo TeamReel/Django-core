@@ -147,7 +147,9 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
             {!teamRosterLoading && eligibleTeamMembers.length === 0 ? (
               <Alert variant="info">All team members are already assigned to this season squad.</Alert>
             ) : !teamRosterLoading ? (
-              <div className="overflow-x-auto">
+              <>
+              {/* ── Desktop table ── */}
+              <div className={`overflow-x-auto ${st.desktopTable}`}>
                 <Table className="detail-table">
                   <thead>
                     <tr>
@@ -234,6 +236,63 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                   </tbody>
                 </Table>
               </div>
+
+              {/* ── Mobile card list ── */}
+              <div className={st.mobileList}>
+                {eligibleTeamMembers.map((m: any) => {
+                  const userId = getUserId(m);
+                  const { name, email } = getUserLabel(m);
+                  const checked = Boolean(userId && selectedEligibleUserIds.has(userId));
+                  const role = getBestRoleForUser(userId);
+                  const functionalRoles = getFunctionalRolesForUser(userId);
+                  return (
+                    <div
+                      key={`team-mobile:${userId || email}`}
+                      className={st.memberCard}
+                      data-selected={checked ? 'true' : undefined}
+                    >
+                      {userCanEditProject && (
+                        <input
+                          type="checkbox"
+                          className={st.memberCardCheckbox}
+                          checked={checked}
+                          disabled={!userId || bulkSubmitting}
+                          onChange={() => { if (userId) toggleEligibleUser(userId); }}
+                        />
+                      )}
+                      <div className={st.memberCardBody}>
+                        <span className={st.memberCardName}>{name}</span>
+                        <div className={st.memberCardEmail}>{email}</div>
+                        <div className={st.memberCardBadges}>
+                          <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(role, isTeamRoute)}</Badge>
+                          {functionalRoles.map((r) => (
+                            <Badge key={r} variant="default">{r}</Badge>
+                          ))}
+                        </div>
+                        {userCanEditProject && (
+                          <div className={st.memberCardActions}>
+                            <button
+                              type="button"
+                              className="app-action-button action-btn action-btn-success"
+                              disabled={!userId || bulkSubmitting}
+                              onClick={async () => {
+                                if (!userId) return;
+                                await assignUsersToSeasonSquad([userId]);
+                                setSelectedEligibleUserIds((prev) => {
+                                  const next = new Set(prev);
+                                  next.delete(userId);
+                                  return next;
+                                });
+                              }}
+                            >Assign</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              </>
             ) : null}
           </div>
         </Card>

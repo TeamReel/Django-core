@@ -209,7 +209,9 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
           ) : members.length === 0 ? (
             <Alert variant="info">No squad members to show media status for.</Alert>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* ── Desktop table ── */}
+            <div className={`overflow-x-auto ${styles.desktopTable}`}>
               <Table className="detail-table">
                 <thead>
                   <tr>
@@ -383,6 +385,109 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                 </tbody>
               </Table>
             </div>
+
+            {/* ── Mobile card list ── */}
+            <div className={styles.mobileList}>
+              {/* Guest player card */}
+              {guestPlayer && (
+                <div className={`${styles.mediaCard} ${styles.mediaCardGuest}`}>
+                  <div className={styles.mediaCardBody}>
+                    <div className={styles.mediaCardTop}>
+                      <span className={styles.mediaCardName}>{'\uD83C\uDFC3'} Gast Speler</span>
+                      <Badge variant={[guestPlayer.has_avatar, guestPlayer.has_closeup, guestPlayer.has_intro, guestPlayer.has_celebration].filter(Boolean).length === 4 ? 'success' : 'default'}>
+                        {[guestPlayer.has_avatar, guestPlayer.has_closeup, guestPlayer.has_intro, guestPlayer.has_celebration].filter(Boolean).length}/4
+                      </Badge>
+                    </div>
+                    <div className={styles.mediaCardSlots}>
+                      {[
+                        { id: 'kit', label: 'Tenue', has: guestPlayer.has_avatar },
+                        { id: 'closeup', label: 'Close-up', has: guestPlayer.has_closeup },
+                        { id: 'intro', label: 'Intro', has: guestPlayer.has_intro },
+                        { id: 'celebration', label: 'Viering', has: guestPlayer.has_celebration },
+                      ].map((gs) => (
+                        <div key={gs.id} className={styles.mediaCardSlot}>
+                          <span className={styles.mediaCardSlotIcon}>{gs.has ? '\u2705' : '\u2B1C'}</span>
+                          <span className={styles.mediaCardSlotLabel}>{gs.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* Squad member cards */}
+              {members.map((m: any) => {
+                const memberUser = m.user || m;
+                const name =
+                  memberUser.name ||
+                  `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
+                  memberUser.email ||
+                  '\u2014';
+                const membershipId = String(m.id || '').trim();
+                const href = memberDetailHref(membershipId);
+                const filledCount = countProcessedMediaSlots(m);
+                const isComplete = filledCount === MEDIA_SLOTS.length;
+                const isBatchSelected = batchSelectedMemberIds.has(membershipId);
+
+                return (
+                  <div
+                    key={`mobile-media-${membershipId}`}
+                    className={styles.mediaCard}
+                    data-selected={isBatchSelected ? 'true' : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      className={styles.mediaCardCheckbox}
+                      checked={isBatchSelected}
+                      onChange={(e) => {
+                        setBatchSelectedMemberIds((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.add(membershipId);
+                          else next.delete(membershipId);
+                          return next;
+                        });
+                      }}
+                    />
+                    <div className={styles.mediaCardBody}>
+                      <div className={styles.mediaCardTop}>
+                        {href ? (
+                          <Link to={href} className={styles.mediaCardName}>{name}</Link>
+                        ) : (
+                          <span className={styles.mediaCardName}>{name}</span>
+                        )}
+                        <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
+                          {filledCount}/{MEDIA_SLOTS.length}
+                        </Badge>
+                      </div>
+                      <div className={styles.mediaCardSlots}>
+                        {MEDIA_SLOTS.map((slot) => {
+                          const procState = getMediaProcessingState(m, slot.id);
+                          const indicator = procState === 'processed' ? '\u2705'
+                            : procState === 'processing' ? '\u23F3'
+                            : procState === 'raw' ? '\uD83D\uDD36'
+                            : '\u2B1C';
+                          const slotTabMap: Record<string, string> = {
+                            profile: 'input', legacy_photo: 'input',
+                            kit: 'assets', closeup: 'assets', legacy: 'assets',
+                          };
+                          const tabId = slotTabMap[slot.id] || slot.id;
+                          return (
+                            <Link
+                              key={slot.id}
+                              to={href ? `${href}?tab=${tabId}` : '#'}
+                              className={styles.mediaCardSlot}
+                            >
+                              <span className={styles.mediaCardSlotIcon}>{indicator}</span>
+                              <span className={styles.mediaCardSlotLabel}>{slot.label}</span>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            </>
           )}
 
           {/* Legend */}
