@@ -47,8 +47,18 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       errorInfo,
     });
 
-    // In production, you would send this to an error reporting service
-    // e.g., Sentry, LogRocket, etc.
+    // Detect chunk / dynamic-import failures and auto-reload once
+    if (this.isChunkLoadError(error)) {
+      const key = 'teamreel-chunk-reload';
+      const lastReload = sessionStorage.getItem(key);
+      const now = Date.now();
+      if (!lastReload || now - Number(lastReload) > 10_000) {
+        sessionStorage.setItem(key, String(now));
+        window.location.reload();
+        return;
+      }
+      sessionStorage.removeItem(key);
+    }
   }
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
@@ -67,6 +77,21 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     });
   };
 
+  handleReload = () => {
+    window.location.reload();
+  };
+
+  isChunkLoadError(error: Error): boolean {
+    const msg = error.message || '';
+    return (
+      msg.includes('dynamically imported module') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('Failed to fetch') ||
+      msg.includes('Loading CSS chunk') ||
+      msg.includes('error loading dynamically imported module')
+    );
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -80,20 +105,23 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
               </h1>
 
               <h2 className="fs-24 mb-24 text-primary">
-                Something went wrong
+                {this.state.error && this.isChunkLoadError(this.state.error)
+                  ? 'App updated — reload needed'
+                  : 'Something went wrong'}
               </h2>
 
               <p className="fs-16 mb-32 text-secondary">
-                We're sorry, but something unexpected happened.
-                The error has been logged and we'll look into it.
+                {this.state.error && this.isChunkLoadError(this.state.error)
+                  ? 'A new version was deployed. Click Reload to get the latest version.'
+                  : "We're sorry, but something unexpected happened. The error has been logged and we'll look into it."}
               </p>
 
               <div className="flex-center gap-12">
                 <button
-                  onClick={this.handleReset}
+                  onClick={this.handleReload}
                   className={`py-12 px-24 border-none rounded-4 fs-16 cursor-pointer text-white ${styles.tryAgainButton}`}
                 >
-                  Try Again
+                  Reload
                 </button>
 
                 <Link

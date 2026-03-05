@@ -1,28 +1,24 @@
-// TeamReel Service Worker
+// TeamReel Service Worker v2
 // Provides offline support and caching for the PWA
+//
+// Key design: Vite-hashed assets (/assets/*) are immutable-by-hash, so we use
+// network-first for them. If a chunk no longer exists on the server (new deploy)
+// the fetch will fail, and the app's lazyWithRetry + ErrorBoundary will trigger
+// a full page reload that picks up the fresh index.html.
 
-const CACHE_NAME = 'teamreel-v1';
-const STATIC_CACHE_NAME = 'teamreel-static-v1';
-const DYNAMIC_CACHE_NAME = 'teamreel-dynamic-v1';
+const CACHE_VERSION = 2;
+const STATIC_CACHE_NAME = `teamreel-static-v${CACHE_VERSION}`;
+const DYNAMIC_CACHE_NAME = `teamreel-dynamic-v${CACHE_VERSION}`;
 
-// Static assets to cache on install
+// Static assets to pre-cache on install (small, rarely changing files)
 const STATIC_ASSETS = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/favicon.svg',
   '/teamreel-icon.svg',
 ];
 
-// API routes to cache with network-first strategy
-const API_CACHE_PATTERNS = [
-  /\/api\/v1\/matches\//,
-  /\/api\/v1\/players\//,
-  /\/api\/v1\/teams\//,
-  /\/api\/v1\/competitions\//,
-];
-
-// Install event - cache static assets
+// Install — pre-cache static shell, activate immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME).then((cache) => {
@@ -30,77 +26,70 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  // Activate immediately
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate — delete ALL old caches so stale chunks are gone
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => {
-            return (
-              name !== STATIC_CACHE_NAME &&
-              name !== DYNAMIC_CACHE_NAME &&
-              name.startsWith('teamreel-')
-            );
+    caches.keys().then((names) =>
+      Promise.all(
+        names
+          .filter((n) => n !== STATIC_CACHE_NAME && n !== DYNAMIC_CACHE_NAME)
+          .map((n) => {
+            console.log('[SW] Deleting old cache:', n);
+            return caches.delete(n);
           })
-          .map((name) => {
-            console.log('[SW] Deleting old cache:', name);
-            return caches.delete(name);
-          })
-      );
-    })
+      )
+    )
   );
-  // Take control immediately
   self.clients.claim();
 });
 
-// Fetch event - serve from cache with appropriate strategy
+// Fetch handler
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  if (request.method !== 'GET') return;
+
   const url = new URL(request.url);
+  if (url.origin !== location.origin) return;
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
+  // ---------- HTML pages: always network-first so deploys are picked up ----------
+  if (request.headers.get('accept')?.includes('text/html') || url.pathname === '/') {
+    event.respondWith(networkFirst(request));
     return;
   }
 
-  // Skip cross-origin requests (except for CDN assets)
-  if (url.origin !== location.origin) {
-    return;
-  }
-
-  // API requests - Network first, fallback to cache
+  // ---------- API calls: network-first ----------
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(networkFirst(request));
     return;
   }
 
-  // Static assets - Cache first, fallback to network
+  // ---------- Vite hashed chunks (/assets/*): network-first ----------
+  // These filenames contain a content-hash so they're unique per build.
+  // Using network-first ensures a stale chunk is never served from cache.
+  if (url.pathname.startsWith('/assets/')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // ---------- Other static assets (images, fonts, icons): cache-first ----------
   if (isStaticAsset(url.pathname)) {
     event.respondWith(cacheFirst(request));
     return;
   }
 
-  // HTML pages - Network first for fresh content
-  if (request.headers.get('accept')?.includes('text/html')) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // Default - Cache first
-  event.respondWith(cacheFirst(request));
+  // Default: network-first
+  event.respondWith(networkFirst(request));
 });
 
-// Cache-first strategy
+// ---------------------------------------------------------------------------
+// Strategies
+// ---------------------------------------------------------------------------
 async function cacheFirst(request) {
   const cached = await caches.match(request);
-  if (cached) {
-    return cached;
-  }
+  if (cached) return cached;
 
   try {
     const response = await fetch(request);
@@ -109,13 +98,11 @@ async function cacheFirst(request) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
-    // Return offline fallback if available
-    return caches.match('/offline.html');
+  } catch {
+    return new Response('Offline', { status: 503 });
   }
 }
 
-// Network-first strategy
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
@@ -124,73 +111,46 @@ async function networkFirst(request) {
       cache.put(request, response.clone());
     }
     return response;
-  } catch (error) {
+  } catch {
     const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-    // Return offline fallback for HTML requests
+    if (cached) return cached;
     if (request.headers.get('accept')?.includes('text/html')) {
-      return caches.match('/offline.html');
+      return caches.match('/offline.html') || new Response('Offline', { status: 503 });
     }
-    throw error;
+    return new Response('Offline', { status: 503 });
   }
 }
 
-// Check if request is for a static asset
 function isStaticAsset(pathname) {
-  const staticExtensions = [
-    '.js',
-    '.css',
-    '.png',
-    '.jpg',
-    '.jpeg',
-    '.gif',
-    '.svg',
-    '.ico',
-    '.woff',
-    '.woff2',
-    '.ttf',
-    '.eot',
-  ];
-  return staticExtensions.some((ext) => pathname.endsWith(ext));
+  return /\.(png|jpe?g|gif|svg|ico|woff2?|ttf|eot|webp|avif)$/i.test(pathname);
 }
 
-// Handle push notifications (future feature)
+// ---------------------------------------------------------------------------
+// Push notifications (future)
+// ---------------------------------------------------------------------------
 self.addEventListener('push', (event) => {
   if (!event.data) return;
-
   const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: '/teamreel-icon.svg',
-    badge: '/teamreel-icon.svg',
-    vibrate: [100, 50, 100],
-    data: {
-      url: data.url || '/',
-    },
-  };
-
-  event.waitUntil(self.registration.showNotification(data.title, options));
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/teamreel-icon.svg',
+      badge: '/teamreel-icon.svg',
+      vibrate: [100, 50, 100],
+      data: { url: data.url || '/' },
+    })
+  );
 });
 
-// Handle notification clicks
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/';
-
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((windowClients) => {
-      // Focus existing window if open
       for (const client of windowClients) {
-        if (client.url === url && 'focus' in client) {
-          return client.focus();
-        }
+        if (client.url === url && 'focus' in client) return client.focus();
       }
-      // Open new window
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
+      if (clients.openWindow) return clients.openWindow(url);
     })
   );
 });
