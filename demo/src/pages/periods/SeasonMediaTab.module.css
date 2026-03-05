@@ -54,13 +54,11 @@
   background: rgba(59, 130, 246, 0.06);
 }
 
-/* ── Desktop / mobile toggle ─────────────────────────────────────────── */
-.desktopTable {
-  display: block;
-}
-
+/* ── Mobile card list (rendered only via React conditional) ─────────── */
 .mobileList {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* ── Media card (base styles — hidden on desktop via .mobileList) ── */
@@ -72,6 +70,8 @@
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 10px;
   background: var(--app-surface, #fff);
+  color: var(--app-text, #1a1a1a);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .mediaCard[data-selected='true'] {
@@ -147,16 +147,6 @@
 
 /* ── Mobile overrides ───────────────────────────────────────────────── */
 @media (max-width: 639px) {
-  .desktopTable {
-    display: none !important;
-  }
-
-  .mobileList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
   .cardPaddingTop {
     padding: 12px 12px 0 12px;
   }

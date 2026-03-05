@@ -59,13 +59,11 @@
   flex-wrap: wrap;
 }
 
-/* ── Desktop / mobile toggle ─────────────────────────────────────────── */
-.desktopTable {
-  display: block;
-}
-
+/* ── Mobile card list (rendered only via React conditional) ─────────── */
 .mobileList {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* ── Member card (base styles — hidden on desktop via .mobileList) ── */
@@ -77,6 +75,8 @@
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 10px;
   background: var(--app-surface, #fff);
+  color: var(--app-text, #1a1a1a);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .memberCard[data-selected='true'] {
@@ -138,16 +138,6 @@
 
 /* ── Mobile overrides ───────────────────────────────────────────────── */
 @media (max-width: 639px) {
-  .desktopTable {
-    display: none !important;
-  }
-
-  .mobileList {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
   .cardBody {
     padding: 12px;
   }
