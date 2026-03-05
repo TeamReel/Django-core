@@ -552,9 +552,22 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                 const isBatchSelected = batchSelectedMemberIds.has(membershipId);
                 const isExpanded = expandedCards.has(membershipId);
 
-                // Extract profile photo URL
+                // Extract closeup-in-tenue photo (prefer closeup over fullbody/profile)
                 const tr = m.metadata?.teamreel_assets || {};
-                const profileUrl = tr?.media?.profile?.url || tr?.kit?.profile_photo_url || memberUser.avatar_url || null;
+                const extractFirst = (obj: any): string | null => {
+                  if (!obj || typeof obj !== 'object') return null;
+                  for (const v of Object.values(obj)) {
+                    if (!v) continue;
+                    if (typeof v === 'string') return v;
+                    if (typeof v === 'object') return (v as any).processed || (v as any).raw || null;
+                  }
+                  return null;
+                };
+                const avatarUrl =
+                  extractFirst(tr?.images?.closeup) ||
+                  extractFirst(tr?.images?.fullbody) ||
+                  tr?.media?.kit?.url ||
+                  null;
 
                 return (
                   <div
@@ -575,9 +588,9 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         });
                       }}
                     />
-                    {/* Profile avatar */}
-                    {profileUrl ? (
-                      <img src={profileUrl} alt="" className={styles.mediaCardAvatar} />
+                    {/* Closeup in tenue avatar */}
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt="" className={styles.mediaCardAvatar} />
                     ) : (
                       <div className={styles.mediaCardAvatarEmpty}>
                         {name.charAt(0).toUpperCase()}
