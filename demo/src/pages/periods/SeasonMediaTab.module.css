@@ -58,32 +58,75 @@
 .viewToggle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
   color: var(--app-muted-text, #6b7280);
   cursor: pointer;
   user-select: none;
-  padding: 4px 0;
   border: none;
   background: none;
+  padding: 0;
+}
+
+/* ── Mobile legend strip ── */
+.mobileLegend {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.mobileLegendLabel {
+  font-weight: 600;
+  font-size: 10px;
+  color: var(--app-muted-text, #6b7280);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.mobileLegendItem {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ── Mobile select-all row ── */
+.mobileSelectAll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+}
+
+.mobileSelectAllLabel {
+  font-size: 12px;
+  color: var(--app-muted-text, #6b7280);
 }
 
 /* ── Mobile card list (rendered only via React conditional) ─────────── */
 .mobileList {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   width: 100%;
 }
 
-/* ── Media card — compact row ── */
+/* ── Media card — compact single-line row ── */
 .mediaCard {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 6px 8px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--app-surface, #fff);
   color: var(--app-text, #1a1a1a);
   width: 100%;
@@ -105,50 +148,71 @@
 }
 
 .mediaCardBody {
-  flex-grow: 1;
-  flex-shrink: 1;
-  flex-basis: auto;
+  flex: 1;
   min-width: 0;
 }
 
-.mediaCardTop {
+/* ── Card row: name + inline indicator dots + badge + toggle ── */
+.mediaCardRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  gap: 4px;
 }
 
 .mediaCardName {
   font-weight: 600;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--app-text) !important;
   text-decoration: none !important;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
-  flex: 1;
+  flex-shrink: 1;
 }
 
 .mediaCardName:hover {
   text-decoration: underline !important;
 }
 
+/* ── Inline status indicator strip ── */
+.mediaCardIndicators {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.mediaCardDot {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* ── Expanded detail section ── */
+.mediaCardDetails {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--app-border, #e5e7eb);
+}
+
+/* ── Slot grid (only shown when expanded) ── */
 .mediaCardSlots {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 1px 3px;
-  margin-top: 4px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px 6px;
 }
 
 .mediaCardSlot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0px;
+  gap: 1px;
   font-size: 9px;
   color: var(--app-muted-text, #6b7280) !important;
   text-decoration: none !important;
+  padding: 3px 0;
 }
 
 .mediaCardSlotIcon {
@@ -157,10 +221,14 @@
 }
 
 .mediaCardSlotLabel {
-  font-size: 8px;
+  font-size: 7px;
   text-align: center;
-  line-height: 1;
+  line-height: 1.1;
   letter-spacing: -0.01em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mediaCardGuest {
