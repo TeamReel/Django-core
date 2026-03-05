@@ -75,6 +75,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   width: 100%;
+  max-width: 100%; /* Force constraint */
   box-sizing: border-box;
 }
 
@@ -86,6 +87,10 @@
 .mediaCardCheckbox {
   margin-top: 3px;
   flex-shrink: 0;
+  width: 18px !important;
+  height: 18px !important;
+  appearance: auto;
+  -webkit-appearance: checkbox;
 }
 
 .mediaCardBody {
@@ -93,7 +98,6 @@
   flex-shrink: 1;
   flex-basis: auto;
   min-width: 0;
-  overflow: hidden;
 }
 
 .mediaCardTop {
@@ -112,6 +116,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  flex: 1;
 }
 
 .mediaCardName:hover {
