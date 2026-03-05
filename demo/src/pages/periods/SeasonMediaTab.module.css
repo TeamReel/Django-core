@@ -127,12 +127,12 @@
   width: 100%;
 }
 
-/* ── Media card — ultra-compact single-line row ── */
+/* ── Media card — compact two-line row ── */
 .mediaCard {
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 4px;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 4px 6px;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, #fff);
   color: var(--app-text, #1a1a1a);
@@ -148,7 +148,7 @@
   flex-shrink: 0;
   width: 14px !important;
   height: 14px !important;
-  margin: 0 !important;
+  margin: 1px 0 0 0 !important;
   padding: 0 !important;
   appearance: auto;
   -webkit-appearance: checkbox;
@@ -157,13 +157,23 @@
 .mediaCardBody {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
 
-/* ── Card row: name + inline indicator dots + badge + toggle ── */
+/* ── Top line: name + score + chevron ── */
+.mediaCardTop {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Keep old class for compat */
 .mediaCardRow {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 
 .mediaCardName {
@@ -182,23 +192,32 @@
   text-decoration: underline !important;
 }
 
-/* ── Inline status indicator strip ── */
+/* ── Score (plain text, replaces Badge) ── */
+.mediaCardScore {
+  margin-left: auto;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--app-muted-text, #6b7280);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Inline status indicator strip (own row) ── */
 .mediaCardIndicators {
   display: flex;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
-/* CSS colored squares instead of emoji (emoji ignores font-size on mobile) */
+/* CSS colored squares */
 .mediaCardDot {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 14px;
+  height: 5px;
   border-radius: 1px;
   flex-shrink: 0;
-  font-size: 0;       /* hide any text content */
+  font-size: 0;
   line-height: 0;
 }
 .mediaCardDot[data-status="processed"] {
@@ -217,7 +236,7 @@
 }
 .mediaCardDot[data-status="na"] {
   background: transparent;
-  width: 8px;
+  width: 14px;
   height: 2px;
   border-radius: 0;
   align-self: center;
@@ -226,8 +245,8 @@
 
 /* ── Expanded detail section ── */
 .mediaCardDetails {
-  margin-top: 4px;
-  padding-top: 4px;
+  margin-top: 2px;
+  padding-top: 3px;
   border-top: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -235,7 +254,7 @@
 .mediaCardSlots {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 2px 4px;
+  gap: 1px 4px;
 }
 
 .mediaCardSlot {

@@ -435,20 +435,9 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                 return (
                   <div className={`${styles.mediaCard} ${styles.mediaCardGuest}`}>
                     <div className={styles.mediaCardBody}>
-                      <div className={styles.mediaCardRow}>
+                      <div className={styles.mediaCardTop}>
                         <span className={styles.mediaCardName}><UserRound size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> Gast</span>
-                        <span className={styles.mediaCardIndicators}>
-                          {MEDIA_SLOTS.map((slot) => {
-                            const guestSlot = guestSlots.find(gs => gs.id === slot.id);
-                            const status = guestSlot ? (guestSlot.has ? 'processed' : 'missing') : 'na';
-                            return (
-                              <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
-                            );
-                          })}
-                        </span>
-                        <Badge variant={guestFilledCount === 4 ? 'success' : 'default'}>
-                          {guestFilledCount}/4
-                        </Badge>
+                        <span className={styles.mediaCardScore}>{guestFilledCount}/4</span>
                         <button
                           type="button"
                           className={styles.viewToggle}
@@ -459,6 +448,15 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           })}
                           aria-label={guestExpanded ? 'Hide' : 'Details'}
                         >{guestExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
+                      </div>
+                      <div className={styles.mediaCardIndicators}>
+                        {MEDIA_SLOTS.map((slot) => {
+                          const guestSlot = guestSlots.find(gs => gs.id === slot.id);
+                          const status = guestSlot ? (guestSlot.has ? 'processed' : 'missing') : 'na';
+                          return (
+                            <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
+                          );
+                        })}
                       </div>
                       {guestExpanded && (
                         <div className={styles.mediaCardDetails}>
@@ -516,27 +514,13 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                       }}
                     />
                     <div className={styles.mediaCardBody}>
-                      <div className={styles.mediaCardRow}>
+                      <div className={styles.mediaCardTop}>
                         {href ? (
                           <Link to={href} className={styles.mediaCardName}>{name}</Link>
                         ) : (
                           <span className={styles.mediaCardName}>{name}</span>
                         )}
-                        <span className={styles.mediaCardIndicators}>
-                          {MEDIA_SLOTS.map((slot) => {
-                            const procState = getMediaProcessingState(m, slot.id);
-                            const status = procState === 'processed' ? 'processed'
-                              : procState === 'processing' ? 'processing'
-                              : procState === 'raw' ? 'raw'
-                              : 'missing';
-                            return (
-                              <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
-                            );
-                          })}
-                        </span>
-                        <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
-                          {filledCount}/{MEDIA_SLOTS.length}
-                        </Badge>
+                        <span className={styles.mediaCardScore}>{filledCount}/{MEDIA_SLOTS.length}</span>
                         <button
                           type="button"
                           className={styles.viewToggle}
@@ -547,6 +531,18 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                           })}
                           aria-label={isExpanded ? 'Hide' : 'Details'}
                         >{isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}</button>
+                      </div>
+                      <div className={styles.mediaCardIndicators}>
+                        {MEDIA_SLOTS.map((slot) => {
+                          const procState = getMediaProcessingState(m, slot.id);
+                          const status = procState === 'processed' ? 'processed'
+                            : procState === 'processing' ? 'processing'
+                            : procState === 'raw' ? 'raw'
+                            : 'missing';
+                          return (
+                            <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
+                          );
+                        })}
                       </div>
                       {isExpanded && (
                         <div className={styles.mediaCardDetails}>
@@ -584,36 +580,38 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
             </>
           )}
 
-          {/* Legend */}
-          <div className={s.legendBox}>
-            <div className={s.legendTitle}>Legend</div>
-            <div className={s.legendRow}>
-              {MEDIA_SLOTS.map((slot) => (
-                <div key={slot.id} className={s.legendItem}>
-                  <span><SlotIcon name={slot.icon} size={14} /></span>
-                  <span className={s.legendLabel}>{slot.label}</span>
+          {/* Legend — hidden on mobile (top legend strip is enough) */}
+          {!isMobile && (
+            <div className={s.legendBox}>
+              <div className={s.legendTitle}>Legend</div>
+              <div className={s.legendRow}>
+                {MEDIA_SLOTS.map((slot) => (
+                  <div key={slot.id} className={s.legendItem}>
+                    <span><SlotIcon name={slot.icon} size={14} /></span>
+                    <span className={s.legendLabel}>{slot.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className={s.legendRowDivided}>
+                <div className={s.legendItem}>
+                  <CheckCircle2 size={14} color="#22c55e" />
+                  <span className={s.legendLabel}>Lineup-ready (bewerkt)</span>
                 </div>
-              ))}
-            </div>
-            <div className={s.legendRowDivided}>
-              <div className={s.legendItem}>
-                <CheckCircle2 size={14} color="#22c55e" />
-                <span className={s.legendLabel}>Lineup-ready (bewerkt)</span>
-              </div>
-              <div className={s.legendItem}>
-                <AlertTriangle size={14} color="#f97316" />
-                <span className={s.legendLabel}>Ruw (niet bewerkt)</span>
-              </div>
-              <div className={s.legendItem}>
-                <Clock size={14} color="#f59e0b" />
-                <span className={s.legendLabel}>Bezig met bewerken</span>
-              </div>
-              <div className={s.legendItem}>
-                <Circle size={14} color="#d1d5db" />
-                <span className={s.legendLabel}>Ontbreekt</span>
+                <div className={s.legendItem}>
+                  <AlertTriangle size={14} color="#f97316" />
+                  <span className={s.legendLabel}>Ruw (niet bewerkt)</span>
+                </div>
+                <div className={s.legendItem}>
+                  <Clock size={14} color="#f59e0b" />
+                  <span className={s.legendLabel}>Bezig met bewerken</span>
+                </div>
+                <div className={s.legendItem}>
+                  <Circle size={14} color="#d1d5db" />
+                  <span className={s.legendLabel}>Ontbreekt</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </Card>
 
