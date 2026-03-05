@@ -19,6 +19,7 @@ export default function SettingsPage() {
     <AppShell>
       <div className={styles.settingsContainer}>
         <Settings
+          className={styles.settingsGrid}
           sections={sections}
           activeSection={activeSection}
           onActiveSectionChange={setActiveSection}

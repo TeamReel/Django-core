@@ -6,20 +6,31 @@
   --settings-danger-badge-bg: #dc354520;
   --settings-success-badge-bg: #28a74520;
 
-  height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px);
+  min-height: calc(100dvh - 120px);
+}
+
+/* ── Settings grid (passed as className to <Settings>) ── */
+.settingsGrid {
+  /* Desktop defaults are set inline by the component. */
 }
 
 .formInput {
   padding: 10px 12px;
+  min-height: 44px;
+  box-sizing: border-box;
 }
 
 .formTextarea {
   padding: 10px 12px;
   resize: vertical;
+  min-height: 88px;
+  box-sizing: border-box;
 }
 
 .saveButton {
-  padding: 10px 20px;
+  padding: 12px 20px;
+  min-height: 44px;
   background-color: var(--app-primary);
   cursor: pointer;
   transition: background-color 0.2s;
@@ -41,6 +52,8 @@
 .changePasswordButton {
   background-color: var(--settings-btn-bg);
   color: var(--settings-btn-text);
+  min-height: 44px;
+  padding: 10px 16px;
 }
 
 .badgeDanger {
@@ -49,8 +62,115 @@
 
 .enable2faButton {
   background-color: var(--app-success);
+  min-height: 44px;
+  padding: 10px 16px;
 }
 
 .badgeSuccess {
   background-color: var(--settings-success-badge-bg);
+}
+
+/* ────────────────── Mobile (≤ 768px) ────────────────── */
+@media (max-width: 768px) {
+  .settingsContainer {
+    min-height: calc(100dvh - 140px);
+    padding: 0 4px;
+  }
+
+  /* Override the inline grid layout from <Settings> component */
+  .settingsGrid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Sidebar wrapper → horizontal strip */
+  .settingsGrid > div:first-child {
+    position: static !important;
+    top: unset !important;
+    height: auto !important;
+    margin-bottom: 16px;
+  }
+
+  /* Navigation items → horizontal scrollable tabs */
+  .settingsGrid nav > div {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    gap: 4px !important;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .settingsGrid nav > div::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Each nav tab → pill shape, larger touch target */
+  .settingsGrid nav [role="button"] {
+    white-space: nowrap !important;
+    min-height: 40px !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-size: 0.8125rem !important;
+    flex-shrink: 0;
+  }
+
+  /* Section content — full width */
+  .settingsGrid > div:last-child {
+    width: 100%;
+  }
+
+  /* Form containers — remove max-width on mobile */
+  .settingsGrid [class*="max-w-600"] {
+    max-width: 100%;
+  }
+
+  /* Save buttons — full-width */
+  .saveButton {
+    width: 100%;
+    display: block;
+    text-align: center;
+  }
+
+  .changePasswordButton {
+    width: 100%;
+  }
+
+  .enable2faButton {
+    width: 100%;
+  }
+
+  /* Security cards — tighter padding */
+  .settingsGrid [class*="p-20"] {
+    padding: 12px;
+  }
+
+  /* 2FA row → stack vertically */
+  .settingsGrid [class*="flex-row"][class*="gap-12"] {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ────────────────── Small phones (≤ 480px) ────────────────── */
+@media (max-width: 480px) {
+  .settingsContainer {
+    padding: 0;
+  }
+
+  .settingsGrid nav [role="button"] {
+    padding: 8px 12px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .formInput {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  .formTextarea {
+    font-size: 16px;
+  }
 }
