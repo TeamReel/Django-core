@@ -5,10 +5,10 @@
  * `useSetBackNavigation({ label: 'Profile', path: '/profile' })`.
  *
  * TopNavbar reads the value and renders a native-style back button.
- * The value auto-clears on every route change so stale state is impossible.
+ * The value auto-clears when the sub-page unmounts so stale state is impossible.
  */
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 export interface BackTarget {
@@ -37,17 +37,14 @@ const BackNavigationContext = createContext<BackNavigationContextValue>({
 /* ── Provider ──────────────────────────────────────────────────────── */
 export function BackNavigationProvider({ children }: { children: React.ReactNode }) {
   const [backTarget, setBackTarget] = useState<BackTarget | null>(null);
-  const location = useLocation();
   const navigate = useNavigate();
   const targetRef = useRef<BackTarget | null>(null);
 
   // Keep ref in sync for goBack closure
   targetRef.current = backTarget;
 
-  // Clear back target on every route change — pages re-set it via their hook
-  useEffect(() => {
-    setBackTarget(null);
-  }, [location.pathname]);
+  // No auto-clear on route change needed — useSetBackNavigation's cleanup
+  // handles clearing on unmount when navigating away from a sub-page.
 
   const goBack = useCallback(() => {
     const target = targetRef.current;
