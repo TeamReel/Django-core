@@ -206,7 +206,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
           </div>
         </div>
 
-        <div className="p-16">
+        <div className={isMobile ? styles.mobileWrapper : 'p-16'}>
           {membersLoading ? (
             <Alert variant="info">Loading squad media status…</Alert>
           ) : members.length === 0 ? (
@@ -391,14 +391,12 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
 
             {/* ── Mobile card list ── */}
             {isMobile && <div className={styles.mobileList}>
-              {/* ── Inline legend (slot icons + abbreviated names) ── */}
+              {/* ── Color legend ── */}
               <div className={styles.mobileLegend}>
-                <span className={styles.mobileLegendLabel}>Slots:</span>
-                {MEDIA_SLOTS.map((slot) => (
-                  <span key={slot.id} className={styles.mobileLegendItem} title={slot.label}>
-                    {slot.icon}
-                  </span>
-                ))}
+                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="processed" /> OK</span>
+                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="processing" /> Bezig</span>
+                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="raw" /> Raw</span>
+                <span className={styles.mobileLegendKey}><span className={styles.mediaCardDot} data-status="missing" /> Mist</span>
               </div>
 
               {/* ── Select all checkbox row ── */}
@@ -416,7 +414,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                     }
                   }}
                 />
-                <span className={styles.mobileSelectAllLabel}>Selecteer alles</span>
+                <span className={styles.mobileSelectAllLabel}>Alles</span>
               </div>
 
               {/* Guest player card */}
@@ -437,10 +435,9 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         <span className={styles.mediaCardIndicators}>
                           {MEDIA_SLOTS.map((slot) => {
                             const guestSlot = guestSlots.find(gs => gs.id === slot.id);
+                            const status = guestSlot ? (guestSlot.has ? 'processed' : 'missing') : 'na';
                             return (
-                              <span key={slot.id} className={styles.mediaCardDot} title={slot.label}>
-                                {guestSlot ? (guestSlot.has ? '\u2705' : '\u2B1C') : '\u2014'}
-                              </span>
+                              <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
                             );
                           })}
                         </span>
@@ -523,14 +520,12 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         <span className={styles.mediaCardIndicators}>
                           {MEDIA_SLOTS.map((slot) => {
                             const procState = getMediaProcessingState(m, slot.id);
-                            const indicator = procState === 'processed' ? '\u2705'
-                              : procState === 'processing' ? '\u23F3'
-                              : procState === 'raw' ? '\uD83D\uDD36'
-                              : '\u2B1C';
+                            const status = procState === 'processed' ? 'processed'
+                              : procState === 'processing' ? 'processing'
+                              : procState === 'raw' ? 'raw'
+                              : 'missing';
                             return (
-                              <span key={slot.id} className={styles.mediaCardDot} title={slot.label}>
-                                {indicator}
-                              </span>
+                              <span key={slot.id} className={styles.mediaCardDot} data-status={status} title={slot.label} />
                             );
                           })}
                         </span>

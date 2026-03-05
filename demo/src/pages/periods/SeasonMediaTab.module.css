@@ -71,30 +71,38 @@
   padding: 0;
 }
 
+/* ── Zero-padding wrapper for mobile ── */
+.mobileWrapper {
+  padding: 0 !important;
+}
+
 /* ── Mobile legend strip ── */
 .mobileLegend {
   display: flex;
   align-items: center;
-  gap: 1px;
-  padding: 4px 4px;
-  background: var(--app-surface, #fff);
+  gap: 8px;
+  padding: 3px 4px;
+  background: var(--app-muted, #f3f4f6);
   border-bottom: 1px solid var(--app-border, #e5e7eb);
-  font-size: 10px;
-  overflow-x: auto;
+}
+
+.mobileLegendKey {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 8px;
+  color: var(--app-muted-text, #6b7280);
   white-space: nowrap;
 }
 
-.mobileLegendLabel {
-  font-weight: 600;
-  font-size: 9px;
-  color: var(--app-muted-text, #6b7280);
-  margin-right: 2px;
-  flex-shrink: 0;
-}
-
 .mobileLegendItem {
-  font-size: 10px;
+  font-size: 7px;
   flex-shrink: 0;
+  width: 10px;
+  text-align: center;
+  color: var(--app-muted-text, #6b7280);
+  letter-spacing: -0.03em;
+  font-weight: 500;
 }
 
 /* ── Mobile select-all row ── */
@@ -103,21 +111,20 @@
   align-items: center;
   gap: 4px;
   padding: 2px 4px;
+  border-bottom: 1px solid var(--app-border, #e5e7eb);
 }
 
 .mobileSelectAllLabel {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--app-muted-text, #6b7280);
 }
 
-/* ── Mobile card list — zero-padding wrapper ─────────── */
+/* ── Mobile card list ─────────── */
 .mobileList {
   display: flex;
   flex-direction: column;
-  gap: 0px;
+  gap: 0;
   width: 100%;
-  margin: 0 -16px;
-  width: calc(100% + 32px);
 }
 
 /* ── Media card — ultra-compact single-line row ── */
@@ -179,17 +186,42 @@
 .mediaCardIndicators {
   display: flex;
   align-items: center;
-  gap: 0px;
+  gap: 1px;
   flex-shrink: 0;
   margin-left: auto;
 }
 
+/* CSS colored squares instead of emoji (emoji ignores font-size on mobile) */
 .mediaCardDot {
-  font-size: 8px;
-  line-height: 1;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
   flex-shrink: 0;
-  width: 10px;
-  text-align: center;
+  font-size: 0;       /* hide any text content */
+  line-height: 0;
+}
+.mediaCardDot[data-status="processed"] {
+  background: #22c55e;
+}
+.mediaCardDot[data-status="processing"] {
+  background: #f59e0b;
+}
+.mediaCardDot[data-status="raw"] {
+  background: #f97316;
+}
+.mediaCardDot[data-status="missing"] {
+  background: #e5e7eb;
+  outline: 1px solid #d1d5db;
+  outline-offset: -1px;
+}
+.mediaCardDot[data-status="na"] {
+  background: transparent;
+  width: 8px;
+  height: 2px;
+  border-radius: 0;
+  align-self: center;
+  background: #d1d5db;
 }
 
 /* ── Expanded detail section ── */
