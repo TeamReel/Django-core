@@ -54,25 +54,25 @@ export const overlayStyle: React.CSSProperties = {
   zIndex: 9000,
   background: 'rgba(0, 0, 0, 0.6)',
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-end',       /* bottom sheet on mobile, center on desktop via CSS */
   justifyContent: 'center',
-  padding: '20px',
+  padding: '0',
 };
 
 export const modalStyle: React.CSSProperties = {
   background: 'var(--app-surface, #1a1a2e)',
-  borderRadius: '12px',
   width: '100%',
   maxWidth: '900px',
-  maxHeight: '90vh',
+  maxHeight: '95dvh',
   display: 'flex',
   flexDirection: 'column',
-  boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+  boxShadow: '0 -8px 40px rgba(0,0,0,0.5)',
   border: '1px solid var(--app-border, #333)',
+  borderRadius: '16px 16px 0 0',
 };
 
 export const headerStyle: React.CSSProperties = {
-  padding: '20px 24px',
+  padding: '12px 16px',
   borderBottom: '1px solid var(--app-border, #333)',
   display: 'flex',
   alignItems: 'center',
@@ -80,18 +80,20 @@ export const headerStyle: React.CSSProperties = {
 };
 
 export const bodyStyle: React.CSSProperties = {
-  padding: '24px',
+  padding: '12px 16px',
   overflowY: 'auto',
   flex: 1,
+  WebkitOverflowScrolling: 'touch',
 };
 
 export const footerStyle: React.CSSProperties = {
-  padding: '16px 24px',
+  padding: '10px 16px',
+  paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
   borderTop: '1px solid var(--app-border, #333)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: '12px',
+  gap: '8px',
 };
 
 export const selectStyle: React.CSSProperties = {

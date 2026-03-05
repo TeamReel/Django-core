@@ -1,0 +1,72 @@
+/* BatchGenerationModal — responsive bottom sheet on mobile, centered on desktop */
+
+/* ── Overlay ── */
+.overlay {
+  /* Default: bottom-aligned for mobile bottom sheet */
+}
+
+/* ── Modal shell ── */
+.modal {
+  /* Properties in batchTypes.ts provide base, this adds responsive overrides */
+}
+
+/* ── Drag handle (mobile affordance) ── */
+.dragHandle {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 0 0;
+}
+
+.dragHandleBar {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--app-muted-text, #6b7280);
+  opacity: 0.4;
+}
+
+/* ── Close button ── */
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--app-text);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  line-height: 1;
+}
+
+.closeBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+/* ── Footer buttons ── */
+.footerBtnPrimary {
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.footerBtnSecondary {
+  padding: 8px 12px !important;
+  font-size: 13px !important;
+}
+
+/* ── Desktop overrides (≥768px) ── */
+@media (min-width: 768px) {
+  .overlay {
+    align-items: center !important;
+    padding: 20px !important;
+  }
+
+  .modal {
+    border-radius: 12px !important;
+    max-height: 85vh !important;
+  }
+
+  .dragHandle {
+    display: none;
+  }
+}

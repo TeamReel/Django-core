@@ -16,6 +16,7 @@ import { overlayStyle, modalStyle, headerStyle, bodyStyle, footerStyle } from '.
 import { useBatchGeneration } from './useBatchGeneration';
 import { BatchConfigureStep } from './BatchConfigureStep';
 import { BatchProgressStep } from './BatchProgressStep';
+import styles from './BatchGenerationModal.module.css';
 
 export type { BatchMember } from './batchTypes';
 
@@ -26,30 +27,23 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
   if (!isOpen) return null;
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()}>
+    <div style={overlayStyle} onClick={onClose} className={styles.overlay}>
+      <div style={modalStyle} onClick={(e) => e.stopPropagation()} className={styles.modal}>
+        {/* Drag handle (mobile) */}
+        <div className={styles.dragHandle}><div className={styles.dragHandleBar} /></div>
+
         {/* Header */}
         <div style={headerStyle}>
-          <div className="flex-row gap-12">
-
-            <div>
-              <h2 className="m-0 fs-18 fw-600">Batch AI Generatie</h2>
-              <span className="fs-12 text-muted">
-                {members.length} {members.length === 1 ? 'member' : 'members'} geselecteerd
-              </span>
-            </div>
+          <div>
+            <h2 className="m-0 fs-16 fw-600">Batch AI Generatie</h2>
+            <span className="fs-11 text-muted">
+              {members.length} {members.length === 1 ? 'member' : 'members'} geselecteerd
+            </span>
           </div>
           <button
             onClick={onClose}
             disabled={batch.step === 'running'}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--app-text)',
-              fontSize: '20px',
-              cursor: batch.step === 'running' ? 'not-allowed' : 'pointer',
-              opacity: batch.step === 'running' ? 0.4 : 1,
-            }}
+            className={styles.closeBtn}
           >
             ✕
           </button>
@@ -95,13 +89,13 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
         <div style={footerStyle}>
           {batch.step === 'configure' && (
             <>
-              <div className="fs-12 text-muted">
-                💎 {batch.selectedTemplate ? batch.selectedTemplate.creditsCost * members.length : 0} credits totaal ({batch.selectedTemplate?.creditsCost || 0} per member)
+              <div className="fs-11 text-muted">
+                {batch.selectedTemplate ? batch.selectedTemplate.creditsCost * members.length : 0} credits ({batch.selectedTemplate?.creditsCost || 0}/member)
               </div>
               <div className="flex-row gap-8">
-                <Button variant="secondary" onClick={onClose}>Annuleren</Button>
-                <Button variant="primary" onClick={batch.startBatch} disabled={members.length === 0}>
-                  🚀 Start Batch ({members.length})
+                <Button variant="secondary" onClick={onClose} className={styles.footerBtnSecondary}>Annuleren</Button>
+                <Button variant="primary" onClick={batch.startBatch} disabled={members.length === 0} className={styles.footerBtnPrimary}>
+                  Start ({members.length})
                 </Button>
               </div>
             </>
@@ -109,19 +103,19 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
 
           {batch.step === 'running' && (
             <>
-              <div className="fs-13 text-muted">
-                ⏳ {batch.completedCount}/{members.length} verwerkt...
+              <div className="fs-12 text-muted">
+                {batch.completedCount}/{members.length} verwerkt...
               </div>
-              <Button variant="secondary" onClick={batch.cancelBatch}>Stop</Button>
+              <Button variant="secondary" onClick={batch.cancelBatch} className={styles.footerBtnSecondary}>Stop</Button>
             </>
           )}
 
           {batch.step === 'done' && (
             <>
-              <div className="fs-13">
+              <div className="fs-12">
                 {batch.errorCount === 0 ? 'Batch voltooid!' : `${batch.errorCount} van ${members.length} mislukt`}
               </div>
-              <Button variant="primary" onClick={() => { onBatchComplete?.(); onClose(); }}>
+              <Button variant="primary" onClick={() => { onBatchComplete?.(); onClose(); }} className={styles.footerBtnPrimary}>
                 Sluiten
               </Button>
             </>

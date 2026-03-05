@@ -673,6 +673,35 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
         </div>
       </Card>
 
+      {/* Sticky bottom batch bar (mobile) */}
+      {isMobile && batchSelectedMemberIds.size > 0 && !isBatchModalOpen && (
+        <div className={styles.stickyBatchBar}>
+          <div className={styles.stickyBatchInfo}>
+            <input
+              type="checkbox"
+              className={styles.mediaCardCheckbox}
+              checked={batchSelectedMemberIds.size === members.length && members.length > 0}
+              ref={(el) => { if (el) el.indeterminate = batchSelectedMemberIds.size > 0 && batchSelectedMemberIds.size < members.length; }}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setBatchSelectedMemberIds(new Set(members.map((m: any) => String(m.id))));
+                } else {
+                  setBatchSelectedMemberIds(new Set());
+                }
+              }}
+            />
+            <span className={styles.stickyBatchCount}>{batchSelectedMemberIds.size} geselecteerd</span>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => setIsBatchModalOpen(true)}
+            className={styles.stickyBatchBtn}
+          >
+            <Zap size={14} /> Genereer
+          </Button>
+        </div>
+      )}
+
       {/* Guest Player AI Generation Modal */}
       <AssetGenerationModal
         isOpen={showGuestAiModal}

@@ -5,9 +5,11 @@
 }
 
 .templateButton {
-  padding: 8px 14px;
+  padding: 6px 10px;
   border: 2px solid var(--app-border, #444);
   background: var(--app-surface-2, #252540);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .templateButton[data-selected='true'] {
@@ -24,7 +26,8 @@
 }
 
 .paramGroup {
-  min-width: 120px;
+  min-width: 100px;
+  flex: 1;
 }
 
 .paramLabel {
@@ -38,7 +41,8 @@
   background: var(--app-surface-2, #252540);
   color: var(--app-text, #e0e0e0);
   font-size: 13px;
-  min-width: 100px;
+  min-width: 0;
+  width: 100%;
 }
 
 .autoProcessNotice {
@@ -59,11 +63,11 @@
 .memberRow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--app-border, #333);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   cursor: pointer;
 }
 
@@ -76,8 +80,8 @@
 }
 
 .avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
   background: var(--app-muted, #333);
@@ -86,7 +90,7 @@
 
 .avatarFallback {
   composes: avatar;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .overrideText {
@@ -102,8 +106,8 @@
 }
 
 .expandedBody {
-  margin-left: 52px;
-  padding: 10px 12px;
+  margin-left: 0;
+  padding: 8px 10px;
 }
 
 .overrideParamsRow {
@@ -111,7 +115,8 @@
 }
 
 .overrideParamGroup {
-  min-width: 110px;
+  min-width: 0;
+  flex: 1;
 }
 
 .overrideParamLabel {
@@ -137,4 +142,41 @@
   padding: 4px 8px;
   align-self: flex-end;
   margin-bottom: 2px;
+}
+
+/* ── Mobile-specific tweaks ── */
+@media (max-width: 767px) {
+  .templateButton {
+    padding: 5px 8px;
+    font-size: 12px !important;
+  }
+
+  .memberRow {
+    padding: 6px 8px;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .avatarFallback {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .expandedBody {
+    margin-left: 0;
+    padding: 6px 8px;
+  }
+}
+
+/* ── Desktop overrides ── */
+@media (min-width: 768px) {
+  .expandedBody {
+    margin-left: 40px;
+  }
 }
