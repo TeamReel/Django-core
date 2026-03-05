@@ -15,7 +15,7 @@
 .sectionDivider { border-top: 1px solid var(--app-border); padding-top: 20px; }
 
 /* ── Typography ── */
-.tabTitle { font-size: 16px; font-weight: 800; }
+.tabTitle { font-size: 13px; font-weight: 700; }
 .tabDescription { margin-top: 6px; opacity: 0.75; font-size: 13px; }
 .tabIcon { font-size: 24px; }
 .sectionTitle { font-size: 14px; font-weight: 700; }

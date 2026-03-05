@@ -40,7 +40,6 @@ export function MemberCelebrationTab({
       <div className={s.cardPadding}>
         <div className={s.flexSpaceBetween}>
           <div className={s.flexCenterGap8}>
-            <span className={s.tabIcon}>🎉</span>
             <div className={s.tabTitle}>Goal Celebration</div>
           </div>
           <Badge variant={userCanEditProject ? 'default' : 'info'}>

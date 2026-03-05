@@ -50,7 +50,6 @@ export function MemberAssetsTab({
       <div className={s.cardPadding}>
         <div className={s.flexSpaceBetween}>
           <div className={s.flexCenterGap8}>
-            <span className={s.tabIcon}>🎨</span>
             <div className={s.tabTitle}>Gegenereerde Assets</div>
           </div>
           <Badge variant={userCanEditProject ? 'default' : 'info'}>

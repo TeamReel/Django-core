@@ -6,7 +6,7 @@
  */
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import {
-  ChevronLeft, ChevronRight, X, Save,
+  ChevronLeft, ChevronRight, X,
 } from 'lucide-react';
 import { Badge, Button, Card } from '@django-core/design-system';
 
@@ -227,24 +227,9 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
         <div className={styles.headerInfo}>
           <div className={styles.memberName}>{memberName}</div>
-          {membership && (
-            <Badge variant="default" className={styles.memberBadge}>
-              {String(membership.id || '').slice(0, 8)}…
-            </Badge>
-          )}
         </div>
 
         <div className={styles.headerActions}>
-          {userCanEditProject && (
-            <button
-              type="button"
-              className={styles.saveBtn}
-              onClick={handleSave}
-              disabled={saving || loading}
-            >
-              <Save size={14} /> {saving ? 'Opslaan...' : 'Opslaan'}
-            </button>
-          )}
           <button type="button" className={styles.closeBtn} onClick={onClose} title="Sluiten">
             <X size={18} />
           </button>

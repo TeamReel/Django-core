@@ -80,8 +80,8 @@
 }
 
 .memberName {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
