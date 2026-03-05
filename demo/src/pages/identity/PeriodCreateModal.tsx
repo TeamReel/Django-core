@@ -232,9 +232,11 @@ export default function PeriodCreateModal({
   return (
     <div
       className={`flex-center ${styles.overlay}`}
+      onClick={() => { if (!saving) onClose(); }}
     >
       <div
         className={`p-24 rounded-8 text-primary border bg-surface ${styles.modal}`}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="flex-between gap-12">
           <h2 className={`mb-12 text-primary ${styles.title}`}>{title}</h2>

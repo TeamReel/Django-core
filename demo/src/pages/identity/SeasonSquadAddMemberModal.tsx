@@ -17,9 +17,11 @@ export default function SeasonSquadAddMemberModal(props: SeasonSquadAddMemberMod
   return (
     <div
       className={`flex-center ${styles.overlay}`}
+      onClick={() => { if (!d.saving) onClose(); }}
     >
       <div
         className={`p-24 rounded-8 border bg-surface text-primary ${styles.modal}`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex-between gap-12">
