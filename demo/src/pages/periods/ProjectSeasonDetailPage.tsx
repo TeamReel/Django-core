@@ -191,22 +191,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 <SeasonOverviewTab
                   season={d.season}
                   competitions={d.competitions}
-                  competitionsLoading={d.competitionsLoading}
                   members={d.members}
-                  seasonMatchesCount={d.matches.length}
+                  matches={d.matches}
+                  matchesLoading={d.matchesLoading}
                   navigateToTab={d.navigateToTab}
                   isTeamRoute={d.isTeamRoute}
                   seasonsBasePath={d.seasonsBasePath}
                   seasonPathKey={d.seasonPathKey}
-                  userCanEditProject={d.userCanEditProject}
-                  userCanDeleteProject={d.userCanDeleteProject}
-                  apiBaseUrl={d.apiBaseUrl}
-                  getMatchCountForCompetition={d.getMatchCountForCompetition}
-                  setSelectedDetailPeriod={d.setSelectedDetailPeriod}
-                  setIsPeriodDetailModalOpen={d.setIsPeriodDetailModalOpen}
-                  setSelectedEditPeriod={d.setSelectedEditPeriod}
-                  setIsPeriodEditModalOpen={d.setIsPeriodEditModalOpen}
-                  setCompetitions={d.setCompetitions}
+                  matchDisplayTitle={d.matchDisplayTitle}
                 />
               )}
 

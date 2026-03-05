@@ -176,6 +176,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
   // ── Fetch matches only when the user is on a tab that actually needs them ──
   useEffect(() => {
     const needsMatches =
+      activeTab === 'overview' ||
       activeTab === 'hierarchy' ||
       activeTab === 'matches' ||
       activeTab === 'competitions' ||
