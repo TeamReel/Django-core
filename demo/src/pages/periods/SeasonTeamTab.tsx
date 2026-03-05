@@ -6,6 +6,7 @@ import {
   getUserLabel,
   getRbacLabel,
 } from './seasonDetailUtils';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import s from './ProjectSeasonDetailPage.module.css';
 import st from './SeasonTeamTab.module.css';
 
@@ -37,6 +38,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
   // ── Tab-local state ──
   const [eligibleSearch, setEligibleSearch] = useState('');
   const [selectedEligibleUserIds, setSelectedEligibleUserIds] = useState<Set<string>>(new Set());
+  const isMobile = useIsMobile();
 
   const squadUserIdSet = useMemo(() => {
     const s = new Set<string>();
@@ -149,7 +151,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
             ) : !teamRosterLoading ? (
               <>
               {/* ── Desktop table ── */}
-              <div className={`overflow-x-auto ${st.desktopTable}`}>
+              {!isMobile && <div className="overflow-x-auto">
                 <Table className="detail-table">
                   <thead>
                     <tr>
@@ -235,10 +237,10 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                     })}
                   </tbody>
                 </Table>
-              </div>
+              </div>}
 
               {/* ── Mobile card list ── */}
-              <div className={st.mobileList}>
+              {isMobile && <div className={st.mobileList}>
                 {eligibleTeamMembers.map((m: any) => {
                   const userId = getUserId(m);
                   const { name, email } = getUserLabel(m);
@@ -291,7 +293,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                     </div>
                   );
                 })}
-              </div>
+              </div>}
               </>
             ) : null}
           </div>

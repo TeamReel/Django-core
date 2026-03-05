@@ -9,6 +9,7 @@ import { getCsrfToken } from '../../utils/csrf';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './SeasonMediaTab.module.css';
 
@@ -52,6 +53,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
   const [guestAiPreselectedTemplate, setGuestAiPreselectedTemplate] = useState<string | undefined>();
   const [guestAiSelectedKitType, setGuestAiSelectedKitType] = useState<string>('home');
   const [croppingGuestCloseup, setCroppingGuestCloseup] = useState(false);
+  const isMobile = useIsMobile();
 
   // ── Guest player data from project metadata ──
   useEffect(() => {
@@ -211,7 +213,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
           ) : (
             <>
             {/* ── Desktop table ── */}
-            <div className={`overflow-x-auto ${styles.desktopTable}`}>
+            {!isMobile && <div className="overflow-x-auto">
               <Table className="detail-table">
                 <thead>
                   <tr>
@@ -384,10 +386,10 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                   })}
                 </tbody>
               </Table>
-            </div>
+            </div>}
 
             {/* ── Mobile card list ── */}
-            <div className={styles.mobileList}>
+            {isMobile && <div className={styles.mobileList}>
               {/* Guest player card */}
               {guestPlayer && (
                 <div className={`${styles.mediaCard} ${styles.mediaCardGuest}`}>
@@ -486,7 +488,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                   </div>
                 );
               })}
-            </div>
+            </div>}
             </>
           )}
 

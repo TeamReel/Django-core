@@ -8,6 +8,7 @@ import {
   getAccessRoleOptions,
   getFunctionalRolesFromMembership,
 } from './seasonDetailUtils';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import EditMemberModal from './EditMemberModal';
 import s from './ProjectSeasonDetailPage.module.css';
 import st from './SeasonSquadTab.module.css';
@@ -47,6 +48,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [selectedEditMember, setSelectedEditMember] = useState<any | null>(null);
   const [editAccessRole, setEditAccessRole] = useState<'admin' | 'viewer'>('viewer');
+  const isMobile = useIsMobile();
 
   const accessRoleOptions = getAccessRoleOptions(isTeamRoute);
 
@@ -164,7 +166,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                 ) : !membersLoading && !membersError ? (
                   <>
                   {/* ── Desktop table ── */}
-                  <div className={`overflow-x-auto ${st.desktopTable}`}>
+                  {!isMobile && <div className="overflow-x-auto">
                     <Table className="detail-table">
                       <thead>
                         <tr>
@@ -280,10 +282,10 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         })}
                       </tbody>
                     </Table>
-                  </div>
+                  </div>}
 
                   {/* ── Mobile card list ── */}
-                  <div className={st.mobileList}>
+                  {isMobile && <div className={st.mobileList}>
                     {visibleSquadMembers.map((m: any) => {
                       const memberUser = m.user || m;
                       const name =
@@ -349,7 +351,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         </div>
                       );
                     })}
-                  </div>
+                  </div>}
                   </>
                 ) : null}
               </>
@@ -361,7 +363,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                 ) : !membersLoading && !membersError ? (
                   <>
                   {/* Desktop table */}
-                  <div className={`overflow-x-auto ${st.desktopTable}`}>
+                  {!isMobile && <div className="overflow-x-auto">
                     <Table className="detail-table">
                       <thead>
                         <tr>
@@ -429,10 +431,10 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         })}
                       </tbody>
                     </Table>
-                  </div>
+                  </div>}
 
                   {/* Mobile card list (read-only) */}
-                  <div className={st.mobileList}>
+                  {isMobile && <div className={st.mobileList}>
                     {members.map((m: any) => {
                       const memberUser = m.user || m;
                       const name =
@@ -465,7 +467,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         </div>
                       );
                     })}
-                  </div>
+                  </div>}
                   </>
                 ) : null}
               </>
