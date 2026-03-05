@@ -17,7 +17,10 @@ export const modalOverlay = style({
     '(max-width: 639px)': {
       top: '57px',
       bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
-      alignItems: 'flex-end',
+      /* Column flex so content stretches to fill overlay without overflow */
+      flexDirection: 'column',
+      justifyContent: 'flex-end',
+      alignItems: 'stretch',
       padding: 0,
       overflow: 'hidden',
     },
@@ -37,8 +40,10 @@ export const modalContent = style({
   '@media': {
     '(max-width: 639px)': {
       maxWidth: '100%',
-      /* 100% of overlay — overlay is already top:57 / bottom:64+safe-area */
-      maxHeight: '100%',
+      /* Let flex handle the height — no maxHeight needed, overlay constrains */
+      maxHeight: 'none',
+      flex: '1 1 auto',
+      minHeight: 0,
       borderRadius: '16px 16px 0 0',
       boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
     },

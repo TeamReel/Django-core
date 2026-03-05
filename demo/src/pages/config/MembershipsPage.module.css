@@ -15,6 +15,13 @@
   align-items: flex-start;
 }
 
+/* ── Mobile ── */
+@media (max-width: 639px) {
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .accordionContainer {
   border: 1px solid var(--app-border);
   border-radius: 10px;

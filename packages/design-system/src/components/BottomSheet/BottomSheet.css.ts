@@ -141,8 +141,10 @@ export const bottomSheetCloseButton = style({
 
 export const bottomSheetBody = style({
   padding: themeVars.spacing['5'],
-  overflow: 'auto',
+  overflowY: 'auto',
+  overflowX: 'hidden',
   flex: 1,
+  minHeight: 0,
   // Smooth scrolling on iOS
   WebkitOverflowScrolling: 'touch',
 });

@@ -135,10 +135,6 @@ export const MembershipsPage: React.FC = () => {
       <PageHeader
         title="Memberships"
         subtitle="Where you're a member across federations/clubs/teams"
-        breadcrumbs={[
-          { label: 'Profile', href: '/profile' },
-          { label: 'Memberships' },
-        ]}
       />
 
       <PageContent>
