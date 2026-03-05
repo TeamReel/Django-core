@@ -15,6 +15,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './MemberDetailPage.module.css';
 
 export const MemberDetailPage: React.FC = () => {
   const { id, memberId } = useParams<{ id: string; memberId: string }>();
@@ -259,7 +260,7 @@ export const MemberDetailPage: React.FC = () => {
                     if (value === 'clubs') navigate('/clubs');
                     else if (value === 'users') navigate('/users');
                   }}
-                  className="py-4 px-8 rounded-4 border bg-surface text-primary cursor-pointer fs-14 fw-500"
+                  className={styles.breadcrumbSelect}
                 >
                   <option value="organisations">Organisations</option>
                   <option value="clubs">Clubs</option>
@@ -273,7 +274,7 @@ export const MemberDetailPage: React.FC = () => {
                 <select
                   value={member.organisation.slug || member.organisation.id}
                   onChange={(e) => handleOrganisationSwitch({ id: e.target.value, label: '', slug: e.target.value })}
-                  className="py-4 px-8 rounded-4 border bg-surface text-primary cursor-pointer fs-14 fw-500"
+                  className={styles.breadcrumbSelect}
                 >
                   {organisationOptions.map(org => (
                     <option key={org.id} value={org.slug || org.id}>{org.label}</option>
@@ -289,7 +290,7 @@ export const MemberDetailPage: React.FC = () => {
                   onChange={(e) => {
                     navigate(`/organisations/${orgSlug}/members/${e.target.value}`);
                   }}
-                  className="py-4 px-8 rounded-4 border bg-surface text-primary cursor-pointer fs-14 fw-500"
+                  className={styles.breadcrumbSelect}
                 >
                   {userOptions.map(u => (
                     <option key={u.id} value={u.slug || u.id}>{u.label}</option>
@@ -300,7 +301,7 @@ export const MemberDetailPage: React.FC = () => {
             },
           ]}
           actions={
-            <div className="flex gap-2">
+            <div className={styles.actions}>
                 <Button variant="secondary" onClick={() => navigate(`/organisations/${orgSlug}`)}>
                     Back
                 </Button>
@@ -349,11 +350,11 @@ export const MemberDetailPage: React.FC = () => {
                             <div className="sm:col-span-2">
                                 <label className="block text-sm font-medium text-gray-500 mb-2">Role</label>
                                 {isEditing ? (
-                                    <div className="flex items-center gap-4">
+                                    <div className={styles.editRow}>
                                         <select
                                             value={role}
                                             onChange={(e) => setRole(e.target.value)}
-                                            className="block w-full max-w-xs rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                            className={styles.roleSelect}
                                         >
                                             <option value="member">Member</option>
                                             <option value="admin">Admin</option>
