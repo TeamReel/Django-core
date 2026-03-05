@@ -1,4 +1,5 @@
 import { ReactNode, HTMLAttributes } from 'react';
+import './PageLayout.css';
 
 export interface BreadcrumbItem {
   label: string | ReactNode;
@@ -23,6 +24,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
   const renderBreadcrumbs = false;
   return (
     <div
+      className="page-header"
       style={{
         padding: '24px',
         borderBottom: '1px solid var(--app-border)',
@@ -81,6 +83,7 @@ export function PageHeader({ title, subtitle, breadcrumbs, actions, ...props }: 
         </div>
       )}
       <div
+        className="page-header-title-row"
         style={{
           display: 'flex',
           justifyContent: 'space-between',

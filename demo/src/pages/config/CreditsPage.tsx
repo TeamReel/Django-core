@@ -19,12 +19,13 @@ import { BreadcrumbNav } from '../../components/BreadcrumbNav';
 import { useCreditsData } from './credits/useCreditsData';
 import { CreditsBalanceTab } from './credits/CreditsBalanceTab';
 import { CreditsTransactionsTab } from './credits/CreditsTransactionsTab';
+import styles from './CreditsPage.module.css';
 
 export const CreditsPage: React.FC = () => {
   const data = useCreditsData();
 
   return (
-    <>
+    <div className={styles.creditsWrapper}>
       <BreadcrumbNav items={[
         { label: 'Profile', path: '/profile' },
       ]} />
@@ -64,12 +65,10 @@ export const CreditsPage: React.FC = () => {
 
       <PageContent>
         {/* Scope header */}
-        <div className="mb-16">
-          <div className="text-sm text-gray-600">
-            {data.scope === 'personal'
-              ? 'My Wallet'
-              : `Organisation Wallet${data.currentOrgName ? ` (${data.currentOrgName})` : ''}`}
-          </div>
+        <div className={styles.scopeLabel}>
+          {data.scope === 'personal'
+            ? 'My Wallet'
+            : `Organisation Wallet${data.currentOrgName ? ` (${data.currentOrgName})` : ''}`}
         </div>
 
         {data.scope === 'personal' ? (
@@ -84,41 +83,18 @@ export const CreditsPage: React.FC = () => {
           <>
             {/* Toast notification */}
             {data.toastMessage && (
-              <div
-                className="fs-14 rounded-8"
-                style={{
-                  position: 'fixed',
-                  bottom: '24px',
-                  right: '24px',
-                  backgroundColor: '#323232',
-                  color: 'white',
-                  padding: '16px 24px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                  zIndex: 9999,
-                  maxWidth: '400px',
-                  lineHeight: '1.5',
-                }}
-              >
+              <div className={styles.toast}>
                 {data.toastMessage}
               </div>
             )}
 
             {/* Tab Switcher */}
-            <div className="flex-row gap-8 mb-24 border-bottom">
+            <div className={styles.tabSwitcher}>
               {(['balance', 'transactions'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => data.setActiveTab(tab)}
-                  className="border-none cursor-pointer fs-16"
-                  style={{
-                    padding: '12px 24px',
-                    background: data.activeTab === tab ? 'var(--primary-bg, #1976d2)' : 'transparent',
-                    color: data.activeTab === tab ? 'white' : 'var(--text-color, inherit)',
-                    borderBottom: data.activeTab === tab
-                      ? '2px solid var(--primary-bg, #1976d2)'
-                      : '2px solid transparent',
-                    fontWeight: data.activeTab === tab ? 'bold' : 'normal',
-                  }}
+                  className={data.activeTab === tab ? styles.tabButtonActive : styles.tabButton}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
@@ -156,7 +132,7 @@ export const CreditsPage: React.FC = () => {
           </>
         )}
       </PageContent>
-    </>
+    </div>
   );
 };
 

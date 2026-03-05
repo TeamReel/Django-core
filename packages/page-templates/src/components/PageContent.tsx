@@ -1,4 +1,5 @@
 import { ReactNode, HTMLAttributes } from 'react';
+import './PageLayout.css';
 
 export interface PageContentProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
@@ -11,6 +12,7 @@ export interface PageContentProps extends HTMLAttributes<HTMLDivElement> {
 export function PageContent({ children, ...props }: PageContentProps) {
   return (
     <div
+      className="page-content"
       style={{
         backgroundColor: 'var(--app-bg)',
         color: 'var(--app-text)',
