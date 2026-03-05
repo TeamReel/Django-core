@@ -1,8 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import { periodPathKey } from '../../utils/periodPath';
 import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
 import s from './ProjectSeasonDetailPage.module.css';
@@ -10,9 +8,6 @@ import s from './ProjectSeasonDetailPage.module.css';
 export interface SeasonCompetitionsTabProps {
   competitions: Period[];
   competitionsLoading: boolean;
-  isTeamRoute: boolean;
-  seasonsBasePath: string;
-  seasonPathKey: string;
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
   apiBaseUrl: string;
@@ -29,9 +24,6 @@ export interface SeasonCompetitionsTabProps {
 const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
   competitions,
   competitionsLoading,
-  isTeamRoute,
-  seasonsBasePath,
-  seasonPathKey,
   userCanEditProject,
   userCanDeleteProject,
   apiBaseUrl,
@@ -80,16 +72,7 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                 {competitions.map((competition) => (
                   <tr key={competition.id}>
                     <td className="detail-td-text">
-                      <Link
-                        to={
-                          isTeamRoute
-                            ? `${seasonsBasePath}/${seasonPathKey}/${periodPathKey(competition) || competition.id}`
-                            : `${seasonsBasePath}/${seasonPathKey}/competitions/${periodPathKey(competition) || competition.id}`
-                        }
-                        className={`hover:underline ${s.appLink}`}
-                      >
-                        {competition.name}
-                      </Link>
+                      {competition.name}
                     </td>
                     <td className="detail-td">
                       {competition.sport ? (

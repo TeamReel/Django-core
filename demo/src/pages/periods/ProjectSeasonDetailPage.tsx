@@ -306,9 +306,6 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 <SeasonCompetitionsTab
                   competitions={d.competitions}
                   competitionsLoading={d.competitionsLoading}
-                  isTeamRoute={d.isTeamRoute}
-                  seasonsBasePath={d.seasonsBasePath}
-                  seasonPathKey={d.seasonPathKey}
                   userCanEditProject={d.userCanEditProject}
                   userCanDeleteProject={d.userCanDeleteProject}
                   apiBaseUrl={d.apiBaseUrl}

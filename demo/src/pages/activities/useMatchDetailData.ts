@@ -226,6 +226,7 @@ export function useMatchDetailData(): MatchDetailDataReturn {
     lineupSaving: formState.lineupSaving,
     lineupSaveSuccess: formState.lineupSaveSuccess,
     saveLineup: actions.saveLineup,
+    seasonBasePath: derived.seasonBasePath,
     competitionBasePath: derived.competitionBasePath,
     matchBasePath: derived.matchBasePath,
     activeTab: derived.activeTab,

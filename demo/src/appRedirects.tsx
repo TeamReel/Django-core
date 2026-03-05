@@ -223,22 +223,19 @@ export function ProjectMatchRedirect() {
 }
 
 export function TeamCompetitionRedirect() {
-  const { orgId, clubId, projectId, seasonId, competitionId } = useParams<{
+  const { orgId, clubId, projectId, seasonId } = useParams<{
     orgId: string;
     clubId: string;
     projectId: string;
     seasonId: string;
-    competitionId: string;
   }>();
-  const location = useLocation();
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(clubId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
   const seasonKeyOrId = String(seasonId || '').trim();
-  const competitionKeyOrId = String(competitionId || '').trim();
   return (
     <Navigate
-      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}/${competitionKeyOrId}${location.search || ''}`}
+      to={`/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}?tab=competitions`}
       replace
     />
   );

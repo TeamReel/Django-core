@@ -297,6 +297,7 @@ export interface MatchDetailDataReturn {
   saveLineup: () => Promise<void>;
 
   /* paths */
+  seasonBasePath: string;
   competitionBasePath: string;
   matchBasePath: string;
 

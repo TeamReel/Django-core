@@ -97,20 +97,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                       })()}
                     </td>
                     <td className="detail-td-text">
-                      {match.period?.id ? (
-                        <Link
-                          to={
-                            isTeamRoute
-                              ? `${seasonsBasePath}/${seasonPathKey}/${String(match.period?.id)}`
-                              : `${seasonsBasePath}/${seasonPathKey}/competitions/${String(match.period?.id)}`
-                          }
-                          className={`hover:underline ${s.appLink}`}
-                        >
-                          {match.period?.name || 'Competition'}
-                        </Link>
-                      ) : (
-                        match.period?.name || '\u2014'
-                      )}
+                      {match.period?.name || '\u2014'}
                     </td>
                     <td className="detail-td-text">
                       {match.start_time ? new Date(match.start_time).toLocaleString() : '\u2014'}

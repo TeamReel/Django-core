@@ -31,6 +31,12 @@ export function useMatchDerived(params: UseMatchDerivedParams) {
   } = params;
 
   // ── Paths ──
+  const seasonBasePath = useMemo(() => {
+    const sk = String(seasonKeyOrId || '').trim();
+    if (!sk) return '';
+    return `${seasonsBasePath}/${sk}`;
+  }, [seasonKeyOrId, seasonsBasePath]);
+
   const competitionBasePath = useMemo(() => {
     const sk = String(seasonKeyOrId || '').trim();
     const ck = String(effectiveCompetitionIdVal || '').trim();
@@ -122,7 +128,7 @@ export function useMatchDerived(params: UseMatchDerivedParams) {
   const matchEvents = (match?.events || []).slice().sort((a, b) => (a.minute || 0) - (b.minute || 0));
 
   return {
-    competitionBasePath, matchBasePath, activeTab,
+    seasonBasePath, competitionBasePath, matchBasePath, activeTab,
     matchWalletOptions,
     date, status, isHome: !!isHome,
     ownTeamName, opponentName, homeTeamName, awayTeamName,

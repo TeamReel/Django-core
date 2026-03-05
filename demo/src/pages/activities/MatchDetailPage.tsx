@@ -19,9 +19,9 @@ export default function HierarchyMatchDetailPage() {
   const d = useMatchDetailData();
 
   /* ---- back navigation ---- */
-  const competitionLabel = d.competition?.name || 'Competitie';
-  const backPath = d.competitionBasePath || d.seasonsBasePath || '/';
-  useSetBackNavigation({ label: competitionLabel, path: backPath });
+  const seasonLabel = d.season?.name || 'Seizoen';
+  const backPath = d.seasonBasePath || d.seasonsBasePath || '/';
+  useSetBackNavigation({ label: seasonLabel, path: backPath });
 
   /* ---- overflow menu ---- */
   const [overflowOpen, setOverflowOpen] = useState(false);
