@@ -110,9 +110,9 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
   }, [apiBaseUrl, project, resolvedSeasonId, membersReloadToken]);
 
   // ── Fetch full team roster ──
-  // Only fetch org members on the squad tab (orgs can have thousands of members).
+  // Only fetch org members on the selectie tab (orgs can have thousands of members).
   useEffect(() => {
-    if (activeTab !== 'squad' && activeTab !== 'team') return;
+    if (activeTab !== 'selectie' && activeTab !== 'overview') return;
     const projectIdForMembers = String((project as any)?.id || '').trim();
     if (!projectIdForMembers) return;
 
@@ -138,7 +138,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
           if (uid && !byUserId.has(uid)) byUserId.set(uid, m);
         }
 
-        if (activeTab === 'squad') {
+        if (activeTab === 'selectie') {
           const orgSlugForMembers = String((org as any)?.slug || orgSlugOrId || '').trim();
           if (orgSlugForMembers) {
             try {

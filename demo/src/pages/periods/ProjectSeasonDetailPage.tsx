@@ -12,7 +12,6 @@ import SeasonDetailModals from './SeasonDetailModals';
 import SeasonOverviewTab from './SeasonOverviewTab';
 import SeasonContentTab from './SeasonContentTab';
 import SeasonSquadTab from './SeasonSquadTab';
-import SeasonTeamTab from './SeasonTeamTab';
 import SeasonMediaTab from './SeasonMediaTab';
 import SeasonCompetitionsTab from './SeasonCompetitionsTab';
 import SeasonMatchesTab from './SeasonMatchesTab';
@@ -163,12 +162,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            { id: 'matches', label: 'Matches' },
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'competitions', label: 'Competities' }] : []),
-            ...(!d.isSupporter ? [{ id: 'squad', label: 'Squad' }] : []),
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'team', label: 'Team' }] : []),
             ...(!d.isSupporter ? [{ id: 'media', label: 'Media' }] : []),
             ...(!d.isSupporter ? [{ id: 'content', label: 'Content' }] : []),
+            { id: 'matches', label: 'Matches' },
+            ...(!d.isSupporter ? [{ id: 'selectie', label: 'Selectie' }] : []),
+            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'competitions', label: 'Competities' }] : []),
             ...(!d.isPlayer && !d.isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
           ]}
           activeTab={d.activeTab}
@@ -199,6 +197,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   seasonsBasePath={d.seasonsBasePath}
                   seasonPathKey={d.seasonPathKey}
                   matchDisplayTitle={d.matchDisplayTitle}
+                  teamRosterCount={d.teamRoster?.length}
+                  brandLogoUrl={d.brandLogoUrl}
+                  brandSponsorUrl={d.brandSponsorUrl}
+                  batchBrandKits={d.batchBrandKits}
                 />
               )}
 
@@ -213,7 +215,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 />
               )}
 
-              {d.activeTab === 'squad' && (
+              {d.activeTab === 'selectie' && (
                 <SeasonSquadTab
                   members={d.members}
                   membersLoading={d.membersLoading}
@@ -225,23 +227,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   projectId={String(d.project?.id || '')}
                   memberDetailHref={(mid: string) => {
                     const base = d.memberDetailHref(mid);
-                    return base ? `${base}?from=squad` : base;
+                    return base ? `${base}?from=selectie` : base;
                   }}
                   unassignMembershipsFromSeasonSquad={d.unassignMembershipsFromSeasonSquad}
                   setIsAddSquadMemberModalOpen={d.setIsAddSquadMemberModalOpen}
                   onMemberUpdated={() => d.setMembersReloadToken(t => t + 1)}
-                />
-              )}
-
-              {d.activeTab === 'team' && (
-                <SeasonTeamTab
                   teamRoster={d.teamRoster}
                   teamRosterLoading={d.teamRosterLoading}
                   teamRosterError={d.teamRosterError}
-                  members={d.members}
-                  userCanEditProject={d.userCanEditProject}
-                  bulkSubmitting={d.bulkSubmitting}
-                  isTeamRoute={d.isTeamRoute}
                   assignUsersToSeasonSquad={d.assignUsersToSeasonSquad}
                   getBestRoleForUser={d.getBestRoleForUser}
                   getFunctionalRolesForUser={d.getFunctionalRolesForUser}

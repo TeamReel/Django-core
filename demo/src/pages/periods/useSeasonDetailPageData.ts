@@ -53,8 +53,8 @@ export function useSeasonDetailPageData() {
     const allowed = isSupporter
       ? new Set(['overview', 'matches'])
       : isPlayer
-        ? new Set(['overview', 'matches', 'squad', 'media', 'content'])
-          : new Set(['overview', 'content', 'competitions', 'matches', 'squad', 'team', 'media', 'assets']);
+        ? new Set(['overview', 'matches', 'selectie', 'media', 'content'])
+          : new Set(['overview', 'content', 'competitions', 'matches', 'selectie', 'media', 'assets']);
     return allowed.has(raw) ? raw : defaultTab;
   }, [location.search, isPlayer, isSupporter]);
 

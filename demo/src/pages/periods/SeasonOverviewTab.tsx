@@ -18,6 +18,10 @@ export interface SeasonOverviewTabProps {
   seasonsBasePath: string;
   seasonPathKey: string;
   matchDisplayTitle: (m: any) => string;
+  teamRosterCount?: number;
+  brandLogoUrl?: string | null;
+  brandSponsorUrl?: string | null;
+  batchBrandKits?: Record<string, string | null>;
 }
 
 /** Slots we track on the overview (the most important ones) */
@@ -36,6 +40,10 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   seasonsBasePath,
   seasonPathKey,
   matchDisplayTitle,
+  teamRosterCount,
+  brandLogoUrl,
+  brandSponsorUrl,
+  batchBrandKits,
 }) => {
   const startDate = season?.start_date
     ? new Date(season.start_date).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -117,6 +125,23 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
     return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
   };
 
+  // ── Brand assets checklist ──
+  const brandAssets = useMemo(() => {
+    const items: { label: string; icon: string; present: boolean }[] = [
+      { label: 'Logo', icon: '🏷️', present: !!brandLogoUrl },
+      { label: 'Sponsor', icon: '🤝', present: !!brandSponsorUrl },
+    ];
+    if (batchBrandKits) {
+      if (batchBrandKits.home !== undefined) items.push({ label: 'Thuis tenue', icon: '👕', present: !!batchBrandKits.home });
+      if (batchBrandKits.away !== undefined) items.push({ label: 'Uit tenue', icon: '👕', present: !!batchBrandKits.away });
+      if (batchBrandKits.third !== undefined) items.push({ label: 'Derde tenue', icon: '👕', present: !!batchBrandKits.third });
+      if (batchBrandKits.keeper !== undefined) items.push({ label: 'Keeper tenue', icon: '🧤', present: !!batchBrandKits.keeper });
+    }
+    return items;
+  }, [brandLogoUrl, brandSponsorUrl, batchBrandKits]);
+
+  const notInSquadCount = typeof teamRosterCount === 'number' ? Math.max(0, teamRosterCount - members.length) : null;
+
   return (
     <div className={ov.overviewRoot}>
       {/* ── Hero card ── */}
@@ -128,21 +153,47 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
         </div>
         <div className={ov.heroStats}>
           <div className={ov.heroStat}>
-            <span className={ov.heroStatValue}>{competitions.length}</span>
-            <span className={ov.heroStatLabel}>Competities</span>
+            <span className={ov.heroStatValue}>{members.length}</span>
+            <span className={ov.heroStatLabel}>In selectie</span>
           </div>
+          {notInSquadCount !== null && (
+            <div className={ov.heroStat}>
+              <span className={ov.heroStatValue}>{notInSquadCount}</span>
+              <span className={ov.heroStatLabel}>Niet in selectie</span>
+            </div>
+          )}
           <div className={ov.heroStat}>
             <span className={ov.heroStatValue}>{matches.length}</span>
             <span className={ov.heroStatLabel}>Wedstrijden</span>
           </div>
           <div className={ov.heroStat}>
-            <span className={ov.heroStatValue}>{members.length}</span>
-            <span className={ov.heroStatLabel}>Selectie</span>
+            <span className={ov.heroStatValue}>{competitions.length}</span>
+            <span className={ov.heroStatLabel}>Competities</span>
           </div>
         </div>
       </div>
 
-      {/* ── Asset readiness ── */}
+      {/* ── Brand assets ── */}
+      {brandAssets.length > 0 && (
+        <div className={ov.sectionCard}>
+          <div className={ov.sectionHeader}>
+            <h3 className={ov.sectionTitle}>Club assets</h3>
+            <button className={ov.sectionLink} onClick={() => navigateToTab('assets')}>
+              Beheer →
+            </button>
+          </div>
+          <div className={ov.brandGrid}>
+            {brandAssets.map((a) => (
+              <div key={a.label} className={ov.brandItem} data-present={a.present ? 'true' : 'false'}>
+                <span className={ov.brandIcon}>{a.present ? '✅' : '⬜'}</span>
+                <span className={ov.brandLabel}>{a.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Media assets (prominent) ── */}
       {members.length > 0 && (
         <div className={ov.sectionCard}>
           <div className={ov.sectionHeader}>
@@ -173,6 +224,19 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
           </div>
         </div>
       )}
+
+      {/* ── Content shortcut ── */}
+      <div className={ov.sectionCard}>
+        <div className={ov.sectionHeader}>
+          <h3 className={ov.sectionTitle}>Content</h3>
+          <button className={ov.sectionLink} onClick={() => navigateToTab('content')}>
+            Content studio →
+          </button>
+        </div>
+        <div className={ov.contentHint}>
+          Genereer wedstrijd-content, line-ups, en social media posts vanuit de Content tab.
+        </div>
+      </div>
 
       {/* ── Upcoming matches ── */}
       {(upcomingMatches.length > 0 || matchesLoading) && (

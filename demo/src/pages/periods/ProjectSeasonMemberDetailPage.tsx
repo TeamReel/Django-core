@@ -62,7 +62,7 @@ export default function ProjectSeasonMemberDetailPage() {
   // ── Back navigation: return to the season page on the referring tab ──
   const referrerTab = useMemo(() => {
     const params = new URLSearchParams(location.search);
-    return params.get('from') || 'squad';
+    return params.get('from') || 'selectie';
   }, [location.search]);
 
   const backPath = useMemo(() => {
@@ -163,7 +163,7 @@ export default function ProjectSeasonMemberDetailPage() {
               );
             })()}
             {!isPlayer && (
-              <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`); }}>
+              <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=selectie`); }}>
                 Back to squad
               </Button>
             )}
@@ -265,7 +265,7 @@ export default function ProjectSeasonMemberDetailPage() {
                       <div className={`fs-12 fw-700 ${s.quickLinksTitle}`}>Quick links</div>
                       {seasonKeyForLinks ? (
                         <div className="flex-col gap-6">
-                          <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`} className="text-blue-600 hover:underline text-decoration-none">Season squad</Link>
+                          <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=selectie`} className="text-blue-600 hover:underline text-decoration-none">Season selectie</Link>
                           <Link to={`${seasonsBasePath}/${seasonKeyForLinks}?tab=content`} className="text-blue-600 hover:underline text-decoration-none">Season content</Link>
                         </div>
                       ) : (
@@ -287,7 +287,7 @@ export default function ProjectSeasonMemberDetailPage() {
           <Button variant="primary" onClick={() => save(media.form, media.videoVariants)} disabled={saving} className={s.mobileActionSave}>
             {saving ? 'Saving…' : '💾 Save'}
           </Button>
-          <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=squad`); }} className={s.mobileActionSquad}>
+          <Button variant="secondary" onClick={() => { if (seasonKeyForLinks) navigate(`${seasonsBasePath}/${seasonKeyForLinks}?tab=selectie`); }} className={s.mobileActionSquad}>
             ← Squad
           </Button>
         </div>
