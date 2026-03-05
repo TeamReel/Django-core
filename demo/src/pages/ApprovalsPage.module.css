@@ -381,8 +381,15 @@
 .chipsRow {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   margin-bottom: 16px;
+  padding-bottom: 4px;
+}
+
+.chipsRow::-webkit-scrollbar {
+  display: none;
 }
 
 /* ─── Provider Info ───────────────────────────────────────────────────────── */
@@ -615,4 +622,175 @@
   border-radius: 99px;
   padding: 1px 6px;
   margin-left: 4px;
+}
+
+/* ── Page shell ── */
+.page { min-height: 100%; }
+
+/* ── Header area ── */
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.titleBlock h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1.3;
+}
+
+.titleBlock p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--app-muted-text);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Tab content area ── */
+.tabContent {
+  padding: 0 16px 120px;
+}
+
+/* ── Skeleton loading ── */
+.skeleton { padding: 16px; }
+
+.skeletonCard {
+  height: 72px;
+  width: 100%;
+  background: var(--app-surface-2);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* ── Filter chip (CSS module version) ── */
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1.5px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, #fff);
+  color: var(--app-text-secondary, #6b7280);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.chipActive {
+  border-color: var(--color-blue-600, #2563eb);
+  background: var(--color-blue-600, #2563eb);
+  color: #fff;
+}
+
+.chipBadge {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+  background: var(--app-surface-2, #f3f4f6);
+}
+
+.chipActive .chipBadge {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Mobile responsive ── */
+@media (max-width: 639px) {
+  .modalOverlay,
+  .modalOverlayHigh {
+    padding: 12px;
+  }
+
+  .modalPanel {
+    border-radius: 12px;
+  }
+
+  .modalHeader {
+    padding: 12px 16px;
+  }
+
+  .modalFooter {
+    padding: 12px 16px;
+    flex-direction: column;
+  }
+
+  .modalFooter > * {
+    width: 100%;
+  }
+
+  .workflowCardHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toastContainer {
+    left: 16px;
+    right: 16px;
+    bottom: 88px;
+  }
+
+  .emptyState {
+    padding: 32px 16px;
+  }
+
+  .actionsRow {
+    flex-direction: column;
+  }
+
+  .actionsRow > * {
+    width: 100%;
+  }
+
+  .btnApprove,
+  .btnReject,
+  .btnRetry,
+  .btnCancel {
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+/* ── Desktop ── */
+@media (min-width: 768px) {
+  .headerRow {
+    padding: 24px 24px 0;
+  }
+
+  .titleBlock h1 {
+    font-size: 24px;
+  }
+
+  .tabContent {
+    padding: 0 24px 64px;
+  }
 }

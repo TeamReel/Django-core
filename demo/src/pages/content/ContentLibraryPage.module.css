@@ -1,11 +1,11 @@
-/* ContentLibraryPage — extracted inline styles */
+/* ContentLibraryPage — mobile-first responsive */
 
 /* ── Page wrappers ── */
 
 .noOrgWrapper {
   min-height: 100vh;
   background-color: var(--app-bg);
-  padding: 24px;
+  padding: 16px;
 }
 
 .noOrgWrapper[data-embedded='true'] {
@@ -27,11 +27,26 @@
   padding: 12px 16px 0;
 }
 
-/* ── Toolbar inputs ── */
+/* ── Toolbar ── */
+
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--app-border);
+}
 
 .searchInput {
-  min-width: 120px;
-  padding: 8px 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
 }
 
 .sortSelect {
@@ -53,12 +68,57 @@
 
 .contentArea {
   max-width: 1400px;
+  padding: 16px 16px 120px;
+  margin: 0 auto;
 }
 
 .loadingArea {
-  padding: 48px;
+  padding: 48px 16px;
+  text-align: center;
 }
 
+/* ── Gallery grid — mobile-first ── */
+
 .galleryGrid {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+/* ── Filter chips ── */
+.chipsRow {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+
+.chipsRow::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Desktop ── */
+
+@media (min-width: 640px) {
+  .galleryGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .contentArea {
+    padding: 24px 24px 64px;
+  }
+
+  .toolbar {
+    padding: 16px 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .galleryGrid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
 }

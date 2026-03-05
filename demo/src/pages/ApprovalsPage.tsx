@@ -10,9 +10,9 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { PullToRefresh } from '@django-core/design-system';
 import { useLocation } from 'react-router-dom';
+import { RefreshCw } from 'lucide-react';
 import MobileTabBar from '../components/MobileTabBar';
 import { useUserRole } from '../components/PermissionGuards';
-import { PageContent, PageHeader } from '@django-core/page-templates';
 import {
   useWorkflowInstances,
   type TransitionHistoryEntry,
@@ -283,24 +283,25 @@ export default function ApprovalsPage() {
         />
       )}
 
-      <PageHeader
-        title={tabTitles[filter].title}
-        subtitle={tabTitles[filter].subtitle}
-        actions={
-          <div className="flex-row gap-8">
+      <div className={s.page}>
+        {/* ── Header ── */}
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}>
+            <h1>{tabTitles[filter].title}</h1>
+            <p>{tabTitles[filter].subtitle}</p>
+          </div>
+          <div className={s.actions}>
             {needsReviewJobs.length > 0 && (filter === 'ai_queue' || filter === 'review' || filter === 'all') && (
               <button onClick={() => openModal(needsReviewJobs[0])} className={s.btnBeginReview}>
-                Begin beoordelen ({needsReviewJobs.length})
+                Beoordelen ({needsReviewJobs.length})
               </button>
             )}
-            <button onClick={() => { refresh(); refreshAiJobs(); refreshVideoJobs(); }} className={s.btnRefresh}>
-              ↻ Refresh
+            <button onClick={() => { refresh(); refreshAiJobs(); refreshVideoJobs(); }} className={s.btnRefresh} title="Vernieuwen">
+              <RefreshCw size={16} />
             </button>
           </div>
-        }
-      />
+        </div>
 
-      <PageContent>
         <PullToRefresh
           onRefresh={async () => { refresh(); refreshAiJobs(); refreshVideoJobs(); }}
           pullText="Trek om te vernieuwen"
@@ -322,12 +323,18 @@ export default function ApprovalsPage() {
           basePath="/approvals"
         />
 
+        <div className={s.tabContent}>
         {(error || actionError || aiError || videoError) && (
           <div className={s.errorBanner}>{actionError || error || aiError || videoError}</div>
         )}
 
         {(loading || aiLoading || videoLoading) && (
-          <div className={s.loadingCenter}>Loading...</div>
+          <div className={s.skeleton}>
+            <div className={s.skeletonCard} />
+            <div className={s.skeletonCard} />
+            <div className={s.skeletonCard} />
+            <div className={s.skeletonCard} />
+          </div>
         )}
 
         {!loading && !aiLoading && !videoLoading && filtered.length === 0 && visibleAiJobs.length === 0 && visibleVideoJobs.length === 0 && (
@@ -347,26 +354,12 @@ export default function ApprovalsPage() {
                 <button
                   key={chip.key}
                   onClick={() => setContentType(chip.key)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
-                    border: `1.5px solid ${isActive ? 'var(--color-blue-600)' : 'var(--app-border, #e5e7eb)'}`,
-                    backgroundColor: isActive ? 'var(--color-blue-600)' : 'var(--app-surface, #fff)',
-                    color: isActive ? '#fff' : 'var(--app-text-secondary, #6b7280)',
-                    cursor: count > 0 || chip.key === 'all' ? 'pointer' : 'default',
-                    opacity: count > 0 || chip.key === 'all' ? 1 : 0.4,
-                    transition: 'all 0.15s',
-                  }}
+                  className={`${s.chip} ${isActive ? s.chipActive : ''}`}
+                  disabled={count === 0 && chip.key !== 'all'}
                 >
                   <span>{chip.icon}</span>
                   <span>{chip.label}</span>
-                  <span style={{
-                    fontSize: 10, fontWeight: 700,
-                    backgroundColor: isActive ? 'rgba(255,255,255,0.25)' : 'var(--app-surface-2, #f3f4f6)',
-                    borderRadius: 99, padding: '1px 6px', minWidth: 18, textAlign: 'center',
-                  }}>
-                    {count}
-                  </span>
+                  <span className={s.chipBadge}>{count}</span>
                 </button>
               );
             })}
@@ -423,8 +416,9 @@ export default function ApprovalsPage() {
             ))}
           </div>
         )}
+        </div>{/* tabContent */}
       </PullToRefresh>
-      </PageContent>
+    </div>{/* page */}
     </>
   );
 }

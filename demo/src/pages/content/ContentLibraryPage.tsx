@@ -148,7 +148,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
       )}
 
       {/* Toolbar */}
-      <div className="gallery-toolbar flex-row gap-12 flex-wrap border-bottom py-16 px-24">
+      <div className={styles.toolbar}>
         <input
           type="text"
           value={data.searchQuery}
@@ -264,11 +264,11 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
       </div>
 
       {/* Content area */}
-      <div className={`gallery-content p-24 mx-auto ${styles.contentArea}`}>
+      <div className={styles.contentArea}>
         <Stack direction="column" gap="4">
           {/* Subtype chips (category has subtypes) */}
           {data.categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.length! > 0 && (
-            <div className="gallery-chips flex-row flex-wrap gap-6">
+            <div className={styles.chipsRow}>
               <FilterChip active={data.subtypeFilter === 'all'} onClick={() => data.setSubtypeFilter('all')} label="All" count={data.subtypeCounts.all || 0} />
               {CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.map(st => {
                 const filter = CONTENT_TYPE_FILTERS.find(f => f.key === st);
@@ -286,7 +286,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
           )}
 
           {data.categoryFilter === 'all' && (
-            <div className="gallery-chips flex-row flex-wrap gap-6">
+            <div className={styles.chipsRow}>
               {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => (
                 <FilterChip key={key} active={data.subtypeFilter === key} onClick={() => data.setSubtypeFilter(key)} label={`${icon} ${label}`} count={data.subtypeCounts[key] || 0} />
               ))}
@@ -301,7 +301,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
 
           {!data.loading && (
             data.filteredContent.length > 0 ? (
-              <div className={`gallery-grid grid gap-16 ${styles.galleryGrid}`}>
+              <div className={styles.galleryGrid}>
                 {data.filteredContent.map((item) => (
                   <ContentCard key={item.id} item={item} onPreview={handlePreview} onDownload={handleDownload} onShare={handleShare} onDelete={handleDelete} />
                 ))}
