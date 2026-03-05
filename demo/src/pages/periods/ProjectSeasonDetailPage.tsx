@@ -1,9 +1,8 @@
 import React from 'react';
-import { Alert, Button, Card } from '@django-core/design-system';
+import { Alert } from '@django-core/design-system';
 import {
-  PageContent,
-  PageHeader,
-} from '@django-core/page-templates';
+  Eye, Pencil, Trash2, Receipt, Check, ChevronLeft,
+} from 'lucide-react';
 import MobileTabBar from '../../components/MobileTabBar';
 import { isSeasonPeriod } from '../../providers/SeasonProvider';
 import s from './ProjectSeasonDetailPage.module.css';
@@ -32,83 +31,75 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   return (
     <>
-      <div>
-        <PageHeader
-          title={d.season ? d.season.name : 'Season'}
-          subtitle={(d.season as any)?.period_type === 'legends' ? 'Legends Seizoen' : undefined}
-          actions={d.isPlayer ? (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Button variant="secondary" size="sm" onClick={() => d.navigate(d.seasonsBasePath)}>
-                Back
-              </Button>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-              {(() => {
-                return (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={d.handleActivateContext}
-                    disabled={d.activatingContext || (isActive ?? false)}
-                    title="Set this season as your active context"
-                    style={{
-                      backgroundColor: isActive ? '#dcfce7' : undefined,
-                      color: isActive ? '#166534' : undefined,
-                      border: isActive ? '1px solid #10b981' : undefined,
-                      cursor: d.activatingContext || isActive ? 'not-allowed' : 'pointer',
-                      opacity: d.activatingContext || isActive ? 0.8 : 1,
-                      fontWeight: isActive ? 600 : undefined,
-                    }}
-                  >
-                    {isActive ? '\u2713 Active Context' : 'Make active'}
-                  </Button>
-                );
-              })()}
-              <Button variant="secondary" size="sm" onClick={() => d.navigate(d.seasonsBasePath)}>
-                Back
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  d.setSelectedDetailPeriod(d.season);
-                  d.setIsPeriodDetailModalOpen(true);
-                }}
-              >
-                View
-              </Button>
-              {d.userCanEditProject && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    d.setSelectedEditPeriod(d.season);
-                    d.setIsPeriodEditModalOpen(true);
-                  }}
-                >
-                  Edit
-                </Button>
-              )}
-              {d.userCanDeleteProject && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={d.handleDeleteSeason}
-                  className={s.dangerText}
-                >
-                  Delete
-                </Button>
-              )}
+      <div className={s.page}>
+        {/* ── Header ─────────────────────────────────────── */}
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}>
+            <h1>{d.season ? d.season.name : 'Seizoen'}</h1>
+            {(d.season as any)?.period_type === 'legends' && <p>Legends Seizoen</p>}
+          </div>
 
-              {d.userCanEditProject && (
-                <Button variant="secondary" size="sm" onClick={() => d.setIsCreateTxnModalOpen(true)}>
-                  Create transaction
-                </Button>
-              )}
-            </div>
-          )}
-        />
+          <div className={s.actions}>
+            {/* Activate context */}
+            <button
+              type="button"
+              className={`${s.activeBtn} ${isActive ? s.activeBtnOn : ''}`}
+              disabled={d.activatingContext || (isActive ?? false)}
+              onClick={d.handleActivateContext}
+              title="Stel dit seizoen in als actieve context"
+            >
+              {isActive && <Check size={14} />}
+              {isActive ? 'Actief' : 'Activeren'}
+            </button>
+
+            {/* Back */}
+            <button type="button" className={s.iconBtn} onClick={() => d.navigate(d.seasonsBasePath)} title="Terug">
+              <ChevronLeft size={16} />
+            </button>
+
+            {/* View */}
+            <button
+              type="button"
+              className={s.iconBtn}
+              onClick={() => {
+                d.setSelectedDetailPeriod(d.season);
+                d.setIsPeriodDetailModalOpen(true);
+              }}
+              title="Bekijken"
+            >
+              <Eye size={16} />
+            </button>
+
+            {/* Edit (admin) */}
+            {d.userCanEditProject && (
+              <button
+                type="button"
+                className={s.iconBtn}
+                onClick={() => {
+                  d.setSelectedEditPeriod(d.season);
+                  d.setIsPeriodEditModalOpen(true);
+                }}
+                title="Bewerken"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+
+            {/* Delete (admin) */}
+            {d.userCanDeleteProject && (
+              <button type="button" className={s.iconBtn} onClick={d.handleDeleteSeason} title="Verwijderen">
+                <Trash2 size={16} />
+              </button>
+            )}
+
+            {/* Create transaction (admin) */}
+            {d.userCanEditProject && (
+              <button type="button" className={s.iconBtn} onClick={() => d.setIsCreateTxnModalOpen(true)} title="Transactie aanmaken">
+                <Receipt size={16} />
+              </button>
+            )}
+          </div>
+        </div>
 
         <SeasonDetailModals
           isCreateTxnModalOpen={d.isCreateTxnModalOpen}
@@ -185,11 +176,17 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           activeTab={d.activeTab}
         />
 
-        <PageContent>
+        <div className={s.tabContent}>
           {d.error && <Alert variant="error">{d.error}</Alert>}
 
           {d.loading ? (
-            <Card><div style={{ padding: '16px' }}>Loading...</div></Card>
+            <div className={s.skeleton}>
+              <div className={s.skeletonBar} />
+              <div className={s.skeletonBarShort} />
+              <div className={s.skeletonBarFull} />
+              <div className={s.skeletonCard} />
+              <div className={s.skeletonCard} />
+            </div>
           ) : (
             <>
               {d.activeTab === 'overview' && (
@@ -375,7 +372,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               seasonId={String(d.season.id)}
             />
           )}
-        </PageContent>
+        </div>
       </div>
 
       {/* Toast notifications */}

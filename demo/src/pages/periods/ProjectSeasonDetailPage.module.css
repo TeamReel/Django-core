@@ -2,9 +2,119 @@
    ProjectSeasonDetailPage — CSS Module
    ============================================================================ */
 
+/* ── Page shell ── */
+.page { min-height: 100%; }
+
+/* ── Header area ── */
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+
+.titleBlock h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1.3;
+}
+
+.titleBlock p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--app-muted-text);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.activeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.activeBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.activeBtnOn {
+  border-color: #10b981;
+  background: #dcfce7;
+  color: #166534;
+  font-weight: 700;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
+.iconBtn:active { background: var(--app-active-bg, rgba(0, 0, 0, 0.08)); }
+
+/* ── Loading skeleton ── */
+.skeleton { padding: 16px; }
+
+.skeletonBar {
+  height: 14px;
+  width: 60%;
+  background: var(--app-surface-2);
+  border-radius: 4px;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeletonBarShort { composes: skeletonBar; width: 35%; margin-top: 8px; }
+.skeletonBarFull { composes: skeletonBar; width: 100%; height: 44px; margin-top: 20px; }
+.skeletonCard { height: 140px; width: 100%; background: var(--app-surface-2); border-radius: 12px; margin-top: 16px; animation: shimmer 1.4s infinite; }
+
+@keyframes shimmer { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+/* ── Error state ── */
+.errorBox { padding: 24px 16px; text-align: center; }
+.errorMsg { font-size: 15px; color: var(--color-red-500, #ef4444); margin-bottom: 16px; }
+.backBtn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; font-size: 14px; font-weight: 600;
+  border-radius: 8px; border: 1px solid var(--app-border);
+  background: var(--app-surface); color: var(--app-text); cursor: pointer;
+}
+
+/* ── Tab content area ── */
+.tabContent { padding: 0 16px 120px; }
+
 /* ── Layout ── */
 .contentGrid { display: grid; gap: 16px; }
-.videoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.videoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .roleGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .bgSelectorGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
 .verticalList { display: flex; flex-direction: column; gap: 10px; }
@@ -28,7 +138,12 @@
 
 /* ── Content Tiles ── */
 .contentTile {
-  width: 100px; padding: 12px 8px; border-radius: 8px; text-align: center; transition: all 0.15s;
+  min-width: 0; padding: 12px 8px; border-radius: 8px; text-align: center; transition: all 0.15s;
+}
+.contentTileGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 8px;
 }
 .contentTileIcon { font-size: 20px; margin-bottom: 4px; }
 .contentTileLabel { font-weight: 600; font-size: 11px; line-height: 1.3; text-align: center; }
@@ -234,4 +349,93 @@
 @keyframes slideInRight {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
+}
+
+/* ── Responsive: mobile ─────────────────────────────────────────────── */
+@media (max-width: 639px) {
+  .videoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roleGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .competitionCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .matchRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .hierarchyHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .editMemberModal {
+    padding: 20px;
+    width: 95%;
+  }
+
+  .previewModalContainer {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .thenNowModal {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+
+  .toastContainer {
+    left: 16px;
+    right: 16px;
+    max-width: none;
+  }
+
+  .legendRow,
+  .legendRowDivided {
+    gap: 8px;
+  }
+
+  .quickActionBtn {
+    min-height: 44px;
+  }
+}
+
+/* ── Responsive: desktop ────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .headerRow {
+    padding: 24px 24px 0;
+  }
+
+  .titleBlock h1 {
+    font-size: 24px;
+  }
+
+  .tabContent {
+    padding: 0 24px 64px;
+  }
+
+  .iconBtn {
+    width: auto;
+    height: auto;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 6px;
+  }
+
+  .videoGrid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .contentTileGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
 }
