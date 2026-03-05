@@ -15,6 +15,7 @@ import { User } from '../../types';
 import AppShell from '../../components/AppShell';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
+import styles from './ProfilePage.module.css';
 
 /**
  * T011 - Profile Page
@@ -178,8 +179,7 @@ export const ProfilePage: React.FC = () => {
         actions={
           <button
             onClick={() => navigate('/users')}
-            className="rounded-4 border bg-surface-2 text-primary cursor-pointer fs-12 fw-500"
-            style={{ padding: '6px 12px' }}
+            className={styles.backButton}
           >
             Back to Users
           </button>
@@ -214,7 +214,7 @@ export const ProfilePage: React.FC = () => {
                 Edit Profile
               </Button>
             ) : (
-              <div className="flex-row gap-8">
+              <div className={styles.editActions}>
                 <Button
                   variant="primary"
                   size="sm"
@@ -332,7 +332,7 @@ export const ProfilePage: React.FC = () => {
               <label className="label-muted mb-4">
                 User ID
               </label>
-              <div className="fw-500 text-primary fs-14" style={{ fontFamily: 'monospace' }} data-testid="profile-user-id">
+              <div className={`fw-500 text-primary fs-14 ${styles.userId}`} data-testid="profile-user-id">
                 {user.id}
               </div>
             </div>

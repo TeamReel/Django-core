@@ -1,0 +1,44 @@
+/* ProfilePage — responsive styles */
+
+.backButton {
+  padding: 8px 16px;
+  min-height: 36px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border, #ddd);
+  background: var(--app-surface-2, #f5f5f5);
+  color: var(--app-text-primary, #333);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.editActions {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.userId {
+  font-family: monospace;
+  word-break: break-all;
+}
+
+/* ────────────────── Mobile (≤ 768px) ────────────────── */
+@media (max-width: 768px) {
+  .backButton {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.8125rem;
+  }
+
+  .editActions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .editActions button {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
