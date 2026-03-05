@@ -13,7 +13,7 @@
   padding: 0 4px;
   background-color: var(--app-surface, #fff);
   border-top: 1px solid var(--app-border, #e5e7eb);
-  z-index: 1000;
+  z-index: 1100;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 

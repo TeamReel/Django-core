@@ -8,7 +8,7 @@
 .wrapper {
   height: 57px;
   position: relative;
-  z-index: 500;
+  z-index: 1100;
 }
 
 .nav {
@@ -18,7 +18,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 500;
+  z-index: 1100;
   overflow: visible;
 }
 

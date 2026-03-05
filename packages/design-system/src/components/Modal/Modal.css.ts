@@ -15,6 +15,8 @@ export const modalOverlay = style({
   padding: themeVars.spacing['4'],
   '@media': {
     '(max-width: 639px)': {
+      top: '57px',
+      bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
       alignItems: 'flex-end',
       padding: 0,
     },
@@ -34,11 +36,32 @@ export const modalContent = style({
   '@media': {
     '(max-width: 639px)': {
       maxWidth: '100%',
-      maxHeight: '85vh',
+      maxHeight: '100%',
       borderRadius: '16px 16px 0 0',
       boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
     },
   },
+});
+
+/* Drag handle indicator for mobile bottom sheet */
+export const modalDragHandle = style({
+  display: 'none',
+  '@media': {
+    '(max-width: 639px)': {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '10px 0 2px',
+      cursor: 'grab',
+    },
+  },
+});
+
+export const modalDragBar = style({
+  width: '36px',
+  height: '4px',
+  borderRadius: '2px',
+  backgroundColor: themeVars.color.border.primary,
+  opacity: 0.6,
 });
 
 export const modalHeader = style({
@@ -87,9 +110,4 @@ export const modalFooter = style({
   gap: themeVars.spacing['3'],
   padding: themeVars.spacing['6'],
   borderTop: `1px solid ${themeVars.color.border.primary}`,
-  '@media': {
-    '(max-width: 639px)': {
-      paddingBottom: `calc(${themeVars.spacing['6']} + env(safe-area-inset-bottom, 0px))`,
-    },
-  },
 });

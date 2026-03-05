@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import FocusTrap from 'focus-trap-react';
-import { modalOverlay, modalContent, modalHeader, modalBody, modalFooter, modalCloseButton } from './Modal.css';
+import { modalOverlay, modalContent, modalHeader, modalBody, modalFooter, modalCloseButton, modalDragHandle, modalDragBar } from './Modal.css';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -68,6 +68,10 @@ export function Modal({
           aria-labelledby={title ? 'modal-title' : undefined}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Mobile drag handle indicator */}
+          <div className={modalDragHandle} aria-hidden="true">
+            <div className={modalDragBar} />
+          </div>
           {title && (
             <header className={modalHeader}>
               <h2 id="modal-title">{title}</h2>
