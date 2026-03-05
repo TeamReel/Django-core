@@ -63,3 +63,72 @@
   color: var(--app-primary);
   font-style: italic;
 }
+
+.headerActions {
+  /* Desktop: default flex-row from utility */
+}
+
+/* ────────────────── Mobile (≤ 768px) ────────────────── */
+@media (max-width: 768px) {
+  .pageContainer {
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 16px;
+  }
+
+  .notificationsContainer {
+    max-width: 100%;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .headerActions button {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  /* Notification cards — tighter for mobile */
+  .notificationCard {
+    border-left-width: 3px;
+    border-radius: 6px;
+  }
+
+  .notificationHeader {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .notificationTitle {
+    font-size: 0.9375rem;
+  }
+
+  .notificationBody {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+
+  .swipeReveal {
+    min-width: 80px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .readHint {
+    font-size: 0.6875rem;
+  }
+}
+
+/* ────────────────── Small phones (≤ 480px) ────────────────── */
+@media (max-width: 480px) {
+  .pageContainer {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 12px;
+  }
+}

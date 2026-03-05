@@ -224,7 +224,7 @@ export default function NotificationsPage() {
           subtitle="View all your system notifications and updates"
           className="mb-16"
           actions={
-            <div className="flex-row gap-8 flex-wrap">
+            <div className={`flex-row gap-8 flex-wrap ${styles.headerActions}`}>
               <Button
                 variant="primary"
                 size="sm"
