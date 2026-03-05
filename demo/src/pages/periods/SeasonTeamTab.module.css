@@ -41,26 +41,38 @@
   flex-wrap: wrap;
 }
 
+/* ── View toggle ── */
+.viewToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--app-muted-text, #6b7280);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+  border: none;
+  background: none;
+}
+
 /* ── Mobile card list (rendered only via React conditional) ─────────── */
 .mobileList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
 }
 
-/* ── Member card (base styles — hidden on desktop via .mobileList) ── */
+/* ── Member card — compact row ── */
 .memberCard {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--app-surface, #fff);
   color: var(--app-text, #1a1a1a);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -72,10 +84,9 @@
 }
 
 .memberCardCheckbox {
-  margin-top: 3px;
   flex-shrink: 0;
-  width: 18px !important;
-  height: 18px !important;
+  width: 16px !important;
+  height: 16px !important;
   appearance: auto;
   -webkit-appearance: checkbox;
 }
@@ -87,42 +98,59 @@
   min-width: 0;
 }
 
+/* Compact: name + meta on one line */
+.memberCardRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .memberCardName {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--app-text) !important;
   text-decoration: none !important;
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.memberCardName:hover {
+  text-decoration: underline !important;
 }
 
 .memberCardEmail {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--app-muted-text, #6b7280);
-  margin-top: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Expanded details */
+.memberCardDetails {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--app-border, #e5e7eb);
 }
 
 .memberCardBadges {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-top: 6px;
 }
 
 .memberCardActions {
   display: flex;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .memberCardActions button {
-  font-size: 12px;
-  padding: 4px 10px;
+  font-size: 11px;
+  padding: 3px 8px;
 }
 
 /* ── Mobile overrides ───────────────────────────────────────────────── */

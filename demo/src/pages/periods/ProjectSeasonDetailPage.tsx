@@ -223,7 +223,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   isTeamRoute={d.isTeamRoute}
                   apiBaseUrl={d.apiBaseUrl}
                   projectId={String(d.project?.id || '')}
-                  memberDetailHref={d.memberDetailHref}
+                  memberDetailHref={(mid: string) => {
+                    const base = d.memberDetailHref(mid);
+                    return base ? `${base}?from=squad` : base;
+                  }}
                   unassignMembershipsFromSeasonSquad={d.unassignMembershipsFromSeasonSquad}
                   setIsAddSquadMemberModalOpen={d.setIsAddSquadMemberModalOpen}
                   onMemberUpdated={() => d.setMembersReloadToken(t => t + 1)}
@@ -253,7 +256,10 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   org={d.org}
                   club={d.club}
                   apiBaseUrl={d.apiBaseUrl}
-                  memberDetailHref={d.memberDetailHref}
+                  memberDetailHref={(mid: string) => {
+                    const base = d.memberDetailHref(mid);
+                    return base ? `${base}?from=media` : base;
+                  }}
                   brandLogoUrl={d.brandLogoUrl}
                   brandSponsorUrl={d.brandSponsorUrl}
                   batchBrandKits={d.batchBrandKits}

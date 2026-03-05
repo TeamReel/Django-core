@@ -48,6 +48,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
   const [selectedEditMember, setSelectedEditMember] = useState<any | null>(null);
   const [editAccessRole, setEditAccessRole] = useState<'admin' | 'viewer'>('viewer');
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
 
   const accessRoleOptions = getAccessRoleOptions(isTeamRoute);
@@ -301,7 +302,8 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                       const membershipId = String(m.id || '').trim();
                       const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
                       const href = memberDetailHref(membershipId);
-                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ') || memberUser.email || '';
+                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ');
+                      const isExpanded = expandedCards.has(membershipId);
                       return (
                         <div
                           key={membershipId}
@@ -316,37 +318,53 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                             onChange={() => { if (membershipId) toggleSquadMembership(membershipId); }}
                           />
                           <div className={st.memberCardBody}>
-                            {href ? (
-                              <Link to={href} className={st.memberCardName}>{name}</Link>
-                            ) : (
-                              <span className={st.memberCardName}>{name}</span>
+                            <div className={st.memberCardRow}>
+                              {href ? (
+                                <Link to={href} className={st.memberCardName}>{name}</Link>
+                              ) : (
+                                <span className={st.memberCardName}>{name}</span>
+                              )}
+                              {meta && <span className={st.memberCardMeta}>{meta}</span>}
+                              <button
+                                type="button"
+                                className={st.viewToggle}
+                                onClick={() => setExpandedCards(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(membershipId)) next.delete(membershipId); else next.add(membershipId);
+                                  return next;
+                                })}
+                                aria-label={isExpanded ? 'Hide' : 'Details'}
+                              >{isExpanded ? '\u25B2' : '\u25BC'}</button>
+                            </div>
+                            {isExpanded && (
+                              <div className={st.memberCardDetails}>
+                                <div className={st.memberCardBadges}>
+                                  <Badge variant={role === 'admin' ? 'warning' : 'default'}>{rbacLabel}</Badge>
+                                  {functionalRoles.map((r: string) => (
+                                    <Badge key={r} variant="default">{r}</Badge>
+                                  ))}
+                                </div>
+                                <div className={st.memberCardActions}>
+                                  <button
+                                    type="button"
+                                    className="app-action-button action-btn action-btn-primary"
+                                    disabled={!membershipId || bulkSubmitting}
+                                    onClick={() => {
+                                      if (!membershipId) return;
+                                      setSelectedEditMember(m);
+                                      setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
+                                      setIsEditMemberModalOpen(true);
+                                    }}
+                                  >Edit</button>
+                                  <button
+                                    type="button"
+                                    className="app-action-button action-btn action-btn-danger"
+                                    disabled={!membershipId || bulkSubmitting}
+                                    onClick={async () => { if (membershipId) await unassignMembershipsFromSeasonSquad([membershipId]); }}
+                                  >Unassign</button>
+                                </div>
+                              </div>
                             )}
-                            {meta && <div className={st.memberCardMeta}>{meta}</div>}
-                            <div className={st.memberCardBadges}>
-                              <Badge variant={role === 'admin' ? 'warning' : 'default'}>{rbacLabel}</Badge>
-                              {functionalRoles.map((r: string) => (
-                                <Badge key={r} variant="default">{r}</Badge>
-                              ))}
-                            </div>
-                            <div className={st.memberCardActions}>
-                              <button
-                                type="button"
-                                className="app-action-button action-btn action-btn-primary"
-                                disabled={!membershipId || bulkSubmitting}
-                                onClick={() => {
-                                  if (!membershipId) return;
-                                  setSelectedEditMember(m);
-                                  setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
-                                  setIsEditMemberModalOpen(true);
-                                }}
-                              >Edit</button>
-                              <button
-                                type="button"
-                                className="app-action-button action-btn action-btn-danger"
-                                disabled={!membershipId || bulkSubmitting}
-                                onClick={async () => { if (membershipId) await unassignMembershipsFromSeasonSquad([membershipId]); }}
-                              >Unassign</button>
-                            </div>
                           </div>
                         </div>
                       );
@@ -447,22 +465,40 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                       const role = normalizeAccessRole(m.role || 'viewer');
                       const functionalRoles = getFunctionalRolesFromMembership(m);
                       const href = memberDetailHref(String(m.id || '').trim());
-                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ') || memberUser.email || '';
+                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ');
+                      const mid = String(m.id || '').trim();
+                      const isExpanded = expandedCards.has(mid);
                       return (
                         <div key={String(m.id || memberUser.email)} className={st.memberCard}>
                           <div className={st.memberCardBody}>
-                            {href ? (
-                              <Link to={href} className={st.memberCardName}>{name}</Link>
-                            ) : (
-                              <span className={st.memberCardName}>{name}</span>
-                            )}
-                            {meta && <div className={st.memberCardMeta}>{meta}</div>}
-                            <div className={st.memberCardBadges}>
-                              <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(m.role || 'viewer', isTeamRoute)}</Badge>
-                              {functionalRoles.map((r: string) => (
-                                <Badge key={r} variant="default">{r}</Badge>
-                              ))}
+                            <div className={st.memberCardRow}>
+                              {href ? (
+                                <Link to={href} className={st.memberCardName}>{name}</Link>
+                              ) : (
+                                <span className={st.memberCardName}>{name}</span>
+                              )}
+                              {meta && <span className={st.memberCardMeta}>{meta}</span>}
+                              <button
+                                type="button"
+                                className={st.viewToggle}
+                                onClick={() => setExpandedCards(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(mid)) next.delete(mid); else next.add(mid);
+                                  return next;
+                                })}
+                                aria-label={isExpanded ? 'Hide' : 'Details'}
+                              >{isExpanded ? '\u25B2' : '\u25BC'}</button>
                             </div>
+                            {isExpanded && (
+                              <div className={st.memberCardDetails}>
+                                <div className={st.memberCardBadges}>
+                                  <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(m.role || 'viewer', isTeamRoute)}</Badge>
+                                  {functionalRoles.map((r: string) => (
+                                    <Badge key={r} variant="default">{r}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

@@ -10,7 +10,7 @@
  * Route: /:orgSlug/:clubSlug/:teamSlug/seasons/:seasonKey/members/:competitionId
  */
 import React, { useState, useRef, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
@@ -32,6 +32,7 @@ import { MemberIdentityTab } from './MemberIdentityTab';
 import { useMemberDetailData } from './useMemberDetailData';
 import { useMemberMediaActions } from './useMemberMediaActions';
 import { MemberAiModal, type MemberAiModalHandle } from './MemberAiModal';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 
 const KIT_ROLE_META = [
@@ -43,6 +44,7 @@ const KIT_ROLE_META = [
 
 export default function ProjectSeasonMemberDetailPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // ── Core data ──
   const detail = useMemberDetailData();
@@ -56,6 +58,19 @@ export default function ProjectSeasonMemberDetailPage() {
     saving, saveError, save,
     breadcrumbs, isOwnProfile,
   } = detail;
+
+  // ── Back navigation: return to the season page on the referring tab ──
+  const referrerTab = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return params.get('from') || 'squad';
+  }, [location.search]);
+
+  const backPath = useMemo(() => {
+    if (!seasonKeyForLinks) return seasonsBasePath || '/';
+    return `${seasonsBasePath}/${seasonKeyForLinks}?tab=${referrerTab}`;
+  }, [seasonsBasePath, seasonKeyForLinks, referrerTab]);
+
+  useSetBackNavigation({ label: season?.name || 'Seizoen', path: backPath });
 
   // ── Media state + actions ──
   const media = useMemberMediaActions({

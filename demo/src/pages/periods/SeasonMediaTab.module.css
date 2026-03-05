@@ -54,28 +54,40 @@
   background: rgba(59, 130, 246, 0.06);
 }
 
+/* ── View toggle ── */
+.viewToggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--app-muted-text, #6b7280);
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
+  border: none;
+  background: none;
+}
+
 /* ── Mobile card list (rendered only via React conditional) ─────────── */
 .mobileList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
 }
 
-/* ── Media card (base styles — hidden on desktop via .mobileList) ── */
+/* ── Media card — compact row ── */
 .mediaCard {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--app-surface, #fff);
   color: var(--app-text, #1a1a1a);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
   width: 100%;
-  max-width: 100%; /* Force constraint */
+  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -85,10 +97,9 @@
 }
 
 .mediaCardCheckbox {
-  margin-top: 3px;
   flex-shrink: 0;
-  width: 18px !important;
-  height: 18px !important;
+  width: 16px !important;
+  height: 16px !important;
   appearance: auto;
   -webkit-appearance: checkbox;
 }
@@ -104,12 +115,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .mediaCardName {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--app-text) !important;
   text-decoration: none !important;
   overflow: hidden;
@@ -120,35 +131,35 @@
 }
 
 .mediaCardName:hover {
-  text-decoration: underline;
+  text-decoration: underline !important;
 }
 
 .mediaCardSlots {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 2px 4px;
-  margin-top: 8px;
+  gap: 1px 3px;
+  margin-top: 4px;
 }
 
 .mediaCardSlot {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
-  font-size: 10px;
+  gap: 0px;
+  font-size: 9px;
   color: var(--app-muted-text, #6b7280) !important;
   text-decoration: none !important;
 }
 
 .mediaCardSlotIcon {
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1;
 }
 
 .mediaCardSlotLabel {
-  font-size: 9px;
+  font-size: 8px;
   text-align: center;
-  line-height: 1.1;
+  line-height: 1;
   letter-spacing: -0.01em;
 }
 
