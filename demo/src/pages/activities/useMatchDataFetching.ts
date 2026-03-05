@@ -67,11 +67,33 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
         if (isUuidComp) {
           competitionUuid = effectiveCompetitionIdVal;
         } else {
+          // Try local provider cache first
           const found = providerCompetitions.find((p: any) => periodPathKey(p) === effectiveCompetitionIdVal);
           competitionUuid = String(found?.id || '').trim();
+
+          // Fallback: search by slug via API when provider hasn't loaded yet
+          if (!competitionUuid && resolvedSeasonId) {
+            try {
+              const searchRes = await fetch(
+                `${apiBaseUrl}/api/v1/periods/?parent=${encodeURIComponent(resolvedSeasonId)}&slug=${encodeURIComponent(effectiveCompetitionIdVal)}`,
+                { credentials: 'include' },
+              );
+              if (searchRes.ok) {
+                const searchData = await searchRes.json();
+                const results = Array.isArray(searchData) ? searchData : (searchData?.results || searchData?.data || []);
+                if (results.length > 0) {
+                  competitionUuid = String(results[0].id || '').trim();
+                }
+              }
+            } catch { /* ignore — will fall through to error */ }
+          }
         }
 
-        if (!competitionUuid) throw new Error('Competition not found');
+        if (!competitionUuid) {
+          // If provider competitions are still loading, don't show an error yet
+          if (providerCompetitions.length === 0) return;
+          throw new Error('Competition not found');
+        }
         setResolvedCompetitionUuid(competitionUuid);
 
         const [competitionRes, matchRes] = await Promise.all([
