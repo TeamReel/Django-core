@@ -9,7 +9,7 @@ import {
   ChevronLeft, ChevronRight, X, Save,
 } from 'lucide-react';
 import { Badge, Button, Card } from '@django-core/design-system';
-import MobileTabBar from '../../components/MobileTabBar';
+
 import { unwrapEnvelope as unwrap } from '../../types/season';
 import { getCsrfToken } from '../../utils/csrf';
 import { useMemberMediaActions } from './useMemberMediaActions';
@@ -251,8 +251,20 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
         </div>
       </div>
 
-      {/* ── Tab bar ── */}
-      <MobileTabBar tabs={PANEL_TABS} activeTab={activeTab} />
+      {/* ── Tab bar (local, no URL navigation) ── */}
+      <div className={styles.tabBar}>
+        {PANEL_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            className={styles.tabBtn}
+            data-active={activeTab === tab.id ? 'true' : undefined}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
       {/* ── Content ── */}
       <div className={styles.panelContent}>

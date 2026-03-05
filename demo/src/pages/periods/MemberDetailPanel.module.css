@@ -143,6 +143,42 @@
   color: var(--app-text);
 }
 
+/* ── Tab bar ── */
+.tabBar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--app-border, #333);
+  background: var(--app-surface, #1e1e30);
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tabBtn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: none;
+  background: transparent;
+  color: var(--app-muted-text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabBtn:hover {
+  background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
+}
+
+.tabBtn[data-active='true'] {
+  background: var(--color-blue-500-alpha-15, rgba(59, 130, 246, 0.15));
+  color: var(--color-blue-500, #3b82f6);
+}
+
 /* ── Scrollable content area ── */
 .panelContent {
   flex: 1;
