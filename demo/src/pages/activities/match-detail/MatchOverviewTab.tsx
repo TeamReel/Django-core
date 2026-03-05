@@ -95,52 +95,46 @@ export default function MatchOverviewTab({
 
   return (
     <div className="flex-col gap-12">
-      {/* ── Scoreboard (compact) ──────────────────────────────────────── */}
-      <div
-        className="rounded-12 border bg-surface px-12 py-16"
-      >
-        <div className="flex-center gap-12">
+      {/* ── Hero Scoreboard ───────────────────────────────────────────── */}
+      <div className={styles.heroCard}>
+        <div className={styles.heroTeams}>
           {/* Home */}
-          <div className="flex-col gap-4 flex-1 items-center" style={{ minWidth: 0 }}>
-            <TeamLogo url={homeLogoUrl} fallback="🏠" size={44} />
-            <span className={`fs-13 fw-700 text-center leading-tight ${styles.teamName}`}>
+          <div className={styles.heroTeam}>
+            <TeamLogo url={homeLogoUrl} fallback="🏠" size={56} />
+            <span className={styles.heroTeamName}>
               {homeTeamName}
             </span>
           </div>
 
           {/* Score block */}
-          <div className={`text-center ${styles.scoreBlock}`}>
-            <div className={`fw-800 ${styles.scoreDisplay}`}>{scoreDisplay}</div>
+          <div className={styles.heroScore}>
+            <div className={styles.heroScoreValue}>{scoreDisplay}</div>
             <Badge
               variant={status === 'finished' ? 'success' : status === 'live' ? 'error' : 'default'}
               size="sm"
-              className={styles.statusBadge}
             >
               {status.toUpperCase()}
             </Badge>
-            <div className="fs-12 text-muted mt-4">
-              {date
-                ? date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) +
-                  ' • ' +
-                  date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
-                : '—'}
-            </div>
           </div>
 
           {/* Away */}
-          <div className="flex-col gap-4 flex-1 items-center" style={{ minWidth: 0 }}>
-            <TeamLogo url={awayLogoUrl} fallback="⚽" size={44} />
-            <span className={`fs-13 fw-700 text-center leading-tight ${styles.teamName}`}>
+          <div className={styles.heroTeam}>
+            <TeamLogo url={awayLogoUrl} fallback="⚽" size={56} />
+            <span className={styles.heroTeamName}>
               {awayTeamName}
             </span>
           </div>
         </div>
 
-        {/* Venue + competition */}
-        <div
-          className="text-center border-top mt-12 fs-12 text-muted pt-8"
-        >
-          📍 {match.location || match.metadata?.venue || 'Onbekend'} • 🏆{' '}
+        <div className={styles.heroMeta}>
+          {date
+            ? date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' }) +
+              ' • ' +
+              date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            : '—'}
+          {' · '}
+          {match.location || match.metadata?.venue || 'Onbekend'}
+          {' · '}
           {competition?.name || match.period?.name || 'Competitie'}
         </div>
       </div>
@@ -200,10 +194,20 @@ export default function MatchOverviewTab({
         const category = CONTENT_TYPES[categoryKey];
         if (!category) return null;
 
+        const doneCount = category.items.filter(
+          (i) => getLatestMediaForSubtype(i.subtype) != null
+        ).length;
+        const total = category.items.length;
+        const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
         return (
           <div key={categoryKey}>
-            <div className={`status-label ${styles.categoryLabel}`}>
-              {category.label}
+            <div className={styles.categoryHeader}>
+              <span className={styles.categoryLabel}>{category.label}</span>
+              <span className={styles.categoryCount}>{doneCount}/{total}</span>
+            </div>
+            <div className={styles.progressTrack}>
+              <div className={styles.progressFill} style={{ width: `${pct}%` }} />
             </div>
             <div className="border overflow-hidden bg-surface rounded-8">
               {category.items.map((item, idx) => {
@@ -251,8 +255,8 @@ export default function MatchOverviewTab({
       {/* ── Match Events (compact) ────────────────────────────────────── */}
       {matchEvents.length > 0 && (
         <div>
-          <div className={`status-label ${styles.categoryLabel}`}>
-            Wedstrijdverloop
+          <div className={styles.categoryHeader}>
+            <span className={styles.categoryLabel}>Wedstrijdverloop</span>
           </div>
           <div className="border overflow-hidden bg-surface rounded-8">
             {matchEvents.map((evt, idx) => {

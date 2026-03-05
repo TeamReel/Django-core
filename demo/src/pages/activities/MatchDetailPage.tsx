@@ -1,6 +1,7 @@
+import { useState, useRef, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import {
-  Eye, Pencil, Trash2, Check, ArrowLeft,
+  Eye, Pencil, Trash2, Check, ArrowLeft, MoreHorizontal,
 } from 'lucide-react';
 import { MatchOverviewTab, MatchContentTab, MatchLineupTab } from './match-detail';
 import MatchDetailModal from '../identity/MatchDetailModal';
@@ -21,6 +22,18 @@ export default function HierarchyMatchDetailPage() {
   const competitionLabel = d.competition?.name || 'Competitie';
   const backPath = d.competitionBasePath || d.seasonsBasePath || '/';
   useSetBackNavigation({ label: competitionLabel, path: backPath });
+
+  /* ---- overflow menu ---- */
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [overflowOpen]);
 
   /* ---- loading / error / redirect guards ---- */
 
@@ -91,11 +104,6 @@ export default function HierarchyMatchDetailPage() {
               );
             })()}
 
-            {/* View */}
-            <button type="button" className={styles.iconBtn} onClick={() => d.setIsMatchDetailModalOpen(true)} title="Bekijken">
-              <Eye size={16} />
-            </button>
-
             {/* Edit (admin) */}
             {!d.isPlayer && (
               <button type="button" className={styles.iconBtn} onClick={() => d.setIsMatchEditModalOpen(true)} title="Bewerken">
@@ -103,12 +111,24 @@ export default function HierarchyMatchDetailPage() {
               </button>
             )}
 
-            {/* Delete (admin) */}
-            {!d.isPlayer && (
-              <button type="button" className={styles.iconBtn} onClick={d.handleDeleteMatch} title="Verwijderen">
-                <Trash2 size={16} />
+            {/* Overflow menu — View + Delete */}
+            <div className={styles.overflowWrap} ref={overflowRef}>
+              <button type="button" className={styles.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+                <MoreHorizontal size={16} />
               </button>
-            )}
+              {overflowOpen && (
+                <div className={styles.overflowMenu}>
+                  <button type="button" onClick={() => { d.setIsMatchDetailModalOpen(true); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Bekijken
+                  </button>
+                  {!d.isPlayer && (
+                    <button type="button" className={styles.overflowDanger} onClick={() => { d.handleDeleteMatch(); setOverflowOpen(false); }}>
+                      <Trash2 size={14} /> Verwijderen
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
 
           </div>
