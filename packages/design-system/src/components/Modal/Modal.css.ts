@@ -19,6 +19,7 @@ export const modalOverlay = style({
       bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
       alignItems: 'flex-end',
       padding: 0,
+      overflow: 'hidden',
     },
   },
 });

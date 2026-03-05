@@ -106,7 +106,7 @@ export default function MainLayout() {
         width: '100%'
       }}>
         {/* TopNavbar */}
-        <div style={{ flexShrink: 0, zIndex: 100 }}>
+        <div style={{ flexShrink: 0 }}>
           <TopNavbar
             isSidebarOpen={sidebarOpen}
             onToggleSidebar={toggleSidebar}
