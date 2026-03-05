@@ -62,6 +62,100 @@
   margin-top: 4px;
 }
 
+/* ── Active match card ── */
+.cardActive {
+  border-color: rgba(234, 179, 8, 0.5) !important;
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.15);
+}
+
+.activeStar {
+  display: inline;
+  vertical-align: -1px;
+  margin-right: 4px;
+  color: #eab308;
+  fill: #eab308;
+}
+
+/* ── Clickable content row ── */
+.statusRowClickable {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.statusRowClickable:active {
+  background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
+}
+
+.contentChevron {
+  display: inline-block;
+  vertical-align: -1px;
+  margin-left: 4px;
+  color: var(--app-muted-text);
+  transition: transform 0.15s ease;
+}
+
+.contentChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ── Content breakdown (expandable) ── */
+.contentBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 10px 4px;
+  border-radius: 8px;
+  background: var(--app-surface-2, rgba(255, 255, 255, 0.02));
+  animation: slideDown 0.15s ease;
+}
+
+.contentPhase {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contentPhaseLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--app-muted-text);
+  padding: 2px 0;
+}
+
+.contentPhaseItems {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.contentItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  border-radius: 4px;
+}
+
+.contentItemIcon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.contentItemLabel {
+  font-size: 11px;
+  color: var(--app-text);
+}
+
+/* ── Active button styling ── */
+.actionBtnActiveOn {
+  border-color: rgba(234, 179, 8, 0.5) !important;
+  background: rgba(234, 179, 8, 0.12) !important;
+  color: #eab308 !important;
+}
+
 /* ── Match card ── */
 .card {
   border: 1px solid var(--app-border, #333);

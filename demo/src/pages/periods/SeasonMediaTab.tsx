@@ -552,6 +552,10 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                 const isBatchSelected = batchSelectedMemberIds.has(membershipId);
                 const isExpanded = expandedCards.has(membershipId);
 
+                // Extract profile photo URL
+                const tr = m.metadata?.teamreel_assets || {};
+                const profileUrl = tr?.media?.profile?.url || tr?.kit?.profile_photo_url || memberUser.avatar_url || null;
+
                 return (
                   <div
                     key={`mobile-media-${membershipId}`}
@@ -571,6 +575,14 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         });
                       }}
                     />
+                    {/* Profile avatar */}
+                    {profileUrl ? (
+                      <img src={profileUrl} alt="" className={styles.mediaCardAvatar} />
+                    ) : (
+                      <div className={styles.mediaCardAvatarEmpty}>
+                        {name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div className={styles.mediaCardBody}>
                       <div className={styles.mediaCardTop}>
                         {href ? (

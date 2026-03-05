@@ -245,6 +245,31 @@
   -webkit-appearance: checkbox;
 }
 
+/* ── Profile avatar in media card ── */
+.mediaCardAvatar {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
+}
+
+.mediaCardAvatarEmpty {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--app-surface-2, rgba(255, 255, 255, 0.08));
+  color: var(--app-muted-text, #888);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
 .mediaCardBody {
   flex: 1;
   min-width: 0;

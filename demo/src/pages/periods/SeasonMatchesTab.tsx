@@ -1,19 +1,20 @@
 /**
  * SeasonMatchesTab — premium expandable card layout for matches.
  *
- * Shows matches sorted by: upcoming first, then played (most recent).
+ * Sorted newest-first with the active match pinned at top.
  * Each card: date badge + title + mini status indicators + chevron.
- * Expanded: lineup status, content progress (lazy-loaded), actions.
+ * Expanded: lineup status, content breakdown (lazy-loaded), actions.
  */
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ChevronRight, Plus, Users, Clapperboard, CalendarDays,
-  MapPin, CheckCircle2, Circle, Loader2, Zap, Eye,
+  ChevronRight, ChevronDown, Plus, Users, Clapperboard, CalendarDays,
+  MapPin, CheckCircle2, Circle, Loader2, Zap, Eye, Star,
 } from 'lucide-react';
 import { Card } from '@django-core/design-system';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../../components/matchWizardTypes';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import styles from './SeasonMatchesTab.module.css';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -83,33 +84,13 @@ function getMatchStatus(match: any): 'upcoming' | 'live' | 'finished' {
   return 'upcoming';
 }
 
-/** Sort: upcoming first (ascending by date), then finished (descending by date). */
-function sortMatches(matches: any[]): { upcoming: any[]; played: any[] } {
-  const upcoming: any[] = [];
-  const played: any[] = [];
-
-  for (const m of matches) {
-    const status = getMatchStatus(m);
-    if (status === 'finished') {
-      played.push(m);
-    } else {
-      upcoming.push(m);
-    }
-  }
-
-  upcoming.sort((a, b) => {
-    const da = a.start_time ? new Date(a.start_time).getTime() : Infinity;
-    const db = b.start_time ? new Date(b.start_time).getTime() : Infinity;
-    return da - db;
-  });
-
-  played.sort((a, b) => {
+/** Sort all matches newest-first by date. */
+function sortMatchesByDate(matches: any[]): any[] {
+  return [...matches].sort((a, b) => {
     const da = a.start_time ? new Date(a.start_time).getTime() : 0;
     const db = b.start_time ? new Date(b.start_time).getTime() : 0;
     return db - da;
   });
-
-  return { upcoming, played };
 }
 
 // ── Content detail cache (lazy-loaded) ───────────────────────────────────────
@@ -118,6 +99,10 @@ interface ContentDetail {
   mediaCount: number;
   generatingCount: number;
   totalChecked: number;
+  /** Subtypes that have generated media. */
+  mediaSubtypes: string[];
+  /** Subtypes currently generating. */
+  generatingSubtypes: string[];
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
@@ -136,7 +121,18 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [contentCache, setContentCache] = useState<Record<string, ContentDetail>>({});
   const [loadingContent, setLoadingContent] = useState<Set<string>>(new Set());
+  const [activeMatchId, setActiveMatchId] = useState<string | null>(null);
   const fetchedRef = useRef<Set<string>>(new Set());
+
+  // Fetch active match from backend on mount
+  useEffect(() => {
+    getActiveContext()
+      .then((ctx) => {
+        const mid = ctx?.match?.id;
+        if (mid) setActiveMatchId(String(mid));
+      })
+      .catch(() => {/* ignore */});
+  }, []);
 
   const toggleExpanded = useCallback((id: string) => {
     setExpandedIds((prev) => {
@@ -170,6 +166,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
 
       let mediaCount = 0;
       let generatingCount = 0;
+      const mediaSubtypes: string[] = [];
+      const generatingSubtypes: string[] = [];
 
       if (mediaRes.ok) {
         const data = await mediaRes.json();
@@ -184,19 +182,24 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
           subtypes.add(normalized);
         }
         mediaCount = subtypes.size;
+        mediaSubtypes.push(...subtypes);
       }
 
       if (contentRes.ok) {
         const data = await contentRes.json();
         const items = data?.data?.results || data?.results || data?.data || [];
         for (const item of (Array.isArray(items) ? items : [])) {
-          if (['queued', 'generating'].includes(item.status)) generatingCount++;
+          if (['queued', 'generating'].includes(item.status)) {
+            generatingCount++;
+            const sub = item.template_subtype || item.subtype || '';
+            if (sub && !generatingSubtypes.includes(sub)) generatingSubtypes.push(sub);
+          }
         }
       }
 
       setContentCache((prev) => ({
         ...prev,
-        [matchId]: { mediaCount, generatingCount, totalChecked: CONTENT_TOTAL },
+        [matchId]: { mediaCount, generatingCount, totalChecked: CONTENT_TOTAL, mediaSubtypes, generatingSubtypes },
       }));
     } catch (err) {
       console.error('[MatchContent] Error loading content status:', err);
@@ -209,8 +212,26 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
     }
   }, [apiBaseUrl]);
 
-  // Sort matches
-  const { upcoming, played } = sortMatches(matches);
+  // Sort matches: newest first, active match pinned at top
+  const sorted = sortMatchesByDate(matches);
+  const activeMatch = activeMatchId ? sorted.find((m) => String(m.id) === activeMatchId) : null;
+  const restMatches = activeMatch ? sorted.filter((m) => String(m.id) !== activeMatchId) : sorted;
+
+  /** Set a match as the active match (persisted to backend). */
+  const handleSetActive = useCallback(async (matchId: string) => {
+    const newId = activeMatchId === matchId ? null : matchId;
+    setActiveMatchId(newId);
+    try {
+      if (newId) {
+        await setActiveContext('match', newId);
+      } else {
+        await setActiveContext('clear');
+      }
+    } catch {
+      // Revert on failure
+      setActiveMatchId(activeMatchId);
+    }
+  }, [activeMatchId]);
 
   // ── Render ───────────────────────────────────────────────────────────
 
@@ -265,37 +286,37 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
           </div>
         ) : (
           <>
-            {/* Upcoming section */}
-            {upcoming.length > 0 && (
+            {/* Active match pinned at top */}
+            {activeMatch && (
               <>
                 <div className={styles.sectionLabel}>
-                  Aankomend ({upcoming.length})
+                  Actieve match
                 </div>
-                {upcoming.map((match) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    expanded={expandedIds.has(String(match.id))}
-                    onToggle={() => {
-                      toggleExpanded(String(match.id));
-                      fetchContentStatus(String(match.id));
-                    }}
-                    contentDetail={contentCache[String(match.id)]}
-                    contentLoading={loadingContent.has(String(match.id))}
-                    matchDisplayTitle={matchDisplayTitle}
-                    matchPath={getMatchPath(match, isTeamRoute, seasonsBasePath, seasonPathKey)}
-                  />
-                ))}
+                <MatchCard
+                  key={`active-${activeMatch.id}`}
+                  match={activeMatch}
+                  expanded={expandedIds.has(String(activeMatch.id))}
+                  onToggle={() => {
+                    toggleExpanded(String(activeMatch.id));
+                    fetchContentStatus(String(activeMatch.id));
+                  }}
+                  contentDetail={contentCache[String(activeMatch.id)]}
+                  contentLoading={loadingContent.has(String(activeMatch.id))}
+                  matchDisplayTitle={matchDisplayTitle}
+                  matchPath={getMatchPath(activeMatch, isTeamRoute, seasonsBasePath, seasonPathKey)}
+                  isActive={true}
+                  onSetActive={() => handleSetActive(String(activeMatch.id))}
+                />
               </>
             )}
 
-            {/* Played section */}
-            {played.length > 0 && (
+            {/* All other matches — newest first */}
+            {restMatches.length > 0 && (
               <>
                 <div className={styles.sectionLabel}>
-                  Gespeeld ({played.length})
+                  {activeMatch ? 'Overige matches' : 'Alle matches'} ({restMatches.length})
                 </div>
-                {played.map((match) => (
+                {restMatches.map((match) => (
                   <MatchCard
                     key={match.id}
                     match={match}
@@ -308,6 +329,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                     contentLoading={loadingContent.has(String(match.id))}
                     matchDisplayTitle={matchDisplayTitle}
                     matchPath={getMatchPath(match, isTeamRoute, seasonsBasePath, seasonPathKey)}
+                    isActive={false}
+                    onSetActive={() => handleSetActive(String(match.id))}
                   />
                 ))}
               </>
@@ -329,11 +352,22 @@ interface MatchCardProps {
   contentLoading: boolean;
   matchDisplayTitle: (m: any) => string;
   matchPath: string;
+  isActive: boolean;
+  onSetActive: () => void;
 }
+
+/** Content phases for breakdown display. */
+const CONTENT_PHASES: { key: string; label: string; items: typeof CONTENT_TYPES.pre }[] = [
+  { key: 'pre', label: 'Pre-match', items: CONTENT_TYPES.pre },
+  { key: 'during', label: 'Tijdens', items: CONTENT_TYPES.during },
+  { key: 'post', label: 'Na afloop', items: CONTENT_TYPES.post },
+];
 
 const MatchCard: React.FC<MatchCardProps> = ({
   match, expanded, onToggle, contentDetail, contentLoading, matchDisplayTitle, matchPath,
+  isActive, onSetActive,
 }) => {
+  const [contentExpanded, setContentExpanded] = useState(false);
   const date = match.start_time ? new Date(match.start_time) : null;
   const lineup = getLineupInfo(match);
   const score = getScoreDisplay(match);
@@ -348,7 +382,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   if (competition) metaParts.push(competition);
 
   return (
-    <div className={styles.card} data-expanded={expanded}>
+    <div className={`${styles.card} ${isActive ? styles.cardActive : ''}`} data-expanded={expanded}>
       {/* Header row — always visible */}
       <div className={styles.cardHeader} onClick={onToggle}>
         {/* Date badge */}
@@ -367,7 +401,10 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
         {/* Title + meta */}
         <div className={styles.cardInfo}>
-          <div className={styles.matchTitle}>{matchDisplayTitle(match)}</div>
+          <div className={styles.matchTitle}>
+            {isActive && <Star size={12} className={styles.activeStar} />}
+            {matchDisplayTitle(match)}
+          </div>
           <div className={styles.matchMeta}>{metaParts.join(' · ') || '—'}</div>
         </div>
 
@@ -404,8 +441,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
             </div>
           </div>
 
-          {/* Content status (lazy loaded) */}
-          <div className={styles.statusRow}>
+          {/* Content status (lazy loaded) — clickable to expand breakdown */}
+          <div
+            className={`${styles.statusRow} ${styles.statusRowClickable}`}
+            onClick={() => contentDetail && setContentExpanded((v) => !v)}
+          >
             {contentLoading ? (
               <>
                 <div className={styles.statusIconBlue}>
@@ -422,7 +462,13 @@ const MatchCard: React.FC<MatchCardProps> = ({
                   <Clapperboard size={14} />
                 </div>
                 <div className={styles.statusInfo}>
-                  <div className={styles.statusLabel}>Content</div>
+                  <div className={styles.statusLabel}>
+                    Content
+                    <ChevronDown
+                      size={12}
+                      className={`${styles.contentChevron} ${contentExpanded ? styles.contentChevronOpen : ''}`}
+                    />
+                  </div>
                   <div className={styles.statusDetail}>
                     {contentDetail.mediaCount} / {contentDetail.totalChecked} gegenereerd
                     {contentDetail.generatingCount > 0 && ` · ${contentDetail.generatingCount} bezig`}
@@ -448,6 +494,37 @@ const MatchCard: React.FC<MatchCardProps> = ({
             )}
           </div>
 
+          {/* Expanded content breakdown */}
+          {contentExpanded && contentDetail && (
+            <div className={styles.contentBreakdown}>
+              {CONTENT_PHASES.map((phase) => (
+                <div key={phase.key} className={styles.contentPhase}>
+                  <div className={styles.contentPhaseLabel}>{phase.label}</div>
+                  <div className={styles.contentPhaseItems}>
+                    {phase.items.map((item) => {
+                      const hasMedia = contentDetail.mediaSubtypes.includes(item.key);
+                      const isGenerating = contentDetail.generatingSubtypes.includes(item.subtype);
+                      return (
+                        <div key={item.key} className={styles.contentItem}>
+                          <span className={styles.contentItemIcon}>
+                            {hasMedia ? (
+                              <CheckCircle2 size={12} color="#22c55e" />
+                            ) : isGenerating ? (
+                              <Loader2 size={12} className={styles.spin} color="#3b82f6" />
+                            ) : (
+                              <Circle size={12} color="var(--app-muted-text, #888)" />
+                            )}
+                          </span>
+                          <span className={styles.contentItemLabel}>{item.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Match info */}
           {(matchLocation || competition) && (
             <div className={styles.statusRow}>
@@ -465,6 +542,17 @@ const MatchCard: React.FC<MatchCardProps> = ({
 
           {/* Actions */}
           <div className={styles.actions}>
+            <button
+              type="button"
+              className={`${styles.actionBtn} ${isActive ? styles.actionBtnActiveOn : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSetActive();
+              }}
+              title={isActive ? 'Niet meer actief' : 'Markeer als actief'}
+            >
+              <Star size={14} /> {isActive ? 'Actief' : 'Actief'}
+            </button>
             <Link to={matchPath} className={styles.actionBtn}>
               <Eye size={14} /> Bekijk
             </Link>
