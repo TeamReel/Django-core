@@ -30,6 +30,12 @@ export const bottomSheetOverlay = style({
   backgroundColor: 'rgba(0, 0, 0, 0.5)',
   zIndex: 1000,
   animation: `${fadeIn} 200ms ease-out`,
+  '@media': {
+    '(max-width: 639px)': {
+      top: '57px',
+      bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+    },
+  },
 });
 
 export const bottomSheetOverlayClosing = style({
@@ -54,6 +60,19 @@ export const bottomSheetContainer = style({
   paddingBottom: 'env(safe-area-inset-bottom, 0px)',
   // Touch action for gesture support
   touchAction: 'none',
+  '@media': {
+    '(max-width: 639px)': {
+      /* Sit between TopNavbar (57px) and MobileBottomNav (64px + safe-area) */
+      top: '57px',
+      bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+      maxHeight: 'none',
+      borderTopLeftRadius: '16px',
+      borderTopRightRadius: '16px',
+      borderBottomLeftRadius: 0,
+      borderBottomRightRadius: 0,
+      paddingBottom: 0,
+    },
+  },
 });
 
 export const bottomSheetContainerClosing = style({

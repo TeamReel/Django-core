@@ -182,7 +182,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             <Alert variant="error">{profileError}</Alert>
           </div>
         )}
-        <div className="grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+        <div className="flex-col gap-12" style={{ display: 'flex', flexDirection: 'column' }}>
           <Input
             label="First name"
             value={profileFirstName}

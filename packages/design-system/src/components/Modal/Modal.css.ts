@@ -37,8 +37,8 @@ export const modalContent = style({
   '@media': {
     '(max-width: 639px)': {
       maxWidth: '100%',
-      /* Constrained to overlay height so header never scrolls out of view */
-      maxHeight: 'calc(100vh - 57px - 64px - env(safe-area-inset-bottom, 0px))',
+      /* 100% of overlay — overlay is already top:57 / bottom:64+safe-area */
+      maxHeight: '100%',
       borderRadius: '16px 16px 0 0',
       boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
     },
@@ -102,9 +102,11 @@ export const modalCloseButton = style({
 
 export const modalBody = style({
   padding: themeVars.spacing['6'],
-  overflow: 'auto',
+  overflowY: 'auto',
+  overflowX: 'hidden',
   flex: 1,
   minHeight: 0,
+  WebkitOverflowScrolling: 'touch',
 });
 
 export const modalFooter = style({
