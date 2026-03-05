@@ -1,9 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import {
-  Eye, Pencil, Trash2, Sparkles, Receipt, Check, ArrowLeft,
+  Eye, Pencil, Trash2, Check, ArrowLeft,
 } from 'lucide-react';
-import { MatchOverviewTab, MatchContentTab, MatchTransactionsTab, MatchLineupTab } from './match-detail';
-import CreateTransactionModal from '../../components/transactions/CreateTransactionModal';
+import { MatchOverviewTab, MatchContentTab, MatchLineupTab } from './match-detail';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import ContentGenerationModal from '../identity/ContentGenerationModal';
@@ -11,11 +10,17 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MobileTabBar from '../../components/MobileTabBar';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { useMatchDetailData } from './useMatchDetailData';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { ContentPreviewModal, SavedAssetPreviewModal, ToastNotifications } from './MatchDetailModals';
 import styles from './MatchDetailPage.module.css';
 
 export default function HierarchyMatchDetailPage() {
   const d = useMatchDetailData();
+
+  /* ---- back navigation ---- */
+  const competitionLabel = d.competition?.name || 'Competitie';
+  const backPath = d.competitionBasePath || d.seasonsBasePath || '/';
+  useSetBackNavigation({ label: competitionLabel, path: backPath });
 
   /* ---- loading / error / redirect guards ---- */
 
@@ -105,39 +110,9 @@ export default function HierarchyMatchDetailPage() {
               </button>
             )}
 
-            {/* Generate Content (admin) */}
-            {!d.isPlayer && (
-              <button type="button" className={styles.iconBtn} onClick={() => d.openContentModal()} title="Content genereren (AI)">
-                <Sparkles size={16} />
-              </button>
-            )}
 
-            {/* Create transaction (admin) */}
-            {!d.isPlayer && (
-              <button type="button" className={styles.iconBtn} onClick={() => d.setIsCreateTxnModalOpen(true)} title="Transactie aanmaken">
-                <Receipt size={16} />
-              </button>
-            )}
           </div>
         </div>
-
-        <CreateTransactionModal
-          isOpen={d.isCreateTxnModalOpen}
-          onClose={() => d.setIsCreateTxnModalOpen(false)}
-          onCreated={() => {
-            d.navigateToTab('transactions');
-          }}
-          title="Create match transaction"
-          scope="match"
-          organizationId={String(d.org?.id || '').trim()}
-          defaultProjectId={match?.project?.id != null ? String(match.project.id) : d.project?.id != null ? String(d.project.id) : null}
-          seasonId={String(d.resolvedSeasonId || '').trim() || null}
-          periodId={String(match?.period?.id || '').trim() || null}
-          activityId={String(match?.id || '').trim() || null}
-          currentUserId={Number((d.user as any)?.id)}
-          chargedUserId={Number((d.user as any)?.id)}
-          walletOptions={d.matchWalletOptions}
-        />
 
         <MatchDetailModal
           opened={d.isMatchDetailModalOpen}
@@ -188,7 +163,7 @@ export default function HierarchyMatchDetailPage() {
             { id: 'overview', label: 'Overview' },
             ...(!d.isPlayer && !d.isSupporter ? [{ id: 'content', label: 'Content' }] : []),
             ...(!d.isSupporter ? [{ id: 'lineup', label: 'Lineup' }] : []),
-            ...(!d.isPlayer && !d.isSupporter ? [{ id: 'transactions', label: 'Transactions' }] : []),
+
           ]}
           activeTab={d.activeTab}
         />
@@ -256,14 +231,6 @@ export default function HierarchyMatchDetailPage() {
               setSavedAssetPreview={d.setSavedAssetPreview}
               handleDeleteMediaItem={d.handleDeleteMediaItem}
               handleRestoreMediaItem={d.handleRestoreMediaItem}
-            />
-          )}
-
-          {d.activeTab === 'transactions' && (
-            <MatchTransactionsTab
-              org={d.org as any}
-              match={match}
-              project={d.project}
             />
           )}
 
