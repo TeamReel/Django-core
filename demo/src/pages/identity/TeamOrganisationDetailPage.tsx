@@ -10,6 +10,7 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
+import { useUserRole } from '../../components/PermissionGuards';
 
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import MobileTabBar from '../../components/MobileTabBar';
@@ -30,6 +31,7 @@ export default function TeamOrganisationDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user: authUser } = useAuth();
+  const { isAdmin: isGlobalAdmin } = useUserRole();
 
   const {
     org, club, team, setTeam, loading, error,
@@ -91,19 +93,19 @@ export default function TeamOrganisationDetailPage() {
   /* ── Derive edit mode from user's team membership role ── */
   const currentUserId = String((authUser as any)?.id || '').trim();
   const userEditMode: 'all' | 'own' | 'none' = useMemo(() => {
+    // System / Org / Club admins always get full edit access
+    if (isGlobalAdmin) return 'all';
+
     if (!currentUserId || !tabData.fullMembers?.length) return 'none';
     const myMembership = tabData.fullMembers.find(
       (m: any) => String(m?.user?.id || '').trim() === currentUserId,
     );
-    if (!myMembership) {
-      // Not a team member — could be club/land admin (check global role)
-      return isPlayer ? 'none' : 'all';
-    }
+    if (!myMembership) return 'none';
     const role = String(myMembership?.role || '').toLowerCase();
     if (role === 'admin') return 'all';   // Team Admin: edit any member
     if (role === 'editor') return 'none';  // Team Editor: no member editing
     return 'own';                          // Team Member (viewer): own only
-  }, [currentUserId, tabData.fullMembers, isPlayer]);
+  }, [currentUserId, tabData.fullMembers, isPlayer, isGlobalAdmin]);
 
   /* ── Overflow menu ── */
   const [overflowOpen, setOverflowOpen] = useState(false);

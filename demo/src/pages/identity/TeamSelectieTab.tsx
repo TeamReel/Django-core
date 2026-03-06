@@ -121,11 +121,43 @@ function getAccessRoleColor(m: any): string {
   return ACCESS_ROLE_COLORS[role] || '#64748b';
 }
 
+/**
+ * Resolve the best URL for a media slot, checking both flat and per-variant structures.
+ * Per-variant: metadata.teamreel_assets.images.[category].[variant].processed|raw
+ */
+function resolveMediaUrl(m: any, slotId: string): string | null {
+  // 1) Flat media URL
+  const flat = m?.metadata?.teamreel_assets?.media?.[slotId]?.url;
+  if (flat) return flat;
+
+  // 2) Per-variant structure
+  const tr = m?.metadata?.teamreel_assets || {};
+  const VARIANT_MAP: Record<string, { branch: string; category: string }> = {
+    closeup: { branch: 'images', category: 'closeup' },
+    kit: { branch: 'images', category: 'fullbody' },
+    action_photo: { branch: 'images', category: 'action_photo' },
+  };
+  const mapping = VARIANT_MAP[slotId];
+  if (mapping) {
+    const branch = tr?.[mapping.branch]?.[mapping.category];
+    if (branch && typeof branch === 'object') {
+      for (const [_key, val] of Object.entries(branch)) {
+        if (!val || typeof val !== 'object') continue;
+        const v = val as Record<string, any>;
+        if (v.processed && typeof v.processed === 'string') return v.processed;
+        if (v.raw && typeof v.raw === 'string') return v.raw;
+      }
+    }
+  }
+
+  return null;
+}
+
 /** Get best available photo */
 function getMemberPhoto(m: any): string | null {
-  const closeup = getMediaUrl(m, 'closeup');
+  const closeup = resolveMediaUrl(m, 'closeup');
   if (closeup) return closeup;
-  const kit = getMediaUrl(m, 'kit');
+  const kit = resolveMediaUrl(m, 'kit');
   if (kit) return kit;
   const profile = getMediaUrl(m, 'profile');
   if (profile) return profile;
@@ -311,6 +343,10 @@ export function TeamSelectieTab({
             const photo = getMemberPhoto(m);
             const filled = countFilledMediaSlots(m);
             const pct = totalSlots > 0 ? Math.round((filled / totalSlots) * 100) : 0;
+            const memberUserId = String(m?.user?.id || '').trim();
+            const canEditThis =
+              editMode === 'all' ||
+              (editMode === 'own' && currentUserId && memberUserId === currentUserId);
             const isExpanded = expandedId === mid;
 
             return (
@@ -357,23 +393,36 @@ export function TeamSelectieTab({
                     </div>
                   </div>
 
-                  {/* Media progress mini */}
-                  <div className={st.miniProgress}>
-                    <Camera size={12} className={st.miniProgressIcon} />
-                    <span className={st.miniProgressLabel}>{filled}/{totalSlots}</span>
-                    <div className={st.miniProgressTrack}>
-                      <div
-                        className={st.miniProgressFill}
-                        style={{ width: `${pct}%` }}
-                        data-complete={pct === 100 ? 'true' : 'false'}
-                      />
-                    </div>
-                  </div>
+                  {/* Right side: edit + progress + arrow */}
+                  <div className={st.cardRight}>
+                    {canEditThis && apiBaseUrl && teamId && (
+                      <button
+                        type="button"
+                        className={st.inlineEditBtn}
+                        onClick={(e) => { e.stopPropagation(); setEditMember(m); }}
+                        title="Bewerken"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
 
-                  <ChevronRight
-                    size={16}
-                    className={`${st.memberArrow} ${isExpanded ? st.memberArrowExpanded : ''}`}
-                  />
+                    <div className={st.miniProgress}>
+                      <Camera size={12} className={st.miniProgressIcon} />
+                      <span className={st.miniProgressLabel}>{filled}/{totalSlots}</span>
+                      <div className={st.miniProgressTrack}>
+                        <div
+                          className={st.miniProgressFill}
+                          style={{ width: `${pct}%` }}
+                          data-complete={pct === 100 ? 'true' : 'false'}
+                        />
+                      </div>
+                    </div>
+
+                    <ChevronRight
+                      size={16}
+                      className={`${st.memberArrow} ${isExpanded ? st.memberArrowExpanded : ''}`}
+                    />
+                  </div>
                 </button>
 
                 {/* ── Expand panel ── */}
@@ -404,22 +453,16 @@ export function TeamSelectieTab({
                     </div>
 
                     <div className={st.expandActions}>
-                      {(() => {
-                        const memberUserId = String(m?.user?.id || '').trim();
-                        const canEditThis =
-                          editMode === 'all' ||
-                          (editMode === 'own' && currentUserId && memberUserId === currentUserId);
-                        return canEditThis && apiBaseUrl && teamId ? (
-                          <button
-                            type="button"
-                            className={st.expandActionEdit}
-                            onClick={() => setEditMember(m)}
-                          >
-                            <Pencil size={14} />
-                            Bewerken
-                          </button>
-                        ) : null;
-                      })()}
+                      {canEditThis && apiBaseUrl && teamId && (
+                        <button
+                          type="button"
+                          className={st.expandActionEdit}
+                          onClick={() => setEditMember(m)}
+                        >
+                          <Pencil size={14} />
+                          Bewerken
+                        </button>
+                      )}
                       {memberDetailHref && (
                         <button
                           type="button"
