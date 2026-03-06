@@ -98,7 +98,7 @@ export const AIStudioPage = lazyWithRetry(() => import('./pages/aistudio/AIStudi
 // Period (Season/Competition) pages
 export const ProjectSeasonsPage = lazyWithRetry(() => import('./pages/periods/ProjectSeasonsPage'));
 export const ProjectCompetitionDetailPage = lazyWithRetry(() => import('./pages/periods/CompetitionDetailWrapper'));
-export const ProjectSeasonMemberDetailPage = lazyWithRetry(() => import('./pages/periods/ProjectSeasonMemberDetailPage'));
+export const ProjectSeasonMemberDetailPage = lazyWithRetry(() => import('./pages/identity/SeasonMemberDetailPage'));
 
 // Work hierarchy pages
 export const ClubsPage = lazyWithRetry(() => import('./pages/work/ClubsPage'));
