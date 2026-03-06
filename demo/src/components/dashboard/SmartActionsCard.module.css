@@ -124,22 +124,11 @@
   100% { background-position: -200% 0; }
 }
 
-/* ── Dark mode overrides ── */
-@media (prefers-color-scheme: dark) {
-  .card {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
-
-  .actionIcon {
-    background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 18%, transparent);
-  }
-}
-
-/* Also respect .dark class on document root (app-level toggle) */
-:global(.dark) .card {
+/* ── Dark mode overrides (app uses [data-theme="dark"]) ── */
+:global([data-theme="dark"]) .card {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-:global(.dark) .actionIcon {
+:global([data-theme="dark"]) .actionIcon {
   background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 18%, transparent);
 }

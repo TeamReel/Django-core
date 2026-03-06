@@ -29,6 +29,12 @@
   --app-info: var(--color-primary-400);      /* Ocean Teal */
   --app-text-muted: var(--color-neutral-400);
   --app-surface-active: var(--color-neutral-100);
+  --app-surface-alt: #f8fafc;               /* Subtle off-white for card items */
+
+  /* Shorthand text tokens (mapped from app-level tokens) */
+  --text-primary: var(--app-text);
+  --text-secondary: var(--app-muted-text);
+  --text-tertiary: var(--color-neutral-300);
 
   /* Derived aliases — referenced in code but previously undefined */
   --app-primary: var(--app-link);               /* Ocean Teal — alias for link/action color */
@@ -73,6 +79,12 @@
   --app-info: var(--color-blue-400);
   --app-text-muted: var(--color-neutral-300);
   --app-surface-active: var(--color-blue-900);
+  --app-surface-alt: rgba(255, 255, 255, 0.04); /* Subtle dark surface for card items */
+
+  /* Shorthand text tokens — dark mode */
+  --text-primary: var(--app-text);
+  --text-secondary: var(--app-muted-text);
+  --text-tertiary: var(--color-neutral-400);
 
   /* Derived aliases — dark mode */
   --app-primary: var(--app-link);               /* Sky Blue in dark mode */
