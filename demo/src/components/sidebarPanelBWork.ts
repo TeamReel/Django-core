@@ -123,6 +123,12 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         matchPath({ path: '/organisations/:orgId/:clubId/:projectId/:seasonId/:competitionId', end: true }, path) ||
         matchPath({ path: '/:orgId/:clubId/:projectId/:seasonId/:competitionId', end: true }, path);
 
+    const memberDetailVanityMatch =
+        matchPath({ path: '/organisations/:orgId/:clubId/:projectId/:seasonId/members/:memberId', end: true }, path) ||
+        matchPath({ path: '/:orgId/:clubId/:projectId/:seasonId/members/:memberId', end: true }, path) ||
+        matchPath({ path: '/organisations/:orgId/:clubId/:projectId/seasons/:seasonId/members/:memberId', end: true }, path) ||
+        matchPath({ path: '/:orgId/:clubId/:projectId/seasons/:seasonId/members/:memberId', end: true }, path);
+
     const matchDetailVanityTeamMatch =
         matchPath({ path: '/organisations/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId', end: true }, path) ||
         matchPath({ path: '/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId', end: true }, path);
@@ -374,6 +380,35 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
             ...(!isPlayer ? [{ label: 'Transactions', path: makeTabUrl(baseUrl, 'transactions'), icon: Scroll }] : []),
             ...(!isPlayer ? [{ label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder }] : []),
             ...(!isPlayer ? [{ label: 'Workflow', path: makeTabUrl(baseUrl, 'workflow'), icon: ClipboardCheck }] : []),
+        ];
+        return { title, items, isActive: true };
+    }
+
+    /* ── Member detail (vanity) ──────────────────────────────────── */
+
+    if (
+        memberDetailVanityMatch?.params?.orgId &&
+        memberDetailVanityMatch?.params?.clubId &&
+        memberDetailVanityMatch?.params?.projectId &&
+        memberDetailVanityMatch?.params?.seasonId &&
+        (memberDetailVanityMatch?.params as any)?.memberId
+    ) {
+        const { orgId, clubId, projectId, seasonId, memberId } = memberDetailVanityMatch.params as any;
+        const baseUrl = path.startsWith('/organisations/')
+            ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}/members/${memberId}`
+            : `/${orgId}/${clubId}/${projectId}/${seasonId}/members/${memberId}`;
+        title = 'Member';
+        items = [
+            { label: 'Overview', path: makeTabUrl(baseUrl, 'overview'), icon: LayoutDashboard },
+            { label: "Input Foto's", path: makeTabUrl(baseUrl, 'input'), icon: Camera },
+            { label: 'Assets', path: makeTabUrl(baseUrl, 'assets'), icon: Folder },
+            { label: 'Actiefoto', path: makeTabUrl(baseUrl, 'action_photo'), icon: Zap },
+            { label: 'Short Intro', path: makeTabUrl(baseUrl, 'intro'), icon: Sparkles },
+            { label: 'Celebration', path: makeTabUrl(baseUrl, 'celebration'), icon: Trophy },
+            { label: 'Transformation', path: makeTabUrl(baseUrl, 'then_vs_now'), icon: Video },
+            { label: 'Duo Portret', path: makeTabUrl(baseUrl, 'photo_composite'), icon: UsersRound },
+            { label: 'Walking Composite', path: makeTabUrl(baseUrl, 'walking_composite'), icon: Footprints },
+            { label: 'Identity', path: makeTabUrl(baseUrl, 'identity'), icon: Fingerprint },
         ];
         return { title, items, isActive: true };
     }
