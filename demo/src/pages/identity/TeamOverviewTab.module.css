@@ -32,7 +32,8 @@
 .heroStats {
   display: flex;
   justify-content: center;
-  gap: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .heroStat {
@@ -87,8 +88,17 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 8px 12px;
+  margin: -8px -12px;
+  border-radius: 8px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   -webkit-tap-highlight-color: transparent;
+}
+
+.sectionLink:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
 }
 
 /* ── Brand assets grid ── */
@@ -224,6 +234,7 @@
   grid-template-columns: 1fr 56px 56px 20px;
   align-items: center;
   padding: 11px 16px;
+  min-height: 48px;
   border: none;
   border-bottom: 1px solid var(--app-border, #1e293b);
   background: none;
@@ -276,6 +287,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
+  min-height: 48px;
   border-bottom: 1px solid var(--app-border, #1e293b);
 }
 
@@ -367,6 +379,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 16px;
+  min-height: 48px;
   border-bottom: 1px solid var(--app-border, #1e293b);
   cursor: default;
 }
@@ -410,4 +423,21 @@
   font-size: 16px;
   color: var(--app-muted-text);
   flex-shrink: 0;
+}
+
+/* ── Desktop: 2-column grid for sections ── */
+@media (min-width: 768px) {
+  .overviewRoot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .heroCard {
+    grid-column: 1 / -1;
+  }
+
+  .heroStats {
+    gap: 32px;
+  }
 }

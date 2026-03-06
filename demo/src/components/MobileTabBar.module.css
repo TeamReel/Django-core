@@ -35,8 +35,8 @@
 .inlinePill {
   flex-shrink: 0;
   padding: 8px 16px;
-  min-height: 40px;
-  border-radius: 20px;
+  min-height: 44px;
+  border-radius: 22px;
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-muted-text, #888);

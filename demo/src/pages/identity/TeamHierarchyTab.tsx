@@ -191,7 +191,6 @@ export function TeamHierarchyTab({
                                 <span
                                   className={h.seasonNavLink}
                                   onClick={(e) => { e.stopPropagation(); navigate(compPath); }}
-                                  style={{ fontSize: 11 }}
                                 >
                                   Bekijk competitie →
                                 </span>

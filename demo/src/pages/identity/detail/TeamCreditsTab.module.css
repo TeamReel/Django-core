@@ -1,11 +1,11 @@
 /* ─── Grid Layouts ─── */
 
 .balanceGrid {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 .summaryGrid {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 /* ─── Balance Cards ─── */
@@ -15,7 +15,7 @@
 }
 
 .balanceAmount {
-  font-size: 48px;
+  font-size: 36px;
   margin: 8px 0;
 }
 
@@ -30,7 +30,7 @@
 /* ─── Transaction Timeline ─── */
 
 .dateColumn {
-  min-width: 120px;
+  min-width: 80px;
 }
 
 .barContainer {
@@ -41,7 +41,7 @@
   height: 24px;
   opacity: 0.8;
   align-items: center;
-  min-width: 60px;
+  min-width: 40px;
 }
 
 .bar[data-positive='true'] {
@@ -53,13 +53,13 @@
 }
 
 .notesColumn {
-  min-width: 150px;
+  min-width: 0;
 }
 
 /* ─── Recent Activity ─── */
 
 .activityAmount {
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .activityAmount[data-positive='true'] {
@@ -73,11 +73,11 @@
 /* ─── Summary Cards ─── */
 
 .summaryValue {
-  font-size: 26px;
+  font-size: 24px;
 }
 
 .netValue {
-  font-size: 26px;
+  font-size: 24px;
 }
 
 .netValue[data-positive='true'] {
@@ -108,4 +108,35 @@
 
 .dimPlaceholder[data-empty='false'] {
   opacity: 1;
+}
+
+/* ─── Mobile responsive ─── */
+@media (max-width: 639px) {
+  .balanceAmount {
+    font-size: 28px;
+  }
+
+  .summaryValue,
+  .netValue {
+    font-size: 20px;
+  }
+
+  .balanceGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .balanceAmount {
+    font-size: 48px;
+  }
+
+  .summaryValue,
+  .netValue {
+    font-size: 28px;
+  }
 }

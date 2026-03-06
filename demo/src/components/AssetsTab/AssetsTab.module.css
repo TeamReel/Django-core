@@ -32,9 +32,10 @@
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
-  padding: 2px 6px;
+  padding: 6px 10px;
+  min-height: 32px;
   cursor: pointer;
 }
 
@@ -103,24 +104,26 @@
 
 .btnPrimary {
   width: 100%;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 8px 12px;
+  min-height: 36px;
+  font-size: 12px;
   cursor: pointer;
   background: var(--vscode-button-background, #0078d4);
   color: var(--vscode-button-foreground, #fff);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .btnDelete {
   width: 100%;
-  padding: 4px 8px;
-  font-size: 11px;
+  padding: 8px 12px;
+  min-height: 36px;
+  font-size: 12px;
   cursor: pointer;
   background: transparent;
   color: #ef4444;
   border: 1px solid #ef4444;
-  border-radius: 4px;
+  border-radius: 6px;
   margin-top: 4px;
 }
 
@@ -185,11 +188,11 @@
 }
 
 .historyPanel {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: var(--app-surface-2, #1e1e1e);
+  border: 1px solid var(--app-border, #333);
+  border-radius: 12px;
   padding: 20px;
-  width: 500px;
+  width: min(500px, calc(100vw - 32px));
   max-height: 80vh;
   overflow: auto;
 }
@@ -238,11 +241,12 @@
 }
 
 .restoreBtn {
-  padding: 6px 12px;
+  padding: 8px 14px;
+  min-height: 36px;
   background: #094771;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
 }
@@ -250,20 +254,20 @@
 /* ── Layout Grids ── */
 .topRowGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
   margin-bottom: 24px;
 }
 
 .kitsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 
 .bgPairsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 

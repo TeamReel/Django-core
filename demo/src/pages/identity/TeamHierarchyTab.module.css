@@ -32,7 +32,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 14px;
+  min-height: 52px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -127,7 +128,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 12px 14px;
+  min-height: 48px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -172,7 +174,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px 8px 24px;
+  padding: 10px 14px 10px 20px;
+  min-height: 48px;
   border-bottom: 1px solid var(--app-border, #1e293b);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -259,10 +262,13 @@
   cursor: pointer;
   background: none;
   border: none;
-  padding: 0;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border-radius: 6px;
+  min-height: 32px;
   -webkit-tap-highlight-color: transparent;
 }
 
-.seasonNavLink:hover {
-  text-decoration: underline;
+.seasonNavLink:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
 }
