@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import {
   Eye, Pencil, Trash2, Check, MoreHorizontal,
@@ -24,7 +25,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   /* ---- back navigation ---- */
   const backPath = d.projectDetailPath || d.seasonsBasePath || '/';
-  useSetBackNavigation({ label: 'Team', path: backPath });
+  const backLabel = d.project?.name || 'Team';
+  useSetBackNavigation({ label: backLabel, path: backPath });
 
   /* ---- overflow menu ---- */
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -48,6 +50,11 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         {/* ── Header ─────────────────────────────────────── */}
         <div className={s.headerRow}>
           <div className={s.titleBlock}>
+            {backPath && (
+              <Link to={backPath} className={s.parentLink}>
+                ‹ {backLabel}
+              </Link>
+            )}
             <h1>{d.season ? d.season.name : 'Seizoen'}</h1>
             {(d.season as any)?.period_type === 'legends' && <p>Legends Seizoen</p>}
           </div>

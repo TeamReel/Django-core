@@ -29,6 +29,25 @@
   color: var(--app-muted-text);
 }
 
+.parentLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+}
+
+.parentLink:hover {
+  color: var(--app-text);
+}
+
 .actions {
   display: flex;
   align-items: center;
@@ -389,25 +408,47 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* ── Responsive: mobile ─────────────────────────────────────────────── */
+/* ── Responsive: mobile — 44px touch targets ─────────────────────── */
 @media (max-width: 639px) {
-  .videoGrid {
-    grid-template-columns: 1fr;
+  .iconBtn {
+    width: 44px;
+    height: 44px;
   }
 
-  .roleGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .competitionCardHeader {
-    flex-direction: column;
-    align-items: flex-start;
+  .activeBtn {
+    min-height: 44px;
+    padding: 10px 16px;
   }
 
   .matchRow {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+    min-height: 44px;
+  }
+
+  .competitionCard { border-radius: 14px; }
+
+  .competitionCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 44px;
+  }
+
+  .competitionLink,
+  .matchLink,
+  .appLink {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .videoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .roleGrid {
+    grid-template-columns: 1fr;
   }
 
   .hierarchyHeader {
@@ -442,6 +483,20 @@
   }
 
   .quickActionBtn {
+    min-height: 44px;
+  }
+
+  .overflowMenu button {
+    min-height: 44px;
+  }
+
+  .btnCancel,
+  .btnSave {
+    min-height: 44px;
+  }
+
+  .modalBtnSecondary,
+  .modalBtnPrimary {
     min-height: 44px;
   }
 }

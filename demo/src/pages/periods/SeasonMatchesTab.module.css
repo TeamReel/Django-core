@@ -523,6 +523,23 @@
   color: var(--app-muted-text);
 }
 
+/* ── Mobile — 44px touch targets ── */
+@media (max-width: 639px) {
+  .cardHeader {
+    min-height: 44px;
+  }
+
+  .sortChip {
+    min-height: 36px;
+    padding: 6px 14px;
+  }
+
+  .actionBtn,
+  .actionBtnPrimary {
+    min-height: 44px;
+  }
+}
+
 /* ── Desktop overrides ── */
 @media (min-width: 768px) {
   .card {

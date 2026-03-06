@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Card, Button, Badge } from '@django-core/design-system';
+import { Alert, Badge } from '@django-core/design-system';
 import { SkeletonList } from '../../../components/Skeleton';
 import SmartEmptyState from '../../../components/SmartEmptyState';
 import { Table } from '@/shims/design-system';
@@ -8,6 +8,7 @@ import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
 import { useClubsData } from './useClubsData';
 import styles from './ClubsList.module.css';
+import dp from './DirectoryPremium.module.css';
 
 interface ClubsListProps {
   preselectedOrgId?: string;
@@ -19,7 +20,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
   return (
     <div>
       {/* Filter bar */}
-      <div className="flex-row gap-12 mb-16 flex-wrap">
+      <div className={dp.filterBar}>
         {d.isSuperAdmin && !d.orgLocked && (
           <select
             value={d.selectedOrgId}
@@ -27,7 +28,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
               d.setSelectedOrgId(e.target.value);
               d.setSelectedClubId('');
             }}
-            className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+            className={dp.filterSelect}
           >
             <option value="">Federation: All</option>
             {[...d.organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
@@ -40,7 +41,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
         <select
           value={d.statusFilter}
           onChange={(e) => d.setStatusFilter(e.target.value)}
-          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+          className={dp.filterSelect}
         >
           <option value="all">Status: All</option>
           <option value="active">Status: Active</option>
@@ -49,7 +50,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
         <select
           value={d.sportFilter}
           onChange={(e) => d.setSportFilter(e.target.value)}
-          className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+          className={dp.filterSelect}
         >
           <option value="all">Sport: All</option>
           {d.categories.map((sport) => (
@@ -58,14 +59,16 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
             </option>
           ))}
         </select>
-        <Button variant="secondary" size="md" onClick={d.handleClearFilters} className="ml-auto">
-          Clear
-        </Button>
-        {d.userCanEditProject && (
-          <Button variant="primary" size="md" onClick={() => d.setIsCreateModalOpen(true)}>
-            Create Club
-          </Button>
-        )}
+        <div className={dp.filterActions}>
+          <button type="button" className={dp.filterBtn} onClick={d.handleClearFilters}>
+            Clear
+          </button>
+          {d.userCanEditProject && (
+            <button type="button" className={dp.filterBtnPrimary} onClick={() => d.setIsCreateModalOpen(true)}>
+              Create Club
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Loading / Error / Empty */}
@@ -77,8 +80,8 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
       {/* Table */}
       {!d.isLoading && !d.error && d.filteredClubs.length > 0 && (
-        <Card>
-          <div className="overflow-x-auto">
+        <div className={dp.tableCard}>
+          <div className={dp.tableScroll}>
             <Table className="dir-table">
               <thead>
                 <tr>
@@ -108,7 +111,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
               </tbody>
             </Table>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Modals */}

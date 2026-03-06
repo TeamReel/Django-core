@@ -5,8 +5,8 @@
  * Extracted during Phase 24 of the frontend refactoring plan.
  */
 import React from 'react';
-import { Button } from '@django-core/design-system';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
+import dp from './DirectoryPremium.module.css';
 
 interface UsersListFiltersProps {
   isSuperAdmin: boolean;
@@ -53,12 +53,12 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
   onClearFilters,
   onAddMember,
 }) => (
-  <div className="flex-row gap-12 mb-16 flex-wrap">
+  <div className={dp.filterBar}>
     {isSuperAdmin && !orgLocked && (
       <select
         value={selectedOrgId}
         onChange={(e) => onOrgChange(e.target.value)}
-        className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+        className={dp.filterSelect}
       >
         <option value="">Federation: All</option>
         {[...organisations]
@@ -76,7 +76,7 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
         value={selectedClubId}
         onChange={(e) => onClubChange(e.target.value)}
         disabled={clubLocked}
-        className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+        className={dp.filterSelect}
       >
         {!clubLocked && <option value="">Club: All</option>}
         {clubs
@@ -94,7 +94,7 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
         value={selectedTeamId}
         onChange={(e) => onTeamChange(e.target.value)}
         disabled={teamLocked}
-        className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+        className={dp.filterSelect}
       >
         {!teamLocked && <option value="">Team: All</option>}
         {teams
@@ -121,7 +121,7 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
     <select
       value={statusFilter}
       onChange={(e) => onStatusChange(e.target.value)}
-      className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+      className={dp.filterSelect}
     >
       <option value="all">Status: All</option>
       <option value="active">Status: Active</option>
@@ -131,7 +131,7 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
     <select
       value={roleFilter}
       onChange={(e) => onRoleChange(e.target.value)}
-      className="py-8 px-12 border rounded-4 fs-14 bg-surface"
+      className={dp.filterSelect}
     >
       <option value="">Role: All</option>
       {availableRoles.map((r) => (
@@ -141,13 +141,13 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
       ))}
     </select>
 
-    <div className="ml-auto flex-row gap-12">
-      <Button variant="secondary" size="md" onClick={onClearFilters}>
+    <div className={dp.filterActions}>
+      <button type="button" className={dp.filterBtn} onClick={onClearFilters}>
         Clear
-      </Button>
-      <Button variant="primary" onClick={onAddMember}>
+      </button>
+      <button type="button" className={dp.filterBtnPrimary} onClick={onAddMember}>
         Add Member
-      </Button>
+      </button>
     </div>
   </div>
 );

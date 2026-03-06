@@ -5,11 +5,12 @@
  * Extracted during Phase 24 of the frontend refactoring plan.
  */
 import React from 'react';
-import { Badge, Button, Card } from '@django-core/design-system';
+import { Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 
 import { isUuid, getUserRoleDisplay } from './usersListHelpers';
 import styles from './UsersListTable.module.css';
+import dp from './DirectoryPremium.module.css';
 import type { UsersListData } from './useUsersListData';
 
 interface UsersListTableProps {
@@ -51,26 +52,23 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
   } = data;
 
   return (
-    <Card>
+    <div className={dp.tableCard}>
       {/* ── Batch action bar ────────────────────────────── */}
       {someSelected && (
-        <div
-          className={`flex-row flex-wrap gap-8 py-8 px-12 mb-4 rounded-6 border ${styles.batchBar}`}
-        >
-          <span
-            className="fs-13 fw-500 text-primary"
-          >
+        <div className={dp.batchBar}>
+          <span className={dp.batchLabel}>
             {selectedIds.size} geselecteerd
           </span>
-          <Button
-            variant="primary"
-            size="sm"
+          <button
+            type="button"
+            className={dp.batchBtn}
             onClick={() => setIsBatchModalOpen(true)}
           >
             ⚡ Batch Actie ({selectedIds.size})
-          </Button>
+          </button>
           <button
-            className={`ml-auto border-none cursor-pointer fs-13 bg-transparent text-muted ${styles.deselectButton}`}
+            type="button"
+            className={dp.deselectBtn}
             onClick={() => setSelectedIds(new Set())}
           >
             Deselecteren
@@ -78,9 +76,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
         </div>
       )}
 
-      <div
-        className={`overflow-x-auto ${styles.scrollContainer}`}
-      >
+      <div className={dp.tableScroll}>
         <Table className="dir-table">
           <thead>
             <tr>
@@ -400,6 +396,6 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
           </tbody>
         </Table>
       </div>
-    </Card>
+    </div>
   );
 };

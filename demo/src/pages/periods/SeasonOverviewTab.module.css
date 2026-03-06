@@ -319,3 +319,45 @@
   color: var(--app-muted-text);
   line-height: 1.4;
 }
+
+/* ── Responsive: mobile — 44px touch targets ── */
+@media (max-width: 639px) {
+  .matchRow {
+    min-height: 44px;
+  }
+
+  .compRow {
+    min-height: 44px;
+  }
+
+  .brandItem {
+    min-height: 44px;
+  }
+
+  .sectionLink {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .assetRow {
+    min-height: 44px;
+  }
+
+  .brandGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Desktop ── */
+@media (min-width: 768px) {
+  .overviewRoot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .heroCard {
+    grid-column: 1 / -1;
+  }
+}

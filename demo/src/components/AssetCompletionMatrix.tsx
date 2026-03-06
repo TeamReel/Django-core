@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { Alert, Badge, Card } from '@django-core/design-system';
+import { Alert } from '@django-core/design-system';
 import {
   useBrandProfile,
   getAssetUrl,
@@ -118,48 +118,51 @@ export function AssetCompletionMatrix({
 
   if (loading) {
     return (
-      <Card>
-        <div className="p-16">
+      <div className={styles.matrixCard}>
+        <div className={styles.matrixPad}>
           <Alert variant="info">Assets laden…</Alert>
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <div className="p-16">
+      <div className={styles.matrixCard}>
+        <div className={styles.matrixPad}>
           <Alert variant="error">Fout bij laden: {error}</Alert>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <div className="px-16 pt-16">
-        <div className="flex-row gap-12 flex-wrap">
-          <h3 className="m-0 fs-16 fw-600">{title}</h3>
-          <Badge variant={filledCells === totalCells ? 'success' : filledCells > 0 ? 'warning' : 'default'}>
+    <div className={styles.matrixCard}>
+      <div className={styles.matrixHeader}>
+        <div className={styles.matrixHeaderRow}>
+          <h3 className={styles.matrixTitle}>{title}</h3>
+          <span
+            className={styles.matrixBadge}
+            data-state={filledCells === totalCells ? 'complete' : filledCells > 0 ? 'partial' : 'empty'}
+          >
             {filledCells} / {totalCells} Assets
-          </Badge>
+          </span>
         </div>
-        <div className="mt-4 text-muted fs-13">
+        <div className={styles.matrixSubtitle}>
           Overview van alle brand assets en hun bewerkingsfase.
           {entityName ? ` (${entityName})` : ''}
         </div>
       </div>
 
-      <div className="p-16 overflow-x-auto">
-        <table className={`w-full fs-12 ${styles.table}`}>
+      <div className={styles.matrixBody}>
+        <table className={`${styles.table} ${styles.tableFull}`}>
           <thead>
             <tr>
               <th className={styles.thContentType}>Content Type</th>
               {PHASE_COLUMNS.map((col) => (
                 <th key={col.key} className={styles.th}>
                   <span
-                    className={`text-white fw-600 rounded-4 ${styles.phaseBadge}`}
+                    className={styles.phaseBadge}
                     style={{ '--phase-color': col.color } as React.CSSProperties}
                   >
                     {col.label}
@@ -183,8 +186,8 @@ export function AssetCompletionMatrix({
                   {/* Upload */}
                   <td className={styles.tdCenter}>
                     {row.uploadType ? (
-                      <div className="flex-center gap-6">
-                        <span className="fs-14">{upload.exists ? 'OK' : '—'}</span>
+                      <div className={styles.cellContent}>
+                        <span className={styles.cellStatus}>{upload.exists ? 'OK' : '—'}</span>
                         {upload.url && (
                           <img src={upload.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
@@ -197,8 +200,8 @@ export function AssetCompletionMatrix({
                   {/* AI Bewerkt */}
                   <td className={styles.tdCenter}>
                     {row.processedType ? (
-                      <div className="flex-center gap-6">
-                        <span className="fs-14">{processed.exists ? 'OK' : '—'}</span>
+                      <div className={styles.cellContent}>
+                        <span className={styles.cellStatus}>{processed.exists ? 'OK' : '—'}</span>
                         {processed.url && (
                           <img src={processed.url} alt="" className={styles.thumbnail} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                         )}
@@ -214,13 +217,13 @@ export function AssetCompletionMatrix({
         </table>
 
         {/* Progress bar */}
-        <div className={`mt-16 p-12 rounded-8 ${styles.progressWrapper}`}>
-          <div className={`fs-13 fw-600 ${styles.progressLabel}`}>
+        <div className={styles.progressWrapper}>
+          <div className={styles.progressLabel}>
             Completion: {filledCells} / {totalCells} assets
           </div>
-          <div className={`rounded-4 overflow-hidden ${styles.progressTrack}`}>
+          <div className={styles.progressTrack}>
             <div
-              className={`transition ${styles.progressBar}`}
+              className={styles.progressBar}
               data-complete={filledCells === totalCells ? 'true' : 'false'}
               style={{ width: `${totalCells > 0 ? (filledCells / totalCells) * 100 : 0}%` }}
             />
@@ -228,22 +231,22 @@ export function AssetCompletionMatrix({
         </div>
 
         {/* Legend */}
-        <div className="flex-row flex-wrap mt-12 gap-16 fs-11 opacity-70">
+        <div className={styles.legendRow}>
           {PHASE_COLUMNS.map((col) => (
-            <div key={col.key} className="flex-row gap-4">
+            <div key={col.key} className={styles.legendItem}>
               <span className={styles.legendSwatch} style={{ '--phase-color': col.color } as React.CSSProperties} />
               <span>{col.label}</span>
             </div>
           ))}
-          <div className="flex-row gap-4">
+          <div className={styles.legendItem}>
             <span></span> <span>Aanwezig</span>
           </div>
-          <div className="flex-row gap-4">
+          <div className={styles.legendItem}>
             <span>⬜</span> <span>Ontbreekt</span>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 

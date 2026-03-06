@@ -1,0 +1,175 @@
+/* ============================================================================
+   DirectoryPremium — shared premium styles for directory list components
+   (ClubsList, TeamsList, UsersList)
+   ============================================================================ */
+
+/* ── Filter bar ── */
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filterSelect {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, #1e293b);
+  color: var(--app-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m2 4 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: #818cf8;
+}
+
+.filterActions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.filterBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--app-border, #334155);
+  background: var(--app-surface-2, #1e293b);
+  color: var(--app-text);
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.filterBtn:hover {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.06));
+}
+
+.filterBtnPrimary {
+  composes: filterBtn;
+  border-color: #818cf8;
+  background: rgba(129, 140, 248, 0.15);
+  color: #818cf8;
+}
+
+.filterBtnPrimary:hover {
+  background: rgba(129, 140, 248, 0.25);
+}
+
+/* ── Table wrapper (premium card) ── */
+.tableCard {
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Batch bar ── */
+.batchBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(129, 140, 248, 0.08);
+  border-bottom: 1px solid var(--app-border, #334155);
+}
+
+.batchLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.batchBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background: #818cf8;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.batchBtn:hover {
+  background: #6366f1;
+}
+
+.deselectBtn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--app-muted-text);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ── Empty state ── */
+.emptyWrap {
+  padding: 40px 16px;
+  text-align: center;
+}
+
+/* ── Mobile — 44px touch targets ── */
+@media (max-width: 639px) {
+  .filterBar {
+    gap: 6px;
+  }
+
+  .filterSelect {
+    min-height: 44px;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 14px;
+  }
+
+  .filterBtn,
+  .filterBtnPrimary {
+    min-height: 44px;
+    flex: 1 1 auto;
+  }
+
+  .filterActions {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .batchBtn {
+    min-height: 44px;
+  }
+}
+
+/* ── Desktop ── */
+@media (min-width: 768px) {
+  .filterSelect {
+    max-width: 220px;
+  }
+}

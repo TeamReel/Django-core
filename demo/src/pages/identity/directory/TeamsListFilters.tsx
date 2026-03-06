@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@django-core/design-system';
 import type { OrganisationOption } from '../../work/WorkFilterBar';
+import dp from './DirectoryPremium.module.css';
 
 interface TeamsListFiltersProps {
   isSuperAdmin: boolean;
@@ -22,24 +22,18 @@ interface TeamsListFiltersProps {
   onCreateTeam: () => void;
 }
 
-const selectStyle = {
-  border: '1px solid var(--app-border)',
-  backgroundColor: 'var(--app-surface)',
-};
-
 export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
   isSuperAdmin, orgLocked, clubLocked, organisations, clubs, categories,
   selectedOrgId, selectedClubId, statusFilter, sportFilter,
   userCanEditProject, onOrgChange, onClubChange, onStatusChange, onSportChange,
   onClear, onCreateTeam,
 }) => (
-  <div className="flex-row gap-12 mb-16 flex-wrap">
+  <div className={dp.filterBar}>
     {isSuperAdmin && !orgLocked && (
       <select
         value={selectedOrgId}
         onChange={(e) => onOrgChange(e.target.value)}
-        className="p-8 px-12 rounded-4 fs-14"
-        style={selectStyle}
+        className={dp.filterSelect}
       >
         <option value="">Federation: All</option>
         {[...organisations].sort((a, b) => a.name.localeCompare(b.name)).map((org) => (
@@ -53,8 +47,7 @@ export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
         value={selectedClubId}
         onChange={(e) => onClubChange(e.target.value)}
         disabled={clubLocked}
-        className="p-8 px-12 rounded-4 fs-14"
-        style={selectStyle}
+        className={dp.filterSelect}
       >
         <option value="">Club: All</option>
         {clubs
@@ -73,8 +66,7 @@ export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
     <select
       value={statusFilter}
       onChange={(e) => onStatusChange(e.target.value)}
-      className="p-8 px-12 rounded-4 fs-14"
-      style={selectStyle}
+      className={dp.filterSelect}
     >
       <option value="all">Status: All</option>
       <option value="active">Status: Active</option>
@@ -84,8 +76,7 @@ export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
     <select
       value={sportFilter}
       onChange={(e) => onSportChange(e.target.value)}
-      className="p-8 px-12 rounded-4 fs-14"
-      style={selectStyle}
+      className={dp.filterSelect}
     >
       <option value="all">Sport: All</option>
       {categories.map((sport: any) => (
@@ -93,14 +84,14 @@ export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
       ))}
     </select>
 
-    <div className="ml-auto flex-row gap-8">
-      <Button variant="secondary" size="md" onClick={onClear}>
+    <div className={dp.filterActions}>
+      <button type="button" className={dp.filterBtn} onClick={onClear}>
         Clear
-      </Button>
+      </button>
       {userCanEditProject && (
-        <Button variant="primary" size="md" onClick={onCreateTeam}>
+        <button type="button" className={dp.filterBtnPrimary} onClick={onCreateTeam}>
           Create Team
-        </Button>
+        </button>
       )}
     </div>
   </div>

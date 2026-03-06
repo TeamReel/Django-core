@@ -1,9 +1,10 @@
 import React from 'react';
-import { Card, Badge } from '@django-core/design-system';
+import { Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { isNumericId, isUuid } from './useTeamsListData';
 import type { OrganisationOption } from '../../work/WorkFilterBar';
 import styles from './TeamsListTable.module.css';
+import dp from './DirectoryPremium.module.css';
 
 interface TeamsListTableProps {
   filteredTeams: any[];
@@ -26,8 +27,8 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
   lockedOrgSlug, selectedOrgId, userCanEditProject, userCanDeleteProject,
   navigate, onView, onEdit, onDelete,
 }) => (
-  <Card>
-    <div className="overflow-x-auto">
+  <div className={dp.tableCard}>
+    <div className={dp.tableScroll}>
       <Table className="dir-table">
         <thead>
           <tr>
@@ -130,7 +131,7 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
         </tbody>
       </Table>
     </div>
-  </Card>
+  </div>
 );
 
 /* ── Per-row slug resolution (extracted from inline map logic) ── */
