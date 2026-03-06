@@ -5,6 +5,16 @@
 
 /* ─── Modal System ────────────────────────────────────────────────────────── */
 
+@keyframes overlayFadeIn {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to   { background-color: rgba(0, 0, 0, 0.72); }
+}
+
+@keyframes panelSlideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -14,6 +24,13 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+.modalOverlay > .modalPanel,
+.modalOverlay > .modalPanelCentered,
+.modalOverlay > .modalPanelCenteredLarge {
+  animation: panelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modalOverlayHigh {
@@ -25,6 +42,11 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: overlayFadeIn 0.2s ease-out;
+}
+
+.modalOverlayHigh > * {
+  animation: panelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modalPanel {
@@ -93,6 +115,15 @@
   cursor: pointer;
   font-size: 18px;
   padding: 4px 10px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.closeBtn:hover {
+  background: var(--app-surface-2, rgba(255,255,255,0.06));
+}
+
+.closeBtn:active {
+  transform: scale(0.9);
 }
 
 .closeBtnMuted {
@@ -147,6 +178,15 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnPrimary:hover {
+  background: #1d4ed8;
+}
+
+.btnPrimary:active {
+  transform: scale(0.96);
 }
 
 .btnGhost {
@@ -169,6 +209,15 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnApprove:hover {
+  background: #15803d;
+}
+
+.btnApprove:active {
+  transform: scale(0.95);
 }
 
 .btnReject {
@@ -180,6 +229,15 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnReject:hover {
+  background: #fee2e2;
+}
+
+.btnReject:active {
+  transform: scale(0.95);
 }
 
 .btnRetry {
@@ -191,6 +249,15 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnRetry:hover {
+  background: #1d4ed8;
+}
+
+.btnRetry:active {
+  transform: scale(0.95);
 }
 
 .btnCancel {
@@ -202,6 +269,15 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnCancel:hover {
+  background: #fee2e2;
+}
+
+.btnCancel:active {
+  transform: scale(0.95);
 }
 
 .btnBeginReview {
@@ -213,6 +289,15 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnBeginReview:hover {
+  background: #fef3c7;
+}
+
+.btnBeginReview:active {
+  transform: scale(0.96);
 }
 
 .btnRefresh {
@@ -224,6 +309,15 @@
   font-weight: 500;
   font-size: 12px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnRefresh:hover {
+  background: var(--app-surface-2, #f3f4f6);
+}
+
+.btnRefresh:active {
+  transform: scale(0.92);
 }
 
 /* ─── Select-All Buttons ──────────────────────────────────────────────────── */
@@ -242,6 +336,11 @@
   font-weight: 600;
   font-size: 11px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnSelectAll:active {
+  transform: scale(0.94);
 }
 
 .btnRejectAll {
@@ -253,6 +352,11 @@
   font-weight: 600;
   font-size: 11px;
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btnRejectAll:active {
+  transform: scale(0.94);
 }
 
 /* ─── Chip / Picker Grid ──────────────────────────────────────────────────── */
@@ -335,6 +439,20 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes toastSlideOut {
+  from { transform: translateX(0);    opacity: 1; max-height: 80px; }
+  to   { transform: translateX(120%); opacity: 0; max-height: 0; padding: 0; margin: 0; }
+}
+
+.toastContainer > div {
+  animation: toastSlideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ─── Empty State ─────────────────────────────────────────────────────────── */
@@ -582,6 +700,11 @@
   border-radius: 10px;
   border: 1px solid var(--app-border);
   background: var(--app-surface);
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.workflowCard:active {
+  transform: scale(0.98);
 }
 
 .workflowCardHeader {
@@ -695,8 +818,12 @@
   color: var(--app-text-secondary, #6b7280);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s;
+  transition: all 0.15s, transform 0.1s;
   flex-shrink: 0;
+}
+
+.chip:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .chip:disabled {
@@ -792,5 +919,14 @@
 
   .tabContent {
     padding: 0 24px 64px;
+  }
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalOverlay > * ,
+  .toastContainer > div {
+    animation: none !important;
   }
 }

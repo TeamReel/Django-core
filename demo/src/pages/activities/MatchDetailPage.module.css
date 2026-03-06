@@ -39,10 +39,12 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
 }
 
 .stickyBackBtn:active {
   background: var(--app-bg);
+  transform: scale(0.97);
 }
 
 .stickyTitle {
@@ -109,9 +111,13 @@
   color: var(--app-text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
   min-height: 36px;
   -webkit-tap-highlight-color: transparent;
+}
+
+.activeBtn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .activeBtn:disabled {
@@ -169,6 +175,10 @@
 
 .labelBtn:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+}
+
+.labelBtn:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.08));
 }
 
 /* ── Overflow (⋯) menu ───────────────────────────────────────────── */
@@ -286,6 +296,15 @@
   background: var(--app-surface);
   color: var(--app-text);
   cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.backBtn:hover {
+  background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+}
+
+.backBtn:active {
+  transform: scale(0.97);
 }
 
 /* ── Desktop ─────────────────────────────────────────────────────────── */

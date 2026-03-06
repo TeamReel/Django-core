@@ -14,7 +14,9 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
-
+.card:active {
+  transform: scale(0.98);
+}
 .card.live {
   border-color: var(--color-error, #ef4444);
   box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2), 0 2px 12px rgba(239, 68, 68, 0.1);
@@ -203,4 +205,8 @@
 
 .actionBtn:hover {
   opacity: 0.9;
+}
+
+.actionBtn:active {
+  transform: scale(0.97);
 }

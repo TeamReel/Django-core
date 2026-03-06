@@ -36,6 +36,12 @@
   cursor: pointer;
   font-size: 16px;
   opacity: 1;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.navBtn:active:not([data-disabled="true"]) {
+  transform: scale(0.9);
+  background: var(--app-surface-2, rgba(255,255,255,0.08));
 }
 
 .navBtn[data-disabled="true"] {
@@ -68,6 +74,7 @@
 .variantCard {
   background-color: var(--rm-slate-800);
   border: 2px solid var(--rm-slate-700);
+  transition: border-color 0.2s, transform 0.15s;
 }
 
 .variantCard[data-selection="approved"] {
@@ -113,7 +120,11 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: all 0.12s, transform 0.1s;
+}
+
+.variantApproveBtn:active {
+  transform: scale(0.94);
 }
 
 .variantApproveBtn[data-selected="true"] {
@@ -132,7 +143,11 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.12s;
+  transition: all 0.12s, transform 0.1s;
+}
+
+.variantRejectBtn:active {
+  transform: scale(0.94);
 }
 
 .variantRejectBtn[data-selected="true"] {
@@ -146,6 +161,11 @@
   background: var(--rm-red-50);
   cursor: pointer;
   opacity: 1;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.footerRejectBtn:active:not([data-state="active"]):not([data-state="inactive"]) {
+  transform: scale(0.94);
 }
 
 .footerRejectBtn[data-state="active"] {
@@ -162,6 +182,11 @@
   background: var(--rm-green-600);
   cursor: pointer;
   opacity: 1;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.footerApproveBtn:active:not([data-state="active"]):not([data-state="inactive"]) {
+  transform: scale(0.94);
 }
 
 .footerApproveBtn[data-state="active"] {

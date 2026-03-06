@@ -516,6 +516,16 @@
 
 /* ─── Modal System ────────────────────────────────────────────────────────── */
 
+@keyframes navOverlayFadeIn {
+  from { background-color: rgba(0, 0, 0, 0); }
+  to   { background-color: rgba(0, 0, 0, 0.72); }
+}
+
+@keyframes navPanelSlideUp {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
 .modalOverlay {
   position: fixed;
   inset: 0;
@@ -525,6 +535,11 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: navOverlayFadeIn 0.2s ease-out;
+}
+
+.modalOverlay > * {
+  animation: navPanelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modalOverlayHigh {
@@ -536,6 +551,11 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  animation: navOverlayFadeIn 0.2s ease-out;
+}
+
+.modalOverlayHigh > * {
+  animation: navPanelSlideUp 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .modalPanel {
@@ -975,6 +995,16 @@
   color: var(--app-text);
   cursor: pointer;
   flex-shrink: 0;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .modalOverlay,
+  .modalOverlay > *,
+  .modalOverlayHigh,
+  .modalOverlayHigh > * {
+    animation: none !important;
+  }
 }
 
 .mobileSearchClose:active {

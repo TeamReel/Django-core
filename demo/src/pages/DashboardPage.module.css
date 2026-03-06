@@ -48,6 +48,10 @@
   background: var(--app-bg);
 }
 
+.notifBtn:active {
+  transform: scale(0.95);
+}
+
 .notifBadge {
   position: absolute;
   top: -4px;
@@ -101,6 +105,15 @@
   background: var(--color-amber-400, #fbbf24);
   color: #000;
   white-space: nowrap;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.lowBannerBtn:hover {
+  background: var(--color-amber-500, #f59e0b);
+}
+
+.lowBannerBtn:active {
+  transform: scale(0.97);
 }
 
 /* ── Summary grid (2 cols) ───────────────────────────────────────────── */
@@ -170,6 +183,10 @@
 
 .recentPill:hover {
   background: var(--app-surface);
+}
+
+.recentPill:active {
+  transform: scale(0.97);
 }
 
 /* ── Desktop: 2-column layout ────────────────────────────────────────── */

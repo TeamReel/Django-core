@@ -19,6 +19,10 @@
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+.summaryCard:active {
+  transform: scale(0.98);
+}
+
 .alertCard {
   border-color: var(--color-error, #ef4444);
 }
@@ -107,6 +111,15 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  transition: opacity 0.12s;
+}
+
+.seeAll:hover {
+  opacity: 0.8;
+}
+
+.seeAll:active {
+  opacity: 0.6;
 }
 
 .emptyMini {
@@ -135,6 +148,10 @@
 
 .matchItem:hover {
   background: var(--app-bg);
+}
+
+.matchItem:active {
+  background: var(--app-active-bg, rgba(0, 0, 0, 0.08));
 }
 
 .matchDate {

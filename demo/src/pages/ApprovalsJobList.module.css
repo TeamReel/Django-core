@@ -34,6 +34,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  transition: box-shadow 0.15s, transform 0.1s;
 }
 
 .aiCard[data-clickable="true"] {
@@ -42,6 +43,10 @@
 
 .aiCard[data-clickable="true"]:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.09);
+}
+
+.aiCard[data-clickable="true"]:active {
+  transform: scale(0.98);
 }
 
 .aiCard[data-border="failed"] {
@@ -153,6 +158,7 @@
   border: 1px solid var(--app-border, #e5e7eb);
   gap: 10px;
   cursor: default;
+  transition: box-shadow 0.15s, transform 0.1s;
 }
 
 .videoCard[data-clickable="true"] {
@@ -161,6 +167,10 @@
 
 .videoCard[data-clickable="true"]:hover {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.09);
+}
+
+.videoCard[data-clickable="true"]:active {
+  transform: scale(0.98);
 }
 
 .videoCard[data-border="failed"] {
