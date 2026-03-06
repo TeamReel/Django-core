@@ -26,16 +26,24 @@
   border-color: var(--app-primary);
 }
 
-.skeleton {
-  height: 140px;
-  border-radius: 12px;
-  background: var(--app-bg);
-  animation: pulse 1.5s ease infinite;
+.loadingState {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.shimmerLine {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 .emptyState {

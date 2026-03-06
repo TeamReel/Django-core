@@ -1,0 +1,109 @@
+/* ContentBreakdownCard — Category bars */
+
+.card {
+  background: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--app-text);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.title { flex: 1; }
+
+.totalBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--app-bg);
+  color: var(--app-muted-text);
+}
+
+.seeAll {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.6;
+}
+.seeAll:hover { opacity: 1; }
+
+/* ── Bar list ──────────────────────────────── */
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.barLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.barIcon {
+  display: flex;
+  align-items: center;
+}
+
+.barText {
+  flex: 1;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.barCount {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--app-text);
+  min-width: 24px;
+  text-align: right;
+}
+
+.barTrack {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--app-bg);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+  min-width: 4px;
+}
+
+/* ── Shimmer ──────────────────────────────── */
+.barShimmer {
+  height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

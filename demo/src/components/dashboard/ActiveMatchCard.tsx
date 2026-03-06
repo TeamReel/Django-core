@@ -137,20 +137,17 @@ export const ActiveMatchCard: React.FC = () => {
   if (loading) {
     return (
       <div className={styles.card}>
-        <div className={styles.skeleton} />
+        <div className={styles.loadingState}>
+          <div className={styles.shimmerLine} style={{ width: '40%' }} />
+          <div className={styles.shimmerLine} style={{ width: '70%', height: '24px' }} />
+          <div className={styles.shimmerLine} style={{ width: '55%' }} />
+        </div>
       </div>
     );
   }
 
   if (!match) {
-    return (
-      <div className={styles.card}>
-        <div className={styles.emptyState}>
-          <Calendar size={24} />
-          <span>Geen wedstrijden gevonden</span>
-        </div>
-      </div>
-    );
+    return null; // Don't show empty card at all — saves space
   }
 
   const date = new Date(match.start_time);

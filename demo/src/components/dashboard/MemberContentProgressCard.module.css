@@ -1,0 +1,166 @@
+/* MemberContentProgressCard — Member progress bars */
+
+.card {
+  background: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--app-text);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.title { flex: 1; }
+
+.teamBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--app-primary);
+}
+
+.seeAll {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.6;
+}
+.seeAll:hover { opacity: 1; }
+
+/* ── Team-level bar ──────────────────────────── */
+.teamBar {
+  margin-bottom: 14px;
+}
+
+.teamBarTrack {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--app-bg);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.teamBarFill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--app-primary);
+  transition: width 0.5s ease;
+}
+
+.teamBarLabel {
+  font-size: 11px;
+  color: var(--app-muted-text);
+}
+
+/* ── Member list ──────────────────────────────── */
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.memberAvatar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitial {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-muted-text);
+}
+
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberName {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+
+.progressTrack {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--app-bg);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--app-primary);
+  transition: width 0.5s ease;
+  min-width: 4px;
+}
+
+.progressComplete {
+  background: #22c55e;
+}
+
+.memberPercent {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-muted-text);
+  min-width: 36px;
+  text-align: right;
+}
+
+.percentComplete {
+  color: #22c55e;
+}
+
+/* ── Shimmer ──────────────────────────────── */
+.memberShimmer {
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

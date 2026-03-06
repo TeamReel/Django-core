@@ -7,3 +7,6 @@ export {
   CreditsTrendCard,
   OrgStatsCard,
 } from './DashboardSummaries';
+export { RecentContentCard } from './RecentContentCard';
+export { ContentBreakdownCard } from './ContentBreakdownCard';
+export { MemberContentProgressCard } from './MemberContentProgressCard';

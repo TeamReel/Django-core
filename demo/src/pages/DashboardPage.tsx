@@ -3,22 +3,23 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Bell } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import {
   ActiveMatchCard,
   SquadReadinessCard,
-  ContentStatsCard,
   UpcomingMatchesCard,
   AIQueueCard,
   CreditsTrendCard,
   OrgStatsCard,
+  RecentContentCard,
+  ContentBreakdownCard,
+  MemberContentProgressCard,
 } from '../components/dashboard';
 import { QuickActions } from '../components/QuickActions';
 import { useUserRole } from '../components/PermissionGuards';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { useNavRecents } from '../hooks/useNavItems';
-import { useUnreadCount } from '../hooks/useNotifications';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -29,7 +30,6 @@ export default function DashboardPage() {
   const project = context.project as any;
   const hasProjectContext = !!project;
   const recents = useNavRecents();
-  const unreadCount = useUnreadCount();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,
@@ -79,16 +79,6 @@ export default function DashboardPage() {
               {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
             </p>
           </div>
-          <button
-            className={styles.notifBtn}
-            onClick={() => navigate('/notifications')}
-            aria-label="Notificaties"
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && (
-              <span className={styles.notifBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
-            )}
-          </button>
         </div>
 
         {/* ── Low balance banner (org admins only) ──────────────── */}
@@ -112,39 +102,30 @@ export default function DashboardPage() {
             {/* 1. Active Match — the match closest to now */}
             <ActiveMatchCard />
 
-            {/* 2. Summary Grid — role-adaptive */}
+            {/* 2. Compact status row — only unique-value cards */}
             <div className={styles.summaryGrid}>
               {!isMemberLevel && <SquadReadinessCard />}
-              <ContentStatsCard />
               {!isMemberLevel && <AIQueueCard />}
               {isOrgLevel && <CreditsTrendCard />}
             </div>
 
-            {/* 3. Upcoming Matches (compact list) */}
+            {/* 3. Content breakdown by type with progress bars */}
+            <ContentBreakdownCard />
+
+            {/* 4. Recent content with thumbnails */}
+            <RecentContentCard />
+
+            {/* 5. Member content progress */}
+            {!isMemberLevel && <MemberContentProgressCard />}
+
+            {/* 6. Upcoming Matches (compact list) */}
             <UpcomingMatchesCard />
 
-            {/* 4. Org Overview Stats (org admins without team scope) */}
+            {/* 7. Org Overview Stats (org admins without team scope) */}
             {isOrgLevel && !isTeamScope && <OrgStatsCard />}
 
-            {/* 5. Quick Actions — role-filtered */}
+            {/* 8. Quick Actions — role-filtered */}
             <QuickActions roleLevel={isOrgLevel ? 'org' : isMemberLevel ? 'member' : 'team'} />
-
-            {/* 6. Recents */}
-            {recents.length > 0 && (
-              <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <h3 className={styles.cardTitle}>Recent bezocht</h3>
-                  <Link to="/recents" className={styles.cardLink}>Alles</Link>
-                </div>
-                <div className={styles.recentsList}>
-                  {recents.slice(0, 6).map((item) => (
-                    <Link key={item.path} to={item.path} className={styles.recentPill} title={item.label}>
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ── Sidebar ──────────────────────────────────────────── */}
