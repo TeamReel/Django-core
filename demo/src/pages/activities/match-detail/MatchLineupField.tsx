@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { UserPlus, X } from 'lucide-react';
 import { FORMATION_LAYOUTS } from '../../identity/content-generation';
 import styles from './MatchLineupField.module.css';
 
@@ -45,21 +46,62 @@ export function FieldVisualization({
   const formationLayout =
     FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
 
-  const gkPool = (lineupSquad.goalkeeper || []).filter(
-    (p: any, idx: number, arr: any[]) =>
-      arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx
-  );
+  // ── Guest players ──
+  const [guestPlayers, setGuestPlayers] = useState<any[]>([]);
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestJersey, setGuestJersey] = useState('');
+
+  const addGuestPlayer = () => {
+    const name = guestName.trim();
+    if (!name) return;
+    const guest = {
+      id: `guest-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      isGuest: true,
+      user: { name },
+      metadata: guestJersey.trim() ? { shirt_number: guestJersey.trim() } : {},
+    };
+    setGuestPlayers((prev) => [...prev, guest]);
+    setGuestName('');
+    setGuestJersey('');
+    setShowGuestForm(false);
+  };
+
+  const removeGuestPlayer = (guestId: string) => {
+    setGuestPlayers((prev) => prev.filter((g) => g.id !== guestId));
+    // Also remove from lineup slots if assigned
+    const newGk = (lineupSlots.goalkeeper || []).map((id) => id === guestId ? '' : id);
+    const newPl = (lineupSlots.player || []).map((id) => id === guestId ? '' : id);
+    setLineupSlots({ ...lineupSlots, goalkeeper: newGk, player: newPl });
+  };
+
+  // ── Sort helper ──
+  const sortByName = (a: any, b: any) =>
+    getSquadMemberName(a).localeCompare(getSquadMemberName(b), 'nl');
+
+  const gkPool = (lineupSquad.goalkeeper || [])
+    .filter(
+      (p: any, idx: number, arr: any[]) =>
+        arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx
+    )
+    .concat(guestPlayers)
+    .sort(sortByName);
+
   const playersOnly = [
     ...(lineupSquad.goalkeeper || []),
     ...(lineupSquad.player || []),
   ];
-  const gkUserKeys = new Set(gkPool.map((p: any) => getUserKey(p)));
+  const gkUserKeys = new Set(
+    (lineupSquad.goalkeeper || []).map((p: any) => getUserKey(p))
+  );
   const playerPool = playersOnly
     .filter((p: any) => !gkUserKeys.has(getUserKey(p)))
     .filter(
       (p: any, idx: number, arr: any[]) =>
         arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx
-    );
+    )
+    .concat(guestPlayers)
+    .sort(sortByName);
 
   const gkSelected = lineupSlots.goalkeeper || [];
   const playerSelected = lineupSlots.player || [];
@@ -124,7 +166,7 @@ export function FieldVisualization({
                     Boolean
                   );
                   const isAlreadyUsed =
-                    allUsedIds.includes(p.id) && p.id !== currentId;
+                    !p.isGuest && allUsedIds.includes(p.id) && p.id !== currentId;
                   return (
                     <option
                       key={p.id}
@@ -134,6 +176,7 @@ export function FieldVisualization({
                     >
                       {jersey ? `#${jersey} ` : ''}
                       {name}
+                      {p.isGuest ? ' (gast)' : ''}
                       {isAlreadyUsed ? ' ✗' : ''}
                     </option>
                   );
@@ -149,6 +192,57 @@ export function FieldVisualization({
             </div>
           );
         })}
+      </div>
+
+      {/* Guest players section */}
+      <div className={`w-full mx-auto ${styles.guestSection}`}>
+        {guestPlayers.length > 0 && (
+          <div className={styles.guestTags}>
+            {guestPlayers.map((g) => (
+              <span key={g.id} className={styles.guestTag}>
+                {g.metadata?.shirt_number ? `#${g.metadata.shirt_number} ` : ''}
+                {getSquadMemberName(g)}
+                <button
+                  className={styles.guestTagRemove}
+                  onClick={() => removeGuestPlayer(g.id)}
+                  title="Verwijder gast"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {showGuestForm ? (
+          <div className={styles.guestForm}>
+            <input
+              className={styles.guestInput}
+              placeholder="Naam"
+              value={guestName}
+              onChange={(e) => setGuestName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addGuestPlayer()}
+              autoFocus
+            />
+            <input
+              className={`${styles.guestInput} ${styles.guestInputSmall}`}
+              placeholder="#"
+              value={guestJersey}
+              onChange={(e) => setGuestJersey(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addGuestPlayer()}
+            />
+            <button className={styles.guestAddBtn} onClick={addGuestPlayer}>
+              Toevoegen
+            </button>
+            <button className={styles.guestCancelBtn} onClick={() => { setShowGuestForm(false); setGuestName(''); setGuestJersey(''); }}>
+              Annuleren
+            </button>
+          </div>
+        ) : (
+          <button className={styles.addGuestBtn} onClick={() => setShowGuestForm(true)}>
+            <UserPlus size={14} /> Gastspeler toevoegen
+          </button>
+        )}
       </div>
 
       {/* Summary bar + Save button */}

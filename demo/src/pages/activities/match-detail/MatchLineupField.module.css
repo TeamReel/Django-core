@@ -219,3 +219,122 @@
   background: rgba(239, 68, 68, 0.15);
   color: var(--color-red-500);
 }
+
+/* ── Guest player section ── */
+.guestSection {
+  max-width: 500px;
+  width: 100%;
+}
+
+.addGuestBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text-secondary, #999);
+  background: transparent;
+  border: 1.5px dashed var(--app-border, #444);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.addGuestBtn:hover {
+  border-color: var(--color-green-400, #4ade80);
+  color: var(--color-green-400, #4ade80);
+}
+
+.guestForm {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.guestInput {
+  height: 36px;
+  padding: 0 10px;
+  font-size: 13px;
+  line-height: 36px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border, #444);
+  background: var(--app-surface-secondary, #2a2a2a);
+  color: var(--app-text-primary, #fff);
+  outline: none;
+  flex: 1;
+  min-width: 120px;
+}
+
+.guestInputSmall {
+  flex: 0;
+  min-width: 48px;
+  max-width: 56px;
+  text-align: center;
+}
+
+.guestInput:focus {
+  border-color: var(--color-green-400, #4ade80);
+}
+
+.guestAddBtn {
+  padding: 0 14px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  background: var(--field-green, #16a34a);
+  color: #fff;
+  cursor: pointer;
+}
+
+.guestCancelBtn {
+  padding: 0 10px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--app-border, #444);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--app-text-secondary, #999);
+  cursor: pointer;
+}
+
+.guestTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.guestTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.15);
+  color: var(--color-green-400, #4ade80);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+}
+
+.guestTagRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 2px;
+  opacity: 0.7;
+}
+
+.guestTagRemove:hover {
+  opacity: 1;
+}
