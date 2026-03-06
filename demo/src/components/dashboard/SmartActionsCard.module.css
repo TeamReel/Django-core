@@ -1,0 +1,112 @@
+.card {
+  background: var(--app-surface, #fff);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--text-secondary, #6b7280);
+}
+
+.title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Action list ── */
+
+.actionList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.actionItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--app-surface-alt, #f9fafb);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  text-align: left;
+}
+
+.actionItem:hover {
+  background: var(--app-surface-hover, #f3f4f6);
+  transform: translateX(2px);
+}
+
+.actionItem:active {
+  transform: scale(0.99);
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.actionText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+
+.actionLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actionSubtitle {
+  font-size: 0.76rem;
+  color: var(--text-secondary, #6b7280);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actionArrow {
+  flex-shrink: 0;
+  color: var(--text-tertiary, #9ca3af);
+}
+
+/* ── Loading shimmer ── */
+
+.shimmer {
+  height: 52px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--app-surface-alt, #f3f4f6) 25%,
+    var(--app-surface-hover, #e5e7eb) 50%,
+    var(--app-surface-alt, #f3f4f6) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

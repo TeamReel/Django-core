@@ -11,15 +11,13 @@ import {
   AIQueueCard,
   CreditsTrendCard,
   OrgStatsCard,
-  RecentContentCard,
   ContentBreakdownCard,
   MemberContentProgressCard,
 } from '../components/dashboard';
-import { QuickActions } from '../components/QuickActions';
+import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
 import { useUserRole } from '../components/PermissionGuards';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { useCreditBalance } from '../hooks/useCreditBalance';
-import { useNavRecents } from '../hooks/useNavItems';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -29,7 +27,6 @@ export default function DashboardPage() {
   const org = context.organisation as any;
   const project = context.project as any;
   const hasProjectContext = !!project;
-  const recents = useNavRecents();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,
@@ -40,7 +37,6 @@ export default function DashboardPage() {
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, isCoach, isPlayer, isSupporter } = useUserRole();
   const isOrgLevel = isSystemAdmin || isLandAdmin || isOrgAdmin;
   const isMemberLevel = isPlayer || isSupporter;
-  // Team-focused: when a project is selected, scope cards to that team
   const isTeamScope = hasProjectContext;
 
   // Pull-to-refresh
@@ -109,11 +105,11 @@ export default function DashboardPage() {
               {isOrgLevel && <CreditsTrendCard />}
             </div>
 
-            {/* 3. Content breakdown by type with progress bars */}
+            {/* 3. Content breakdown with progress bars */}
             <ContentBreakdownCard />
 
-            {/* 4. Recent content with thumbnails */}
-            <RecentContentCard />
+            {/* 4. Smart contextual quick actions */}
+            <SmartActionsCard />
 
             {/* 5. Member content progress */}
             {!isMemberLevel && <MemberContentProgressCard />}
@@ -123,9 +119,6 @@ export default function DashboardPage() {
 
             {/* 7. Org Overview Stats (org admins without team scope) */}
             {isOrgLevel && !isTeamScope && <OrgStatsCard />}
-
-            {/* 8. Quick Actions — role-filtered */}
-            <QuickActions roleLevel={isOrgLevel ? 'org' : isMemberLevel ? 'member' : 'team'} />
           </div>
 
           {/* ── Sidebar ──────────────────────────────────────────── */}

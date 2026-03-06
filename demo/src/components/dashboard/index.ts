@@ -10,3 +10,4 @@ export {
 export { RecentContentCard } from './RecentContentCard';
 export { ContentBreakdownCard } from './ContentBreakdownCard';
 export { MemberContentProgressCard } from './MemberContentProgressCard';
+export { SmartActionsCard } from './SmartActionsCard';
