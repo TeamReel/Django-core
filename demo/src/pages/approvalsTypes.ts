@@ -42,7 +42,7 @@ export function filterAiJobsByTab(jobs: GenerationJob[], tab: FilterState): Gene
     case 'review':
       return jobs.filter(j => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status));
     case 'active':
-      return jobs.filter(j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing');
+      return jobs.filter(j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing' || j.status === 'retrying');
     case 'completed':
       return jobs.filter(j => j.approval_status === 'approved');
     case 'rejected':

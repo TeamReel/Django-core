@@ -11,7 +11,7 @@ import { getApiBaseUrl } from '../utils/apiBase';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export type GenJobStatus = 'queued' | 'waiting' | 'processing' | 'completed' | 'failed' | 'cancelled';
+export type GenJobStatus = 'queued' | 'waiting' | 'processing' | 'retrying' | 'completed' | 'failed' | 'cancelled';
 export type GenJobApprovalStatus = 'pending_review' | 'approved' | 'rejected';
 
 /** One generated output variant (image or video). */
@@ -145,7 +145,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
   }, [fetchJobs, pollInterval]);
 
   // Derived counts
-  const activeJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing');
+  const activeJobs = jobs.filter((j) => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing' || j.status === 'retrying');
   const activeCount = activeJobs.length;
 
   return {

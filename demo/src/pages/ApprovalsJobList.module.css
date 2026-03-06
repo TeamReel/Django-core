@@ -113,6 +113,11 @@
   background-color: color-mix(in srgb, var(--color-blue-600) 9%, transparent);
 }
 
+.aiStatusBadge[data-status="retrying"] {
+  color: var(--app-warning, #F59E0B);
+  background-color: color-mix(in srgb, var(--app-warning, #F59E0B) 12%, transparent);
+}
+
 .aiStatusBadge[data-status="completed"] {
   color: var(--ajl-green-600);
   background-color: color-mix(in srgb, var(--ajl-green-600) 9%, transparent);

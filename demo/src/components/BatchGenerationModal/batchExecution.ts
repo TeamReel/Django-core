@@ -301,6 +301,7 @@ async function generateForMember(
       const statusData = statusJson.data || statusJson;
       if (statusData.status === 'completed') { pollResult = statusData.data || {}; break; }
       if (statusData.status === 'failed') throw new Error(statusData.error || 'Video generatie mislukt');
+      // retrying: keep polling — backend will re-dispatch the task automatically
     }
 
     if (!pollResult) throw new Error('Video generatie timeout');

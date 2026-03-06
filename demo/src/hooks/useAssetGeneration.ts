@@ -117,9 +117,22 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           throw new Error(data.error || 'Video generatie mislukt');
         }
 
+        // Retrying — transient error (503 / rate limit), backend will retry automatically
+        if (data.status === 'retrying') {
+          setProgress(10);
+          setError(data.message || 'AI model tijdelijk niet beschikbaar, wordt automatisch opnieuw geprobeerd…');
+          // Don't throw — keep polling, the task will be re-dispatched
+          continue;
+        }
+
         // Still processing — update progress from server
         if (typeof data.progress === 'number') {
           setProgress(Math.min(data.progress, 95));
+        }
+
+        // Clear any previous retrying message when back to processing
+        if (data.status === 'processing' || data.status === 'queued') {
+          setError(null);
         }
       }
 

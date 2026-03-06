@@ -32,7 +32,7 @@ export interface GenerationVariant {
   } | null;
 }
 
-export type GenerationStep = 'idle' | 'submitting' | 'polling' | 'queued' | 'completed' | 'error';
+export type GenerationStep = 'idle' | 'submitting' | 'polling' | 'queued' | 'retrying' | 'completed' | 'error';
 
 /** Data returned from the /save/ endpoint after accepting a variant */
 export interface SaveResult {

@@ -85,7 +85,7 @@ export function useQueueCounts(pollInterval = 30000): QueueCounts {
       const review = aiReview + videoReview;
 
       const aiActive = aiJobs.filter(
-        j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing',
+        j => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing' || j.status === 'retrying',
       ).length;
       const videoActive = videoJobs.filter(
         j => j.status === 'queued' || j.status === 'processing',

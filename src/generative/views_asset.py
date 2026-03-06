@@ -2426,6 +2426,11 @@ def generation_task_status_view(request: Request, task_id: str) -> Response:
         clean["data"] = task.get("data", {})
     elif task.get("status") == "failed":
         clean["error"] = task.get("error", "Unknown error")
+    elif task.get("status") == "retrying":
+        clean["error"] = task.get("error", "")
+        clean["message"] = task.get("message", "Wordt automatisch opnieuw geprobeerd…")
+        clean["retry_attempt"] = task.get("retry_attempt", 0)
+        clean["retry_max"] = task.get("retry_max", 3)
     elif task.get("message"):
         clean["message"] = task["message"]
 

@@ -67,7 +67,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
         [allAiJobs],
     );
     const inProgressJobs = useMemo(() =>
-        allAiJobs.filter(j => j.status === 'queued' || j.status === 'processing'),
+        allAiJobs.filter(j => j.status === 'queued' || j.status === 'processing' || j.status === 'retrying'),
         [allAiJobs],
     );
 

@@ -23,7 +23,7 @@ type UnifiedItem =
   | { kind: 'video'; job: VideoJob; sortDate: number };
 
 const statusIcon: Record<GenJobStatus, string> = {
-  queued: '⏳', waiting: '⏳', processing: '', completed: '✅', failed: '❌', cancelled: '',
+  queued: '⏳', waiting: '⏳', processing: '', retrying: '🔄', completed: '✅', failed: '❌', cancelled: '',
 };
 
 interface ApprovalsJobListProps {
@@ -83,7 +83,7 @@ export function ApprovalsJobList({
       {unifiedItems.map(item => {
         if (item.kind === 'ai') {
           const job = item.job;
-          const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting';
+          const isActive = job.status === 'processing' || job.status === 'queued' || job.status === 'waiting' || job.status === 'retrying';
           const isReviewable = job.status === 'completed' && (job.approval_status === 'pending_review' || !job.approval_status);
           const isClickable = job.status === 'completed';
           const approvalData = job.approval_status === 'approved'
@@ -126,6 +126,12 @@ export function ApprovalsJobList({
                 )}
                 {job.status === 'failed' && job.error_message && (
                   <div className={s.errorInline}>{job.error_message}</div>
+                )}
+                {job.status === 'retrying' && (
+                  <div className={s.errorInline} style={{ color: 'var(--app-warning, #F59E0B)' }}>
+                    🔄 AI model tijdelijk niet beschikbaar — wordt automatisch opnieuw geprobeerd…
+                    {job.error_message && <> ({job.error_message.slice(0, 100)})</>}
+                  </div>
                 )}
               </div>
               <div className={s.badgesCol}>

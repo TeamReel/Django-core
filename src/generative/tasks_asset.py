@@ -173,7 +173,7 @@ def _release_semaphore(provider: str, job_id: str) -> None:
 @shared_task(
     bind=True,
     name="generative.tasks.generate_asset_task",
-    max_retries=2,
+    max_retries=3,
     soft_time_limit=900,  # 15 min soft limit
     time_limit=960,  # 16 min hard limit
     rate_limit="6/m",  # max 6 tasks per minute from this queue
@@ -299,20 +299,47 @@ def generate_asset_task(
                 model=model,
             )
     except Exception as exc:
-        logger.exception("Asset generation failed for job %s: %s", job_id, exc)
+        error_str = str(exc)
+        logger.exception("Asset generation failed for job %s: %s", job_id, error_str)
+
+        # Classify error: only retry transient errors (503, rate limit, etc.)
+        TRANSIENT_KEYWORDS = ["503", "unavailable", "rate", "quota", "timeout", "429", "overloaded"]
+        is_transient = any(kw in error_str.lower() for kw in TRANSIENT_KEYWORDS)
+
+        if is_transient and self.request.retries < self.max_retries:
+            retry_delay = 30 * (self.request.retries + 1)
+            set_job(
+                job_id,
+                {
+                    "status": "retrying",
+                    "progress": 10,
+                    "message": (
+                        f"AI model tijdelijk niet beschikbaar. "
+                        f"Poging {self.request.retries + 2} van {self.max_retries + 1} "
+                        f"over {retry_delay}s…"
+                    ),
+                    "error": error_str,
+                    "provider": effective_provider,
+                },
+            )
+            _sync_job_status(
+                job_id,
+                "retrying",
+                progress=10,
+                error=f"Transient error (attempt {self.request.retries + 1}): {error_str[:200]}",
+            )
+            raise self.retry(exc=exc, countdown=retry_delay)
+
         set_job(
             job_id,
             {
                 "status": "failed",
-                "error": str(exc),
+                "error": error_str,
                 "provider": effective_provider,
             },
         )
-        _sync_job_status(job_id, "failed", error=str(exc))
-        # Retry transient errors
-        if self.request.retries < self.max_retries:
-            raise self.retry(exc=exc, countdown=30 * (self.request.retries + 1))
-        return {"status": "failed", "error": str(exc)}
+        _sync_job_status(job_id, "failed", error=error_str)
+        return {"status": "failed", "error": error_str}
     finally:
         _release_semaphore(effective_provider, job_id)
 
@@ -419,13 +446,64 @@ def _process_images(
                 }
             )
 
-    # Check if any variants succeeded — if all failed, mark job as failed
+    # Check if any variants succeeded — if all failed, check for transient retry
     all_errors = [v.get("error") for v in variants if v.get("error")]
     has_success = any(not v.get("error") for v in variants)
 
     if not has_success and variants:
-        # All variants failed (e.g., content-blocked by AI safety filter)
         combined_error = "; ".join(all_errors[:3])  # first 3 errors
+
+        # ── Transient error retry (503, rate limit, quota, timeout) ───
+        # If all errors look transient and we have retries left, re-queue
+        # with exponential backoff instead of immediately failing.
+        TRANSIENT_KEYWORDS = ["503", "unavailable", "rate", "quota", "timeout", "429", "overloaded"]
+        errors_lower = " ".join(str(e) for e in all_errors).lower()
+        is_transient = any(kw in errors_lower for kw in TRANSIENT_KEYWORDS)
+        retries_done = task.request.retries if task else 0
+        max_retries = task.max_retries if task else 2
+
+        if is_transient and retries_done < max_retries:
+            retry_delay = 30 * (retries_done + 1)  # 30s, 60s, 90s
+            logger.warning(
+                "Image generation job %s: all variants failed with transient error "
+                "(attempt %d/%d), retrying in %ds: %s",
+                job_id,
+                retries_done + 1,
+                max_retries,
+                retry_delay,
+                combined_error,
+            )
+            set_job(
+                job_id,
+                {
+                    "status": "retrying",
+                    "progress": 10,
+                    "message": (
+                        f"AI model tijdelijk niet beschikbaar. "
+                        f"Poging {retries_done + 2} van {max_retries + 1} "
+                        f"over {retry_delay}s…"
+                    ),
+                    "error": combined_error,
+                    "retry_attempt": retries_done + 1,
+                    "retry_max": max_retries,
+                    "provider": provider,
+                    "output_type": "image",
+                    "template_id": template_id,
+                },
+            )
+            _sync_job_status(
+                job_id,
+                "retrying",
+                progress=10,
+                error=f"Transient error (attempt {retries_done + 1}): {combined_error[:200]}",
+            )
+            # Raise to trigger Celery's built-in retry with countdown
+            raise task.retry(
+                exc=Exception(combined_error),
+                countdown=retry_delay,
+            )
+
+        # All variants failed permanently (e.g., content-blocked by safety filter)
         set_job(
             job_id,
             {
@@ -442,7 +520,7 @@ def _process_images(
         _sync_job_status(job_id, "failed", progress=100, error=combined_error)
 
         logger.warning(
-            "Image generation job %s: all %d variants failed: %s",
+            "Image generation job %s: all %d variants failed (permanent): %s",
             job_id,
             len(variants),
             combined_error,
@@ -540,15 +618,57 @@ def _process_video(
     elapsed = time.time() - t0
 
     if result.get("error"):
+        error_msg = result["error"]
+
+        # ── Transient error retry (503, rate limit, quota, timeout) ───
+        TRANSIENT_KEYWORDS = ["503", "unavailable", "rate", "quota", "timeout", "429", "overloaded"]
+        is_transient = any(kw in str(error_msg).lower() for kw in TRANSIENT_KEYWORDS)
+        retries_done = task.request.retries if task else 0
+        max_retries = task.max_retries if task else 2
+
+        if is_transient and retries_done < max_retries:
+            retry_delay = 30 * (retries_done + 1)
+            logger.warning(
+                "Video generation job %s: transient error (attempt %d/%d), " "retrying in %ds: %s",
+                job_id,
+                retries_done + 1,
+                max_retries,
+                retry_delay,
+                error_msg,
+            )
+            set_job(
+                job_id,
+                {
+                    "status": "retrying",
+                    "progress": 10,
+                    "message": (
+                        f"AI model tijdelijk niet beschikbaar. "
+                        f"Poging {retries_done + 2} van {max_retries + 1} "
+                        f"over {retry_delay}s…"
+                    ),
+                    "error": error_msg,
+                    "retry_attempt": retries_done + 1,
+                    "retry_max": max_retries,
+                    "provider": provider,
+                },
+            )
+            _sync_job_status(
+                job_id,
+                "retrying",
+                progress=10,
+                error=f"Transient error (attempt {retries_done + 1}): {str(error_msg)[:200]}",
+            )
+            raise task.retry(exc=Exception(error_msg), countdown=retry_delay)
+
         set_job(
             job_id,
             {
                 "status": "failed",
-                "error": result["error"],
+                "error": error_msg,
             },
         )
-        _sync_job_status(job_id, "failed", error=result["error"])
-        return {"status": "failed", "error": result["error"]}
+        _sync_job_status(job_id, "failed", error=error_msg)
+        return {"status": "failed", "error": error_msg}
 
     set_job(
         job_id,

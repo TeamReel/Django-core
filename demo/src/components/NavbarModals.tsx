@@ -235,12 +235,12 @@ export function NavbarQuickReviewModal({
             {inProgressJobs.map((j) => (
               <div key={j.task_id} className={`flex-row gap-12 p-12 rounded-8 mb-8 ${styles.jobRow}`}>
                 <div className={`${s.jobIcon} ${styles.jobIconStatus}`} data-processing={j.status === 'processing'}>
-                  {j.status === 'processing' ? '\u2699\ufe0f' : '\u23f3'}
+                  {j.status === 'processing' ? '\u2699\ufe0f' : j.status === 'retrying' ? '\ud83d\udd04' : '\u23f3'}
                 </div>
                 <div className="flex-1">
                   <div className="fs-13 fw-600 text-primary">{j.label || j.template_id}</div>
                   <div className={s.textSecondary11}>
-                    {j.status === 'processing' ? 'Bezig...' : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
+                    {j.status === 'processing' ? 'Bezig...' : j.status === 'retrying' ? 'Opnieuw proberen...' : 'In wachtrij'} {'\u00b7'} {new Date(j.created_at).toLocaleTimeString()}
                   </div>
                 </div>
               </div>

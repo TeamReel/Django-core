@@ -690,6 +690,7 @@ class GenerationJob(models.Model):
         QUEUED = "queued", "In wachtrij"
         WAITING = "waiting", "Wachten"
         PROCESSING = "processing", "Wordt verwerkt"
+        RETRYING = "retrying", "Opnieuw proberen"
         COMPLETED = "completed", "Voltooid"
         FAILED = "failed", "Mislukt"
         CANCELLED = "cancelled", "Geannuleerd"

@@ -106,6 +106,25 @@ export function ResultsStep({
         </div>
       )}
 
+      {/* Retrying (transient error — 503 / rate limit) */}
+      {generation.step === 'polling' && generation.error && (
+        <div className={`text-center ${styles.centeredSection}`}>
+          <div className={`mb-16 ${styles.emojiIcon}`} style={{ fontSize: '40px' }}>⏳</div>
+          <div className="fs-14 fw-600 mb-8">AI model tijdelijk niet beschikbaar</div>
+          <div
+            className={`fs-12 text-muted mx-auto mb-12 ${styles.constrainedText}`}
+          >
+            {generation.error}
+          </div>
+          <div
+            className={`fs-12 mx-auto ${styles.constrainedText}`}
+            style={{ color: 'var(--app-warning, #F59E0B)' }}
+          >
+            Wordt automatisch opnieuw geprobeerd… Even geduld.
+          </div>
+        </div>
+      )}
+
       {/* Completed — variant grid + feedback */}
       {generation.step === 'completed' && generation.variants.length > 0 && (
         <div>
