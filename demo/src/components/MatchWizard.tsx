@@ -38,7 +38,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   } = d;
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose}>
+    <BottomSheet isOpen={isOpen} onClose={handleClose} bodyClassName={styles.sheetBody}>
       <div className={`flex-col ${styles.root}`}>
 
         {/* ── Header: back + title + close ─────────────────────────── */}

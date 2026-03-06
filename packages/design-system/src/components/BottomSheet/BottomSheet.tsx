@@ -36,6 +36,8 @@ export interface BottomSheetProps {
   dragThreshold?: number;
   /** Custom className for the container */
   className?: string;
+  /** Custom className for the body wrapper (e.g. to remove padding) */
+  bodyClassName?: string;
   /** Show drag handle indicator (default: true) */
   showDragHandle?: boolean;
 }
@@ -74,6 +76,7 @@ export function BottomSheet({
   enableDragToDismiss = true,
   dragThreshold = 100,
   className,
+  bodyClassName,
   showDragHandle = true,
 }: BottomSheetProps): JSX.Element | null {
   const [isClosing, setIsClosing] = useState(false);
@@ -254,7 +257,7 @@ export function BottomSheet({
           )}
 
           {/* Body content */}
-          <div className={bottomSheetBody}>{children}</div>
+          <div className={`${bottomSheetBody}${bodyClassName ? ` ${bodyClassName}` : ''}`}>{children}</div>
 
           {/* Footer actions */}
           {footer && <footer className={bottomSheetFooter}>{footer}</footer>}

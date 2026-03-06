@@ -140,6 +140,8 @@ export const bottomSheetCloseButton = style({
 });
 
 export const bottomSheetBody = style({
+  display: 'flex',
+  flexDirection: 'column',
   padding: themeVars.spacing['5'],
   overflowY: 'auto',
   overflowX: 'hidden',
