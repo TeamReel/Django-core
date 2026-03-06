@@ -25,6 +25,12 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const [editingPosition, setEditingPosition] = useState<number | null>(null);
   const [lineupSaving, setLineupSaving] = useState(false);
 
+  // Error states per step
+  const [templatesError, setTemplatesError] = useState<string | null>(null);
+  const [squadError, setSquadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const matchesError = matchesLoadError ? 'Kon wedstrijden niet laden. Controleer je verbinding.' : null;
+
   const [pendingContent, setPendingContent] = useState<{
     key: string; label: string; subtype: string; templateType: string;
   } | null>(null);
@@ -39,7 +45,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const [templatesLoading, setTemplatesLoading] = useState(false);
 
   // Matches
-  const { activities, loading: matchesLoading } = useActivities({ limit: 10 });
+  const { activities, loading: matchesLoading, error: matchesLoadError } = useActivities({ limit: 10 });
   const upcomingMatches = activities.filter(a => {
     const isMatch = a.activity_type.toLowerCase().includes('match');
     return isMatch && new Date(a.start_time) > new Date();
@@ -123,10 +129,11 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     if (!projectId) return;
 
     setSquadLoading(true);
+    setSquadError(null);
     try {
       const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectId))}/members/?page_size=100`;
       const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-      if (!res.ok) { setSquadLoading(false); return; }
+      if (!res.ok) { setSquadError('Kon spelers niet laden'); setSquadLoading(false); return; }
 
       const raw = await res.json();
       let members: SquadMember[] = [];
@@ -168,6 +175,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       setSquadGroups(groups);
     } catch (err) {
       console.error('Failed to fetch squad:', err);
+      setSquadError('Kon spelers niet laden. Controleer je verbinding.');
     } finally {
       setSquadLoading(false);
     }
@@ -175,11 +183,12 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
   const fetchTemplates = async () => {
     setTemplatesLoading(true);
+    setTemplatesError(null);
     try {
       const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?is_active=true&page_size=500`, {
         credentials: 'include', headers: { 'Content-Type': 'application/json' },
       });
-      if (!res.ok) return;
+      if (!res.ok) { setTemplatesError('Kon sjablonen niet laden'); setTemplatesLoading(false); return; }
       const data = await res.json();
       const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
       const all: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
@@ -192,6 +201,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       setAvailableTemplates(grouped);
     } catch (err) {
       console.error('Failed to fetch templates:', err);
+      setTemplatesError('Kon sjablonen niet laden. Controleer je verbinding.');
     } finally {
       setTemplatesLoading(false);
     }
@@ -200,6 +210,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const saveLineup = async () => {
     if (!selectedMatch) return;
     setLineupSaving(true);
+    setSaveError(null);
     try {
       const matchId = (selectedMatch as any).slug || selectedMatch.id;
       const existingMetadata = (selectedMatch as any).metadata || {};
@@ -214,6 +225,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       });
     } catch (err) {
       console.error('Failed to save lineup:', err);
+      setSaveError('Opslaan mislukt. Probeer opnieuw.');
     } finally {
       setLineupSaving(false);
     }
@@ -346,6 +358,8 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     // Content
     selectedContentPhase, setSelectedContentPhase, pendingContent,
     isContentModalOpen, selectedTemplate, selectedContentTypeLabel,
+    // Errors
+    matchesError, templatesError, squadError, saveError,
     // Matches
     matchesLoading, upcomingMatches,
     // Handlers
@@ -354,5 +368,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     handleBack, handleClose,
     // Helpers
     getStepTitle, getMemberName, getMemberJersey, getMemberById,
+    // Retry
+    retrySquad: fetchSquad, retryTemplates: fetchTemplates,
   };
 }

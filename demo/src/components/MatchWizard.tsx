@@ -11,7 +11,7 @@
  */
 import React from 'react';
 import { BottomSheet } from '@django-core/design-system';
-import { ChevronRight, Check, Zap, Play, Clock, Calendar, MapPin } from 'lucide-react';
+import { ChevronRight, Check, Zap, Play, Clock, Calendar, MapPin, AlertTriangle, RefreshCw } from 'lucide-react';
 import SmartEmptyState from './SmartEmptyState';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import ContentGenerationModal from '../pages/identity/ContentGenerationModal';
@@ -33,6 +33,8 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     handleContentModalClose, handleContentGenerated,
     handleBack, handleClose,
     getStepTitle, setSelectedMatch, filledPositions, totalPositions,
+    matchesError, templatesError, squadError, saveError,
+    retrySquad, retryTemplates,
   } = d;
 
   return (
@@ -56,7 +58,18 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {/* ── Step 1: Match selection ─────────────────────────────── */}
           {currentStep === 'match' && (
             <div className="flex-col gap-10">
-              {matchesLoading ? (
+              {matchesError ? (
+                <div className={styles.errorBanner}>
+                  <AlertTriangle size={20} className={styles.errorIcon} />
+                  <div className="flex-1-min">
+                    <div className="fw-600 fs-14 text-primary">Fout bij laden</div>
+                    <div className="fs-13 text-muted">{matchesError}</div>
+                  </div>
+                  <button onClick={() => window.location.reload()} className={styles.retryBtn}>
+                    <RefreshCw size={16} />Opnieuw
+                  </button>
+                </div>
+              ) : matchesLoading ? (
                 <div className="text-center p-32 text-muted">Laden...</div>
               ) : upcomingMatches.length === 0 ? (
                 <SmartEmptyState type="matches" compact hideActions />
@@ -110,6 +123,18 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               </div>
 
               {/* Content type cards */}
+              {templatesError ? (
+                <div className={styles.errorBanner}>
+                  <AlertTriangle size={20} className={styles.errorIcon} />
+                  <div className="flex-1-min">
+                    <div className="fw-600 fs-14 text-primary">Sjablonen laden mislukt</div>
+                    <div className="fs-13 text-muted">{templatesError}</div>
+                  </div>
+                  <button onClick={retryTemplates} className={styles.retryBtn}>
+                    <RefreshCw size={16} />Opnieuw
+                  </button>
+                </div>
+              ) : null}
               <div className="flex-col gap-10">
                 {CONTENT_TYPES[selectedContentPhase].map((content: ContentType) => {
                   const Icon = content.icon;
@@ -227,6 +252,12 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         )}
         {currentStep === 'review' && (
           <div className={`border-top ${styles.bottomBar}`}>
+            {saveError && (
+              <div className={styles.errorBannerCompact}>
+                <AlertTriangle size={16} className={styles.errorIcon} />
+                <span className="fs-13 flex-1">{saveError}</span>
+              </div>
+            )}
             <button onClick={handleReviewConfirm}
               className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
               <Zap size={18} />Genereer content

@@ -358,3 +358,54 @@
     min-height: 32px;
   }
 }
+
+/* ── Error banner ──────────────────────────────────── */
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-error, #ef4444);
+  background-color: color-mix(in srgb, var(--color-error, #ef4444) 6%, var(--app-surface));
+}
+
+.errorBannerCompact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background-color: color-mix(in srgb, var(--color-error, #ef4444) 8%, var(--app-surface));
+  color: var(--color-error, #ef4444);
+}
+
+.errorIcon {
+  color: var(--color-error, #ef4444);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.retryBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  color: var(--app-primary);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.retryBtn:active {
+  transform: scale(0.95);
+  background-color: var(--app-surface-2);
+}

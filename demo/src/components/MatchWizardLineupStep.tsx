@@ -2,7 +2,7 @@
  * MatchWizardLineupStep — Step 3: position-by-position lineup editor.
  */
 import React from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, AlertTriangle, RefreshCw } from 'lucide-react';
 import SmartEmptyState from './SmartEmptyState';
 import { POSITIONS, getSquadMemberName, type SquadMember } from './matchWizardTypes';
 import type { useMatchWizardData } from './useMatchWizardData';
@@ -15,6 +15,7 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
     lineupSlots, squadLoading, editingPosition, setEditingPosition,
     filledPositions, totalPositions, allPlayers,
     handleSelectPlayer, getMemberName, getMemberJersey,
+    squadError, retrySquad,
   } = d;
 
   const usedMemberIds = [...(lineupSlots.goalkeeper || []), ...(lineupSlots.player || [])].filter(Boolean);
@@ -35,7 +36,18 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
         </div>
       </div>
 
-      {squadLoading ? (
+      {squadError ? (
+        <div className={styles.errorBanner}>
+          <AlertTriangle size={20} className={styles.errorIcon} />
+          <div className="flex-1-min">
+            <div className="fw-600 fs-14 text-primary">Fout bij laden</div>
+            <div className="fs-13 text-muted">{squadError}</div>
+          </div>
+          <button onClick={retrySquad} className={styles.retryBtn}>
+            <RefreshCw size={16} />Opnieuw
+          </button>
+        </div>
+      ) : squadLoading ? (
         <div className={`text-center p-32 ${styles.textMuted}`}>Spelers laden...</div>
       ) : allPlayers.length === 0 ? (
         <SmartEmptyState type="members" compact hideActions description="Geen spelers gevonden in het team." />
