@@ -1,0 +1,289 @@
+/* NextMatchHero — Premium hero card for next upcoming match */
+
+/* ── Hero Card ─────────────────────────────────────────────────────── */
+.hero {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle gradient shimmer accent on the left edge */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--app-primary) 0%, var(--color-success, #22c55e) 100%);
+  border-radius: 16px 0 0 16px;
+}
+
+/* ── Top bar ───────────────────────────────────────────────────────── */
+.heroTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.urgencyBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--app-bg);
+}
+
+.urgencyBadge[data-urgency="urgent"] {
+  color: var(--color-error, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.urgencyBadge[data-urgency="soon"] {
+  color: var(--color-warning, #f59e0b);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.urgencyBadge[data-urgency="upcoming"] {
+  color: var(--color-success, #22c55e);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.urgencyBadge[data-urgency="future"],
+.urgencyBadge[data-urgency="past"] {
+  color: var(--app-muted-text);
+}
+
+.dateLabel {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  font-weight: 500;
+}
+
+/* ── Main row ────────────────────────────────────────────────────── */
+.heroMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  padding: 4px 0;
+  margin-bottom: 12px;
+}
+
+.heroInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.opponentName {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.teamName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  margin-bottom: 4px;
+}
+
+.venue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--app-muted-text);
+}
+
+/* ── Readiness Ring ──────────────────────────────────────────────── */
+.ringWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.ringWrap svg {
+  transform: rotate(-90deg);
+}
+
+.ringProgress {
+  transition: stroke-dashoffset 0.6s ease;
+}
+
+.ringLabel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--app-text);
+}
+
+/* ── Readiness summary ───────────────────────────────────────────── */
+.readinessSummary {
+  background: var(--app-bg);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.readinessLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.checklistGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.checkItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+  white-space: nowrap;
+}
+
+.checkItem[data-status="done"] {
+  color: var(--color-success, #22c55e);
+}
+
+.checkItem[data-status="generating"] {
+  color: var(--color-warning, #f59e0b);
+}
+
+.checkDone {
+  color: var(--color-success, #22c55e);
+}
+
+.checkGenerating {
+  color: var(--color-warning, #f59e0b);
+  animation: spin 1s linear infinite;
+}
+
+.checkMissing {
+  color: var(--app-border);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── CTA buttons ─────────────────────────────────────────────────── */
+.heroCta {
+  display: flex;
+  gap: 8px;
+}
+
+.ctaPrimary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: var(--app-primary);
+  color: #fff;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.ctaPrimary:hover {
+  opacity: 0.9;
+}
+
+.ctaPrimary:active {
+  transform: scale(0.98);
+}
+
+.ctaSecondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  cursor: pointer;
+  background: var(--app-surface);
+  color: var(--app-text);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.ctaSecondary:hover {
+  background: var(--app-bg);
+}
+
+/* ── Empty state ─────────────────────────────────────────────────── */
+.emptyHero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 16px;
+  background: var(--app-surface);
+  border: 1px dashed var(--app-border);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.emptyIcon {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin-bottom: 2px;
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: var(--app-muted-text);
+}
+
+/* ── Skeleton ────────────────────────────────────────────────────── */
+.heroSkeleton {
+  margin-bottom: 16px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 400px) {
+  .heroCta {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,45 @@
+/* QuickActions — Horizontal 1-tap navigation bar */
+
+.bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 4px 10px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--app-text);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action:hover {
+  background: var(--app-bg);
+  border-color: var(--app-primary);
+}
+
+.action:active {
+  transform: scale(0.96);
+  background: var(--app-bg);
+}
+
+/* On very small screens, show 3 columns max */
+@media (max-width: 380px) {
+  .bar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -1,0 +1,1 @@
+export { NextMatchHero } from './NextMatchHero';

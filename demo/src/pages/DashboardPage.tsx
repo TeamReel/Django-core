@@ -4,28 +4,18 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  AlertTriangle, Megaphone, ClipboardList, PersonStanding,
-  Music, Target, Flag, Film, FolderOpen, Users, ChevronRight,
+  AlertTriangle, ChevronRight, FolderOpen, Users,
 } from 'lucide-react';
+import { NextMatchHero } from '../components/NextMatchHero';
+import { ContentStreakWidget } from '../components/ContentStreakWidget';
+import { QuickActions } from '../components/QuickActions';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
-import { useCreditBalance } from '../hooks/useCreditBalance';
 import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
+import { useCreditBalance } from '../hooks/useCreditBalance';
 import { useNavRecents } from '../hooks/useNavItems';
-import { useAppSelection } from '../hooks/useAppSelection';
 import { useUserRole } from '../components/PermissionGuards';
 import styles from './DashboardPage.module.css';
-
-/** Content types available from the dashboard quick-create */
-const QUICK_CREATE_TYPES = [
-  { key: 'flyer', label: 'Match Flyer', Icon: Megaphone },
-  { key: 'lineup', label: 'Lineup', Icon: ClipboardList },
-  { key: 'walkon', label: 'Walk-on Video', Icon: PersonStanding },
-  { key: 'anthem', label: 'Anthem Video', Icon: Music },
-  { key: 'goal', label: 'Goal Celebration', Icon: Target },
-  { key: 'end_score', label: 'Final Score', Icon: Flag },
-  { key: 'highlights', label: 'Highlights', Icon: Film },
-];
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -33,7 +23,6 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const org = context.organisation as any;
   const recents = useNavRecents();
-  const { matchId } = useAppSelection();
   const { isPlayer } = useUserRole();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
@@ -93,42 +82,19 @@ export default function DashboardPage() {
         <div className={styles.twoCol}>
           {/* ── Main column ──────────────────────────────────────── */}
           <div>
-            {/* Upcoming Matches — most actionable, goes first */}
+            {/* 1. Next Match Hero — readiness ring + CTA */}
+            {!isPlayer && <NextMatchHero />}
+
+            {/* 2. Content Streak */}
+            {!isPlayer && <ContentStreakWidget />}
+
+            {/* 3. Quick Actions — 1-tap nav */}
+            <QuickActions />
+
+            {/* 4. Upcoming Matches (remaining) */}
             <UpcomingMatchesWidget />
 
-            {/* Quick Create Content */}
-            {!isPlayer && (
-              <div className={styles.card}>
-                <div className={styles.cardHeader}>
-                  <h3 className={styles.cardTitle}>Content maken</h3>
-                  {matchId && (
-                    <Link to={`/matches/${matchId}?tab=content`} className={styles.cardLink}>
-                      Alles <ChevronRight size={14} style={{ verticalAlign: 'middle' }} />
-                    </Link>
-                  )}
-                </div>
-                {matchId ? (
-                  <div className={styles.quickGrid}>
-                    {QUICK_CREATE_TYPES.map((ct) => (
-                      <button
-                        key={ct.key}
-                        className={styles.quickBtn}
-                        onClick={() => navigate(`/matches/${matchId}?tab=content`)}
-                      >
-                        <ct.Icon size={22} />
-                        <span>{ct.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>
-                    Stel een wedstrijd als actief in om content te genereren.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Recents */}
+            {/* 5. Recents */}
             {recents.length > 0 && (
               <div className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -145,7 +111,7 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Stats (compact 4-col row) */}
+            {/* 6. Org quick links */}
             {org && (
               <div className={styles.card}>
                 <div className={styles.statsRow}>
