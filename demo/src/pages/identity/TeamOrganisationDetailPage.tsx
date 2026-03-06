@@ -319,6 +319,10 @@ export default function TeamOrganisationDetailPage() {
               onAdminLinkClick={!isPlayer ? () => {
                 navigate(`/${orgKeyForRoutes}/${clubKeyForRoutes}/${teamKeyForRoutes}/directory`);
               } : undefined}
+              apiBaseUrl={apiBaseUrl}
+              teamId={teamIdForDirectoryLists}
+              canEdit={!isPlayer}
+              onRefresh={tabData.refreshFullMembers}
             />
           )}
 

@@ -1,8 +1,9 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Users, ChevronRight, Camera, UserCog } from 'lucide-react';
+import { Search, Users, ChevronRight, Camera, UserCog, Pencil } from 'lucide-react';
 import { getMediaUrl, countFilledMediaSlots, memberHasMedia } from '../../utils/mediaHelpers';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
+import { MemberEditSheet } from './MemberEditSheet';
 import st from './TeamSelectieTab.module.css';
 
 interface TeamSelectieTabProps {
@@ -13,6 +14,13 @@ interface TeamSelectieTabProps {
   /** Show admin link at bottom */
   showAdminLink?: boolean;
   onAdminLinkClick?: () => void;
+  /** Required for edit functionality */
+  apiBaseUrl?: string;
+  teamId?: string;
+  /** Whether the current user can edit members */
+  canEdit?: boolean;
+  /** Callback to refresh member data after edits */
+  onRefresh?: () => void;
 }
 
 /* ── Name helpers ── */
@@ -102,11 +110,16 @@ export function TeamSelectieTab({
   memberDetailHref,
   showAdminLink,
   onAdminLinkClick,
+  apiBaseUrl,
+  teamId,
+  canEdit,
+  onRefresh,
 }: TeamSelectieTabProps) {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeRoleFilter, setActiveRoleFilter] = useState<string | null>(null);
+  const [editMember, setEditMember] = useState<any | null>(null);
   const expandRef = useRef<HTMLDivElement | null>(null);
 
   const q = search.trim().toLowerCase();
@@ -352,16 +365,28 @@ export function TeamSelectieTab({
                       })}
                     </div>
 
-                    {memberDetailHref && (
-                      <button
-                        type="button"
-                        className={st.expandAction}
-                        onClick={() => navigate(memberDetailHref(m))}
-                      >
-                        Bekijk profiel
-                        <ChevronRight size={14} />
-                      </button>
-                    )}
+                    <div className={st.expandActions}>
+                      {canEdit && apiBaseUrl && teamId && (
+                        <button
+                          type="button"
+                          className={st.expandActionEdit}
+                          onClick={() => setEditMember(m)}
+                        >
+                          <Pencil size={14} />
+                          Bewerken
+                        </button>
+                      )}
+                      {memberDetailHref && (
+                        <button
+                          type="button"
+                          className={st.expandAction}
+                          onClick={() => navigate(memberDetailHref(m))}
+                        >
+                          Bekijk profiel
+                          <ChevronRight size={14} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -377,6 +402,18 @@ export function TeamSelectieTab({
           Volledig ledenbeheer
           <ChevronRight size={14} />
         </button>
+      )}
+
+      {/* ── Member edit sheet ── */}
+      {canEdit && apiBaseUrl && teamId && (
+        <MemberEditSheet
+          opened={!!editMember}
+          onClose={() => setEditMember(null)}
+          membership={editMember}
+          apiBaseUrl={apiBaseUrl}
+          teamId={teamId}
+          onSaved={onRefresh}
+        />
       )}
     </div>
   );

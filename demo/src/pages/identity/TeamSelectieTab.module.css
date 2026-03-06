@@ -437,15 +437,42 @@
   max-width: 100%;
 }
 
-/* ── Expand action button ── */
+/* ── Expand action buttons ── */
+.expandActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.expandActionEdit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease;
+}
+
+.expandActionEdit:active {
+  background: rgba(245, 158, 11, 0.15);
+}
+
 .expandAction {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  width: 100%;
+  flex: 1;
   padding: 10px;
-  margin-top: 12px;
   font-size: 13px;
   font-weight: 600;
   color: #818cf8;

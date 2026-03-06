@@ -63,6 +63,8 @@ export function useTeamTabData({
   // ── Full members with media (for progress bars) ──
   const [fullMembers, setFullMembers] = useState<any[]>([]);
   const [fullMembersLoading, setFullMembersLoading] = useState(false);
+  const [fullMembersRefreshKey, setFullMembersRefreshKey] = useState(0);
+  const refreshFullMembers = () => setFullMembersRefreshKey((k) => k + 1);
 
   // ── Content count ──
   const [contentCount, setContentCount] = useState<number | null>(null);
@@ -428,7 +430,7 @@ export function useTeamTabData({
 
     void loadFullMembers();
     return () => { cancelled = true; };
-  }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists]);
+  }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists, fullMembersRefreshKey]);
 
   // ── Load content count (generation requests for this team) ──
   useEffect(() => {
@@ -516,6 +518,7 @@ export function useTeamTabData({
     // Media progress
     fullMembers,
     fullMembersLoading,
+    refreshFullMembers,
     assetStats,
     // Content
     contentCount,
