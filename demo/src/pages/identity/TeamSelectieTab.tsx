@@ -57,13 +57,7 @@ const ROLE_LABELS: Record<string, string> = {
   player: 'Speler',
   coach: 'Coach',
   keeper: 'Keeper',
-  captain: 'Aanvoerder',
-  assistant: 'Assistent',
-  manager: 'Manager',
-  physio: 'Fysiotherapeut',
-  medic: 'Medisch',
-  analyst: 'Analist',
-  parent: 'Ouder',
+  supporter: 'Supporter',
 };
 
 /** Access role → TeamReel display name */
@@ -80,16 +74,10 @@ const ACCESS_ROLE_COLORS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
+  player: '#818cf8',
   coach: '#f59e0b',
   keeper: '#06b6d4',
-  captain: '#a78bfa',
-  manager: '#f97316',
-  assistant: '#10b981',
-  physio: '#ec4899',
-  medic: '#ef4444',
-  analyst: '#6366f1',
-  parent: '#94a3b8',
-  player: '#818cf8',
+  supporter: '#94a3b8',
 };
 
 function getFunctionalRoles(m: any): string[] {

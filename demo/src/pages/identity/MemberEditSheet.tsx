@@ -7,18 +7,12 @@ import { X, Shield, Users, Check, Loader2 } from 'lucide-react';
 import { getCsrfToken } from '../../utils/csrf';
 import st from './MemberEditSheet.module.css';
 
-/* ── Functional role definitions ── */
+/* ── Functional role definitions (must match backend valid choices) ── */
 const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string; emoji: string }> = [
-  { value: 'player',    label: 'Speler',         emoji: '⚽' },
-  { value: 'keeper',    label: 'Keeper',         emoji: '🧤' },
-  { value: 'captain',   label: 'Aanvoerder',     emoji: '©️' },
-  { value: 'coach',     label: 'Coach',          emoji: '📋' },
-  { value: 'assistant', label: 'Assistent',      emoji: '🤝' },
-  { value: 'manager',   label: 'Manager',        emoji: '💼' },
-  { value: 'physio',    label: 'Fysiotherapeut',  emoji: '🏥' },
-  { value: 'medic',     label: 'Medisch',        emoji: '⛑️' },
-  { value: 'analyst',   label: 'Analist',        emoji: '📊' },
-  { value: 'parent',    label: 'Ouder',          emoji: '👪' },
+  { value: 'player',    label: 'Speler',     emoji: '⚽' },
+  { value: 'coach',     label: 'Coach',      emoji: '📋' },
+  { value: 'keeper',    label: 'Keeper',     emoji: '🧤' },
+  { value: 'supporter', label: 'Supporter',  emoji: '📣' },
 ];
 
 const ACCESS_ROLES: Array<{ value: string; label: string; desc: string }> = [
@@ -28,16 +22,10 @@ const ACCESS_ROLES: Array<{ value: string; label: string; desc: string }> = [
 ];
 
 const ROLE_COLORS: Record<string, string> = {
+  player: '#818cf8',
   coach: '#f59e0b',
   keeper: '#06b6d4',
-  captain: '#a78bfa',
-  manager: '#f97316',
-  assistant: '#10b981',
-  physio: '#ec4899',
-  medic: '#ef4444',
-  analyst: '#6366f1',
-  parent: '#94a3b8',
-  player: '#818cf8',
+  supporter: '#94a3b8',
 };
 
 function readFunctionalRoles(m: any): string[] {
@@ -141,11 +129,13 @@ export function MemberEditSheet({
       // 2) Sync functional roles via assign/unassign
       const userId = user?.id;
       if (userId) {
+        const VALID_API_ROLES = new Set(FUNCTIONAL_ROLE_OPTIONS.map((o) => o.value));
         const oldRoles = new Set(readFunctionalRoles(membership));
         const newRoles = functionalRoles;
 
-        const toAssign = [...newRoles].filter((r) => !oldRoles.has(r));
-        const toUnassign = [...oldRoles].filter((r) => !newRoles.has(r));
+        // Only send roles the backend accepts
+        const toAssign = [...newRoles].filter((r) => !oldRoles.has(r) && VALID_API_ROLES.has(r));
+        const toUnassign = [...oldRoles].filter((r) => !newRoles.has(r) && VALID_API_ROLES.has(r));
 
         if (toAssign.length > 0) {
           const res = await fetch(
