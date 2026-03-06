@@ -30,15 +30,47 @@ function extractItems<T = any>(json: any): T[] {
 export const SquadReadinessCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
+  const apiBaseUrl = getApiBaseUrl();
   const org = context.organisation as any;
-  const memberCount = org?.member_count || 0;
+  const project = context.project as any;
+  const [memberCount, setMemberCount] = useState<number>(0);
 
-  // For a real implementation we'd use useSeasonContext + member media data.
-  // For now, show member count + navigate to team page.
+  useEffect(() => {
+    if (project && org) {
+      // Fetch team member count from project members API
+      (async () => {
+        try {
+          const res = await fetch(
+            `${apiBaseUrl}/api/v1/organisations/${org.slug}/projects/${project.slug}/members/?page_size=1`,
+            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+          );
+          if (res.ok) {
+            const data = await res.json();
+            setMemberCount(data?.meta?.pagination?.count ?? data?.count ?? extractItems(data).length);
+          }
+        } catch {
+          setMemberCount(0);
+        }
+      })();
+    } else {
+      setMemberCount(org?.member_count || 0);
+    }
+  }, [apiBaseUrl, org?.slug, project?.slug]);
+
+  const handleClick = () => {
+    if (project) {
+      navigate(`/teams/${project.slug || project.id}/squad`);
+    } else if (org) {
+      navigate(`/organisations/${org.slug}`);
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div
       className={styles.summaryCard}
-      onClick={() => navigate(org ? `/organisations/${org.slug}` : '/')}
+      onClick={handleClick}
       role="button"
       tabIndex={0}
     >
@@ -47,7 +79,7 @@ export const SquadReadinessCard: React.FC = () => {
       </div>
       <div className={styles.cardContent}>
         <div className={styles.cardValue}>{memberCount}</div>
-        <div className={styles.cardLabel}>Leden</div>
+        <div className={styles.cardLabel}>{project ? 'Selectie' : 'Leden'}</div>
       </div>
       <ChevronRight size={16} className={styles.cardArrow} />
     </div>
@@ -57,28 +89,34 @@ export const SquadReadinessCard: React.FC = () => {
 /* ── Content Stats ────────────────────────────────────────────────── */
 
 export const ContentStatsCard: React.FC = () => {
+  const { context } = useContextSwitcher();
   const [count, setCount] = useState<number | null>(null);
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
+  const project = context.project as any;
 
   useEffect(() => {
     (async () => {
       try {
-        // Content created in the last 7 days
+        // Content created in the last 7 days, scoped to project if available
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        const projectParam = project ? `&project=${project.id}` : '';
         const res = await fetch(
-          `${apiBaseUrl}/api/v1/media/items/?created_at__gte=${encodeURIComponent(weekAgo)}&page_size=1`,
+          `${apiBaseUrl}/api/v1/media/items/?created_at__gte=${encodeURIComponent(weekAgo)}${projectParam}&page_size=1`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
         );
         if (res.ok) {
           const data = await res.json();
-          setCount(data?.meta?.pagination?.count ?? extractItems(data).length);
+          setCount(data?.meta?.pagination?.count ?? data?.count ?? extractItems(data).length);
+        } else {
+          // Gracefully handle backend errors (e.g. 500)
+          setCount(0);
         }
       } catch {
         setCount(0);
       }
     })();
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, project?.id]);
 
   return (
     <div
@@ -111,16 +149,19 @@ interface CompactMatch {
 }
 
 export const UpcomingMatchesCard: React.FC = () => {
+  const { context } = useContextSwitcher();
   const [matches, setMatches] = useState<CompactMatch[]>([]);
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
+  const project = context.project as any;
 
   useEffect(() => {
     (async () => {
       try {
         const now = new Date().toISOString();
+        const projectParam = project ? `&project=${project.id}` : '';
         const res = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=3`,
+          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=3${projectParam}`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
         );
         if (res.ok) {
@@ -130,7 +171,7 @@ export const UpcomingMatchesCard: React.FC = () => {
         // silent
       }
     })();
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, project?.id]);
 
   return (
     <div className={`${styles.summaryCard} ${styles.tallCard}`}>

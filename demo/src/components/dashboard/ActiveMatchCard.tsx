@@ -11,6 +11,7 @@ import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
   Circle, Trophy, Sparkles, Calendar,
 } from 'lucide-react';
+import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import styles from './ActiveMatchCard.module.css';
@@ -43,11 +44,13 @@ interface Match {
 /* ── Component ─────────────────────────────────────────────────────── */
 
 export const ActiveMatchCard: React.FC = () => {
+  const { context } = useContextSwitcher();
   const [match, setMatch] = useState<Match | null>(null);
   const [contentCount, setContentCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
+  const project = context.project as any;
 
   useEffect(() => {
     let cancelled = false;
@@ -56,15 +59,16 @@ export const ActiveMatchCard: React.FC = () => {
       try {
         setLoading(true);
         const now = new Date().toISOString();
+        const projectParam = project ? `&project=${project.id}` : '';
 
         // Fetch both recent past and near future matches in parallel
         const [pastRes, futureRes] = await Promise.all([
           fetch(
-            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__lte=${encodeURIComponent(now)}&ordering=-start_time&page_size=3`,
+            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__lte=${encodeURIComponent(now)}&ordering=-start_time&page_size=3${projectParam}`,
             { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
           ),
           fetch(
-            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=3`,
+            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=3${projectParam}`,
             { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
           ),
         ]);
@@ -88,16 +92,20 @@ export const ActiveMatchCard: React.FC = () => {
 
         if (!cancelled) setMatch(closest);
 
-        // Count content items for this match
+        // Count content items for this match (gracefully handle 500s)
         if (closest) {
-          const mediaRes = await fetch(
-            `${apiBaseUrl}/api/v1/media/items/?activity=${closest.id}&page_size=1`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          );
-          if (mediaRes.ok) {
-            const mediaData = await mediaRes.json();
-            const count = mediaData?.meta?.pagination?.count ?? extractItems(mediaData).length;
-            if (!cancelled) setContentCount(count);
+          try {
+            const mediaRes = await fetch(
+              `${apiBaseUrl}/api/v1/media/items/?activity=${closest.id}&page_size=1`,
+              { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+            );
+            if (mediaRes.ok) {
+              const mediaData = await mediaRes.json();
+              const count = mediaData?.meta?.pagination?.count ?? mediaData?.count ?? extractItems(mediaData).length;
+              if (!cancelled) setContentCount(count);
+            }
+          } catch {
+            // Media items endpoint may fail — ignore
           }
         }
       } catch {
@@ -108,7 +116,7 @@ export const ActiveMatchCard: React.FC = () => {
     })();
 
     return () => { cancelled = true; };
-  }, [apiBaseUrl]);
+  }, [apiBaseUrl, project?.id]);
 
   // Derived state
   const matchState = useMemo(() => {

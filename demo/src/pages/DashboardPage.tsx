@@ -26,6 +26,8 @@ export default function DashboardPage() {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
   const org = context.organisation as any;
+  const project = context.project as any;
+  const hasProjectContext = !!project;
   const recents = useNavRecents();
   const unreadCount = useUnreadCount();
 
@@ -38,6 +40,8 @@ export default function DashboardPage() {
   const { isSystemAdmin, isLandAdmin, isOrgAdmin, isCoach, isPlayer, isSupporter } = useUserRole();
   const isOrgLevel = isSystemAdmin || isLandAdmin || isOrgAdmin;
   const isMemberLevel = isPlayer || isSupporter;
+  // Team-focused: when a project is selected, scope cards to that team
+  const isTeamScope = hasProjectContext;
 
   // Pull-to-refresh
   const [refreshKey, setRefreshKey] = useState(0);
@@ -49,7 +53,6 @@ export default function DashboardPage() {
   const isSuperadmin =
     Boolean((user as any)?.is_superuser) ||
     String((user as any)?.role || '').toLowerCase() === 'superadmin';
-  const hasProjectContext = !!context.project;
 
   const activityFilterProps = isSuperadmin
     ? {}
@@ -73,7 +76,7 @@ export default function DashboardPage() {
               Welkom, {user?.first_name || 'there'}
             </h1>
             <p className={styles.orgSubtitle}>
-              {org ? org.name : 'Selecteer een organisatie'}
+              {project ? project.name : org ? org.name : 'Selecteer een organisatie'}
             </p>
           </div>
           <button
@@ -120,8 +123,8 @@ export default function DashboardPage() {
             {/* 3. Upcoming Matches (compact list) */}
             <UpcomingMatchesCard />
 
-            {/* 4. Org Overview Stats (org admins only) */}
-            {isOrgLevel && <OrgStatsCard />}
+            {/* 4. Org Overview Stats (org admins without team scope) */}
+            {isOrgLevel && !isTeamScope && <OrgStatsCard />}
 
             {/* 5. Quick Actions — role-filtered */}
             <QuickActions roleLevel={isOrgLevel ? 'org' : isMemberLevel ? 'member' : 'team'} />

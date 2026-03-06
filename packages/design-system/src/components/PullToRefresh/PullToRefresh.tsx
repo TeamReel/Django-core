@@ -82,7 +82,7 @@ export function PullToRefresh({
   );
 
   const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
+    (e: TouchEvent) => {
       if (disabled || state === 'refreshing') return;
       if (startY.current === 0) return;
 
@@ -115,6 +115,17 @@ export function PullToRefresh({
     },
     [disabled, state, threshold, maxPullDistance]
   );
+
+  // Attach touchmove via native addEventListener with { passive: false }
+  // to avoid "Unable to preventDefault inside passive event listener" warnings.
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [handleTouchMove]);
 
   const handleTouchEnd = useCallback(async () => {
     if (disabled || state === 'refreshing') return;
@@ -174,7 +185,6 @@ export function PullToRefresh({
       ref={containerRef}
       className={`${pullToRefreshContainer} ${className ?? ''}`}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Pull indicator */}
