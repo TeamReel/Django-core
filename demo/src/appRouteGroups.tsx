@@ -91,6 +91,8 @@ import {
   // Files / Media
   FilesPage,
   MediaLibraryPage,
+  // Member detail (season context)
+  ProjectSeasonMemberDetailPage,
 } from './appLazyImports';
 
 // =============================================================================
@@ -142,6 +144,7 @@ export function getHierarchyRoutes(): React.ReactNode[] {
     <Route key="h-vanity-team" path="/:orgId/:clubId/:projectId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />,
     <Route key="h-vanity-team-seasons" path="/:orgId/:clubId/:projectId/seasons" element={<ProtectedRoute><TeamSeasonsRedirect /></ProtectedRoute>} />,
     <Route key="h-vanity-season" path="/:orgId/:clubId/:projectId/:seasonId" element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} />,
+    <Route key="h-vanity-member" path="/:orgId/:clubId/:projectId/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
     <Route key="h-vanity-comp" path="/:orgId/:clubId/:projectId/:seasonId/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
     <Route key="h-vanity-match" path="/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><MatchDetailPage /></ProtectedRoute>} />,
 
@@ -149,14 +152,17 @@ export function getHierarchyRoutes(): React.ReactNode[] {
     <Route key="h-org-vanity-team" path="/organisations/:orgId/:clubId/:projectId" element={<ProtectedRoute><TeamDetailPage /></ProtectedRoute>} />,
     <Route key="h-org-vanity-team-seasons" path="/organisations/:orgId/:clubId/:projectId/seasons" element={<ProtectedRoute><TeamSeasonsRedirect /></ProtectedRoute>} />,
     <Route key="h-org-vanity-season" path="/organisations/:orgId/:clubId/:projectId/:seasonId" element={<ProtectedRoute><SeasonDetailPage /></ProtectedRoute>} />,
+    <Route key="h-org-vanity-member" path="/organisations/:orgId/:clubId/:projectId/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
     <Route key="h-org-vanity-comp" path="/organisations/:orgId/:clubId/:projectId/:seasonId/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
     <Route key="h-org-vanity-match" path="/organisations/:orgId/:clubId/:projectId/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><MatchDetailPage /></ProtectedRoute>} />,
 
     // ── Back-compat: vanity routes with explicit /seasons segment ──
     <Route key="h-bc-season" path="/:orgId/:clubId/:projectId/seasons/:seasonId" element={<ProtectedRoute><TeamSeasonRedirect /></ProtectedRoute>} />,
+    <Route key="h-bc-member" path="/:orgId/:clubId/:projectId/seasons/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
     <Route key="h-bc-comp" path="/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
     <Route key="h-bc-match" path="/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><TeamMatchRedirect /></ProtectedRoute>} />,
     <Route key="h-org-bc-season" path="/organisations/:orgId/:clubId/:projectId/seasons/:seasonId" element={<ProtectedRoute><TeamSeasonRedirect /></ProtectedRoute>} />,
+    <Route key="h-org-bc-member" path="/organisations/:orgId/:clubId/:projectId/seasons/:seasonId/members/:memberId" element={<ProtectedRoute><ProjectSeasonMemberDetailPage /></ProtectedRoute>} />,
     <Route key="h-org-bc-comp" path="/organisations/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId" element={<ProtectedRoute><TeamCompetitionRedirect /></ProtectedRoute>} />,
     <Route key="h-org-bc-match" path="/organisations/:orgId/:clubId/:projectId/seasons/:seasonId/:competitionId/:matchId" element={<ProtectedRoute><TeamMatchRedirect /></ProtectedRoute>} />,
   ];

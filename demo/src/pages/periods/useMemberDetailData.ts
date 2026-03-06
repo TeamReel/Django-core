@@ -107,7 +107,7 @@ export function useMemberDetailData(): MemberDetailData {
     apiBaseUrl,
   } = useSeasonContext();
 
-  const membershipId = String((params as any).competitionId || '').trim();
+  const membershipId = String((params as any).memberId || (params as any).competitionId || '').trim();
 
   // ── Tab navigation ──
   const activeTab = useMemo(() => {

@@ -351,7 +351,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
     (membershipId: string): string => {
       const mid = String(membershipId || '').trim();
       if (!mid || !isTeamRoute || !seasonPathKey) return '';
-      return `${seasonsBasePath}/${seasonPathKey}/${encodeURIComponent(mid)}`;
+      return `${seasonsBasePath}/${seasonPathKey}/members/${encodeURIComponent(mid)}`;
     },
     [isTeamRoute, seasonsBasePath, seasonPathKey],
   );

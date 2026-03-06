@@ -26,6 +26,9 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const [editingPosition, setEditingPosition] = useState<number | null>(null);
   const [lineupSaving, setLineupSaving] = useState(false);
 
+  // Matches
+  const { activities, loading: matchesLoading, error: matchesLoadError } = useActivities({ limit: 10 });
+
   // Error states per step
   const [templatesError, setTemplatesError] = useState<string | null>(null);
   const [squadError, setSquadError] = useState<string | null>(null);
@@ -44,9 +47,6 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   // Templates
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
-
-  // Matches
-  const { activities, loading: matchesLoading, error: matchesLoadError } = useActivities({ limit: 10 });
   const upcomingMatches = activities.filter(a => {
     const isMatch = a.activity_type.toLowerCase().includes('match');
     return isMatch && new Date(a.start_time) > new Date();
