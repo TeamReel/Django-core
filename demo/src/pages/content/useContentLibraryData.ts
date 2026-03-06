@@ -31,9 +31,11 @@ interface Params {
   orgSlug: string | undefined;
   activeLevel: HierarchyTab;
   urlCategory: ContentCategory | null;
+  /** Pre-selected team ID from useAppSelection — auto-scopes gallery to user's team */
+  autoTeamId?: string | null;
 }
 
-export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory }: Params) {
+export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory, autoTeamId }: Params) {
   // ── Data state ──
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,15 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   const [selectedTeamId, setSelectedTeamId] = useState<string>('');
   const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
+  const [autoScopeApplied, setAutoScopeApplied] = useState(false);
+
+  // ── Auto-scope to user's team if available ──
+  useEffect(() => {
+    if (autoTeamId && !autoScopeApplied && !selectedTeamId) {
+      setSelectedTeamId(autoTeamId);
+      setAutoScopeApplied(true);
+    }
+  }, [autoTeamId, autoScopeApplied, selectedTeamId]);
 
   // ── Content filter state ──
   const [categoryFilter, setCategoryFilter] = useState<ContentCategory>(urlCategory || 'all');

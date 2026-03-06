@@ -21,6 +21,44 @@
   min-height: auto;
 }
 
+/* ── Gallery header ── */
+
+.galleryHeader {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--app-border, rgba(255, 255, 255, 0.08));
+  background: var(--app-surface, #1a1a2e);
+}
+
+.galleryHeaderInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.galleryTitleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.galleryTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1.2;
+}
+
+.gallerySub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--app-text-secondary, #999);
+}
+
 /* ── Category tab bar ── */
 
 .categoryTabBarWrapper {

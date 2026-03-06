@@ -27,6 +27,7 @@ import {
 } from './contentLibraryTypes';
 import { ContentCard, FilterChip, EmptyState, ContentPreviewModal } from './ContentCard';
 import { GalleryCreateContentButton } from './GalleryCreateContentButton';
+import { GalleryMatchTimeline } from './GalleryMatchTimeline';
 import { useContentLibraryData } from './useContentLibraryData';
 import { getAssetTypeLabel } from './contentLibraryTypes';
 import styles from './ContentLibraryPage.module.css';
@@ -47,7 +48,7 @@ export interface ContentLibraryViewProps {
 export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded = false, overrideLevel }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { matchId } = useAppSelection();
+  const { matchId, teamIdForApi } = useAppSelection();
   const { context, organisations: myOrganisations } = useContextSwitcher();
   const { user } = useAuth();
   const orgId = (context as any)?.organisation?.id as string | undefined;
@@ -61,8 +62,11 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   const activeLevel = (['match', 'season', 'member', 'team', 'club'].includes(rawTab) ? rawTab : 'match') as HierarchyTab;
   const urlCategory = params.get('category') as ContentCategory | null;
 
-  // Data hook
-  const data = useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory });
+  // Data hook — auto-scope to user's team
+  const data = useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory, autoTeamId: teamIdForApi });
+
+  // Show timeline view when on match level with no specific subtype filter and no search
+  const showTimeline = !embedded && data.subtypeFilter === 'all' && !data.searchQuery;
 
   // Preview state
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
@@ -117,12 +121,16 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
     <div className={styles.pageWrapper} data-embedded={String(embedded)}>
       {/* Header */}
       {!embedded && (
-        <div className="p-24 border-bottom bg-surface">
-          <div className="flex-between gap-12">
-            <Stack direction="column" gap="1">
-              <Text size="xl" weight="bold">Gallery</Text>
-              <Text size="md" color="secondary">Al je gegenereerde content op één plek</Text>
-            </Stack>
+        <div className={styles.galleryHeader}>
+          <div className={styles.galleryHeaderInner}>
+            <div className={styles.galleryTitleBlock}>
+              <h1 className={styles.galleryTitle}>Gallery</h1>
+              <p className={styles.gallerySub}>
+                {data.selectedTeamId
+                  ? `Content van je team`
+                  : 'Al je gegenereerde content op één plek'}
+              </p>
+            </div>
             <GalleryCreateContentButton />
           </div>
         </div>
@@ -264,43 +272,57 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
       </div>
 
       {/* Content area */}
-      <div className={styles.contentArea}>
-        <Stack direction="column" gap="4">
-          {/* Subtype chips (category has subtypes) */}
-          {data.categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.length! > 0 && (
-            <div className={styles.chipsRow}>
-              <FilterChip active={data.subtypeFilter === 'all'} onClick={() => data.setSubtypeFilter('all')} label="All" count={data.subtypeCounts.all || 0} />
-              {CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.map(st => {
-                const filter = CONTENT_TYPE_FILTERS.find(f => f.key === st);
-                return (
-                  <FilterChip
-                    key={st}
-                    active={data.subtypeFilter === st}
-                    onClick={() => data.setSubtypeFilter(st)}
-                    label={`${filter?.icon || '📄'} ${filter?.label || getAssetTypeLabel(st)}`}
-                    count={data.subtypeCounts[st] || 0}
-                  />
-                );
-              })}
-            </div>
-          )}
+      {data.error && <div className={styles.contentArea}><Alert variant="error">{data.error}</Alert></div>}
 
-          {data.categoryFilter === 'all' && (
-            <div className={styles.chipsRow}>
-              {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => (
-                <FilterChip key={key} active={data.subtypeFilter === key} onClick={() => data.setSubtypeFilter(key)} label={`${icon} ${label}`} count={data.subtypeCounts[key] || 0} />
-              ))}
-            </div>
-          )}
+      {data.loading && (
+        <div className={`text-center ${styles.loadingArea}`}><Text color="secondary">Content laden...</Text></div>
+      )}
 
-          {data.error && <Alert variant="error">{data.error}</Alert>}
+      {!data.loading && !data.error && showTimeline && (
+        <>
+          {/* Timeline view — grouped by match */}
+          <GalleryMatchTimeline
+            items={data.filteredContent}
+            onPreview={handlePreview}
+            onDownload={handleDownload}
+            onShare={handleShare}
+            onDelete={handleDelete}
+            onNavigateToMatches={() => navigate('/matches')}
+          />
+        </>
+      )}
 
-          {data.loading && (
-            <div className={`text-center ${styles.loadingArea}`}><Text color="secondary">Content laden...</Text></div>
-          )}
+      {!data.loading && !data.error && !showTimeline && (
+        <div className={styles.contentArea}>
+          <Stack direction="column" gap="4">
+            {/* Subtype chips (category has subtypes) */}
+            {data.categoryFilter !== 'all' && CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.length! > 0 && (
+              <div className={styles.chipsRow}>
+                <FilterChip active={data.subtypeFilter === 'all'} onClick={() => data.setSubtypeFilter('all')} label="All" count={data.subtypeCounts.all || 0} />
+                {CONTENT_CATEGORIES.find(c => c.key === data.categoryFilter)?.subtypes.map(st => {
+                  const filter = CONTENT_TYPE_FILTERS.find(f => f.key === st);
+                  return (
+                    <FilterChip
+                      key={st}
+                      active={data.subtypeFilter === st}
+                      onClick={() => data.setSubtypeFilter(st)}
+                      label={`${filter?.icon || '📄'} ${filter?.label || getAssetTypeLabel(st)}`}
+                      count={data.subtypeCounts[st] || 0}
+                    />
+                  );
+                })}
+              </div>
+            )}
 
-          {!data.loading && (
-            data.filteredContent.length > 0 ? (
+            {data.categoryFilter === 'all' && (
+              <div className={styles.chipsRow}>
+                {CONTENT_TYPE_FILTERS.map(({ key, label, icon }) => (
+                  <FilterChip key={key} active={data.subtypeFilter === key} onClick={() => data.setSubtypeFilter(key)} label={`${icon} ${label}`} count={data.subtypeCounts[key] || 0} />
+                ))}
+              </div>
+            )}
+
+            {data.filteredContent.length > 0 ? (
               <div className={styles.galleryGrid}>
                 {data.filteredContent.map((item) => (
                   <ContentCard key={item.id} item={item} onPreview={handlePreview} onDownload={handleDownload} onShare={handleShare} onDelete={handleDelete} />
@@ -315,14 +337,14 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
                   <Button variant="primary" size="md" onClick={() => navigate('/matches')} className="mt-4">Ga naar Wedstrijden</Button>
                 ) : undefined}
               />
-            )
-          )}
+            )}
 
-          <div className="flex-between py-8">
-            <Text size="xs" color="secondary">{data.filteredContent.length} van {data.contentItems.length} items</Text>
-          </div>
-        </Stack>
-      </div>
+            <div className="flex-between py-8">
+              <Text size="xs" color="secondary">{data.filteredContent.length} van {data.contentItems.length} items</Text>
+            </div>
+          </Stack>
+        </div>
+      )}
 
       {/* Preview Modal */}
       {previewItem && <ContentPreviewModal item={previewItem} onClose={() => setPreviewItem(null)} />}
