@@ -255,3 +255,37 @@ def collect_system_metrics(self) -> dict[str, int]:
         raise
 
     return metrics_recorded
+
+
+@shared_task
+def db_maintenance_vacuum():
+    """Run lightweight VACUUM ANALYZE on high-churn tables.
+
+    Reclaims dead-tuple space and updates planner statistics so
+    PostgreSQL can choose efficient query plans.
+
+    Runs weekly via celery-beat. Does NOT use VACUUM FULL (which
+    requires an exclusive lock) — standard VACUUM is online-safe.
+    """
+    from django.db import connection
+
+    tables = [
+        "notifications_notification",
+        "audit_events",
+        "search_searchentry",
+        "observability_systemmetric",
+        "django_session",
+    ]
+
+    results = {}
+    with connection.cursor() as cursor:
+        for table in tables:
+            try:
+                cursor.execute(f"VACUUM ANALYZE {table}")
+                results[table] = "ok"
+            except Exception as exc:
+                results[table] = str(exc)
+                logger.warning("VACUUM failed for %s: %s", table, exc)
+
+    logger.info("DB maintenance completed", extra={"vacuum_results": results})
+    return results

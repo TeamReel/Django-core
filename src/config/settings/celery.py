@@ -89,7 +89,7 @@ CELERY_BEAT_SCHEDULE = {
         "task": "notifications.tasks.cleanup_tasks.cleanup_old_notifications",
         "schedule": crontab(hour=2, minute=0),  # Daily at 2 AM UTC
         "kwargs": {
-            "retention_days": 90,  # Delete notifications older than 90 days
+            "retention_days": 30,  # Delete notifications older than 30 days
             "dry_run": False,
         },
         "options": {
@@ -179,6 +179,14 @@ CELERY_BEAT_SCHEDULE = {
         "kwargs": {"stuck_minutes": 60},
         "options": {
             "expires": 3600,  # Task expires if not run within 1 hour
+        },
+    },
+    # Weekly DB maintenance: VACUUM ANALYZE on high-churn tables (Sunday 3:30 AM)
+    "db-maintenance-vacuum": {
+        "task": "observability.tasks.db_maintenance_vacuum",
+        "schedule": crontab(hour=3, minute=30, day_of_week=0),  # Sunday 3:30 AM UTC
+        "options": {
+            "expires": 3600,
         },
     },
 }
