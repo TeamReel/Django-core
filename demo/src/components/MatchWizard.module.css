@@ -13,6 +13,7 @@
   .root {
     flex: 1;
     min-height: 0;
+    max-height: none;
   }
 }
 

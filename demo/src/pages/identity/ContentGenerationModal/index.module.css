@@ -16,6 +16,17 @@
   padding: 16px;
 }
 
+/* Mobile: sit between TopNavbar (57px) and MobileBottomNav (64px + safe-area) */
+@media (max-width: 639px) {
+  .overlay {
+    top: 57px;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding: 0;
+    align-items: stretch;
+    overflow: hidden;
+  }
+}
+
 .panel {
   background-color: var(--app-surface, white);
   padding: 0;
@@ -29,6 +40,17 @@
   max-height: calc(100vh - 32px);
   max-height: calc(100dvh - 32px);
   margin: auto;
+}
+
+/* Mobile: fill entire space between navbars */
+@media (max-width: 639px) {
+  .panel {
+    max-height: none;
+    height: 100%;
+    border-radius: 0;
+    margin: 0;
+    box-shadow: none;
+  }
 }
 
 .header {
