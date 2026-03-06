@@ -15,7 +15,7 @@ import { ChevronRight, Check, Zap, Play, Clock } from 'lucide-react';
 import SmartEmptyState from './SmartEmptyState';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import ContentGenerationModal from '../pages/identity/ContentGenerationModal';
-import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, type MatchWizardProps } from './matchWizardTypes';
+import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, type MatchWizardProps, type ContentType } from './matchWizardTypes';
 import { useMatchWizardData } from './useMatchWizardData';
 import { MatchWizardLineupStep } from './MatchWizardLineupStep';
 import styles from './MatchWizard.module.css';
@@ -109,21 +109,28 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               </div>
 
               {/* Content type cards */}
-              <div className="flex-col gap-8">
-                {CONTENT_TYPES[selectedContentPhase].map((content) => {
+              <div className="flex-col gap-10">
+                {CONTENT_TYPES[selectedContentPhase].map((content: ContentType) => {
                   const Icon = content.icon;
                   const needsLineup = LINEUP_REQUIRED_SUBTYPES.has(content.subtype);
                   return (
                     <button key={content.key}
                       onClick={() => handleContentSelect(content.key, content.label, content.subtype, content.templateType)}
                       className={styles.contentCard}>
-                      <div className={`flex-center rounded-12 ${styles.contentIconWrap}`}>
-                        <Icon size={22} className={styles.contentIcon} />
+                      <div className={styles.thumbArea} data-output={content.outputType}>
+                        {content.thumbnail ? (
+                          <img src={content.thumbnail} alt={content.label} className={styles.thumbImg} />
+                        ) : (
+                          <Icon size={28} className={styles.thumbIcon} />
+                        )}
+                        <span className={styles.outputBadge} data-output={content.outputType}>
+                          {content.outputType === 'video' ? 'VIDEO' : content.outputType === 'image' ? 'IMAGE' : 'TEXT'}
+                        </span>
                       </div>
                       <div className="flex-1-min">
                         <div className="fw-600 text-primary fs-15">{content.label}</div>
-                        <div className="fs-13 text-muted">
-                          {content.description}{needsLineup && ' (opstelling nodig)'}
+                        <div className="fs-12 text-muted" style={{ lineHeight: 1.4 }}>
+                          {content.description}{needsLineup && ' · Opstelling nodig'}
                         </div>
                       </div>
                       <ChevronRight size={20} className={styles.iconChevron} />

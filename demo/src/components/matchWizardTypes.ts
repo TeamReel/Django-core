@@ -5,6 +5,24 @@ import { Image, Video, FileText, Play, Zap, Users, Clock } from 'lucide-react';
 
 export type WizardStep = 'match' | 'content' | 'lineup';
 export type ContentPhase = 'pre' | 'during' | 'post';
+export type OutputType = 'video' | 'image' | 'text';
+
+export interface MatchWizardProps {
+  isOpen: boolean;
+  onClose: () => void;
+  initialMatchId?: string;
+}
+
+export interface ContentType {
+  key: string;
+  subtype: string;
+  label: string;
+  icon: typeof Image;
+  description: string;
+  templateType: string;
+  outputType: OutputType;
+  thumbnail?: string; // optional preview image URL
+}
 
 export interface MatchWizardProps {
   isOpen: boolean;
@@ -28,24 +46,24 @@ export const LINEUP_REQUIRED_SUBTYPES = new Set([
 ]);
 
 /** Keys map to real template subtype values from backend. */
-export const CONTENT_TYPES = {
+export const CONTENT_TYPES: Record<ContentPhase, ContentType[]> = {
   pre: [
-    { key: 'flyer', subtype: 'flyer', label: 'Match Flyer', icon: Image, description: 'Aankondiging voor socials', templateType: 'pre_match' },
-    { key: 'lineup', subtype: 'lineup', label: 'Lineup Video', icon: Video, description: 'Visuele opstelling video', templateType: 'pre_match' },
-    { key: 'lineup_flyer', subtype: 'lineup_flyer', label: 'Lineup Flyer', icon: Users, description: 'Opstelling flyer', templateType: 'pre_match' },
-    { key: 'match_intro', subtype: 'match_intro', label: 'Match Intro', icon: Play, description: 'Match intro video', templateType: 'pre_match' },
-    { key: 'poster', subtype: 'poster', label: 'Elftalfoto', icon: Image, description: 'Teamfoto genereren', templateType: 'pre_match' },
-    { key: 'walkon', subtype: 'walkon', label: 'Walk-on Video', icon: Video, description: 'Spelers intro video', templateType: 'pre_match' },
-    { key: 'anthem', subtype: 'anthem', label: 'Anthem Video', icon: Play, description: 'Volkslied video', templateType: 'pre_match' },
+    { key: 'flyer', subtype: 'flyer', label: 'Match Flyer', icon: Image, description: 'Aankondiging voor socials', templateType: 'pre_match', outputType: 'image' },
+    { key: 'lineup', subtype: 'lineup', label: 'Lineup Video', icon: Video, description: 'Visuele opstelling video', templateType: 'pre_match', outputType: 'video' },
+    { key: 'lineup_flyer', subtype: 'lineup_flyer', label: 'Lineup Flyer', icon: Users, description: 'Opstelling flyer', templateType: 'pre_match', outputType: 'image' },
+    { key: 'match_intro', subtype: 'match_intro', label: 'Match Intro', icon: Play, description: 'Match intro video', templateType: 'pre_match', outputType: 'video' },
+    { key: 'poster', subtype: 'poster', label: 'Elftalfoto', icon: Image, description: 'Teamfoto genereren', templateType: 'pre_match', outputType: 'image' },
+    { key: 'walkon', subtype: 'walkon', label: 'Walk-on Video', icon: Video, description: 'Spelers intro video', templateType: 'pre_match', outputType: 'video' },
+    { key: 'anthem', subtype: 'anthem', label: 'Anthem Video', icon: Play, description: 'Volkslied video', templateType: 'pre_match', outputType: 'video' },
   ],
   during: [
-    { key: 'goal', subtype: 'goal', label: 'Goal Celebration', icon: Zap, description: 'Doelpunt vieren', templateType: 'during_match' },
-    { key: 'score_update', subtype: 'score_update', label: 'Score Update', icon: FileText, description: 'Tussenstand delen', templateType: 'during_match' },
+    { key: 'goal', subtype: 'goal', label: 'Goal Celebration', icon: Zap, description: 'Doelpunt vieren', templateType: 'during_match', outputType: 'video' },
+    { key: 'score_update', subtype: 'score_update', label: 'Score Update', icon: FileText, description: 'Tussenstand delen', templateType: 'during_match', outputType: 'image' },
   ],
   post: [
-    { key: 'end_score', subtype: 'end_score', label: 'Eindstand', icon: FileText, description: 'Uitslag delen', templateType: 'post_match' },
-    { key: 'match_summary', subtype: 'match_summary', label: 'Samenvatting', icon: FileText, description: 'Wedstrijd samenvatting', templateType: 'post_match' },
-    { key: 'highlights', subtype: 'highlights', label: 'Highlights', icon: Video, description: 'Samenvattingsvideo', templateType: 'post_match' },
+    { key: 'end_score', subtype: 'end_score', label: 'Eindstand', icon: FileText, description: 'Uitslag delen', templateType: 'post_match', outputType: 'image' },
+    { key: 'match_summary', subtype: 'match_summary', label: 'Samenvatting', icon: FileText, description: 'Wedstrijd samenvatting', templateType: 'post_match', outputType: 'text' },
+    { key: 'highlights', subtype: 'highlights', label: 'Highlights', icon: Video, description: 'Samenvattingsvideo', templateType: 'post_match', outputType: 'video' },
   ],
 };
 
