@@ -34,8 +34,8 @@ interface Match {
   start_time: string;
   end_time?: string;
   location?: string;
-  project: { id: string; name: string; slug?: string };
-  opponent_project?: { name: string; slug?: string };
+  project: { id: string; name: string; slug?: string; club_name?: string };
+  opponent_project?: { name: string; slug?: string; club_name?: string };
   metadata: Record<string, any>;
   period?: { id: string; name: string };
 }
@@ -122,8 +122,9 @@ export const ActiveMatchCard: React.FC = () => {
     return 'played' as const;
   }, [match]);
 
-  const opponent = match?.opponent_project?.name || match?.title?.split(' vs ')?.[1] || 'Tegenstander';
-  const teamName = match?.project?.name || 'Team';
+  // Prefer club name (parent_project) over team name
+  const teamName = match?.project?.club_name || match?.project?.name || 'Team';
+  const opponent = match?.opponent_project?.club_name || match?.opponent_project?.name || match?.title?.split(' vs ')?.[1] || 'Tegenstander';
 
   if (loading) {
     return (

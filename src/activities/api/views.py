@@ -375,9 +375,14 @@ class ActivityViewSet(viewsets.ModelViewSet):
     - start_time__lte: Filter activities starting before datetime
     """
 
-    queryset = Activity.objects.select_related("project", "period", "created_by").order_by(
-        "-start_time"
-    )
+    queryset = Activity.objects.select_related(
+        "project",
+        "project__parent_project",
+        "opponent_project",
+        "opponent_project__parent_project",
+        "period",
+        "created_by",
+    ).order_by("-start_time")
     serializer_class = ActivitySerializer
     permission_classes = [ActivityPermission]
     pagination_class = BaseAPIPagination

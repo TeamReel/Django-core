@@ -316,19 +316,25 @@ class ActivitySerializer(serializers.ModelSerializer):
         return None
 
     def get_project(self, obj):
-        """Return nested project representation"""
+        """Return nested project representation with optional club_name."""
         if obj.project:
-            return {"id": str(obj.project.id), "name": obj.project.name, "slug": obj.project.slug}
+            data = {"id": str(obj.project.id), "name": obj.project.name, "slug": obj.project.slug}
+            if obj.project.parent_project:
+                data["club_name"] = obj.project.parent_project.name
+            return data
         return None
 
     def get_opponent_project(self, obj):
-        """Return nested opponent project name/id"""
+        """Return nested opponent project name/id with optional club_name."""
         if obj.opponent_project:
-            return {
+            data = {
                 "id": str(obj.opponent_project.id),
                 "name": obj.opponent_project.name,
                 "slug": obj.opponent_project.slug,
             }
+            if obj.opponent_project.parent_project:
+                data["club_name"] = obj.opponent_project.parent_project.name
+            return data
         return None
 
     def get_period(self, obj):
