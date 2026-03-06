@@ -1,6 +1,6 @@
 /* ============================================================================
-   TeamOrganisationDetailPage — CSS Module
-   Season-style premium layout for team detail
+   ClubOrganisationDetailPage — CSS Module
+   Premium layout consistent with TeamOrganisationDetailPage
    ============================================================================ */
 
 /* ── Page shell ── */
@@ -171,64 +171,6 @@
   background: var(--app-surface); color: var(--app-text); cursor: pointer;
 }
 
-/* ── Toasts ── */
-.toastContainer {
-  position: fixed; top: 16px; right: 16px; z-index: 9999;
-  display: flex; flex-direction: column; gap: 8px; max-width: 420px;
-}
-.toast {
-  border-radius: 8px; padding: 12px 16px; color: #fff;
-  display: flex; align-items: flex-start; gap: 10px; font-size: 13px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); animation: slideInRight 0.3s ease-out;
-}
-.toastDismiss {
-  background: none; border: none; color: #fff; cursor: pointer;
-  font-size: 18px; opacity: 0.7; flex-shrink: 0; margin-left: auto;
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-/* ── Responsive ── */
-@media (min-width: 768px) {
-  .headerRow {
-    padding: 24px 24px 0;
-  }
-
-  .titleBlock h1 {
-    font-size: 24px;
-  }
-
-  .tabContent {
-    padding: 0 24px 64px;
-  }
-
-  .iconBtn {
-    width: auto;
-    height: auto;
-    padding: 6px 12px;
-    font-size: 12px;
-    font-weight: 500;
-    gap: 6px;
-  }
-
-  .toastContainer {
-    left: auto;
-    right: 16px;
-    max-width: 420px;
-  }
-}
-
-@media (max-width: 639px) {
-  .toastContainer {
-    left: 16px;
-    right: 16px;
-    max-width: none;
-  }
-}
-
 /* ── Identity tab toggle ── */
 .identityToggle {
   display: flex;
@@ -262,4 +204,28 @@
   background: var(--app-surface, #0f172a);
   color: var(--app-text);
   font-weight: 700;
+}
+
+/* ── Responsive ── */
+@media (min-width: 768px) {
+  .headerRow {
+    padding: 24px 24px 0;
+  }
+
+  .titleBlock h1 {
+    font-size: 24px;
+  }
+
+  .tabContent {
+    padding: 0 24px 64px;
+  }
+
+  .iconBtn {
+    width: auto;
+    height: auto;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 6px;
+  }
 }

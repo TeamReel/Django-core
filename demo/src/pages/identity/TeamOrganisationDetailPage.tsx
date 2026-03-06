@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Alert, Button } from '@django-core/design-system';
 import {
   Check, Pencil, Eye, Trash2, MoreHorizontal,
@@ -8,6 +8,7 @@ import {
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import MobileTabBar from '../../components/MobileTabBar';
@@ -42,6 +43,9 @@ export default function TeamOrganisationDetailPage() {
     backToClubHref, federationClubsHref,
     apiBaseUrl, isPlayer,
   } = useTeamDetailData();
+
+  // ── Stack navigation: back arrow → club ──
+  useSetBackNavigation({ label: club?.name || 'Club', path: backToClubHref });
 
   // ── Tab logic ──
   const activeTabFromUrl = useMemo(() => {
@@ -135,6 +139,9 @@ export default function TeamOrganisationDetailPage() {
         {/* ── Header ── */}
         <div className={s.headerRow}>
           <div className={s.titleBlock}>
+            <Link to={backToClubHref} className={s.parentLink}>
+              {club?.name || 'Club'}
+            </Link>
             <h1>{team.name}</h1>
             <p>{(team as any)?.team_type === 'legends' ? 'Legends Team' : 'Team'}</p>
           </div>

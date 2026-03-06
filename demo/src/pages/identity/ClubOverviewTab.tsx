@@ -1,5 +1,7 @@
 import React from 'react';
-import { Button, Card, Alert } from '@django-core/design-system';
+import { Alert } from '@django-core/design-system';
+import { ChevronRight } from 'lucide-react';
+import ov from './ClubOverviewTab.module.css';
 
 type Period = {
   id: string;
@@ -50,155 +52,149 @@ export function ClubOverviewTab({
   navigate,
   makeTabHref,
 }: ClubOverviewTabProps) {
+  const clubLocation = String((club as any)?.metadata?.identity?.default_location || '').trim();
+
   return (
-    <div className="space-y-6">
+    <div className={ov.overviewRoot}>
       {overviewError && <Alert variant="error">{overviewError}</Alert>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-16">
-          <div className="flex items-center justify-between mb-3 gap-12">
-            <div className="text-sm font-semibold text-gray-900">
-              Teams{' '}
-              <span className="text-gray-500 fw-600">
-                ({overviewLoading ? '…' : overviewCounts ? overviewCounts.teams : '—'})
-              </span>
-            </div>
-            <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('teams'))}>
-              View all
-            </Button>
+      {/* ── Hero card ── */}
+      <div className={ov.heroCard}>
+        <div className={ov.heroTitle}>{club?.name || 'Club'}</div>
+        <div className={ov.heroSubtitle}>
+          {org?.name || 'Federatie'}{clubLocation ? ` \u00B7 ${clubLocation}` : ''}
+        </div>
+        <div className={ov.heroStats}>
+          <div className={ov.heroStat}>
+            <span className={ov.heroStatValue}>
+              {overviewLoading ? '…' : overviewCounts?.teams ?? '—'}
+            </span>
+            <span className={ov.heroStatLabel}>Teams</span>
           </div>
-          {overviewLoading && overviewTeams.length === 0 ? (
-            <div className="text-sm text-gray-500">Loading teams…</div>
-          ) : overviewTeams.length === 0 ? (
-            <div className="text-sm text-gray-500">No teams found.</div>
-          ) : (
-            <div className="space-y-2">
-              {overviewTeams.map((t) => {
-                const teamKey = String(t?.slug || t?.id || '').trim();
-                const teamPath =
-                  orgKeyForRoutes && clubKeyForRoutes && teamKey
-                    ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKey)}`
-                    : '';
-
-                return (
-                  <div key={String(t.id)} className="flex items-center justify-between" style={{ gap: 12 }}>
-                    {teamPath ? (
-                      <button
-                        type="button"
-                        className="app-unstyled-button text-blue-600 hover:underline text-left fw-600 min-w-0"
-                        onClick={() => navigate(teamPath)}
-                      >
-                        {t.name}
-                      </button>
-                    ) : (
-                      <div className="text-sm text-gray-900 fw-600">
-                        {t.name}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-
-        <Card className="p-16">
-          <div className="flex items-center justify-between mb-3 gap-12">
-            <div className="text-sm font-semibold text-gray-900">
-              Seasons{' '}
-              <span className="text-gray-500 fw-600">
-                ({overviewLoading ? '…' : overviewCounts ? overviewCounts.seasons : '—'})
-              </span>
-            </div>
-            <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('seasons'))}>
-              View all
-            </Button>
+          <div className={ov.heroStat}>
+            <span className={ov.heroStatValue}>
+              {overviewLoading ? '…' : overviewCounts?.seasons ?? '—'}
+            </span>
+            <span className={ov.heroStatLabel}>Seizoenen</span>
           </div>
-          {overviewLoading && overviewSeasons.length === 0 ? (
-            <div className="text-sm text-gray-500">Loading seasons…</div>
-          ) : overviewSeasons.length === 0 ? (
-            <div className="text-sm text-gray-500">No seasons found.</div>
-          ) : (
-            <div className="space-y-2">
-              {overviewSeasons.map((s) => (
-                <div key={String((s as any)?.id)} className="text-sm text-gray-900 fw-600">
-                  {String((s as any)?.name || 'Season')}
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-
-        <Card className="p-16">
-          <div className="flex items-center justify-between mb-3 gap-12">
-            <div className="text-sm font-semibold text-gray-900">
-              Members{' '}
-              <span className="text-gray-500 fw-600">
-                ({overviewLoading ? '…' : overviewCounts ? overviewCounts.members : '—'})
-              </span>
-            </div>
-            <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('members'))}>
-              View all
-            </Button>
+          <div className={ov.heroStat}>
+            <span className={ov.heroStatValue}>
+              {overviewLoading ? '…' : overviewCounts?.members ?? '—'}
+            </span>
+            <span className={ov.heroStatLabel}>Leden</span>
           </div>
-          {overviewLoading && overviewMembers.length === 0 ? (
-            <div className="text-sm text-gray-500">Loading members…</div>
-          ) : overviewMembers.length === 0 ? (
-            <div className="text-sm text-gray-500">No members found.</div>
-          ) : (
-            <div className="space-y-2">
-              {overviewMembers.map((m) => {
-                const label =
-                  `${String(m?.first_name || '').trim()} ${String(m?.last_name || '').trim()}`.trim() ||
-                  String(m?.email || '').trim() ||
-                  `User ${m.id}`;
-                return (
-                  <button
-                    key={String(m.id)}
-                    type="button"
-                    className="app-unstyled-button text-blue-600 hover:underline text-left fw-600"
-                    onClick={() => navigate(`/users/${encodeURIComponent(String(m.id))}`)}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-
-        <Card className="p-16">
-          <div className="flex items-center justify-between mb-3 gap-12">
-            <div className="text-sm font-semibold text-gray-900">
-              Matches <span className="text-gray-500 fw-600">(—)</span>
-            </div>
-            <Button variant="secondary" size="sm" onClick={() => navigate(makeTabHref('matches'))}>
-              View all
-            </Button>
-          </div>
-          <div className="text-sm text-gray-500">Open the Matches tab to view fixtures and results.</div>
-        </Card>
+        </div>
       </div>
 
-      <Card>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Club Details</h3>
+      {/* ── Teams ── */}
+      <div className={ov.sectionCard}>
+        <div className={ov.sectionHeader}>
+          <h3 className={ov.sectionTitle}>Teams</h3>
+          <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('teams'))}>
+            Alle teams →
+          </button>
         </div>
-        <div className="space-y-3">
-          <div>
-            <div className="text-sm font-medium text-gray-500">Name</div>
-            <div className="text-base text-gray-900 mt-1">{club?.name || '—'}</div>
+        {overviewLoading && overviewTeams.length === 0 ? (
+          <div className={ov.loadingText}>Laden…</div>
+        ) : overviewTeams.length === 0 ? (
+          <div className={ov.emptyText}>Geen teams gevonden.</div>
+        ) : (
+          overviewTeams.map((t) => {
+            const teamKey = String(t?.slug || t?.id || '').trim();
+            const teamPath =
+              orgKeyForRoutes && clubKeyForRoutes && teamKey
+                ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKey)}`
+                : '';
+
+            return (
+              <div
+                key={String(t.id)}
+                className={ov.itemRow}
+                onClick={() => teamPath && navigate(teamPath)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' && teamPath) navigate(teamPath); }}
+              >
+                <span className={ov.itemName}>{t.name}</span>
+                <ChevronRight size={16} className={ov.itemChevron} />
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* ── Seizoenen ── */}
+      <div className={ov.sectionCard}>
+        <div className={ov.sectionHeader}>
+          <h3 className={ov.sectionTitle}>Seizoenen</h3>
+        </div>
+        {overviewLoading && overviewSeasons.length === 0 ? (
+          <div className={ov.loadingText}>Laden…</div>
+        ) : overviewSeasons.length === 0 ? (
+          <div className={ov.emptyText}>Geen seizoenen gevonden.</div>
+        ) : (
+          overviewSeasons.map((s) => (
+            <div key={String(s.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
+              <span className={ov.itemName}>{String(s.name || 'Seizoen')}</span>
+              <span className={ov.itemMeta}>{s.type || ''}</span>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* ── Leden ── */}
+      <div className={ov.sectionCard}>
+        <div className={ov.sectionHeader}>
+          <h3 className={ov.sectionTitle}>Leden</h3>
+          <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('members'))}>
+            Alle leden →
+          </button>
+        </div>
+        {overviewLoading && overviewMembers.length === 0 ? (
+          <div className={ov.loadingText}>Laden…</div>
+        ) : overviewMembers.length === 0 ? (
+          <div className={ov.emptyText}>Geen leden gevonden.</div>
+        ) : (
+          overviewMembers.map((m) => {
+            const label =
+              `${String(m?.first_name || '').trim()} ${String(m?.last_name || '').trim()}`.trim() ||
+              String(m?.email || '').trim() ||
+              `User ${m.id}`;
+            return (
+              <div key={String(m.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
+                <span className={ov.itemName}>{label}</span>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* ── Club details ── */}
+      <div className={ov.sectionCard}>
+        <div className={ov.sectionHeader}>
+          <h3 className={ov.sectionTitle}>Club details</h3>
+        </div>
+        <div className={ov.infoGrid}>
+          <div className={ov.infoRow}>
+            <span className={ov.infoLabel}>Naam</span>
+            <span className={ov.infoValue}>{club?.name || '—'}</span>
           </div>
-          <div>
-            <div className="text-sm font-medium text-gray-500">Federation</div>
-            <div className="text-base text-gray-900 mt-1">{org?.name || '—'}</div>
+          <div className={ov.infoRow}>
+            <span className={ov.infoLabel}>Federatie</span>
+            <span className={ov.infoValue}>{org?.name || '—'}</span>
           </div>
-          <div>
-            <div className="text-sm font-medium text-gray-500">Slug</div>
-            <div className="text-base text-gray-900 mt-1">{String((club as any)?.slug || '—')}</div>
+          {clubLocation && (
+            <div className={ov.infoRow}>
+              <span className={ov.infoLabel}>Locatie</span>
+              <span className={ov.infoValue}>{clubLocation}</span>
+            </div>
+          )}
+          <div className={ov.infoRow}>
+            <span className={ov.infoLabel}>Slug</span>
+            <span className={ov.infoValue}>{String((club as any)?.slug || '—')}</span>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

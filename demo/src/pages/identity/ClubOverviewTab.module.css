@@ -1,0 +1,208 @@
+/* ============================================================================
+   ClubOverviewTab — Premium mobile-first overview
+   Consistent with TeamOverviewTab pattern
+   ============================================================================ */
+
+.overviewRoot {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Hero card ── */
+.heroCard {
+  background: linear-gradient(135deg, var(--app-surface-2, #1e293b) 0%, var(--app-surface, #0f172a) 100%);
+  border-radius: 16px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.heroTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--app-text);
+  margin-bottom: 4px;
+}
+
+.heroSubtitle {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  margin-bottom: 20px;
+}
+
+.heroStats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.heroStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.heroStatValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1;
+}
+
+.heroStatLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Section card (shared) ── */
+.sectionCard {
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--app-border, #334155);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.sectionLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: #818cf8;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  margin: -8px -12px;
+  border-radius: 8px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sectionLink:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+/* ── Row items shared ── */
+.itemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.itemRow:last-child {
+  border-bottom: none;
+}
+
+.itemRow:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+.itemName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemMeta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.itemChevron {
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+/* ── Loading / empty ── */
+.loadingText {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  padding: 16px;
+}
+
+.emptyText {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  padding: 16px;
+}
+
+/* ── Club info card ── */
+.infoGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.infoRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.infoLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.infoValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--app-text);
+}
+
+/* ── Responsive ── */
+@media (min-width: 768px) {
+  .overviewRoot {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .heroCard {
+    grid-column: 1 / -1;
+  }
+}

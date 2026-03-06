@@ -61,16 +61,18 @@ export function useClubOrgDetailData() {
     const [orgClubsForSwitcher, setOrgClubsForSwitcher] = useState<Project[]>([]);
     const [orgClubsForSwitcherLoading, setOrgClubsForSwitcherLoading] = useState(false);
 
-    // ── Active tab ──
+    // ── Active tab (compact 5-tab layout) ──
     const activeTabFromUrl = useMemo(() => {
         const params = new URLSearchParams(location.search || '');
         const tab = String(params.get('tab') || 'overview').trim().toLowerCase();
-        const normalized = tab === 'people' || tab === 'users' ? 'members' : tab;
-        const allowed = new Set([
-            'overview', 'hierarchy', 'teams', 'seasons', 'competitions',
-            'matches', 'members', 'media', 'assets', 'balance',
-            'transactions', 'identity', 'kits', 'settings',
-        ]);
+        // Normalize legacy tab names
+        const normalized =
+            tab === 'people' || tab === 'users' ? 'members'
+            : tab === 'hierarchy' || tab === 'seasons' || tab === 'competitions' || tab === 'matches' ? 'teams'
+            : tab === 'assets' || tab === 'kits' || tab === 'settings' ? 'identity'
+            : tab === 'balance' || tab === 'transactions' ? 'overview'
+            : tab;
+        const allowed = new Set(['overview', 'teams', 'members', 'media', 'identity']);
         return allowed.has(normalized) ? normalized : 'overview';
     }, [location.search]);
 

@@ -1,34 +1,34 @@
-import React from 'react';
-import { Alert, Button, Card } from '@django-core/design-system';
-import { BreadcrumbContextSwitcher, PageContent, PageHeader } from '@django-core/page-templates';
-import { useConfirm } from '../../components/ui/ConfirmDialog';
-import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Check, Pencil, Eye, Trash2, MoreHorizontal,
+} from 'lucide-react';
 
-import { TeamsList } from './directory/TeamsList';
-import { SeasonsList } from './directory/SeasonsList';
-import { CompetitionsList } from './directory/CompetitionsList';
-import { MatchesList } from './directory/MatchesList';
-import { UsersList } from './directory/UsersList';
-import TeamCreditsTab from './detail/TeamCreditsTab';
-import ClubAssetsTab from './detail/ClubAssetsTab';
+import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { getCsrfToken } from '../../utils/csrf';
+
 import MobileTabBar from '../../components/MobileTabBar';
 import { useUserRole } from '../../components/PermissionGuards';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
-import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
-import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
+
 import { ClubOverviewTab } from './ClubOverviewTab';
-import { ClubHierarchyTab } from './ClubHierarchyTab';
+import { TeamsList } from './directory/TeamsList';
+import { UsersList } from './directory/UsersList';
 import { AssetsTab } from '../../components/AssetsTab';
-import { SkeletonDetailPage } from '../../components/Skeleton';
-import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
 import { ClubKitsTab } from './ClubKitsTab';
-import { getCsrfToken } from './clubOrgDetailHelpers';
+import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
+import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+
 import { useClubOrgDetailData } from './useClubOrgDetailData';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
+import s from './ClubOrganisationDetailPage.module.css';
 
 /* ═══════════════════════════════════════════════════════════════
-   ClubOrganisationDetailPage  (thin JSX shell)
-   All state / effects / computed values live in useClubOrgDetailData.
+   ClubOrganisationDetailPage  —  Premium rebuild
+   5 compact tabs: Overview | Teams | Members | Media | Identity
+   Consistent with TeamOrganisationDetailPage layout
    ═══════════════════════════════════════════════════════════════ */
 
 export default function ClubOrganisationDetailPage() {
@@ -42,24 +42,45 @@ export default function ClubOrganisationDetailPage() {
     orgIdForDirectoryLists, orgSlugForDirectoryLists,
     clubIdForDirectoryLists, orgKeyForRoutes, clubKeyForRoutes,
     backToOrgHref,
-    clubBreadcrumbOptions, orgClubsForSwitcherLoading, handleClubSwitch,
     overviewLoading, overviewError, overviewTeams, overviewSeasons, overviewMembers, overviewCounts,
-    hierarchySearch, setHierarchySearch,
-    hierarchyTeams, hierarchySeasonsByTeamId,
-    hierarchyCompetitionsCountByTeamId, hierarchyMatchesCountByTeamId,
-    hierarchyCompetitionsCountBySeasonId, hierarchyMatchesCountBySeasonId,
-    hierarchyMembersCountByTeamId, hierarchyMembersCountForClub,
-    hierarchyLoading, hierarchyError,
     brandLogoUrl, brandProfileId,
   } = useClubOrgDetailData();
 
   const confirm = useConfirm();
 
+  // ── Stack navigation: back arrow → federation ──
+  useSetBackNavigation({ label: org?.name || 'Federatie', path: backToOrgHref });
+
+  /* ── Overflow menu ── */
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
+
+  /* ── Identity sub-tab (Assets | Kits | Brand) ── */
+  const [identitySubtab, setIdentitySubtab] = useState<'assets' | 'kits' | 'brand'>('assets');
+
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [overflowOpen]);
+
   // ── Loading state ──
   if (loading) {
     return (
-      <div className="p-6 club-detail-page">
-        <SkeletonDetailPage tabCount={6} />
+      <div className={s.page}>
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}><h1>Club</h1></div>
+        </div>
+        <div className={s.skeleton}>
+          <div className={s.skeletonBar} />
+          <div className={s.skeletonBarShort} />
+          <div className={s.skeletonBarFull} />
+          <div className={s.skeletonCard} />
+          <div className={s.skeletonCard} />
+        </div>
       </div>
     );
   }
@@ -67,139 +88,126 @@ export default function ClubOrganisationDetailPage() {
   // ── Error state ──
   if (error || !org || !club) {
     return (
-      <div className="p-6 club-detail-page">
-        <div>
-          <PageHeader title="Club" />
-          <PageContent>
-            <Alert variant="error">{error || 'Club not found'}</Alert>
-            <Button variant="secondary" onClick={() => navigate(backToOrgHref)}>
-              Back
-            </Button>
-          </PageContent>
+      <div className={s.page}>
+        <div className={s.errorBox}>
+          <div className={s.errorMsg}>{error || 'Club not found'}</div>
+          <button type="button" className={s.backBtn} onClick={() => navigate(backToOrgHref)}>
+            Terug
+          </button>
         </div>
       </div>
     );
   }
 
-  const clubDefaultLocation = String((club as any)?.metadata?.identity?.default_location || '').trim();
+  const isActive = !!club && String((activeContext as any)?.club?.id ?? '') === String(club.id ?? '');
 
   return (
     <>
-      <div className="club-detail-page">
-        <PageHeader
-          title={club.name}
-          subtitle={clubDefaultLocation ? `Club overview \u2022 Location: ${clubDefaultLocation}` : 'Club overview \u2022 Location: \u2014'}
-          breadcrumbs={[
-            { label: 'Dashboard', onClick: () => navigate('/dashboard') },
-            { label: org?.name || 'Federation', onClick: () => navigate(backToOrgHref) },
-            {
-              label: (
-                <BreadcrumbContextSwitcher
-                  currentId={String(club.id)}
-                  options={clubBreadcrumbOptions}
-                  onSelect={handleClubSwitch}
-                  hasDropdown={!orgClubsForSwitcherLoading && clubBreadcrumbOptions.length > 1}
-                  type="project"
-                />
-              ),
-              current: true,
-            },
-          ]}
-          actions={
-            <div className="flex-row flex-wrap gap-8">
-              {(() => {
-                const isActive = club && activeContext?.club && (
-                  String(activeContext.club.id) === String(club.id) ||
-                  activeContext.club.slug === club.slug
-                );
-                return (
-                  <Button
-                    variant={isActive ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={async () => {
-                      if (!club || isActive) return;
-                      try {
-                        setActivatingContext(true);
-                        await setActiveContext('club', String(club.id));
-                        const context = await getActiveContext();
-                        setActiveContextState(context);
-                      } catch (err) {
-                        console.error('Failed to set active context:', err);
-                      } finally {
-                        setActivatingContext(false);
-                      }
-                    }}
-                    disabled={activatingContext || isActive}
-                    style={{
-                      backgroundColor: isActive ? '#dcfce7' : undefined,
-                      color: isActive ? '#166534' : undefined,
-                      border: isActive ? '1px solid #10b981' : undefined,
-                      fontWeight: isActive ? 600 : undefined,
-                      opacity: activatingContext || isActive ? 0.8 : 1,
-                    }}
-                  >
-                    {isActive ? '\u2713 Active Context' : 'Make active'}
-                  </Button>
-                );
-              })()}
-              <Button variant="secondary" size="sm" onClick={() => navigate(backToOrgHref)}>Back</Button>
-              <Button variant="secondary" size="sm" onClick={() => setIsProjectDetailModalOpen(true)}>View</Button>
-              <Button variant="secondary" size="sm" onClick={() => setIsProjectEditModalOpen(true)}>Edit</Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={async () => {
-                  if (!club) return;
-                  const ok = await confirm({
-                    title: 'Delete Club',
-                    message: `Are you sure you want to delete club ${club.name}?`,
-                    variant: 'danger',
-                    confirmLabel: 'Delete',
-                  });
-                  if (!ok) return;
-                  try {
-                    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
-                      method: 'DELETE',
-                      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                      credentials: 'include',
-                    });
-                    if (!res.ok) throw new Error('Failed to delete club');
-                    navigate(backToOrgHref);
-                  } catch (e) {
-                    console.error('Delete failed:', e);
-                    alert('Failed to delete club');
-                  }
-                }}
-                style={{ color: '#dc2626' }}
-              >
-                Delete
-              </Button>
-            </div>
-          }
-        />
+      <div className={s.page}>
+        {/* ── Header ── */}
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}>
+            <Link to={backToOrgHref} className={s.parentLink}>
+              {org?.name || 'Federatie'}
+            </Link>
+            <h1>{club.name}</h1>
+            <p>Club</p>
+          </div>
 
-        {/* RBAC: Supporter (Overview, Teams), Member (+ Members, Media, Identity), Admin (all 14) */}
+          <div className={s.actions}>
+            <button
+              type="button"
+              className={`${s.activeBtn} ${isActive ? s.activeBtnOn : ''}`}
+              disabled={activatingContext || isActive}
+              onClick={async () => {
+                if (!club || isActive) return;
+                try {
+                  setActivatingContext(true);
+                  await setActiveContext('club', String(club.id));
+                  const context = await getActiveContext();
+                  setActiveContextState(context);
+                } finally {
+                  setActivatingContext(false);
+                }
+              }}
+              title="Stel deze club in als actieve context"
+            >
+              {isActive && <Check size={14} />}
+              {isActive ? 'Actief' : 'Activeren'}
+            </button>
+
+            {!isPlayer && (
+              <button
+                type="button"
+                className={s.iconBtn}
+                onClick={() => setIsProjectEditModalOpen(true)}
+                title="Bewerken"
+              >
+                <Pencil size={16} />
+              </button>
+            )}
+
+            <div className={s.overflowWrap} ref={overflowRef}>
+              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+                <MoreHorizontal size={16} />
+              </button>
+              {overflowOpen && (
+                <div className={s.overflowMenu}>
+                  <button type="button" onClick={() => { setIsProjectDetailModalOpen(true); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Bekijken
+                  </button>
+                  <button type="button" onClick={() => { navigate(backToOrgHref); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Terug naar federatie
+                  </button>
+                  {!isPlayer && (
+                    <button
+                      type="button"
+                      className={s.overflowDanger}
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: 'Club verwijderen',
+                          message: `Weet je zeker dat je club ${club.name} wilt verwijderen?`,
+                          variant: 'danger',
+                          confirmLabel: 'Verwijderen',
+                        });
+                        if (!ok) return;
+                        try {
+                          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                            credentials: 'include',
+                          });
+                          if (!res.ok) throw new Error('Failed');
+                          navigate(backToOrgHref);
+                        } catch {
+                          alert('Kon club niet verwijderen');
+                        }
+                        setOverflowOpen(false);
+                      }}
+                    >
+                      <Trash2 size={14} /> Verwijderen
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Tab Bar ── */}
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            ...(!isPlayer && !isSupporter ? [{ id: 'hierarchy', label: 'Hierarchy' }] : []),
             { id: 'teams', label: 'Teams' },
-            ...(!isPlayer && !isSupporter ? [{ id: 'seasons', label: 'Seasons' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'competitions', label: 'Competitions' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'matches', label: 'Matches' }] : []),
             ...(!isSupporter ? [{ id: 'members', label: 'Members' }] : []),
             ...(!isSupporter ? [{ id: 'media', label: 'Media' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'assets', label: 'Assets' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'balance', label: 'Balance' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'transactions', label: 'Transactions' }] : []),
-            ...(!isSupporter ? [{ id: 'identity', label: 'Identity' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'kits', label: 'Kits' }] : []),
-            ...(!isPlayer && !isSupporter ? [{ id: 'settings', label: 'Settings' }] : []),
+            ...(!isPlayer && !isSupporter ? [{ id: 'identity', label: 'Identity' }] : []),
           ]}
           activeTab={activeTabFromUrl}
         />
 
-        <PageContent>
+        {/* ── Tab Content ── */}
+        <div className={s.tabContent}>
           {activeTabFromUrl === 'overview' && (
             <ClubOverviewTab
               club={club} org={org}
@@ -211,36 +219,8 @@ export default function ClubOrganisationDetailPage() {
             />
           )}
 
-          {activeTabFromUrl === 'hierarchy' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <ClubHierarchyTab
-              club={club} orgKeyForRoutes={orgKeyForRoutes} clubKeyForRoutes={clubKeyForRoutes}
-              hierarchySearch={hierarchySearch} setHierarchySearch={setHierarchySearch}
-              hierarchyTeams={hierarchyTeams} hierarchySeasonsByTeamId={hierarchySeasonsByTeamId}
-              hierarchyCompetitionsCountByTeamId={hierarchyCompetitionsCountByTeamId}
-              hierarchyMatchesCountByTeamId={hierarchyMatchesCountByTeamId}
-              hierarchyCompetitionsCountBySeasonId={hierarchyCompetitionsCountBySeasonId}
-              hierarchyMatchesCountBySeasonId={hierarchyMatchesCountBySeasonId}
-              hierarchyMembersCountByTeamId={hierarchyMembersCountByTeamId}
-              hierarchyMembersCountForClub={hierarchyMembersCountForClub}
-              hierarchyLoading={hierarchyLoading} hierarchyError={hierarchyError}
-              navigate={navigate}
-            />
-          )}
-
           {activeTabFromUrl === 'teams' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
             <TeamsList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} />
-          )}
-
-          {activeTabFromUrl === 'seasons' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
-            <SeasonsList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} preselectedClubSlug={clubKeyForRoutes} />
-          )}
-
-          {activeTabFromUrl === 'competitions' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
-            <CompetitionsList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} preselectedClubSlug={clubKeyForRoutes} />
-          )}
-
-          {activeTabFromUrl === 'matches' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
-            <MatchesList preselectedOrgId={orgSlugForDirectoryLists} preselectedClubId={clubIdForDirectoryLists} preselectedClubSlug={clubKeyForRoutes} />
           )}
 
           {activeTabFromUrl === 'members' && orgSlugForDirectoryLists && clubIdForDirectoryLists && (
@@ -248,44 +228,62 @@ export default function ClubOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'media' && club && orgIdForDirectoryLists && (
-            <div className="space-y-6">
-              <AssetCompletionMatrix
-                projectId={club.slug || String(club.id)}
-                entityName={club.name} title="Asset Completion Matrix"
-              />
-            </div>
-          )}
-
-          {activeTabFromUrl === 'assets' && club && orgIdForDirectoryLists && (
-            <div className="space-y-6">
-              <AssetsTab level="club" organisationId={String(orgIdForDirectoryLists)} projectId={club.slug || String(club.id)} entityName={club.name} />
-              <ClubAssetsTab clubId={String(club.id)} clubName={club.name} clubMetadata={(club as any)?.metadata || {}} onAssetsUpdated={() => { window.location.reload(); }} />
-            </div>
-          )}
-
-          {activeTabFromUrl === 'balance' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <TeamCreditsTab view="balance" projectId={clubIdForDirectoryLists} projectName={club.name} organisationId={orgIdForDirectoryLists} />
-          )}
-
-          {activeTabFromUrl === 'transactions' && orgIdForDirectoryLists && clubIdForDirectoryLists && (
-            <TeamCreditsTab view="transactions" projectId={clubIdForDirectoryLists} projectName={club.name} organisationId={orgIdForDirectoryLists} />
+            <AssetCompletionMatrix
+              projectId={club.slug || String(club.id)}
+              entityName={club.name}
+              title="Asset Completion Matrix"
+            />
           )}
 
           {activeTabFromUrl === 'identity' && club && orgIdForDirectoryLists && (
-            <BrandIdentityPage projectId={club.slug || String(club.id)} projectName={club.name} />
+            <div>
+              <div className={s.identityToggle}>
+                <button
+                  type="button"
+                  className={`${s.identityToggleBtn} ${identitySubtab === 'assets' ? s.identityToggleBtnActive : ''}`}
+                  onClick={() => setIdentitySubtab('assets')}
+                >
+                  Assets
+                </button>
+                <button
+                  type="button"
+                  className={`${s.identityToggleBtn} ${identitySubtab === 'kits' ? s.identityToggleBtnActive : ''}`}
+                  onClick={() => setIdentitySubtab('kits')}
+                >
+                  Kits
+                </button>
+                <button
+                  type="button"
+                  className={`${s.identityToggleBtn} ${identitySubtab === 'brand' ? s.identityToggleBtnActive : ''}`}
+                  onClick={() => setIdentitySubtab('brand')}
+                >
+                  Brand
+                </button>
+              </div>
+              {identitySubtab === 'assets' && (
+                <AssetsTab
+                  level="club"
+                  organisationId={String(orgIdForDirectoryLists)}
+                  projectId={club.slug || String(club.id)}
+                  entityName={club.name}
+                />
+              )}
+              {identitySubtab === 'kits' && (
+                <ClubKitsTab club={club} apiBaseUrl={apiBaseUrl} brandProfileId={brandProfileId} orgId={String(orgIdForDirectoryLists)} />
+              )}
+              {identitySubtab === 'brand' && (
+                <BrandIdentityPage projectId={club.slug || String(club.id)} projectName={club.name} />
+              )}
+            </div>
           )}
-
-          {activeTabFromUrl === 'kits' && club && orgIdForDirectoryLists && (
-            <ClubKitsTab club={club} apiBaseUrl={apiBaseUrl} brandProfileId={brandProfileId} orgId={String(orgIdForDirectoryLists)} />
-          )}
-
-          {activeTabFromUrl === 'settings' && club && orgIdForDirectoryLists && (
-            <ContentAvailabilityCard scopeType="PROJECT" organisationId={String(orgIdForDirectoryLists)} projectId={String(club.id)} scopeName={club.name} />
-          )}
-        </PageContent>
+        </div>
       </div>
 
-      <ProjectDetailModal opened={isProjectDetailModalOpen} onClose={() => setIsProjectDetailModalOpen(false)} project={club} />
+      <ProjectDetailModal
+        opened={isProjectDetailModalOpen}
+        onClose={() => setIsProjectDetailModalOpen(false)}
+        project={club}
+      />
 
       <EntityEditModal
         isOpen={isProjectEditModalOpen}
