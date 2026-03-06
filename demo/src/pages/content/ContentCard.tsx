@@ -5,8 +5,9 @@
  * ContentCard, FilterChip, EmptyState, ContentPreviewModal.
  */
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Card, Text, Badge, Button } from '@django-core/design-system';
+import { Download, Share2, Trash2, X, Play, Pause, Maximize2, Clock, FileText, Tag, Calendar } from 'lucide-react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { formatFileSize } from '../../hooks/useFileAssets';
 import { getAssetTypeLabel, getAssetTypeIcon, type ContentItem } from './contentLibraryTypes';
@@ -168,40 +169,138 @@ export function EmptyState({ icon, message, sub, action }: { icon: string; messa
 }
 
 // ============================================================================
-// ContentPreviewModal
+// ContentPreviewModal — Full-size preview with video player + metadata card
 // ============================================================================
 
-export function ContentPreviewModal({ item, onClose }: { item: ContentItem; onClose: () => void }) {
+export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDelete }: {
+  item: ContentItem;
+  onClose: () => void;
+  onDownload?: (item: ContentItem) => void;
+  onShare?: (item: ContentItem) => void;
+  onDelete?: (item: ContentItem) => void;
+}) {
   const url = item.file_url || getAssetUrl(item.storage_path);
   const isVideo = Boolean(
     item.mime_type?.startsWith('video/') ||
     (url ? /\.(mp4|webm|mov)$/i.test(url) : false)
   );
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const assetType = ((item.extraction_metadata?.asset_type as string) || 'other').replace(/_[a-f0-9]{8}$/i, '');
+  const activityTitle = (item.extraction_metadata?.activity_title as string) || (typeof item.activity === 'object' ? item.activity?.title : '');
+  const clubName = (item.extraction_metadata?.club_name as string) || '';
+  const tags = (item.extraction_metadata?.tags as string[]) || [];
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) { videoRef.current.play(); setIsPlaying(true); }
+    else { videoRef.current.pause(); setIsPlaying(false); }
+  };
+
   return (
-    <div
-      className={`flex-center fixed inset-0 z-1000 ${styles.overlay}`}
-      onClick={onClose}
-    >
-      <div
-        className={`bg-surface rounded-12 overflow-auto p-16 ${styles.modalContainer}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex-between mb-16">
-          <Text weight="bold" size="lg">{item.title || 'Preview'}</Text>
-          <Button variant="secondary" size="sm" onClick={onClose}>Sluiten</Button>
+    <div className={styles.detailOverlay} onClick={onClose}>
+      <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()}>
+
+        {/* Header */}
+        <div className={styles.detailHeader}>
+          <span className="fw-600 fs-16 text-primary truncate flex-1">{item.title || getAssetTypeLabel(assetType)}</span>
+          <button onClick={onClose} className={styles.detailCloseBtn} aria-label="Sluiten">
+            <X size={20} />
+          </button>
         </div>
-        {url && (
-          isVideo ? (
-            <video src={url} className={styles.previewMedia} controls autoPlay playsInline />
-          ) : (
-            <img src={url} alt={item.title} className={styles.previewMedia} />
-          )
-        )}
-        <div className="mt-16 flex-row justify-end gap-8">
-          <Button variant="primary" size="sm" onClick={() => { if (url) window.open(url, '_blank'); }}>
-            Download
-          </Button>
+
+        {/* Scrollable content */}
+        <div className={styles.detailBody}>
+
+          {/* Preview area */}
+          <div className={styles.detailPreview}>
+            {url ? (
+              isVideo ? (
+                <div className={styles.videoContainer}>
+                  <video
+                    ref={videoRef}
+                    src={url}
+                    className={styles.detailMedia}
+                    playsInline
+                    preload="metadata"
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
+                    controls
+                  />
+                  <button onClick={togglePlay} className={styles.videoPlayBtn} data-playing={isPlaying}>
+                    {isPlaying ? <Pause size={32} /> : <Play size={32} />}
+                  </button>
+                </div>
+              ) : (
+                <img src={url} alt={item.title || ''} className={styles.detailMedia}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              )
+            ) : (
+              <div className={styles.detailMediaFallback}>
+                <FileText size={48} />
+              </div>
+            )}
+            {/* Type badge */}
+            <span className={styles.detailTypeBadge} data-video={isVideo ? 'true' : undefined}>
+              {isVideo ? 'VIDEO' : item.mime_type?.split('/')[1]?.toUpperCase() || 'FILE'}
+            </span>
+          </div>
+
+          {/* Metadata card */}
+          <div className={styles.detailMeta}>
+            {activityTitle && (
+              <div className={styles.detailMetaRow}>
+                <Calendar size={16} className={styles.detailMetaIcon} />
+                <span className="fs-14 text-primary fw-500">{activityTitle}</span>
+              </div>
+            )}
+            {clubName && (
+              <div className={styles.detailMetaRow}>
+                <Tag size={16} className={styles.detailMetaIcon} />
+                <span className="fs-13 text-muted">{clubName}</span>
+              </div>
+            )}
+            <div className={styles.detailMetaRow}>
+              <Clock size={16} className={styles.detailMetaIcon} />
+              <span className="fs-13 text-muted">
+                {new Date(item.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {item.file_size_bytes && item.file_size_bytes > 0 && <> &middot; {formatFileSize(item.file_size_bytes)}</>}
+              </span>
+            </div>
+            {item.mime_type && (
+              <div className={styles.detailMetaRow}>
+                <FileText size={16} className={styles.detailMetaIcon} />
+                <span className="fs-13 text-muted">{item.mime_type}</span>
+              </div>
+            )}
+            {tags.length > 0 && (
+              <div className={styles.detailTags}>
+                {tags.map((tag, i) => (
+                  <span key={i} className={styles.detailTag}>#{tag}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Action bar */}
+        <div className={styles.detailActions}>
+          <button onClick={() => { if (url) window.open(url, '_blank'); }} className={styles.detailActionBtn} data-variant="primary">
+            <Download size={18} />Download
+          </button>
+          {onShare && (
+            <button onClick={() => onShare(item)} className={styles.detailActionBtn}>
+              <Share2 size={18} />Delen
+            </button>
+          )}
+          {onDelete && (
+            <button onClick={() => onDelete(item)} className={styles.detailActionBtn} data-variant="danger">
+              <Trash2 size={18} />Verwijder
+            </button>
+          )}
         </div>
       </div>
     </div>
