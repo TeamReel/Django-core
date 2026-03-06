@@ -1,14 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Input } from '@django-core/design-system';
-import { getMediaUrl, countFilledMediaSlots } from '../../utils/mediaHelpers';
+import { getMediaUrl, countFilledMediaSlots, memberHasMedia } from '../../utils/mediaHelpers';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import st from './TeamSelectieTab.module.css';
 
 interface TeamSelectieTabProps {
   members: any[];
   membersLoading: boolean;
-  /** If provided, clicking a member navigates here (admin feature) */
+  /** If provided, long-press or desktop click navigates here (admin feature) */
   memberDetailHref?: (membership: any) => string;
   /** Show admin link at bottom */
   showAdminLink?: boolean;
@@ -74,6 +74,8 @@ export function TeamSelectieTab({
 }: TeamSelectieTabProps) {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const expandRef = useRef<HTMLDivElement | null>(null);
 
   const q = search.trim().toLowerCase();
   const filtered = useMemo(() => {
@@ -86,6 +88,16 @@ export function TeamSelectieTab({
   }, [members, q]);
 
   const totalSlots = MEDIA_SLOTS.length;
+
+  // Scroll expanded panel into view
+  useEffect(() => {
+    if (expandedId && expandRef.current) {
+      const timeout = setTimeout(() => {
+        expandRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [expandedId]);
 
   return (
     <div className={st.root}>
@@ -114,46 +126,87 @@ export function TeamSelectieTab({
             const photo = getMemberPhoto(m);
             const filled = countFilledMediaSlots(m);
             const pct = totalSlots > 0 ? Math.round((filled / totalSlots) * 100) : 0;
-            const href = memberDetailHref ? memberDetailHref(m) : '';
+            const isExpanded = expandedId === mid;
 
             return (
-              <button
-                key={mid}
-                type="button"
-                className={st.memberCard}
-                onClick={() => href && navigate(href)}
-              >
-                <div className={st.avatar}>
-                  {photo ? (
-                    <img
-                      src={photo}
-                      alt={name}
-                      className={st.avatarImg}
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  ) : (
-                    <span className={st.avatarInitials}>{getInitials(m)}</span>
-                  )}
-                </div>
-
-                <div className={st.memberInfo}>
-                  <span className={st.memberName}>{name}</span>
-                  <span className={st.memberRole}>{role}</span>
-                </div>
-
-                <div className={st.miniProgress}>
-                  <span className={st.miniProgressLabel}>{filled}/{totalSlots}</span>
-                  <div className={st.miniProgressTrack}>
-                    <div
-                      className={st.miniProgressFill}
-                      style={{ width: `${pct}%` }}
-                      data-complete={pct === 100 ? 'true' : 'false'}
-                    />
+              <div key={mid} className={st.memberWrapper}>
+                <button
+                  type="button"
+                  className={`${st.memberCard} ${isExpanded ? st.memberCardExpanded : ''}`}
+                  onClick={() => setExpandedId(isExpanded ? null : mid)}
+                >
+                  <div className={st.avatar}>
+                    {photo ? (
+                      <img
+                        src={photo}
+                        alt={name}
+                        className={st.avatarImg}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <span className={st.avatarInitials}>{getInitials(m)}</span>
+                    )}
                   </div>
-                </div>
 
-                <span className={st.memberArrow}>›</span>
-              </button>
+                  <div className={st.memberInfo}>
+                    <span className={st.memberName}>{name}</span>
+                    <span className={st.memberRole}>{role}</span>
+                  </div>
+
+                  <div className={st.miniProgress}>
+                    <span className={st.miniProgressLabel}>{filled}/{totalSlots}</span>
+                    <div className={st.miniProgressTrack}>
+                      <div
+                        className={st.miniProgressFill}
+                        style={{ width: `${pct}%` }}
+                        data-complete={pct === 100 ? 'true' : 'false'}
+                      />
+                    </div>
+                  </div>
+
+                  <span className={`${st.memberArrow} ${isExpanded ? st.memberArrowExpanded : ''}`}>›</span>
+                </button>
+
+                {isExpanded && (
+                  <div className={st.expandPanel} ref={expandRef}>
+                    {/* ── Media slots grid ── */}
+                    <div className={st.expandMedia}>
+                      {MEDIA_SLOTS.map((slot) => {
+                        const url = getMediaUrl(m, slot.id);
+                        const hasMed = memberHasMedia(m, slot.id);
+                        return (
+                          <div key={slot.id} className={st.expandSlot}>
+                            <div className={`${st.expandSlotThumb} ${hasMed ? st.expandSlotFilled : ''}`}>
+                              {url ? (
+                                <img
+                                  src={url}
+                                  alt={slot.label}
+                                  className={st.expandSlotImg}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                              ) : (
+                                <span className={st.expandSlotIcon}>{hasMed ? '✓' : '—'}</span>
+                              )}
+                            </div>
+                            <span className={st.expandSlotLabel}>{slot.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* ── Actions ── */}
+                    {memberDetailHref && (
+                      <button
+                        type="button"
+                        className={st.expandAction}
+                        onClick={() => navigate(memberDetailHref(m))}
+                      >
+                        Bekijk profiel →
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             );
           })}
 
