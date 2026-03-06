@@ -265,13 +265,16 @@ export function SeasonProvider({ children }: PropsWithChildren) {
   const batchBrandKits = useMemo(() => {
     const kits: Record<string, string | null> = {};
     for (const role of KIT_ROLES) {
+      // Try combined → processed → upload, team first then club
       const teamAsset = isTeamRoute
         ? teamBrand.getAsset?.(`kit_${role.id}_combined`) ||
-          teamBrand.getAsset?.(`kit_${role.id}`)
+          teamBrand.getAsset?.(`kit_${role.id}`) ||
+          teamBrand.getAsset?.(`kit_${role.id}_upload`)
         : null;
       const clubAsset =
         clubBrand.getAsset?.(`kit_${role.id}_combined`) ||
-        clubBrand.getAsset?.(`kit_${role.id}`);
+        clubBrand.getAsset?.(`kit_${role.id}`) ||
+        clubBrand.getAsset?.(`kit_${role.id}_upload`);
       const asset = teamAsset || clubAsset;
       kits[role.id] = asset ? getAssetUrl(asset.url) : null;
     }

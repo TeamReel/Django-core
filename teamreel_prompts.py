@@ -725,6 +725,12 @@ STYLE:
         "description": "Plaats een persoon in het volledige tenue met voetbalschoenen.",
         "input_requirements": ["person_photo", "logo", "sponsor", "reference_photo"],
         "parameters": {
+            "kit_type": {
+                "label": "Tenue Type",
+                "type": "select",
+                "options": ["home", "away", "third", "goalkeeper", "coach", "assistant", "training"],
+                "default": "home",
+            },
             "sleeves": {
                 "label": "Mouwen",
                 "type": "select",
@@ -759,17 +765,20 @@ STYLE:
 ═══════════════════════════════════════════════════════════
 MANDATORY OVERRIDES — These settings OVERRIDE the reference image:
 ═══════════════════════════════════════════════════════════
+- KIT TYPE: {kit_type_label}. The output MUST be this type of kit. If the reference image shows a different kit type, adapt the colors/patterns for this kit type.
 - SLEEVES: {sleeves_label}. If the reference shows different sleeves, IGNORE the reference and use {sleeves_label}.
 - POSE: {pose_label}. The player MUST be in this exact pose regardless of the input photo pose.
 - ROLE: {role_label}.
 ═══════════════════════════════════════════════════════════
 
 KIT FROM REFERENCE (use for colors, patterns, logos, sponsor ONLY):
+- The kit type must be: {kit_type_label}.
 - Match the EXACT colors, patterns, stripes, and design details from the reference kit
 - SAME logo placement and appearance
 - SAME sponsor placement and appearance
 - DO NOT modify, reinterpret, or "improve" the color scheme or pattern design
 - The person should look like they are WEARING this team's kit
+- If the kit type is GOALKEEPER: the kit MUST look like a goalkeeper kit — typically a distinctly different color from outfield players, with goalkeeper-specific features (padded elbows, different cut). Use the reference image for logo/sponsor but adapt the overall color scheme to be a plausible goalkeeper variant.
 
 PERSON — FACIAL IDENTITY (HIGHEST PRIORITY):
 The face in the output MUST be the SAME PERSON as in the input photo. This is the most critical requirement.
