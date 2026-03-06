@@ -385,7 +385,40 @@ export function useTeamTabData({
         const json = await res.json();
         const data = json?.data || json;
         const results = data?.results || (Array.isArray(data) ? data : []);
-        if (!cancelled) setFullMembers(results);
+
+        // ── Deduplicate by user id (same player may appear with different periods) ──
+        const byUserId = new Map<string, any>();
+        for (const m of results) {
+          const uid = String(m?.user?.id ?? m?.id ?? '').trim();
+          if (!uid) continue;
+          const existing = byUserId.get(uid);
+          if (existing) {
+            // Merge functional_roles arrays
+            const existingRoles: string[] = existing.functional_roles || [];
+            const newRoles: string[] = m.functional_roles || [];
+            existing.functional_roles = [...new Set([...existingRoles, ...newRoles])];
+            // Keep the entry with the most complete metadata (teamreel_assets)
+            const existingAssets = Object.keys(existing?.metadata?.teamreel_assets || {}).length;
+            const newAssets = Object.keys(m?.metadata?.teamreel_assets || {}).length;
+            if (newAssets > existingAssets) {
+              existing.metadata = m.metadata;
+            }
+          } else {
+            byUserId.set(uid, { ...m });
+          }
+        }
+        const deduped = Array.from(byUserId.values());
+
+        // ── Sort alphabetically by name ──
+        deduped.sort((a: any, b: any) => {
+          const au = a?.user || a;
+          const bu = b?.user || b;
+          const aName = `${au?.last_name || ''} ${au?.first_name || ''} ${au?.email || ''}`.trim().toLowerCase();
+          const bName = `${bu?.last_name || ''} ${bu?.first_name || ''} ${bu?.email || ''}`.trim().toLowerCase();
+          return aName.localeCompare(bName);
+        });
+
+        if (!cancelled) setFullMembers(deduped);
       } catch {
         if (!cancelled) setFullMembers([]);
       } finally {

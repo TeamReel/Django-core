@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Input } from '@django-core/design-system';
+import { Search, Users, ChevronRight, Camera, UserCog } from 'lucide-react';
 import { getMediaUrl, countFilledMediaSlots, memberHasMedia } from '../../utils/mediaHelpers';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import st from './TeamSelectieTab.module.css';
@@ -15,7 +15,7 @@ interface TeamSelectieTabProps {
   onAdminLinkClick?: () => void;
 }
 
-/** Name helpers */
+/* ── Name helpers ── */
 function getMemberName(m: any): string {
   const u = m?.user || m;
   return (
@@ -37,22 +37,53 @@ function getInitials(m: any): string {
   return '?';
 }
 
-function getMemberRole(m: any): string {
-  const role = String(m?.role || m?.membership_role || '').trim().toLowerCase();
-  if (role === 'admin' || role === 'coach') return 'Coach';
-  if (role === 'viewer' || role === 'player') {
-    // Check functional role from email pattern or metadata
-    const email = String(m?.user?.email || m?.email || '').toLowerCase();
-    if (email.includes('keeper')) return 'Keeper';
-    if (email.includes('speler')) return 'Speler';
-    if (email.includes('assistant')) return 'Assistent';
-    if (email.includes('verzorger')) return 'Verzorger';
-    return 'Speler';
+/** Map functional_roles array to display labels */
+const ROLE_LABELS: Record<string, string> = {
+  player: 'Speler',
+  coach: 'Coach',
+  keeper: 'Keeper',
+  captain: 'Aanvoerder',
+  assistant: 'Assistent',
+  manager: 'Manager',
+  physio: 'Fysiotherapeut',
+  medic: 'Medisch',
+  analyst: 'Analist',
+  parent: 'Ouder',
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  coach: '#f59e0b',
+  keeper: '#06b6d4',
+  captain: '#a78bfa',
+  manager: '#f97316',
+  assistant: '#10b981',
+  physio: '#ec4899',
+  medic: '#ef4444',
+  analyst: '#6366f1',
+  parent: '#94a3b8',
+  player: '#818cf8',
+};
+
+function getFunctionalRoles(m: any): string[] {
+  const roles: string[] = Array.isArray(m?.functional_roles) ? [...m.functional_roles] : [];
+  // Fallback: derive from access role
+  if (roles.length === 0) {
+    const accessRole = String(m?.role || '').trim().toLowerCase();
+    if (accessRole === 'admin') roles.push('coach');
+    else roles.push('player');
   }
-  return role || 'Lid';
+  return [...new Set(roles)];
 }
 
-/** Get best available photo: closeup → kit → profile → avatar → null */
+function getRoleLabel(role: string): string {
+  return ROLE_LABELS[role.toLowerCase()] || role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+function getRoleColor(role: string): string {
+  return ROLE_COLORS[role.toLowerCase()] || '#818cf8';
+}
+
+/** Get best available photo */
 function getMemberPhoto(m: any): string | null {
   const closeup = getMediaUrl(m, 'closeup');
   if (closeup) return closeup;
@@ -75,17 +106,69 @@ export function TeamSelectieTab({
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeRoleFilter, setActiveRoleFilter] = useState<string | null>(null);
   const expandRef = useRef<HTMLDivElement | null>(null);
 
   const q = search.trim().toLowerCase();
-  const filtered = useMemo(() => {
-    if (!q) return members;
-    return members.filter((m) => {
-      const name = getMemberName(m).toLowerCase();
-      const role = getMemberRole(m).toLowerCase();
-      return name.includes(q) || role.includes(q);
+
+  /* ── Collect all unique roles for filter chips ── */
+  const allRoles = useMemo(() => {
+    const set = new Set<string>();
+    members.forEach((m) => {
+      getFunctionalRoles(m).forEach((r) => set.add(r.toLowerCase()));
     });
-  }, [members, q]);
+    const arr = Array.from(set);
+    arr.sort((a, b) => {
+      if (a === 'coach') return -1;
+      if (b === 'coach') return 1;
+      return a.localeCompare(b);
+    });
+    return arr;
+  }, [members]);
+
+  /* ── Filter + search ── */
+  const filtered = useMemo(() => {
+    let list = members;
+
+    if (activeRoleFilter) {
+      list = list.filter((m) => {
+        const roles = getFunctionalRoles(m);
+        return roles.some((r) => r.toLowerCase() === activeRoleFilter);
+      });
+    }
+
+    if (q) {
+      list = list.filter((m) => {
+        const name = getMemberName(m).toLowerCase();
+        const roles = getFunctionalRoles(m).map((r) => getRoleLabel(r).toLowerCase()).join(' ');
+        return name.includes(q) || roles.includes(q);
+      });
+    }
+
+    return list;
+  }, [members, q, activeRoleFilter]);
+
+  /* ── Group by first letter ── */
+  const letterGroups = useMemo(() => {
+    const groups: { letter: string; members: any[] }[] = [];
+    const map = new Map<string, any[]>();
+    for (const m of filtered) {
+      const name = getMemberName(m);
+      const letter = (name[0] || '?').toUpperCase();
+      const normalLetter = /[A-Z]/.test(letter) ? letter : '#';
+      if (!map.has(normalLetter)) map.set(normalLetter, []);
+      map.get(normalLetter)!.push(m);
+    }
+    const sortedKeys = Array.from(map.keys()).sort((a, b) => {
+      if (a === '#') return 1;
+      if (b === '#') return -1;
+      return a.localeCompare(b);
+    });
+    for (const letter of sortedKeys) {
+      groups.push({ letter, members: map.get(letter)! });
+    }
+    return groups;
+  }, [filtered]);
 
   const totalSlots = MEDIA_SLOTS.length;
 
@@ -101,28 +184,86 @@ export function TeamSelectieTab({
 
   return (
     <div className={st.root}>
+      {/* ── Search bar ── */}
       <div className={st.searchRow}>
-        <Input
-          value={search}
-          onChange={(e) => setSearch((e.target as any).value)}
-          placeholder="Zoek lid…"
-        />
+        <div className={st.searchInputWrap}>
+          <Search size={16} className={st.searchIcon} />
+          <input
+            className={st.searchInput}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Zoek op naam of rol…"
+          />
+        </div>
+        <div className={st.countBadge}>
+          <Users size={14} />
+          <span>{filtered.length}</span>
+        </div>
       </div>
 
-      {membersLoading && members.length === 0 ? (
-        <div className={st.loading}>Laden…</div>
-      ) : members.length === 0 ? (
-        <div className={st.empty}>Geen leden gevonden.</div>
-      ) : (
-        <>
-          <div className={st.headerInfo}>
-            <span className={st.countLabel}>{filtered.length} leden</span>
+      {/* ── Role filter chips ── */}
+      {allRoles.length > 1 && (
+        <div className={st.roleFilters}>
+          <button
+            type="button"
+            className={`${st.roleChip} ${!activeRoleFilter ? st.roleChipActive : ''}`}
+            onClick={() => setActiveRoleFilter(null)}
+          >
+            Alles
+          </button>
+          {allRoles.map((role) => (
+            <button
+              key={role}
+              type="button"
+              className={`${st.roleChip} ${activeRoleFilter === role ? st.roleChipActive : ''}`}
+              style={activeRoleFilter === role ? { background: getRoleColor(role), borderColor: getRoleColor(role) } : undefined}
+              onClick={() => setActiveRoleFilter(activeRoleFilter === role ? null : role)}
+            >
+              {getRoleLabel(role)}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── Loading ── */}
+      {membersLoading && members.length === 0 && (
+        <div className={st.loading}>
+          <div className={st.loadingDot} />
+          <div className={st.loadingDot} />
+          <div className={st.loadingDot} />
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {!membersLoading && members.length === 0 && (
+        <div className={st.emptyState}>
+          <Users size={40} className={st.emptyIcon} />
+          <p className={st.emptyTitle}>Nog geen leden</p>
+          <p className={st.emptyDesc}>Voeg spelers en stafleden toe via het ledenbeheer.</p>
+        </div>
+      )}
+
+      {/* ── No results for search ── */}
+      {!membersLoading && members.length > 0 && filtered.length === 0 && (
+        <div className={st.emptyState}>
+          <Search size={32} className={st.emptyIcon} />
+          <p className={st.emptyTitle}>Geen resultaten</p>
+          <p className={st.emptyDesc}>Probeer een andere zoekterm of filter.</p>
+        </div>
+      )}
+
+      {/* ── Member list with letter groups ── */}
+      {filtered.length > 0 && letterGroups.map(({ letter, members: groupMembers }) => (
+        <div key={letter} className={st.letterGroup}>
+          <div className={st.letterHeader}>
+            <span className={st.letterBadge}>{letter}</span>
+            <div className={st.letterLine} />
           </div>
 
-          {filtered.map((m: any) => {
+          {groupMembers.map((m: any) => {
             const mid = String(m?.id || m?.user?.id || '').trim();
             const name = getMemberName(m);
-            const role = getMemberRole(m);
+            const roles = getFunctionalRoles(m);
             const photo = getMemberPhoto(m);
             const filled = countFilledMediaSlots(m);
             const pct = totalSlots > 0 ? Math.round((filled / totalSlots) * 100) : 0;
@@ -135,6 +276,7 @@ export function TeamSelectieTab({
                   className={`${st.memberCard} ${isExpanded ? st.memberCardExpanded : ''}`}
                   onClick={() => setExpandedId(isExpanded ? null : mid)}
                 >
+                  {/* Avatar */}
                   <div className={st.avatar}>
                     {photo ? (
                       <img
@@ -148,12 +290,25 @@ export function TeamSelectieTab({
                     )}
                   </div>
 
+                  {/* Info */}
                   <div className={st.memberInfo}>
                     <span className={st.memberName}>{name}</span>
-                    <span className={st.memberRole}>{role}</span>
+                    <div className={st.memberRoles}>
+                      {roles.map((role) => (
+                        <span
+                          key={role}
+                          className={st.memberRolePill}
+                          style={{ background: `${getRoleColor(role)}22`, color: getRoleColor(role), borderColor: `${getRoleColor(role)}44` }}
+                        >
+                          {getRoleLabel(role)}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
+                  {/* Media progress mini */}
                   <div className={st.miniProgress}>
+                    <Camera size={12} className={st.miniProgressIcon} />
                     <span className={st.miniProgressLabel}>{filled}/{totalSlots}</span>
                     <div className={st.miniProgressTrack}>
                       <div
@@ -164,12 +319,15 @@ export function TeamSelectieTab({
                     </div>
                   </div>
 
-                  <span className={`${st.memberArrow} ${isExpanded ? st.memberArrowExpanded : ''}`}>›</span>
+                  <ChevronRight
+                    size={16}
+                    className={`${st.memberArrow} ${isExpanded ? st.memberArrowExpanded : ''}`}
+                  />
                 </button>
 
+                {/* ── Expand panel ── */}
                 {isExpanded && (
                   <div className={st.expandPanel} ref={expandRef}>
-                    {/* ── Media slots grid ── */}
                     <div className={st.expandMedia}>
                       {MEDIA_SLOTS.map((slot) => {
                         const url = getMediaUrl(m, slot.id);
@@ -194,14 +352,14 @@ export function TeamSelectieTab({
                       })}
                     </div>
 
-                    {/* ── Actions ── */}
                     {memberDetailHref && (
                       <button
                         type="button"
                         className={st.expandAction}
                         onClick={() => navigate(memberDetailHref(m))}
                       >
-                        Bekijk profiel →
+                        Bekijk profiel
+                        <ChevronRight size={14} />
                       </button>
                     )}
                   </div>
@@ -209,13 +367,16 @@ export function TeamSelectieTab({
               </div>
             );
           })}
+        </div>
+      ))}
 
-          {showAdminLink && onAdminLinkClick && (
-            <button type="button" className={st.adminLink} onClick={onAdminLinkClick}>
-              Volledig ledenbeheer →
-            </button>
-          )}
-        </>
+      {/* ── Admin link ── */}
+      {showAdminLink && onAdminLinkClick && (
+        <button type="button" className={st.adminLink} onClick={onAdminLinkClick}>
+          <UserCog size={16} />
+          Volledig ledenbeheer
+          <ChevronRight size={14} />
+        </button>
       )}
     </div>
   );
