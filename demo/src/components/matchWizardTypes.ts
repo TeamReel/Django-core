@@ -38,6 +38,8 @@ export interface SquadMember {
   metadata?: { shirt_number?: string | number; position?: string; functional_roles?: string[]; team_role?: string };
   data?: { jersey_number?: string | number; functional_role?: string };
   functional_roles?: string[];
+  /** True for manually added guest players (not in the squad) */
+  isGuest?: boolean;
 }
 
 /** Content types that require a lineup to be set first. */

@@ -1,8 +1,9 @@
 /**
  * MatchWizardLineupStep — Step 3: position-by-position lineup editor.
+ * Supports guest players that can be added ad-hoc and used in multiple positions.
  */
-import React from 'react';
-import { ChevronRight, AlertTriangle, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronRight, AlertTriangle, RefreshCw, UserPlus, X } from 'lucide-react';
 import SmartEmptyState from './SmartEmptyState';
 import { POSITIONS, getSquadMemberName, type SquadMember } from './matchWizardTypes';
 import type { useMatchWizardData } from './useMatchWizardData';
@@ -16,7 +17,21 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
     filledPositions, totalPositions, allPlayers,
     handleSelectPlayer, getMemberName, getMemberJersey,
     squadError, retrySquad,
+    guestPlayers, addGuestPlayer, removeGuestPlayer,
   } = d;
+
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [guestName, setGuestName] = useState('');
+  const [guestJersey, setGuestJersey] = useState('');
+
+  const handleAddGuest = () => {
+    const name = guestName.trim();
+    if (!name) return;
+    addGuestPlayer(name, guestJersey.trim() || undefined);
+    setGuestName('');
+    setGuestJersey('');
+    setShowGuestForm(false);
+  };
 
   const usedMemberIds = [...(lineupSlots.goalkeeper || []), ...(lineupSlots.player || [])].filter(Boolean);
 
@@ -49,10 +64,60 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
         </div>
       ) : squadLoading ? (
         <div className={`text-center p-32 ${styles.textMuted}`}>Spelers laden...</div>
-      ) : allPlayers.length === 0 ? (
+      ) : allPlayers.length === 0 && guestPlayers.length === 0 ? (
         <SmartEmptyState type="members" compact hideActions description="Geen spelers gevonden in het team." />
       ) : (
         <div className="flex-col gap-6">
+          {/* ── Guest player management ── */}
+          {guestPlayers.length > 0 && (
+            <div className={styles.guestSection}>
+              <div className={`fs-12 fw-600 uppercase ${styles.guestSectionLabel}`}>Gasten</div>
+              <div className="flex-row gap-6" style={{ flexWrap: 'wrap' }}>
+                {guestPlayers.map(g => (
+                  <span key={g.id} className={styles.guestTag}>
+                    {g.metadata?.shirt_number && <span className={styles.guestTagJersey}>#{g.metadata.shirt_number}</span>}
+                    {getSquadMemberName(g)}
+                    <button onClick={() => removeGuestPlayer(g.id)} className={styles.guestTagRemove} aria-label="Verwijder gast">
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {showGuestForm ? (
+            <div className={styles.guestForm}>
+              <div className="fw-600 fs-13 text-primary" style={{ marginBottom: 8 }}>Gast toevoegen</div>
+              <div className="flex-row gap-8">
+                <input
+                  className={styles.guestInput}
+                  placeholder="Naam"
+                  value={guestName}
+                  onChange={e => setGuestName(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAddGuest()}
+                  autoFocus
+                />
+                <input
+                  className={`${styles.guestInput} ${styles.guestInputSmall}`}
+                  placeholder="#"
+                  value={guestJersey}
+                  onChange={e => setGuestJersey(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAddGuest()}
+                  style={{ maxWidth: 56 }}
+                />
+              </div>
+              <div className="flex-row gap-8" style={{ marginTop: 8 }}>
+                <button onClick={handleAddGuest} disabled={!guestName.trim()} className={styles.guestAddBtn}>Toevoegen</button>
+                <button onClick={() => { setShowGuestForm(false); setGuestName(''); setGuestJersey(''); }} className={styles.guestCancelBtn}>Annuleren</button>
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => setShowGuestForm(true)} className={styles.addGuestBtn}>
+              <UserPlus size={16} />
+              <span>Gast toevoegen</span>
+            </button>
+          )}
+
           {POSITIONS.map((posConfig) => {
             const isGoalkeeper = posConfig.slot === 1;
             const positionIdx = isGoalkeeper ? 0 : posConfig.slot - 2;
@@ -77,7 +142,8 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
                       — Geen speler —
                     </button>
                     {allPlayers.map((member) => {
-                      const isUsed = usedMemberIds.includes(member.id) && member.id !== memberId;
+                      // Guests can be used in multiple positions
+                      const isUsed = !member.isGuest && usedMemberIds.includes(member.id) && member.id !== memberId;
                       const jersey = member.metadata?.shirt_number || member.data?.jersey_number;
                       return (
                         <button key={member.id}
@@ -85,7 +151,8 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
                           disabled={isUsed}
                           className={styles.playerButton}
                           data-selected={member.id === memberId ? 'true' : undefined}
-                          data-used={isUsed ? 'true' : undefined}>
+                          data-used={isUsed ? 'true' : undefined}
+                          data-guest={member.isGuest ? 'true' : undefined}>
                           {jersey && (
                             <span
                               className={`rounded-full flex-center fs-11 fw-600 ${styles.jerseyBadge}`}
@@ -93,6 +160,7 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
                             >{jersey}</span>
                           )}
                           <span className="flex-1">{getSquadMemberName(member)}</span>
+                          {member.isGuest && <span className={styles.guestBadge}>gast</span>}
                           {isUsed && <span className="fs-11 opacity-70">ingevuld</span>}
                         </button>
                       );
@@ -113,7 +181,12 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
                 <div className="flex-1-min">
                   {memberId ? (
                     <>
-                      <div className="fw-600 fs-14 text-primary">{getMemberName(memberId)}</div>
+                      <div className="fw-600 fs-14 text-primary">
+                        {getMemberName(memberId)}
+                        {allPlayers.find(m => m.id === memberId)?.isGuest && (
+                          <span className={styles.guestBadgeInline}>gast</span>
+                        )}
+                      </div>
                       <div className={`fs-12 ${styles.textMuted}`}>
                         {getMemberJersey(memberId) && `#${getMemberJersey(memberId)} \u00b7 `}{posConfig.fullLabel}
                       </div>

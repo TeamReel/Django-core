@@ -20,6 +20,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const [lineupSlots, setLineupSlots] = useState<{ goalkeeper: string[]; player: string[] }>({ goalkeeper: [], player: [] });
   const [lineupFormation, setLineupFormation] = useState('4-3-3');
   const [squadGroups, setSquadGroups] = useState<Record<string, SquadMember[]>>({ goalkeeper: [], player: [] });
+  const [guestPlayers, setGuestPlayers] = useState<SquadMember[]>([]);
   const [squadLoading, setSquadLoading] = useState(false);
   const [selectedContentPhase, setSelectedContentPhase] = useState<ContentPhase>('pre');
   const [editingPosition, setEditingPosition] = useState<number | null>(null);
@@ -319,8 +320,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     setCurrentStep('match');
     setSelectedMatch(null);
     setLineupSlots({ goalkeeper: [], player: [] });
-    setSquadGroups({ goalkeeper: [], player: [] });
-    setEditingPosition(null);
+    setSquadGroups({ goalkeeper: [], player: [] });      setGuestPlayers([]);    setEditingPosition(null);
     setPendingContent(null);
     onClose();
   };
@@ -329,7 +329,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
   const gkPool = squadGroups.goalkeeper || [];
   const playerPool = squadGroups.player || [];
-  const allPlayers = [...gkPool, ...playerPool];
+  const allPlayers = [...gkPool, ...playerPool, ...guestPlayers];
 
   const filledPositions = lineupSlots.goalkeeper.filter(Boolean).length + lineupSlots.player.filter(Boolean).length;
   const totalPositions = POSITIONS.length;
@@ -341,6 +341,25 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       case 'lineup': return pendingContent ? `Opstelling — ${pendingContent.label}` : 'Opstelling';
       case 'review': return 'Bevestig generatie';
     }
+  };
+
+  const addGuestPlayer = (name: string, jerseyNumber?: string) => {
+    const guest: SquadMember = {
+      id: `guest-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      user: { name },
+      metadata: jerseyNumber ? { shirt_number: jerseyNumber } : undefined,
+      isGuest: true,
+    };
+    setGuestPlayers(prev => [...prev, guest]);
+  };
+
+  const removeGuestPlayer = (guestId: string) => {
+    setGuestPlayers(prev => prev.filter(g => g.id !== guestId));
+    // Clear from lineup slots if assigned
+    setLineupSlots(prev => ({
+      goalkeeper: prev.goalkeeper.map(id => id === guestId ? '' : id).filter(Boolean),
+      player: prev.player.map(id => id === guestId ? '' : id),
+    }));
   };
 
   const getMemberById = (memberId: string) => allPlayers.find(m => m.id === memberId);
@@ -366,6 +385,8 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     handleSelectPlayer, handleContentSelect, handleLineupConfirm, handleReviewConfirm,
     handleContentModalClose, handleContentGenerated,
     handleBack, handleClose,
+    // Guest players
+    guestPlayers, addGuestPlayer, removeGuestPlayer,
     // Helpers
     getStepTitle, getMemberName, getMemberJersey, getMemberById,
     // Retry
