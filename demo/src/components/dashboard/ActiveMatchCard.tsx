@@ -161,7 +161,7 @@ export const ActiveMatchCard: React.FC = () => {
       {/* Status badge */}
       <div className={styles.topRow}>
         <span className={`${styles.badge} ${styles[`badge_${matchState}`]}`}>
-          {matchState === 'live' ? '🔴 LIVE' : matchState === 'upcoming' ? 'Aankomend' : 'Gespeeld'}
+          {matchState === 'live' ? <><Circle size={8} fill="currentColor" /> LIVE</> : matchState === 'upcoming' ? 'Aankomend' : 'Gespeeld'}
         </span>
         <span className={`${styles.timeLabel} ${styles[`time_${urgency}`]}`}>
           {relTime}
