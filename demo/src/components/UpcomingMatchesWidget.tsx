@@ -8,6 +8,14 @@ import SmartEmptyState from './SmartEmptyState';
 import { Zap, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import styles from './UpcomingMatchesWidget.module.css';
 
+/** Safely extract array from any paginated API response format */
+function extractItems<T = any>(json: any): T[] {
+  if (Array.isArray(json)) return json;
+  if (json && Array.isArray(json.data)) return json.data;
+  if (json && Array.isArray(json.results)) return json.results;
+  return [];
+}
+
 interface Match {
   id: string;
   title: string;
@@ -44,7 +52,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
 
         if (response.ok) {
             const data = await response.json();
-            setMatches(data.data || data.results || []);
+            setMatches(extractItems<Match>(data));
         }
       } catch (err) {
         console.error("Failed to fetch upcoming matches", err);

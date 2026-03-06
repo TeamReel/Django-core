@@ -11,6 +11,14 @@ import { Flame, TrendingUp, Trophy } from 'lucide-react';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './ContentStreakWidget.module.css';
 
+/** Safely extract array from any paginated API response format */
+function extractItems<T = any>(json: any): T[] {
+  if (Array.isArray(json)) return json;
+  if (json && Array.isArray(json.data)) return json.data;
+  if (json && Array.isArray(json.results)) return json.results;
+  return [];
+}
+
 /* ── Types ─────────────────────────────────────────────────────────── */
 
 interface PastMatch {
@@ -68,7 +76,7 @@ export const ContentStreakWidget: React.FC = () => {
         );
         if (!matchRes.ok) throw new Error('fetch failed');
         const matchData = await matchRes.json();
-        const pastMatches: PastMatch[] = matchData.data || matchData.results || [];
+        const pastMatches: PastMatch[] = extractItems<PastMatch>(matchData);
 
         if (cancelled) return;
         setTotalMatches(pastMatches.length);
@@ -87,7 +95,7 @@ export const ContentStreakWidget: React.FC = () => {
           );
           if (!mediaRes.ok) break;
           const mediaData = await mediaRes.json();
-          const items: MediaItem[] = mediaData.data || mediaData.results || [];
+          const items: MediaItem[] = extractItems<MediaItem>(mediaData);
 
           const types = new Set<string>();
           for (const mi of items) {

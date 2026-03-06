@@ -17,6 +17,14 @@ import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { SkeletonCard } from '../Skeleton';
 import styles from './NextMatchHero.module.css';
 
+/** Safely extract array from any paginated API response format */
+function extractItems<T = any>(json: any): T[] {
+  if (Array.isArray(json)) return json;
+  if (json && Array.isArray(json.data)) return json.data;
+  if (json && Array.isArray(json.results)) return json.results;
+  return [];
+}
+
 /* ── Types ─────────────────────────────────────────────────────────── */
 
 interface Match {
@@ -155,7 +163,7 @@ export const NextMatchHero: React.FC = () => {
         );
         if (!res.ok) throw new Error('fetch failed');
         const data = await res.json();
-        const items = data.data || data.results || [];
+        const items = extractItems<Match>(data);
         const m = items[0] ?? null;
         if (!cancelled) setMatch(m);
 
@@ -167,7 +175,7 @@ export const NextMatchHero: React.FC = () => {
           );
           if (mediaRes.ok) {
             const mediaData = await mediaRes.json();
-            if (!cancelled) setMediaItems(mediaData.data || mediaData.results || []);
+            if (!cancelled) setMediaItems(extractItems<MediaItem>(mediaData));
           }
         }
       } catch {
@@ -182,7 +190,8 @@ export const NextMatchHero: React.FC = () => {
   // Compute readiness
   const { percent, checklist } = useMemo(() => {
     const doneTypes = new Set<string>();
-    for (const mi of mediaItems) {
+    const safeMedia = Array.isArray(mediaItems) ? mediaItems : [];
+    for (const mi of safeMedia) {
       const raw = mi.extraction_metadata?.asset_type;
       if (raw) doneTypes.add(normalizeAssetType(raw));
     }
