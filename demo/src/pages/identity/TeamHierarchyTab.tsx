@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Card, Input } from '@django-core/design-system';
+import { Alert, Input } from '@django-core/design-system';
+import { ChevronRight } from 'lucide-react';
 
 import { type Period } from './teamDetailTypes';
+import h from './TeamHierarchyTab.module.css';
 
 interface TeamHierarchyTabProps {
   hierarchySeasons: Period[];
@@ -13,33 +15,36 @@ interface TeamHierarchyTabProps {
   hierarchyError: string | null;
   hierarchySearch: string;
   setHierarchySearch: (v: string) => void;
+  teamMatchesByPeriodId: Record<string, any[]>;
+  teamMatchesLoading: boolean;
   orgKeyForRoutes: string;
   clubKeyForRoutes: string;
   teamKeyForRoutes: string;
 }
 
-const pillStyle: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  padding: '2px 8px',
-  borderRadius: 999,
-  border: '1px solid var(--app-border)',
-  background: 'var(--app-surface-2)',
-  fontSize: 12,
-  color: 'var(--app-muted-text)',
-  fontWeight: 600,
+/** Format a match date */
+const fmtDate = (m: any) => {
+  const raw = m?.start_time || m?.date || m?.metadata?.date;
+  if (!raw) return '—';
+  const d = new Date(raw);
+  return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
 };
 
-const competitionRowStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: 12,
-  padding: '8px 10px',
-  border: '1px solid var(--app-border)',
-  borderRadius: 8,
-  background: 'var(--app-surface)',
+const fmtTime = (m: any) => {
+  const raw = m?.start_time || m?.date || m?.metadata?.date;
+  if (!raw) return '';
+  const d = new Date(raw);
+  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+};
+
+/** Build a display title for a match */
+const matchDisplayTitle = (m: any): string => {
+  const name = String(m?.name || '').trim();
+  if (name) return name;
+  const home = m?.metadata?.home_team || m?.metadata?.team_home || '';
+  const away = m?.metadata?.away_team || m?.metadata?.team_away || '';
+  if (home && away) return `${home} — ${away}`;
+  return `Wedstrijd ${String(m?.id || '').slice(0, 8)}`;
 };
 
 export function TeamHierarchyTab({
@@ -51,146 +56,198 @@ export function TeamHierarchyTab({
   hierarchyError,
   hierarchySearch,
   setHierarchySearch,
+  teamMatchesByPeriodId,
+  teamMatchesLoading,
   orgKeyForRoutes,
   clubKeyForRoutes,
   teamKeyForRoutes,
 }: TeamHierarchyTabProps) {
   const navigate = useNavigate();
 
+  // ── Expand/collapse state ──
+  const [expandedSeasons, setExpandedSeasons] = useState<Set<string>>(new Set());
+  const [expandedComps, setExpandedComps] = useState<Set<string>>(new Set());
+
+  const toggleSeason = (id: string) =>
+    setExpandedSeasons((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  const toggleComp = (id: string) =>
+    setExpandedComps((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+
+  // ── Search filter ──
   const q = String(hierarchySearch || '').trim().toLowerCase();
-  const visibleSeasons = !q
-    ? hierarchySeasons
-    : (hierarchySeasons || []).filter((s) => {
-        const seasonName = String((s as any)?.name || '').toLowerCase();
-        if (seasonName.includes(q)) return true;
-        const comps = hierarchyCompetitionsBySeasonId[String((s as any)?.id)] || [];
-        return (comps || []).some((c) => String((c as any)?.name || '').toLowerCase().includes(q));
-      });
+  const visibleSeasons = useMemo(() => {
+    if (!q) return hierarchySeasons;
+    return (hierarchySeasons || []).filter((s) => {
+      const seasonName = String((s as any)?.name || '').toLowerCase();
+      if (seasonName.includes(q)) return true;
+      const comps = hierarchyCompetitionsBySeasonId[String((s as any)?.id)] || [];
+      return comps.some((c) => String((c as any)?.name || '').toLowerCase().includes(q));
+    });
+  }, [hierarchySeasons, hierarchyCompetitionsBySeasonId, q]);
+
+  // Auto-expand all seasons when searching
+  const effectiveExpandedSeasons = q
+    ? new Set(visibleSeasons.map((s) => String(s.id)))
+    : expandedSeasons;
 
   return (
-    <Card>
-      <div className="flex-between gap-12">
-        <div>
-          <div className="fs-16 fw-700">Hierarchy</div>
-          <div className="text-muted fs-13">Seasons → competitions</div>
-        </div>
+    <div className={h.root}>
+      <div className={h.searchRow}>
         <Input
           value={hierarchySearch}
           onChange={(e) => setHierarchySearch((e.target as any).value)}
-          placeholder="Search seasons / competitions…"
+          placeholder="Zoek seizoen of competitie…"
         />
       </div>
 
-      {hierarchyError && (
-        <div className="mt-12">
-          <Alert variant="error">{hierarchyError}</Alert>
-        </div>
-      )}
+      {hierarchyError && <Alert variant="error">{hierarchyError}</Alert>}
 
       {hierarchyLoading && hierarchySeasons.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2 mt-12">
-          Loading hierarchy...
-        </div>
+        <div className={h.loading}>Laden…</div>
       ) : hierarchySeasons.length === 0 ? (
-        <div className="text-sm text-gray-500 py-2 mt-12">
-          No seasons found.
-        </div>
+        <div className={h.empty}>Geen seizoenen gevonden.</div>
       ) : (
-        <div className="mt-12 flex-col gap-10">
-          {visibleSeasons.map((season) => {
-            const seasonKey = String((season as any)?.slug || (season as any)?.id || '').trim();
-            const seasonPath =
-              orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey
-                ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}`
-                : '';
+        visibleSeasons.map((season) => {
+          const sid = String((season as any)?.id ?? '').trim();
+          const seasonKey = String((season as any)?.slug || sid).trim();
+          const seasonPath =
+            orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey
+              ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}`
+              : '';
 
-            const competitionsAll = hierarchyCompetitionsBySeasonId[String(season.id)] || [];
-            const competitions = !q
-              ? competitionsAll
-              : (competitionsAll || []).filter((c) => String((c as any)?.name || '').toLowerCase().includes(q));
+          const competitionsAll = hierarchyCompetitionsBySeasonId[sid] || [];
+          const competitions = !q
+            ? competitionsAll
+            : competitionsAll.filter((c) => String((c as any)?.name || '').toLowerCase().includes(q));
 
-            const seasonId = String((season as any)?.id ?? '').trim();
-            const seasonMatches = hierarchyMatchesCountBySeasonId[seasonId] ?? 0;
+          const seasonMatches = hierarchyMatchesCountBySeasonId[sid] ?? 0;
+          const isSeasonOpen = effectiveExpandedSeasons.has(sid);
 
-            return (
-              <div
-                key={String(season.id)}
-                className="border bg-surface overflow-hidden"
-                style={{ borderRadius: 10 }}
+          return (
+            <div key={sid} className={h.seasonCard}>
+              {/* Season header (click to expand) */}
+              <button
+                type="button"
+                className={h.seasonHeader}
+                onClick={() => toggleSeason(sid)}
               >
-                <div
-                  className="flex-between border-bottom bg-surface-2 gap-12"
-                  style={{ padding: '10px 12px' }}
-                >
-                  <div className="flex-col gap-2 min-w-0">
-                    {seasonPath ? (
-                      <button
-                        type="button"
-                        className="app-unstyled-button hover:underline text-left fw-800 fs-14"
-                        onClick={() => navigate(seasonPath)}
-                        style={{ color: '#60a5fa' }}
-                      >
-                        {String((season as any)?.name || 'Season')}
-                      </button>
-                    ) : (
-                      <div className="fw-800 fs-14 text-primary">
-                        {String((season as any)?.name || 'Season')}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
-                    <span style={pillStyle}>Competitions: {competitionsAll.length}</span>
-                    <span style={pillStyle}>Matches: {seasonMatches}</span>
-                  </div>
-                </div>
-
-                <div style={{ padding: '10px 12px' }}>
-                  {competitions.length === 0 ? (
-                    <div className="text-sm text-gray-500 py-2">No competitions.</div>
-                  ) : (
-                    <div className="flex-col gap-8">
-                      {competitions.map((c) => {
-                        const competitionKey = String((c as any)?.slug || (c as any)?.id || '').trim();
-                        const competitionPath =
-                          orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey && competitionKey
-                            ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}/${encodeURIComponent(competitionKey)}`
-                            : '';
-
-                        const competitionId = String((c as any)?.id ?? '').trim();
-                        const competitionMatches = hierarchyMatchesCountByCompetitionId[competitionId] ?? (c as any)?.activities_count ?? 0;
-
-                        return (
-                          <div key={String((c as any)?.id)} style={competitionRowStyle}>
-                            <div className="min-w-0">
-                              {competitionPath ? (
-                                <button
-                                  type="button"
-                                  className="app-unstyled-button hover:underline text-left fw-700 fs-13"
-                                  onClick={() => navigate(competitionPath)}
-                                  style={{ color: '#60a5fa' }}
-                                >
-                                  {String((c as any)?.name || 'Competition')}
-                                </button>
-                              ) : (
-                                <div className="fw-700 fs-13 text-primary">{String((c as any)?.name || 'Competition')}</div>
-                              )}
-                            </div>
-
-                            <div className="flex-row gap-8 flex-wrap" style={{ justifyContent: 'flex-end' }}>
-                              <span style={pillStyle}>Matches: {competitionMatches}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                <div className={h.seasonLeft}>
+                  <span className={h.seasonName}>{String((season as any)?.name || 'Seizoen')}</span>
+                  {seasonPath && (
+                    <span
+                      className={h.seasonNavLink}
+                      onClick={(e) => { e.stopPropagation(); navigate(seasonPath); }}
+                    >
+                      Bekijk seizoen →
+                    </span>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
+                <div className={h.seasonRight}>
+                  <span className={h.pill}>{competitionsAll.length} comp.</span>
+                  <span className={h.pill}>{seasonMatches} wed.</span>
+                  <span className={`${h.chevron} ${isSeasonOpen ? h.chevronOpen : ''}`}>
+                    <ChevronRight size={16} />
+                  </span>
+                </div>
+              </button>
+
+              {/* Season body (competitions) */}
+              {isSeasonOpen && (
+                <div className={h.seasonBody}>
+                  {competitions.length === 0 ? (
+                    <div className={h.empty}>Geen competities.</div>
+                  ) : (
+                    competitions.map((comp) => {
+                      const cid = String((comp as any)?.id ?? '').trim();
+                      const compKey = String((comp as any)?.slug || cid).trim();
+                      const compPath =
+                        seasonPath && compKey
+                          ? `${seasonPath}/${encodeURIComponent(compKey)}`
+                          : '';
+                      const compMatchCount = hierarchyMatchesCountByCompetitionId[cid] ?? (comp as any)?.activities_count ?? 0;
+                      const isCompOpen = expandedComps.has(cid);
+                      const compMatches = teamMatchesByPeriodId[cid] || [];
+
+                      return (
+                        <div key={cid} className={h.compRow}>
+                          {/* Competition header */}
+                          <button
+                            type="button"
+                            className={h.compHeader}
+                            onClick={() => toggleComp(cid)}
+                          >
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                              <span className={h.compName}>{String((comp as any)?.name || 'Competitie')}</span>
+                              {compPath && (
+                                <span
+                                  className={h.seasonNavLink}
+                                  onClick={(e) => { e.stopPropagation(); navigate(compPath); }}
+                                  style={{ fontSize: 11 }}
+                                >
+                                  Bekijk competitie →
+                                </span>
+                              )}
+                            </div>
+                            <div className={h.seasonRight}>
+                              <span className={h.pill}>{compMatchCount} wed.</span>
+                              <span className={`${h.chevron} ${isCompOpen ? h.chevronOpen : ''}`}>
+                                <ChevronRight size={14} />
+                              </span>
+                            </div>
+                          </button>
+
+                          {/* Matches body */}
+                          {isCompOpen && (
+                            <div className={h.matchesBody}>
+                              {teamMatchesLoading && compMatches.length === 0 ? (
+                                <div className={h.loading}>Laden…</div>
+                              ) : compMatches.length === 0 ? (
+                                <div className={h.empty}>Geen wedstrijden.</div>
+                              ) : (
+                                compMatches.map((m: any) => {
+                                  const mid = String(m?.id || m?.slug || '').trim();
+                                  const matchPath = compPath && mid
+                                    ? `${compPath}/${encodeURIComponent(m.slug || mid)}`
+                                    : '';
+
+                                  return (
+                                    <button
+                                      key={mid}
+                                      type="button"
+                                      className={h.matchRow}
+                                      onClick={() => matchPath && navigate(matchPath)}
+                                    >
+                                      <div className={h.matchDate}>
+                                        <span className={h.matchDay}>{fmtDate(m)}</span>
+                                        <span className={h.matchTime}>{fmtTime(m)}</span>
+                                      </div>
+                                      <span className={h.matchTitle}>{matchDisplayTitle(m)}</span>
+                                      {matchPath && <span className={h.matchArrow}>›</span>}
+                                    </button>
+                                  );
+                                })
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })
       )}
-    </Card>
+    </div>
   );
 }

@@ -208,3 +208,37 @@
     max-width: none;
   }
 }
+
+/* ── Identity tab toggle ── */
+.identityToggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.identityToggleBtn {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.identityToggleBtn:not(:last-child) {
+  border-right: 1px solid var(--app-border, #334155);
+}
+
+.identityToggleBtnActive {
+  background: var(--app-surface, #0f172a);
+  color: var(--app-text);
+  font-weight: 700;
+}

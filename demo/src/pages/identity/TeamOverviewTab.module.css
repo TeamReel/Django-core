@@ -355,3 +355,59 @@
   font-size: 13px;
   color: var(--app-muted-text);
 }
+
+/* ── Match list (upcoming + recent) ── */
+.matchList {
+  display: flex;
+  flex-direction: column;
+}
+
+.matchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+  cursor: default;
+}
+
+.matchRow:last-child {
+  border-bottom: none;
+}
+
+.matchDate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.matchDay {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.matchTime {
+  font-size: 11px;
+  color: var(--app-muted-text);
+  opacity: 0.7;
+}
+
+.matchTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.matchArrow {
+  font-size: 16px;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}

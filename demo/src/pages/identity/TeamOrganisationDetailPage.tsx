@@ -9,9 +9,6 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 
-import { SeasonsList } from './directory/SeasonsList';
-import { CompetitionsList } from './directory/CompetitionsList';
-import { MatchesList } from './directory/MatchesList';
 import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import MobileTabBar from '../../components/MobileTabBar';
@@ -97,12 +94,14 @@ export default function TeamOrganisationDetailPage() {
     const tab = String(params.get('tab') || (isPlayer ? 'hierarchy' : 'overview')).trim().toLowerCase();
     const normalized = tab === 'people' || tab === 'users' ? 'members'
       : (tab === 'balance' || tab === 'transactions') ? 'credits'
+      : (tab === 'seasons' || tab === 'competitions' || tab === 'matches') ? 'hierarchy'
+      : (tab === 'assets' || tab === 'kits') ? 'identity'
       : tab;
     const allowed = isPlayer
-      ? new Set(['hierarchy', 'matches'])
+      ? new Set(['hierarchy'])
       : new Set([
-          'overview', 'hierarchy', 'seasons', 'competitions', 'matches',
-          'members', 'media', 'credits', 'assets', 'kits',
+          'overview', 'hierarchy',
+          'members', 'media', 'identity', 'credits',
         ]);
     return allowed.has(normalized) ? normalized : (isPlayer ? 'hierarchy' : 'overview');
   }, [location.search, isPlayer]);
@@ -131,6 +130,9 @@ export default function TeamOrganisationDetailPage() {
   /* ── Overflow menu ── */
   const [overflowOpen, setOverflowOpen] = useState(false);
   const overflowRef = useRef<HTMLDivElement>(null);
+
+  /* ── Identity sub-tab (Assets | Kits) ── */
+  const [identitySubtab, setIdentitySubtab] = useState<'assets' | 'kits'>('assets');
   useEffect(() => {
     if (!overflowOpen) return;
     const handler = (e: MouseEvent) => {
@@ -287,14 +289,10 @@ export default function TeamOrganisationDetailPage() {
           tabs={[
             ...(!isPlayer ? [{ id: 'overview', label: 'Overview' }] : []),
             { id: 'hierarchy', label: 'Hierarchy' },
-            ...(!isPlayer ? [{ id: 'seasons', label: 'Seasons' }] : []),
-            ...(!isPlayer ? [{ id: 'competitions', label: 'Competities' }] : []),
-            { id: 'matches', label: 'Matches' },
             ...(!isPlayer ? [{ id: 'members', label: 'Selectie' }] : []),
             ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
+            ...(!isPlayer ? [{ id: 'identity', label: 'Identity' }] : []),
             ...(!isPlayer ? [{ id: 'credits', label: 'Credits' }] : []),
-            ...(!isPlayer ? [{ id: 'assets', label: 'Assets' }] : []),
-            ...(!isPlayer ? [{ id: 'kits', label: 'Kits' }] : []),
           ]}
           activeTab={activeTabFromUrl}
         />
@@ -324,6 +322,8 @@ export default function TeamOrganisationDetailPage() {
               fullMembersLoading={tabData.fullMembersLoading}
               contentCount={tabData.contentCount}
               contentCountLoading={tabData.contentCountLoading}
+              teamMatches={tabData.teamMatches}
+              teamMatchesLoading={tabData.teamMatchesLoading}
             />
           )}
 
@@ -337,39 +337,11 @@ export default function TeamOrganisationDetailPage() {
               hierarchyError={tabData.hierarchyError}
               hierarchySearch={tabData.hierarchySearch}
               setHierarchySearch={tabData.setHierarchySearch}
+              teamMatchesByPeriodId={tabData.teamMatchesByPeriodId}
+              teamMatchesLoading={tabData.teamMatchesLoading}
               orgKeyForRoutes={orgKeyForRoutes}
               clubKeyForRoutes={clubKeyForRoutes}
               teamKeyForRoutes={teamKeyForRoutes}
-            />
-          )}
-
-          {activeTabFromUrl === 'seasons' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
-            <SeasonsList
-              preselectedOrgId={orgSlugForDirectoryLists}
-              preselectedClubId={clubIdForDirectoryLists}
-              preselectedTeamId={teamIdForDirectoryLists}
-              preselectedClubSlug={clubKeyForRoutes}
-              preselectedTeamSlug={teamKeyForRoutes}
-            />
-          )}
-
-          {activeTabFromUrl === 'competitions' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
-            <CompetitionsList
-              preselectedOrgId={orgSlugForDirectoryLists}
-              preselectedClubId={clubIdForDirectoryLists}
-              preselectedTeamId={teamIdForDirectoryLists}
-              preselectedClubSlug={clubKeyForRoutes}
-              preselectedTeamSlug={teamKeyForRoutes}
-            />
-          )}
-
-          {activeTabFromUrl === 'matches' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
-            <MatchesList
-              preselectedOrgId={orgSlugForDirectoryLists}
-              preselectedClubId={clubIdForDirectoryLists}
-              preselectedTeamId={teamIdForDirectoryLists}
-              preselectedClubSlug={clubKeyForRoutes}
-              preselectedTeamSlug={teamKeyForRoutes}
             />
           )}
 
@@ -407,39 +379,58 @@ export default function TeamOrganisationDetailPage() {
             </div>
           )}
 
-          {activeTabFromUrl === 'assets' && team && org && (
-            <AssetsTab
-              level="team"
-              organisationId={String(org.id)}
-              projectId={String(team.id)}
-              parentProjectId={club ? String(club.id) : undefined}
-              entityName={team.name}
-              sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
-              onSponsorModeChange={async (mode) => {
-                if (!team) return;
-                const csrfToken = getCsrfToken();
-                const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
-                  credentials: 'include',
-                  body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } }),
-                });
-                if (res.ok) {
-                  const raw = await res.json().catch(() => null);
-                  const updated: any = (raw?.data ?? raw) as any;
-                  setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
-                }
-              }}
-            />
-          )}
-
-          {activeTabFromUrl === 'kits' && team && org && (
-            <KitsTab
-              projectSlug={team.slug || String(team.id)}
-              projectName={team.name}
-              brandProfileId={brandProfileId}
-              orgId={String(org.id)}
-            />
+          {activeTabFromUrl === 'identity' && team && org && (
+            <div>
+              <div className={s.identityToggle}>
+                <button
+                  type="button"
+                  className={`${s.identityToggleBtn} ${identitySubtab === 'assets' ? s.identityToggleBtnActive : ''}`}
+                  onClick={() => setIdentitySubtab('assets')}
+                >
+                  Assets
+                </button>
+                <button
+                  type="button"
+                  className={`${s.identityToggleBtn} ${identitySubtab === 'kits' ? s.identityToggleBtnActive : ''}`}
+                  onClick={() => setIdentitySubtab('kits')}
+                >
+                  Kits
+                </button>
+              </div>
+              {identitySubtab === 'assets' && (
+                <AssetsTab
+                  level="team"
+                  organisationId={String(org.id)}
+                  projectId={String(team.id)}
+                  parentProjectId={club ? String(club.id) : undefined}
+                  entityName={team.name}
+                  sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
+                  onSponsorModeChange={async (mode) => {
+                    if (!team) return;
+                    const csrfToken = getCsrfToken();
+                    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
+                      credentials: 'include',
+                      body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } }),
+                    });
+                    if (res.ok) {
+                      const raw = await res.json().catch(() => null);
+                      const updated: any = (raw?.data ?? raw) as any;
+                      setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
+                    }
+                  }}
+                />
+              )}
+              {identitySubtab === 'kits' && (
+                <KitsTab
+                  projectSlug={team.slug || String(team.id)}
+                  projectName={team.name}
+                  brandProfileId={brandProfileId}
+                  orgId={String(org.id)}
+                />
+              )}
+            </div>
           )}
         </div>
       </div>

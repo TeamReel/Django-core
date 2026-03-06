@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
 import { CheckCircle2, Circle } from 'lucide-react';
@@ -44,6 +44,9 @@ interface TeamOverviewTabProps {
   fullMembersLoading: boolean;
   contentCount: number | null;
   contentCountLoading: boolean;
+  // Match data
+  teamMatches: any[];
+  teamMatchesLoading: boolean;
 }
 
 export function TeamOverviewTab({
@@ -68,6 +71,8 @@ export function TeamOverviewTab({
   fullMembersLoading,
   contentCount,
   contentCountLoading,
+  teamMatches,
+  teamMatchesLoading,
 }: TeamOverviewTabProps) {
   const navigate = useNavigate();
 
@@ -95,6 +100,65 @@ export function TeamOverviewTab({
   const getLabel = (m: OverviewMember) => {
     const name = `${String(m?.first_name || '').trim()} ${String(m?.last_name || '').trim()}`.trim();
     return name || String(m?.email || '').trim() || `User ${m.id}`;
+  };
+
+  // ── Recent matches (past, sorted most recent first) ──
+  const recentMatches = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return teamMatches
+      .filter((m) => {
+        const d = m.start_time || m.date || m.metadata?.date;
+        if (!d) return false;
+        return new Date(d) < now;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.start_time || a.date || a.metadata?.date).getTime();
+        const db = new Date(b.start_time || b.date || b.metadata?.date).getTime();
+        return db - da;
+      })
+      .slice(0, 4);
+  }, [teamMatches]);
+
+  // ── Upcoming matches (future or today, sorted soonest first) ──
+  const upcomingMatches = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return teamMatches
+      .filter((m) => {
+        const d = m.start_time || m.date || m.metadata?.date;
+        if (!d) return false;
+        return new Date(d) >= now;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.start_time || a.date || a.metadata?.date).getTime();
+        const db = new Date(b.start_time || b.date || b.metadata?.date).getTime();
+        return da - db;
+      })
+      .slice(0, 3);
+  }, [teamMatches]);
+
+  const fmtDate = (m: any) => {
+    const raw = m?.start_time || m?.date || m?.metadata?.date;
+    if (!raw) return '—';
+    const d = new Date(raw);
+    return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
+  };
+
+  const fmtTime = (m: any) => {
+    const raw = m?.start_time || m?.date || m?.metadata?.date;
+    if (!raw) return '';
+    const d = new Date(raw);
+    return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const matchDisplayTitle = (m: any): string => {
+    const name = String(m?.name || '').trim();
+    if (name) return name;
+    const home = m?.metadata?.home_team || m?.metadata?.team_home || '';
+    const away = m?.metadata?.away_team || m?.metadata?.team_away || '';
+    if (home && away) return `${home} — ${away}`;
+    return `Wedstrijd ${String(m?.id || '').slice(0, 8)}`;
   };
 
   return (
@@ -141,7 +205,7 @@ export function TeamOverviewTab({
         <div className={ov.sectionCard}>
           <div className={ov.sectionHeader}>
             <h3 className={ov.sectionTitle}>Club assets</h3>
-            <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('assets'))}>
+            <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('identity'))}>
               Beheer →
             </button>
           </div>
@@ -198,7 +262,7 @@ export function TeamOverviewTab({
       <div className={ov.sectionCard}>
         <div className={ov.sectionHeader}>
           <h3 className={ov.sectionTitle}>Seizoenen</h3>
-          <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('seasons'))}>
+          <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('hierarchy'))}>
             Alle seizoenen →
           </button>
         </div>
@@ -240,6 +304,54 @@ export function TeamOverviewTab({
           </div>
         )}
       </div>
+
+      {/* ── Upcoming matches ── */}
+      {(upcomingMatches.length > 0 || teamMatchesLoading) && (
+        <div className={ov.sectionCard}>
+          <div className={ov.sectionHeader}>
+            <h3 className={ov.sectionTitle}>Aankomend</h3>
+            <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('hierarchy'))}>
+              Alle wedstrijden →
+            </button>
+          </div>
+          {teamMatchesLoading ? (
+            <div className={ov.loadingText}>Laden…</div>
+          ) : (
+            <div className={ov.matchList}>
+              {upcomingMatches.map((m: any) => (
+                <div key={m.id} className={ov.matchRow}>
+                  <div className={ov.matchDate}>
+                    <span className={ov.matchDay}>{fmtDate(m)}</span>
+                    <span className={ov.matchTime}>{fmtTime(m)}</span>
+                  </div>
+                  <span className={ov.matchTitle}>{matchDisplayTitle(m)}</span>
+                  <span className={ov.matchArrow}>›</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Recent results ── */}
+      {recentMatches.length > 0 && (
+        <div className={ov.sectionCard}>
+          <div className={ov.sectionHeader}>
+            <h3 className={ov.sectionTitle}>Recente wedstrijden</h3>
+          </div>
+          <div className={ov.matchList}>
+            {recentMatches.map((m: any) => (
+              <div key={m.id} className={ov.matchRow}>
+                <div className={ov.matchDate}>
+                  <span className={ov.matchDay}>{fmtDate(m)}</span>
+                </div>
+                <span className={ov.matchTitle}>{matchDisplayTitle(m)}</span>
+                <span className={ov.matchArrow}>›</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Members ── */}
       <div className={ov.sectionCard}>

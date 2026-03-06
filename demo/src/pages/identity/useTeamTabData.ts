@@ -68,6 +68,10 @@ export function useTeamTabData({
   const [contentCount, setContentCount] = useState<number | null>(null);
   const [contentCountLoading, setContentCountLoading] = useState(false);
 
+  // ── Team matches (for hierarchy expansion + overview recent matches) ──
+  const [teamMatches, setTeamMatches] = useState<any[]>([]);
+  const [teamMatchesLoading, setTeamMatchesLoading] = useState(false);
+
   // ── Brand profiles ──
   const clubBrand = useBrandProfile({
     projectId: clubId || undefined,
@@ -422,6 +426,42 @@ export function useTeamTabData({
     return () => { cancelled = true; };
   }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists]);
 
+  // ── Load team matches (for hierarchy drill-down and overview recent matches) ──
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTeamMatches = async () => {
+      if (activeTabFromUrl !== 'overview' && activeTabFromUrl !== 'hierarchy') return;
+      const teamId = String(teamIdForDirectoryLists || '').trim();
+      if (!teamId) return;
+
+      setTeamMatchesLoading(true);
+      try {
+        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(teamId)}&activity_type=match&ordering=-start_time&page_size=250`;
+        const list = await fetchAllPages<any>(url, { credentials: 'include' }, { bypass: true, maxItems: 500 });
+        if (!cancelled) setTeamMatches(list || []);
+      } catch {
+        if (!cancelled) setTeamMatches([]);
+      } finally {
+        if (!cancelled) setTeamMatchesLoading(false);
+      }
+    };
+
+    void loadTeamMatches();
+    return () => { cancelled = true; };
+  }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists]);
+
+  /** Matches grouped by period (competition) id */
+  const teamMatchesByPeriodId = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    for (const m of teamMatches) {
+      const pid = String(m?.period_id || m?.period?.id || m?.period || '').trim();
+      if (!pid) continue;
+      (map[pid] ||= []).push(m);
+    }
+    return map;
+  }, [teamMatches]);
+
   return {
     hierarchySeasons,
     hierarchyCompetitionsBySeasonId,
@@ -447,5 +487,9 @@ export function useTeamTabData({
     // Content
     contentCount,
     contentCountLoading,
+    // Team matches
+    teamMatches,
+    teamMatchesLoading,
+    teamMatchesByPeriodId,
   };
 }
