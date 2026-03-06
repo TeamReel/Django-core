@@ -28,7 +28,7 @@ export const bottomSheetOverlay = style({
   right: 0,
   bottom: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  zIndex: 1000,
+  zIndex: 1300,
   animation: `${fadeIn} 200ms ease-out`,
   '@media': {
     '(max-width: 639px)': {
@@ -47,7 +47,7 @@ export const bottomSheetContainer = style({
   left: 0,
   right: 0,
   bottom: 0,
-  zIndex: 1001,
+  zIndex: 1301,
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: themeVars.color.background.primary,
