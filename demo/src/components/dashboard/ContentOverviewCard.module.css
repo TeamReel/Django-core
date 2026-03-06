@@ -1,0 +1,213 @@
+/* ContentOverviewCard — Season & match content inventory */
+
+.card {
+  background: var(--app-surface);
+  border-radius: 14px;
+  border: 1px solid var(--app-border);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* ── Header ────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--app-primary) 12%, transparent);
+  color: var(--app-primary);
+  flex-shrink: 0;
+}
+
+.title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.totalBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--app-primary) 10%, transparent);
+  color: var(--app-primary);
+}
+
+/* ── Section (season / match) ──────────────── */
+.section {
+  margin-top: 14px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+}
+
+.sectionIcon {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+}
+
+.sectionTitle {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sectionCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.sectionChevron {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  transition: transform 0.2s ease;
+}
+
+.sectionChevron[data-open='true'] {
+  transform: rotate(90deg);
+}
+
+/* ── Match row within section ──────────────── */
+.matchGroup {
+  padding: 10px 0 6px;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.matchGroup:last-child {
+  border-bottom: none;
+}
+
+.matchLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  margin-bottom: 8px;
+}
+
+.matchDate {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--app-muted-text);
+}
+
+/* ── Type chips (content per type) ─────────── */
+.typeChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.typeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
+.typeChip[data-type='image'] {
+  background: rgba(13, 148, 136, 0.1);
+  color: #0d9488;
+}
+
+.typeChip[data-type='video'] {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
+.typeChip[data-type='text'] {
+  background: rgba(217, 119, 6, 0.1);
+  color: #d97706;
+}
+
+/* ── Summary stat row ──────────────────────── */
+.statRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-border);
+}
+
+.statBlock {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--app-surface-alt, var(--app-bg));
+  border-radius: 10px;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--app-text);
+  line-height: 1.2;
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+
+/* ── Empty / loading ───────────────────────── */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  font-size: 13px;
+  color: var(--app-muted-text);
+}
+
+.shimmer {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

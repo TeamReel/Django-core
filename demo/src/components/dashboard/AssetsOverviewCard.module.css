@@ -1,0 +1,324 @@
+/* AssetsOverviewCard — Brand + member asset inventory */
+
+.card {
+  background: var(--app-surface);
+  border-radius: 14px;
+  border: 1px solid var(--app-border);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* ── Header ────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: color-mix(in srgb, #8b5cf6 12%, transparent);
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.totalBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #8b5cf6 10%, transparent);
+  color: #8b5cf6;
+}
+
+/* ── Section ───────────────────────────────── */
+.section {
+  margin-top: 14px;
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--app-muted-text);
+  margin-bottom: 10px;
+}
+
+/* ── Asset checklist (team-level) ──────────── */
+.assetGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.assetItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--app-surface-alt, var(--app-bg));
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  transition: border-color 0.15s;
+}
+
+.assetItem[data-present='true'] {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.assetItem[data-present='false'] {
+  border-color: rgba(239, 68, 68, 0.15);
+  opacity: 0.7;
+}
+
+.assetCheck {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.assetCheck[data-ok='true'] {
+  color: #10b981;
+}
+
+.assetCheck[data-ok='false'] {
+  color: var(--app-muted-text);
+  opacity: 0.4;
+}
+
+.assetLabel {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Summary progress (team brand) ─────────── */
+.summaryBar {
+  margin-top: 12px;
+}
+
+.summaryLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.summaryText {
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.summaryPercent {
+  font-weight: 700;
+  color: var(--app-primary);
+}
+
+.progressTrack {
+  height: 6px;
+  background: var(--app-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--app-primary);
+  transition: width 0.4s ease;
+}
+
+.progressFillGood {
+  background: #10b981;
+}
+
+.progressFillWarn {
+  background: #f59e0b;
+}
+
+.progressFillBad {
+  background: #ef4444;
+}
+
+/* ── Member progress rows ──────────────────── */
+.memberSection {
+  margin-top: 16px;
+}
+
+.memberTeamBar {
+  margin-bottom: 12px;
+}
+
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.memberAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--app-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitial {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--app-muted-text);
+}
+
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.memberName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 3px;
+}
+
+.memberTrack {
+  height: 5px;
+  background: var(--app-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.memberFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.memberMeta {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  white-space: nowrap;
+  min-width: 32px;
+  text-align: right;
+}
+
+.memberMetaComplete {
+  color: #10b981;
+}
+
+/* ── Type indicator dots ───────────────────── */
+.typeDots {
+  display: flex;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.typeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+}
+
+.typeDot[data-ok='true'] {
+  background: #10b981;
+}
+
+.typeDot[data-ok='false'] {
+  background: var(--app-border);
+}
+
+/* ── Missing action callout ────────────────── */
+.missingCallout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #f59e0b 8%, var(--app-surface));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text);
+  margin-top: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.missingCallout:hover {
+  background: color-mix(in srgb, #f59e0b 14%, var(--app-surface));
+}
+
+.missingIcon {
+  display: flex;
+  align-items: center;
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.missingText {
+  flex: 1;
+}
+
+.missingArrow {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+}
+
+/* ── Loading ───────────────────────────────── */
+.shimmer {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

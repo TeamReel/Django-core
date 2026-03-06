@@ -13,6 +13,8 @@ import {
   OrgStatsCard,
   ContentBreakdownCard,
   MemberContentProgressCard,
+  ContentOverviewCard,
+  AssetsOverviewCard,
 } from '../components/dashboard';
 import { SmartActionsCard } from '../components/dashboard/SmartActionsCard';
 import { useUserRole } from '../components/PermissionGuards';
@@ -108,11 +110,17 @@ export default function DashboardPage() {
             {/* 3. Content breakdown with progress bars */}
             <ContentBreakdownCard />
 
+            {/* 3b. Content overview — full inventory */}
+            <ContentOverviewCard />
+
             {/* 4. Smart contextual quick actions */}
             <SmartActionsCard />
 
             {/* 5. Member content progress */}
             {!isMemberLevel && <MemberContentProgressCard />}
+
+            {/* 5b. Asset inventory — team & member assets */}
+            {!isMemberLevel && <AssetsOverviewCard />}
 
             {/* 6. Upcoming Matches (compact list) */}
             <UpcomingMatchesCard />
