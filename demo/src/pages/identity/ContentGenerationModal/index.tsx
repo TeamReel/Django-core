@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { Button } from '@django-core/design-system';
 import { getSecureMimeType } from './utils';
 
@@ -78,7 +79,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
       className={styles.overlay}
       onClick={onClose}
@@ -397,6 +398,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
