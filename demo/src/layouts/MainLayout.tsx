@@ -55,6 +55,61 @@ export default function MainLayout() {
     }
   }, [isMobile]);
 
+  // Dynamic mobile navbar offsets for modals/sheets:
+  // modal should always sit between visible top and bottom navbars.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const root = document.documentElement;
+    const setOffsets = () => {
+      // Only relevant on mobile width where nav bars are active
+      if (window.innerWidth >= 640) {
+        root.style.removeProperty('--tr-top-navbar-offset');
+        root.style.removeProperty('--tr-bottom-navbar-offset');
+        return;
+      }
+
+      const topNav = document.querySelector<HTMLElement>('[data-app-top-navbar="true"]');
+      const bottomNav = document.querySelector<HTMLElement>('[data-app-bottom-navbar="true"]');
+
+      const topHeight = topNav
+        ? Math.max(0, Math.round(topNav.getBoundingClientRect().height))
+        : 57;
+
+      // Occupied bottom area = from top edge of bottom nav to viewport bottom.
+      // This automatically adapts to safe-area insets and raised + button geometry.
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+      const bottomOffset = bottomNav
+        ? Math.max(0, Math.round(viewportHeight - bottomNav.getBoundingClientRect().top))
+        : 80;
+
+      root.style.setProperty('--tr-top-navbar-offset', `${topHeight}px`);
+      root.style.setProperty('--tr-bottom-navbar-offset', `${bottomOffset}px`);
+    };
+
+    const onResize = () => {
+      window.requestAnimationFrame(setOffsets);
+    };
+
+    setOffsets();
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    window.visualViewport?.addEventListener('resize', onResize);
+
+    const observer = new ResizeObserver(() => onResize());
+    const topNav = document.querySelector<HTMLElement>('[data-app-top-navbar="true"]');
+    const bottomNav = document.querySelector<HTMLElement>('[data-app-bottom-navbar="true"]');
+    if (topNav) observer.observe(topNav);
+    if (bottomNav) observer.observe(bottomNav);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+      window.visualViewport?.removeEventListener('resize', onResize);
+      observer.disconnect();
+    };
+  }, [isMobile, location.pathname]);
+
   const toggleSidebar = () => {
     if (isMobile) {
       setMobileMenuOpen(!mobileMenuOpen);

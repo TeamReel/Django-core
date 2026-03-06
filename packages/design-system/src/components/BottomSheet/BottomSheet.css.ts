@@ -28,12 +28,12 @@ export const bottomSheetOverlay = style({
   right: 0,
   bottom: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  zIndex: 1300,
+  zIndex: 1090,
   animation: `${fadeIn} 200ms ease-out`,
   '@media': {
     '(max-width: 639px)': {
-      top: '57px',
-      bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+      top: 'var(--tr-top-navbar-offset, 57px)',
+      bottom: 'var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px)))',
     },
   },
 });
@@ -47,7 +47,7 @@ export const bottomSheetContainer = style({
   left: 0,
   right: 0,
   bottom: 0,
-  zIndex: 1301,
+  zIndex: 1091,
   display: 'flex',
   flexDirection: 'column',
   backgroundColor: themeVars.color.background.primary,
@@ -62,9 +62,9 @@ export const bottomSheetContainer = style({
   touchAction: 'none',
   '@media': {
     '(max-width: 639px)': {
-      /* Sit between TopNavbar (57px) and MobileBottomNav + raised create button */
-      top: '57px',
-      bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+      /* Sit between dynamic top & bottom nav offsets (runtime measured). */
+      top: 'var(--tr-top-navbar-offset, 57px)',
+      bottom: 'var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px)))',
       maxHeight: 'none',
       overflow: 'hidden',
       borderTopLeftRadius: '16px',

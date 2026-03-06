@@ -172,7 +172,7 @@ export default function MobileBottomNav() {
 
   return (
     <>
-      <nav className={styles.nav}>
+      <nav className={styles.nav} data-app-bottom-navbar="true">
         {/* Left tabs: Home, Season */}
         {tabs.slice(0, 2).map(renderTab)}
 

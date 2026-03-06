@@ -37,7 +37,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
   return (
     <div className={s.wrapper}>
       <CommandPalette isOpen={d.commandOpen} onClose={() => d.setCommandOpen(false)} />
-      <nav className={s.nav}>
+      <nav className={s.nav} data-app-top-navbar="true">
         <div className={s.navContainer} data-mobile={isMobile}>
           {/* Mobile: hamburger OR back button */}
           {isMobile && !backTarget && (
