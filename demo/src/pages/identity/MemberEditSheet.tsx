@@ -22,9 +22,9 @@ const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string; emoji: stri
 ];
 
 const ACCESS_ROLES: Array<{ value: string; label: string; desc: string }> = [
-  { value: 'viewer', label: 'Viewer',  desc: 'Kan teamgegevens bekijken' },
-  { value: 'editor', label: 'Editor',  desc: 'Kan content bewerken' },
-  { value: 'admin',  label: 'Admin',   desc: 'Volledig beheer' },
+  { value: 'viewer', label: 'Team Member',  desc: 'Bekijken en eigen profiel bewerken' },
+  { value: 'editor', label: 'Team Editor',  desc: 'Content creëren en bewerken' },
+  { value: 'admin',  label: 'Team Admin',   desc: 'Volledig beheer van team en leden' },
 ];
 
 const ROLE_COLORS: Record<string, string> = {
@@ -56,10 +56,13 @@ interface MemberEditSheetProps {
   teamId: string;
   /** Callback after successful save so parent can refresh data */
   onSaved?: () => void;
+  /** Whether the user can change the access role (Team Admin only) */
+  canChangeAccessRole?: boolean;
 }
 
 export function MemberEditSheet({
   opened, onClose, membership, apiBaseUrl, teamId, onSaved,
+  canChangeAccessRole = true,
 }: MemberEditSheetProps) {
   const [accessRole, setAccessRole] = useState('viewer');
   const [functionalRoles, setFunctionalRoles] = useState<Set<string>>(new Set());
@@ -118,19 +121,21 @@ export function MemberEditSheet({
     if (csrfToken) headers['X-CSRFToken'] = csrfToken;
 
     try {
-      // 1) PATCH access role
-      const patchRes = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/${encodeURIComponent(membershipId)}/`,
-        {
-          method: 'PATCH',
-          headers,
-          credentials: 'include',
-          body: JSON.stringify({ role: accessRole }),
-        },
-      );
-      if (!patchRes.ok) {
-        const body = await patchRes.json().catch(() => null);
-        throw new Error(body?.detail || `Opslaan mislukt (${patchRes.status})`);
+      // 1) PATCH access role (only if user has permission)
+      if (canChangeAccessRole) {
+        const patchRes = await fetch(
+          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/${encodeURIComponent(membershipId)}/`,
+          {
+            method: 'PATCH',
+            headers,
+            credentials: 'include',
+            body: JSON.stringify({ role: accessRole }),
+          },
+        );
+        if (!patchRes.ok) {
+          const body = await patchRes.json().catch(() => null);
+          throw new Error(body?.detail || `Opslaan mislukt (${patchRes.status})`);
+        }
       }
 
       // 2) Sync functional roles via assign/unassign
@@ -213,27 +218,29 @@ export function MemberEditSheet({
           </button>
         </div>
 
-        {/* ── Access role ── */}
-        <div className={st.section}>
-          <div className={st.sectionLabel}>
-            <Shield size={14} />
-            Toegangsrol
+        {/* ── Access role (only for Team Admins) ── */}
+        {canChangeAccessRole && (
+          <div className={st.section}>
+            <div className={st.sectionLabel}>
+              <Shield size={14} />
+              Teamrol
+            </div>
+            <div className={st.accessRoles}>
+              {ACCESS_ROLES.map((ar) => (
+                <button
+                  key={ar.value}
+                  type="button"
+                  className={`${st.accessRoleCard} ${accessRole === ar.value ? st.accessRoleCardActive : ''}`}
+                  onClick={() => { setAccessRole(ar.value); setSuccess(false); }}
+                >
+                  <span className={st.accessRoleLabel}>{ar.label}</span>
+                  <span className={st.accessRoleDesc}>{ar.desc}</span>
+                  {accessRole === ar.value && <Check size={14} className={st.accessRoleCheck} />}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className={st.accessRoles}>
-            {ACCESS_ROLES.map((ar) => (
-              <button
-                key={ar.value}
-                type="button"
-                className={`${st.accessRoleCard} ${accessRole === ar.value ? st.accessRoleCardActive : ''}`}
-                onClick={() => { setAccessRole(ar.value); setSuccess(false); }}
-              >
-                <span className={st.accessRoleLabel}>{ar.label}</span>
-                <span className={st.accessRoleDesc}>{ar.desc}</span>
-                {accessRole === ar.value && <Check size={14} className={st.accessRoleCheck} />}
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* ── Functional roles ── */}
         <div className={st.section}>

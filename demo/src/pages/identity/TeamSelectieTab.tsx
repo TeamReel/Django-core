@@ -17,8 +17,15 @@ interface TeamSelectieTabProps {
   /** Required for edit functionality */
   apiBaseUrl?: string;
   teamId?: string;
-  /** Whether the current user can edit members */
-  canEdit?: boolean;
+  /**
+   * Edit mode for member editing:
+   * - 'all'  = Team Admin: can edit any member
+   * - 'own'  = Team Member: can edit only own profile
+   * - 'none' = Team Editor / no edit access
+   */
+  editMode?: 'all' | 'own' | 'none';
+  /** Current user ID (needed for 'own' edit mode) */
+  currentUserId?: string;
   /** Callback to refresh member data after edits */
   onRefresh?: () => void;
 }
@@ -59,6 +66,19 @@ const ROLE_LABELS: Record<string, string> = {
   parent: 'Ouder',
 };
 
+/** Access role → TeamReel display name */
+const ACCESS_ROLE_LABELS: Record<string, string> = {
+  admin: 'Team Admin',
+  editor: 'Team Editor',
+  viewer: 'Team Member',
+};
+
+const ACCESS_ROLE_COLORS: Record<string, string> = {
+  admin: '#f59e0b',
+  editor: '#3b82f6',
+  viewer: '#64748b',
+};
+
 const ROLE_COLORS: Record<string, string> = {
   coach: '#f59e0b',
   keeper: '#06b6d4',
@@ -91,6 +111,16 @@ function getRoleColor(role: string): string {
   return ROLE_COLORS[role.toLowerCase()] || '#818cf8';
 }
 
+function getAccessRoleLabel(m: any): string {
+  const role = String(m?.role || '').trim().toLowerCase();
+  return ACCESS_ROLE_LABELS[role] || 'Team Member';
+}
+
+function getAccessRoleColor(m: any): string {
+  const role = String(m?.role || '').trim().toLowerCase();
+  return ACCESS_ROLE_COLORS[role] || '#64748b';
+}
+
 /** Get best available photo */
 function getMemberPhoto(m: any): string | null {
   const closeup = getMediaUrl(m, 'closeup');
@@ -112,7 +142,8 @@ export function TeamSelectieTab({
   onAdminLinkClick,
   apiBaseUrl,
   teamId,
-  canEdit,
+  editMode = 'none',
+  currentUserId,
   onRefresh,
 }: TeamSelectieTabProps) {
   const navigate = useNavigate();
@@ -307,6 +338,13 @@ export function TeamSelectieTab({
                   <div className={st.memberInfo}>
                     <span className={st.memberName}>{name}</span>
                     <div className={st.memberRoles}>
+                      {/* Access role badge */}
+                      <span
+                        className={st.accessRoleBadge}
+                        style={{ color: getAccessRoleColor(m), borderColor: `${getAccessRoleColor(m)}44`, background: `${getAccessRoleColor(m)}14` }}
+                      >
+                        {getAccessRoleLabel(m)}
+                      </span>
                       {roles.map((role) => (
                         <span
                           key={role}
@@ -366,16 +404,22 @@ export function TeamSelectieTab({
                     </div>
 
                     <div className={st.expandActions}>
-                      {canEdit && apiBaseUrl && teamId && (
-                        <button
-                          type="button"
-                          className={st.expandActionEdit}
-                          onClick={() => setEditMember(m)}
-                        >
-                          <Pencil size={14} />
-                          Bewerken
-                        </button>
-                      )}
+                      {(() => {
+                        const memberUserId = String(m?.user?.id || '').trim();
+                        const canEditThis =
+                          editMode === 'all' ||
+                          (editMode === 'own' && currentUserId && memberUserId === currentUserId);
+                        return canEditThis && apiBaseUrl && teamId ? (
+                          <button
+                            type="button"
+                            className={st.expandActionEdit}
+                            onClick={() => setEditMember(m)}
+                          >
+                            <Pencil size={14} />
+                            Bewerken
+                          </button>
+                        ) : null;
+                      })()}
                       {memberDetailHref && (
                         <button
                           type="button"
@@ -405,7 +449,7 @@ export function TeamSelectieTab({
       )}
 
       {/* ── Member edit sheet ── */}
-      {canEdit && apiBaseUrl && teamId && (
+      {editMode !== 'none' && apiBaseUrl && teamId && (
         <MemberEditSheet
           opened={!!editMember}
           onClose={() => setEditMember(null)}
@@ -413,6 +457,7 @@ export function TeamSelectieTab({
           apiBaseUrl={apiBaseUrl}
           teamId={teamId}
           onSaved={onRefresh}
+          canChangeAccessRole={editMode === 'all'}
         />
       )}
     </div>

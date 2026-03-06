@@ -237,6 +237,20 @@
   line-height: 18px;
 }
 
+.accessRoleBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 /* ── Mini progress (right) ── */
 .miniProgress {
   display: flex;

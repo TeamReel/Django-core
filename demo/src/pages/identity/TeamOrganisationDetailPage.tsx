@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { Alert, Button } from '@django-core/design-system';
+import { useAuth } from '@django-core/auth-ui';
 import {
   Check, Pencil, Eye, Trash2, MoreHorizontal,
 } from 'lucide-react';
@@ -28,6 +29,7 @@ import s from './TeamOrganisationDetailPage.module.css';
 export default function TeamOrganisationDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user: authUser } = useAuth();
 
   const {
     org, club, team, setTeam, loading, error,
@@ -85,6 +87,23 @@ export default function TeamOrganisationDetailPage() {
     orgId: String(org?.id || ''),
     clubId: clubIdForDirectoryLists,
   });
+
+  /* ── Derive edit mode from user's team membership role ── */
+  const currentUserId = String((authUser as any)?.id || '').trim();
+  const userEditMode: 'all' | 'own' | 'none' = useMemo(() => {
+    if (!currentUserId || !tabData.fullMembers?.length) return 'none';
+    const myMembership = tabData.fullMembers.find(
+      (m: any) => String(m?.user?.id || '').trim() === currentUserId,
+    );
+    if (!myMembership) {
+      // Not a team member — could be club/land admin (check global role)
+      return isPlayer ? 'none' : 'all';
+    }
+    const role = String(myMembership?.role || '').toLowerCase();
+    if (role === 'admin') return 'all';   // Team Admin: edit any member
+    if (role === 'editor') return 'none';  // Team Editor: no member editing
+    return 'own';                          // Team Member (viewer): own only
+  }, [currentUserId, tabData.fullMembers, isPlayer]);
 
   /* ── Overflow menu ── */
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -321,7 +340,8 @@ export default function TeamOrganisationDetailPage() {
               } : undefined}
               apiBaseUrl={apiBaseUrl}
               teamId={teamIdForDirectoryLists}
-              canEdit={!isPlayer}
+              editMode={userEditMode}
+              currentUserId={currentUserId}
               onRefresh={tabData.refreshFullMembers}
             />
           )}
