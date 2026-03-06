@@ -76,12 +76,21 @@ export default function MainLayout() {
         ? Math.max(0, Math.round(topNav.getBoundingClientRect().height))
         : 57;
 
-      // Occupied bottom area = from top edge of bottom nav to viewport bottom.
-      // This automatically adapts to safe-area insets and raised + button geometry.
+      // Occupied bottom area = from highest visible edge of bottom nav zone
+      // (includes raised center create button) to viewport bottom.
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      const bottomOffset = bottomNav
-        ? Math.max(0, Math.round(viewportHeight - bottomNav.getBoundingClientRect().top))
-        : 80;
+      let bottomOffset = 80; // fallback
+      if (bottomNav) {
+        let highestTop = bottomNav.getBoundingClientRect().top;
+        // Scan for raised elements (e.g. center + button) that extend above the nav
+        for (const el of bottomNav.querySelectorAll<HTMLElement>('button, a, [role="button"]')) {
+          const r = el.getBoundingClientRect();
+          if (r.width > 0 && r.height > 0 && r.top < highestTop) {
+            highestTop = r.top;
+          }
+        }
+        bottomOffset = Math.max(0, Math.round(viewportHeight - highestTop + 6));
+      }
 
       root.style.setProperty('--tr-top-navbar-offset', `${topHeight}px`);
       root.style.setProperty('--tr-bottom-navbar-offset', `${bottomOffset}px`);

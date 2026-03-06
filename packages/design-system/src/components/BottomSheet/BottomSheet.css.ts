@@ -58,7 +58,7 @@ export const bottomSheetContainer = style({
   animation: `${slideUp} 300ms cubic-bezier(0.32, 0.72, 0, 1)`,
   // Safe area padding for notched devices
   paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-  // Touch action for gesture support
+  // Touch action for gesture support (desktop / drag handle only)
   touchAction: 'none',
   '@media': {
     '(max-width: 639px)': {
@@ -72,6 +72,8 @@ export const bottomSheetContainer = style({
       borderBottomLeftRadius: 0,
       borderBottomRightRadius: 0,
       paddingBottom: 0,
+      /* Allow vertical touch scrolling inside child scroll areas */
+      touchAction: 'pan-y',
     },
   },
 });

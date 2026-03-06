@@ -30,6 +30,8 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 16px;
+  /* Ensure touch scrolling works inside BottomSheet container */
+  touch-action: pan-y;
 }
 
 /* ── Header ─────────────────────────────────────────── */

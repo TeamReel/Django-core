@@ -92,6 +92,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 16px;
+  touch-action: pan-y;
 }
 
 .footer {
