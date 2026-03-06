@@ -247,7 +247,7 @@ export default function LegacyMatchRedirectPage() {
           return;
         }
 
-        navigate(target, { replace: true });
+        navigate(target, { replace: true, state: location.state });
         setStatus('redirected');
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to redirect');

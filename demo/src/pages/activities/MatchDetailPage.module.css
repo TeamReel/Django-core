@@ -5,6 +5,56 @@
   min-height: 100%;
 }
 
+/* ── Sticky context bar (visible on scroll) ─────────────────────────── */
+.stickyContextBar {
+  position: sticky;
+  top: 56px; /* below TopNavbar */
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+  backdrop-filter: blur(12px);
+  animation: stickySlideDown 120ms ease-out;
+}
+
+@keyframes stickySlideDown {
+  from { opacity: 0; transform: translateY(-100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stickyBackBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border);
+  background: transparent;
+  color: var(--app-primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.stickyBackBtn:active {
+  background: var(--app-bg);
+}
+
+.stickyTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--app-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
 /* ── Header area ─────────────────────────────────────────────────────── */
 .headerRow {
   display: flex;

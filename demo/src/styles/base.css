@@ -340,3 +340,20 @@ h1, h2, h3, h4, h5, h6 {
 header [role="alert"] {
   display: none !important;
 }
+
+/* ─── Page Transition Animation ────────────────────────────────────────── */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-transition {
+  animation: pageEnter 150ms ease-out both;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .page-transition {
+    animation: none;
+  }
+}

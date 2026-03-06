@@ -154,7 +154,7 @@ export const ActiveMatchCard: React.FC = () => {
   return (
     <div
       className={`${styles.card} ${styles[matchState || '']}`}
-      onClick={() => navigate(`/matches/${match.slug || match.id}`)}
+      onClick={() => navigate(`/matches/${match.slug || match.id}`, { state: { from: 'dashboard' } })}
       role="button"
       tabIndex={0}
     >
@@ -221,7 +221,7 @@ export const ActiveMatchCard: React.FC = () => {
           className={styles.actionBtn}
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/matches/${match.slug || match.id}`);
+            navigate(`/matches/${match.slug || match.id}`, { state: { from: 'dashboard' } });
           }}
         >
           {matchState === 'upcoming' ? (

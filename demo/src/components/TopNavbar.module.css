@@ -251,6 +251,24 @@
   border-radius: 10px;
 }
 
+/* Keyboard shortcut badge */
+.kbdHint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.4;
+  color: var(--app-muted-text);
+  background: var(--app-bg);
+  border: 1px solid var(--app-border);
+  border-radius: 4px;
+  margin-left: 2px;
+  pointer-events: none;
+}
+
 /* ─── Create Menu ─────────────────────────────────────────────────────────── */
 
 .createWrap {
@@ -912,4 +930,53 @@
   color: #fff;
   font-weight: 600;
   font-size: 13px;
+}
+
+/* ─── Mobile Search Overlay ────────────────────────────────────────────── */
+
+.mobileSearchOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: var(--app-bg);
+  display: flex;
+  flex-direction: column;
+  animation: mobileSearchSlideDown 150ms ease-out;
+}
+
+@keyframes mobileSearchSlideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mobileSearchHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface);
+}
+
+.mobileSearchInputWrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.mobileSearchClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--app-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobileSearchClose:active {
+  background: var(--app-border);
 }

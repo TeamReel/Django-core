@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import {
   Eye, Pencil, Trash2, Check, ArrowLeft, MoreHorizontal,
 } from 'lucide-react';
@@ -17,10 +17,27 @@ import styles from './MatchDetailPage.module.css';
 
 export default function HierarchyMatchDetailPage() {
   const d = useMatchDetailData();
+  const location = useLocation();
 
-  /* ---- back navigation ---- */
-  const backPath = d.seasonBasePath || d.seasonsBasePath || '/';
-  useSetBackNavigation({ label: 'Seizoen', path: backPath });
+  /* ---- back navigation: smart source detection ---- */
+  const cameFromDashboard = (location.state as any)?.from === 'dashboard';
+  const backPath = cameFromDashboard ? '/dashboard' : (d.seasonBasePath || d.seasonsBasePath || '/');
+  const backLabel = cameFromDashboard ? 'Dashboard' : 'Seizoen';
+  useSetBackNavigation({ label: backLabel, path: backPath });
+
+  /* ---- sticky context bar: visible when header scrolls out of view ---- */
+  const headerSentinel = useRef<HTMLDivElement>(null);
+  const [stickyVisible, setStickyVisible] = useState(false);
+  useEffect(() => {
+    const el = headerSentinel.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setStickyVisible(!entry.isIntersecting),
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [d.loading, d.match]);
 
   /* ---- overflow menu ---- */
   const [overflowOpen, setOverflowOpen] = useState(false);
@@ -69,8 +86,19 @@ export default function HierarchyMatchDetailPage() {
   return (
     <>
       <div className={styles.page}>
+        {/* ── Sticky context bar (visible on scroll) ──── */}
+        {stickyVisible && (
+          <div className={styles.stickyContextBar}>
+            <button className={styles.stickyBackBtn} onClick={() => d.navigate(backPath)}>
+              <ArrowLeft size={14} />
+              <span>{backLabel}</span>
+            </button>
+            <span className={styles.stickyTitle}>{match.title}</span>
+          </div>
+        )}
+
         {/* ── Match header ────────────────────────────────── */}
-        <div className={styles.headerRow}>
+        <div ref={headerSentinel} className={styles.headerRow}>
           <div className={styles.titleBlock}>
             <h1>{match.title}</h1>
           </div>

@@ -6,11 +6,12 @@
  * - All state, effects, handlers \u2192 useTopNavbarData.tsx
  * - Modal components \u2192 NavbarModals.tsx
  */
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Menu, ChevronDown, ChevronUp, Sun, Moon,
   Globe, Bell, Coins, PanelLeftOpen, PanelLeftClose, Command, Plus, ListChecks,
-  ChevronLeft
+  ChevronLeft, Search, X
 } from 'lucide-react';
 import { AppIcon } from './AppIcon';
 import ProfileAvatarDropdown from './ProfileAvatarDropdown';
@@ -31,6 +32,7 @@ import {
 export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const d = useTopNavbarData(onOpenSearchRef);
   const { backTarget, goBack } = useBackNavigation();
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   return (
     <div className={s.wrapper}>
@@ -158,16 +160,29 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
                 </div>
               )}
 
+              {/* Mobile: Search icon */}
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={() => setMobileSearchOpen(true)}
+                  className={`nav-icon-button ${s.navIconBtn}`}
+                  aria-label="Zoeken" title="Zoeken"
+                >
+                  <AppIcon icon={Search} size={20} />
+                </button>
+              )}
+
               {/* Quick Switcher */}
               {!isMobile && (
                 <button
                   type="button"
                   onClick={() => d.setCommandOpen(true)}
                   className={`nav-icon-button ${s.quickSwitchBtn}`}
-                  title="Quick switch" aria-label="Quick switch"
+                  title="Quick switch (Ctrl+K)" aria-label="Quick switch"
                 >
                   <AppIcon icon={Command} size={18} />
                   <span className="fs-13 fw-800">Quick switch</span>
+                  <kbd className={s.kbdHint}>⌘K</kbd>
                 </button>
               )}
 
@@ -396,6 +411,28 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
               <ProfileAvatarDropdown />
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Mobile Search Overlay ── */}
+      {mobileSearchOpen && (
+        <div className={s.mobileSearchOverlay}>
+          <div className={s.mobileSearchHeader}>
+            <div className={s.mobileSearchInputWrap}>
+              <SearchBar
+                placeholder="Zoeken..."
+                onQueryChange={(q) => d.setNavSearchHasQuery(Boolean(String(q || '').trim()))}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setMobileSearchOpen(false)}
+              className={s.mobileSearchClose}
+              aria-label="Sluiten"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
       )}
 
