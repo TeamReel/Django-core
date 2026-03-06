@@ -129,7 +129,7 @@ export default function ContentGenerationModal(props: ContentGenerationModalProp
         </div>
 
         {/* Content area */}
-        <div className="flex-1 overflow-y-auto p-16">
+        <div className={styles.contentArea}>
           {step === 'type' && (
             <TypeStep onSelectType={handleSelectType} />
           )}

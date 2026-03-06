@@ -53,7 +53,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         </div>
 
         {/* ── Step content (scrollable) ────────────────────────────── */}
-        <div className="flex-1 overflow-y-auto p-16">
+        <div className={styles.scrollArea}>
 
           {/* ── Step 1: Match selection ─────────────────────────────── */}
           {currentStep === 'match' && (

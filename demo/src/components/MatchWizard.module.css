@@ -14,11 +14,27 @@
     flex: 1;
     min-height: 0;
     max-height: none;
+    overflow: hidden;
   }
 }
 
 .sheetBody {
   padding: 0;
+}
+
+@media (max-width: 639px) {
+  .sheetBody {
+    overflow: hidden;
+  }
+}
+
+/* ── Scrollable content area ────────────────────────── */
+.scrollArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -229,6 +245,13 @@
   padding: 12px 16px;
   padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   flex-shrink: 0;
+}
+
+@media (max-width: 639px) {
+  .bottomBar {
+    /* BottomSheet already accounts for safe-area via 'bottom' offset */
+    padding-bottom: 12px;
+  }
 }
 
 /* ── Primary action button ──────────────────────────── */
