@@ -14,6 +14,7 @@ import {
   OrgStatsCard,
 } from '../components/dashboard';
 import { QuickActions } from '../components/QuickActions';
+import { useUserRole } from '../components/PermissionGuards';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { useNavRecents } from '../hooks/useNavItems';
@@ -32,6 +33,11 @@ export default function DashboardPage() {
     org?.slug,
     org?.id?.toString(),
   );
+
+  // ── Role tiers ──
+  const { isSystemAdmin, isLandAdmin, isOrgAdmin, isCoach, isPlayer, isSupporter } = useUserRole();
+  const isOrgLevel = isSystemAdmin || isLandAdmin || isOrgAdmin;
+  const isMemberLevel = isPlayer || isSupporter;
 
   // Pull-to-refresh
   const [refreshKey, setRefreshKey] = useState(0);
@@ -82,8 +88,8 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* ── Low balance banner ─────────────────────────────────── */}
-        {lowBalanceAlert && (
+        {/* ── Low balance banner (org admins only) ──────────────── */}
+        {isOrgLevel && lowBalanceAlert && (
           <div className={styles.lowBanner}>
             <AlertTriangle size={18} />
             <div className={styles.lowBannerText}>
@@ -103,22 +109,22 @@ export default function DashboardPage() {
             {/* 1. Active Match — the match closest to now */}
             <ActiveMatchCard />
 
-            {/* 2. Summary Grid */}
+            {/* 2. Summary Grid — role-adaptive */}
             <div className={styles.summaryGrid}>
-              <SquadReadinessCard />
+              {!isMemberLevel && <SquadReadinessCard />}
               <ContentStatsCard />
-              <AIQueueCard />
-              <CreditsTrendCard />
+              {!isMemberLevel && <AIQueueCard />}
+              {isOrgLevel && <CreditsTrendCard />}
             </div>
 
             {/* 3. Upcoming Matches (compact list) */}
             <UpcomingMatchesCard />
 
-            {/* 4. Org Overview Stats */}
-            <OrgStatsCard />
+            {/* 4. Org Overview Stats (org admins only) */}
+            {isOrgLevel && <OrgStatsCard />}
 
-            {/* 5. Quick Actions — full nav grid */}
-            <QuickActions />
+            {/* 5. Quick Actions — role-filtered */}
+            <QuickActions roleLevel={isOrgLevel ? 'org' : isMemberLevel ? 'member' : 'team'} />
 
             {/* 6. Recents */}
             {recents.length > 0 && (

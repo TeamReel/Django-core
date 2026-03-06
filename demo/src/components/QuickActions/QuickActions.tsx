@@ -13,6 +13,8 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import styles from './QuickActions.module.css';
 
+export type RoleLevel = 'org' | 'team' | 'member';
+
 interface Action {
   key: string;
   label: string;
@@ -20,6 +22,8 @@ interface Action {
   getPath: (ctx: { orgSlug: string; matchId: string | null }) => string;
   /** Only show this action when a match is selected */
   matchRequired?: boolean;
+  /** Role tiers that see this action (default: all) */
+  visibleFor?: RoleLevel[];
 }
 
 const ACTIONS: Action[] = [
@@ -52,16 +56,23 @@ const ACTIONS: Action[] = [
     label: 'Credits',
     Icon: CreditCard,
     getPath: () => '/credits',
+    visibleFor: ['org'],
   },
   {
     key: 'settings',
     label: 'Instellingen',
     Icon: Settings,
     getPath: () => '/settings',
+    visibleFor: ['org', 'team'],
   },
 ];
 
-export const QuickActions: React.FC = () => {
+interface QuickActionsProps {
+  /** Dashboard role tier — controls which actions are visible */
+  roleLevel?: RoleLevel;
+}
+
+export const QuickActions: React.FC<QuickActionsProps> = ({ roleLevel = 'org' }) => {
   const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const { matchId } = useAppSelection();
@@ -69,8 +80,9 @@ export const QuickActions: React.FC = () => {
 
   return (
     <div className={styles.bar}>
-      {ACTIONS.map(({ key, label, Icon, getPath, matchRequired }) => {
+      {ACTIONS.map(({ key, label, Icon, getPath, matchRequired, visibleFor }) => {
         if (matchRequired && !matchId) return null;
+        if (visibleFor && !visibleFor.includes(roleLevel)) return null;
         return (
           <button
             key={key}
