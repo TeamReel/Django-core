@@ -3,8 +3,8 @@ import { useSwipeToDismiss } from '@django-core/design-system';
 
 export interface SwipeableCardProps {
   children: React.ReactNode;
-  /** Callback when card is swiped to dismiss */
-  onDismiss: () => void;
+  /** Callback when card is swiped to dismiss. Receives the swipe direction. */
+  onDismiss: (direction: 'left' | 'right') => void;
   /** Direction(s) to allow swiping (default: 'left') */
   direction?: 'left' | 'right' | 'both';
   /** Threshold in pixels to trigger dismiss (default: 100) */
@@ -99,11 +99,12 @@ export default function SwipeableCard({
     if (absOffset >= threshold) {
       // Animate off-screen then dismiss
       setIsDismissing(true);
-      const dismissDirection = offsetX < 0 ? -1 : 1;
-      setOffsetX(dismissDirection * window.innerWidth);
+      const dismissDir = offsetX < 0 ? 'left' as const : 'right' as const;
+      const dismissSign = offsetX < 0 ? -1 : 1;
+      setOffsetX(dismissSign * window.innerWidth);
 
       setTimeout(() => {
-        onDismiss();
+        onDismiss(dismissDir);
         // Reset after dismiss callback
         setOffsetX(0);
         setIsDismissing(false);
@@ -151,11 +152,12 @@ export default function SwipeableCard({
 
     if (absOffset >= threshold) {
       setIsDismissing(true);
-      const dismissDirection = offsetX < 0 ? -1 : 1;
-      setOffsetX(dismissDirection * window.innerWidth);
+      const dismissDir = offsetX < 0 ? 'left' as const : 'right' as const;
+      const dismissSign = offsetX < 0 ? -1 : 1;
+      setOffsetX(dismissSign * window.innerWidth);
 
       setTimeout(() => {
-        onDismiss();
+        onDismiss(dismissDir);
         setOffsetX(0);
         setIsDismissing(false);
       }, 200);

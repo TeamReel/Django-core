@@ -220,6 +220,33 @@ export default function ApprovalsPage() {
   const visibleAiJobs = filterAiJobsByTab(mergedJobs, filter);
   const visibleVideoJobs = useMemo(() => filterVideoJobsByTab(videoJobs, filter), [videoJobs, filter]);
 
+  // ── Swipe-to-approve/reject handlers (X1) ──
+  const handleSwipeApproveAi = useCallback((taskId: string) => {
+    handleModalAction(taskId, 'approve');
+  }, [handleModalAction]);
+
+  const handleSwipeRejectAi = useCallback((taskId: string) => {
+    handleModalAction(taskId, 'reject');
+  }, [handleModalAction]);
+
+  const handleSwipeApproveVideo = useCallback(async (jobId: string) => {
+    try {
+      await approveVideoJob(jobId);
+      pushToast('✅ Video goedgekeurd!', 'success');
+    } catch (e) {
+      pushToast(e instanceof Error ? e.message : 'Goedkeuren mislukt', 'error');
+    }
+  }, [approveVideoJob, pushToast]);
+
+  const handleSwipeRejectVideo = useCallback(async (jobId: string) => {
+    try {
+      await rejectVideoJob(jobId);
+      pushToast('❌ Video afgewezen', 'success');
+    } catch (e) {
+      pushToast(e instanceof Error ? e.message : 'Afwijzen mislukt', 'error');
+    }
+  }, [rejectVideoJob, pushToast]);
+
   const contentTypeCounts = useMemo(() => ({
     all: visibleAiJobs.length + visibleVideoJobs.length,
     ai_video: visibleAiJobs.filter(j => j.output_type === 'video').length,
@@ -376,6 +403,10 @@ export default function ApprovalsPage() {
             cancelVideoJob={cancelVideoJob}
             retryVideoJob={retryVideoJob}
             hasWorkflowInstances={filtered.length > 0}
+            onSwipeApproveAi={handleSwipeApproveAi}
+            onSwipeRejectAi={handleSwipeRejectAi}
+            onSwipeApproveVideo={handleSwipeApproveVideo}
+            onSwipeRejectVideo={handleSwipeRejectVideo}
           />
         )}
 

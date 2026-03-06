@@ -1,7 +1,10 @@
 /**
  * Unified job list: AI generation + video processing jobs interleaved by date.
+ * Supports swipe-to-approve/reject on reviewable cards (X1).
  */
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
+import { Check, X } from 'lucide-react';
+import SwipeableCard from '../components/SwipeableCard';
 import {
   type GenerationJob,
   type GenJobStatus,
@@ -32,6 +35,14 @@ interface ApprovalsJobListProps {
   cancelVideoJob: (id: string) => void;
   retryVideoJob: (id: string) => void;
   hasWorkflowInstances: boolean;
+  /** Swipe-to-approve an AI job (task_id) */
+  onSwipeApproveAi?: (taskId: string) => void;
+  /** Swipe-to-reject an AI job (task_id) */
+  onSwipeRejectAi?: (taskId: string) => void;
+  /** Swipe-to-approve a video job (id) */
+  onSwipeApproveVideo?: (jobId: string) => void;
+  /** Swipe-to-reject a video job (id) */
+  onSwipeRejectVideo?: (jobId: string) => void;
 }
 
 export function ApprovalsJobList({
@@ -43,6 +54,10 @@ export function ApprovalsJobList({
   cancelVideoJob,
   retryVideoJob,
   hasWorkflowInstances,
+  onSwipeApproveAi,
+  onSwipeRejectAi,
+  onSwipeApproveVideo,
+  onSwipeRejectVideo,
 }: ApprovalsJobListProps) {
   const unifiedItems = useMemo<UnifiedItem[]>(() => {
     const items: UnifiedItem[] = [];
@@ -80,10 +95,11 @@ export function ApprovalsJobList({
           const outputType = job.output_type === 'video' ? 'video' : job.output_type === 'image' ? 'image' : 'ai';
           const typeBadgeLabel = job.output_type === 'video' ? 'AI VIDEO' : job.output_type === 'image' ? 'AI IMAGE' : 'AI';
           const borderState = job.status === 'failed' ? 'failed' : isReviewable ? 'reviewable' : 'default';
+          const canSwipe = isReviewable && !!onSwipeApproveAi && !!onSwipeRejectAi;
 
-          return (
+          const aiCardEl = (
             <div
-              key={`ai-${job.task_id}`}
+              key={canSwipe ? undefined : `ai-${job.task_id}`}
               onClick={() => isClickable && openModal(job)}
               className={`${styles.aiCard} rounded-10 transition`}
               data-clickable={isClickable}
@@ -134,23 +150,59 @@ export function ApprovalsJobList({
                   </span>
                 )}
               </div>
-              {isClickable && <span className={s.chevron}>›</span>}
+              {isClickable && !canSwipe && <span className={s.chevron}>›</span>}
+              {canSwipe && (
+                <span className={styles.swipeHint}>↔</span>
+              )}
             </div>
           );
+
+          if (canSwipe) {
+            return (
+              <SwipeableCard
+                key={`ai-${job.task_id}`}
+                direction="both"
+                threshold={80}
+                onDismiss={(dir) => {
+                  if (dir === 'right') onSwipeApproveAi!(job.task_id);
+                  else onSwipeRejectAi!(job.task_id);
+                }}
+                className={styles.swipeWrapper}
+                rightReveal={
+                  <div className={styles.swipeRevealApprove}>
+                    <Check size={22} strokeWidth={3} />
+                    <span>Goedkeuren</span>
+                  </div>
+                }
+                leftReveal={
+                  <div className={styles.swipeRevealReject}>
+                    <X size={22} strokeWidth={3} />
+                    <span>Afwijzen</span>
+                  </div>
+                }
+              >
+                {aiCardEl}
+              </SwipeableCard>
+            );
+          }
+
+          return aiCardEl;
         } else {
           const vJob = item.job;
           const statusDisplay = getJobStatusDisplay(vJob.status);
           const typeDisplay = getJobTypeDisplay(vJob.job_type);
           const isActive = vJob.status === 'queued' || vJob.status === 'processing';
           const isClickable = vJob.status === 'completed';
+          const isVideoReviewable = isClickable && vJob.workflow_instance?.current_state === 'ready_for_review';
+          const canSwipeVideo = isVideoReviewable && !!onSwipeApproveVideo && !!onSwipeRejectVideo;
           const videoBorderState = vJob.status === 'failed' ? 'failed'
             : isActive ? 'active'
-            : isClickable && vJob.workflow_instance?.current_state === 'ready_for_review' ? 'review'
+            : isVideoReviewable ? 'review'
             : 'default';
 
-          return (
+          const videoCardEl = (
             <div
-              key={`video-${vJob.id}`}
+              key={canSwipeVideo ? undefined : `video-${vJob.id}`}
               onClick={() => isClickable && openVideoModal(vJob)}
               className={`${styles.videoCard} flex-col rounded-10 transition`}
               data-clickable={isClickable}
@@ -214,7 +266,7 @@ export function ApprovalsJobList({
                 </div>
               )}
 
-              {isClickable && (
+              {isClickable && !canSwipeVideo && (
                 <div className={s.hintRow}>
                   <span className={s.hintText}>
                     {vJob.workflow_instance?.available_actions?.length ? 'Klik om te beoordelen' : 'Klik voor preview'}
@@ -222,19 +274,56 @@ export function ApprovalsJobList({
                   <span className={s.chevron}>›</span>
                 </div>
               )}
+              {canSwipeVideo && (
+                <div className={s.hintRow}>
+                  <span className={s.hintText}>Swipe om te beoordelen</span>
+                  <span className={styles.swipeHint}>↔</span>
+                </div>
+              )}
 
               {(isActive || vJob.status === 'failed') && (
                 <div className={s.actionsRow}>
                   {isActive && (
-                    <button onClick={() => cancelVideoJob(vJob.id)} className={s.btnCancel}>Cancel</button>
+                    <button onClick={(e) => { e.stopPropagation(); cancelVideoJob(vJob.id); }} className={s.btnCancel}>Cancel</button>
                   )}
                   {vJob.status === 'failed' && (
-                    <button onClick={() => retryVideoJob(vJob.id)} className={s.btnRetry}>Retry</button>
+                    <button onClick={(e) => { e.stopPropagation(); retryVideoJob(vJob.id); }} className={s.btnRetry}>Retry</button>
                   )}
                 </div>
               )}
             </div>
           );
+
+          if (canSwipeVideo) {
+            return (
+              <SwipeableCard
+                key={`video-${vJob.id}`}
+                direction="both"
+                threshold={80}
+                onDismiss={(dir) => {
+                  if (dir === 'right') onSwipeApproveVideo!(vJob.id);
+                  else onSwipeRejectVideo!(vJob.id);
+                }}
+                className={styles.swipeWrapper}
+                rightReveal={
+                  <div className={styles.swipeRevealApprove}>
+                    <Check size={22} strokeWidth={3} />
+                    <span>Goedkeuren</span>
+                  </div>
+                }
+                leftReveal={
+                  <div className={styles.swipeRevealReject}>
+                    <X size={22} strokeWidth={3} />
+                    <span>Afwijzen</span>
+                  </div>
+                }
+              >
+                {videoCardEl}
+              </SwipeableCard>
+            );
+          }
+
+          return videoCardEl;
         }
       })}
     </div>
