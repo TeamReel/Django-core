@@ -121,6 +121,15 @@ function getAccessRoleColor(m: any): string {
   return ACCESS_ROLE_COLORS[role] || '#64748b';
 }
 
+const S3_BASE = 'https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/';
+
+/** Turn a relative S3 path into a full URL; pass through already-full URLs */
+function toFullUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  return `${S3_BASE}${path}`;
+}
+
 /**
  * Resolve the best URL for a media slot, checking both flat and per-variant structures.
  * Per-variant: metadata.teamreel_assets.images.[category].[variant].processed|raw
@@ -128,7 +137,7 @@ function getAccessRoleColor(m: any): string {
 function resolveMediaUrl(m: any, slotId: string): string | null {
   // 1) Flat media URL
   const flat = m?.metadata?.teamreel_assets?.media?.[slotId]?.url;
-  if (flat) return flat;
+  if (flat) return toFullUrl(flat);
 
   // 2) Per-variant structure
   const tr = m?.metadata?.teamreel_assets || {};
@@ -144,8 +153,8 @@ function resolveMediaUrl(m: any, slotId: string): string | null {
       for (const [_key, val] of Object.entries(branch)) {
         if (!val || typeof val !== 'object') continue;
         const v = val as Record<string, any>;
-        if (v.processed && typeof v.processed === 'string') return v.processed;
-        if (v.raw && typeof v.raw === 'string') return v.raw;
+        if (v.processed && typeof v.processed === 'string') return toFullUrl(v.processed);
+        if (v.raw && typeof v.raw === 'string') return toFullUrl(v.raw);
       }
     }
   }
@@ -160,7 +169,7 @@ function getMemberPhoto(m: any): string | null {
   const kit = resolveMediaUrl(m, 'kit');
   if (kit) return kit;
   const profile = getMediaUrl(m, 'profile');
-  if (profile) return profile;
+  if (profile) return toFullUrl(profile);
   const avatarUrl = m?.user?.avatar_url;
   if (avatarUrl) return avatarUrl;
   return null;
