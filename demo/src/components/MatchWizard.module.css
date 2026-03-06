@@ -6,6 +6,14 @@
 /* ── Root container ─────────────────────────────────── */
 .root {
   max-height: 65vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 639px) {
+  .root {
+    max-height: 100%;
+    height: 100%;
+  }
 }
 
 /* ── Header ─────────────────────────────────────────── */
@@ -15,8 +23,10 @@
 }
 
 .headerBtn {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   line-height: 1;
   transition: background 0.15s, transform 0.1s;
 }
@@ -26,7 +36,7 @@
 }
 
 .headerSpacer {
-  width: 40px;
+  width: 44px;
 }
 
 /* ── Match card (base) ──────────────────────────────── */
@@ -219,6 +229,7 @@
 /* ── Primary action button ──────────────────────────── */
 .primaryBtn {
   padding: 14px;
+  min-height: 48px;
   background-color: var(--app-primary);
   transition: background 0.15s, transform 0.1s;
 }
@@ -245,6 +256,13 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+}
+
+@media (max-height: 600px) {
+  .reviewPreview {
+    aspect-ratio: 2 / 1;
+    max-height: 140px;
+  }
 }
 
 .reviewPreview[data-output='video'] {
@@ -319,4 +337,24 @@
 .reviewRowIcon {
   color: var(--app-primary);
   flex-shrink: 0;
+}
+
+/* ── Mobile overrides ───────────────────────────────── */
+@media (max-width: 639px) {
+  .matchCard,
+  .contentCard {
+    min-height: 48px;
+  }
+
+  .phaseTab {
+    min-height: 44px;
+  }
+
+  .reviewCard {
+    padding: 14px;
+  }
+
+  .reviewRow {
+    min-height: 32px;
+  }
 }
