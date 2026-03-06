@@ -1532,6 +1532,33 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
                 {"detail": "Functional roles are only supported on team projects."}
             )
 
+    def _update_metadata_functional_roles(self, project, user_id, *, add=None, remove=None):
+        """Update metadata.functional_roles on the membership.
+
+        Directly adds/removes the specified roles from the metadata list so that
+        legacy metadata-sourced roles are properly handled (the assignment table
+        may not have rows for roles that only live in metadata).
+        """
+        membership = ProjectMembership.objects.filter(
+            project=project,
+            user_id=user_id,
+            deleted_at__isnull=True,
+        ).first()
+        if membership is None:
+            return
+
+        meta = membership.metadata or {}
+        current = set(meta.get("functional_roles") or [])
+
+        if add:
+            current.update(add)
+        if remove:
+            current -= set(remove)
+
+        meta["functional_roles"] = sorted(current)
+        membership.metadata = meta
+        membership.save(update_fields=["metadata", "updated_at"])
+
     @action(detail=False, methods=["post"], url_path="assign")
     def assign(self, request, project_pk=None):
         project = self._get_project()
@@ -1560,6 +1587,9 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
             else:
                 skipped.append(obj.role)
 
+        # Keep metadata.functional_roles in sync
+        self._update_metadata_functional_roles(project, user_id, add=roles)
+
         return Response({"created": created, "skipped": skipped})
 
     @action(detail=False, methods=["post"], url_path="unassign")
@@ -1581,6 +1611,9 @@ class ProjectFunctionalRoleViewSet(viewsets.ViewSet):
         )
         removed = list(qs.values_list("role", flat=True))
         qs.delete()
+
+        # Keep metadata.functional_roles in sync
+        self._update_metadata_functional_roles(project, user_id, remove=roles)
 
         return Response({"removed": sorted(removed)})
 

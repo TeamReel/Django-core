@@ -103,10 +103,9 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
     def get_functional_roles(self, obj):
         """Return functional roles for this user on this project.
 
-        Notes:
-        - This is team-level domain data, distinct from access roles.
-        - We also include a derived 'coach' role when the membership access role is admin.
-        - During transition, we also read legacy metadata hints (team_role/character_role).
+        Sources (merged):
+        1. ProjectFunctionalRoleAssignment table (authoritative)
+        2. metadata.functional_roles list (kept in sync by assign/unassign endpoints)
 
         Uses context caching to avoid N+1 queries when serializing multiple memberships.
         """
@@ -132,15 +131,9 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
             # Best-effort: do not break members endpoint if functional roles table is missing.
             pass
 
-        # Derived: admins are considered coaches on team projects.
-        try:
-            if (
-                getattr(obj.project, "parent_project_id", None)
-                and obj.role == ProjectMembership.Role.ADMIN
-            ):
-                roles.add("coach")
-        except Exception:
-            pass
+        # Derived admin→coach logic REMOVED.
+        # Functional roles are now fully managed via the assignment table
+        # and metadata.functional_roles. Admins are no longer auto-coaches.
 
         # Read functional_roles from metadata (primary source for squad page edits)
         meta = getattr(obj, "metadata", None) or {}
@@ -151,28 +144,9 @@ class ProjectMembershipSerializer(serializers.ModelSerializer):
                 if role_str:
                     roles.add(role_str)
 
-        # Legacy metadata hints (team_role, character_role).
-        for key in ("team_role", "character_role"):
-            raw = str(meta.get(key, "") or "").strip().lower()
-            if not raw:
-                continue
-            # Normalize common variants
-            mapping = {
-                "coach": "coach",
-                "trainer": "coach",
-                "manager": "manager",
-                "player": "player",
-                "speler": "player",
-                "keeper": "keeper",
-                "goalkeeper": "keeper",
-                "assistent": "assistant",
-                "assistant": "assistant",
-                "verzorger": "verzorger",
-                "supporter": "supporter",
-            }
-            normalized = mapping.get(raw)
-            if normalized:
-                roles.add(normalized)
+        # Legacy metadata hints (team_role, character_role) — no longer read.
+        # Functional roles are fully managed via metadata.functional_roles
+        # and the ProjectFunctionalRoleAssignment table.
 
         return sorted(roles)
 
