@@ -3,6 +3,7 @@
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
 }
 
 .header {
@@ -34,12 +35,13 @@
   gap: 12px;
   width: 100%;
   padding: 10px 12px;
-  border: none;
+  border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
   border-radius: 10px;
   background: var(--app-surface-alt, #f9fafb);
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
   text-align: left;
+  color: inherit;
 }
 
 .actionItem:hover {
@@ -51,6 +53,15 @@
   transform: scale(0.99);
 }
 
+/* ── Themed color variants ── */
+/* Each variant sets --_accent used by .actionIcon */
+
+.colorIndigo { --_accent: var(--color-indigo, #6366f1); }
+.colorPink   { --_accent: var(--color-pink, #ec4899); }
+.colorAmber  { --_accent: var(--color-amber, #f59e0b); }
+.colorGreen  { --_accent: var(--color-green, #22c55e); }
+.colorViolet { --_accent: var(--color-violet, #8b5cf6); }
+
 .actionIcon {
   display: flex;
   align-items: center;
@@ -59,6 +70,8 @@
   height: 36px;
   border-radius: 10px;
   flex-shrink: 0;
+  color: var(--_accent, var(--app-primary, #6366f1));
+  background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 12%, transparent);
 }
 
 .actionText {
@@ -109,4 +122,24 @@
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* ── Dark mode overrides ── */
+@media (prefers-color-scheme: dark) {
+  .card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .actionIcon {
+    background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 18%, transparent);
+  }
+}
+
+/* Also respect .dark class on document root (app-level toggle) */
+:global(.dark) .card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+:global(.dark) .actionIcon {
+  background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 18%, transparent);
 }

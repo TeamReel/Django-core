@@ -4,20 +4,21 @@
  * Analyzes the current state (team members, content completeness, matches)
  * and surfaces the most relevant actions the user should take next.
  *
- * Examples:
- * - "4 spelers missen een tenue" → navigates to batch generate
- * - "Wedstrijd flyer aanmaken" → navigates to match detail
- * - "Upload action foto's" → navigates to media upload
+ * Actions open the correct modal / wizard directly:
+ * - Match actions → open MatchWizard via teamreel:open-quick-create event
+ * - Member content → navigate to season media tab (batch generation)
+ * - Upload → navigate to media library
  */
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Zap, ChevronRight, Shirt, Camera, Image, FileImage,
-  Trophy, Users, Upload, Sparkles, PlayCircle, CalendarCheck,
+  Users, Upload, PlayCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { useAppSelection } from '../../hooks/useAppSelection';
 import styles from './SmartActionsCard.module.css';
 
 function extractItems<T = any>(json: any): T[] {
@@ -27,14 +28,21 @@ function extractItems<T = any>(json: any): T[] {
   return [];
 }
 
+/** How an action opens: wizard event, navigate to page, or navigate with tab */
+type ActionMode =
+  | { type: 'match-wizard'; matchId: string }
+  | { type: 'navigate'; path: string }
+  | { type: 'season-tab'; tab: string };
+
 interface SmartAction {
   key: string;
   label: string;
   subtitle: string;
   Icon: LucideIcon;
-  color: string;
-  priority: number; // higher = show first
-  path: string;
+  /** CSS class name for themed color (e.g. styles.colorIndigo) */
+  colorClass: string;
+  priority: number;
+  mode: ActionMode;
 }
 
 /** Expected member content types for a complete profile */
@@ -46,9 +54,42 @@ export const SmartActionsCard: React.FC = () => {
   const apiBaseUrl = getApiBaseUrl();
   const org = context.organisation as any;
   const project = context.project as any;
+  const { orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId } = useAppSelection();
 
   const [actions, setActions] = useState<SmartAction[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ── Action handler — opens the right modal/page ──────────────────
+  const handleAction = useCallback((action: SmartAction) => {
+    switch (action.mode.type) {
+      case 'match-wizard':
+        // Dispatch custom event to open the MatchWizard (handled by MobileBottomNav / QuickCreateFAB)
+        window.dispatchEvent(
+          new CustomEvent('teamreel:open-quick-create', {
+            detail: { matchId: action.mode.matchId },
+          }),
+        );
+        break;
+
+      case 'season-tab': {
+        // Navigate to the current season page with the right tab
+        const base = orgSlug && clubSlugOrId && teamSlugOrId && seasonSlugOrId
+          ? `/${orgSlug}/${clubSlugOrId}/${teamSlugOrId}/${seasonSlugOrId}`
+          : null;
+        if (base) {
+          navigate(`${base}?tab=${encodeURIComponent(action.mode.tab)}`);
+        } else {
+          // Fallback: just go to dashboard
+          navigate('/dashboard');
+        }
+        break;
+      }
+
+      case 'navigate':
+        navigate(action.mode.path);
+        break;
+    }
+  }, [navigate, orgSlug, clubSlugOrId, teamSlugOrId, seasonSlugOrId]);
 
   useEffect(() => {
     if (!org) {
@@ -138,11 +179,12 @@ export const SmartActionsCard: React.FC = () => {
           }
 
           // Generate actions for missing content types
-          const typeConfig: Record<string, { label: string; Icon: LucideIcon; color: string }> = {
-            in_tenue: { label: 'Tenue foto', Icon: Shirt, color: '#6366f1' },
-            profile_photo: { label: 'Profielfoto', Icon: Camera, color: '#ec4899' },
-            closeup: { label: 'Close-up', Icon: Image, color: '#f59e0b' },
-            short_intro: { label: 'Intro video', Icon: PlayCircle, color: '#22c55e' },
+          // colorClass maps to themed CSS classes in the module
+          const typeConfig: Record<string, { label: string; Icon: LucideIcon; colorClass: string }> = {
+            in_tenue:      { label: 'Tenue foto',  Icon: Shirt,      colorClass: styles.colorIndigo },
+            profile_photo: { label: 'Profielfoto', Icon: Camera,     colorClass: styles.colorPink },
+            closeup:       { label: 'Close-up',    Icon: Image,      colorClass: styles.colorAmber },
+            short_intro:   { label: 'Intro video', Icon: PlayCircle, colorClass: styles.colorGreen },
           };
 
           for (const type of MEMBER_CONTENT_TYPES) {
@@ -155,9 +197,9 @@ export const SmartActionsCard: React.FC = () => {
                 label: `${cfg.label} genereren`,
                 subtitle: `${missing} van ${totalMembers} spelers mist een ${cfg.label.toLowerCase()} (${pct}% klaar)`,
                 Icon: cfg.Icon,
-                color: cfg.color,
+                colorClass: cfg.colorClass,
                 priority: missing === totalMembers ? 100 : 80 + (missing / totalMembers) * 20,
-                path: `/teams/${project.slug || project.id}/squad`,
+                mode: { type: 'season-tab', tab: 'media' },
               });
             }
           }
@@ -171,7 +213,7 @@ export const SmartActionsCard: React.FC = () => {
             const matchDate = new Date(nextMatch.start_time);
             const daysUntil = Math.ceil((matchDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
             const opponentName = nextMatch.opponent_project?.name || nextMatch.title?.split(' vs ')?.[1] || 'Tegenstander';
-            const matchSlug = nextMatch.slug || nextMatch.id;
+            const matchId = String(nextMatch.id);
 
             if (daysUntil <= 7) {
               computed.push({
@@ -179,9 +221,9 @@ export const SmartActionsCard: React.FC = () => {
                 label: 'Wedstrijd flyer maken',
                 subtitle: `vs ${opponentName} — ${daysUntil <= 0 ? 'Vandaag' : daysUntil === 1 ? 'Morgen' : `Over ${daysUntil} dagen`}`,
                 Icon: FileImage,
-                color: '#ec4899',
+                colorClass: styles.colorPink,
                 priority: daysUntil <= 1 ? 95 : 70,
-                path: `/matches/${matchSlug}`,
+                mode: { type: 'match-wizard', matchId },
               });
 
               computed.push({
@@ -189,9 +231,9 @@ export const SmartActionsCard: React.FC = () => {
                 label: 'Opstelling invullen',
                 subtitle: `Selectie voor ${opponentName} instellen`,
                 Icon: Users,
-                color: '#6366f1',
+                colorClass: styles.colorIndigo,
                 priority: daysUntil <= 1 ? 90 : 65,
-                path: `/matches/${matchSlug}`,
+                mode: { type: 'match-wizard', matchId },
               });
             }
           }
@@ -204,9 +246,9 @@ export const SmartActionsCard: React.FC = () => {
             label: 'Foto\'s uploaden',
             subtitle: 'Action foto\'s of wedstrijdbeelden toevoegen',
             Icon: Upload,
-            color: '#8b5cf6',
+            colorClass: styles.colorViolet,
             priority: 30,
-            path: '/media',
+            mode: { type: 'navigate', path: '/medialib' },
           });
         }
 
@@ -251,13 +293,10 @@ export const SmartActionsCard: React.FC = () => {
         {actions.map(action => (
           <button
             key={action.key}
-            className={styles.actionItem}
-            onClick={() => navigate(action.path)}
+            className={`${styles.actionItem} ${action.colorClass}`}
+            onClick={() => handleAction(action)}
           >
-            <div
-              className={styles.actionIcon}
-              style={{ background: `color-mix(in srgb, ${action.color} 12%, transparent)`, color: action.color }}
-            >
+            <div className={styles.actionIcon}>
               <action.Icon size={18} />
             </div>
             <div className={styles.actionText}>
