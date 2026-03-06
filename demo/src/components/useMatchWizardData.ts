@@ -268,16 +268,20 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
   const handleContentSelect = (contentKey: string, contentLabel: string, subtype: string, templateType: string) => {
     if (!selectedMatch) return;
+    setPendingContent({ key: contentKey, label: contentLabel, subtype, templateType });
     if (LINEUP_REQUIRED_SUBTYPES.has(subtype)) {
-      setPendingContent({ key: contentKey, label: contentLabel, subtype, templateType });
       setCurrentStep('lineup');
       return;
     }
-    openContentGeneration(contentKey, contentLabel, subtype, templateType);
+    setCurrentStep('review');
   };
 
   const handleLineupConfirm = () => {
     saveLineup();
+    setCurrentStep('review');
+  };
+
+  const handleReviewConfirm = () => {
     if (pendingContent) openContentGeneration(pendingContent.key, pendingContent.label, pendingContent.subtype, pendingContent.templateType);
   };
 
@@ -289,7 +293,12 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   };
 
   const handleBack = () => {
-    if (currentStep === 'lineup') { setPendingContent(null); setCurrentStep('content'); }
+    if (currentStep === 'review') {
+      // Go back to lineup if lineup was required, else back to content
+      if (pendingContent && LINEUP_REQUIRED_SUBTYPES.has(pendingContent.subtype)) setCurrentStep('lineup');
+      else setCurrentStep('content');
+    }
+    else if (currentStep === 'lineup') { setPendingContent(null); setCurrentStep('content'); }
     else if (currentStep === 'content') setCurrentStep('match');
     else handleClose();
   };
@@ -318,6 +327,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       case 'match': return 'Selecteer wedstrijd';
       case 'content': return 'Kies content';
       case 'lineup': return pendingContent ? `Opstelling — ${pendingContent.label}` : 'Opstelling';
+      case 'review': return 'Bevestig generatie';
     }
   };
 
@@ -339,7 +349,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     // Matches
     matchesLoading, upcomingMatches,
     // Handlers
-    handleSelectPlayer, handleContentSelect, handleLineupConfirm,
+    handleSelectPlayer, handleContentSelect, handleLineupConfirm, handleReviewConfirm,
     handleContentModalClose, handleContentGenerated,
     handleBack, handleClose,
     // Helpers

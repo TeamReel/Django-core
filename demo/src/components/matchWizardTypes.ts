@@ -3,7 +3,7 @@
  */
 import { Image, Video, FileText, Play, Zap, Users, Clock } from 'lucide-react';
 
-export type WizardStep = 'match' | 'content' | 'lineup';
+export type WizardStep = 'match' | 'content' | 'lineup' | 'review';
 export type ContentPhase = 'pre' | 'during' | 'post';
 export type OutputType = 'video' | 'image' | 'text';
 
