@@ -163,9 +163,9 @@ export const bottomSheetBody = style({
 
 export const bottomSheetFooter = style({
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'stretch',
+  flexDirection: 'column',
   gap: themeVars.spacing['3'],
-  padding: themeVars.spacing['5'],
+  padding: `${themeVars.spacing['3']} ${themeVars.spacing['4']}`,
   borderTop: `1px solid ${themeVars.color.border.primary}`,
+  flexShrink: 0,
 });

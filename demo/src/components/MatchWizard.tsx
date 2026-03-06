@@ -37,8 +37,48 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
     retrySquad, retryTemplates,
   } = d;
 
+  // Wizard footer — rendered via BottomSheet native footer slot so it's
+  // always visible outside the scrollable body, guaranteed by the design-system
+  // flex layout (no dependency on utility classes inside the body).
+  const wizardFooter = (() => {
+    if (currentStep === 'match' && selectedMatch) {
+      return (
+        <button onClick={() => setCurrentStep('content')}
+          className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
+          Verder<ChevronRight size={18} />
+        </button>
+      );
+    }
+    if (currentStep === 'lineup') {
+      return (
+        <button onClick={handleLineupConfirm} disabled={lineupSaving}
+          className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+          data-saving={lineupSaving}>
+          {lineupSaving ? 'Opslaan...' : 'Verder'}<ChevronRight size={18} />
+        </button>
+      );
+    }
+    if (currentStep === 'review') {
+      return (
+        <div className="flex-col gap-10 w-full">
+          {saveError && (
+            <div className={styles.errorBannerCompact}>
+              <AlertTriangle size={16} className={styles.errorIcon} />
+              <span className="fs-13 flex-1">{saveError}</span>
+            </div>
+          )}
+          <button onClick={handleReviewConfirm}
+            className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
+            <Zap size={18} />Genereer content
+          </button>
+        </div>
+      );
+    }
+    return null;
+  })();
+
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose} bodyClassName={styles.sheetBody}>
+    <BottomSheet isOpen={isOpen} onClose={handleClose} bodyClassName={styles.sheetBody} footer={wizardFooter || undefined}>
       <div className={`flex-col ${styles.root}`}>
 
         {/* ── Header: back + title + close ─────────────────────────── */}
@@ -231,39 +271,6 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             );
           })()}
         </div>
-
-        {/* ── Bottom action bar ─────────────────────────────────────── */}
-        {currentStep === 'match' && selectedMatch && (
-          <div className={`border-top ${styles.bottomBar}`}>
-            <button onClick={() => setCurrentStep('content')}
-              className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
-              Verder<ChevronRight size={18} />
-            </button>
-          </div>
-        )}
-        {currentStep === 'lineup' && (
-          <div className={`border-top ${styles.bottomBar}`}>
-            <button onClick={handleLineupConfirm} disabled={lineupSaving}
-              className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
-              data-saving={lineupSaving}>
-              {lineupSaving ? 'Opslaan...' : 'Verder'}<ChevronRight size={18} />
-            </button>
-          </div>
-        )}
-        {currentStep === 'review' && (
-          <div className={`border-top ${styles.bottomBar}`}>
-            {saveError && (
-              <div className={styles.errorBannerCompact}>
-                <AlertTriangle size={16} className={styles.errorIcon} />
-                <span className="fs-13 flex-1">{saveError}</span>
-              </div>
-            )}
-            <button onClick={handleReviewConfirm}
-              className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
-              <Zap size={18} />Genereer content
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Inline Content Generation Modal */}

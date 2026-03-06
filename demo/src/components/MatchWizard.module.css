@@ -11,6 +11,8 @@
 
 @media (max-width: 639px) {
   .root {
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-height: 0;
     max-height: none;
