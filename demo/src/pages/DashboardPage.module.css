@@ -1,4 +1,4 @@
-/* DashboardPage — mobile-first CSS module */
+/* DashboardPage — Premium command center (mobile-first) */
 
 .page {
   padding: 16px 16px 120px;
@@ -6,60 +6,73 @@
   margin: 0 auto;
 }
 
-/* ── Greeting ────────────────────────────────────────────────────────── */
+/* ── Header ──────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .greeting {
   font-size: 22px;
   font-weight: 700;
   color: var(--app-text);
-  margin: 0 0 4px;
+  margin: 0 0 2px;
   line-height: 1.3;
 }
 
 .orgSubtitle {
   font-size: 14px;
   color: var(--app-muted-text);
-  margin: 0 0 20px;
+  margin: 0;
 }
 
-/* ── Section (card) ──────────────────────────────────────────────────── */
-.card {
-  background: var(--app-surface);
+.notifBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   border: 1px solid var(--app-border);
-  padding: 16px;
-  margin-bottom: 12px;
-}
-
-.cardHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-
-.cardTitle {
-  font-size: 15px;
-  font-weight: 700;
+  background: var(--app-surface);
   color: var(--app-text);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+  flex-shrink: 0;
 }
 
-.cardLink {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--app-primary);
-  text-decoration: none;
+.notifBtn:hover {
+  background: var(--app-bg);
+}
+
+.notifBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  color: white;
+  background: var(--color-error, #ef4444);
+  border-radius: 10px;
+  border: 2px solid var(--app-surface);
 }
 
 /* ── Low balance banner ──────────────────────────────────────────────── */
 .lowBanner {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 14px;
   background: var(--app-surface);
   border: 1px solid var(--color-amber-400, #fbbf24);
   border-radius: 10px;
@@ -90,92 +103,90 @@
   white-space: nowrap;
 }
 
+/* ── Summary grid (2 cols) ───────────────────────────────────────────── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* ── Section (card) ──────────────────────────────────────────────────── */
+.card {
+  background: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--app-text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-primary);
+  text-decoration: none;
+}
+
 /* ── Recents pills ───────────────────────────────────────────────────── */
 .recentsList {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 6px;
 }
 
 .recentPill {
   display: inline-block;
-  padding: 6px 12px;
-  font-size: 13px;
+  padding: 5px 10px;
+  font-size: 12px;
   font-weight: 600;
   background: var(--app-bg);
   color: var(--app-text);
   border: 1px solid var(--app-border);
   border-radius: 20px;
   text-decoration: none;
-  max-width: 220px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: background 0.12s;
 }
 
-/* ── Stats row ───────────────────────────────────────────────────────── */
-.statsRow {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.statBox {
-  text-align: center;
-  padding: 10px 4px;
-  background: var(--app-bg);
-  border-radius: 8px;
-}
-
-.statNumber {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--app-text);
-  line-height: 1.2;
-}
-
-.statLabel {
-  font-size: 11px;
-  color: var(--app-muted-text);
-  margin-top: 2px;
-}
-
-/* ── CTA row ─────────────────────────────────────────────────────────── */
-.ctaRow {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.ctaBtn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 8px;
-  border: 1px solid var(--app-border);
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.ctaPrimary {
-  background: var(--app-primary);
-  color: white;
-  border-color: var(--app-primary);
-}
-
-.ctaSecondary {
+.recentPill:hover {
   background: var(--app-surface);
-  color: var(--app-text);
 }
 
 /* ── Desktop: 2-column layout ────────────────────────────────────────── */
+.twoCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.mainCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.sideCol {
+  margin-top: 12px;
+}
+
 @media (min-width: 768px) {
   .page {
     max-width: 960px;
@@ -183,13 +194,25 @@
   }
 
   .twoCol {
-    display: grid;
-    grid-template-columns: 1fr 340px;
+    flex-direction: row;
     gap: 20px;
-    align-items: start;
+    align-items: flex-start;
   }
 
-  .statsRow {
-    grid-template-columns: repeat(4, 1fr);
+  .mainCol {
+    flex: 1;
+  }
+
+  .sideCol {
+    width: 320px;
+    flex-shrink: 0;
+    margin-top: 0;
+    position: sticky;
+    top: 80px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 }

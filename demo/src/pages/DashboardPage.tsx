@@ -3,18 +3,21 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PullToRefresh } from '@django-core/design-system';
 import { Link, useNavigate } from 'react-router-dom';
+import { AlertTriangle, Bell } from 'lucide-react';
 import {
-  AlertTriangle, ChevronRight, FolderOpen, Users,
-} from 'lucide-react';
-import { NextMatchHero } from '../components/NextMatchHero';
-import { ContentStreakWidget } from '../components/ContentStreakWidget';
+  ActiveMatchCard,
+  SquadReadinessCard,
+  ContentStatsCard,
+  UpcomingMatchesCard,
+  AIQueueCard,
+  CreditsTrendCard,
+  OrgStatsCard,
+} from '../components/dashboard';
 import { QuickActions } from '../components/QuickActions';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
-import { TransactionWidget } from '../components/TransactionWidget/TransactionWidget';
-import { UpcomingMatchesWidget } from '../components/UpcomingMatchesWidget';
 import { useCreditBalance } from '../hooks/useCreditBalance';
 import { useNavRecents } from '../hooks/useNavItems';
-import { useUserRole } from '../components/PermissionGuards';
+import { useUnreadCount } from '../hooks/useNotifications';
 import styles from './DashboardPage.module.css';
 
 export default function DashboardPage() {
@@ -23,14 +26,14 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const org = context.organisation as any;
   const recents = useNavRecents();
-  const { isPlayer } = useUserRole();
+  const unreadCount = useUnreadCount();
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,
     org?.id?.toString(),
   );
 
-  // Pull-to-refresh: increment key to force child widgets to re-mount and refetch
+  // Pull-to-refresh
   const [refreshKey, setRefreshKey] = useState(0);
   const handleRefresh = useCallback(async () => {
     setRefreshKey(k => k + 1);
@@ -56,18 +59,33 @@ export default function DashboardPage() {
       refreshingText="Vernieuwen..."
     >
       <div key={refreshKey} className={styles.page}>
-        {/* ── Greeting ──────────────────────────────────────────── */}
-        <h1 className={styles.greeting}>
-          Welkom, {user?.first_name || 'there'}
-        </h1>
-        <p className={styles.orgSubtitle}>
-          {org ? org.name : 'Selecteer een organisatie'}
-        </p>
 
-        {/* ── Low balance banner ────────────────────────────────── */}
+        {/* ── Header ─────────────────────────────────────────────── */}
+        <div className={styles.header}>
+          <div>
+            <h1 className={styles.greeting}>
+              Welkom, {user?.first_name || 'there'}
+            </h1>
+            <p className={styles.orgSubtitle}>
+              {org ? org.name : 'Selecteer een organisatie'}
+            </p>
+          </div>
+          <button
+            className={styles.notifBtn}
+            onClick={() => navigate('/notifications')}
+            aria-label="Notificaties"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className={styles.notifBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+            )}
+          </button>
+        </div>
+
+        {/* ── Low balance banner ─────────────────────────────────── */}
         {lowBalanceAlert && (
           <div className={styles.lowBanner}>
-            <AlertTriangle size={20} />
+            <AlertTriangle size={18} />
             <div className={styles.lowBannerText}>
               <strong>Laag tegoed</strong>
               Nog {balance} credits (drempel: {threshold}).
@@ -78,23 +96,31 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* ── Two-column wrapper (desktop only) ─────────────────── */}
+        {/* ── Main layout ────────────────────────────────────────── */}
         <div className={styles.twoCol}>
-          {/* ── Main column ──────────────────────────────────────── */}
-          <div>
-            {/* 1. Next Match Hero — readiness ring + CTA */}
-            {!isPlayer && <NextMatchHero />}
+          <div className={styles.mainCol}>
 
-            {/* 2. Content Streak */}
-            {!isPlayer && <ContentStreakWidget />}
+            {/* 1. Active Match — the match closest to now */}
+            <ActiveMatchCard />
 
-            {/* 3. Quick Actions — 1-tap nav */}
+            {/* 2. Summary Grid */}
+            <div className={styles.summaryGrid}>
+              <SquadReadinessCard />
+              <ContentStatsCard />
+              <AIQueueCard />
+              <CreditsTrendCard />
+            </div>
+
+            {/* 3. Upcoming Matches (compact list) */}
+            <UpcomingMatchesCard />
+
+            {/* 4. Org Overview Stats */}
+            <OrgStatsCard />
+
+            {/* 5. Quick Actions — full nav grid */}
             <QuickActions />
 
-            {/* 4. Upcoming Matches (remaining) */}
-            <UpcomingMatchesWidget />
-
-            {/* 5. Recents */}
+            {/* 6. Recents */}
             {recents.length > 0 && (
               <div className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -110,60 +136,15 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
-
-            {/* 6. Org quick links */}
-            {org && (
-              <div className={styles.card}>
-                <div className={styles.statsRow}>
-                  <div className={styles.statBox}>
-                    <div className={styles.statNumber}>{org.clubs_count || org.project_count || 0}</div>
-                    <div className={styles.statLabel}>Clubs</div>
-                  </div>
-                  <div className={styles.statBox}>
-                    <div className={styles.statNumber}>{org.teams_count || 0}</div>
-                    <div className={styles.statLabel}>Teams</div>
-                  </div>
-                  <div className={styles.statBox}>
-                    <div className={styles.statNumber}>{org.matches_count || 0}</div>
-                    <div className={styles.statLabel}>Wedstrijden</div>
-                  </div>
-                  <div className={styles.statBox}>
-                    <div className={styles.statNumber}>{org.member_count || 0}</div>
-                    <div className={styles.statLabel}>Leden</div>
-                  </div>
-                </div>
-                <div className={styles.ctaRow}>
-                  <Link
-                    to={`/organisations/${org.slug}/projects`}
-                    className={`${styles.ctaBtn} ${styles.ctaPrimary}`}
-                  >
-                    <FolderOpen size={16} /> Projects
-                  </Link>
-                  <Link
-                    to={`/organisations/${org.slug}`}
-                    className={`${styles.ctaBtn} ${styles.ctaSecondary}`}
-                  >
-                    <Users size={16} /> Team
-                  </Link>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* ── Sidebar (stacks below on mobile) ─────────────────── */}
-          <div>
+          {/* ── Sidebar ──────────────────────────────────────────── */}
+          <div className={styles.sideCol}>
             <ActivityFeed
               title="Activiteiten"
               limit={5}
               {...activityFilterProps}
             />
-
-            {org?.id && (
-              <TransactionWidget
-                organisationId={org.id.toString()}
-                limit={3}
-              />
-            )}
           </div>
         </div>
       </div>

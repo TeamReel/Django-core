@@ -1,0 +1,210 @@
+/* DashboardSummaries — Compact card grid styles */
+
+/* ── Base summary card ───────────────────────────────────────────── */
+.summaryCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--app-surface);
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  min-height: 64px;
+}
+
+.summaryCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.alertCard {
+  border-color: var(--color-error, #ef4444);
+}
+
+/* ── Icon circle ─────────────────────────────────────────────────── */
+.cardIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Text content ────────────────────────────────────────────────── */
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--app-text);
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cardLabel {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  margin-top: 1px;
+}
+
+.cardArrow {
+  flex-shrink: 0;
+  color: var(--app-muted-text);
+  opacity: 0.4;
+}
+
+.reviewBadge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+}
+
+.warnIcon {
+  color: var(--color-error, #ef4444);
+}
+
+/* ── Tall card (matches list, stats) ─────────────────────────────── */
+.tallCard {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-height: auto;
+}
+
+.tallHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--app-text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.tallTitle {
+  flex: 1;
+}
+
+.seeAll {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.emptyMini {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  padding: 8px 0;
+  text-align: center;
+}
+
+/* ── Match list (compact) ────────────────────────────────────────── */
+.matchList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.matchItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.matchItem:hover {
+  background: var(--app-bg);
+}
+
+.matchDate {
+  flex-shrink: 0;
+  width: 38px;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.matchDay {
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--app-text);
+}
+
+.matchMonth {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+}
+
+.matchInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.matchOpponent {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matchTime {
+  display: block;
+  font-size: 11px;
+  color: var(--app-muted-text);
+}
+
+/* ── Mini stats grid ─────────────────────────────────────────────── */
+.miniStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.miniStat {
+  text-align: center;
+  padding: 8px 4px;
+  background: var(--app-bg);
+  border-radius: 8px;
+}
+
+.miniValue {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-text);
+  line-height: 1.2;
+}
+
+.miniLabel {
+  display: block;
+  font-size: 10px;
+  color: var(--app-muted-text);
+  margin-top: 2px;
+}
