@@ -16,11 +16,11 @@
   padding: 16px;
 }
 
-/* Mobile: sit between TopNavbar (57px) and MobileBottomNav (64px + safe-area) */
+/* Mobile: sit between TopNavbar (57px) and MobileBottomNav + raised create button */
 @media (max-width: 639px) {
   .overlay {
     top: 57px;
-    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(80px + env(safe-area-inset-bottom, 0px));
     padding: 0;
     align-items: stretch;
     overflow: hidden;

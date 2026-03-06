@@ -33,7 +33,7 @@ export const bottomSheetOverlay = style({
   '@media': {
     '(max-width: 639px)': {
       top: '57px',
-      bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+      bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
     },
   },
 });
@@ -62,9 +62,9 @@ export const bottomSheetContainer = style({
   touchAction: 'none',
   '@media': {
     '(max-width: 639px)': {
-      /* Sit between TopNavbar (57px) and MobileBottomNav (64px + safe-area) */
+      /* Sit between TopNavbar (57px) and MobileBottomNav + raised create button */
       top: '57px',
-      bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+      bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
       maxHeight: 'none',
       overflow: 'hidden',
       borderTopLeftRadius: '16px',
