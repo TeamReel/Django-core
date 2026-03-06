@@ -40,7 +40,7 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         const apiBaseUrl = getApiBaseUrl();
 
         const params = new URLSearchParams();
-        if (limit) params.append('limit', String(limit));
+        if (limit) params.append('page_size', String(limit));
         if (project_id) params.append('project_id', project_id);
         if (organisation_id) params.append('organisation_id', organisation_id);
 

@@ -61,8 +61,9 @@ export const ContentStreakWidget: React.FC = () => {
         setLoading(true);
 
         // Fetch last 20 past matches
+        const now = new Date().toISOString();
         const matchRes = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?activity_type=match&future=false&limit=20&ordering=-start_time`,
+          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__lte=${encodeURIComponent(now)}&ordering=-start_time&page_size=20`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
         );
         if (!matchRes.ok) throw new Error('fetch failed');

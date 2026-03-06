@@ -36,8 +36,9 @@ export const UpcomingMatchesWidget: React.FC = () => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
+        const now = new Date().toISOString();
         const response = await fetch(
-            `${apiBaseUrl}/api/v1/activities/?activity_type=match&future=true&limit=3`,
+            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=5`,
             { headers: { 'Content-Type': 'application/json' }, credentials: 'include' }
         );
 

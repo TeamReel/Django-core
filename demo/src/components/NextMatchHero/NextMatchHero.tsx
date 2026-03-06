@@ -148,8 +148,9 @@ export const NextMatchHero: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
+        const now = new Date().toISOString();
         const res = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?activity_type=match&future=true&limit=1`,
+          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=1`,
           { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
         );
         if (!res.ok) throw new Error('fetch failed');
