@@ -373,7 +373,7 @@ export function useTeamTabData({
     let cancelled = false;
 
     const loadFullMembers = async () => {
-      if (activeTabFromUrl !== 'overview') return;
+      if (!['overview', 'members', 'media'].includes(activeTabFromUrl)) return;
       const teamId = String(teamIdForDirectoryLists || '').trim();
       if (!teamId) return;
 

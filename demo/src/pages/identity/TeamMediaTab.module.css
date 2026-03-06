@@ -1,0 +1,247 @@
+/* ============================================================================
+   TeamMediaTab — Mobile-first per-player media progress
+   ============================================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Summary card ── */
+.summaryCard {
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.summaryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--app-border, #334155);
+}
+
+.summaryTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+}
+
+.summaryBadge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.summarySlots {
+  display: flex;
+  flex-direction: column;
+}
+
+.slotRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+  align-items: center;
+}
+
+.slotRow:last-child {
+  border-bottom: none;
+}
+
+.slotInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.slotIcon {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+}
+
+.slotLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.slotCount {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.slotTrack {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  height: 4px;
+  background: var(--app-surface, #0f172a);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.slotFill {
+  height: 100%;
+  background: #818cf8;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.slotFill[data-complete='true'] {
+  background: #22c55e;
+}
+
+/* ── Per-player card list ── */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchRow input {
+  flex: 1;
+}
+
+.playerCard {
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.playerHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.playerAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--app-surface, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playerAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.playerInitials {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--app-muted-text);
+}
+
+.playerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.playerName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playerScore {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+/* ── Per-slot progress inside player card ── */
+.playerSlots {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--app-border, #1e293b);
+}
+
+.playerSlotRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.playerSlotRow:last-child {
+  border-bottom: none;
+}
+
+.playerSlotIcon {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+  width: 18px;
+  flex-shrink: 0;
+}
+
+.playerSlotLabel {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  min-width: 80px;
+}
+
+.playerSlotStatus {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.playerSlotStatus[data-state='processed'] {
+  color: #22c55e;
+}
+
+.playerSlotStatus[data-state='raw'] {
+  color: #f59e0b;
+}
+
+.playerSlotStatus[data-state='processing'] {
+  color: #818cf8;
+}
+
+.playerSlotStatus[data-state='empty'] {
+  color: var(--app-muted-text);
+  opacity: 0.5;
+}
+
+/* ── Empty / loading ── */
+.empty {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  text-align: center;
+  padding: 24px 0;
+}
+
+.loading {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  text-align: center;
+  padding: 24px 0;
+}

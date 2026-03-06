@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Alert, Button, Card } from '@django-core/design-system';
+import { Alert, Button } from '@django-core/design-system';
 import {
   Check, Pencil, Eye, Trash2, MoreHorizontal,
 } from 'lucide-react';
@@ -9,65 +9,20 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 
-import { UsersList } from './directory/UsersList';
 import TeamCreditsTab from './detail/TeamCreditsTab';
 import MobileTabBar from '../../components/MobileTabBar';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import { AssetsTab } from '../../components/AssetsTab';
 import { KitsTab } from '../../components/KitsTab';
-import { MemberMediaMatrix } from '../../components/MemberMediaMatrix';
-import { AssetCompletionMatrix } from '../../components/AssetCompletionMatrix';
 
 import { useTeamDetailData } from './useTeamDetailData';
 import { useTeamTabData } from './useTeamTabData';
 import { TeamOverviewTab } from './TeamOverviewTab';
 import { TeamHierarchyTab } from './TeamHierarchyTab';
+import { TeamSelectieTab } from './TeamSelectieTab';
+import { TeamMediaTab } from './TeamMediaTab';
 import s from './TeamOrganisationDetailPage.module.css';
-
-/**
- * Lazy-loading wrapper for MemberMediaMatrix on the team page.
- * Fetches all project members when mounted (i.e. when media tab is active).
- */
-function MediaMatrixLoader({ apiBaseUrl, teamId }: { apiBaseUrl: string; teamId: string }) {
-  const [members, setMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!teamId) return;
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/?page_size=200`,
-          { credentials: 'include' },
-        );
-        if (!res.ok) throw new Error(`Failed to load members (${res.status})`);
-        const json = await res.json();
-        const data = json?.data || json;
-        const results = data?.results || (Array.isArray(data) ? data : []);
-        if (!cancelled) setMembers(results);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load members');
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    void load();
-    return () => { cancelled = true; };
-  }, [apiBaseUrl, teamId]);
-
-  return (
-    <MemberMediaMatrix
-      members={members}
-      membersLoading={loading}
-      membersError={error}
-    />
-  );
-}
 
 export default function TeamOrganisationDetailPage() {
   const navigate = useNavigate();
@@ -98,12 +53,12 @@ export default function TeamOrganisationDetailPage() {
       : (tab === 'assets' || tab === 'kits') ? 'identity'
       : tab;
     const allowed = isPlayer
-      ? new Set(['hierarchy'])
+      ? new Set(['overview', 'hierarchy', 'members'])
       : new Set([
           'overview', 'hierarchy',
           'members', 'media', 'identity', 'credits',
         ]);
-    return allowed.has(normalized) ? normalized : (isPlayer ? 'hierarchy' : 'overview');
+    return allowed.has(normalized) ? normalized : 'overview';
   }, [location.search, isPlayer]);
 
   const makeTabHref = (tabId: string): string => {
@@ -287,9 +242,9 @@ export default function TeamOrganisationDetailPage() {
         {/* ── Tab Bar ── */}
         <MobileTabBar
           tabs={[
-            ...(!isPlayer ? [{ id: 'overview', label: 'Overview' }] : []),
+            { id: 'overview', label: 'Overview' },
             { id: 'hierarchy', label: 'Hierarchy' },
-            ...(!isPlayer ? [{ id: 'members', label: 'Selectie' }] : []),
+            { id: 'members', label: 'Selectie' },
             ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
             ...(!isPlayer ? [{ id: 'identity', label: 'Identity' }] : []),
             ...(!isPlayer ? [{ id: 'credits', label: 'Credits' }] : []),
@@ -345,11 +300,18 @@ export default function TeamOrganisationDetailPage() {
             />
           )}
 
-          {activeTabFromUrl === 'members' && orgSlugForDirectoryLists && clubIdForDirectoryLists && teamIdForDirectoryLists && (
-            <UsersList
-              preselectedOrgId={orgSlugForDirectoryLists}
-              preselectedClubId={clubIdForDirectoryLists}
-              preselectedTeamId={teamIdForDirectoryLists}
+          {activeTabFromUrl === 'members' && teamIdForDirectoryLists && (
+            <TeamSelectieTab
+              members={tabData.fullMembers}
+              membersLoading={tabData.fullMembersLoading}
+              memberDetailHref={!isPlayer ? (m: any) => {
+                const memberId = String(m?.id || m?.user?.id || '');
+                return `/${orgKeyForRoutes}/${clubKeyForRoutes}/${teamKeyForRoutes}/members/${memberId}`;
+              } : undefined}
+              showAdminLink={!isPlayer}
+              onAdminLinkClick={!isPlayer ? () => {
+                navigate(`/${orgKeyForRoutes}/${clubKeyForRoutes}/${teamKeyForRoutes}/directory`);
+              } : undefined}
             />
           )}
 
@@ -358,25 +320,10 @@ export default function TeamOrganisationDetailPage() {
           )}
 
           {activeTabFromUrl === 'media' && team && org && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <AssetCompletionMatrix
-                projectId={team.slug || String(team.id)}
-                entityName={team.name}
-                title="Asset Completion Matrix"
-              />
-
-              <Card>
-                <div style={{ padding: '16px 16px 0 16px' }}>
-                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Member Media Matrix</h3>
-                </div>
-                <div style={{ padding: 16 }}>
-                  <MediaMatrixLoader
-                    apiBaseUrl={apiBaseUrl}
-                    teamId={team.slug || String(team.id)}
-                  />
-                </div>
-              </Card>
-            </div>
+            <TeamMediaTab
+              members={tabData.fullMembers}
+              membersLoading={tabData.fullMembersLoading}
+            />
           )}
 
           {activeTabFromUrl === 'identity' && team && org && (

@@ -1,0 +1,181 @@
+/* ============================================================================
+   TeamSelectieTab — Mobile-first squad list with closeup photos
+   ============================================================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Search ── */
+.searchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchRow input {
+  flex: 1;
+}
+
+/* ── Header info ── */
+.headerInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.countLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+/* ── Member card ── */
+.memberCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--app-surface-2, #1e293b);
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+}
+
+.memberCard:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+/* ── Avatar / photo ── */
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--app-surface, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+}
+
+/* ── Member info (middle) ── */
+.memberInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.memberName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memberRole {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+}
+
+/* ── Mini progress (right) ── */
+.miniProgress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.miniProgressLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.miniProgressTrack {
+  width: 48px;
+  height: 4px;
+  background: var(--app-surface, #0f172a);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.miniProgressFill {
+  height: 100%;
+  background: #818cf8;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.miniProgressFill[data-complete='true'] {
+  background: #22c55e;
+}
+
+.memberArrow {
+  font-size: 16px;
+  color: var(--app-muted-text);
+  flex-shrink: 0;
+}
+
+/* ── Empty / loading ── */
+.empty {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  text-align: center;
+  padding: 24px 0;
+}
+
+.loading {
+  font-size: 13px;
+  color: var(--app-muted-text);
+  text-align: center;
+  padding: 24px 0;
+}
+
+/* ── Admin link ── */
+.adminLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #818cf8;
+  background: none;
+  border: 1px solid var(--app-border, #334155);
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.adminLink:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
