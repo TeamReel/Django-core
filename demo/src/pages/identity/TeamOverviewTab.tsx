@@ -1,9 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '@django-core/design-system';
+import { CheckCircle2, Circle } from 'lucide-react';
+import SlotIcon from '../../components/SlotIcon';
 
 import { type Organisation, type Period, type Project, type OverviewMember } from './teamDetailTypes';
 import ov from './TeamOverviewTab.module.css';
+
+interface AssetStat {
+  id: string;
+  label: string;
+  icon: string;
+  done: number;
+  total: number;
+  pct: number;
+}
+
+interface BrandAssetItem {
+  label: string;
+  present: boolean;
+}
 
 interface TeamOverviewTabProps {
   hierarchySeasons: Period[];
@@ -22,6 +38,12 @@ interface TeamOverviewTabProps {
   club: Project;
   org: Organisation;
   makeTabHref: (tab: string) => string;
+  // Brand + media + content
+  brandAssets: BrandAssetItem[];
+  assetStats: AssetStat[];
+  fullMembersLoading: boolean;
+  contentCount: number | null;
+  contentCountLoading: boolean;
 }
 
 export function TeamOverviewTab({
@@ -41,6 +63,11 @@ export function TeamOverviewTab({
   club,
   org,
   makeTabHref,
+  brandAssets,
+  assetStats,
+  fullMembersLoading,
+  contentCount,
+  contentCountLoading,
 }: TeamOverviewTabProps) {
   const navigate = useNavigate();
 
@@ -48,9 +75,13 @@ export function TeamOverviewTab({
     (sum, list) => sum + (list?.length || 0), 0,
   );
 
-  const totalMatches = Object.values(hierarchyMatchesCountBySeasonId || {}).reduce(
-    (sum, n) => sum + (typeof n === 'number' ? n : 0), 0,
-  );
+  // Compute overall assets % from tracked slots
+  const overallAssetPct = (() => {
+    if (!assetStats.length) return 0;
+    const totalDone = assetStats.reduce((s, a) => s + a.done, 0);
+    const totalAll = assetStats.reduce((s, a) => s + a.total, 0);
+    return totalAll > 0 ? Math.round((totalDone / totalAll) * 100) : 0;
+  })();
 
   const getInitials = (m: OverviewMember) => {
     const f = String(m?.first_name || '').trim();
@@ -65,14 +96,6 @@ export function TeamOverviewTab({
     const name = `${String(m?.first_name || '').trim()} ${String(m?.last_name || '').trim()}`.trim();
     return name || String(m?.email || '').trim() || `User ${m.id}`;
   };
-
-  // Flat list of competitions across seasons
-  const allCompetitions: Array<{ season: Period; comp: Period }> = [];
-  for (const season of hierarchySeasons || []) {
-    const sid = String((season as any)?.id ?? '').trim();
-    const comps = hierarchyCompetitionsBySeasonId[sid] || [];
-    for (const c of comps || []) allCompetitions.push({ season, comp: c });
-  }
 
   return (
     <div className={ov.overviewRoot}>
@@ -100,20 +123,78 @@ export function TeamOverviewTab({
           </div>
           <div className={ov.heroStat}>
             <span className={ov.heroStatValue}>
-              {hierarchyLoading ? '…' : totalMatches}
+              {contentCountLoading ? '…' : contentCount ?? 0}
             </span>
-            <span className={ov.heroStatLabel}>Wedstrijden</span>
+            <span className={ov.heroStatLabel}>Content</span>
           </div>
           <div className={ov.heroStat}>
             <span className={ov.heroStatValue}>
-              {hierarchyLoading ? '…' : totalCompetitions}
+              {fullMembersLoading ? '…' : `${overallAssetPct}%`}
             </span>
-            <span className={ov.heroStatLabel}>Competities</span>
+            <span className={ov.heroStatLabel}>Assets</span>
           </div>
         </div>
       </div>
 
-      {/* ── Seasons ── */}
+      {/* ── Brand assets checklist ── */}
+      {brandAssets.length > 0 && (
+        <div className={ov.sectionCard}>
+          <div className={ov.sectionHeader}>
+            <h3 className={ov.sectionTitle}>Club assets</h3>
+            <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('assets'))}>
+              Beheer →
+            </button>
+          </div>
+          <div className={ov.brandGrid}>
+            {brandAssets.map((a) => (
+              <div key={a.label} className={ov.brandItem} data-present={a.present ? 'true' : 'false'}>
+                <span className={ov.brandIcon}>
+                  {a.present ? <CheckCircle2 size={14} color="#22c55e" /> : <Circle size={14} color="#64748b" />}
+                </span>
+                <span className={ov.brandLabel}>{a.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Media assets progress ── */}
+      {assetStats.length > 0 && assetStats[0].total > 0 && (
+        <div className={ov.sectionCard}>
+          <div className={ov.sectionHeader}>
+            <h3 className={ov.sectionTitle}>Media assets</h3>
+            <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('media'))}>
+              Media matrix →
+            </button>
+          </div>
+          {fullMembersLoading ? (
+            <div className={ov.loadingText}>Laden…</div>
+          ) : (
+            <div className={ov.assetList}>
+              {assetStats.map((slot) => (
+                <div key={slot.id} className={ov.assetRow}>
+                  <div className={ov.assetInfo}>
+                    <span className={ov.assetIcon}><SlotIcon name={slot.icon} size={14} /></span>
+                    <span className={ov.assetLabel}>{slot.label}</span>
+                  </div>
+                  <div className={ov.assetRight}>
+                    <span className={ov.assetCount}>{slot.done}/{slot.total}</span>
+                  </div>
+                  <div className={ov.progressTrack}>
+                    <div
+                      className={ov.progressFill}
+                      style={{ width: `${slot.pct}%` }}
+                      data-complete={slot.pct === 100 ? 'true' : 'false'}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Per-seizoen breakdown ── */}
       <div className={ov.sectionCard}>
         <div className={ov.sectionHeader}>
           <h3 className={ov.sectionTitle}>Seizoenen</h3>
@@ -126,11 +207,17 @@ export function TeamOverviewTab({
         ) : hierarchySeasons.length === 0 ? (
           <div className={ov.emptyText}>Geen seizoenen gevonden.</div>
         ) : (
-          <div className={ov.seasonList}>
-            {hierarchySeasons.slice(0, 6).map((season) => {
-              const seasonKey = String((season as any)?.slug || (season as any)?.id || '').trim();
-              const matchCount = hierarchyMatchesCountBySeasonId[String((season as any)?.id)] || 0;
-              const compCount = (hierarchyCompetitionsBySeasonId[String((season as any)?.id)] || []).length;
+          <div className={ov.breakdownTable}>
+            <div className={ov.breakdownHeader}>
+              <span className={ov.breakdownColName}>Seizoen</span>
+              <span className={ov.breakdownCol}>Comp.</span>
+              <span className={ov.breakdownCol}>Wedstr.</span>
+            </div>
+            {hierarchySeasons.slice(0, 8).map((season) => {
+              const sid = String((season as any)?.id ?? '').trim();
+              const seasonKey = String((season as any)?.slug || sid).trim();
+              const matchCount = hierarchyMatchesCountBySeasonId[sid] || 0;
+              const compCount = (hierarchyCompetitionsBySeasonId[sid] || []).length;
               const seasonPath =
                 orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey
                   ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}`
@@ -138,65 +225,21 @@ export function TeamOverviewTab({
 
               return (
                 <button
-                  key={String((season as any)?.id)}
+                  key={sid}
                   type="button"
-                  className={ov.seasonRow}
+                  className={ov.breakdownRow}
                   onClick={() => seasonPath && navigate(seasonPath)}
-                  style={{ background: 'none', border: 'none', cursor: seasonPath ? 'pointer' : 'default', font: 'inherit', textAlign: 'left', width: '100%' }}
                 >
-                  <div className={ov.seasonInfo}>
-                    <span className={ov.seasonName}>{String((season as any)?.name || 'Season')}</span>
-                    <span className={ov.seasonMeta}>
-                      {compCount} competitie{compCount !== 1 ? 's' : ''} · {matchCount} wedstrijd{matchCount !== 1 ? 'en' : ''}
-                    </span>
-                  </div>
-                  {seasonPath && <span className={ov.seasonArrow}>›</span>}
+                  <span className={ov.breakdownColName}>{String((season as any)?.name || 'Season')}</span>
+                  <span className={ov.breakdownCol}>{compCount}</span>
+                  <span className={ov.breakdownCol}>{matchCount}</span>
+                  {seasonPath && <span className={ov.breakdownArrow}>›</span>}
                 </button>
               );
             })}
           </div>
         )}
       </div>
-
-      {/* ── Competitions ── */}
-      {allCompetitions.length > 0 && (
-        <div className={ov.sectionCard}>
-          <div className={ov.sectionHeader}>
-            <h3 className={ov.sectionTitle}>Competities</h3>
-            <button className={ov.sectionLink} onClick={() => navigate(makeTabHref('competitions'))}>
-              Bekijk alle →
-            </button>
-          </div>
-          <div className={ov.compList}>
-            {allCompetitions.slice(0, 6).map(({ season, comp }) => {
-              const compPath = (() => {
-                const seasonKey = String((season as any)?.slug || (season as any)?.id || '').trim();
-                const compKey = String((comp as any)?.slug || (comp as any)?.id || '').trim();
-                return orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey && compKey
-                  ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}/${encodeURIComponent(compKey)}`
-                  : '';
-              })();
-              return (
-                <button
-                  key={String((comp as any)?.id)}
-                  type="button"
-                  className={ov.compRow}
-                  onClick={() => compPath && navigate(compPath)}
-                  style={{ background: 'none', border: 'none', cursor: compPath ? 'pointer' : 'default', font: 'inherit', textAlign: 'left', width: '100%' }}
-                >
-                  <div className={ov.compInfo}>
-                    <span className={ov.compName}>{String((comp as any)?.name || 'Competition')}</span>
-                    <span className={ov.compSport}>
-                      {String((season as any)?.name || '')}
-                    </span>
-                  </div>
-                  {compPath && <span className={ov.seasonArrow}>›</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* ── Members ── */}
       <div className={ov.sectionCard}>
@@ -241,8 +284,8 @@ export function TeamOverviewTab({
             <span className={ov.detailValue}>{org?.name || '—'}</span>
           </div>
           <div className={ov.detailRow}>
-            <span className={ov.detailLabel}>Slug</span>
-            <span className={ov.detailValue}>{String((team as any)?.slug || '—')}</span>
+            <span className={ov.detailLabel}>Competities</span>
+            <span className={ov.detailValue}>{hierarchyLoading ? '…' : totalCompetitions}</span>
           </div>
           <div className={ov.detailRow}>
             <span className={ov.detailLabel}>Type</span>

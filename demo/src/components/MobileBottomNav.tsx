@@ -69,10 +69,20 @@ export default function MobileBottomNav() {
     ? `${teamPath}/${activeSeasonSlug}`
     : teamPath;
 
+  // Dynamic label: "Team" when on the team page itself, "Season" when deeper
+  const isOnTeamPage = (() => {
+    const segs = location.pathname.split('/').filter(Boolean);
+    if (teamPath !== '/dashboard' && location.pathname === teamPath) return true;
+    // Exactly 3 segments = org/club/team (no season)
+    if (segs.length === 3 && teamPath !== '/dashboard') return true;
+    return false;
+  })();
+  const hierarchyLabel = isOnTeamPage ? 'Team' : 'Season';
+
   // ── Tab definitions (excluding center + button) ─────────────────────
   const tabs = [
     { id: 'home', icon: Home, label: 'Home', path: '/dashboard' },
-    { id: 'season', icon: CalendarDays, label: 'Season', path: seasonPath },
+    { id: 'season', icon: CalendarDays, label: hierarchyLabel, path: seasonPath },
     // center + button is rendered separately
     { id: 'gallery', icon: Images, label: 'Gallery', path: '/studio' },
     { id: 'profile', icon: UserCircle, label: 'Profile', path: '/profile' },

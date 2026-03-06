@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
+import { getMediaProcessingState } from '../../utils/mediaHelpers';
+import { MEDIA_SLOTS } from '../../constants/mediaSlots';
+import useBrandProfile from '../../hooks/useBrandProfile';
+import { getAssetUrl } from '../../hooks/useBrandProfile';
 import {
   type Period,
   type OverviewMember,
@@ -9,12 +13,27 @@ import {
   getParentPeriodId,
 } from './teamDetailTypes';
 
+/** Kit roles used for brand asset checklist */
+const KIT_ROLES = [
+  { id: 'home', label: 'Thuis tenue' },
+  { id: 'away', label: 'Uit tenue' },
+  { id: 'third', label: 'Derde tenue' },
+  { id: 'keeper', label: 'Keeper tenue' },
+];
+
+/** Slots tracked on the overview */
+const TRACKED_SLOTS = MEDIA_SLOTS.filter(
+  (s) => ['profile', 'kit', 'closeup', 'intro', 'celebration'].includes(s.id),
+);
+
 interface UseTeamTabDataParams {
   activeTabFromUrl: string;
   apiBaseUrl: string;
   teamIdForDirectoryLists: string;
   clubIdForDirectoryLists: string;
   orgSlugForDirectoryLists: string;
+  orgId: string;
+  clubId: string;
 }
 
 export function useTeamTabData({
@@ -23,6 +42,8 @@ export function useTeamTabData({
   teamIdForDirectoryLists,
   clubIdForDirectoryLists,
   orgSlugForDirectoryLists,
+  orgId,
+  clubId,
 }: UseTeamTabDataParams) {
   // ── Hierarchy state ──
   const [hierarchySeasons, setHierarchySeasons] = useState<Period[]>([]);
@@ -38,6 +59,85 @@ export function useTeamTabData({
   const [overviewMembersCount, setOverviewMembersCount] = useState<number | null>(null);
   const [overviewMembersLoading, setOverviewMembersLoading] = useState(false);
   const [overviewMembersError, setOverviewMembersError] = useState<string | null>(null);
+
+  // ── Full members with media (for progress bars) ──
+  const [fullMembers, setFullMembers] = useState<any[]>([]);
+  const [fullMembersLoading, setFullMembersLoading] = useState(false);
+
+  // ── Content count ──
+  const [contentCount, setContentCount] = useState<number | null>(null);
+  const [contentCountLoading, setContentCountLoading] = useState(false);
+
+  // ── Brand profiles ──
+  const clubBrand = useBrandProfile({
+    projectId: clubId || undefined,
+    organisationId: orgId || undefined,
+    autoFetch: !!(clubId && (activeTabFromUrl === 'overview')),
+  });
+
+  const teamBrand = useBrandProfile({
+    projectId: teamIdForDirectoryLists || undefined,
+    organisationId: orgId || undefined,
+    autoFetch: !!(teamIdForDirectoryLists && (activeTabFromUrl === 'overview')),
+  });
+
+  /** Pre-built kit URLs (team takes priority over club) */
+  const batchBrandKits = useMemo(() => {
+    const kits: Record<string, string | null> = {};
+    for (const role of KIT_ROLES) {
+      const teamAsset =
+        teamBrand.getAsset?.(`kit_${role.id}_combined`) ||
+        teamBrand.getAsset?.(`kit_${role.id}`);
+      const clubAsset =
+        clubBrand.getAsset?.(`kit_${role.id}_combined`) ||
+        clubBrand.getAsset?.(`kit_${role.id}`);
+      const asset = teamAsset || clubAsset;
+      kits[role.id] = asset ? getAssetUrl(asset.url) : null;
+    }
+    return kits;
+  }, [clubBrand, teamBrand]);
+
+  const brandLogoUrl = useMemo(
+    () =>
+      clubBrand.getAsset?.('logo_upload')
+        ? getAssetUrl(clubBrand.getAsset('logo_upload')!.url)
+        : null,
+    [clubBrand],
+  );
+
+  const brandSponsorUrl = useMemo(
+    () =>
+      clubBrand.getAsset?.('sponsor_logo_upload')
+        ? getAssetUrl(clubBrand.getAsset('sponsor_logo_upload')!.url)
+        : null,
+    [clubBrand],
+  );
+
+  /** Brand assets checklist */
+  const brandAssets = useMemo(() => {
+    const items: { label: string; present: boolean }[] = [
+      { label: 'Logo', present: !!brandLogoUrl },
+      { label: 'Sponsor', present: !!brandSponsorUrl },
+    ];
+    for (const role of KIT_ROLES) {
+      if (batchBrandKits[role.id] !== undefined) {
+        items.push({ label: role.label, present: !!batchBrandKits[role.id] });
+      }
+    }
+    return items;
+  }, [brandLogoUrl, brandSponsorUrl, batchBrandKits]);
+
+  /** Media asset stats (per slot completion) */
+  const assetStats = useMemo(() => {
+    const total = fullMembers.length;
+    return TRACKED_SLOTS.map((slot) => {
+      const done = fullMembers.filter((m) => {
+        const state = getMediaProcessingState(m, slot.id);
+        return state === 'processed' || state === 'raw';
+      }).length;
+      return { ...slot, done, total, pct: total > 0 ? Math.round((done / total) * 100) : 0 };
+    });
+  }, [fullMembers]);
 
   // ── Load hierarchy (seasons → competitions → match counts) ──
   useEffect(() => {
@@ -264,6 +364,64 @@ export function useTeamTabData({
     return () => { cancelled = true; };
   }, [activeTabFromUrl, apiBaseUrl, orgSlugForDirectoryLists, teamIdForDirectoryLists]);
 
+  // ── Load full members with media metadata (for asset progress) ──
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadFullMembers = async () => {
+      if (activeTabFromUrl !== 'overview') return;
+      const teamId = String(teamIdForDirectoryLists || '').trim();
+      if (!teamId) return;
+
+      setFullMembersLoading(true);
+      try {
+        const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/?page_size=200`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) throw new Error(`Failed (${res.status})`);
+        const json = await res.json();
+        const data = json?.data || json;
+        const results = data?.results || (Array.isArray(data) ? data : []);
+        if (!cancelled) setFullMembers(results);
+      } catch {
+        if (!cancelled) setFullMembers([]);
+      } finally {
+        if (!cancelled) setFullMembersLoading(false);
+      }
+    };
+
+    void loadFullMembers();
+    return () => { cancelled = true; };
+  }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists]);
+
+  // ── Load content count (generation requests for this team) ──
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadContentCount = async () => {
+      if (activeTabFromUrl !== 'overview') return;
+      const teamId = String(teamIdForDirectoryLists || '').trim();
+      if (!teamId) return;
+
+      setContentCountLoading(true);
+      try {
+        const url = `${apiBaseUrl}/api/v1/generation-requests/?project=${encodeURIComponent(teamId)}&page_size=1`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) { if (!cancelled) setContentCount(0); return; }
+        const json = await res.json();
+        const data = json?.data || json;
+        const count = data?.count ?? data?.meta?.pagination?.total ?? (Array.isArray(data?.results) ? data.results.length : 0);
+        if (!cancelled) setContentCount(typeof count === 'number' ? count : 0);
+      } catch {
+        if (!cancelled) setContentCount(0);
+      } finally {
+        if (!cancelled) setContentCountLoading(false);
+      }
+    };
+
+    void loadContentCount();
+    return () => { cancelled = true; };
+  }, [activeTabFromUrl, apiBaseUrl, teamIdForDirectoryLists]);
+
   return {
     hierarchySeasons,
     hierarchyCompetitionsBySeasonId,
@@ -277,5 +435,17 @@ export function useTeamTabData({
     overviewMembersCount,
     overviewMembersLoading,
     overviewMembersError,
+    // Brand
+    brandAssets,
+    brandLogoUrl,
+    brandSponsorUrl,
+    batchBrandKits,
+    // Media progress
+    fullMembers,
+    fullMembersLoading,
+    assetStats,
+    // Content
+    contentCount,
+    contentCountLoading,
   };
 }

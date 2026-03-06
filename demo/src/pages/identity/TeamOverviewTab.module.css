@@ -32,7 +32,7 @@
 .heroStats {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: 24px;
 }
 
 .heroStat {
@@ -43,14 +43,14 @@
 }
 
 .heroStatValue {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--app-text);
   line-height: 1;
 }
 
 .heroStatLabel {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--app-muted-text);
   text-transform: uppercase;
@@ -89,6 +89,180 @@
   cursor: pointer;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Brand assets grid ── */
+.brandGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+}
+
+.brandItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.brandItem:nth-last-child(-n+2) {
+  border-bottom: none;
+}
+
+.brandIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.brandLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--app-muted-text);
+}
+
+.brandItem[data-present='true'] .brandLabel {
+  color: var(--app-text);
+}
+
+/* ── Media asset progress bars ── */
+.assetList {
+  display: flex;
+  flex-direction: column;
+}
+
+.assetRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+  align-items: center;
+}
+
+.assetRow:last-child {
+  border-bottom: none;
+}
+
+.assetInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.assetIcon {
+  display: flex;
+  align-items: center;
+  color: var(--app-muted-text);
+}
+
+.assetLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text);
+}
+
+.assetRight {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.assetCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+}
+
+.progressTrack {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  height: 4px;
+  background: var(--app-surface, #0f172a);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #818cf8;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progressFill[data-complete='true'] {
+  background: #22c55e;
+}
+
+/* ── Per-seizoen breakdown table ── */
+.breakdownTable {
+  display: flex;
+  flex-direction: column;
+}
+
+.breakdownHeader {
+  display: grid;
+  grid-template-columns: 1fr 56px 56px 20px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+}
+
+.breakdownHeader .breakdownColName,
+.breakdownHeader .breakdownCol {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.breakdownRow {
+  display: grid;
+  grid-template-columns: 1fr 56px 56px 20px;
+  align-items: center;
+  padding: 11px 16px;
+  border: none;
+  border-bottom: 1px solid var(--app-border, #1e293b);
+  background: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  color: var(--app-text);
+}
+
+.breakdownRow:last-child {
+  border-bottom: none;
+}
+
+.breakdownRow:active {
+  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
+}
+
+.breakdownColName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breakdownCol {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-muted-text);
+  text-align: center;
+}
+
+.breakdownArrow {
+  font-size: 16px;
+  color: var(--app-muted-text);
+  text-align: center;
 }
 
 /* ── Member list ── */
@@ -130,95 +304,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* ── Season list ── */
-.seasonList {
-  display: flex;
-  flex-direction: column;
-}
-
-.seasonRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--app-border, #1e293b);
-  text-decoration: none;
-  color: var(--app-text);
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.12s;
-}
-
-.seasonRow:last-child {
-  border-bottom: none;
-}
-
-.seasonRow:active {
-  background: var(--app-hover-bg, rgba(255, 255, 255, 0.04));
-}
-
-.seasonInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.seasonName {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--app-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.seasonMeta {
-  font-size: 12px;
-  color: var(--app-muted-text);
-}
-
-.seasonArrow {
-  font-size: 18px;
-  color: var(--app-muted-text);
-  flex-shrink: 0;
-}
-
-/* ── Competition list ── */
-.compList {
-  display: flex;
-  flex-direction: column;
-}
-
-.compRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--app-border, #1e293b);
-}
-
-.compRow:last-child {
-  border-bottom: none;
-}
-
-.compInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.compName {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--app-text);
-}
-
-.compSport {
-  font-size: 12px;
-  color: var(--app-muted-text);
 }
 
 /* ── Details card ── */

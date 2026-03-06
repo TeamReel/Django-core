@@ -95,12 +95,14 @@ export default function TeamOrganisationDetailPage() {
   const activeTabFromUrl = useMemo(() => {
     const params = new URLSearchParams(location.search || '');
     const tab = String(params.get('tab') || (isPlayer ? 'hierarchy' : 'overview')).trim().toLowerCase();
-    const normalized = tab === 'people' || tab === 'users' ? 'members' : tab;
+    const normalized = tab === 'people' || tab === 'users' ? 'members'
+      : (tab === 'balance' || tab === 'transactions') ? 'credits'
+      : tab;
     const allowed = isPlayer
       ? new Set(['hierarchy', 'matches'])
       : new Set([
           'overview', 'hierarchy', 'seasons', 'competitions', 'matches',
-          'members', 'media', 'balance', 'transactions', 'assets', 'kits',
+          'members', 'media', 'credits', 'assets', 'kits',
         ]);
     return allowed.has(normalized) ? normalized : (isPlayer ? 'hierarchy' : 'overview');
   }, [location.search, isPlayer]);
@@ -122,6 +124,8 @@ export default function TeamOrganisationDetailPage() {
     teamIdForDirectoryLists,
     clubIdForDirectoryLists,
     orgSlugForDirectoryLists,
+    orgId: String(org?.id || ''),
+    clubId: clubIdForDirectoryLists,
   });
 
   /* ── Overflow menu ── */
@@ -288,8 +292,7 @@ export default function TeamOrganisationDetailPage() {
             { id: 'matches', label: 'Matches' },
             ...(!isPlayer ? [{ id: 'members', label: 'Selectie' }] : []),
             ...(!isPlayer ? [{ id: 'media', label: 'Media' }] : []),
-            ...(!isPlayer ? [{ id: 'balance', label: 'Balance' }] : []),
-            ...(!isPlayer ? [{ id: 'transactions', label: 'Transacties' }] : []),
+            ...(!isPlayer ? [{ id: 'credits', label: 'Credits' }] : []),
             ...(!isPlayer ? [{ id: 'assets', label: 'Assets' }] : []),
             ...(!isPlayer ? [{ id: 'kits', label: 'Kits' }] : []),
           ]}
@@ -316,6 +319,11 @@ export default function TeamOrganisationDetailPage() {
               club={club}
               org={org}
               makeTabHref={makeTabHref}
+              brandAssets={tabData.brandAssets}
+              assetStats={tabData.assetStats}
+              fullMembersLoading={tabData.fullMembersLoading}
+              contentCount={tabData.contentCount}
+              contentCountLoading={tabData.contentCountLoading}
             />
           )}
 
@@ -373,12 +381,8 @@ export default function TeamOrganisationDetailPage() {
             />
           )}
 
-          {activeTabFromUrl === 'balance' && orgIdForDirectoryLists && teamIdForDirectoryLists && (
+          {activeTabFromUrl === 'credits' && orgIdForDirectoryLists && teamIdForDirectoryLists && (
             <TeamCreditsTab view="balance" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
-          )}
-
-          {activeTabFromUrl === 'transactions' && orgIdForDirectoryLists && teamIdForDirectoryLists && (
-            <TeamCreditsTab view="transactions" projectId={teamIdForDirectoryLists} projectName={team.name} organisationId={orgIdForDirectoryLists} />
           )}
 
           {activeTabFromUrl === 'media' && team && org && (
