@@ -39,7 +39,7 @@ const KIT_ROLE_META = [
   { id: 'home', label: 'Home', icon: 'home' },
   { id: 'away', label: 'Away', icon: 'plane' },
   { id: 'third', label: 'Third', icon: 'hash' },
-  { id: 'keeper', label: 'Keeper', icon: 'shield' },
+  { id: 'goalkeeper', label: 'Keeper', icon: 'shield' },
 ];
 
 export default function ProjectSeasonMemberDetailPage() {
