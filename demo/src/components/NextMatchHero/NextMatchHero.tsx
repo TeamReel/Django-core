@@ -155,7 +155,8 @@ export const NextMatchHero: React.FC = () => {
         );
         if (!res.ok) throw new Error('fetch failed');
         const data = await res.json();
-        const m = (data.results || [])[0] ?? null;
+        const items = data.data || data.results || [];
+        const m = items[0] ?? null;
         if (!cancelled) setMatch(m);
 
         // If we have a match, fetch its media items to compute readiness
@@ -166,7 +167,7 @@ export const NextMatchHero: React.FC = () => {
           );
           if (mediaRes.ok) {
             const mediaData = await mediaRes.json();
-            if (!cancelled) setMediaItems(mediaData.results || []);
+            if (!cancelled) setMediaItems(mediaData.data || mediaData.results || []);
           }
         }
       } catch {

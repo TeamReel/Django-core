@@ -68,7 +68,7 @@ export const ContentStreakWidget: React.FC = () => {
         );
         if (!matchRes.ok) throw new Error('fetch failed');
         const matchData = await matchRes.json();
-        const pastMatches: PastMatch[] = matchData.results || [];
+        const pastMatches: PastMatch[] = matchData.data || matchData.results || [];
 
         if (cancelled) return;
         setTotalMatches(pastMatches.length);
@@ -87,7 +87,7 @@ export const ContentStreakWidget: React.FC = () => {
           );
           if (!mediaRes.ok) break;
           const mediaData = await mediaRes.json();
-          const items: MediaItem[] = mediaData.results || [];
+          const items: MediaItem[] = mediaData.data || mediaData.results || [];
 
           const types = new Set<string>();
           for (const mi of items) {

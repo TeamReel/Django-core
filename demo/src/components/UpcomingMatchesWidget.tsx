@@ -44,7 +44,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
 
         if (response.ok) {
             const data = await response.json();
-            setMatches(data.results || []);
+            setMatches(data.data || data.results || []);
         }
       } catch (err) {
         console.error("Failed to fetch upcoming matches", err);
