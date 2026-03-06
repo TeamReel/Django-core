@@ -4,6 +4,7 @@ import {
   getBestMatchDetailPath as getBestMatchDetailPathPure,
   ORG_TABS,
   ALLOWED_TABS,
+  LEGACY_TAB_MAP,
 } from './orgDataHelpers';
 import { isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 
@@ -59,7 +60,9 @@ export function useOrgDerived(params: UseOrgDerivedParams) {
   const activeTab = useMemo(() => {
     const raw = String(new URLSearchParams(location.search).get('tab') || '').trim().toLowerCase();
     if (!raw) return 'overview';
-    return ALLOWED_TABS.has(raw) ? raw : 'overview';
+    // Normalize legacy tab names to compact set
+    const normalized = LEGACY_TAB_MAP[raw] || raw;
+    return ALLOWED_TABS.has(normalized) ? normalized : 'overview';
   }, [location.search]);
 
   const createModalOrganisations = useMemo(() => {

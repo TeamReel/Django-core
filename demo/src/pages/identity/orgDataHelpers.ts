@@ -25,23 +25,29 @@ export { getCsrfToken } from '../../utils/csrf';
 
 export const ORG_TABS: { id: string; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'hierarchy', label: 'Hierarchy' },
   { id: 'clubs', label: 'Clubs' },
-  { id: 'teams', label: 'Teams' },
-  { id: 'seasons', label: 'Seasons' },
-  { id: 'competitions', label: 'Competitions' },
-  { id: 'matches', label: 'Matches' },
-  { id: 'users', label: 'Members' },
-  { id: 'audit', label: 'Audit' },
-  { id: 'governance', label: 'Governance' },
-  { id: 'operations', label: 'Operations (Admin)' },
+  { id: 'members', label: 'Members' },
+  { id: 'identity', label: 'Identity' },
   { id: 'settings', label: 'Settings' },
 ];
 
 export const ALLOWED_TABS = new Set([
-  'overview', 'hierarchy', 'clubs', 'teams', 'seasons', 'competitions',
-  'matches', 'users', 'audit', 'governance', 'operations', 'identity', 'settings',
+  'overview', 'clubs', 'members', 'identity', 'settings',
 ]);
+
+/** Map legacy tab names to compact tab IDs */
+export const LEGACY_TAB_MAP: Record<string, string> = {
+  hierarchy: 'clubs',
+  teams: 'clubs',
+  seasons: 'clubs',
+  competitions: 'clubs',
+  matches: 'clubs',
+  users: 'members',
+  people: 'members',
+  audit: 'settings',
+  governance: 'settings',
+  operations: 'settings',
+};
 
 /* ------------------------------------------------------------------ */
 /*  Path builder                                                       */

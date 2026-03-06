@@ -1,71 +1,67 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  Button,
-  Card,
-  Alert,
-} from '@django-core/design-system';
-import {
-  PageHeader,
-  PageContent,
-} from '@django-core/page-templates';
+  Check, Pencil, Eye, Trash2, MoreHorizontal,
+} from 'lucide-react';
 import { Organisation } from '../../types';
-import { AuditLogTable } from '../../components/AuditLog/AuditLogTable';
-import { PolicyList } from '../../components/Organisations/PolicyList';
-import { ClubsList } from './directory/ClubsList';
-import { TeamsList } from './directory/TeamsList';
-import { SeasonsList } from './directory/SeasonsList';
-import { CompetitionsList } from './directory/CompetitionsList';
-import { MatchesList } from './directory/MatchesList';
-import { UsersList } from './directory/UsersList';
 import MobileTabBar from '../../components/MobileTabBar';
-import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import BrandIdentityPage from '../../components/Branding/BrandIdentityPage';
+import ContentAvailabilityCard from '../../components/FeatureFlags/ContentAvailabilityCard';
 import { OrgOverviewTab } from './OrgOverviewTab';
-import { OrgHierarchyTab } from './OrgHierarchyTab';
+import { ClubsList } from './directory/ClubsList';
+import { UsersList } from './directory/UsersList';
 import { OrgModals } from './OrgModals';
 import { useOrgData } from './useOrgData';
+import s from './OrganisationDetailPage.module.css';
 
 /**
- * T007 - Organisation Detail Page
+ * T007 - Organisation Detail Page — Premium rebuild
  *
- * Purpose: Display organisation summary with members, projects, and credits snippet
- * - Shows org metadata, member count, project list
- * - Links to projects and audit log
- * - Permission-aware: viewer sees read-only view
+ * Compact 5-tab layout: Overview | Clubs | Members | Identity | Settings
+ * Consistent with Team & Club detail page design
  */
 export const OrganisationDetailPage: React.FC = () => {
   const d = useOrgData();
 
+  /* ── Overflow menu ── */
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const overflowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (overflowRef.current && !overflowRef.current.contains(e.target as Node)) setOverflowOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [overflowOpen]);
+
+  // ── Loading state ──
   if (d.loading) {
     return (
-      <div className="p-6 org-detail-page">
-        <div>
-          <PageHeader title="Organisation Details" />
-          <PageContent>
-            <Card>
-              <div className="text-center py-8 text-gray-500">
-                Loading organisation details...
-              </div>
-            </Card>
-          </PageContent>
+      <div className={s.page}>
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}><h1>Federatie</h1></div>
+        </div>
+        <div className={s.skeleton}>
+          <div className={s.skeletonBar} />
+          <div className={s.skeletonBarShort} />
+          <div className={s.skeletonBarFull} />
+          <div className={s.skeletonCard} />
+          <div className={s.skeletonCard} />
         </div>
       </div>
     );
   }
 
+  // ── Error state ──
   if (d.error || !d.org) {
     return (
-      <div className="p-6 org-detail-page">
-        <div>
-          <PageHeader title="Organisation Details" />
-          <PageContent>
-            <Alert variant="error" data-testid="org-detail-error">
-              {d.error || 'Organisation not found'}
-            </Alert>
-            <Button variant="secondary" onClick={() => d.navigate('/federations')}>
-              Back to Organisations
-            </Button>
-          </PageContent>
+      <div className={s.page}>
+        <div className={s.errorBox}>
+          <div className={s.errorMsg}>{d.error || 'Federatie niet gevonden'}</div>
+          <button type="button" className={s.backBtn} onClick={() => d.navigate('/federations')}>
+            Terug
+          </button>
         </div>
       </div>
     );
@@ -78,72 +74,78 @@ export const OrganisationDetailPage: React.FC = () => {
 
   return (
     <>
-      <div className="org-detail-page">
-        <PageHeader
-          title={org.name}
-          subtitle="Federation overview"
-          actions={
-            <div className="flex-row flex-wrap gap-8">
+      <div className={s.page}>
+        {/* ── Header ── */}
+        <div className={s.headerRow}>
+          <div className={s.titleBlock}>
+            <h1>{org.name}</h1>
+            <p>Federatie{org?.sport?.name ? ` · ${org.sport.name}` : ''}</p>
+          </div>
+
+          <div className={s.actions}>
+            <button
+              type="button"
+              className={`${s.activeBtn} ${isActive ? s.activeBtnOn : ''}`}
+              disabled={d.activatingContext || isActive}
+              onClick={() => { if (!isActive) void d.handleActivateContext(); }}
+              title={isActive ? 'Deze federatie is al actief' : 'Stel in als actieve context'}
+            >
+              {isActive && <Check size={14} />}
+              {isActive ? 'Actief' : 'Activeren'}
+            </button>
+
+            {d.userCanEditOrg && (
               <button
-                onClick={() => { if (!isActive) void d.handleActivateContext(); }}
-                disabled={d.activatingContext || isActive}
-                className="rounded-4 fs-12"
-                style={{
-                  padding: '6px 12px',
-                  border: isActive ? '1px solid #10b981' : '1px solid var(--app-border)',
-                  backgroundColor: isActive ? '#dcfce7' : 'var(--app-surface-2)',
-                  color: isActive ? '#166534' : 'var(--app-text)',
-                  cursor: (d.activatingContext || isActive) ? 'not-allowed' : 'pointer',
-                  fontWeight: isActive ? 600 : 500,
-                  opacity: (d.activatingContext || isActive) ? 0.8 : 1,
-                }}
-                title={isActive ? 'This federation is already your active context' : 'Set this federation as your active context'}
+                type="button"
+                className={s.iconBtn}
+                onClick={() => d.setIsOrgEditModalOpen(true)}
+                title="Bewerken"
               >
-                {isActive ? '✓ Active Context' : 'Make active'}
+                <Pencil size={16} />
               </button>
-              <Button variant="secondary" size="sm" onClick={() => d.navigate('/federations')}>
-                Back
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => d.setIsOrgDetailModalOpen(true)}>
-                View
-              </Button>
-              {d.userCanEditOrg && (
-                <Button variant="secondary" size="sm" onClick={() => d.setIsOrgEditModalOpen(true)}>
-                  Edit
-                </Button>
-              )}
-              {d.userCanEditOrg && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={d.handleDelete}
-                  disabled={d.deleteLoading}
-                >
-                  {d.deleteLoading ? 'Deleting...' : 'Delete'}
-                </Button>
+            )}
+
+            <div className={s.overflowWrap} ref={overflowRef}>
+              <button type="button" className={s.iconBtn} onClick={() => setOverflowOpen((v) => !v)} title="Meer">
+                <MoreHorizontal size={16} />
+              </button>
+              {overflowOpen && (
+                <div className={s.overflowMenu}>
+                  <button type="button" onClick={() => { d.setIsOrgDetailModalOpen(true); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Bekijken
+                  </button>
+                  <button type="button" onClick={() => { d.navigate('/federations'); setOverflowOpen(false); }}>
+                    <Eye size={14} /> Alle federaties
+                  </button>
+                  {d.userCanDeleteOrg && (
+                    <button
+                      type="button"
+                      className={s.overflowDanger}
+                      onClick={() => { d.handleDelete(); setOverflowOpen(false); }}
+                    >
+                      <Trash2 size={14} /> Verwijderen
+                    </button>
+                  )}
+                </div>
               )}
             </div>
-          }
-        />
+          </div>
+        </div>
 
-        {/* Mobile Tab Bar */}
+        {/* ── Tab Bar ── */}
         <MobileTabBar
           tabs={[
             { id: 'overview', label: 'Overview' },
-            { id: 'hierarchy', label: 'Hierarchy' },
             { id: 'clubs', label: 'Clubs' },
-            { id: 'teams', label: 'Teams' },
-            { id: 'seasons', label: 'Seasons' },
-            { id: 'competitions', label: 'Competitions' },
-            { id: 'matches', label: 'Matches' },
-            { id: 'users', label: 'Users' },
+            { id: 'members', label: 'Members' },
             { id: 'identity', label: 'Identity' },
-            { id: 'settings', label: 'Settings' },
+            ...(d.isSuperAdmin || d.userCanEditOrg ? [{ id: 'settings', label: 'Settings' }] : []),
           ]}
           activeTab={d.activeTab}
         />
 
-        <PageContent>
+        {/* ── Tab Content ── */}
+        <div className={s.tabContent}>
           {d.activeTab === 'overview' && (
             <OrgOverviewTab
               org={org}
@@ -168,77 +170,11 @@ export const OrganisationDetailPage: React.FC = () => {
             />
           )}
 
-          {d.activeTab === 'hierarchy' && (
-            <OrgHierarchyTab
-              hierarchySearch={d.hierarchySearch}
-              setHierarchySearch={d.setHierarchySearch}
-              teams={d.teams}
-              clubsForHierarchy={d.clubsForHierarchy}
-              membershipUserCounts={d.membershipUserCounts}
-              teamSeasonsCountById={d.teamSeasonsCountById}
-              teamCompetitionsCountById={d.teamCompetitionsCountById}
-              teamMatchesCountById={d.teamMatchesCountById}
-              teamsLoading={d.teamsLoading}
-              orgSlugOrId={d.orgSlugOrId}
-              currentOrgSlug={d.currentOrgSlug}
-              id={d.id}
-              navigate={d.navigate}
-            />
-          )}
-
-          {d.activeTab === 'audit' && (
-            <Card>
-              {d.isSuperAdmin || d.userCanEditOrg ? (
-                <AuditLogTable organisationId={String(d.currentOrgId || org?.id || '')} limit={50} />
-              ) : (
-                <Alert variant="error">You do not have access to the audit log for this organisation.</Alert>
-              )}
-            </Card>
-          )}
-
-          {d.activeTab === 'governance' && (
-            <Card>
-              {d.isSuperAdmin || d.userCanEditOrg ? (
-                <PolicyList organisationId={String(d.currentOrgId || org?.id || '')} />
-              ) : (
-                <Alert variant="error">You do not have access to governance policies for this organisation.</Alert>
-              )}
-            </Card>
-          )}
-
-          {d.activeTab === 'operations' && (
-            <Card>
-              {d.isSuperAdmin ? (
-                <div className="p-12 text-muted">
-                  Operations tooling is not wired yet for this demo.
-                </div>
-              ) : (
-                <Alert variant="error">You do not have access to operations for this organisation.</Alert>
-              )}
-            </Card>
-          )}
-
           {d.activeTab === 'clubs' && d.orgIdForDirectoryLists && (
             <ClubsList preselectedOrgId={d.orgIdForDirectoryLists} />
           )}
 
-          {d.activeTab === 'teams' && d.orgIdForDirectoryLists && (
-            <TeamsList preselectedOrgId={d.orgIdForDirectoryLists} />
-          )}
-
-          {d.activeTab === 'seasons' && d.orgIdForDirectoryLists && (
-            <SeasonsList preselectedOrgId={d.orgIdForDirectoryLists} />
-          )}
-
-          {d.activeTab === 'competitions' && d.orgIdForDirectoryLists && (
-            <CompetitionsList preselectedOrgId={d.orgIdForDirectoryLists} />
-          )}
-
-          {d.activeTab === 'matches' && d.orgIdForDirectoryLists && (
-            <MatchesList preselectedOrgId={d.orgIdForDirectoryLists} />
-          )}
-
-          {d.activeTab === 'users' && d.orgIdForDirectoryLists && (
+          {d.activeTab === 'members' && d.orgIdForDirectoryLists && (
             <UsersList preselectedOrgId={d.orgIdForDirectoryLists} />
           )}
 
@@ -256,7 +192,7 @@ export const OrganisationDetailPage: React.FC = () => {
               scopeName={org.name}
             />
           )}
-        </PageContent>
+        </div>
 
         <OrgModals
           org={org}
