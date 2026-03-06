@@ -13,6 +13,10 @@ import { CONTENT_TYPES, ASSET_TYPE_TO_MEDIA_KEY } from './constants';
 /*  Shared helpers                                                     */
 /* ================================================================== */
 
+/** Filter out frontend-only guest IDs (guest-*) — backend expects UUIDs */
+const stripGuestIds = (ids: string[]): string[] =>
+  ids.filter((id) => !id.startsWith('guest-'));
+
 export const resolveProjectId = (
   matchData: { project?: { id: string } } | null,
   seasonProjectId?: string | number,
@@ -126,8 +130,8 @@ export const generateLineupFlyer = async (p: GenerateLineupFlyerParams): Promise
       formation,
       closeup_style: p.lineupCloseupStyle,
       selected_member_ids: {
-        goalkeeper: p.selectedMembers.goalkeeper?.slice(0, 1) || [],
-        player: p.selectedMembers.player?.slice(0, 10) || [],
+        goalkeeper: stripGuestIds(p.selectedMembers.goalkeeper || []).slice(0, 1),
+        player: stripGuestIds(p.selectedMembers.player || []).slice(0, 10),
       },
       ...(p.selectedBackgroundUrl ? { background_url: p.selectedBackgroundUrl } : {}),
     },
@@ -173,8 +177,8 @@ export const generateTeamPoster = async (p: GenerateTeamPosterParams): Promise<G
       template_id: p.selectedTemplateId || null,
       formation,
       selected_member_ids: {
-        goalkeeper: p.selectedMembers.goalkeeper?.slice(0, 1) || [],
-        player: p.selectedMembers.player?.slice(0, 10) || [],
+        goalkeeper: stripGuestIds(p.selectedMembers.goalkeeper || []).slice(0, 1),
+        player: stripGuestIds(p.selectedMembers.player || []).slice(0, 10),
       },
     },
     { 'X-Project-ID': projectId },

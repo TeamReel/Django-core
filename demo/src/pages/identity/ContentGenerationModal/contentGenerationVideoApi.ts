@@ -27,13 +27,17 @@ export interface GenerateLineupVideoParams {
   getMemberNameById: (id: string) => string;
 }
 
+/** Filter out frontend-only guest IDs (guest-*) — backend expects UUIDs */
+const stripGuestIds = (ids: string[]): string[] =>
+  ids.filter((id) => !id.startsWith('guest-'));
+
 export const generateLineupVideo = async (p: GenerateLineupVideoParams): Promise<string> => {
   const projectId = resolveProjectId(p.matchData, p.seasonProjectId);
 
-  let targetGKs = p.selectedMembers.goalkeeper;
-  let targetPlayers = p.selectedMembers.player;
-  let targetCoach = p.selectedMembers.coach;
-  let targetAssistant = p.selectedMembers.assistant;
+  let targetGKs = stripGuestIds(p.selectedMembers.goalkeeper);
+  let targetPlayers = stripGuestIds(p.selectedMembers.player);
+  let targetCoach = stripGuestIds(p.selectedMembers.coach);
+  let targetAssistant = stripGuestIds(p.selectedMembers.assistant);
 
   let gkAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
   let playerAssets = ['in_tenue', 'short_intro', 'in_tenue', 'close_up'];
