@@ -5,7 +5,7 @@
  * (org → club → team → season → competition → match) that drives both
  * Panel A detail links and the recents recorder.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 
@@ -36,6 +36,7 @@ export function useResolvedAppContext(
     organisationsLength: number | undefined,
 ): ResolvedAppContext | null {
     const [resolvedAppContext, setResolvedAppContext] = useState<ResolvedAppContext | null>(null);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         const apiBaseUrl = getApiBaseUrl();
@@ -114,10 +115,15 @@ export function useResolvedAppContext(
             void load();
         };
 
-        void load();
+        // Debounce: deps often change rapidly at startup (user, org, slug
+        // all resolve in quick succession). Collapse into a single fetch.
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => { void load(); }, 80);
+
         window.addEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onActiveContextChanged);
         return () => {
             cancelled = true;
+            if (debounceRef.current) clearTimeout(debounceRef.current);
             window.removeEventListener(ACTIVE_CONTEXT_CHANGED_EVENT, onActiveContextChanged);
         };
     }, [

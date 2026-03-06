@@ -223,7 +223,7 @@ export const UpcomingMatchesCard: React.FC = () => {
 /* ── AI Queue Status ──────────────────────────────────────────────── */
 
 export const AIQueueCard: React.FC = () => {
-  const queueCounts = useQueueCounts(15000);
+  const queueCounts = useQueueCounts();
   const navigate = useNavigate();
 
   const activeJobs = queueCounts?.active || 0;

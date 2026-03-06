@@ -40,7 +40,7 @@ export function useSidebarData() {
         matchId,
     } = useAppSelection();
 
-    const queueCounts = useQueueCounts(30000);
+    const queueCounts = useQueueCounts();
 
     /* ── Sub-hooks ─────────────────────────────────────────────── */
 

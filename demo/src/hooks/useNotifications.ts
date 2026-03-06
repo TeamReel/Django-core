@@ -94,6 +94,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
   // ── Fetch notifications ─────────────────────────────────────────
 
   const fetchNotifications = useCallback(async (silent = false) => {
+    if (silent && document.hidden) return; // Skip background polling (not initial fetch)
     try {
       if (!silent) setLoading(true);
 

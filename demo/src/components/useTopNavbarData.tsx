@@ -27,7 +27,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     const { signOut, loading: signOutLoading } = useSignOut();
     const { mode, setTheme } = useTheme();
     const { context } = useContextSwitcher();
-    const queueCounts = useQueueCounts(30000);
+    const queueCounts = useQueueCounts();
     const queueBadgeCount = queueCounts.review > 0 ? queueCounts.review : queueCounts.active;
     const queueBadgeColor = queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)';
 
@@ -171,6 +171,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     useEffect(() => {
         if (!user) return;
         const fetchUnreadCount = async () => {
+            if (document.hidden) return; // Don't poll while tab is hidden
             try {
                 const apiBaseUrl = getApiBaseUrl();
                 debugLog('[TopNavbar] Fetching notifications from:', `${apiBaseUrl}/api/v1/user-notifications/`);
@@ -208,8 +209,10 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
         fetchUnreadCount();
         const interval = setInterval(fetchUnreadCount, 30000);
         const handleNotificationChange = () => fetchUnreadCount();
+        const handleVisibility = () => { if (!document.hidden) fetchUnreadCount(); };
         window.addEventListener('notificationChanged', handleNotificationChange);
-        return () => { clearInterval(interval); window.removeEventListener('notificationChanged', handleNotificationChange); };
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => { clearInterval(interval); window.removeEventListener('notificationChanged', handleNotificationChange); document.removeEventListener('visibilitychange', handleVisibility); };
     }, [user]);
 
     // Reset badge counts when navigating to the full-page equivalents
@@ -226,6 +229,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
         let cancelled = false;
         const controller = new AbortController();
         const fetchBalance = async () => {
+            if (document.hidden) return; // Don't poll while tab is hidden
             try {
                 const apiBaseUrl = getApiBaseUrl();
                 const response = await fetch(

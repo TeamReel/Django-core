@@ -199,6 +199,7 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
     let cancelled = false;
 
     async function fetchJobs() {
+      if (document.hidden) return; // Skip while tab is in background
       try {
         if (refreshKey === 0) setLoading(true);
 

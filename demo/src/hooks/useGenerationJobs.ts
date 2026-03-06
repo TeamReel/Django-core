@@ -74,7 +74,7 @@ export interface UseGenerationJobsOptions {
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
 export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
-  const { status, project_id, membership_id, pollInterval = 8000, onStatusChange } = options;
+  const { status, project_id, membership_id, pollInterval = 15000, onStatusChange } = options;
 
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(false);
@@ -84,6 +84,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
   const prevStatusMap = useRef<Record<string, GenJobStatus>>({});
 
   const fetchJobs = useCallback(async () => {
+    if (document.hidden) return; // Skip while tab is in background
     const apiBaseUrl = getApiBaseUrl();
     const params = new URLSearchParams();
     if (status) params.set('status', status);
@@ -137,11 +138,20 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
     fetchJobs();
   }, [fetchJobs]);
 
-  // Polling
+  // Polling — pauses when tab is hidden, resumes + fetches on visibility
   useEffect(() => {
     if (!pollInterval) return;
-    const timer = setInterval(fetchJobs, pollInterval);
-    return () => clearInterval(timer);
+    let timer = setInterval(fetchJobs, pollInterval);
+    const onVisibility = () => {
+      if (document.hidden) {
+        clearInterval(timer);
+      } else {
+        fetchJobs();
+        timer = setInterval(fetchJobs, pollInterval);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', onVisibility); };
   }, [fetchJobs, pollInterval]);
 
   // Derived counts
