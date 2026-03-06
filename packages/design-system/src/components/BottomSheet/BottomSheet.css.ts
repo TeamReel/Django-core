@@ -66,6 +66,7 @@ export const bottomSheetContainer = style({
       top: '57px',
       bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
       maxHeight: 'none',
+      overflow: 'hidden',
       borderTopLeftRadius: '16px',
       borderTopRightRadius: '16px',
       borderBottomLeftRadius: 0,
@@ -149,6 +150,13 @@ export const bottomSheetBody = style({
   minHeight: 0,
   // Smooth scrolling on iOS
   WebkitOverflowScrolling: 'touch',
+  '@media': {
+    '(max-width: 639px)': {
+      /* On mobile the sheet fills between navbars — body must NOT scroll
+         so inner flex children (scrollArea + bottomBar) lay out correctly. */
+      overflowY: 'hidden',
+    },
+  },
 });
 
 export const bottomSheetFooter = style({

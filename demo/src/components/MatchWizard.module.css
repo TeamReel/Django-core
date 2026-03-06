@@ -19,13 +19,8 @@
 }
 
 .sheetBody {
-  padding: 0;
-}
-
-@media (max-width: 639px) {
-  .sheetBody {
-    overflow: hidden;
-  }
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
 /* ── Scrollable content area ────────────────────────── */
