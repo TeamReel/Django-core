@@ -21,6 +21,8 @@ import type { ContentItem } from '../content/contentLibraryTypes';
 import { useStudioData, type VideoJobSummary, type ContentGroup, type MatchGroup } from './useStudioData';
 import styles from './AIStudioPage.module.css';
 
+type ViewMode = 'type' | 'match';
+
 // ============================================================================
 // Phase Headers — label + colour accent per match phase
 // ============================================================================
@@ -72,9 +74,11 @@ function getJobTypeLabel(jobType: string): string {
 function StudioContentCard({
   item,
   onPreview,
+  viewMode = 'type',
 }: {
   item: ContentItem;
   onPreview: (item: ContentItem) => void;
+  viewMode?: ViewMode;
 }) {
   const url = item.file_url || getAssetUrl(item.storage_path);
   const isVideo = Boolean(
@@ -82,17 +86,16 @@ function StudioContentCard({
     (url ? /\.(mp4|webm|mov)$/i.test(url) : false)
   );
 
-  const opponent = (item.extraction_metadata?.opponent as string) || '';
-  const activityTitle = (item.extraction_metadata?.activity_title as string) || '';
-  const activityDate = (item.extraction_metadata?.activity_date as string) || '';
-
-  const subtitle = opponent
-    ? `vs ${opponent}`
-    : activityTitle
-    ? activityTitle
-    : activityDate
-    ? new Date(activityDate).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })
-    : '';
+  // Contextual label: match view → content type, type view → opponent / match info
+  let label = '';
+  if (viewMode === 'match') {
+    const assetType = item.extraction_metadata?.asset_type as string | undefined;
+    label = assetType ? getAssetTypeLabel(assetType) : (item.title || '');
+  } else {
+    const opponent = (item.extraction_metadata?.opponent as string) || '';
+    const activityTitle = (item.extraction_metadata?.activity_title as string) || '';
+    label = opponent ? `vs ${opponent}` : activityTitle || '';
+  }
 
   return (
     <button className={styles.contentCard} onClick={() => onPreview(item)} type="button">
@@ -116,11 +119,11 @@ function StudioContentCard({
           <span className={styles.contentCardFallback}>📄</span>
         )}
       </div>
-      <div className={styles.contentCardInfo}>
-        <span className={styles.contentCardTitle}>{item.title || 'Untitled'}</span>
-        {subtitle && <span className={styles.contentCardSub}>{subtitle}</span>}
-        <span className={styles.contentCardDate}>{formatRelativeDate(item.created_at)}</span>
-      </div>
+      {label && (
+        <div className={styles.contentCardInfo}>
+          <span className={styles.contentCardLabel}>{label}</span>
+        </div>
+      )}
     </button>
   );
 }
@@ -133,10 +136,12 @@ function StudioSection({
   group,
   onPreview,
   onViewAll,
+  viewMode = 'type',
 }: {
   group: ContentGroup;
   onPreview: (item: ContentItem) => void;
   onViewAll: (group: ContentGroup) => void;
+  viewMode?: ViewMode;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -157,7 +162,7 @@ function StudioSection({
 
       <div className={styles.sectionScroll} ref={scrollRef}>
         {group.items.slice(0, 20).map((item) => (
-          <StudioContentCard key={item.id} item={item} onPreview={onPreview} />
+          <StudioContentCard key={item.id} item={item} onPreview={onPreview} viewMode={viewMode} />
         ))}
       </div>
     </section>
@@ -333,6 +338,7 @@ function StudioPreviewModal({
 interface ViewAllData {
   title: string;
   items: ContentItem[];
+  viewMode?: ViewMode;
 }
 
 function ViewAllSheet({
@@ -356,7 +362,7 @@ function ViewAllSheet({
     >
       <div className={styles.viewAllGrid}>
         {sheetData.items.map((item) => (
-          <StudioContentCard key={item.id} item={item} onPreview={(it) => { onClose(); onPreview(it); }} />
+          <StudioContentCard key={item.id} item={item} onPreview={(it) => { onClose(); onPreview(it); }} viewMode={sheetData.viewMode} />
         ))}
       </div>
     </BottomSheet>
@@ -366,8 +372,6 @@ function ViewAllSheet({
 // ============================================================================
 // Main Page
 // ============================================================================
-
-type ViewMode = 'type' | 'match';
 
 export default function AIStudioPage() {
   const data = useStudioData();
@@ -495,7 +499,8 @@ export default function AIStudioPage() {
                   key={group.key}
                   group={group}
                   onPreview={(item) => setPreviewItem(item)}
-                  onViewAll={(g) => setViewAllData({ title: `${g.icon} ${g.label}`, items: g.items })}
+                  onViewAll={(g) => setViewAllData({ title: `${g.icon} ${g.label}`, items: g.items, viewMode: 'type' })}
+                  viewMode="type"
                 />
               ))}
             </div>
@@ -517,7 +522,7 @@ export default function AIStudioPage() {
                   {data.nonMatchGroup.items.length > 3 && (
                     <button
                       className={styles.sectionViewAll}
-                      onClick={() => setViewAllData({ title: '📅 Seizoen & Leden', items: data.nonMatchGroup!.items })}
+                      onClick={() => setViewAllData({ title: '📅 Seizoen & Leden', items: data.nonMatchGroup!.items, viewMode: 'match' })}
                       type="button"
                     >
                       Bekijk alles <ChevronRight size={14} />
@@ -526,7 +531,7 @@ export default function AIStudioPage() {
                 </div>
                 <div className={styles.sectionScroll}>
                   {data.nonMatchGroup.items.slice(0, 20).map((item) => (
-                    <StudioContentCard key={item.id} item={item} onPreview={(it) => setPreviewItem(it)} />
+                    <StudioContentCard key={item.id} item={item} onPreview={(it) => setPreviewItem(it)} viewMode="match" />
                   ))}
                 </div>
               </section>
@@ -562,7 +567,7 @@ export default function AIStudioPage() {
                       {match.items.length > 3 && (
                         <button
                           className={styles.sectionViewAll}
-                          onClick={() => setViewAllData({ title: `⚽ ${match.title}`, items: match.items })}
+                          onClick={() => setViewAllData({ title: `⚽ ${match.title}`, items: match.items, viewMode: 'match' })}
                           type="button"
                         >
                           Bekijk alles <ChevronRight size={14} />
@@ -571,7 +576,7 @@ export default function AIStudioPage() {
                     </div>
                     <div className={styles.sectionScroll}>
                       {match.items.slice(0, 20).map((item) => (
-                        <StudioContentCard key={item.id} item={item} onPreview={(it) => setPreviewItem(it)} />
+                        <StudioContentCard key={item.id} item={item} onPreview={(it) => setPreviewItem(it)} viewMode="match" />
                       ))}
                     </div>
                   </section>
