@@ -167,11 +167,17 @@ export function useContentGeneration({
           const hasLineupData = savedLineup && (savedLineup.goalkeeper?.length || savedLineup.player?.length);
           const subtype = initialTemplate.template_subtype || '';
 
-          // Types that need no extra config — auto-generate directly from MatchWizard
-          const AUTO_GENERATE = new Set(['lineup', 'lineup_flyer', 'walkon', 'match_intro']);
-          if (AUTO_GENERATE.has(subtype) && (subtype === 'match_intro' || hasLineupData)) {
+          // Types with lineup options (background, closeup, animation) → show options step
+          const HAS_LINEUP_OPTIONS = new Set(['lineup', 'lineup_flyer']);
+          // Types with no config at all → auto-generate directly
+          const AUTO_GENERATE = new Set(['walkon', 'match_intro']);
+
+          if (AUTO_GENERATE.has(subtype)) {
             autoGenerateRef.current = true;
             setStep('generating');
+          } else if (HAS_LINEUP_OPTIONS.has(subtype) && hasLineupData) {
+            // Show options step (background, popout/badge, animation)
+            setStep('members');
           } else if (subtype === 'goal') {
             setStep('confirm');
           } else if (subtype === 'poster') {

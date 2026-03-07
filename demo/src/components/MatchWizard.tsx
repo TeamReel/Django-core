@@ -56,8 +56,9 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   })();
 
   return (
+    <>
     <BottomSheet
-      isOpen={isOpen}
+      isOpen={isOpen && !isContentModalOpen}
       onClose={handleClose}
       bodyClassName={styles.sheetBody}
       footer={wizardFooter || undefined}
@@ -286,32 +287,34 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         </div>
       </div>
 
-      {/* Inline Content Generation Modal */}
-      {selectedMatch && isContentModalOpen && (
-        <ContentGenerationModal
-          isOpen={isContentModalOpen}
-          onClose={handleContentModalClose}
-          onGenerated={handleContentGenerated}
-          matchData={{
-            id: String(selectedMatch.id),
-            title: selectedMatch.title,
-            project: (selectedMatch as any).project,
-            opponent_project: (selectedMatch as any).opponent_project,
-            participations: (selectedMatch as any).participations,
-            start_time: selectedMatch.start_time,
-            location: (selectedMatch as any).location,
-            metadata: {
-              formation: lineupFormation,
-              lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player },
-              ...(selectedMatch as any).metadata,
-            },
-          }}
-          organisationSport={(selectedMatch as any).project?.sport}
-          organisationId={(selectedMatch as any).project?.organisation_id || (selectedMatch as any).organisation?.id}
-          template={selectedTemplate}
-          contentTypeLabel={selectedContentTypeLabel}
-        />
-      )}
     </BottomSheet>
+
+    {/* Content Generation Modal — rendered outside BottomSheet to avoid stacking */}
+    {selectedMatch && isContentModalOpen && (
+      <ContentGenerationModal
+        isOpen={isContentModalOpen}
+        onClose={handleContentModalClose}
+        onGenerated={handleContentGenerated}
+        matchData={{
+          id: String(selectedMatch.id),
+          title: selectedMatch.title,
+          project: (selectedMatch as any).project,
+          opponent_project: (selectedMatch as any).opponent_project,
+          participations: (selectedMatch as any).participations,
+          start_time: selectedMatch.start_time,
+          location: (selectedMatch as any).location,
+          metadata: {
+            formation: lineupFormation,
+            lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player },
+            ...(selectedMatch as any).metadata,
+          },
+        }}
+        organisationSport={(selectedMatch as any).project?.sport}
+        organisationId={(selectedMatch as any).project?.organisation_id || (selectedMatch as any).organisation?.id}
+        template={selectedTemplate}
+        contentTypeLabel={selectedContentTypeLabel}
+      />
+    )}
+    </>
   );
 }
