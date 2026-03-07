@@ -52,9 +52,12 @@ function groupContentByMatch(items: ContentItem[]): MatchGroup[] {
 
   for (const item of items) {
     const meta = item.extraction_metadata || {};
-    const activityId = typeof item.activity === 'object'
-      ? item.activity?.id || '__other__'
-      : (item.activity as string) || '__other__';
+    // Resolve activity ID: API returns activity_id (top-level), fallback to extraction_metadata, then legacy item.activity
+    const activityId =
+      item.activity_id
+      || (meta.activity_id as string)
+      || (typeof item.activity === 'object' ? item.activity?.id : (item.activity as string))
+      || '__other__';
 
     const activityTitle = (meta.activity_title as string)
       || (typeof item.activity === 'object' ? item.activity?.title : '')

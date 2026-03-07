@@ -54,6 +54,7 @@ export interface ContentItem {
   updated_at: string;
   project?: string | { id: string; name: string };
   activity?: string | { id: string; title: string };
+  activity_id?: string | null;
 }
 
 // ============================================================================

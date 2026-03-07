@@ -293,12 +293,20 @@ export function useStudioData(): StudioData {
       const sectionInfo = SECTION_ORDER.find(s => s.key === normalizedType);
       const isNonMatchContent = sectionInfo ? nonMatchPhases.has(sectionInfo.phase) : false;
 
+      // Resolve activity ID from:
+      // 1. item.activity_id (top-level field from API serializer)
+      // 2. extraction_metadata.activity_id (stored during content generation)
+      // 3. item.activity (legacy: could be string UUID or {id, title} object)
+      const rawActivityId =
+        item.activity_id
+        || (meta.activity_id as string)
+        || (typeof item.activity === 'object' ? item.activity?.id : (item.activity as string))
+        || null;
+
       // Determine activity key
-      const activityId = isNonMatchContent
+      const activityId = isNonMatchContent || !rawActivityId
         ? NON_MATCH_KEY
-        : typeof item.activity === 'object'
-          ? item.activity?.id || NON_MATCH_KEY
-          : (item.activity as string) || NON_MATCH_KEY;
+        : rawActivityId;
 
       if (!groupMap.has(activityId)) {
         const activityTitle = (meta.activity_title as string)
