@@ -48,8 +48,7 @@ class MediaItemViewSet(viewsets.ModelViewSet):
 
         Access granted when the user:
         - is staff/superuser, OR
-        - has a ProjectMembership for the item's project, OR
-        - has an Organisation Membership for the project's organisation.
+        - has a ProjectMembership for the item's project (or parent/child).
 
         Uses Exists subqueries instead of JOINs to avoid duplicates
         (no .distinct() needed), which is compatible with CursorPagination.
@@ -61,7 +60,6 @@ class MediaItemViewSet(viewsets.ModelViewSet):
         else:
             from django.db.models import Exists, OuterRef
             from projects.models import ProjectMembership
-            from organisations.models import Membership as OrgMembership
 
             queryset = MediaItem.objects.filter(
                 # Direct project membership
@@ -88,14 +86,9 @@ class MediaItemViewSet(viewsets.ModelViewSet):
                         deleted_at__isnull=True,
                     )
                 )
-                # Organisation membership fallback
-                | Exists(
-                    OrgMembership.objects.filter(
-                        organisation_id=OuterRef("project__organisation_id"),
-                        user=user,
-                        is_active=True,
-                    )
-                )
+                # Note: Organisation membership removed — gave access to ALL
+                # projects in the org, which was too permissive. Access should
+                # be scoped through explicit ProjectMembership.
             )  # No .distinct() needed with Exists subqueries
 
         queryset = queryset.select_related("file", "project", "created_by").prefetch_related("tags")
