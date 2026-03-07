@@ -76,6 +76,46 @@
 
 /* ── Active Jobs Strip ── */
 
+/* ── View Mode Toggle ── */
+
+.viewToggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid var(--app-border, rgba(255, 255, 255, 0.06));
+}
+
+.viewToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--app-text-secondary, #888);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.viewToggleBtn:active {
+  opacity: 0.7;
+}
+
+.viewToggleBtnActive {
+  background: var(--app-primary, #6366f1);
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
+}
+
+/* ── Active Jobs Strip ── */
+
 .activeJobsStrip {
   padding: 12px 16px;
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.06) 100%);
@@ -410,6 +450,80 @@
 
 /* ── Recent Jobs Section ── */
 
+/* ── Match View ── */
+
+.matchSection {
+  border-bottom: 1px solid var(--app-border, rgba(255, 255, 255, 0.06));
+}
+
+.matchHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--app-text);
+  gap: 12px;
+  transition: background 0.15s;
+}
+
+.matchHeader:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.matchHeader:active {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.matchInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.matchTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--app-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matchMeta {
+  font-size: 12px;
+  color: var(--app-text-secondary, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matchChevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  color: var(--app-text-secondary, #666);
+}
+
+.matchGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.matchGrid .contentCard {
+  width: 100%;
+}
+
+/* ── Recent Jobs Section ── */
+
 .recentJobsSection {
   padding: 16px 16px 8px;
   margin-top: 8px;
@@ -646,6 +760,16 @@
     gap: 12px;
   }
 
+  .matchGrid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 0 24px 20px;
+  }
+
+  .matchHeader {
+    padding: 16px 24px;
+  }
+
   .header {
     padding: 24px 24px 20px;
   }
@@ -674,6 +798,11 @@
 
   .viewAllGrid {
     grid-template-columns: repeat(5, 1fr);
+  }
+
+  .matchGrid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
   }
 
   .headerContent {

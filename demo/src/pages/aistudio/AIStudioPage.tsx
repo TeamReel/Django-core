@@ -13,11 +13,12 @@ import { PullToRefresh, Badge, BottomSheet } from '@django-core/design-system';
 import {
   Play, Download, Share2, X, CheckCircle2, AlertCircle,
   Loader2, ChevronRight, Images, Film, Image as ImageIcon, Sparkles,
+  LayoutGrid, CalendarDays, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { getAssetTypeLabel } from '../content/contentLibraryTypes';
 import type { ContentItem } from '../content/contentLibraryTypes';
-import { useStudioData, type VideoJobSummary, type ContentGroup } from './useStudioData';
+import { useStudioData, type VideoJobSummary, type ContentGroup, type MatchGroup } from './useStudioData';
 import styles from './AIStudioPage.module.css';
 
 // ============================================================================
@@ -326,6 +327,65 @@ function StudioPreviewModal({
 }
 
 // ============================================================================
+// MatchSection — One match with expandable content grid
+// ============================================================================
+
+function MatchSection({
+  match,
+  onPreview,
+  defaultExpanded = false,
+}: {
+  match: MatchGroup;
+  onPreview: (item: ContentItem) => void;
+  defaultExpanded?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+
+  const dateStr = match.date
+    ? new Date(match.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })
+    : '';
+
+  const scoreStr =
+    match.scoreHome != null && match.scoreAway != null
+      ? `${match.scoreHome} - ${match.scoreAway}`
+      : '';
+
+  return (
+    <section className={styles.matchSection}>
+      <button
+        className={styles.matchHeader}
+        onClick={() => setExpanded((v) => !v)}
+        type="button"
+      >
+        <div className={styles.matchInfo}>
+          <span className={styles.matchTitle}>
+            {match.isNonMatch ? '📅' : '⚽'}{' '}
+            {match.title}
+          </span>
+          <span className={styles.matchMeta}>
+            {dateStr}
+            {scoreStr && <> &middot; {scoreStr}</>}
+            {match.homeAway && <> &middot; {match.homeAway === 'home' ? 'Thuis' : 'Uit'}</>}
+            {' '}&middot; {match.items.length} item{match.items.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+        <span className={styles.matchChevron}>
+          {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className={styles.matchGrid}>
+          {match.items.map((item) => (
+            <StudioContentCard key={item.id} item={item} onPreview={onPreview} />
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ============================================================================
 // ViewAllSheet — BottomSheet showing all items for one content type
 // ============================================================================
 
@@ -361,9 +421,12 @@ function ViewAllSheet({
 // Main Page
 // ============================================================================
 
+type ViewMode = 'type' | 'match';
+
 export default function AIStudioPage() {
   const data = useStudioData();
 
+  const [viewMode, setViewMode] = useState<ViewMode>('type');
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
   const [viewAllGroup, setViewAllGroup] = useState<ContentGroup | null>(null);
 
@@ -371,7 +434,7 @@ export default function AIStudioPage() {
     await data.refresh();
   }, [data]);
 
-  // Group sections by phase
+  // Group sections by phase (for type view)
   const groupsByPhase = data.contentGroups.reduce<Record<string, ContentGroup[]>>((acc, g) => {
     if (!acc[g.phase]) acc[g.phase] = [];
     acc[g.phase].push(g);
@@ -379,6 +442,8 @@ export default function AIStudioPage() {
   }, {});
 
   const phases = Object.keys(groupsByPhase);
+
+  const hasContent = !data.loading && !data.error && (data.contentGroups.length > 0 || data.matchGroups.length > 0 || data.nonMatchGroup);
 
   return (
     <PullToRefresh onRefresh={handleRefresh} pullText="Trek om te verversen" refreshingText="Verversen...">
@@ -412,6 +477,26 @@ export default function AIStudioPage() {
               </div>
             )}
           </div>
+
+          {/* View mode toggle */}
+          {hasContent && (
+            <div className={styles.viewToggle}>
+              <button
+                className={`${styles.viewToggleBtn} ${viewMode === 'type' ? styles.viewToggleBtnActive : ''}`}
+                onClick={() => setViewMode('type')}
+                type="button"
+              >
+                <LayoutGrid size={14} /> Per type
+              </button>
+              <button
+                className={`${styles.viewToggleBtn} ${viewMode === 'match' ? styles.viewToggleBtnActive : ''}`}
+                onClick={() => setViewMode('match')}
+                type="button"
+              >
+                <CalendarDays size={14} /> Per wedstrijd
+              </button>
+            </div>
+          )}
         </header>
 
         {/* ── Active video jobs strip ── */}
@@ -437,7 +522,7 @@ export default function AIStudioPage() {
         )}
 
         {/* ── Empty state ── */}
-        {!data.loading && !data.error && data.contentGroups.length === 0 && (
+        {!data.loading && !data.error && data.contentGroups.length === 0 && data.matchGroups.length === 0 && !data.nonMatchGroup && (
           <div className={styles.emptyState}>
             <span className={styles.emptyIcon}>🎬</span>
             <h2 className={styles.emptyTitle}>Nog geen content</h2>
@@ -447,8 +532,8 @@ export default function AIStudioPage() {
           </div>
         )}
 
-        {/* ── Content sections grouped by phase ── */}
-        {!data.loading && !data.error && phases.map((phase) => {
+        {/* ========== TYPE VIEW ========== */}
+        {viewMode === 'type' && !data.loading && !data.error && phases.map((phase) => {
           const meta = PHASE_META[phase] || PHASE_META.other;
           const groups = groupsByPhase[phase];
           return (
@@ -470,6 +555,41 @@ export default function AIStudioPage() {
             </div>
           );
         })}
+
+        {/* ========== MATCH VIEW ========== */}
+        {viewMode === 'match' && !data.loading && !data.error && (
+          <>
+            {/* Non-match content first (Seizoen & Leden) */}
+            {data.nonMatchGroup && data.nonMatchGroup.items.length > 0 && (
+              <MatchSection
+                match={data.nonMatchGroup}
+                onPreview={(item) => setPreviewItem(item)}
+              />
+            )}
+
+            {/* Match sections sorted newest first */}
+            {data.matchGroups.length > 0 ? (
+              data.matchGroups.map((match, idx) => (
+                <MatchSection
+                  key={match.activityId}
+                  match={match}
+                  onPreview={(item) => setPreviewItem(item)}
+                  defaultExpanded={idx === 0}
+                />
+              ))
+            ) : (
+              !data.nonMatchGroup && (
+                <div className={styles.emptyState}>
+                  <span className={styles.emptyIcon}>⚽</span>
+                  <h2 className={styles.emptyTitle}>Geen wedstrijd-content</h2>
+                  <p className={styles.emptySub}>
+                    Content gekoppeld aan wedstrijden verschijnt hier.
+                  </p>
+                </div>
+              )
+            )}
+          </>
+        )}
 
         {/* ── Recently completed video jobs ── */}
         {data.recentCompletedJobs.length > 0 && (

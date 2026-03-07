@@ -50,10 +50,32 @@ export interface VideoJobSummary {
   config?: Record<string, unknown>;
 }
 
+export interface MatchGroup {
+  /** Activity (match) ID — or '__non_match__' for season/member content */
+  activityId: string;
+  /** Display title, e.g. "vs Opponent" or "Seizoen & Leden" */
+  title: string;
+  /** ISO date string (activity date or earliest item date) */
+  date: string;
+  /** Opponent name */
+  opponent: string;
+  /** home | away */
+  homeAway: string;
+  /** Scores */
+  scoreHome?: number;
+  scoreAway?: number;
+  /** Content items in this group */
+  items: ContentItem[];
+  /** Whether this is the non-match bucket */
+  isNonMatch: boolean;
+}
+
 export interface StudioData {
   // Content
   contentItems: ContentItem[];
   contentGroups: ContentGroup[];
+  matchGroups: MatchGroup[];
+  nonMatchGroup: MatchGroup | null;
   loading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -256,6 +278,64 @@ export function useStudioData(): StudioData {
     [videoJobs],
   );
 
+  // ── Group content by match/activity ──
+  const { matchGroups, nonMatchGroup } = useMemo(() => {
+    const NON_MATCH_KEY = '__non_match__';
+    const groupMap = new Map<string, MatchGroup>();
+
+    // Phases that are NOT match-related
+    const nonMatchPhases = new Set(['season', 'member']);
+
+    for (const item of contentItems) {
+      const meta = item.extraction_metadata || {};
+      const assetType = (meta.asset_type as string) || 'other';
+      const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
+      const sectionInfo = SECTION_ORDER.find(s => s.key === normalizedType);
+      const isNonMatchContent = sectionInfo ? nonMatchPhases.has(sectionInfo.phase) : false;
+
+      // Determine activity key
+      const activityId = isNonMatchContent
+        ? NON_MATCH_KEY
+        : typeof item.activity === 'object'
+          ? item.activity?.id || NON_MATCH_KEY
+          : (item.activity as string) || NON_MATCH_KEY;
+
+      if (!groupMap.has(activityId)) {
+        const activityTitle = (meta.activity_title as string)
+          || (typeof item.activity === 'object' ? item.activity?.title : '')
+          || '';
+        groupMap.set(activityId, {
+          activityId,
+          title: activityId === NON_MATCH_KEY
+            ? 'Seizoen & Leden'
+            : (meta.opponent as string)
+              ? `vs ${meta.opponent as string}`
+              : activityTitle || `Wedstrijd`,
+          date: (meta.activity_date as string) || item.created_at || '',
+          opponent: (meta.opponent as string) || '',
+          homeAway: (meta.home_away as string) || '',
+          scoreHome: meta.score_home as number | undefined,
+          scoreAway: meta.score_away as number | undefined,
+          items: [],
+          isNonMatch: activityId === NON_MATCH_KEY,
+        });
+      }
+
+      groupMap.get(activityId)!.items.push(item);
+    }
+
+    // Extract non-match group
+    const nonMatch = groupMap.get(NON_MATCH_KEY) || null;
+    groupMap.delete(NON_MATCH_KEY);
+
+    // Sort matches by date descending (newest first)
+    const matches = Array.from(groupMap.values()).sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    return { matchGroups: matches, nonMatchGroup: nonMatch };
+  }, [contentItems]);
+
   // ── Stats ──
   const totalItems = contentItems.length;
   const totalVideos = contentItems.filter(i => i.mime_type?.startsWith('video/')).length;
@@ -264,6 +344,8 @@ export function useStudioData(): StudioData {
   return {
     contentItems,
     contentGroups,
+    matchGroups,
+    nonMatchGroup,
     loading,
     error,
     refresh,
