@@ -456,7 +456,10 @@ export function useContentGeneration({
   const handleGenerate = () => { if (selectedTemplate) handleGenerateInternal(); };
 
   const handleBack = () => {
-    if (initialTemplate && step === 'members') { onClose(); return; }
+    // When opened from MatchWizard (initialTemplate set), back always
+    // closes this modal and returns to the MatchWizard review step.
+    // The modal's internal type/template steps are not part of the flow.
+    if (initialTemplate) { onClose(); return; }
 
     if (step === 'template') {
       setStep('type'); setSelectedType(null); setTemplates([]);

@@ -1,7 +1,7 @@
 /**
  * useMatchWizardData — State, effects, and handlers for MatchWizard.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActivities, Activity } from '../hooks/useActivities';
 import { getApiBaseUrl } from '../utils/apiBase';
@@ -43,6 +43,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<ContentTemplate | null>(null);
   const [selectedContentTypeLabel, setSelectedContentTypeLabel] = useState('');
+  const contentGeneratedRef = useRef(false);
 
   // Templates
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
@@ -302,13 +303,18 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     setIsContentModalOpen(false);
     setSelectedTemplate(null);
     setSelectedContentTypeLabel('');
-    // Close the entire wizard when content modal is closed (flow complete)
-    handleClose();
+    if (contentGeneratedRef.current) {
+      // Content was generated — close entire wizard
+      contentGeneratedRef.current = false;
+      handleClose();
+    } else {
+      // User hit back before generation — return to review step
+      setCurrentStep('review');
+    }
   };
   const handleContentGenerated = (_message?: string) => {
-    // Don't auto-close — let ContentGenerationModal show its success/preview step.
-    // The user can review the result and close manually via the modal's close button,
-    // which triggers handleContentModalClose → wizard stays open → user closes wizard.
+    // Mark that content was generated so the next onClose closes the wizard
+    contentGeneratedRef.current = true;
   };
 
   const handleBack = () => {
