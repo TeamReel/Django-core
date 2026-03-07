@@ -59,26 +59,19 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
       );
     }
     if (currentStep === 'review') {
-      return (
-        <div className="flex-col gap-10 w-full">
-          {saveError && (
-            <div className={styles.errorBannerCompact}>
-              <AlertTriangle size={16} className={styles.errorIcon} />
-              <span className="fs-13 flex-1">{saveError}</span>
-            </div>
-          )}
-          <button onClick={handleReviewConfirm}
-            className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}>
-            <Zap size={18} />Genereer content
-          </button>
-        </div>
-      );
+      return null;
     }
     return null;
   })();
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose} bodyClassName={styles.sheetBody} footer={wizardFooter || undefined}>
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={handleClose}
+      bodyClassName={styles.sheetBody}
+      footer={wizardFooter || undefined}
+      showDragHandle={false}
+    >
       <div className={`flex-col ${styles.root}`}>
 
         {/* ── Header: back + title + close ─────────────────────────── */}
@@ -266,6 +259,21 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       </span>
                     </div>
                   )}
+                </div>
+
+                <div className={styles.reviewActionsInline}>
+                  {saveError && (
+                    <div className={styles.errorBannerCompact}>
+                      <AlertTriangle size={16} className={styles.errorIcon} />
+                      <span className="fs-13 flex-1">{saveError}</span>
+                    </div>
+                  )}
+                  <button
+                    onClick={handleReviewConfirm}
+                    className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+                  >
+                    <Zap size={18} />Genereer content
+                  </button>
                 </div>
               </div>
             );

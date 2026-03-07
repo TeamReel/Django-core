@@ -367,6 +367,15 @@
   background-color: var(--app-surface);
 }
 
+.reviewActionsInline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-border);
+}
+
 .reviewRow {
   display: flex;
   align-items: center;
