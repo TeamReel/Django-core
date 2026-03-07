@@ -78,8 +78,13 @@ export default function MainLayout() {
 
       // Occupied bottom area = from highest visible edge of bottom nav zone
       // (includes raised center create button) to viewport bottom.
-      const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
-      let bottomOffset = 80; // fallback
+      // Use the largest available viewport metric to avoid underestimating
+      // offset on mobile browsers where visual/layout viewport can differ.
+      const layoutViewportHeight = window.innerHeight;
+      const visualViewportHeight = window.visualViewport?.height ?? 0;
+      const docViewportHeight = document.documentElement.clientHeight;
+      const viewportHeight = Math.max(layoutViewportHeight, visualViewportHeight, docViewportHeight);
+      let bottomOffset = 96; // robust fallback for raised + button overlap
       if (bottomNav) {
         let highestTop = bottomNav.getBoundingClientRect().top;
         // Scan for raised elements (e.g. center + button) that extend above the nav
@@ -89,9 +94,9 @@ export default function MainLayout() {
             highestTop = r.top;
           }
         }
-          // Enforce a strict minimum of 80 so we never evaluate to 0 and get covered.
-          bottomOffset = Math.max(80, Math.round(viewportHeight - highestTop + 6));
-        }
+        // Enforce a strict minimum so CTA/footer never falls beneath bottom nav.
+        bottomOffset = Math.max(96, Math.round(viewportHeight - highestTop + 10));
+      }
 
         root.style.setProperty('--tr-top-navbar-offset', `${topHeight}px`);
         root.style.setProperty('--tr-bottom-navbar-offset', `${bottomOffset}px`);
