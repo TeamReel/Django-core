@@ -1,0 +1,278 @@
+/**
+ * useStudioData — Data hook for the Studio History page
+ *
+ * Fetches:
+ * 1. Media items (generated content) from /api/v1/media/items/
+ * 2. Video jobs from /api/v1/video/jobs/
+ *
+ * Groups content by content type (subtype) and provides live video job status.
+ */
+
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { getApiBaseUrl } from '../../utils/apiBase';
+import { useContextSwitcher } from '@django-core/context-switcher';
+import { useAppSelection } from '../../hooks/useAppSelection';
+import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
+import type { ContentItem } from '../content/contentLibraryTypes';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export type ContentGroupKey =
+  | 'lineup' | 'lineup_flyer' | 'flyer' | 'match_intro' | 'poster' | 'walkon' | 'anthem'
+  | 'goal' | 'score_update'
+  | 'end_score' | 'match_summary' | 'highlights'
+  | 'duo_portret_cover' | 'duo_portret_overlay' | 'sidebyside_cover' | 'sidebyside_overlay'
+  | 'transformation' | 'walking_composite'
+  | 'member_intro' | 'member_goal_celebration' | 'member_in_tenue' | 'member_action_photo'
+  | 'member_legacy_closeup' | 'member_legacy_in_tenue'
+  | 'other';
+
+export interface ContentGroup {
+  key: string;
+  label: string;
+  icon: string;
+  phase: string;
+  items: ContentItem[];
+}
+
+export interface VideoJobSummary {
+  id: string;
+  job_type: string;
+  status: string;
+  progress_percent: number;
+  error_message?: string | null;
+  output_url?: string | null;
+  thumbnail_url?: string | null;
+  created_at: string;
+  completed_at?: string | null;
+  config?: Record<string, unknown>;
+}
+
+export interface StudioData {
+  // Content
+  contentItems: ContentItem[];
+  contentGroups: ContentGroup[];
+  loading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+
+  // Video jobs
+  videoJobs: VideoJobSummary[];
+  activeJobs: VideoJobSummary[];
+  recentCompletedJobs: VideoJobSummary[];
+  videoJobsLoading: boolean;
+
+  // Stats
+  totalItems: number;
+  totalVideos: number;
+  totalImages: number;
+}
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/** Ordered list of content type sections for display */
+const SECTION_ORDER: { key: string; phase: string }[] = [
+  // Pre-match
+  { key: 'lineup', phase: 'pre_match' },
+  { key: 'lineup_flyer', phase: 'pre_match' },
+  { key: 'flyer', phase: 'pre_match' },
+  { key: 'match_intro', phase: 'pre_match' },
+  { key: 'poster', phase: 'pre_match' },
+  { key: 'walkon', phase: 'pre_match' },
+  { key: 'anthem', phase: 'pre_match' },
+  // During match
+  { key: 'goal', phase: 'during_match' },
+  { key: 'score_update', phase: 'during_match' },
+  // Post-match
+  { key: 'end_score', phase: 'post_match' },
+  { key: 'match_summary', phase: 'post_match' },
+  { key: 'highlights', phase: 'post_match' },
+  // Season
+  { key: 'transformation', phase: 'season' },
+  { key: 'duo_portret_cover', phase: 'season' },
+  { key: 'duo_portret_overlay', phase: 'season' },
+  { key: 'sidebyside_cover', phase: 'season' },
+  { key: 'sidebyside_overlay', phase: 'season' },
+  { key: 'walking_composite', phase: 'season' },
+  // Member
+  { key: 'member_intro', phase: 'member' },
+  { key: 'member_goal_celebration', phase: 'member' },
+  { key: 'member_in_tenue', phase: 'member' },
+  { key: 'member_action_photo', phase: 'member' },
+  { key: 'member_legacy_closeup', phase: 'member' },
+  { key: 'member_legacy_in_tenue', phase: 'member' },
+];
+
+/** Resolve label + icon from CONTENT_TYPES constants */
+function getTypeInfo(subtype: string): { label: string; icon: string } {
+  const allItems = [
+    ...CONTENT_TYPES.pre_match.items,
+    ...CONTENT_TYPES.during_match.items,
+    ...CONTENT_TYPES.post_match.items,
+    ...CONTENT_TYPES.season.items,
+    ...CONTENT_TYPES.member.items,
+    ...(CONTENT_TYPES as any).custom?.items || [],
+  ];
+  const found = allItems.find((item: any) => item.subtype === subtype);
+  return { label: found?.label || subtype, icon: found?.icon || '📄' };
+}
+
+// ============================================================================
+// Hook
+// ============================================================================
+
+export function useStudioData(): StudioData {
+  const { context } = useContextSwitcher();
+  const { teamIdForApi } = useAppSelection();
+  const orgSlug = (context as any)?.organisation?.slug as string | undefined;
+
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [videoJobs, setVideoJobs] = useState<VideoJobSummary[]>([]);
+  const [videoJobsLoading, setVideoJobsLoading] = useState(true);
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // ── Fetch content items ──
+  const fetchContent = useCallback(async () => {
+    const apiBaseUrl = getApiBaseUrl();
+    setLoading(true);
+    setError(null);
+    try {
+      let url = `${apiBaseUrl}/api/v1/media/items/?page_size=500&ordering=-created_at`;
+      if (teamIdForApi) url += `&project=${teamIdForApi}`;
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Kon content niet laden');
+      const data = await response.json();
+      const items = data?.results || data?.data?.results || data?.data || [];
+      setContentItems(Array.isArray(items) ? items : []);
+    } catch (err) {
+      console.error('[Studio] Content fetch error:', err);
+      setError('Fout bij laden van content');
+    } finally {
+      setLoading(false);
+    }
+  }, [teamIdForApi]);
+
+  // ── Fetch video jobs ──
+  const fetchVideoJobs = useCallback(async () => {
+    const apiBaseUrl = getApiBaseUrl();
+    try {
+      let url = `${apiBaseUrl}/api/v1/video/jobs/?page_size=50&ordering=-created_at`;
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      const raw = data?.results || data?.data?.results || data?.data || [];
+      const jobs: VideoJobSummary[] = (Array.isArray(raw) ? raw : []).map((j: any) => ({
+        id: j.id,
+        job_type: j.job_type,
+        status: j.status,
+        progress_percent: j.progress_percent || 0,
+        error_message: j.error_message,
+        output_url: j.output_url || j.output_file?.url,
+        thumbnail_url: j.thumbnail_url,
+        created_at: j.created_at,
+        completed_at: j.completed_at,
+        config: j.config,
+      }));
+      setVideoJobs(jobs);
+    } catch (err) {
+      console.error('[Studio] Video jobs fetch error:', err);
+    } finally {
+      setVideoJobsLoading(false);
+    }
+  }, []);
+
+  // ── Initial fetch ──
+  useEffect(() => {
+    fetchContent();
+    fetchVideoJobs();
+  }, [fetchContent, fetchVideoJobs]);
+
+  // ── Poll active video jobs every 8s ──
+  useEffect(() => {
+    const hasActive = videoJobs.some(j => j.status === 'queued' || j.status === 'processing');
+    if (hasActive) {
+      pollRef.current = setInterval(() => { fetchVideoJobs(); }, 8000);
+    }
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [videoJobs, fetchVideoJobs]);
+
+  // ── Refresh handler ──
+  const refresh = useCallback(async () => {
+    await Promise.all([fetchContent(), fetchVideoJobs()]);
+  }, [fetchContent, fetchVideoJobs]);
+
+  // ── Group content by subtype ──
+  const contentGroups = useMemo(() => {
+    const groupMap = new Map<string, ContentItem[]>();
+
+    for (const item of contentItems) {
+      const assetType = (item.extraction_metadata?.asset_type as string) || 'other';
+      const normalizedType = assetType.replace(/_[a-f0-9]{8}$/i, '');
+      const key = SECTION_ORDER.find(s => s.key === normalizedType) ? normalizedType : 'other';
+      if (!groupMap.has(key)) groupMap.set(key, []);
+      groupMap.get(key)!.push(item);
+    }
+
+    // Build ordered groups (only those that have items)
+    const groups: ContentGroup[] = [];
+    for (const { key, phase } of SECTION_ORDER) {
+      const items = groupMap.get(key);
+      if (items && items.length > 0) {
+        const info = getTypeInfo(key);
+        groups.push({ key, label: info.label, icon: info.icon, phase, items });
+      }
+    }
+
+    // Add "other" group at the end
+    const otherItems = groupMap.get('other');
+    if (otherItems && otherItems.length > 0) {
+      groups.push({ key: 'other', label: 'Overig', icon: '📄', phase: 'other', items: otherItems });
+    }
+
+    return groups;
+  }, [contentItems]);
+
+  // ── Video job splits ──
+  const activeJobs = useMemo(
+    () => videoJobs.filter(j => j.status === 'queued' || j.status === 'processing'),
+    [videoJobs],
+  );
+  const recentCompletedJobs = useMemo(
+    () => videoJobs.filter(j => j.status === 'completed').slice(0, 5),
+    [videoJobs],
+  );
+
+  // ── Stats ──
+  const totalItems = contentItems.length;
+  const totalVideos = contentItems.filter(i => i.mime_type?.startsWith('video/')).length;
+  const totalImages = contentItems.filter(i => i.mime_type?.startsWith('image/')).length;
+
+  return {
+    contentItems,
+    contentGroups,
+    loading,
+    error,
+    refresh,
+    videoJobs,
+    activeJobs,
+    recentCompletedJobs,
+    videoJobsLoading,
+    totalItems,
+    totalVideos,
+    totalImages,
+  };
+}
