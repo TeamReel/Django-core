@@ -70,18 +70,6 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         </button>
       );
     }
-    if (currentStep === 'options') {
-      const isGoal = pendingContent?.subtype === 'goal';
-      return (
-        <button
-          onClick={handleOptionsConfirm}
-          disabled={isGoal && !options.goalScorerId}
-          className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
-        >
-          Verder<ChevronRight size={18} />
-        </button>
-      );
-    }
     return null;
   })();
 
@@ -244,7 +232,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
             // Lineup-type options: formation, closeup style, animation, background
             if (LINEUP_OPTIONS_SUBTYPES.has(subtype) && selectedTemplate) {
-              return (
+              return (<>
                 <MembersStep
                   selectedType={selectedType}
                   selectedTemplate={selectedTemplate}
@@ -264,11 +252,21 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                   setSelectedBackgroundUrl={options.setSelectedBackgroundUrl}
                   appBackgrounds={options.appBackgrounds}
                 />
+                <div className={styles.optionsActionsInline}>
+                  <button
+                    onClick={handleOptionsConfirm}
+                    className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+                  >
+                    Verder<ChevronRight size={18} />
+                  </button>
+                </div>
+              </>
               );
             }
 
             // Type-specific config: flyer variant, goal score, match summary
-            return (
+            const isGoal = pendingContent.subtype === 'goal';
+            return (<>
               <ConfirmStep
                 selectedType={selectedType}
                 selectedTemplate={selectedTemplate}
@@ -303,7 +301,16 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 homeTeamName={homeTeamName}
                 awayTeamName={awayTeamName}
               />
-            );
+              <div className={styles.optionsActionsInline}>
+                <button
+                  onClick={handleOptionsConfirm}
+                  disabled={isGoal && !options.goalScorerId}
+                  className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+                >
+                  Verder<ChevronRight size={18} />
+                </button>
+              </div>
+            </>);
           })()}
 
           {/* ── Step 5: Review & Confirm ───────────────────────────── */}

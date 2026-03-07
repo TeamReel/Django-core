@@ -397,6 +397,15 @@
   border-top: 1px solid var(--app-border);
 }
 
+.optionsActionsInline {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-border);
+}
+
 .reviewRow {
   display: flex;
   align-items: center;
@@ -416,7 +425,8 @@
   }
 
   .lineupActionsInline,
-  .reviewActionsInline {
+  .reviewActionsInline,
+  .optionsActionsInline {
     margin-bottom: calc(var(--tr-bottom-navbar-offset, 96px) + 8px);
   }
 
