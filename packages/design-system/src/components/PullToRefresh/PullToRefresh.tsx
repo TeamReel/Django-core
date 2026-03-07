@@ -68,15 +68,28 @@ export function PullToRefresh({
   const isTracking = useRef(false);
   const directionLocked = useRef<'vertical' | 'horizontal' | null>(null);
 
+  /**
+   * Check if page is scrolled to top (within 2px tolerance).
+   * Checks both window scroll and the container's scroll position.
+   */
+  const isAtTop = useCallback((): boolean => {
+    // Check window/document scroll
+    const windowScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    if (windowScrollY > 2) return false;
+
+    // Also check container scroll
+    const container = containerRef.current;
+    if (container && container.scrollTop > 2) return false;
+
+    return true;
+  }, []);
+
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (disabled || state === 'refreshing') return;
 
-      const container = containerRef.current;
-      if (!container) return;
-
       // Only enable pull-to-refresh when scrolled to top
-      if (container.scrollTop > 0) return;
+      if (!isAtTop()) return;
 
       startY.current = e.touches[0].clientY;
       startX.current = e.touches[0].clientX;
@@ -84,7 +97,7 @@ export function PullToRefresh({
       isTracking.current = true;
       directionLocked.current = null;
     },
-    [disabled, state]
+    [disabled, state, isAtTop]
   );
 
   const handleTouchMove = useCallback(
@@ -92,13 +105,12 @@ export function PullToRefresh({
       if (disabled || state === 'refreshing') return;
       if (!isTracking.current) return;
 
-      const container = containerRef.current;
-      if (!container) return;
-
-      // Only enable when at top of scroll
-      if (container.scrollTop > 0) {
+      // If not at top anymore, stop tracking
+      if (!isAtTop()) {
         isTracking.current = false;
         directionLocked.current = null;
+        setState('idle');
+        setPullDistance(0);
         return;
       }
 

@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+from datetime import timedelta
 
 from celery import shared_task
+from django.utils import timezone
 
 from src.video.models import VideoJob
 from src.video.models.job import JobStatus
@@ -39,3 +41,63 @@ def process_video_job(self, job_id: str) -> str | None:
             raise self.retry(countdown=60 * (2**self.request.retries), exc=exc) from exc
 
         return str(job.id)
+
+
+@shared_task(bind=True)
+def recover_stale_video_jobs(self, threshold_minutes: int = 15) -> dict:
+    """
+    Periodic task to detect and mark stuck video jobs as failed.
+
+    A video job is considered stuck if:
+    - Status is 'queued' or 'processing'
+    - updated_at is older than threshold_minutes
+
+    Stuck jobs are marked as failed with a descriptive error message,
+    allowing users to retry them.
+
+    Args:
+        threshold_minutes: Jobs not updated within this time are considered stuck.
+                          Default: 15 minutes.
+
+    Returns:
+        dict with stats: {'recovered': X, 'jobs': [...]}
+    """
+    threshold = timezone.now() - timedelta(minutes=threshold_minutes)
+
+    stuck_jobs = VideoJob.objects.filter(
+        status__in=[JobStatus.QUEUED, JobStatus.PROCESSING],
+        updated_at__lt=threshold,
+    )
+
+    recovered = []
+    for job in stuck_jobs:
+        old_status = job.status
+        progress = job.progress_percent or 0
+
+        job.status = JobStatus.FAILED
+        job.error_message = (
+            f"Taak vastgelopen - geen voortgang na {threshold_minutes} minuten "
+            f"(was {old_status} bij {progress}%)"
+        )
+        job.save(update_fields=["status", "error_message", "updated_at"])
+
+        logger.warning(
+            "Recovered stuck VideoJob",
+            extra={
+                "job_id": str(job.id),
+                "job_type": job.job_type,
+                "old_status": old_status,
+                "progress_percent": progress,
+                "project_id": job.project_id,
+                "minutes_stale": threshold_minutes,
+            },
+        )
+        recovered.append(str(job.id))
+
+    if recovered:
+        logger.info(
+            "recover_stale_video_jobs complete",
+            extra={"recovered_count": len(recovered), "job_ids": recovered},
+        )
+
+    return {"recovered": len(recovered), "jobs": recovered}

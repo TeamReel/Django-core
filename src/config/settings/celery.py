@@ -181,6 +181,15 @@ CELERY_BEAT_SCHEDULE = {
             "expires": 3600,  # Task expires if not run within 1 hour
         },
     },
+    # Recover stale VideoJobs every 10 minutes
+    "recover-stale-video-jobs": {
+        "task": "src.video.tasks.processing.recover_stale_video_jobs",
+        "schedule": crontab(minute="*/10"),  # Every 10 minutes
+        "kwargs": {"threshold_minutes": 15},
+        "options": {
+            "expires": 300,  # Task expires if not run within 5 minutes
+        },
+    },
     # Weekly DB maintenance: VACUUM ANALYZE on high-churn tables (Sunday 3:30 AM)
     "db-maintenance-vacuum": {
         "task": "observability.tasks.db_maintenance_vacuum",
