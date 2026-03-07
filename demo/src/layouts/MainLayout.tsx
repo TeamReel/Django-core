@@ -89,26 +89,27 @@ export default function MainLayout() {
             highestTop = r.top;
           }
         }
-        bottomOffset = Math.max(0, Math.round(viewportHeight - highestTop + 6));
-      }
+          // Enforce a strict minimum of 80 so we never evaluate to 0 and get covered.
+          bottomOffset = Math.max(80, Math.round(viewportHeight - highestTop + 6));
+        }
 
-      root.style.setProperty('--tr-top-navbar-offset', `${topHeight}px`);
-      root.style.setProperty('--tr-bottom-navbar-offset', `${bottomOffset}px`);
-    };
+        root.style.setProperty('--tr-top-navbar-offset', `${topHeight}px`);
+        root.style.setProperty('--tr-bottom-navbar-offset', `${bottomOffset}px`);
+      };
 
-    const onResize = () => {
-      window.requestAnimationFrame(setOffsets);
-    };
+      const onResize = () => {
+        window.requestAnimationFrame(setOffsets);
+      };
 
-    setOffsets();
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', onResize);
-    window.visualViewport?.addEventListener('resize', onResize);
+      setOffsets();
+      window.addEventListener('resize', onResize);
+      window.addEventListener('orientationchange', onResize);
+      window.visualViewport?.addEventListener('resize', onResize);
 
-    const observer = new ResizeObserver(() => onResize());
-    const topNav = document.querySelector<HTMLElement>('[data-app-top-navbar="true"]');
-    const bottomNav = document.querySelector<HTMLElement>('[data-app-bottom-navbar="true"]');
-    if (topNav) observer.observe(topNav);
+      const observer = new ResizeObserver(() => onResize());
+      const topNav = document.querySelector<HTMLElement>('[data-app-top-navbar="true"]');
+      const bottomNav = document.querySelector<HTMLElement>('[data-app-bottom-navbar="true"]');
+      if (topNav) observer.observe(topNav);
     if (bottomNav) observer.observe(bottomNav);
 
     return () => {

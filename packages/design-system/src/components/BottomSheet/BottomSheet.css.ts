@@ -32,8 +32,8 @@ export const bottomSheetOverlay = style({
   animation: `${fadeIn} 200ms ease-out`,
   '@media': {
     '(max-width: 639px)': {
-      top: 'var(--tr-top-navbar-offset, 57px)',
-      bottom: 'var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px)))',
+      top: 'max(var(--tr-top-navbar-offset, 57px), 57px)',
+      bottom: 'max(var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px))), calc(80px + env(safe-area-inset-bottom, 0px)))',
     },
   },
 });
@@ -62,9 +62,10 @@ export const bottomSheetContainer = style({
   touchAction: 'none',
   '@media': {
     '(max-width: 639px)': {
-      /* Sit between dynamic top & bottom nav offsets (runtime measured). */
-      top: 'var(--tr-top-navbar-offset, 57px)',
-      bottom: 'var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px)))',
+      /* Sit between dynamic top & bottom nav offsets (runtime measured),
+         with a strict minimum of 80px + safe area to prevent hiding behind nav. */
+      top: 'max(var(--tr-top-navbar-offset, 57px), 57px)',
+      bottom: 'max(var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px))), calc(80px + env(safe-area-inset-bottom, 0px)))',
       maxHeight: 'none',
       overflow: 'hidden',
       borderTopLeftRadius: '16px',
