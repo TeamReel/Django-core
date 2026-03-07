@@ -63,7 +63,10 @@ export function PullToRefresh({
   const [state, setState] = useState<PullState>('idle');
   const [pullDistance, setPullDistance] = useState(0);
   const startY = useRef(0);
+  const startX = useRef(0);
   const currentY = useRef(0);
+  const isTracking = useRef(false);
+  const directionLocked = useRef<'vertical' | 'horizontal' | null>(null);
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
@@ -76,7 +79,10 @@ export function PullToRefresh({
       if (container.scrollTop > 0) return;
 
       startY.current = e.touches[0].clientY;
+      startX.current = e.touches[0].clientX;
       currentY.current = startY.current;
+      isTracking.current = true;
+      directionLocked.current = null;
     },
     [disabled, state]
   );
@@ -84,23 +90,53 @@ export function PullToRefresh({
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
       if (disabled || state === 'refreshing') return;
-      if (startY.current === 0) return;
+      if (!isTracking.current) return;
 
       const container = containerRef.current;
       if (!container) return;
 
       // Only enable when at top of scroll
       if (container.scrollTop > 0) {
-        startY.current = 0;
+        isTracking.current = false;
+        directionLocked.current = null;
         return;
       }
 
-      currentY.current = e.touches[0].clientY;
-      const diff = currentY.current - startY.current;
+      const touchY = e.touches[0].clientY;
+      const touchX = e.touches[0].clientX;
+      const diffY = touchY - startY.current;
+      const diffX = touchX - startX.current;
 
-      if (diff > 0) {
+      // Determine direction on first significant movement (10px threshold)
+      if (directionLocked.current === null) {
+        const absY = Math.abs(diffY);
+        const absX = Math.abs(diffX);
+
+        if (absY > 10 || absX > 10) {
+          // Lock direction: only pull-to-refresh if clearly vertical (2:1 ratio)
+          if (absY > absX * 2 && diffY > 0) {
+            directionLocked.current = 'vertical';
+          } else {
+            directionLocked.current = 'horizontal';
+            isTracking.current = false;
+            return;
+          }
+        } else {
+          // Not enough movement yet - don't interrupt anything
+          return;
+        }
+      }
+
+      // Only continue if locked to vertical direction
+      if (directionLocked.current !== 'vertical') {
+        return;
+      }
+
+      currentY.current = touchY;
+
+      if (diffY > 0) {
         // Apply resistance for natural feel
-        const distance = Math.min(diff * 0.5, maxPullDistance);
+        const distance = Math.min(diffY * 0.5, maxPullDistance);
         setPullDistance(distance);
 
         if (distance >= threshold) {
@@ -128,7 +164,15 @@ export function PullToRefresh({
   }, [handleTouchMove]);
 
   const handleTouchEnd = useCallback(async () => {
-    if (disabled || state === 'refreshing') return;
+    // Reset tracking state
+    isTracking.current = false;
+    directionLocked.current = null;
+
+    if (disabled || state === 'refreshing') {
+      startY.current = 0;
+      startX.current = 0;
+      return;
+    }
 
     if (state === 'ready') {
       setState('refreshing');
@@ -146,6 +190,7 @@ export function PullToRefresh({
     }
 
     startY.current = 0;
+    startX.current = 0;
   }, [disabled, state, threshold, onRefresh]);
 
   // Reset on unmount

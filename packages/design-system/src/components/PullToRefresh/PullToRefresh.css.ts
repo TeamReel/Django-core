@@ -9,7 +9,8 @@ const spin = keyframes({
 export const pullToRefreshContainer = style({
   position: 'relative',
   overflow: 'hidden',
-  touchAction: 'pan-y',
+  // Allow both horizontal and vertical touch - direction lock in JS handles pull detection
+  touchAction: 'auto',
   WebkitOverflowScrolling: 'touch',
 });
 

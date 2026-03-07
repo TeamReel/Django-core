@@ -340,6 +340,8 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
   padding: 0 16px 8px;
+  /* Prioritize horizontal scroll - prevents pull-to-refresh interference */
+  touch-action: pan-x;
 }
 
 .sectionScroll::-webkit-scrollbar {
