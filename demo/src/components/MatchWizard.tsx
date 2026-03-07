@@ -49,15 +49,6 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         </button>
       );
     }
-    if (currentStep === 'lineup') {
-      return (
-        <button onClick={handleLineupConfirm} disabled={lineupSaving}
-          className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
-          data-saving={lineupSaving}>
-          {lineupSaving ? 'Opslaan...' : 'Verder'}<ChevronRight size={18} />
-        </button>
-      );
-    }
     if (currentStep === 'review') {
       return null;
     }
@@ -201,7 +192,21 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           )}
 
           {/* ── Step 3: Lineup ─────────────────────────────────────── */}
-          {currentStep === 'lineup' && <MatchWizardLineupStep d={d} />}
+          {currentStep === 'lineup' && (
+            <div className={styles.lineupStepWrap}>
+              <MatchWizardLineupStep d={d} />
+              <div className={styles.lineupActionsInline}>
+                <button
+                  onClick={handleLineupConfirm}
+                  disabled={lineupSaving}
+                  className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+                  data-saving={lineupSaving}
+                >
+                  {lineupSaving ? 'Opslaan...' : 'Verder'}<ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* ── Step 4: Review & Confirm ───────────────────────────── */}
           {currentStep === 'review' && pendingContent && selectedMatch && (() => {
