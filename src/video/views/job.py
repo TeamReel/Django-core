@@ -293,6 +293,15 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             MediaItem = apps.get_model("medialib", "MediaItem")
             from src.medialib.models import MediaItemState
 
+            # Prevent duplicate MediaItems (auto-created on job completion)
+            existing = MediaItem.objects.filter(file_id=job.output_file_id).first()
+            if existing:
+                logger.info(
+                    "MediaItem already exists for output file – skipping approve creation",
+                    extra={"job_id": str(job.id), "media_item_id": str(existing.id)},
+                )
+                return {"saved": True, "media_item_id": str(existing.id), "already_existed": True}
+
             activity = Activity.objects.select_related(
                 "project",
                 "project__parent_project",

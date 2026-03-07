@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from celery import shared_task
+from django.apps import apps
 from django.utils import timezone
 
 from src.video.models import VideoJob
@@ -13,6 +15,160 @@ from src.video.services.processors.lineup import LineupProcessor
 from src.video.services.processors.base import JobCancelledError
 
 logger = logging.getLogger(__name__)
+
+
+# Map job_type → content tab asset_type that the frontend recognises
+JOB_TYPE_TO_ASSET_TYPE: dict[str, str] = {
+    "lineup": "lineup",
+    "goal_celebration": "goal",
+    "match_intro": "match_intro",
+    "then_vs_now": "then_vs_now",
+    "compose": "compose",
+}
+
+
+def _create_media_item_for_completed_job(job: VideoJob) -> dict[str, Any]:
+    """Auto-create a MediaItem linking the completed video to its activity/match.
+
+    This ensures the video appears in the match content gallery and the Studio
+    page immediately \u2014 without requiring a separate 'approve' action.
+
+    Returns a dict with success/error info for logging.
+    """
+    config = job.config or {}
+    activity_id = config.get("activity_id")
+
+    if not activity_id:
+        logger.info(
+            "No activity_id in job config \u2013 skipping auto MediaItem creation",
+            extra={"job_id": str(job.id)},
+        )
+        return {"saved": False, "reason": "no_activity_id"}
+
+    if not job.output_file_id:
+        logger.info(
+            "No output_file on job \u2013 skipping auto MediaItem creation",
+            extra={"job_id": str(job.id)},
+        )
+        return {"saved": False, "reason": "no_output_file"}
+
+    try:
+        Activity = apps.get_model("activities", "Activity")
+        MediaItem = apps.get_model("medialib", "MediaItem")
+        from src.medialib.models import MediaItemState
+
+        activity = Activity.objects.select_related(
+            "project",
+            "project__parent_project",
+            "project__organisation",
+        ).get(id=activity_id)
+        project = activity.project or job.project
+
+        if not project:
+            return {"saved": False, "reason": "no_project", "activity_id": str(activity_id)}
+
+        # Prevent duplicate MediaItems for the same output file
+        if MediaItem.objects.filter(file_id=job.output_file_id).exists():
+            logger.info(
+                "MediaItem already exists for output file \u2013 skipping",
+                extra={"job_id": str(job.id), "output_file_id": str(job.output_file_id)},
+            )
+            return {"saved": False, "reason": "already_exists"}
+
+        asset_type = JOB_TYPE_TO_ASSET_TYPE.get(job.job_type, job.job_type)
+
+        # Build rich extraction_metadata (same pattern as VideoJobViewSet.approve)
+        extraction_meta: dict[str, Any] = {
+            "source": "video_job_auto",
+            "job_id": str(job.id),
+            "job_type": job.job_type,
+            "asset_type": asset_type,
+        }
+
+        # Project context
+        if project:
+            extraction_meta["project_id"] = project.id
+            extraction_meta["project_name"] = project.name
+            if project.parent_project:
+                extraction_meta["club_name"] = project.parent_project.name
+                extraction_meta["team_name"] = project.name
+            else:
+                extraction_meta["club_name"] = project.name
+
+        # Organisation context
+        org = getattr(project, "organisation", None)
+        if org:
+            extraction_meta["organisation_id"] = str(org.id)
+            extraction_meta["organisation_name"] = org.name
+
+        # Activity/match context
+        extraction_meta["activity_id"] = str(activity.id)
+        extraction_meta["activity_title"] = activity.title
+
+        # Sport type
+        if hasattr(project, "sport") and project.sport:
+            extraction_meta["sport_type"] = project.sport.name
+
+        # Match context from activity
+        if hasattr(activity, "opponent"):
+            extraction_meta["opponent"] = activity.opponent
+        if hasattr(activity, "home_away"):
+            extraction_meta["home_away"] = activity.home_away
+        if hasattr(activity, "date"):
+            extraction_meta["activity_date"] = activity.date.isoformat() if activity.date else None
+
+        # Score from job config
+        if config.get("score_home") is not None:
+            extraction_meta["score_home"] = config["score_home"]
+        if config.get("score_away") is not None:
+            extraction_meta["score_away"] = config["score_away"]
+
+        file_asset = job.output_file
+        mime_type = getattr(file_asset, "mime_type", "video/mp4") or "video/mp4"
+        file_size = (
+            getattr(file_asset, "file_size", None)
+            or getattr(file_asset, "file_size_bytes", None)
+            or 0
+        )
+
+        media_item = MediaItem.objects.create(
+            file=file_asset,
+            activity=activity,
+            project=project,
+            title=f"{job.job_type.replace('_', ' ').title()} Video",
+            description=f"Auto-generated {job.job_type} video for {activity.title}",
+            mime_type=mime_type,
+            file_size_bytes=file_size,
+            state=MediaItemState.PROCESSED,
+            created_by=job.created_by,
+            extraction_metadata=extraction_meta,
+        )
+
+        logger.info(
+            "Auto-created MediaItem for completed video job",
+            extra={
+                "media_item_id": str(media_item.id),
+                "job_id": str(job.id),
+                "activity_id": str(activity_id),
+                "project_id": project.id,
+                "asset_type": asset_type,
+            },
+        )
+        return {
+            "saved": True,
+            "media_item_id": str(media_item.id),
+            "activity_id": str(activity_id),
+            "asset_type": asset_type,
+        }
+
+    except Exception as exc:
+        logger.error(
+            "Failed to auto-create MediaItem for completed video: %s",
+            exc,
+            extra={"job_id": str(job.id)},
+            exc_info=True,
+        )
+        return {"saved": False, "error": str(exc)}
 
 
 def _transition_workflow_on_completion(job: VideoJob) -> None:
@@ -112,6 +268,14 @@ def process_lineup_video(self, job_id: str) -> str | None:
     try:
         processor = LineupProcessor(job)
         processor.execute()
+
+        # Auto-create MediaItem so the video appears in match content immediately
+        job.refresh_from_db()
+        save_result = _create_media_item_for_completed_job(job)
+        logger.info(
+            "Auto MediaItem creation result",
+            extra={"job_id": job_id, "result": save_result},
+        )
 
         # Transition workflow if configured
         _transition_workflow_on_completion(job)
