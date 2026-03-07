@@ -5,6 +5,7 @@ import styles from './VideoQueuedStep.module.css';
 interface VideoQueuedStepProps {
   videoOutputUrl: string | null;
   videoJobStatus: string;
+  videoJobError?: string | null;
   videoJobProgressRaw: number;
   videoThumbnailUrl: string | null;
   videoApprovalStatus: string;
@@ -17,6 +18,7 @@ interface VideoQueuedStepProps {
 export function VideoQueuedStep({
   videoOutputUrl,
   videoJobStatus,
+  videoJobError,
   videoJobProgressRaw,
   videoThumbnailUrl,
   videoApprovalStatus,
@@ -98,7 +100,7 @@ export function VideoQueuedStep({
             </div>
             <h2 className="text-primary fs-18 fw-600 mb-8">Generatie mislukt</h2>
             <p className="fs-14 mb-16 text-muted">
-              Er is iets misgegaan bij het verwerken van je video. Probeer het opnieuw of neem contact op.
+              {videoJobError || 'Er is iets misgegaan bij het verwerken van je video. Probeer het opnieuw of neem contact op.'}
             </p>
             <div className="flex-col gap-8 items-center">
               <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>

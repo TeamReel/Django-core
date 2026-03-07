@@ -448,6 +448,25 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     setGenerationStartedAtMs(Date.now());
     videoPoll.resetVideo();
 
+    // ── Pre-flight validation for lineup types ──
+    const subtype = pendingContent?.subtype || '';
+    if (subtype === 'lineup' || subtype === 'lineup_flyer') {
+      const expectedFieldPlayers = lineupFormation.split('-').reduce((sum, n) => sum + parseInt(n, 10), 0);
+      const filledGk = lineupSlots.goalkeeper.filter(Boolean).filter(id => !id.startsWith('guest-')).length;
+      const filledPlayers = lineupSlots.player.filter(Boolean).filter(id => !id.startsWith('guest-')).length;
+      if (filledGk < 1 || filledPlayers < expectedFieldPlayers) {
+        const missing: string[] = [];
+        if (filledGk < 1) missing.push('keeper');
+        if (filledPlayers < expectedFieldPlayers) missing.push(`${expectedFieldPlayers - filledPlayers} veldspeler(s)`);
+        setGenerationError(
+          `Opstelling niet compleet voor formatie ${lineupFormation}: ${missing.join(' en ')} ontbre(e)k(en). ` +
+          `Vul alle posities met echte spelers (geen gast-spelers) en probeer opnieuw.`,
+        );
+        setCurrentStep('error');
+        return;
+      }
+    }
+
     let p = 0;
     const progressInterval = setInterval(() => {
       p += Math.random() * 10;
@@ -456,7 +475,6 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     }, 500);
 
     try {
-      const subtype = pendingContent?.subtype || '';
       const seasonProjectId = projectId;
       const matchData = matchDataForApi;
 

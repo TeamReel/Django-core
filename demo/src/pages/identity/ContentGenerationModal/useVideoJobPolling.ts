@@ -21,6 +21,7 @@ export interface UseVideoJobPollingReturn {
   videoJobId: string | null;
   setVideoJobId: React.Dispatch<React.SetStateAction<string | null>>;
   videoJobStatus: string | null;
+  videoJobError: string | null;
   videoJobProgressRaw: number;
   videoJobMeta: Record<string, unknown>;
   videoOutputUrl: string | null;
@@ -43,6 +44,7 @@ export function useVideoJobPolling({
 }: UseVideoJobPollingParams): UseVideoJobPollingReturn {
   const [videoJobId, setVideoJobId] = useState<string | null>(null);
   const [videoJobStatus, setVideoJobStatus] = useState<string | null>(null);
+  const [videoJobError, setVideoJobError] = useState<string | null>(null);
   const [videoJobProgressRaw, setVideoJobProgressRaw] = useState<number>(0);
   const [videoJobMeta, setVideoJobMeta] = useState<Record<string, unknown>>({});
   const [videoOutputUrl, setVideoOutputUrl] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export function useVideoJobPolling({
   const resetVideo = () => {
     setVideoJobId(null);
     setVideoJobStatus(null);
+    setVideoJobError(null);
     setVideoJobProgressRaw(0);
     setVideoJobMeta({});
     setVideoOutputUrl(null);
@@ -108,7 +111,10 @@ export function useVideoJobPolling({
             if (job.thumbnail_url) setVideoThumbnailUrl(job.thumbnail_url);
             break;
           }
-          if (job.status === 'failed') break;
+          if (job.status === 'failed') {
+            setVideoJobError(job.error_message || null);
+            break;
+          }
         } catch (err: any) {
           if (err?.name === 'AbortError') return;
           console.warn('Poll error:', err);
@@ -149,6 +155,7 @@ export function useVideoJobPolling({
     videoJobId,
     setVideoJobId,
     videoJobStatus,
+    videoJobError,
     videoJobProgressRaw,
     videoJobMeta,
     videoOutputUrl,

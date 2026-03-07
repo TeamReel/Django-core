@@ -408,6 +408,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             <VideoQueuedStep
               videoOutputUrl={videoPoll.videoOutputUrl}
               videoJobStatus={videoPoll.videoJobStatus || ''}
+              videoJobError={videoPoll.videoJobError}
               videoJobProgressRaw={videoPoll.videoJobProgressRaw}
               videoThumbnailUrl={videoPoll.videoThumbnailUrl}
               videoApprovalStatus={videoPoll.videoApprovalStatus}
@@ -443,7 +444,12 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
           {currentStep === 'error' && (
             <ErrorStep
               error={generationError}
-              onRetry={() => setCurrentStep('review')}
+              onRetry={() => {
+                // If lineup was incomplete, go back to lineup step to fix it
+                const isLineupType = pendingContent?.subtype === 'lineup' || pendingContent?.subtype === 'lineup_flyer';
+                const isLineupError = generationError?.includes('Opstelling niet compleet') || generationError?.includes('not enough');
+                setCurrentStep(isLineupType && isLineupError ? 'lineup' : 'review');
+              }}
               onClose={handleClose}
             />
           )}
