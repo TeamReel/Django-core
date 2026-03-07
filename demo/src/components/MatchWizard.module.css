@@ -415,6 +415,11 @@
     min-height: 48px;
   }
 
+  .lineupActionsInline,
+  .reviewActionsInline {
+    margin-bottom: calc(var(--tr-bottom-navbar-offset, 96px) + 8px);
+  }
+
   .phaseTab {
     min-height: 44px;
   }
