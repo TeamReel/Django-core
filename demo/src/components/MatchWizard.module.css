@@ -16,7 +16,9 @@
     flex: 1;
     min-height: 0;
     max-height: none;
-    overflow: hidden;
+    /* Do NOT set overflow:hidden here — the child .scrollArea handles
+       its own overflow-y:auto.  Hidden here would prevent the flex
+       child from computing its scroll height correctly. */
   }
 }
 
@@ -285,10 +287,20 @@
   overflow: hidden;
 }
 
+/* Mobile: constrain preview so the whole review step fits on screen.
+   The 16:9 aspect-ratio on a ~343px body produces ~193px — too tall
+   combined with header, labels, summary card, and footer.  Cap it. */
+@media (max-width: 639px) {
+  .reviewPreview {
+    aspect-ratio: unset;
+    height: 120px;
+  }
+}
+
 @media (max-height: 600px) {
   .reviewPreview {
-    aspect-ratio: 2 / 1;
-    max-height: 140px;
+    aspect-ratio: unset;
+    height: 100px;
   }
 }
 
