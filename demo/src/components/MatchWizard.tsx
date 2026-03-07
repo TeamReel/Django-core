@@ -1,21 +1,33 @@
 /**
- * MatchWizard - Step-by-step mobile wizard for match content creation
+ * MatchWizard - Single unified wizard for match content creation
  *
- * Flow:
- * 1. Select/confirm match (active match pre-selected)
+ * Flow (all steps in ONE BottomSheet):
+ * 1. Select/confirm match
  * 2. Choose content type (pre / during / post)
  * 3. Set lineup (only for lineup-dependent content types)
- * 4. → Generate via ContentGenerationModal
- *
- * Consistent modal design: back arrow + title + close X in header.
+ * 4. Options (background, style, score — only for types with config)
+ * 5. Review & confirm
+ * 6. Generating (progress)
+ * 7. Result (success / video_queued / error)
  */
 import React from 'react';
 import { BottomSheet } from '@django-core/design-system';
 import { ChevronRight, Check, Zap, Play, Clock, Calendar, MapPin, AlertTriangle, RefreshCw } from 'lucide-react';
 import SmartEmptyState from './SmartEmptyState';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
-import ContentGenerationModal from '../pages/identity/ContentGenerationModal';
-import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, type MatchWizardProps, type ContentType } from './matchWizardTypes';
+
+// Step components reused from ContentGenerationModal
+import { MembersStep } from '../pages/identity/ContentGenerationModal/MembersStep';
+import { ConfirmStep } from '../pages/identity/ContentGenerationModal/ConfirmStep';
+import { GeneratingStep } from '../pages/identity/ContentGenerationModal/GeneratingStep';
+import { VideoQueuedStep } from '../pages/identity/ContentGenerationModal/VideoQueuedStep';
+import { SuccessStep } from '../pages/identity/ContentGenerationModal/SuccessStep';
+import ErrorStep from '../pages/identity/ContentGenerationModal/ErrorStep';
+
+import {
+  CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, LINEUP_OPTIONS_SUBTYPES,
+  type MatchWizardProps, type ContentType,
+} from './matchWizardTypes';
 import { useMatchWizardData } from './useMatchWizardData';
 import { MatchWizardLineupStep } from './MatchWizardLineupStep';
 import styles from './MatchWizard.module.css';
@@ -24,22 +36,31 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
   const d = useMatchWizardData(isOpen, onClose, initialMatchId);
   const {
     currentStep, setCurrentStep, selectedMatch,
-    lineupSlots, lineupFormation, lineupSaving,
+    lineupSlots, lineupFormation, setLineupFormation, lineupSaving,
     selectedContentPhase, setSelectedContentPhase,
-    isContentModalOpen, selectedTemplate, selectedContentTypeLabel,
+    selectedTemplate, selectedContentTypeLabel,
+    selectedType, isLineupFlow,
+    options, seasonSquad, videoPoll,
     matchesLoading, upcomingMatches,
     pendingContent,
-    handleContentSelect, handleLineupConfirm, handleReviewConfirm,
-    handleContentModalClose, handleContentGenerated,
+    // Generation
+    progress, generationError, generatedOutput,
+    generatedVariants, selectedVariantIndex, setSelectedVariantIndex,
+    savingAsset, saveSuccess, savedVariantIndices,
+    homeTeamName, awayTeamName, matchDataForApi,
+    // Handlers
+    handleContentSelect, handleLineupConfirm, handleOptionsConfirm, handleReviewConfirm,
+    handleGenerate, handleSaveAsAsset, handleSaveAllAsAssets, handleSaveVariantByIndex,
     handleBack, handleClose,
     getStepTitle, setSelectedMatch, filledPositions, totalPositions,
     matchesError, templatesError, squadError, saveError,
     retrySquad, retryTemplates,
   } = d;
 
-  // Wizard footer — rendered via BottomSheet native footer slot so it's
-  // always visible outside the scrollable body, guaranteed by the design-system
-  // flex layout (no dependency on utility classes inside the body).
+  // Steps that show a back button in the header
+  const showBackButton = !['match', 'generating', 'video_queued', 'success'].includes(currentStep);
+
+  // Footer — only shown for steps that need it
   const wizardFooter = (() => {
     if (currentStep === 'match' && selectedMatch) {
       return (
@@ -49,16 +70,24 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
         </button>
       );
     }
-    if (currentStep === 'review') {
-      return null;
+    if (currentStep === 'options') {
+      const isGoal = pendingContent?.subtype === 'goal';
+      return (
+        <button
+          onClick={handleOptionsConfirm}
+          disabled={isGoal && !options.goalScorerId}
+          className={`w-full rounded-12 border-none fw-600 cursor-pointer flex-center gap-8 text-white fs-15 ${styles.primaryBtn}`}
+        >
+          Verder<ChevronRight size={18} />
+        </button>
+      );
     }
     return null;
   })();
 
   return (
-    <>
     <BottomSheet
-      isOpen={isOpen && !isContentModalOpen}
+      isOpen={isOpen}
       onClose={handleClose}
       bodyClassName={styles.sheetBody}
       footer={wizardFooter || undefined}
@@ -68,7 +97,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
 
         {/* ── Header: back + title + close ─────────────────────────── */}
         <div className={`flex-row gap-12 border-bottom ${styles.header}`}>
-          {currentStep !== 'match' ? (
+          {showBackButton ? (
             <button onClick={handleBack} aria-label="Terug"
               className={`flex-center bg-surface-2 border cursor-pointer text-primary fs-20 rounded-10 ${styles.headerBtn}`}>←</button>
           ) : <div className={styles.headerSpacer} />}
@@ -209,7 +238,75 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
             </div>
           )}
 
-          {/* ── Step 4: Review & Confirm ───────────────────────────── */}
+          {/* ── Step 4: Options ────────────────────────────────────── */}
+          {currentStep === 'options' && pendingContent && (() => {
+            const subtype = pendingContent.subtype;
+
+            // Lineup-type options: formation, closeup style, animation, background
+            if (LINEUP_OPTIONS_SUBTYPES.has(subtype) && selectedTemplate) {
+              return (
+                <MembersStep
+                  selectedType={selectedType}
+                  selectedTemplate={selectedTemplate}
+                  isLineupFlow={true}
+                  seasonSquad={seasonSquad.seasonSquad}
+                  selectedMembers={seasonSquad.selectedMembers}
+                  setSelectedMembers={seasonSquad.setSelectedMembers}
+                  lineupFormation={lineupFormation}
+                  setLineupFormation={setLineupFormation}
+                  lineupCloseupStyle={options.lineupCloseupStyle}
+                  setLineupCloseupStyle={options.setLineupCloseupStyle}
+                  lineupAnimationStyle={options.lineupAnimationStyle}
+                  setLineupAnimationStyle={options.setLineupAnimationStyle}
+                  lineupIntroStyle={options.lineupIntroStyle}
+                  setLineupIntroStyle={options.setLineupIntroStyle}
+                  selectedBackgroundUrl={options.selectedBackgroundUrl}
+                  setSelectedBackgroundUrl={options.setSelectedBackgroundUrl}
+                  appBackgrounds={options.appBackgrounds}
+                />
+              );
+            }
+
+            // Type-specific config: flyer variant, goal score, match summary
+            return (
+              <ConfirmStep
+                selectedType={selectedType}
+                selectedTemplate={selectedTemplate}
+                contentTypeLabel={selectedContentTypeLabel}
+                matchData={matchDataForApi}
+                seasonSquad={seasonSquad.seasonSquad}
+                matchFlyerVariant={options.matchFlyerVariant}
+                setMatchFlyerVariant={options.setMatchFlyerVariant}
+                flyerMemberId={options.flyerMemberId}
+                setFlyerMemberId={options.setFlyerMemberId}
+                flyerActionStyle={options.flyerActionStyle}
+                setFlyerActionStyle={options.setFlyerActionStyle}
+                flyerPhotoLayout={options.flyerPhotoLayout}
+                setFlyerPhotoLayout={options.setFlyerPhotoLayout}
+                flyerPhotoSlots={options.flyerPhotoSlots}
+                setFlyerPhotoSlots={options.setFlyerPhotoSlots}
+                goalScoreHome={options.goalScoreHome}
+                setGoalScoreHome={options.setGoalScoreHome}
+                goalScoreAway={options.goalScoreAway}
+                setGoalScoreAway={options.setGoalScoreAway}
+                goalScorerId={options.goalScorerId}
+                setGoalScorerId={options.setGoalScorerId}
+                summaryScoreHome={options.summaryScoreHome}
+                setSummaryScoreHome={options.setSummaryScoreHome}
+                summaryScoreAway={options.summaryScoreAway}
+                setSummaryScoreAway={options.setSummaryScoreAway}
+                summaryGoalScorers={options.summaryGoalScorers}
+                setSummaryGoalScorers={options.setSummaryGoalScorers}
+                selectedBackgroundUrl={options.selectedBackgroundUrl}
+                setSelectedBackgroundUrl={options.setSelectedBackgroundUrl}
+                appBackgrounds={options.appBackgrounds}
+                homeTeamName={homeTeamName}
+                awayTeamName={awayTeamName}
+              />
+            );
+          })()}
+
+          {/* ── Step 5: Review & Confirm ───────────────────────────── */}
           {currentStep === 'review' && pendingContent && selectedMatch && (() => {
             const allTypes = [...CONTENT_TYPES.pre, ...CONTENT_TYPES.during, ...CONTENT_TYPES.post];
             const ct = allTypes.find(c => c.key === pendingContent.key);
@@ -284,37 +381,67 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               </div>
             );
           })()}
+
+          {/* ── Step 6: Generating ─────────────────────────────────── */}
+          {currentStep === 'generating' && (
+            <GeneratingStep
+              progress={progress}
+              selectedType={selectedType}
+              selectedTemplate={selectedTemplate}
+              videoJobStatus={videoPoll.videoJobStatus || ''}
+              videoJobProgressRaw={videoPoll.videoJobProgressRaw}
+              videoJobMeta={videoPoll.videoJobMeta}
+              videoJobId={videoPoll.videoJobId}
+              onClose={handleClose}
+            />
+          )}
+
+          {/* ── Step 7a: Video Queued ──────────────────────────────── */}
+          {currentStep === 'video_queued' && (
+            <VideoQueuedStep
+              videoOutputUrl={videoPoll.videoOutputUrl}
+              videoJobStatus={videoPoll.videoJobStatus || ''}
+              videoJobProgressRaw={videoPoll.videoJobProgressRaw}
+              videoThumbnailUrl={videoPoll.videoThumbnailUrl}
+              videoApprovalStatus={videoPoll.videoApprovalStatus}
+              videoApprovalError={videoPoll.videoApprovalError}
+              handleVideoApproval={videoPoll.handleVideoApproval}
+              selectedType={selectedType}
+              onClose={handleClose}
+            />
+          )}
+
+          {/* ── Step 7b: Success (images/text) ─────────────────────── */}
+          {currentStep === 'success' && (
+            <SuccessStep
+              generatedOutput={generatedOutput}
+              generatedVariants={generatedVariants}
+              selectedVariantIndex={selectedVariantIndex}
+              setSelectedVariantIndex={setSelectedVariantIndex}
+              savingAsset={savingAsset}
+              saveSuccess={saveSuccess}
+              savedVariantIndices={savedVariantIndices}
+              selectedType={selectedType}
+              selectedTemplate={selectedTemplate}
+              matchData={matchDataForApi}
+              handleSaveAsAsset={handleSaveAsAsset}
+              handleSaveAllAsAssets={handleSaveAllAsAssets}
+              handleSaveVariantByIndex={handleSaveVariantByIndex}
+              handleGenerateInternal={handleGenerate}
+              onClose={handleClose}
+            />
+          )}
+
+          {/* ── Step 7c: Error ─────────────────────────────────────── */}
+          {currentStep === 'error' && (
+            <ErrorStep
+              error={generationError}
+              onRetry={() => setCurrentStep('review')}
+              onClose={handleClose}
+            />
+          )}
         </div>
       </div>
-
     </BottomSheet>
-
-    {/* Content Generation Modal — rendered outside BottomSheet to avoid stacking */}
-    {selectedMatch && isContentModalOpen && (
-      <ContentGenerationModal
-        isOpen={isContentModalOpen}
-        onClose={handleContentModalClose}
-        onGenerated={handleContentGenerated}
-        matchData={{
-          id: String(selectedMatch.id),
-          title: selectedMatch.title,
-          project: (selectedMatch as any).project,
-          opponent_project: (selectedMatch as any).opponent_project,
-          participations: (selectedMatch as any).participations,
-          start_time: selectedMatch.start_time,
-          location: (selectedMatch as any).location,
-          metadata: {
-            formation: lineupFormation,
-            lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player },
-            ...(selectedMatch as any).metadata,
-          },
-        }}
-        organisationSport={(selectedMatch as any).project?.sport}
-        organisationId={(selectedMatch as any).project?.organisation_id || (selectedMatch as any).organisation?.id}
-        template={selectedTemplate}
-        contentTypeLabel={selectedContentTypeLabel}
-      />
-    )}
-    </>
   );
 }

@@ -3,7 +3,7 @@
  */
 import { Image, Video, FileText, Play, Zap, Users, Clock } from 'lucide-react';
 
-export type WizardStep = 'match' | 'content' | 'lineup' | 'review';
+export type WizardStep = 'match' | 'content' | 'lineup' | 'options' | 'review' | 'generating' | 'video_queued' | 'success' | 'error';
 export type ContentPhase = 'pre' | 'during' | 'post';
 export type OutputType = 'video' | 'image' | 'text';
 
@@ -46,6 +46,14 @@ export interface SquadMember {
 export const LINEUP_REQUIRED_SUBTYPES = new Set([
   'lineup', 'lineup_flyer', 'walkon', 'poster', 'match_intro',
 ]);
+
+/** Content types that have a dedicated options step (background, style, score, etc.) */
+export const HAS_OPTIONS_SUBTYPES = new Set([
+  'lineup', 'lineup_flyer', 'flyer', 'goal', 'match_summary',
+]);
+
+/** Subset of options types where lineup-style options are shown (formation, closeup, animation). */
+export const LINEUP_OPTIONS_SUBTYPES = new Set(['lineup', 'lineup_flyer']);
 
 /** Keys map to real template subtype values from backend. */
 export const CONTENT_TYPES: Record<ContentPhase, ContentType[]> = {
