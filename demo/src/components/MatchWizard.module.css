@@ -38,6 +38,12 @@
   touch-action: pan-y;
 }
 
+@media (max-width: 639px) {
+  .scrollArea {
+    padding-bottom: calc(var(--tr-bottom-navbar-offset, 96px) + 16px);
+  }
+}
+
 /* ── Header ─────────────────────────────────────────── */
 .header {
   padding: 4px 16px 12px;
@@ -407,10 +413,6 @@
   .matchCard,
   .contentCard {
     min-height: 48px;
-  }
-
-  .lineupStepWrap {
-    padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
   }
 
   .phaseTab {

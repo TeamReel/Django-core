@@ -193,7 +193,9 @@ export default function MainLayout() {
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: isMobile ? '12px' : '24px',
-            paddingBottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px))' : '24px', // Extra space for bottom nav on mobile
+            paddingBottom: isMobile
+              ? 'max(var(--tr-bottom-navbar-offset, calc(96px + env(safe-area-inset-bottom, 0px))), calc(96px + env(safe-area-inset-bottom, 0px)))'
+              : '24px',
             backgroundColor: 'var(--app-surface-1)',
             position: 'relative'
           }}
