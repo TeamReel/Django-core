@@ -51,7 +51,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
     file_url = serializers.SerializerMethodField()
     storage_path = serializers.CharField(source="file.storage_path", read_only=True)
     file_id = serializers.UUIDField(source="file.id", read_only=True)
-    project_id = serializers.UUIDField(source="project.id", read_only=True)
+    project_id = serializers.IntegerField(source="project.id", read_only=True)
     activity_id = serializers.UUIDField(source="activity.id", read_only=True, default=None)
     created_by_name = serializers.CharField(source="created_by.get_full_name", read_only=True)
 

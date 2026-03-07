@@ -162,7 +162,20 @@ export function useContentGeneration({
             subtype: initialTemplate.template_subtype || '',
             label: contentTypeLabel || initialTemplate.name,
           });
+
+          // If lineup data was already provided (e.g. from MatchWizard),
+          // skip directly to confirm — no need to ask for lineup again.
+          const hasLineupData = savedLineup && (savedLineup.goalkeeper?.length || savedLineup.player?.length);
+          const isLineupSubtype =
+            initialTemplate.template_subtype === 'lineup' ||
+            initialTemplate.template_subtype === 'lineup_flyer' ||
+            initialTemplate.template_subtype === 'poster' ||
+            initialTemplate.template_subtype === 'walkon';
+
           if (initialTemplate.template_subtype === 'goal' || initialTemplate.template_subtype === 'match_intro') {
+            setStep('confirm');
+          } else if (isLineupSubtype && hasLineupData) {
+            // Lineup already filled in by caller — go straight to confirm
             setStep('confirm');
           } else if (initialTemplate.template_subtype === 'poster') {
             setStep('members');

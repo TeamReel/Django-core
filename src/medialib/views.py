@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Prefetch
-from .models import MediaItem, MediaTag, Collection
+from .models import MediaItem, MediaTag, Collection, MediaItemRelation
 from .serializers import (
     MediaItemSerializer,
     MediaTagSerializer,
@@ -50,36 +50,53 @@ class MediaItemViewSet(viewsets.ModelViewSet):
         - is staff/superuser, OR
         - has a ProjectMembership for the item's project, OR
         - has an Organisation Membership for the project's organisation.
+
+        Uses Exists subqueries instead of JOINs to avoid duplicates
+        (no .distinct() needed), which is compatible with CursorPagination.
         """
         user = self.request.user
 
         if user.is_staff or user.is_superuser:
             queryset = MediaItem.objects.all()
         else:
-            from django.db.models import Q
+            from django.db.models import Exists, OuterRef
+            from projects.models import ProjectMembership
+            from organisations.models import Membership as OrgMembership
 
             queryset = MediaItem.objects.filter(
                 # Direct project membership
-                Q(
-                    project__memberships__user=user,
-                    project__memberships__deleted_at__isnull=True,
+                Exists(
+                    ProjectMembership.objects.filter(
+                        project_id=OuterRef("project_id"),
+                        user=user,
+                        deleted_at__isnull=True,
+                    )
                 )
                 # Parent project membership (club admin sees team media)
-                | Q(
-                    project__parent_project__memberships__user=user,
-                    project__parent_project__memberships__deleted_at__isnull=True,
+                | Exists(
+                    ProjectMembership.objects.filter(
+                        project_id=OuterRef("project__parent_project_id"),
+                        user=user,
+                        deleted_at__isnull=True,
+                    )
                 )
                 # Child project membership (team member sees club-level media)
-                | Q(
-                    project__children__memberships__user=user,
-                    project__children__memberships__deleted_at__isnull=True,
+                | Exists(
+                    ProjectMembership.objects.filter(
+                        project__parent_project_id=OuterRef("project_id"),
+                        user=user,
+                        deleted_at__isnull=True,
+                    )
                 )
                 # Organisation membership fallback
-                | Q(
-                    project__organisation__memberships__user=user,
-                    project__organisation__memberships__is_active=True,
+                | Exists(
+                    OrgMembership.objects.filter(
+                        organisation_id=OuterRef("project__organisation_id"),
+                        user=user,
+                        is_active=True,
+                    )
                 )
-            ).distinct()
+            )  # No .distinct() needed with Exists subqueries
 
         queryset = queryset.select_related("file", "project", "created_by").prefetch_related("tags")
 
@@ -94,9 +111,17 @@ class MediaItemViewSet(viewsets.ModelViewSet):
                 app_label, model_name = target_type.split(".")
 
                 ct = ContentType.objects.get(app_label=app_label, model=model_name)
+                from django.db.models import Exists, OuterRef as OR2
+
                 queryset = queryset.filter(
-                    relations__content_type=ct, relations__object_id=target_id
-                ).distinct()
+                    Exists(
+                        MediaItemRelation.objects.filter(
+                            media_item_id=OR2("pk"),
+                            content_type=ct,
+                            object_id=target_id,
+                        )
+                    )
+                )
             except (ValueError, ContentType.DoesNotExist):
                 # Return empty queryset if target type is invalid
                 return queryset.none()

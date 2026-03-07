@@ -10,4 +10,4 @@ class MediaItemCursorPagination(CursorPagination):
     page_size = 24  # Divisible by 2, 3, 4, 6 for grid layouts
     ordering = "-created_at"
     page_size_query_param = "page_size"
-    max_page_size = 100
+    max_page_size = 200

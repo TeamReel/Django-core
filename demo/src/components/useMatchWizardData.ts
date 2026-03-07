@@ -298,11 +298,17 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     if (pendingContent) openContentGeneration(pendingContent.key, pendingContent.label, pendingContent.subtype, pendingContent.templateType);
   };
 
-  const handleContentModalClose = () => { setIsContentModalOpen(false); setSelectedTemplate(null); setSelectedContentTypeLabel(''); };
+  const handleContentModalClose = () => {
+    setIsContentModalOpen(false);
+    setSelectedTemplate(null);
+    setSelectedContentTypeLabel('');
+    // Close the entire wizard when content modal is closed (flow complete)
+    handleClose();
+  };
   const handleContentGenerated = (_message?: string) => {
-    // After successful generation: close content modal + entire wizard
-    handleContentModalClose();
-    setTimeout(() => handleClose(), 100);
+    // Don't auto-close — let ContentGenerationModal show its success/preview step.
+    // The user can review the result and close manually via the modal's close button,
+    // which triggers handleContentModalClose → wizard stays open → user closes wizard.
   };
 
   const handleBack = () => {
