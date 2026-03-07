@@ -116,6 +116,7 @@ export function useContentGeneration({
   // ─── Effects: reset on open/close ───────────────────────
   const hasInitializedRef = useRef(false);
   const lastOpenStateRef = useRef(false);
+  const autoGenerateRef = useRef(false);
 
   useEffect(() => {
     const freshOpen = isOpen && !lastOpenStateRef.current;
@@ -163,21 +164,17 @@ export function useContentGeneration({
             label: contentTypeLabel || initialTemplate.name,
           });
 
-          // If lineup data was already provided (e.g. from MatchWizard),
-          // skip directly to confirm — no need to ask for lineup again.
           const hasLineupData = savedLineup && (savedLineup.goalkeeper?.length || savedLineup.player?.length);
-          const isLineupSubtype =
-            initialTemplate.template_subtype === 'lineup' ||
-            initialTemplate.template_subtype === 'lineup_flyer' ||
-            initialTemplate.template_subtype === 'poster' ||
-            initialTemplate.template_subtype === 'walkon';
+          const subtype = initialTemplate.template_subtype || '';
 
-          if (initialTemplate.template_subtype === 'goal' || initialTemplate.template_subtype === 'match_intro') {
+          // Types that need no extra config — auto-generate directly from MatchWizard
+          const AUTO_GENERATE = new Set(['lineup', 'lineup_flyer', 'walkon', 'match_intro']);
+          if (AUTO_GENERATE.has(subtype) && (subtype === 'match_intro' || hasLineupData)) {
+            autoGenerateRef.current = true;
+            setStep('generating');
+          } else if (subtype === 'goal') {
             setStep('confirm');
-          } else if (isLineupSubtype && hasLineupData) {
-            // Lineup already filled in by caller — go straight to confirm
-            setStep('confirm');
-          } else if (initialTemplate.template_subtype === 'poster') {
+          } else if (subtype === 'poster') {
             setStep('members');
           } else {
             const needsMembers = initialTemplate.input_requirements?.members &&
@@ -194,8 +191,19 @@ export function useContentGeneration({
       }
     } else {
       hasInitializedRef.current = false;
+      autoGenerateRef.current = false;
     }
   }, [isOpen, initialTemplate, contentTypeLabel]);
+
+  // Auto-generate: when opening from MatchWizard with all data ready,
+  // skip confirm and start generation immediately.
+  useEffect(() => {
+    if (autoGenerateRef.current && step === 'generating' && selectedTemplate) {
+      autoGenerateRef.current = false;
+      handleGenerateInternal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   // ─── Fetch templates ────────────────────────────────────
   const doFetchTemplates = async (templateType: string, templateSubtype: string) => {
