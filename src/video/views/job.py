@@ -265,9 +265,7 @@ class VideoJobViewSet(viewsets.ModelViewSet):
         output = VideoJobDetailSerializer(job, context=self.get_serializer_context())
         return Response(output.data, status=status.HTTP_200_OK)
 
-    def _save_approved_video_to_activity(
-        self, job: VideoJob, user
-    ) -> dict[str, Any]:
+    def _save_approved_video_to_activity(self, job: VideoJob, user) -> dict[str, Any]:
         """Create a MediaItem linking the approved video to its activity/match.
 
         Returns a dict with success/error info for debugging.
@@ -296,7 +294,9 @@ class VideoJobViewSet(viewsets.ModelViewSet):
             from src.medialib.models import MediaItemState
 
             activity = Activity.objects.select_related(
-                "project", "project__parent_project", "project__organisation",
+                "project",
+                "project__parent_project",
+                "project__organisation",
             ).get(id=activity_id)
             project = activity.project or job.project
 
@@ -348,9 +348,11 @@ class VideoJobViewSet(viewsets.ModelViewSet):
 
             file_asset = job.output_file
             mime_type = getattr(file_asset, "mime_type", "video/mp4") or "video/mp4"
-            file_size = getattr(file_asset, "file_size", None) or getattr(
-                file_asset, "file_size_bytes", None
-            ) or 0
+            file_size = (
+                getattr(file_asset, "file_size", None)
+                or getattr(file_asset, "file_size_bytes", None)
+                or 0
+            )
 
             media_item = MediaItem.objects.create(
                 file=file_asset,
@@ -1085,6 +1087,54 @@ class VideoJobViewSet(viewsets.ModelViewSet):
                 "variant_id": variant_id,
             },
             status=status.HTTP_202_ACCEPTED,
+        )
+
+    @action(detail=False, methods=["get"], url_path="counts")
+    def counts(self, request: Request) -> Response:
+        """Return aggregated status counts for video jobs (lightweight).
+
+        GET /api/v1/video/jobs/counts/
+
+        Designed for queue badge / tab count purposes.  Uses a single DB
+        aggregate query instead of serialising every job.
+
+        Response::
+
+            {
+                "video_review": 2,
+                "video_active": 1,
+                "video_completed": 8,
+                "video_failed": 0,
+                "video_total": 11
+            }
+        """
+        from django.db.models import Count, Q
+
+        qs = self.get_queryset()
+
+        agg = qs.aggregate(
+            review=Count(
+                "id",
+                filter=Q(status="completed", workflow_instance__current_state="ready_for_review"),
+            ),
+            active=Count("id", filter=Q(status__in=["queued", "processing"])),
+            completed_no_review=Count(
+                "id",
+                filter=Q(status="completed")
+                & ~Q(workflow_instance__current_state="ready_for_review"),
+            ),
+            failed=Count("id", filter=Q(status__in=["failed", "cancelled"])),
+            total=Count("id"),
+        )
+
+        return Response(
+            {
+                "video_review": agg["review"],
+                "video_active": agg["active"],
+                "video_completed": agg["completed_no_review"],
+                "video_failed": agg["failed"],
+                "video_total": agg["total"],
+            }
         )
 
     @action(detail=False, methods=["get"], url_path="active-processing-jobs")

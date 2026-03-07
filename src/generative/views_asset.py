@@ -2795,6 +2795,70 @@ def list_generation_jobs_view(request: Request) -> Response:
 
 
 # =============================================================================
+# Generation Job Counts — lightweight aggregate for queue badges
+# =============================================================================
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def generation_job_counts_view(request: Request) -> Response:
+    """Return aggregated status counts for AI generation jobs.
+
+    GET /api/v1/generative/jobs/counts/
+
+    This is a lightweight alternative to list_generation_jobs_view designed
+    for queue badge/tab counts.  It performs a single DB aggregation query
+    instead of loading, enriching and serialising every job.
+
+    Response shape::
+
+        {
+            "ai_review": 3,
+            "ai_active": 1,
+            "ai_approved": 12,
+            "ai_rejected": 0,
+            "ai_total": 16
+        }
+    """
+    from django.db.models import Count, Q
+
+    from .models import GenerationJob
+
+    qs = GenerationJob.objects.all()
+
+    # Non-admin users only see their own jobs (same rule as list endpoint)
+    if request.user and request.user.is_authenticated and not request.user.is_staff:
+        qs = qs.filter(created_by_id=request.user.id)
+
+    agg = qs.aggregate(
+        review=Count(
+            "id",
+            filter=Q(status="completed")
+            & (Q(approval_status="pending_review") | Q(approval_status__isnull=True)),
+        ),
+        active=Count(
+            "id",
+            filter=Q(status__in=["queued", "waiting", "processing", "retrying"]),
+        ),
+        approved=Count("id", filter=Q(approval_status="approved")),
+        rejected=Count("id", filter=Q(approval_status="rejected")),
+        failed=Count("id", filter=Q(status__in=["failed", "cancelled"])),
+        total=Count("id"),
+    )
+
+    return Response(
+        {
+            "ai_review": agg["review"],
+            "ai_active": agg["active"],
+            "ai_approved": agg["approved"],
+            "ai_rejected": agg["rejected"],
+            "ai_failed": agg["failed"],
+            "ai_total": agg["total"],
+        }
+    )
+
+
+# =============================================================================
 # Crop Closeup From Fullbody — smart alpha-channel detection, no AI
 # =============================================================================
 

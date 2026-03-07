@@ -21,6 +21,7 @@ from .views_asset import (
     crop_closeup_from_fullbody_view,
     crop_halfbody_from_fullbody_view,
     generate_asset_view,
+    generation_job_counts_view,
     generation_task_status_view,
     list_asset_history_view,
     list_asset_models_view,
@@ -56,6 +57,7 @@ urlpatterns = [
     path("assets/crop-halfbody/", crop_halfbody_from_fullbody_view, name="asset-crop-halfbody"),
     # Generation job queue (Workflow UI)
     path("jobs/", list_generation_jobs_view, name="generation-jobs-list"),
+    path("jobs/counts/", generation_job_counts_view, name="generation-jobs-counts"),
     path("jobs/<str:task_id>/review/", review_generation_job_view, name="generation-job-review"),
     # Standard CRUD
     path("", include(router.urls)),

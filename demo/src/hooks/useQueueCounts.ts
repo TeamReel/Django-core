@@ -13,7 +13,6 @@
  */
 import { useSyncExternalStore } from 'react';
 import { getApiBaseUrl } from '../utils/apiBase';
-import type { GenerationJob } from './useGenerationJobs';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -80,67 +79,43 @@ async function fetchCounts() {
   const apiBase = getApiBaseUrl();
 
   try {
-    const [aiRes, videoRes] = await Promise.all([
-      fetch(`${apiBase}/api/v1/generative/jobs/?limit=200`, { credentials: 'include' }).then((r) =>
+    // Use lightweight server-side counts endpoints instead of fetching all jobs.
+    // This reduces ~500 KB of data transfer to ~200 bytes per poll.
+    const [aiCountsRes, videoCountsRes] = await Promise.all([
+      fetch(`${apiBase}/api/v1/generative/jobs/counts/`, { credentials: 'include' }).then((r) =>
         r.ok ? r.json() : null,
       ),
-      fetch(`${apiBase}/api/v1/video/jobs/?limit=200`, { credentials: 'include' }).then((r) =>
+      fetch(`${apiBase}/api/v1/video/jobs/counts/`, { credentials: 'include' }).then((r) =>
         r.ok ? r.json() : null,
       ),
     ]);
 
-    // Parse AI jobs
-    const aiPayload = aiRes?.data ?? aiRes;
-    const aiJobs: GenerationJob[] = aiPayload?.results ?? (Array.isArray(aiPayload) ? aiPayload : []);
+    // Unwrap envelope if needed
+    const ai = aiCountsRes?.data ?? aiCountsRes;
+    const vid = videoCountsRes?.data ?? videoCountsRes;
 
-    // Parse video jobs — handle both envelope and direct formats
-    const videoPayload = videoRes?.data ?? videoRes;
-    let videoJobs: { status: string; job_type?: string }[] = [];
-    if (videoPayload?.results && Array.isArray(videoPayload.results)) {
-      videoJobs = videoPayload.results;
-    } else if (videoPayload?.data && Array.isArray(videoPayload.data.results)) {
-      videoJobs = videoPayload.data.results;
-    } else if (videoPayload?.data && Array.isArray(videoPayload.data)) {
-      videoJobs = videoPayload.data;
-    } else if (Array.isArray(videoPayload)) {
-      videoJobs = videoPayload;
+    if (ai && vid) {
+      setSnapshot({
+        review: (ai.ai_review ?? 0) + (vid.video_review ?? 0),
+        active: (ai.ai_active ?? 0) + (vid.video_active ?? 0),
+        completed: (ai.ai_approved ?? 0) + (vid.video_completed ?? 0),
+        rejected: (ai.ai_rejected ?? 0) + (ai.ai_failed ?? 0) + (vid.video_failed ?? 0),
+        ai_queue: ai.ai_total ?? 0,
+        video: vid.video_total ?? 0,
+        all: (ai.ai_total ?? 0) + (vid.video_total ?? 0),
+      });
+    } else if (ai) {
+      // Video counts endpoint not available yet — only update AI counts
+      setSnapshot({
+        ...snapshot,
+        review: ai.ai_review ?? 0,
+        active: ai.ai_active ?? 0,
+        completed: ai.ai_approved ?? 0,
+        rejected: (ai.ai_rejected ?? 0) + (ai.ai_failed ?? 0),
+        ai_queue: ai.ai_total ?? 0,
+        all: (ai.ai_total ?? 0) + snapshot.video,
+      });
     }
-
-    // Count per tab
-    const aiReview = aiJobs.filter(
-      (j) => j.status === 'completed' && (j.approval_status === 'pending_review' || !j.approval_status),
-    ).length;
-
-    const videoReview = videoJobs.filter(
-      (j: any) => j.status === 'completed' && j.workflow_instance?.current_state === 'ready_for_review',
-    ).length;
-
-    const aiActive = aiJobs.filter(
-      (j) => j.status === 'queued' || j.status === 'waiting' || j.status === 'processing' || j.status === 'retrying',
-    ).length;
-    const videoActive = videoJobs.filter(
-      (j) => j.status === 'queued' || j.status === 'processing',
-    ).length;
-
-    const aiApproved = aiJobs.filter((j) => j.approval_status === 'approved').length;
-    const videoCompleted = videoJobs.filter(
-      (j: any) => j.status === 'completed' && j.workflow_instance?.current_state !== 'ready_for_review',
-    ).length;
-
-    const aiRejected = aiJobs.filter((j) => j.approval_status === 'rejected').length;
-    const videoFailed = videoJobs.filter(
-      (j) => j.status === 'failed' || j.status === 'cancelled',
-    ).length;
-
-    setSnapshot({
-      review: aiReview + videoReview,
-      active: aiActive + videoActive,
-      completed: aiApproved + videoCompleted,
-      rejected: aiRejected + videoFailed,
-      ai_queue: aiJobs.length,
-      video: videoJobs.length,
-      all: aiJobs.length + videoJobs.length,
-    });
   } catch {
     // Silently ignore — don't break UI if queue API is down
   } finally {
