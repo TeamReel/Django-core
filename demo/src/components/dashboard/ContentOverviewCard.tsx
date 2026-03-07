@@ -1,12 +1,14 @@
 /**
  * ContentOverviewCard — Full content inventory per season & match.
  *
- * Groups generation requests into:
+ * Groups content from both GenerationRequests AND MediaItems:
  * - Match content: grouped by match, per content subtype (flyer, lineup, etc.)
  * - Season content: season-level templates
  * - Member content: player profile media
  *
- * Uses generation request API with template info to categorize.
+ * Uses both generation request API and media items API to ensure all
+ * content is shown, including items created outside the generation pipeline
+ * (e.g., lineup videos, match flyers created directly).
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -44,6 +46,9 @@ const SUBTYPE_LABELS: Record<string, string> = {
   in_tenue: 'In Tenue',
   closeup: 'Close-up',
   short_intro: 'Korte Intro',
+  video: 'Video',
+  image: 'Afbeelding',
+  other: 'Overig',
 };
 
 /** Map subtype → output type for chip coloring */
@@ -52,7 +57,31 @@ const SUBTYPE_OUTPUT: Record<string, 'image' | 'video' | 'text'> = {
   poster: 'image', walkon: 'video', anthem: 'video', goal: 'video',
   score_update: 'image', end_score: 'image', match_summary: 'text', highlights: 'video',
   profile_photo: 'image', in_tenue: 'image', closeup: 'image', short_intro: 'video',
+  video: 'video', image: 'image', other: 'image',
 };
+
+/** Derive subtype from MediaItem title or mime_type */
+function inferMediaItemSubtype(title: string, mimeType: string): string {
+  const normalized = title.toLowerCase();
+  if (normalized.includes('lineup') && mimeType.startsWith('video/')) return 'lineup';
+  if (normalized.includes('lineup')) return 'lineup_flyer';
+  if (normalized.includes('flyer')) return 'flyer';
+  if (normalized.includes('intro')) return 'match_intro';
+  if (normalized.includes('poster') || normalized.includes('elftal')) return 'poster';
+  if (normalized.includes('walkon') || normalized.includes('walk-on')) return 'walkon';
+  if (normalized.includes('anthem')) return 'anthem';
+  if (normalized.includes('goal') || normalized.includes('doelpunt')) return 'goal';
+  if (normalized.includes('score')) return 'score_update';
+  if (normalized.includes('end') && normalized.includes('score')) return 'end_score';
+  if (normalized.includes('highlight')) return 'highlights';
+  if (normalized.includes('profile')) return 'profile_photo';
+  if (normalized.includes('tenue')) return 'in_tenue';
+  if (normalized.includes('closeup') || normalized.includes('close-up')) return 'closeup';
+  // Fallback based on mime type
+  if (mimeType.startsWith('video/')) return 'video';
+  if (mimeType.startsWith('image/')) return 'image';
+  return 'other';
+}
 
 /* ── Types ──────────────────────────────────────────────── */
 
@@ -105,41 +134,90 @@ export const ContentOverviewCard: React.FC = () => {
         setLoading(true);
         const projectParam = project ? `&project=${project.id}` : '';
 
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/generative/requests/?status=completed${projectParam}&page_size=500&ordering=-created_at`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-        if (!res.ok) return;
+        // Fetch both GenerationRequests AND MediaItems in parallel
+        const [genRes, mediaRes] = await Promise.all([
+          fetch(
+            `${apiBaseUrl}/api/v1/generative/requests/?status=completed${projectParam}&page_size=500&ordering=-created_at`,
+            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+          ),
+          fetch(
+            `${apiBaseUrl}/api/v1/media/items/?${projectParam.replace('&', '')}&page_size=500&ordering=-created_at`,
+            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+          ),
+        ]);
 
-        const data = await res.json();
-        const items = extractItems<any>(data);
+        // Track seen IDs to avoid double-counting (some MediaItems are linked to GenRequests)
+        const seenMediaIds = new Set<string>();
 
         // Categorize by template_type + subtype + activity
         const matchMap = new Map<string, { title: string; date?: string; subtypes: Record<string, number> }>();
         const seasonSubtypes: Record<string, number> = {};
         const memberSubtypes: Record<string, number> = {};
 
-        for (const req of items) {
-          const tplType = req.template?.template_type || '';
-          const subtype = req.template?.template_subtype || req.input_data?.template_subtype || 'other';
+        // Process GenerationRequests
+        if (genRes.ok) {
+          const genData = await genRes.json();
+          const genItems = extractItems<any>(genData);
 
-          if (tplType === 'member') {
-            memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
-          } else if (tplType === 'season') {
-            seasonSubtypes[subtype] = (seasonSubtypes[subtype] || 0) + 1;
-          } else if (['pre_match', 'during_match', 'post_match'].includes(tplType)) {
-            const actId = req.input_data?.activity_id || req.metadata?.activity_id || 'unknown';
-            const matchTitle = req.input_data?.match_title ||
-              req.metadata?.match_title ||
-              req.input_data?.title ||
-              'Wedstrijd';
-            const matchDate = req.input_data?.match_date || req.metadata?.match_date;
-
-            if (!matchMap.has(actId)) {
-              matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
+          for (const req of genItems) {
+            // Track linked media IDs to avoid double-counting
+            if (req.result?.media_item_id) {
+              seenMediaIds.add(req.result.media_item_id);
             }
-            const m = matchMap.get(actId)!;
-            m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
+
+            const tplType = req.template?.template_type || '';
+            const subtype = req.template?.template_subtype || req.input_data?.template_subtype || 'other';
+
+            if (tplType === 'member') {
+              memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
+            } else if (tplType === 'season') {
+              seasonSubtypes[subtype] = (seasonSubtypes[subtype] || 0) + 1;
+            } else if (['pre_match', 'during_match', 'post_match'].includes(tplType)) {
+              const actId = req.input_data?.activity_id || req.metadata?.activity_id || 'unknown';
+              const matchTitle = req.input_data?.match_title ||
+                req.metadata?.match_title ||
+                req.input_data?.title ||
+                'Wedstrijd';
+              const matchDate = req.input_data?.match_date || req.metadata?.match_date;
+
+              if (!matchMap.has(actId)) {
+                matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
+              }
+              const m = matchMap.get(actId)!;
+              m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
+            }
+          }
+        }
+
+        // Process MediaItems (only those not already counted)
+        if (mediaRes.ok) {
+          const mediaData = await mediaRes.json();
+          const mediaItems = extractItems<any>(mediaData);
+
+          for (const item of mediaItems) {
+            // Skip if already counted via GenerationRequest
+            if (seenMediaIds.has(item.id)) continue;
+
+            const actId = item.activity_id || item.activity;
+            const mimeType = item.mime_type || '';
+            const title = item.title || '';
+            const subtype = inferMediaItemSubtype(title, mimeType);
+
+            // If has activity_id, treat as match content
+            if (actId) {
+              const matchTitle = item.activity_title || item.title || 'Wedstrijd';
+              const matchDate = item.activity_date;
+
+              if (!matchMap.has(actId)) {
+                matchMap.set(actId, { title: matchTitle, date: matchDate, subtypes: {} });
+              }
+              const m = matchMap.get(actId)!;
+              m.subtypes[subtype] = (m.subtypes[subtype] || 0) + 1;
+            } else if (item.member_id || item.member) {
+              // Member content
+              memberSubtypes[subtype] = (memberSubtypes[subtype] || 0) + 1;
+            }
+            // Note: MediaItems without activity or member are not displayed (no clear category)
           }
         }
 

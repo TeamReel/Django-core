@@ -53,6 +53,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
     file_id = serializers.UUIDField(source="file.id", read_only=True)
     project_id = serializers.IntegerField(source="project.id", read_only=True)
     activity_id = serializers.UUIDField(source="activity.id", read_only=True, default=None)
+    activity_title = serializers.CharField(source="activity.title", read_only=True, default=None)
     created_by_name = serializers.CharField(source="created_by.get_full_name", read_only=True)
 
     # Write fields
@@ -72,6 +73,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
             "file_id",
             "storage_path",
             "activity_id",
+            "activity_title",
             "title",
             "description",
             "mime_type",
@@ -95,6 +97,7 @@ class MediaItemSerializer(serializers.ModelSerializer):
             "file_id",
             "storage_path",
             "activity_id",
+            "activity_title",
             "state",
             "extraction_metadata",
             "width",

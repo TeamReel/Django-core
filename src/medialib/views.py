@@ -91,7 +91,9 @@ class MediaItemViewSet(viewsets.ModelViewSet):
                 # be scoped through explicit ProjectMembership.
             )  # No .distinct() needed with Exists subqueries
 
-        queryset = queryset.select_related("file", "project", "created_by").prefetch_related("tags")
+        queryset = queryset.select_related(
+            "file", "project", "created_by", "activity"
+        ).prefetch_related("tags")
 
         # Legacy manual filters removed in favor of MediaItemFilterSet
         # Target/Relation filtering
