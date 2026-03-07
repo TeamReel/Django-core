@@ -13,7 +13,7 @@ import { PullToRefresh, Badge, BottomSheet } from '@django-core/design-system';
 import {
   Play, Download, Share2, X, CheckCircle2, AlertCircle,
   Loader2, ChevronRight, Images, Film, Image as ImageIcon, Sparkles,
-  LayoutGrid, CalendarDays, ChevronDown, ChevronUp,
+  LayoutGrid, CalendarDays,
 } from 'lucide-react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { getAssetTypeLabel } from '../content/contentLibraryTypes';
@@ -327,89 +327,35 @@ function StudioPreviewModal({
 }
 
 // ============================================================================
-// MatchSection — One match with expandable content grid
+// ViewAllSheet — BottomSheet showing all items for one content type or match
 // ============================================================================
 
-function MatchSection({
-  match,
-  onPreview,
-  defaultExpanded = false,
-}: {
-  match: MatchGroup;
-  onPreview: (item: ContentItem) => void;
-  defaultExpanded?: boolean;
-}) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
-
-  const dateStr = match.date
-    ? new Date(match.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })
-    : '';
-
-  const scoreStr =
-    match.scoreHome != null && match.scoreAway != null
-      ? `${match.scoreHome} - ${match.scoreAway}`
-      : '';
-
-  return (
-    <section className={styles.matchSection}>
-      <button
-        className={styles.matchHeader}
-        onClick={() => setExpanded((v) => !v)}
-        type="button"
-      >
-        <div className={styles.matchInfo}>
-          <span className={styles.matchTitle}>
-            {match.isNonMatch ? '📅' : '⚽'}{' '}
-            {match.title}
-          </span>
-          <span className={styles.matchMeta}>
-            {dateStr}
-            {scoreStr && <> &middot; {scoreStr}</>}
-            {match.homeAway && <> &middot; {match.homeAway === 'home' ? 'Thuis' : 'Uit'}</>}
-            {' '}&middot; {match.items.length} item{match.items.length !== 1 ? 's' : ''}
-          </span>
-        </div>
-        <span className={styles.matchChevron}>
-          {expanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-        </span>
-      </button>
-
-      {expanded && (
-        <div className={styles.matchGrid}>
-          {match.items.map((item) => (
-            <StudioContentCard key={item.id} item={item} onPreview={onPreview} />
-          ))}
-        </div>
-      )}
-    </section>
-  );
+interface ViewAllData {
+  title: string;
+  items: ContentItem[];
 }
 
-// ============================================================================
-// ViewAllSheet — BottomSheet showing all items for one content type
-// ============================================================================
-
 function ViewAllSheet({
-  group,
+  data: sheetData,
   isOpen,
   onClose,
   onPreview,
 }: {
-  group: ContentGroup | null;
+  data: ViewAllData | null;
   isOpen: boolean;
   onClose: () => void;
   onPreview: (item: ContentItem) => void;
 }) {
-  if (!group) return null;
+  if (!sheetData) return null;
 
   return (
     <BottomSheet
       isOpen={isOpen}
       onClose={onClose}
-      title={`${group.icon} ${group.label} (${group.items.length})`}
+      title={`${sheetData.title} (${sheetData.items.length})`}
     >
       <div className={styles.viewAllGrid}>
-        {group.items.map((item) => (
+        {sheetData.items.map((item) => (
           <StudioContentCard key={item.id} item={item} onPreview={(it) => { onClose(); onPreview(it); }} />
         ))}
       </div>
@@ -428,7 +374,7 @@ export default function AIStudioPage() {
 
   const [viewMode, setViewMode] = useState<ViewMode>('type');
   const [previewItem, setPreviewItem] = useState<ContentItem | null>(null);
-  const [viewAllGroup, setViewAllGroup] = useState<ContentGroup | null>(null);
+  const [viewAllData, setViewAllData] = useState<ViewAllData | null>(null);
 
   const handleRefresh = useCallback(async () => {
     await data.refresh();
@@ -549,7 +495,7 @@ export default function AIStudioPage() {
                   key={group.key}
                   group={group}
                   onPreview={(item) => setPreviewItem(item)}
-                  onViewAll={(g) => setViewAllGroup(g)}
+                  onViewAll={(g) => setViewAllData({ title: `${g.icon} ${g.label}`, items: g.items })}
                 />
               ))}
             </div>
@@ -561,22 +507,76 @@ export default function AIStudioPage() {
           <>
             {/* Non-match content first (Seizoen & Leden) */}
             {data.nonMatchGroup && data.nonMatchGroup.items.length > 0 && (
-              <MatchSection
-                match={data.nonMatchGroup}
-                onPreview={(item) => setPreviewItem(item)}
-              />
+              <section className={styles.section}>
+                <div className={styles.sectionHeader}>
+                  <div className={styles.sectionTitleRow}>
+                    <span className={styles.sectionIcon}>📅</span>
+                    <h3 className={styles.sectionTitle}>Seizoen &amp; Leden</h3>
+                    <Badge size="sm" variant="default">{data.nonMatchGroup.items.length}</Badge>
+                  </div>
+                  {data.nonMatchGroup.items.length > 3 && (
+                    <button
+                      className={styles.sectionViewAll}
+                      onClick={() => setViewAllData({ title: '📅 Seizoen & Leden', items: data.nonMatchGroup!.items })}
+                      type="button"
+                    >
+                      Bekijk alles <ChevronRight size={14} />
+                    </button>
+                  )}
+                </div>
+                <div className={styles.sectionScroll}>
+                  {data.nonMatchGroup.items.slice(0, 20).map((item) => (
+                    <StudioContentCard key={item.id} item={item} onPreview={(it) => setPreviewItem(it)} />
+                  ))}
+                </div>
+              </section>
             )}
 
-            {/* Match sections sorted newest first */}
+            {/* Match sections — same horizontal scroll layout as type view */}
             {data.matchGroups.length > 0 ? (
-              data.matchGroups.map((match, idx) => (
-                <MatchSection
-                  key={match.activityId}
-                  match={match}
-                  onPreview={(item) => setPreviewItem(item)}
-                  defaultExpanded={idx === 0}
-                />
-              ))
+              data.matchGroups.map((match) => {
+                const dateStr = match.date
+                  ? new Date(match.date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })
+                  : '';
+                const scoreStr =
+                  match.scoreHome != null && match.scoreAway != null
+                    ? `${match.scoreHome}-${match.scoreAway}`
+                    : '';
+                const subtitle = [
+                  dateStr,
+                  scoreStr,
+                  match.homeAway === 'home' ? 'Thuis' : match.homeAway === 'away' ? 'Uit' : '',
+                ].filter(Boolean).join(' · ');
+
+                return (
+                  <section key={match.activityId} className={styles.section}>
+                    <div className={styles.sectionHeader}>
+                      <div className={styles.sectionTitleRow}>
+                        <span className={styles.sectionIcon}>⚽</span>
+                        <div className={styles.matchTitleBlock}>
+                          <h3 className={styles.sectionTitle}>{match.title}</h3>
+                          {subtitle && <span className={styles.matchSubtitle}>{subtitle}</span>}
+                        </div>
+                        <Badge size="sm" variant="default">{match.items.length}</Badge>
+                      </div>
+                      {match.items.length > 3 && (
+                        <button
+                          className={styles.sectionViewAll}
+                          onClick={() => setViewAllData({ title: `⚽ ${match.title}`, items: match.items })}
+                          type="button"
+                        >
+                          Bekijk alles <ChevronRight size={14} />
+                        </button>
+                      )}
+                    </div>
+                    <div className={styles.sectionScroll}>
+                      {match.items.slice(0, 20).map((item) => (
+                        <StudioContentCard key={item.id} item={item} onPreview={(it) => setPreviewItem(it)} />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })
             ) : (
               !data.nonMatchGroup && (
                 <div className={styles.emptyState}>
@@ -616,9 +616,9 @@ export default function AIStudioPage() {
 
       {/* ── View all bottom sheet ── */}
       <ViewAllSheet
-        group={viewAllGroup}
-        isOpen={!!viewAllGroup}
-        onClose={() => setViewAllGroup(null)}
+        data={viewAllData}
+        isOpen={!!viewAllData}
+        onClose={() => setViewAllData(null)}
         onPreview={(item) => setPreviewItem(item)}
       />
     </PullToRefresh>
