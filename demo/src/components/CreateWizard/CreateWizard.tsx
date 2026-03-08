@@ -7,12 +7,8 @@
  *
  * Architecture (dual-context pattern):
  *   CreateWizardProvider (domain: selectedFlow, prefill)
- *     WizardProvider (navigation: steps, current step, back/next)
- *       WizardShell (UI: BottomSheet, header, progress)
- *
- * Content flow now shows SmartMatchStep first (C1: auto-highlight < 48h),
- * then delegates to MatchWizardV2 once a match is selected.
- * Other flows currently show a stub placeholder.
+ *     → Content flow: ContentFlow (C3 — unified SmartMatch → MatchWizardV2)
+ *     → Other flows: WizardInnerShell (stub)
  */
 import React, { useCallback, useMemo } from 'react';
 
@@ -24,9 +20,8 @@ import {
   type CreateFlowType,
 } from './CreateWizardContext';
 import { ChooseFlowStep } from './steps/ChooseFlowStep';
-import { SmartMatchStep } from './steps/SmartMatchStep';
 import { FlowStubStep } from './steps/FlowStubStep';
-import MatchWizardV2 from '../MatchWizardV2';
+import { ContentFlow } from './flows/ContentFlow';
 
 // ─── Props ────────────────────────────────────────────────
 
@@ -54,32 +49,16 @@ function CreateWizardInner({
   onClose: () => void;
   initialMatchId?: string;
 }) {
-  const { selectedFlow, prefill, resetAll } = useCreateWizard();
+  const { selectedFlow } = useCreateWizard();
 
-  // ── Content flow: SmartMatchStep → MatchWizardV2 ──
-  // Once user picks a match in SmartMatchStep, we store the activityId
-  // in prefill and hand off to MatchWizardV2.
-  // If initialMatchId is provided, skip SmartMatchStep entirely.
-  const matchIdToUse = initialMatchId || prefill.activityId;
-
-  if (selectedFlow === 'content') {
-    // Match already known → go straight to MatchWizardV2
-    if (matchIdToUse) {
-      return (
-        <MatchWizardV2
-          isOpen={isOpen}
-          onClose={() => {
-            resetAll();
-            onClose();
-          }}
-          initialMatchId={matchIdToUse}
-        />
-      );
-    }
-
-    // No match yet → show SmartMatchStep inside our own WizardShell
+  // ── Content flow (C3): single unified wizard ──
+  if (selectedFlow === 'content' || initialMatchId) {
     return (
-      <ContentFlowShell isOpen={isOpen} onClose={onClose} />
+      <ContentFlow
+        isOpen={isOpen}
+        onClose={onClose}
+        initialMatchId={initialMatchId}
+      />
     );
   }
 
@@ -90,46 +69,6 @@ function CreateWizardInner({
       onClose={onClose}
       selectedFlow={selectedFlow}
     />
-  );
-}
-
-// ─── Content flow: SmartMatch step before MatchWizardV2 ───
-
-const CONTENT_STEPS: WizardStepConfig[] = [
-  { id: 'choose', title: 'Wat wil je doen?', showBack: false },
-  { id: 'smartMatch', title: 'Kies wedstrijd' },
-];
-
-function ContentFlowShell({
-  isOpen,
-  onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  const { resetAll, selectedFlow } = useCreateWizard();
-
-  const handleClose = useCallback(() => {
-    resetAll();
-    onClose();
-  }, [resetAll, onClose]);
-
-  return (
-    <WizardProvider
-      steps={CONTENT_STEPS}
-      initialStepId={selectedFlow ? 'smartMatch' : 'choose'}
-      onClose={handleClose}
-    >
-      <WizardShell isOpen={isOpen} showProgress>
-        <WizardStep stepId="choose">
-          <ChooseFlowStep />
-        </WizardStep>
-
-        <WizardStep stepId="smartMatch">
-          <SmartMatchStep />
-        </WizardStep>
-      </WizardShell>
-    </WizardProvider>
   );
 }
 

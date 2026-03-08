@@ -68,7 +68,7 @@ export interface MatchWizardV2Props {
 
 // ─── Inner Component (needs both contexts) ────────────────
 
-function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; initialMatchId?: string }) {
+export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; initialMatchId?: string }) {
   const navigate = useNavigate();
   const { pushToast } = useToast();
   const mw = useMatchWizard();
@@ -507,6 +507,9 @@ function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; initial
     </>
   );
 }
+
+/** Step config — exported for reuse in ContentFlow */
+export { WIZARD_STEPS as MATCH_WIZARD_STEPS };
 
 // ─── Main Export ──────────────────────────────────────────
 

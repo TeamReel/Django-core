@@ -17,7 +17,12 @@ import { formatRelativeTime, getDateUrgency } from '../../../utils/relativeTime'
 import type { Activity } from '../../../hooks/useActivities';
 import styles from '../CreateWizard.module.css';
 
-export function SmartMatchStep() {
+export interface SmartMatchStepProps {
+  /** Called with the full Activity when a match is selected (bridge to MatchWizardContext) */
+  onMatchSelect?: (match: Activity) => void;
+}
+
+export function SmartMatchStep({ onMatchSelect }: SmartMatchStepProps = {}) {
   const { next } = useWizard();
   const { prefill, setPrefill } = useCreateWizard();
   const { highlighted, upcoming, loading, error } = useSmartMatch(prefill.teamIdForApi);
@@ -28,6 +33,7 @@ export function SmartMatchStep() {
 
   const handleSelect = (match: Activity) => {
     setPrefill({ ...prefill, activityId: match.id });
+    onMatchSelect?.(match);
     next();
   };
 
