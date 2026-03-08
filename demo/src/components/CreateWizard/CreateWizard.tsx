@@ -20,6 +20,7 @@ import {
   CreateWizardProvider,
   useCreateWizard,
   type CreatePrefill,
+  type CreateFlowType,
 } from './CreateWizardContext';
 import { ChooseFlowStep } from './steps/ChooseFlowStep';
 import { FlowStubStep } from './steps/FlowStubStep';
@@ -43,6 +44,8 @@ export interface CreateWizardProps {
   prefill?: CreatePrefill;
   /** Optional: match ID to pre-select (from custom events) */
   initialMatchId?: string;
+  /** Optional: auto-select a flow (skip choose step) */
+  initialFlow?: CreateFlowType;
 }
 
 // ─── Inner component (needs CreateWizardProvider context) ──
@@ -148,12 +151,13 @@ export default function CreateWizard({
   onClose,
   prefill = {},
   initialMatchId,
+  initialFlow,
 }: CreateWizardProps) {
   // Don't render anything when closed (preserves clean unmount)
   if (!isOpen) return null;
 
   return (
-    <CreateWizardProvider initialPrefill={prefill}>
+    <CreateWizardProvider initialPrefill={prefill} initialFlow={initialFlow}>
       <CreateWizardInner
         isOpen={isOpen}
         onClose={onClose}

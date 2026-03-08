@@ -17,7 +17,9 @@ import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
 import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
+import { useCreateContext } from '../hooks/useCreateContext';
 import CreateWizard from './CreateWizard';
+import type { CreateFlowType } from './CreateWizard/CreateWizardContext';
 import styles from './MobileBottomNav.module.css';
 
 export default function MobileBottomNav() {
@@ -25,10 +27,12 @@ export default function MobileBottomNav() {
   const location = useLocation();
   const haptic = useHapticFeedback();
   const { orgSlug, clubSlugOrId, teamSlugOrId } = useAppSelection();
+  const { prefill: createPrefill } = useCreateContext();
 
   const [activeSeasonSlug, setActiveSeasonSlug] = useState<string | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardMatchId, setWizardMatchId] = useState<string | undefined>(undefined);
+  const [wizardAutoFlow, setWizardAutoFlow] = useState<CreateFlowType | undefined>(undefined);
 
   const fetchContext = useCallback(async () => {
     try {
@@ -49,8 +53,11 @@ export default function MobileBottomNav() {
   // Listen for external open-quick-create events (e.g. SmartEmptyState, match cards)
   useEffect(() => {
     const handler = (e: Event) => {
-      const matchId = (e as CustomEvent)?.detail?.matchId;
+      const detail = (e as CustomEvent)?.detail;
+      const matchId = detail?.matchId;
+      const flow = detail?.flow as CreateFlowType | undefined;
       setWizardMatchId(matchId || undefined);
+      setWizardAutoFlow(flow || undefined);
       setWizardOpen(true);
     };
     window.addEventListener('teamreel:open-quick-create', handler);
@@ -194,13 +201,10 @@ export default function MobileBottomNav() {
       {/* CreateWizard — universal create flow via + button */}
       <CreateWizard
         isOpen={wizardOpen}
-        onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); }}
+        onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); setWizardAutoFlow(undefined); }}
         initialMatchId={wizardMatchId}
-        prefill={{
-          organisationSlug: orgSlug || undefined,
-          clubProjectId: clubSlugOrId || undefined,
-          teamProjectId: teamSlugOrId || undefined,
-        }}
+        initialFlow={wizardAutoFlow}
+        prefill={createPrefill}
       />
     </>
   );

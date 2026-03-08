@@ -103,15 +103,34 @@ export function ChooseFlowStep() {
 // ─── Helpers ──────────────────────────────────────────────
 
 function buildContextHint(prefill: CreatePrefill): string | null {
-  // For E2 this will be fleshed out with real names from API data.
-  // For now: just show that context exists.
+  // Build a breadcrumb from resolved names (E2) — falls back to generic labels
   const parts: string[] = [];
-  if (prefill.activityId) parts.push('wedstrijd');
-  else if (prefill.periodId) parts.push('seizoen');
-  else if (prefill.teamProjectId) parts.push('team');
-  else if (prefill.clubProjectId) parts.push('club');
-  else if (prefill.organisationSlug) parts.push('organisatie');
+
+  // Team or club name (most relevant context)
+  if (prefill.teamName) {
+    parts.push(prefill.teamName);
+  } else if (prefill.clubName) {
+    parts.push(prefill.clubName);
+  } else if (prefill.teamProjectId) {
+    parts.push('team');
+  } else if (prefill.clubProjectId) {
+    parts.push('club');
+  } else if (prefill.organisationSlug) {
+    parts.push(String(prefill.organisationSlug));
+  }
+
+  // Season / competition name (secondary context)
+  if (prefill.competitionName) {
+    parts.push(prefill.competitionName);
+  } else if (prefill.periodName) {
+    parts.push(prefill.periodName);
+  }
+
+  // Activity context (deepest)
+  if (prefill.activityId) {
+    parts.push('wedstrijd');
+  }
 
   if (parts.length === 0) return null;
-  return `Context: ${parts.join(' / ')}`;
+  return parts.join(' › ');
 }

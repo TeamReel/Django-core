@@ -21,8 +21,14 @@ export interface CreatePrefill {
   organisationId?: string;
   organisationSlug?: string;
   clubProjectId?: string | number;
+  clubName?: string;
   teamProjectId?: string | number;
+  teamName?: string;
+  teamIdForApi?: string;
   periodId?: string;
+  periodName?: string;
+  competitionId?: string;
+  competitionName?: string;
   activityId?: string;
 }
 
@@ -65,14 +71,17 @@ export function useCreateWizard(): CreateWizardContextValue {
 export interface CreateWizardProviderProps {
   /** Initial pre-fills from context */
   initialPrefill?: CreatePrefill;
+  /** Optional: auto-select a flow on mount (skip choose step) */
+  initialFlow?: CreateFlowType;
   children: ReactNode;
 }
 
 export function CreateWizardProvider({
   initialPrefill = {},
+  initialFlow,
   children,
 }: CreateWizardProviderProps) {
-  const [selectedFlow, setSelectedFlow] = useState<CreateFlowType | null>(null);
+  const [selectedFlow, setSelectedFlow] = useState<CreateFlowType | null>(initialFlow ?? null);
   const [prefill, setPrefillState] = useState<CreatePrefill>(initialPrefill);
 
   const selectFlow = useCallback((flow: CreateFlowType) => {
