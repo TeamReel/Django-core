@@ -1,0 +1,116 @@
+/* CreateWizard – Module CSS
+ * Styles for the universal create wizard (ChooseFlowStep, sub-flow shells).
+ */
+
+/* ── Choose Flow step ───────────────────────────────── */
+.chooseFlow {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 16px 16px;
+}
+
+.contextHint {
+  font-size: 13px;
+  color: var(--app-muted-text, #6b7280);
+  background: var(--app-surface-2, #f3f4f6);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin: 0;
+  text-align: center;
+}
+
+.flowGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Flow card (option button) ──────────────────────── */
+.flowCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+
+.flowCard:hover {
+  background: var(--app-surface-2, #f9fafb);
+  border-color: var(--app-primary, #3B8EA5);
+}
+
+.flowCard:active {
+  transform: scale(0.98);
+  background: var(--app-surface-2, #f3f4f6);
+}
+
+/* Icon circle */
+.flowIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.1));
+  color: var(--app-primary, #3B8EA5);
+}
+
+/* Text content */
+.flowContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.flowLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--app-text-primary, #111827);
+}
+
+.flowDescription {
+  font-size: 13px;
+  color: var(--app-muted-text, #6b7280);
+  line-height: 1.35;
+}
+
+/* ── Stub step (placeholder for unbuilt flows) ──────── */
+.stubStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.stubIcon {
+  color: var(--app-muted-text, #6b7280);
+  opacity: 0.5;
+}
+
+.stubTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--app-text-primary, #111827);
+  margin: 0;
+}
+
+.stubDescription {
+  font-size: 14px;
+  color: var(--app-muted-text, #6b7280);
+  margin: 0;
+  max-width: 280px;
+}

@@ -17,7 +17,7 @@ import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
 import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { useHapticFeedback } from '../hooks/useHapticFeedback';
-import MatchWizard from './MatchWizard';
+import CreateWizard from './CreateWizard';
 import styles from './MobileBottomNav.module.css';
 
 export default function MobileBottomNav() {
@@ -191,11 +191,16 @@ export default function MobileBottomNav() {
         {tabs.slice(2).map(renderTab)}
       </nav>
 
-      {/* MatchWizard — opened by center + button */}
-      <MatchWizard
+      {/* CreateWizard — universal create flow via + button */}
+      <CreateWizard
         isOpen={wizardOpen}
         onClose={() => { setWizardOpen(false); setWizardMatchId(undefined); }}
         initialMatchId={wizardMatchId}
+        prefill={{
+          organisationSlug: orgSlug || undefined,
+          clubProjectId: clubSlugOrId || undefined,
+          teamProjectId: teamSlugOrId || undefined,
+        }}
       />
     </>
   );
