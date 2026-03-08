@@ -37,7 +37,7 @@
 }
 
 .sectionTitle {
-  font-size: 16px;
+  font-size: var(--text-base);
   font-weight: var(--font-semibold);
   margin-bottom: 16px;
   color: var(--app-text);
@@ -51,7 +51,7 @@
 
 .fieldLabel {
   display: block;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
   margin-bottom: 4px;
 }

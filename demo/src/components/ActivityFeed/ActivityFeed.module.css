@@ -28,11 +28,11 @@
 
 .dateMonth {
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 
 .periodName {
-  font-size: 10px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }

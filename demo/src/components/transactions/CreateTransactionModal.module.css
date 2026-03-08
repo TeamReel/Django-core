@@ -16,7 +16,7 @@
 
 .closeButton {
   background: none;
-  font-size: 22px;
+  font-size: var(--text-xl);
 }
 
 .formGrid {

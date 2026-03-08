@@ -25,7 +25,7 @@
   --legends-badge-bg: #fffbeb;
   --legends-badge-color: #d97706;
   margin-left: 8px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   padding: 4px 8px;
   border-radius: var(--radius-sm);

@@ -105,11 +105,11 @@
   }
 
   .notificationTitle {
-    font-size: 0.9375rem;
+    font-size: var(--text-base);
   }
 
   .notificationBody {
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     line-height: 1.5;
   }
 
@@ -120,7 +120,7 @@
   }
 
   .readHint {
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
   }
 }
 

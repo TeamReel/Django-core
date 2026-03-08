@@ -66,7 +66,7 @@
 }
 
 .name {
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: var(--font-bold);
   color: var(--app-text);
   margin: 0;
@@ -74,14 +74,14 @@
 }
 
 .email {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
   margin: 4px 0 0;
 }
 
 /* ── Section label ───────────────────────────────────────────────────── */
 .sectionLabel {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -109,7 +109,7 @@
   border: none;
   background: transparent;
   color: var(--app-text);
-  font-size: 15px;
+  font-size: var(--text-base);
   cursor: pointer;
   text-align: left;
   transition: background var(--duration-fast) var(--ease-default);
@@ -133,7 +133,7 @@ button.row:active {
 }
 
 .rowValue {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
   font-weight: var(--font-medium);
 }
@@ -160,7 +160,7 @@ button.row:active {
   border: none;
   border-radius: var(--radius-md);
   background: transparent;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   cursor: pointer;
@@ -187,7 +187,7 @@ button.row:active {
   -webkit-appearance: none;
   border: none;
   background: transparent;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--app-muted-text);
   text-align: right;
@@ -263,7 +263,7 @@ button.row:active {
 }
 
 .cascadeLabel {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
@@ -273,7 +273,7 @@ button.row:active {
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   background: var(--app-bg);
   color: var(--app-text);
 }
@@ -299,7 +299,7 @@ button.row:active {
   justify-content: center;
   min-height: 200px;
   color: var(--app-muted-text);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 /* ── Desktop: wider layout ───────────────────────────────────────────── */
@@ -325,6 +325,6 @@ button.row:active {
   }
 
   .avatarInitials {
-    font-size: 24px;
+    font-size: var(--text-xl);
   }
 }

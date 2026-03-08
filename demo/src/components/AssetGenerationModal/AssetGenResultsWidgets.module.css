@@ -24,7 +24,7 @@
   background: var(--vscode-editorWidget-background, #252526);
   border: 1px solid var(--vscode-widget-border, #333);
   border-radius: var(--radius-md);
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--vscode-descriptionForeground, #888);
 }
 
@@ -61,7 +61,7 @@
 .feedbackInput {
   width: 100%;
   padding: 8px 8px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   background: var(--vscode-input-background, #3c3c3c);
   color: var(--vscode-input-foreground, #ccc);
   border: 1px solid var(--vscode-input-border, #3c3c3c);

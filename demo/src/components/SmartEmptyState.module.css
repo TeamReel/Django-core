@@ -35,18 +35,18 @@
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--app-text);
   margin-bottom: 8px;
 }
 
 .compact .title {
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 .description {
-  font-size: 0.9375rem;
+  font-size: var(--text-base);
   color: var(--app-muted-text);
   margin-bottom: 24px;
   max-width: 320px;
@@ -54,7 +54,7 @@
 }
 
 .compact .description {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   margin-bottom: 16px;
 }
 

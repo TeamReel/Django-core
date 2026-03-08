@@ -14,7 +14,7 @@
   background-color: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
@@ -54,7 +54,7 @@
 .thRole {
   top: 0;
   z-index: 3;
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   background-color: var(--app-table-header-bg);
 }
 
@@ -81,7 +81,7 @@
 }
 
 .categoryCount {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   opacity: 0.75;
 }
 
@@ -126,7 +126,7 @@
     flex: 1;
     min-height: 44px;
     text-align: center;
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     padding: 12px 8px;
   }
 
@@ -149,13 +149,13 @@
 
   .thFeature {
     min-width: 152px;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     position: static;
     z-index: auto;
   }
 
   .thRole {
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
     position: static;
     z-index: auto;
     padding: 8px 4px;
@@ -164,12 +164,12 @@
   .permissionNameTd {
     position: static;
     z-index: auto;
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     min-width: 152px;
   }
 
   .permissionDesc {
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
   }
 
   .permissionKey {
@@ -177,16 +177,16 @@
   }
 
   .roleCell {
-    font-size: 0.875rem;
+    font-size: var(--text-sm);
     padding: 8px 4px;
   }
 
   .categoryLabel {
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
   }
 
   .categoryCount {
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
   }
 
   .categoryBar {

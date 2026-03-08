@@ -41,7 +41,7 @@
   width: 20px;
   height: 20px;
   background: var(--color-green-400);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 
 /* ── Photo layout picker ── */

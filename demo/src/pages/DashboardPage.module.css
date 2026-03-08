@@ -15,7 +15,7 @@
 }
 
 .greeting {
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: var(--font-bold);
   color: var(--app-text);
   margin: 0 0 4px;
@@ -23,7 +23,7 @@
 }
 
 .orgSubtitle {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
   margin: 0;
 }
@@ -43,18 +43,18 @@
 
 .lowBannerText {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 .lowBannerText strong {
   display: block;
-  font-size: 14px;
+  font-size: var(--text-sm);
   margin-bottom: 4px;
 }
 
 .lowBannerBtn {
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
   border: none;
@@ -98,7 +98,7 @@
 }
 
 .cardTitle {
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-bold);
   color: var(--app-text);
   margin: 0;
@@ -108,7 +108,7 @@
 }
 
 .cardLink {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-primary);
   text-decoration: none;

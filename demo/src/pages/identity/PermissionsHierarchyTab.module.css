@@ -42,7 +42,7 @@
 
 .roleScope {
   margin-top: 4px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
 }
 
 .roleDescription {
@@ -56,7 +56,7 @@
 }
 
 .highlightItem {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 /* Hierarchy Ladder */
@@ -95,7 +95,7 @@
 }
 
 .ladderScope {
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
 }
 
 .ladderDescription {

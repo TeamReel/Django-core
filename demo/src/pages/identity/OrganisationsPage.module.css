@@ -20,7 +20,7 @@
 .orgNameLink {
   color: var(--color-blue-600);
   text-decoration: underline;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .orgNameLink:hover {
@@ -28,7 +28,7 @@
 }
 
 .creditBalance {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
 }
 
 .actionBtn {
@@ -77,17 +77,17 @@
   }
 
   .orgNameLink {
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
   }
 
   .creditBalance {
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
   }
 
   .actionBtn {
     padding: 8px 12px;
     min-height: 36px;
-    font-size: 0.6875rem;
+    font-size: var(--text-xs);
   }
 
   .statusSelect {

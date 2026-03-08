@@ -67,14 +67,14 @@
 }
 
 .streakCount {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.2;
 }
 
 .streakLabel {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
   font-weight: var(--font-medium);
   margin-top: 1px;

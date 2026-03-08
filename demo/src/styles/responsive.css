@@ -151,7 +151,7 @@
   table th,
   table td {
     padding: 8px 8px !important;
-    font-size: 13px !important;
+    font-size: var(--text-sm) !important;
     white-space: nowrap;
   }
 
@@ -201,7 +201,7 @@
   [style*="width:32px"][style*="height:32px"] {
     width: 28px !important;
     height: 28px !important;
-    font-size: 12px !important;
+    font-size: var(--text-xs) !important;
   }
 
   /* Hide email in user lists, show only name */
@@ -215,7 +215,7 @@
   [style*="padding: '4px 8px'"],
   [style*="padding:'4px 8px'"] {
     padding: 4px 8px !important;
-    font-size: 11px !important;
+    font-size: var(--text-xs) !important;
   }
 }
 
@@ -291,15 +291,15 @@
 /* --- Responsive Typography --- */
 @media (max-width: 639px) {
   h1 {
-    font-size: 1.5rem !important;
+    font-size: var(--text-xl) !important;
   }
 
   h2 {
-    font-size: 1.25rem !important;
+    font-size: var(--text-lg) !important;
   }
 
   h3 {
-    font-size: 1.1rem !important;
+    font-size: var(--text-base) !important;
   }
 }
 
@@ -325,12 +325,12 @@
 
   /* Compact page titles */
   h1 {
-    font-size: 1.25rem !important;
+    font-size: var(--text-lg) !important;
     margin-bottom: 12px !important;
   }
 
   h2 {
-    font-size: 1.1rem !important;
+    font-size: var(--text-base) !important;
   }
 
   /* Hide breadcrumbs on mobile - take up too much space */
@@ -362,7 +362,7 @@
 /* --- Responsive Form Controls --- */
 @media (max-width: 639px) {
   input, select, textarea {
-    font-size: 16px !important; /* Prevents zoom on iOS */
+    font-size: var(--text-base) !important; /* Prevents zoom on iOS */
     min-height: 44px; /* Touch-friendly size */
   }
 

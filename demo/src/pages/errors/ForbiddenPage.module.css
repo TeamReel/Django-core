@@ -17,13 +17,13 @@
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--text-xl);
   margin-bottom: 24px;
   color: var(--title-color, #333);
 }
 
 .message {
-  font-size: 16px;
+  font-size: var(--text-base);
   color: var(--message-color, #666);
   margin-bottom: 32px;
 }
@@ -41,7 +41,7 @@
   color: white;
   text-decoration: none;
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 
 .backButton {
@@ -50,7 +50,7 @@
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 16px;
+  font-size: var(--text-base);
   cursor: pointer;
 }
 
@@ -64,7 +64,7 @@
 
 .infoTitle {
   margin-top: 0;
-  font-size: 18px;
+  font-size: var(--text-lg);
 }
 
 .infoList {

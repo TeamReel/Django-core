@@ -1,13 +1,13 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .th {
   padding: 12px 12px;
   font-weight: var(--font-semibold);
-  font-size: 12px;
+  font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--app-text-secondary);
@@ -46,7 +46,7 @@
 
 .statusText {
   color: var(--app-text-secondary);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .sortIcon {

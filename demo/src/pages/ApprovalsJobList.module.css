@@ -75,7 +75,7 @@
 
 /* --- Type badge (AI) --- */
 .typeBadge {
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
   letter-spacing: 0.04em;
 }
@@ -97,7 +97,7 @@
 
 /* --- AI status badge --- */
 .aiStatusBadge {
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
   letter-spacing: 0.04em;
 }
@@ -135,7 +135,7 @@
 
 /* --- AI approval badge --- */
 .approvalBadge {
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
 }
 
@@ -198,7 +198,7 @@
 
 /* --- Video status badge --- */
 .videoStatusBadge {
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
   letter-spacing: 0.04em;
 }
@@ -271,7 +271,7 @@
   padding: 0 20px;
   height: 100%;
   font-weight: var(--font-bold);
-  font-size: 13px;
+  font-size: var(--text-sm);
   letter-spacing: 0.02em;
   white-space: nowrap;
   user-select: none;
@@ -291,7 +291,7 @@
 
 .swipeHint {
   color: var(--app-muted-text);
-  font-size: 16px;
+  font-size: var(--text-base);
   opacity: 0.5;
   animation: swipeHintPulse 2s ease-in-out infinite;
 }

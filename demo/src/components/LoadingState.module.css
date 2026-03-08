@@ -65,7 +65,7 @@
 .message {
   margin-top: 16px;
   color: var(--loading-text, #666);
-  font-size: 16px;
+  font-size: var(--text-base);
 }
 
 /* Full-screen overlay */
@@ -99,6 +99,6 @@
 .overlayMessage {
   margin-top: 24px;
   color: var(--overlay-text, #333);
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: var(--font-medium);
 }

@@ -35,7 +35,7 @@
   width: 20px;
   height: 20px;
   background: var(--color-green-400);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--color-white, #fff);
 }
 
@@ -46,7 +46,7 @@
   width: 20px;
   height: 20px;
   background: var(--color-green-400);
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--color-white, #fff);
 }
 
@@ -93,7 +93,7 @@
 
 /* ── Intro description text ── */
 .introDesc {
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 
 /* ── Background selector grid ── */
@@ -132,7 +132,7 @@
 /* ── Background label ── */
 .bgLabel {
   padding: 4px 0;
-  font-size: 10px;
+  font-size: var(--text-xs);
   color: var(--app-text, #111);
   background: var(--app-surface-2, #f3f4f6);
 }

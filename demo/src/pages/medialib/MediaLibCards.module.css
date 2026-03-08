@@ -107,7 +107,7 @@
 }
 
 .filterChipCount {
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 0 4px;
   background-color: var(--app-surface-2, #f3f4f6);
   color: var(--app-text-secondary);

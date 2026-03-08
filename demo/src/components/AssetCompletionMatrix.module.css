@@ -26,7 +26,7 @@
 
 .matrixTitle {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-bold);
   color: var(--app-text);
 }
@@ -36,7 +36,7 @@
   align-items: center;
   padding: 4px 12px;
   border-radius: var(--radius-full);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
 }
 
@@ -57,7 +57,7 @@
 
 .matrixSubtitle {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
 
@@ -74,13 +74,13 @@
 
 .tableFull {
   width: 100%;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 /* ── Table header cells ── */
 .th {
   padding: 8px 12px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   text-align: center;
   border-bottom: 2px solid var(--app-border);
@@ -97,7 +97,7 @@
   display: inline-block;
   padding: 4px 8px;
   background: var(--phase-color);
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: white;
   border-radius: var(--radius-sm);
@@ -106,7 +106,7 @@
 /* ── Table body cells ── */
 .td {
   padding: 8px 12px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   border-bottom: 1px solid var(--app-border);
 }
 
@@ -133,7 +133,7 @@
 }
 
 .cellStatus {
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 /* ── Thumbnails ── */
@@ -161,7 +161,7 @@
 }
 
 .progressLabel {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   margin-bottom: 8px;
 }
@@ -193,7 +193,7 @@
   flex-wrap: wrap;
   gap: 16px;
   margin-top: 12px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   opacity: 0.7;
 }
 

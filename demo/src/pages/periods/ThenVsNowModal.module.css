@@ -67,7 +67,7 @@
   padding: 4px 8px;
   border: 1px solid var(--app-border);
   border-radius: var(--radius-sm);
-  font-size: 12px;
+  font-size: var(--text-xs);
   background-color: var(--app-bg);
   color: var(--app-text);
 }
@@ -105,7 +105,7 @@
 /* ─── Background Emoji ───────────────────────────────────────── */
 
 .bgEmoji {
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 
 /* ─── Background Option Label ────────────────────────────────── */

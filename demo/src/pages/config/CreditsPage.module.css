@@ -21,7 +21,7 @@
   min-width: 0;
   border: none;
   cursor: pointer;
-  font-size: 15px;
+  font-size: var(--text-base);
   padding: 12px 20px;
   background: transparent;
   color: var(--app-text, inherit);
@@ -55,13 +55,13 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 9999;
   max-width: 400px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   line-height: 1.5;
 }
 
 /* ── Scope label ───────────────────────────────────────────────────── */
 .scopeLabel {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text, #666);
   margin-bottom: 16px;
 }
@@ -71,7 +71,7 @@
   .tabButton,
   .tabButtonActive {
     padding: 12px 16px;
-    font-size: 14px;
+    font-size: var(--text-sm);
   }
 
   .toast {
@@ -83,6 +83,6 @@
   }
 
   .scopeLabel {
-    font-size: 13px;
+    font-size: var(--text-sm);
   }
 }

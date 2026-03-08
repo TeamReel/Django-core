@@ -72,7 +72,7 @@
 }
 
 .positionLabel {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   color: var(--field-label-color, rgba(255, 255, 255, 0.7));
   text-transform: uppercase;
@@ -84,7 +84,7 @@
 .positionSelect {
   width: 120px;
   padding: 4px 8px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-normal);
   background-color: var(--select-bg, rgba(0, 0, 0, 0.6));
   color: var(--select-text, #fff);
@@ -132,7 +132,7 @@
 /* ── Selected name below dropdown ──────────────────── */
 
 .selectedName {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--select-text, #fff);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);

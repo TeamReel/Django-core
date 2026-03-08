@@ -46,7 +46,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text, #6b7280);
   cursor: pointer;
   user-select: none;
@@ -108,7 +108,7 @@
 
 .memberCardName {
   font-weight: var(--font-semibold);
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-text) !important;
   text-decoration: none !important;
   overflow: hidden;
@@ -123,7 +123,7 @@
 }
 
 .memberCardEmail {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text, #6b7280);
   white-space: nowrap;
   flex-shrink: 0;
@@ -149,7 +149,7 @@
 }
 
 .memberCardActions button {
-  font-size: 11px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
 }
 

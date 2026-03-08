@@ -29,7 +29,7 @@
   color: var(--app-text, #333);
   cursor: pointer;
   font-weight: var(--font-normal);
-  font-size: 14px;
+  font-size: var(--text-sm);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   transition: all var(--duration-fast) var(--ease-default);
 }

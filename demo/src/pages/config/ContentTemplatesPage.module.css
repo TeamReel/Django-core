@@ -4,7 +4,7 @@
   border: 1px solid var(--app-border);
   background-color: var(--app-bg);
   color: var(--app-text);
-  font-size: 14px;
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 
@@ -61,7 +61,7 @@
 }
 
 .globalBadge {
-  font-size: 10px;
+  font-size: var(--text-xs);
   padding: 4px 8px;
 }
 

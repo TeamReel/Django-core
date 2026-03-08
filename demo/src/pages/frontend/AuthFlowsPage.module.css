@@ -17,7 +17,7 @@
 
 .headerSubtitle {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
 
@@ -47,7 +47,7 @@
   background-color: var(--app-surface);
   color: var(--color-neutral-400);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
   transition: all var(--duration-fast) var(--ease-default);
 }

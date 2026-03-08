@@ -59,7 +59,7 @@
   gap: 4px;
   padding: 4px 12px;
   border-radius: var(--radius-lg);
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-normal);
   border: 1px solid var(--app-border);
   background-color: transparent;
@@ -76,7 +76,7 @@
 }
 
 .chipCount {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   padding: 0 4px;
   border-radius: var(--radius-md);
@@ -277,7 +277,7 @@
   position: absolute;
   top: 12px;
   right: 12px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-extrabold);
   letter-spacing: 0.06em;
   padding: 4px 12px;
@@ -321,7 +321,7 @@
 }
 
 .detailTag {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
   padding: 4px 12px;
   border-radius: var(--radius-md);
@@ -352,7 +352,7 @@
   background-color: var(--app-surface);
   color: var(--app-text-primary);
   font-weight: var(--font-semibold);
-  font-size: 13px;
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
@@ -389,6 +389,6 @@
 
   .detailActionBtn {
     padding: 12px 12px;
-    font-size: 12px;
+    font-size: var(--text-xs);
   }
 }

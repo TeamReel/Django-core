@@ -9,7 +9,7 @@
 }
 
 .headerTitle {
-  font-size: 15px;
+  font-size: var(--text-base);
   color: var(--app-text, #111);
 }
 

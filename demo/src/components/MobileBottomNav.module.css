@@ -62,7 +62,7 @@
 
 /* ── Tab label ───────────────────────────────────────────────────────── */
 .tabLabel {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-normal);
   line-height: 1;
   color: var(--app-muted-text);

@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** 🔄 In uitvoering (5/11 fases)
+**Status:** 🔄 In uitvoering (6/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -16,7 +16,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 |--------|--------|
 | **Token adoptie** | ~11% (975 van ~8.675 declaraties) |
 | **Spacing tokens** | 3.0% adoptie (80 / 2.632) |
-| **Font-size tokens** | 2.3% adoptie (25 / 1.095) |
+| **Font-size tokens** | ~95% adoptie (900 gefixt, rest = 8-9px/28px+/hero) |
 | **Font-weight tokens** | 3.0% adoptie (19 / 629) |
 | **Border-radius tokens** | ~99% adoptie (707 gefixt) |
 | **Motion tokens** | ~95% adoptie (234 gefixt, rest = none/keyframes/linear) |
@@ -33,7 +33,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **A2** | Shadow Token Adoption | `box-shadow: ...` → `var(--shadow-*)` | 28 | 30 min | ✅ Done |
 | **A3** | Motion Token Adoption | `transition` / `animation` → `var(--duration-*)` + `var(--ease-*)` | 234 | 45 min | ✅ Done |
 | **A4** | Font-weight Token Adoption | `font-weight: N` → `var(--font-*)` | 586 | 30 min | ✅ Done |
-| **A5** | Font-size Token Adoption | `font-size: Nrem` → `var(--text-*)` | 1.070 | 45 min | 🔲 Todo |
+| **A5** | Font-size Token Adoption | `font-size: Nrem` → `var(--text-*)` | 900 | 45 min | ✅ Done |
 | **A6** | Spacing Token Adoption | `padding/margin/gap: Npx` → `var(--space-*)` | 2.552 | 2 uur | 🔲 Todo |
 | **A7** | Line-height + Font-family Cleanup | `line-height` / `font-family` → tokens | 130 | 20 min | 🔲 Todo |
 | **H1** | Touch-safe Hovers | `@media (hover: hover)` wrappers | ~150 | 1 uur | 🔲 Todo |

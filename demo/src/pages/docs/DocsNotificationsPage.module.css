@@ -24,7 +24,7 @@
   background-color: var(--app-surface);
   color: var(--filter-btn-color, #6c757d);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
@@ -81,7 +81,7 @@
   background-color: var(--app-surface);
   color: var(--color-neutral-400);
   cursor: pointer;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
   white-space: nowrap;
 }

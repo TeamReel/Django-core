@@ -40,7 +40,7 @@
   color: var(--app-error);
   border: 1px solid rgba(220, 53, 69, 0.2);
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .fieldLabel {
@@ -48,7 +48,7 @@
   margin-bottom: 8px;
   font-weight: var(--font-medium);
   color: var(--app-text);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .selectInput {
@@ -58,7 +58,7 @@
   border: 1px solid var(--app-border);
   background-color: var(--app-input-bg);
   color: var(--app-text);
-  font-size: 14px;
+  font-size: var(--text-sm);
 }
 
 .footer {
@@ -75,7 +75,7 @@
   background-color: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
@@ -91,7 +91,7 @@
   background-color: var(--submit-bg);
   color: white;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 

@@ -34,7 +34,7 @@
   border: 1px solid var(--rm-gray-200);
   background: transparent;
   cursor: pointer;
-  font-size: 16px;
+  font-size: var(--text-base);
   opacity: 1;
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
@@ -118,7 +118,7 @@
   background: var(--rm-green-50);
   color: var(--rm-green-700);
   font-weight: var(--font-semibold);
-  font-size: 12px;
+  font-size: var(--text-xs);
   cursor: pointer;
   transition: all var(--duration-fast), transform var(--duration-fast);
 }
@@ -141,7 +141,7 @@
   background: var(--rm-red-50);
   color: var(--rm-red-600);
   font-weight: var(--font-semibold);
-  font-size: 12px;
+  font-size: var(--text-xs);
   cursor: pointer;
   transition: all var(--duration-fast), transform var(--duration-fast);
 }

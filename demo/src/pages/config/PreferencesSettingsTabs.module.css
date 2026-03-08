@@ -81,24 +81,24 @@
 
 .previewTextLightPrimary {
   margin: 0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-gray-800);
 }
 
 .previewTextLightSecondary {
   margin: 4px 0 0 0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
 }
 
 .previewTextDarkPrimary {
   margin: 4px 0 0 0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-gray-100);
 }
 
 .previewTextDarkSecondary {
   margin: 4px 0 0 0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--color-gray-400);
 }

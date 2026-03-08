@@ -12,7 +12,7 @@
   border: 1px solid var(--vscode-inputValidation-warningBorder, #856d00);
   border-radius: var(--radius-md);
   margin-top: 16px;
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .sponsorModeToggle {
@@ -23,7 +23,7 @@
 
 .sponsorModeBtn {
   padding: 8px 12px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   cursor: pointer;
   border: 1px solid var(--vscode-widget-border, #333);
   border-radius: var(--radius-sm);

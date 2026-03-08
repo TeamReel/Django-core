@@ -1,8 +1,8 @@
 # A5 — Font-size Token Adoption
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 45 min
-**Scope:** 1.070 hardcoded `font-size` → `var(--text-*)`
+**Scope:** 900 hardcoded `font-size` → `var(--text-*)` (145 bestanden)
 
 ---
 

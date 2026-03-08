@@ -13,7 +13,7 @@
   align-items: center;
   gap: 8px;
   color: var(--app-text);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-bold);
   margin-bottom: 12px;
 }
@@ -21,7 +21,7 @@
 .title { flex: 1; }
 
 .teamBadge {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-lg);
@@ -62,7 +62,7 @@
 }
 
 .teamBarLabel {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
 }
 
@@ -98,7 +98,7 @@
 }
 
 .avatarInitial {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   color: var(--app-muted-text);
 }
@@ -110,7 +110,7 @@
 
 .memberName {
   display: block;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-text);
   white-space: nowrap;
@@ -140,7 +140,7 @@
 
 .memberPercent {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   color: var(--app-muted-text);
   min-width: 36px;

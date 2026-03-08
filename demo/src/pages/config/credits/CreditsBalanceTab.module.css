@@ -76,7 +76,7 @@
 }
 
 .recentTxnTitle {
-  font-size: 15px;
+  font-size: var(--text-base);
   margin-bottom: 8px;
 }
 

@@ -53,5 +53,5 @@
   padding: 1px 8px;
   background-color: var(--state-bg);
   color: var(--state-color);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }

@@ -40,7 +40,7 @@
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-muted-text, #888);
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
   cursor: pointer;
   white-space: nowrap;
@@ -87,7 +87,7 @@
 }
 
 .sectionLabel {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
   color: var(--app-muted-text);
   text-transform: uppercase;
@@ -95,7 +95,7 @@
 }
 
 .currentTabLabel {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-semibold);
   color: var(--app-text);
 }
@@ -108,7 +108,7 @@
 }
 
 .optionsCount {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
 }
 
@@ -163,7 +163,7 @@
 }
 
 .dropdownItemLabel {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-medium);
   color: var(--app-text);
 }

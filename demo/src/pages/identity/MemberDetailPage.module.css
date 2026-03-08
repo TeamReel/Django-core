@@ -7,7 +7,7 @@
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #333);
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
   max-width: 100%;
 }
@@ -38,7 +38,7 @@
 @media (max-width: 768px) {
   .breadcrumbSelect {
     max-width: 120px;
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     text-overflow: ellipsis;
     overflow: hidden;
     min-height: 36px;
@@ -71,7 +71,7 @@
 @media (max-width: 480px) {
   .breadcrumbSelect {
     max-width: 88px;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     padding: 4px 8px;
   }
 }

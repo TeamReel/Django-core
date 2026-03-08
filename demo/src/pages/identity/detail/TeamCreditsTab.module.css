@@ -73,11 +73,11 @@
 /* ─── Summary Cards ─── */
 
 .summaryValue {
-  font-size: 24px;
+  font-size: var(--text-xl);
 }
 
 .netValue {
-  font-size: 24px;
+  font-size: var(--text-xl);
 }
 
 .netValue[data-positive='true'] {
@@ -118,7 +118,7 @@
 
   .summaryValue,
   .netValue {
-    font-size: 20px;
+    font-size: var(--text-lg);
   }
 
   .balanceGrid {

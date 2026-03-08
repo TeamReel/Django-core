@@ -23,7 +23,7 @@
   background-color: var(--app-surface);
   color: var(--color-neutral-400);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 

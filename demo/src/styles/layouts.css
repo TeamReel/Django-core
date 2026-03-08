@@ -62,7 +62,7 @@
   /* PageHeader title: smaller on mobile */
   [class*="PageHeader"] h1,
   div[style*="fontSize: '28px'"] {
-    font-size: 20px !important;
+    font-size: var(--text-lg) !important;
     margin-bottom: 4px !important;
   }
 
@@ -135,7 +135,7 @@
 
   /* Team names smaller */
   [style*="fontSize: '1.5rem'"] {
-    font-size: 1.1rem !important;
+    font-size: var(--text-base) !important;
   }
 }
 
@@ -159,7 +159,7 @@
   [role="tab"] {
     flex-shrink: 0;
     padding: 8px 12px !important;
-    font-size: 13px !important;
+    font-size: var(--text-sm) !important;
   }
 }
 
@@ -176,7 +176,7 @@
   }
 
   [style*="gridTemplateColumns: repeat(auto-fill, minmax(200px"] > div span[style*="fontSize: '20px'"] {
-    font-size: 16px !important;
+    font-size: var(--text-base) !important;
   }
 }
 
@@ -255,7 +255,7 @@
 
   /* Smaller label text */
   .media-asset-grid > div > div:last-child > div:first-child {
-    font-size: 10px !important;
+    font-size: var(--text-xs) !important;
     line-height: 1.2 !important;
     margin-bottom: 4px !important;
   }
@@ -263,7 +263,7 @@
   /* Smaller action buttons */
   .media-asset-grid > div > div:last-child button {
     padding: 4px 4px !important;
-    font-size: 10px !important;
+    font-size: var(--text-xs) !important;
   }
 
   /* Hide inline scrollbar on pills */

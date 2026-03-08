@@ -3,7 +3,7 @@
 }
 
 .kitIconFallback {
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 
 .mlAuto {
@@ -11,7 +11,7 @@
 }
 
 .fullbodyRequired {
-  font-size: 10px;
+  font-size: var(--text-xs);
   opacity: 0.5;
   margin-left: auto;
 }

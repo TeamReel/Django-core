@@ -5,7 +5,7 @@
 }
 
 .kitIconFallback {
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 
 .badgeAutoLeft {

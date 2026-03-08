@@ -22,14 +22,14 @@
 }
 
 .headline {
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--app-text, #1C355E);
   margin-bottom: 8px;
 }
 
 .description {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-text-muted, #6b7280);
   margin-bottom: 24px;
   min-height: 20px;
@@ -52,7 +52,7 @@
 }
 
 .progressLabel {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-text-secondary, #4b5563);
   font-weight: var(--font-medium);
 }
@@ -62,7 +62,7 @@
 }
 
 .closeHint {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-text-muted, #9ca3af);
   margin-bottom: 8px;
 }

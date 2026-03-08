@@ -16,7 +16,7 @@
 
 .title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: var(--font-semibold);
 }
 
@@ -32,7 +32,7 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 
 .languageMenuContainer {
@@ -45,7 +45,7 @@
   border: 1px solid var(--app-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-text);
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@
 }
 
 .languageArrow {
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 
 .languageDropdown {
@@ -78,7 +78,7 @@
   background-color: transparent;
   color: var(--app-text);
   font-weight: var(--font-normal);
-  font-size: 14px;
+  font-size: var(--text-sm);
   cursor: pointer;
   border-bottom: 1px solid var(--app-border);
 }
@@ -104,7 +104,7 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 20px;
+  font-size: var(--text-lg);
 }
 
 .unreadBadge {
@@ -115,12 +115,12 @@
   color: white;
   border-radius: var(--radius-lg);
   padding: 4px 8px;
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
 }
 
 .userEmail {
-  font-size: 14px;
+  font-size: var(--text-sm);
   color: var(--app-text);
   opacity: 0.7;
 }
@@ -131,7 +131,7 @@
   color: white;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 14px;
+  font-size: var(--text-sm);
   cursor: pointer;
 }
 

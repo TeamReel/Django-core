@@ -47,7 +47,7 @@
 
 .galleryTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.2;
@@ -55,7 +55,7 @@
 
 .gallerySub {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-text-secondary, #999);
 }
 
@@ -80,7 +80,7 @@
   flex: 1;
   min-width: 0;
   padding: 12px 12px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: var(--app-surface);

@@ -17,7 +17,7 @@
 }
 
 .headerTitle {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-bold);
   margin: 0;
   color: var(--app-text, #111);
@@ -31,7 +31,7 @@
 }
 
 .scoreSeparator {
-  font-size: 24px;
+  font-size: var(--text-xl);
   font-weight: var(--font-bold);
   color: var(--app-text-muted, #6b7280);
   margin-top: 20px;
@@ -40,7 +40,7 @@
 .select {
   width: 100%;
   padding: 12px 12px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-md);
   background: var(--app-surface, white);
@@ -77,7 +77,7 @@
 }
 
 .teamName {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   margin-bottom: 8px;
   color: var(--app-text-muted, #6b7280);
@@ -100,7 +100,7 @@
   border: 2px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, white);
   color: var(--app-text-muted, #6b7280);
-  font-size: 18px;
+  font-size: var(--text-lg);
   font-weight: var(--font-bold);
   cursor: pointer;
   display: flex;

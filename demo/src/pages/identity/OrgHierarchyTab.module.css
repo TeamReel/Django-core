@@ -6,7 +6,7 @@
   border-radius: 1000px;
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
   font-weight: var(--font-semibold);
 }

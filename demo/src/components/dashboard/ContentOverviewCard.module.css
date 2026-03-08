@@ -30,13 +30,13 @@
 
 .title {
   flex: 1;
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
 .totalBadge {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-lg);
@@ -72,7 +72,7 @@
 
 .sectionTitle {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-bold);
   color: var(--app-text);
   text-transform: uppercase;
@@ -80,7 +80,7 @@
 }
 
 .sectionCount {
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
@@ -110,14 +110,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--app-text);
   margin-bottom: 8px;
 }
 
 .matchDate {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-normal);
   color: var(--app-muted-text);
 }
@@ -133,7 +133,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   padding: 4px 8px;
   border-radius: var(--radius-md);
@@ -173,14 +173,14 @@
 }
 
 .statValue {
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.2;
 }
 
 .statLabel {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   text-transform: uppercase;
@@ -194,7 +194,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px 16px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
 

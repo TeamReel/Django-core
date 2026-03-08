@@ -35,7 +35,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -65,7 +65,7 @@
 }
 
 .dateLabel {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
   font-weight: var(--font-medium);
 }
@@ -87,7 +87,7 @@
 }
 
 .opponentName {
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.2;
@@ -95,7 +95,7 @@
 }
 
 .teamName {
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   margin-bottom: 4px;
@@ -105,7 +105,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-muted-text);
 }
 
@@ -129,7 +129,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
 }
@@ -146,7 +146,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-bold);
   color: var(--app-text);
   margin-bottom: 8px;
@@ -164,7 +164,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: var(--font-medium);
   color: var(--app-muted-text);
   white-space: nowrap;
@@ -208,7 +208,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-bold);
   border-radius: var(--radius-lg);
   border: none;
@@ -232,7 +232,7 @@
   justify-content: center;
   gap: 4px;
   padding: 12px 16px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
@@ -265,14 +265,14 @@
 }
 
 .emptyTitle {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: var(--font-bold);
   color: var(--app-text);
   margin-bottom: 4px;
 }
 
 .emptyDesc {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
 

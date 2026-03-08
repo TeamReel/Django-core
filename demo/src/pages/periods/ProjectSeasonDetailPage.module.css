@@ -17,7 +17,7 @@
 
 .titleBlock h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.3;
@@ -25,7 +25,7 @@
 
 .titleBlock p {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
 
@@ -33,7 +33,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   text-decoration: none;
@@ -60,7 +60,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
@@ -124,7 +124,7 @@
   gap: 8px;
   width: 100%;
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
   border: none;
   background: none;
@@ -189,7 +189,7 @@
 .matchLink { text-align: left; font-weight: 700; font-size: 13px; color: var(--color-blue-400); text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
 .downloadLink { font-size: 11px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; margin-top: 4px; }
 .downloadLink12 { font-size: 12px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; }
-.monoId { font-family: monospace; font-size: 10px; }
+.monoId { font-family: monospace; font-size: var(--text-xs); }
 .creditsText { font-size: 9px; color: var(--app-muted-text); }
 .dangerText { color: var(--color-red-500); }
 
@@ -202,7 +202,7 @@
   grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
   gap: 8px;
 }
-.contentTileIcon { font-size: 20px; margin-bottom: 4px; }
+.contentTileIcon { font-size: var(--text-lg); margin-bottom: 4px; }
 .contentTileLabel { font-weight: var(--font-semibold); font-size: 11px; line-height: 1.3; text-align: center; }
 .contentTileMeta { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
 .badgeXs { font-size: 9px; padding: 4px; }
@@ -269,19 +269,19 @@
   transform: rotate(-45deg); transform-origin: left bottom;
   position: absolute; bottom: 4px; left: 50%;
 }
-.slotIcon { font-size: 16px; }
+.slotIcon { font-size: var(--text-base); }
 .guestRow { background: rgba(167, 139, 250, 0.06); }
 .guestLabel { color: var(--color-violet-400); font-weight: 600; }
-.guestIndicator { font-size: 14px; cursor: pointer; }
-.indicatorIcon { font-size: 14px; }
-.indicatorDisabled { font-size: 14px; opacity: 0.3; }
+.guestIndicator { font-size: var(--text-sm); cursor: pointer; }
+.indicatorIcon { font-size: var(--text-sm); }
+.indicatorDisabled { font-size: var(--text-sm); opacity: 0.3; }
 .legendBox { margin-top: 16px; padding: 12px; background: var(--app-muted); border-radius: var(--radius-md); }
 .legendTitle { font-size: 12px; font-weight: var(--font-semibold); margin-bottom: 8px; }
-.legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; }
+.legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: var(--text-xs); margin-bottom: 12px; }
 .legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; border-top: 1px solid var(--app-border, #334155); padding-top: 8px; }
 .legendItem { display: flex; align-items: center; gap: 4px; }
 .legendLabel { opacity: 0.8; }
-.mediaHeaderBtn { font-size: 13px; padding: 8px 16px; }
+.mediaHeaderBtn { font-size: var(--text-sm); padding: 8px 16px; }
 
 /* ── Edit Member Modal ── */
 .modalOverlay {
@@ -352,7 +352,7 @@
 .memberMeta { font-size: 11px; color: var(--app-muted-text); }
 .variantRow { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
 .variantPill { padding: 4px 8px; border-radius: var(--radius-full); font-size: 10px; cursor: pointer; transition: all var(--duration-fast); }
-.arrowBtn { background: none; border: none; font-size: 16px; padding: 4px; }
+.arrowBtn { background: none; border: none; font-size: var(--text-base); padding: 4px; }
 .removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, #ef4444); opacity: 0.5; }
 .addIcon { font-size: 18px; color: var(--app-muted-text); }
 .unselectedHeader { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-muted-text); padding: 12px 20px 8px; }
@@ -395,12 +395,12 @@
 }
 .toast {
   border-radius: var(--radius-md); padding: 12px 16px; color: white;
-  display: flex; align-items: flex-start; gap: 12px; font-size: 13px;
+  display: flex; align-items: flex-start; gap: 12px; font-size: var(--text-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); animation: slideInRight 0.3s ease-out;
 }
 .toastDismiss {
   background: none; border: none; color: white; cursor: pointer;
-  font-size: 18px; opacity: 0.7; flex-shrink: 0; margin-left: auto;
+  font-size: var(--text-lg); opacity: 0.7; flex-shrink: 0; margin-left: auto;
 }
 
 @keyframes slideInRight {
@@ -508,7 +508,7 @@
   }
 
   .titleBlock h1 {
-    font-size: 24px;
+    font-size: var(--text-xl);
   }
 
   .tabContent {
@@ -519,7 +519,7 @@
     width: auto;
     height: auto;
     padding: 8px 12px;
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: var(--font-medium);
     gap: 8px;
   }

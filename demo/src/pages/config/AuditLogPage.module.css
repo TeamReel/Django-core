@@ -34,7 +34,7 @@
   background-color: var(--app-surface);
   color: var(--clear-btn-color);
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--text-sm);
   font-weight: var(--font-medium);
   width: 100%;
   height: 40px;
@@ -45,13 +45,13 @@
 }
 
 .paginationText {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
 
 .detailsButton {
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--app-primary);
   background: none;
   border: none;

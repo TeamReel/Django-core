@@ -27,7 +27,7 @@
 .closeButton {
   background: transparent;
   border: none;
-  font-size: 18px;
+  font-size: var(--text-lg);
   cursor: pointer;
   color: var(--app-text);
 }

@@ -68,7 +68,7 @@
   border: 1px solid var(--app-border, #e5e7eb);
   cursor: pointer;
   color: var(--app-text, #111);
-  font-size: 20px;
+  font-size: var(--text-lg);
   line-height: 1;
   flex-shrink: 0;
 }

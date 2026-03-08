@@ -39,7 +39,7 @@
 }
 
 .headerSubtext {
-  font-size: 12px;
+  font-size: var(--text-xs);
   opacity: 0.85;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .seasonLabelText {
-  font-size: 13px;
+  font-size: var(--text-sm);
   opacity: 0.9;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .noSeasonsText {
-  font-size: 13px;
+  font-size: var(--text-sm);
   opacity: 0.9;
 }
 
