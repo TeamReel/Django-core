@@ -134,7 +134,7 @@ export function ConfirmStep({
       {/* === Match Summary (inline — ~100 lines) === */}
       {selectedType?.subtype === 'match_summary' && (
         <div className="w-full max-w-480 mt-16 border rounded-12 overflow-hidden bg-surface">
-          <div className="border-bottom bg-surface-2" style={{ padding: '14px 20px' }}>
+          <div className="border-bottom bg-surface-2" style={{ padding: 'var(--space-4) var(--space-5)' }}>
             <h4 className="fs-14 fw-700 m-0 text-primary">
               Wedstrijd Samenvatting
             </h4>
@@ -150,7 +150,7 @@ export function ConfirmStep({
                   <input type="number" min={0} max={99} value={summaryScoreHome}
                     onChange={(e) => setSummaryScoreHome(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{
-                      width: 60, padding: '10px', fontSize: 28, fontWeight: 700, textAlign: 'center', borderRadius: 8,
+                      width: 60, padding: 'var(--space-3)', fontSize: 28, fontWeight: 'var(--font-bold)', textAlign: 'center', borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--app-border, #e5e7eb)',
                       background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text, #111)',
                     }} />
@@ -161,7 +161,7 @@ export function ConfirmStep({
                   <input type="number" min={0} max={99} value={summaryScoreAway}
                     onChange={(e) => setSummaryScoreAway(Math.max(0, parseInt(e.target.value) || 0))}
                     style={{
-                      width: 60, padding: '10px', fontSize: 28, fontWeight: 700, textAlign: 'center', borderRadius: 8,
+                      width: 60, padding: 'var(--space-3)', fontSize: 28, fontWeight: 'var(--font-bold)', textAlign: 'center', borderRadius: 'var(--radius-md)',
                       border: '1px solid var(--app-border, #e5e7eb)',
                       background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text, #111)',
                     }} />

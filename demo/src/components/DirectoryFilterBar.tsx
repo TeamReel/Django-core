@@ -78,9 +78,9 @@ export const DirectoryFilterBar: React.FC<DirectoryFilterBarProps> = ({
     <div
       style={{
         display: 'flex',
-        gap: '12px',
+        gap: 'var(--space-3)',
         alignItems: 'center',
-        marginBottom: '16px',
+        marginBottom: 'var(--space-4)',
         flexWrap: 'wrap',
       }}
     >
@@ -232,7 +232,7 @@ export const DirectoryFilterBar: React.FC<DirectoryFilterBarProps> = ({
       )}
 
       {/* Actions */}
-      <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+      <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-2)' }}>
         {extraActions}
         <Button variant="secondary" size="md" onClick={clearAll}>
           Clear

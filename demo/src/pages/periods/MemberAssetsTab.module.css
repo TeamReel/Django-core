@@ -3,7 +3,7 @@
 }
 
 .variantCardBorder[data-border="has-url"] {
-  --color-amber: #f59e0b;
+  --color-amber: var(--color-amber-400);
   border: 2px solid var(--color-amber);
 }
 

@@ -74,7 +74,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               onClick={() => handleClose(false)}
               className="rounded-8 cursor-pointer fs-13 fw-600"
               style={{
-                padding: '8px 16px',
+                padding: 'var(--space-2) var(--space-4)',
                 border: '1px solid var(--app-border)',
                 background: 'var(--app-surface)',
                 color: 'var(--app-text)',
@@ -87,10 +87,10 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
               onClick={() => handleClose(true)}
               className="rounded-8 cursor-pointer fs-13 fw-600"
               style={{
-                padding: '8px 16px',
+                padding: 'var(--space-2) var(--space-4)',
                 border: 'none',
                 background: isDanger ? 'var(--color-red-500, #dc2626)' : 'var(--color-primary-400, #3B8EA5)',
-                color: '#fff',
+                color: 'var(--color-white, #fff)',
               }}
             >
               {state.confirmLabel || 'Confirm'}

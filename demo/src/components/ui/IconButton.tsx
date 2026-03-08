@@ -31,9 +31,9 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 // ---------------------------------------------------------------------------
 
 const SIZE_STYLES: Record<IconButtonSize, React.CSSProperties> = {
-  sm: { width: 28, height: 28, padding: 4 },
-  md: { width: 36, height: 36, padding: 8 },
-  lg: { width: 44, height: 44, padding: 10 },
+  sm: { width: 28, height: 28, padding: 'var(--space-1)' },
+  md: { width: 36, height: 36, padding: 'var(--space-2)' },
+  lg: { width: 44, height: 44, padding: 'var(--space-3)' },
 };
 
 // ---------------------------------------------------------------------------
@@ -54,7 +54,7 @@ const VARIANT_STYLES: Record<IconButtonVariant, React.CSSProperties> = {
   filled: {
     background: 'var(--app-primary)',
     border: 'none',
-    color: '#fff',
+    color: 'var(--color-white, #fff)',
   },
 };
 

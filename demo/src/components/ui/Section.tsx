@@ -24,7 +24,7 @@ export function Section({ title, description, children, className = '' }: Sectio
     <div className={`mb-24 ${className}`}>
       <h3 className="fs-14 fw-600 mb-4" style={{ color: 'var(--app-text)' }}>{title}</h3>
       {description && (
-        <p className="m-0 mb-12" style={{ fontSize: 13, color: 'var(--app-text-secondary)' }}>
+        <p className="m-0 mb-12" style={{ fontSize: 'var(--text-sm)', color: 'var(--app-text-secondary)' }}>
           {description}
         </p>
       )}

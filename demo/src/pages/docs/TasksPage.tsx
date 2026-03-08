@@ -83,7 +83,7 @@ export function TasksPage() {
           {error && <Alert variant="warning" className="mb-16">{error}</Alert>}
 
           {loading ? (
-            <div className="flex-center" style={{ padding: '48px' }}><Spinner /></div>
+            <div className="flex-center" style={{ padding: 'var(--space-12)' }}><Spinner /></div>
           ) : (
             <>
               <div className="grid gap-16 mb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>

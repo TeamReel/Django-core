@@ -50,7 +50,7 @@ export const CreditsPage: React.FC = () => {
             <div
               className="fs-11 rounded-6 fw-600 cursor-default text-inverse"
               style={{
-                padding: '4px 10px',
+                padding: 'var(--space-1) var(--space-3)',
                 backgroundColor: data.isSuperAdmin ? 'var(--color-blue-500)' : '#a855f7',
                 letterSpacing: '0.5px',
               }}
@@ -193,7 +193,7 @@ const PersonalWalletView: React.FC<PersonalWalletViewProps> = ({
                 <div
                   key={txn.id}
                   className="flex-between rounded-8"
-                  style={{ padding: '10px 12px', border: '1px solid var(--border-color, #e0e0e0)' }}
+                  style={{ padding: 'var(--space-3) var(--space-3)', border: '1px solid var(--border-color, #e0e0e0)' }}
                 >
                   <div className="flex-col gap-2">
                     <div className="fw-600 fs-13">{txn.source_type}</div>

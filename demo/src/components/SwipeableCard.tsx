@@ -31,7 +31,7 @@ export interface SwipeableCardProps {
  * <SwipeableCard
  *   onDismiss={() => markAsRead(notification.id)}
  *   leftReveal={
- *     <div style={{ background: '#22c55e', color: 'white', padding: 16 }}>
+ *     <div style={{ background: '#22c55e', color: 'white', padding: 'var(--space-4)' }}>
  *       ✓ Mark as Read
  *     </div>
  *   }

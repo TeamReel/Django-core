@@ -122,19 +122,19 @@ export function Modal({
               {icon && (
                 <div
                   className="flex-center rounded-8"
-                  style={{ width: 36, height: 36, background: 'var(--app-primary)', color: '#fff' }}
+                  style={{ width: 36, height: 36, background: 'var(--app-primary)', color: 'var(--color-white, #fff)' }}
                 >
                   {icon}
                 </div>
               )}
               <div>
                 {title && (
-                  <div id="modal-title" style={{ fontWeight: 700, fontSize: 16, color: 'var(--app-text)' }}>
+                  <div id="modal-title" style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-base)', color: 'var(--app-text)' }}>
                     {title}
                   </div>
                 )}
                 {subtitle && (
-                  <div style={{ fontSize: 13, color: 'var(--app-text-secondary)', marginTop: 2 }}>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--app-text-secondary)', marginTop: 'var(--space-1)' }}>
                     {subtitle}
                   </div>
                 )}
@@ -161,7 +161,7 @@ export function Modal({
         {footer && (
           <div
             className="flex-row border-top"
-            style={{ padding: '14px 20px', justifyContent: 'flex-end', gap: 8 }}
+            style={{ padding: 'var(--space-4) var(--space-5)', justifyContent: 'flex-end', gap: 'var(--space-2)' }}
           >
             {footer}
           </div>
@@ -179,15 +179,15 @@ const overlayStyle: React.CSSProperties = {
   position: 'fixed',
   inset: 0,
   backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  zIndex: 1000,
+  zIndex: 'var(--z-modal)',
 };
 
 const panelStyle: React.CSSProperties = {
   width: '95%',
   maxHeight: '90vh',
-  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.24)',
+  boxShadow: 'var(--shadow-lg)',
 };
 
 const headerPadding: React.CSSProperties = {
-  padding: '16px 20px',
+  padding: 'var(--space-4) var(--space-5)',
 };

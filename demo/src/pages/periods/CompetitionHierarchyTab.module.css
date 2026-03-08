@@ -1,12 +1,12 @@
 /* CompetitionHierarchyTab — extracted inline styles */
 
 .root {
-  --link-accent: #60a5fa;
+  --link-accent: var(--color-blue-400);
 }
 
 .breadcrumbPill {
   padding: var(--space-1) var(--space-2);
-  border-radius: 1000px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   font-size: var(--text-xs);
@@ -31,7 +31,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-1) var(--space-2);
-  border-radius: 1000px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   font-size: var(--text-xs);

@@ -30,19 +30,19 @@ export const overlayStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  zIndex: 1100,
+  zIndex: 'var(--z-toast)',
   overflowY: 'auto',
   WebkitOverflowScrolling: 'touch',
-  padding: '16px',
+  padding: 'var(--space-4)',
 };
 
 export const panelStyle: CSSProperties = {
   backgroundColor: 'var(--app-surface, white)',
-  padding: '24px',
-  borderRadius: '12px',
+  padding: 'var(--space-6)',
+  borderRadius: 'var(--radius-lg)',
   width: '700px',
   maxWidth: '100%',
-  boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+  boxShadow: 'var(--shadow-lg)',
   color: 'var(--app-text)',
   display: 'flex',
   flexDirection: 'column',
@@ -51,57 +51,57 @@ export const panelStyle: CSSProperties = {
 };
 
 export const tabStyle = (active: boolean): CSSProperties => ({
-  padding: '10px 24px',
+  padding: 'var(--space-3) var(--space-6)',
   border: 'none',
   background: active ? 'var(--app-primary, #0b5ed7)' : 'transparent',
-  color: active ? '#fff' : 'var(--app-text, #333)',
+  color: active ? 'var(--color-white, #fff)' : 'var(--app-text, #333)',
   cursor: 'pointer',
   fontWeight: active ? 600 : 400,
-  fontSize: '14px',
-  borderRadius: '8px 8px 0 0',
+  fontSize: 'var(--text-sm)',
+  borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
   transition: 'all .15s ease',
 });
 
 export const labelStyle: CSSProperties = {
   display: 'block',
-  marginBottom: '4px',
-  fontSize: '14px',
-  fontWeight: 500,
+  marginBottom: 'var(--space-1)',
+  fontSize: 'var(--text-sm)',
+  fontWeight: 'var(--font-medium)',
   color: 'var(--app-text)',
 };
 
 export const fieldWrapStyle: CSSProperties = {
-  marginBottom: '16px',
+  marginBottom: 'var(--space-4)',
 };
 
 export const errorBoxStyle: CSSProperties = {
-  padding: '8px 12px',
+  padding: 'var(--space-2) var(--space-3)',
   backgroundColor: 'rgba(220, 53, 69, 0.1)',
   color: 'var(--app-error)',
   border: '1px solid rgba(220, 53, 69, 0.3)',
-  borderRadius: '6px',
-  marginBottom: '16px',
-  fontSize: '14px',
+  borderRadius: 'var(--radius-md)',
+  marginBottom: 'var(--space-4)',
+  fontSize: 'var(--text-sm)',
 };
 
 export const successBoxStyle: CSSProperties = {
-  padding: '8px 12px',
+  padding: 'var(--space-2) var(--space-3)',
   backgroundColor: 'rgba(25, 135, 84, 0.1)',
-  color: '#198754',
+  color: 'var(--color-green-600)',
   border: '1px solid rgba(25, 135, 84, 0.3)',
-  borderRadius: '6px',
-  marginBottom: '16px',
-  fontSize: '14px',
+  borderRadius: 'var(--radius-md)',
+  marginBottom: 'var(--space-4)',
+  fontSize: 'var(--text-sm)',
 };
 
 export const userRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '10px 12px',
-  borderRadius: '8px',
+  padding: 'var(--space-3) var(--space-3)',
+  borderRadius: 'var(--radius-md)',
   border: '1px solid var(--app-border, #e0e0e0)',
-  marginBottom: '8px',
+  marginBottom: 'var(--space-2)',
   cursor: 'pointer',
   transition: 'background .1s',
 };

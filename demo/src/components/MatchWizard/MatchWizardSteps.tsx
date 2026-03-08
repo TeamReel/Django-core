@@ -231,7 +231,7 @@ export function ReviewStep({
       {/* Content type label */}
       <div className="text-center">
         <div className="fw-700 text-primary fs-18">{contentLabel}</div>
-        <div className="fs-13 text-muted" style={{ marginTop: 4 }}>{contentDescription}</div>
+        <div className="fs-13 text-muted" style={{ marginTop: 'var(--space-1)' }}>{contentDescription}</div>
       </div>
 
       {/* Summary card */}

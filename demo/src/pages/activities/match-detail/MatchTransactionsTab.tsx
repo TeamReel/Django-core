@@ -15,7 +15,7 @@ export default function MatchTransactionsTab({
   project,
 }: MatchTransactionsTabProps) {
   return (
-    <div style={{ display: 'grid', gap: '12px' }}>
+    <div style={{ display: 'grid', gap: 'var(--space-3)' }}>
       <GovernanceSummaryCard
         organisationId={String(org?.id || '')}
         projectId={String(match?.project?.id || project?.id || '')}

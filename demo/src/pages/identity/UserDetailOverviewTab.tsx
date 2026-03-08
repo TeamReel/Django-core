@@ -134,7 +134,7 @@ export function UserDetailOverviewTab({ data }: Props) {
       <Card>
         <h3 style={{ marginTop: 0 }}>User</h3>
         {data.user && (
-          <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: '8px 16px' }}>
+          <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: 'var(--space-2) var(--space-4)' }}>
             <div className="text-muted">Name</div>
             <div className="fw-600">{data.userDisplayName}</div>
             <div className="text-muted">Email</div>

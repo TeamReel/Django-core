@@ -16,11 +16,11 @@ const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({ videoUrl, videoLa
     <div
       onClick={(e) => e.stopPropagation()}
       className={s.previewModalContainer}
-      style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}
+      style={{ boxShadow: 'var(--shadow-lg)' }}
     >
       <div className={s.previewModalHeader}>
         <span className={s.previewTitle}>{videoLabel || 'Video Preview'}</span>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
           <a
             href={videoUrl}
             target="_blank"
@@ -33,7 +33,7 @@ const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({ videoUrl, videoLa
             type="button"
             onClick={onClose}
             className={s.closeButton}
-            style={{ lineHeight: 1, padding: '4px 8px' }}
+            style={{ lineHeight: 1, padding: 'var(--space-1) var(--space-2)' }}
           >
             ✕
           </button>

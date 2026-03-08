@@ -18,15 +18,15 @@ export default function OrganisationDetailModal({ opened, onClose, organisation 
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 1000
+      zIndex: 'var(--z-modal)'
     }}>
       <div className="bg-surface p-24 rounded-8 overflow-auto text-primary border" style={{
         width: '600px',
         maxWidth: '90%',
         maxHeight: '80vh',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        boxShadow: 'var(--shadow-md)'
       }}>
-        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: '20px' }}>Organisation Details</h2>
+        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: 'var(--space-5)' }}>Organisation Details</h2>
 
         <div className="flex-col gap-20">
           {/* Organisation Information */}

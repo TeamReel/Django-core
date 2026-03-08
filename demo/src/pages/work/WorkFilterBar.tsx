@@ -68,8 +68,8 @@ export default function WorkFilterBar({
   onClear,
 }: Props) {
   const selectStyle: CSSProperties = {
-    padding: '8px',
-    borderRadius: '4px',
+    padding: 'var(--space-2)',
+    borderRadius: 'var(--radius-sm)',
     border: '1px solid #ccc',
   };
 
@@ -77,7 +77,7 @@ export default function WorkFilterBar({
     <>
       {showStatus && (
         <>
-          <label style={{ fontSize: '14px', fontWeight: 500 }}>Status:</label>
+          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Status:</label>
           <select value={statusFilter} onChange={(e) => onStatusChange(e.target.value)} style={selectStyle}>
             <option value="all">All</option>
             <option value="active">Active</option>
@@ -88,7 +88,7 @@ export default function WorkFilterBar({
 
       {showOrganisation && (
         <>
-          <label style={{ fontSize: '14px', fontWeight: 500 }}>Organisation:</label>
+          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Organisation:</label>
           <select
             value={selectedOrgId}
             onChange={(e) => onOrganisationChange(e.target.value)}
@@ -106,7 +106,7 @@ export default function WorkFilterBar({
 
       {showClub && (
         <>
-          <label style={{ fontSize: '14px', fontWeight: 500 }}>Club:</label>
+          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Club:</label>
           <select
             value={selectedClubId}
             onChange={(e) => onClubChange(e.target.value)}
@@ -132,7 +132,7 @@ export default function WorkFilterBar({
 
       {showTeam && (
         <>
-          <label style={{ fontSize: '14px', fontWeight: 500 }}>Team:</label>
+          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Team:</label>
           <select
             value={selectedTeamId}
             onChange={(e) => onTeamChange(e.target.value)}

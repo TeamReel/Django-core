@@ -52,7 +52,7 @@ export const AssetsTabTeamLevel: React.FC<Props> = ({ d, readOnly, projectId, or
     </div>
 
     {/* Kits Grid — same layout as club with inheritance badges */}
-    <h3 className={s.sectionBoxTitle} style={{ marginBottom: 12 }}>Tenues</h3>
+    <h3 className={s.sectionBoxTitle} style={{ marginBottom: 'var(--space-3)' }}>Tenues</h3>
     <div className={s.kitsGrid}>
       {KIT_ROLES.map((role) => {
         const uploadType = `kit_${role.id}_upload`;

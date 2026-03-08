@@ -38,7 +38,7 @@ const VARIANT_STYLES: Record<CardVariant, React.CSSProperties> = {
   outlined: { background: 'var(--app-surface, #1a1a2e)' },
   elevated: {
     background: 'var(--app-surface, #1a1a2e)',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12)',
+    boxShadow: 'var(--shadow-sm)',
   },
   filled: { background: 'var(--app-surface-2, #252540)' },
   flat: { background: 'transparent' },

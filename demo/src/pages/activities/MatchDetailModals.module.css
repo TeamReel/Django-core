@@ -92,9 +92,9 @@
 
 .toastItem {
   --color-toast-success: #166534;
-  --color-toast-error: #991b1b;
-  --color-toast-warning: #92400e;
-  --color-toast-info: #1e40af;
+  --color-toast-error: var(--color-red-700);
+  --color-toast-warning: var(--color-amber-700);
+  --color-toast-info: var(--color-blue-800);
 
   animation: slideInRight 0.3s ease-out;
 }

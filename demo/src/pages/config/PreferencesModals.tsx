@@ -228,7 +228,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             type="password"
             disabled={profileSaving}
           />
-          <div className="text-xs text-gray-500" style={{ marginTop: 6 }}>
+          <div className="text-xs text-gray-500" style={{ marginTop: 'var(--space-2)' }}>
             Required to confirm changes to your account.
           </div>
         </div>

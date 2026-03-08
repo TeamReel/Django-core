@@ -38,7 +38,7 @@ export function OrgEditMemberRoleModal({
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 1100,
+        zIndex: 'var(--z-toast)',
       }}
     >
       <div
@@ -46,7 +46,7 @@ export function OrgEditMemberRoleModal({
         style={{
           width: '520px',
           maxWidth: '95%',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         <div className="flex-between gap-12">
@@ -66,20 +66,20 @@ export function OrgEditMemberRoleModal({
         </div>
 
         {error ? (
-          <div className="mt-12 rounded-6" style={{ padding: '10px 12px', backgroundColor: '#fee', color: '#c00' }}>
+          <div className="mt-12 rounded-6" style={{ padding: 'var(--space-3) var(--space-3)', backgroundColor: 'var(--color-red-100)', color: 'var(--color-red-500)' }}>
             {error}
           </div>
         ) : null}
 
         <div className="mt-16">
-          <label className="block fw-600" style={{ marginBottom: '6px' }}>Role</label>
+          <label className="block fw-600" style={{ marginBottom: 'var(--space-2)' }}>Role</label>
           <select
             value={editingMemberRole}
             onChange={(e) => setEditingMemberRole(e.target.value as any)}
             disabled={saving}
             className="w-full rounded-6 border bg-surface-2 text-primary"
             style={{
-              padding: '8px 10px',
+              padding: 'var(--space-2) var(--space-3)',
             }}
           >
             <option value="member">Member</option>

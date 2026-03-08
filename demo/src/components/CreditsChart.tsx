@@ -85,7 +85,7 @@ export const CreditsChart: React.FC<CreditsChartProps> = ({
             fill: true,
             tension: 0.3,
             pointBackgroundColor: primaryColor,
-            pointBorderColor: '#ffffff',
+            pointBorderColor: 'var(--color-white, #fff)',
           },
         ],
       };

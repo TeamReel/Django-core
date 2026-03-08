@@ -46,7 +46,7 @@ export default function AppsPage() {
       label: 'Competitions',
       description: 'Leagues, cups, and tournament management',
       icon: Trophy,
-      color: '#8b5cf6',
+      color: 'var(--color-violet-500)',
     },
     {
       path: matchPath,

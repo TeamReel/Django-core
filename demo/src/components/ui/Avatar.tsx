@@ -97,7 +97,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     borderRadius: 'var(--radius-full)',
     overflow: 'hidden',
     backgroundColor: showImage ? 'var(--app-surface-2)' : hashColor(name),
-    color: '#ffffff',
+    color: 'var(--color-white, #fff)',
     fontSize,
     fontWeight: 'var(--font-semibold)' as never,
     lineHeight: 1,

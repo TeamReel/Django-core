@@ -33,7 +33,7 @@ export default function ProjectDetailModal({ opened, onClose, project }: Project
         right: 0,
         bottom: 0,
         backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 1000
+        zIndex: 'var(--z-modal)'
       }}
     >
       <div
@@ -42,11 +42,11 @@ export default function ProjectDetailModal({ opened, onClose, project }: Project
           width: '600px',
           maxWidth: '90%',
           maxHeight: '80vh',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          boxShadow: 'var(--shadow-md)',
           color: 'var(--app-text)',
         }}
       >
-        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: '20px' }}>Project Details</h2>
+        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: 'var(--space-5)' }}>Project Details</h2>
 
         <div className="flex-col gap-20">
           {/* Project Information */}

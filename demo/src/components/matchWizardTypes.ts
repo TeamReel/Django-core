@@ -95,9 +95,9 @@ export const POSITIONS = [
 export const CARD_STYLE: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
-  padding: '14px 16px',
-  borderRadius: '12px',
+  gap: 'var(--space-3)',
+  padding: 'var(--space-4) var(--space-4)',
+  borderRadius: 'var(--radius-lg)',
   border: '1px solid var(--app-border)',
   backgroundColor: 'var(--app-surface)',
   cursor: 'pointer',

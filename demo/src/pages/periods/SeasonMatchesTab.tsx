@@ -237,7 +237,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
   if (matchesLoading) {
     return (
       <Card>
-        <div style={{ padding: '12px' }}>
+        <div style={{ padding: 'var(--space-3)' }}>
           <div className={styles.header}>
             <div className={styles.title}>Matches</div>
           </div>
@@ -253,7 +253,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
 
   return (
     <Card>
-      <div style={{ padding: '12px' }}>
+      <div style={{ padding: 'var(--space-3)' }}>
         {/* Header */}
         <div className={styles.header}>
           <div>

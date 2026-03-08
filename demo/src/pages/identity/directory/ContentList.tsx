@@ -225,7 +225,7 @@ export const ContentList: React.FC = () => {
               {filtered.map((job) => (
                 <tr key={job.task_id} className={cl.tableRow}>
                   <td className="dir-td">
-                    <span style={{ fontSize: 15, marginRight: 3 }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
+                    <span style={{ fontSize: 'var(--text-base)', marginRight: 'var(--space-1)' }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
                     <span className="fs-11 text-muted">{job.output_asset_type || job.output_type}</span>
                   </td>
                   <td className="dir-td-text">{job.label || '—'}</td>

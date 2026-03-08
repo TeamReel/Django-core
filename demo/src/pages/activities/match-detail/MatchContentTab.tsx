@@ -111,14 +111,14 @@ export default function MatchContentTab({
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
               color: 'var(--app-muted-text, #888)',
-              paddingLeft: 2,
+              paddingLeft: 'var(--space-1)',
             }}>
               {category.label}
             </div>
 
             {/* Content rows */}
             <div className="overflow-hidden" style={{
-              borderRadius: 10,
+              borderRadius: 'var(--radius-lg)',
               border: '1px solid var(--app-border, #333)',
               background: 'var(--app-surface, #1e1e1e)',
             }}>

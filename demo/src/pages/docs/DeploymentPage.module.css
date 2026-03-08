@@ -20,7 +20,7 @@
 }
 
 .cardDivider {
-  --divider-color: #e5e5e5;
+  --divider-color: var(--app-border);
   border-top: 1px solid var(--divider-color);
   padding-top: var(--space-3);
   font-size: var(--text-sm);

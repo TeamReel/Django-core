@@ -39,8 +39,8 @@ export const isCompetitionPeriod = (p: any): boolean => {
 // ── Table style constants ──
 
 export const compactTableStyle: React.CSSProperties = { tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse' };
-export const compactThStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
-export const compactTdStyle: React.CSSProperties = { padding: '6px 8px', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid var(--app-border)' };
+export const compactThStyle: React.CSSProperties = { padding: 'var(--space-2) var(--space-2)', fontSize: '0.8rem', textAlign: 'left', borderBottom: '2px solid var(--app-border)' };
+export const compactTdStyle: React.CSSProperties = { padding: 'var(--space-2) var(--space-2)', fontSize: '0.85rem', verticalAlign: 'middle', borderBottom: '1px solid var(--app-border)' };
 export const compactTextTdStyle: React.CSSProperties = {
   ...compactTdStyle,
   overflow: 'hidden',
@@ -51,7 +51,7 @@ export const compactTextTdStyle: React.CSSProperties = {
 export const compactActionsStyle: React.CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
-  gap: '8px',
+  gap: 'var(--space-2)',
   flexWrap: 'wrap',
 };
 

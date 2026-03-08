@@ -178,7 +178,7 @@ export const MemberList: React.FC<MemberListProps> = ({
 
                   return (
                     <tr key={user.id}>
-                      <td className="fw-700" style={{ color: '#555' }}>
+                      <td className="fw-700" style={{ color: 'var(--app-muted-text)' }}>
                          {shirtNumber}
                       </td>
                       <td>

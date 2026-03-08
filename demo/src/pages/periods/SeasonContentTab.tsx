@@ -216,7 +216,7 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: 'var(--space-3)',
         }}>
           {CONTENT_TYPES.season?.items.map(item => {
             const templates = availableTemplates[item.subtype] || [];

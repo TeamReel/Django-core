@@ -108,7 +108,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()}>
         <h2 className={s.editMemberTitle}>Edit Member Roles</h2>
 
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: 'var(--space-6)' }}>
           <div className={s.memberInfoRow}>
             <strong className={s.memberInfoLabel}>Name:</strong>{' '}
             {member.user?.name ||
@@ -122,7 +122,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         </div>
 
         {/* Access Role Section */}
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: 'var(--space-6)' }}>
           <label className={s.fieldLabel}>Access Role</label>
           <div className={s.radioGroup}>
             {accessRoleOptions.map((opt) => {
@@ -156,7 +156,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           </div>
         </div>
 
-        <div style={{ marginBottom: '24px' }}>
+        <div style={{ marginBottom: 'var(--space-6)' }}>
           <label className={s.fieldLabel}>Functional Roles</label>
           <div className={s.roleGrid}>
             {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map((role) => {

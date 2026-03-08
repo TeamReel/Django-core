@@ -79,8 +79,8 @@ export const addHoursToIsoLike = (isoLike: string, hours: number): string => {
 // ─── Style helper ────────────────────────────────────────────────────────────
 
 export const controlStyle = (disabled: boolean) => ({
-  padding: '8px 10px',
-  borderRadius: '6px',
+  padding: 'var(--space-2) var(--space-3)',
+  borderRadius: 'var(--radius-md)',
   border: '1px solid var(--app-border)',
   backgroundColor: disabled ? 'var(--app-surface-3, #e9eef5)' : 'var(--app-surface-2)',
   color: disabled ? 'var(--app-text-muted, #667085)' : 'var(--app-text)',

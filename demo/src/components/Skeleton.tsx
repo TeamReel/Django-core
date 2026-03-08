@@ -323,7 +323,7 @@ export function SkeletonDetailPage({
           <Skeleton width="100%" height="200px" borderRadius="12px" className={styles.mb6} />
         )}
         <SkeletonList count={2} variant="row" gap={12} />
-        <div style={{ marginTop: 16 }}>
+        <div style={{ marginTop: 'var(--space-4)' }}>
           <Skeleton variant="text" lines={contentLines} />
         </div>
       </div>

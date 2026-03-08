@@ -80,7 +80,7 @@ export function StatusBadge({
 
   return (
     <Badge variant={resolved} size={size} className={className}>
-      {icon && <span style={{ marginRight: 4, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>}
+      {icon && <span style={{ marginRight: 'var(--space-1)', display: 'inline-flex', alignItems: 'center' }}>{icon}</span>}
       {children}
     </Badge>
   );

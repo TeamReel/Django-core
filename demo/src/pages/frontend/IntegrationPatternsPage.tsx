@@ -193,8 +193,8 @@ export function CreateProjectForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <Alert variant="error" style={{ marginBottom: '16px' }}>{error}</Alert>}
-      {success && <Alert variant="success" style={{ marginBottom: '16px' }}>Project created!</Alert>}
+      {error && <Alert variant="error" style={{ marginBottom: 'var(--space-4)' }}>{error}</Alert>}
+      {success && <Alert variant="success" style={{ marginBottom: 'var(--space-4)' }}>Project created!</Alert>}
 
       <Input
         label="Project Name"
@@ -204,7 +204,7 @@ export function CreateProjectForm() {
         required
       />
 
-      <Button type="submit" loading={submitting} style={{ marginTop: '16px' }}>
+      <Button type="submit" loading={submitting} style={{ marginTop: 'var(--space-4)' }}>
         Create Project
       </Button>
     </form>
@@ -329,7 +329,7 @@ function ErrorFallback({ error, resetErrorBoundary }: any) {
   return (
     <Alert variant="error" title="Something went wrong">
       <p>{error.message}</p>
-      <Button onClick={resetErrorBoundary} size="sm" style={{ marginTop: '8px' }}>
+      <Button onClick={resetErrorBoundary} size="sm" style={{ marginTop: 'var(--space-2)' }}>
         Try again
       </Button>
     </Alert>

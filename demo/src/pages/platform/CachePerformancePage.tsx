@@ -296,7 +296,7 @@ export const CachePerformancePage: React.FC = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis
                         dataKey="timestamp"
-                        tick={{ fontSize: 12 }}
+                        tick={{ fontSize: 'var(--text-xs)' }}
                         angle={-45}
                         textAnchor="end"
                         height={80}

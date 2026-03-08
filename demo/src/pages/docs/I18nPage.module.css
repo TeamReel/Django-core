@@ -1,11 +1,11 @@
 /* I18nPage – extracted inline styles */
 
 .page {
-  --i18n-bg-muted: #f9fafb;
-  --i18n-border: #e5e5e5;
-  --i18n-primary: #3b82f6;
-  --i18n-primary-bg: #eff6ff;
-  --i18n-white: #fff;
+  --i18n-bg-muted: var(--color-neutral-50);
+  --i18n-border: var(--app-border);
+  --i18n-primary: var(--color-blue-500);
+  --i18n-primary-bg: var(--color-blue-50);
+  --i18n-white: var(--color-white, #fff);
 }
 
 .welcomeHeading {

@@ -70,9 +70,9 @@ export const getRbacColor = (label: string): string => {
 export function RbacBadge({ label }: { label: string }) {
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: '5px',
-      padding: '4px 10px', borderRadius: '999px', fontSize: '12px', fontWeight: 700,
-      color: '#fff', backgroundColor: getRbacColor(label), letterSpacing: '0.02em',
+      display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1)',
+      padding: 'var(--space-1) var(--space-3)', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 'var(--font-bold)',
+      color: 'var(--color-white, #fff)', backgroundColor: getRbacColor(label), letterSpacing: '0.02em',
     }}>
       🔰 {label}
     </span>

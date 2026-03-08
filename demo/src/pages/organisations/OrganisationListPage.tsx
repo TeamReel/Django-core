@@ -57,15 +57,15 @@ export default function OrganisationListPage() {
     <>
       <div>
         <h1>Organisations</h1>
-        <p className="mb-24" style={{ color: '#666' }}>Select an organisation to view its projects and resources.</p>
+        <p className="mb-24" style={{ color: 'var(--app-muted-text)' }}>Select an organisation to view its projects and resources.</p>
 
         {isLoading && <p>Loading organisations...</p>}
 
         {error && (
           <div className="p-12 rounded-4 mb-16" style={{
-            backgroundColor: '#fee',
+            backgroundColor: 'var(--color-red-100)',
             border: '1px solid #fcc',
-            color: '#c00'
+            color: 'var(--color-red-500)'
           }}>
             {error}
           </div>
@@ -88,7 +88,7 @@ export default function OrganisationListPage() {
               key={org.id}
               className="border rounded-8 p-20 bg-surface"
               style={{
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                boxShadow: 'var(--shadow-xs)'
               }}
             >
               <h3 className="text-primary mt-0">{org.name}</h3>
@@ -142,7 +142,7 @@ export default function OrganisationListPage() {
                   to={`/organisations/${org.slug}/projects`}
                   className="py-8 px-16 rounded-4 fs-14 text-white text-decoration-none"
                   style={{
-                    backgroundColor: '#6c757d',
+                    backgroundColor: 'var(--color-neutral-400)',
                   }}
                 >
                   View Projects

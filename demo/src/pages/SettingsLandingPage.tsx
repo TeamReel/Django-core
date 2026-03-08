@@ -26,7 +26,7 @@ export default function SettingsLandingPage() {
       label: 'Templates',
       description: 'Configure content generation templates',
       icon: Palette,
-      color: '#8b5cf6',
+      color: 'var(--color-violet-500)',
     });
   }
 

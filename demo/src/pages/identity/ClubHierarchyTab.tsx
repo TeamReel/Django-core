@@ -99,24 +99,24 @@ export function ClubHierarchyTab({
   const pillStyle: React.CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 6,
-    padding: '2px 8px',
-    borderRadius: 999,
+    gap: 'var(--space-2)',
+    padding: 'var(--space-1) var(--space-2)',
+    borderRadius: 'var(--radius-full)',
     border: '1px solid var(--app-border)',
     background: 'var(--app-surface-2)',
-    fontSize: 12,
+    fontSize: 'var(--text-xs)',
     color: 'var(--app-muted-text)',
-    fontWeight: 600,
+    fontWeight: 'var(--font-semibold)',
   };
 
   const seasonRowStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 12,
-    padding: '8px 10px',
+    gap: 'var(--space-3)',
+    padding: 'var(--space-2) var(--space-3)',
     border: '1px solid var(--app-border)',
-    borderRadius: 8,
+    borderRadius: 'var(--radius-md)',
     background: 'var(--app-surface)',
   };
 
@@ -149,8 +149,8 @@ export function ClubHierarchyTab({
       ) : (
         <div className="mt-12 flex-col gap-10">
           {/* Club summary row */}
-          <div className="border bg-surface overflow-hidden" style={{ borderRadius: 10 }}>
-            <div className="flex-between gap-12 border-bottom bg-surface-2" style={{ padding: '10px 12px' }}>
+          <div className="border bg-surface overflow-hidden" style={{ borderRadius: 'var(--radius-lg)' }}>
+            <div className="flex-between gap-12 border-bottom bg-surface-2" style={{ padding: 'var(--space-3) var(--space-3)' }}>
               <div className="flex-col gap-2 min-w-0">
                 <div className="fw-800 fs-14 text-primary">{club?.name || 'Club'}</div>
               </div>
@@ -183,15 +183,15 @@ export function ClubHierarchyTab({
             const matchesCount = hierarchyMatchesCountByTeamId[String(team.id)] ?? 0;
 
             return (
-              <div key={team.id} className="border bg-surface overflow-hidden" style={{ borderRadius: 10 }}>
-                <div className="flex-between gap-12 border-bottom bg-surface-2" style={{ padding: '10px 12px' }}>
+              <div key={team.id} className="border bg-surface overflow-hidden" style={{ borderRadius: 'var(--radius-lg)' }}>
+                <div className="flex-between gap-12 border-bottom bg-surface-2" style={{ padding: 'var(--space-3) var(--space-3)' }}>
                   <div className="flex-col gap-2 min-w-0">
                     {teamPath ? (
                       <button
                         type="button"
                         className="app-unstyled-button hover:underline text-left fw-800 fs-14"
                         onClick={() => navigate(teamPath)}
-                        style={{ color: '#60a5fa' }}
+                        style={{ color: 'var(--color-blue-400)' }}
                       >
                         {team.name}
                       </button>
@@ -217,7 +217,7 @@ export function ClubHierarchyTab({
                   </div>
                 </div>
 
-                <div style={{ padding: '10px 12px' }}>
+                <div style={{ padding: 'var(--space-3) var(--space-3)' }}>
                   {seasons.length === 0 ? (
                     <div className="text-sm text-gray-500 py-2">No seasons.</div>
                   ) : (
@@ -241,7 +241,7 @@ export function ClubHierarchyTab({
                                   type="button"
                                   className="app-unstyled-button hover:underline text-left fw-700 fs-13"
                                   onClick={() => navigate(seasonPath)}
-                                  style={{ color: '#60a5fa' }}
+                                  style={{ color: 'var(--color-blue-400)' }}
                                 >
                                   {String((s as any)?.name || 'Season')}
                                 </button>

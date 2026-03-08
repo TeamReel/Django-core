@@ -5,10 +5,10 @@
 /* ── Custom property defaults ─────────────────────────────────────────────── */
 
 .root {
-  --vq-color-danger: #dc2626;
+  --vq-color-danger: var(--color-red-500);
   --vq-color-danger-bg: #fef2f2;
-  --vq-color-blue-primary: #2563eb;
-  --vq-color-blue-100: #dbeafe;
+  --vq-color-blue-primary: var(--color-blue-600);
+  --vq-color-blue-100: var(--color-blue-100);
   --vq-color-success: #059669;
 }
 

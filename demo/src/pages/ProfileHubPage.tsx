@@ -322,7 +322,7 @@ export default function ProfileHubPage() {
       </div>
 
       {/* ── Sign Out ─────────────────────────────────────────────────── */}
-      <div className={s.section} style={{ marginTop: 20 }}>
+      <div className={s.section} style={{ marginTop: 'var(--space-5)' }}>
         <button className={`${s.row} ${s.danger}`} onClick={() => signOut()} disabled={signingOut}>
           <LogOut size={20} />
           <span className={s.rowLabel}>{signingOut ? 'Signing out…' : 'Sign Out'}</span>

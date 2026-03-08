@@ -34,13 +34,13 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
     {/* Background processing notice for video types */}
     {step === 'running' && (selectedTemplate?.category === 'intro' || selectedTemplate?.category === 'celebration') && (
       <div style={{
-        padding: '10px 12px',
-        marginBottom: '12px',
+        padding: 'var(--space-3) var(--space-3)',
+        marginBottom: 'var(--space-3)',
         background: 'rgba(59, 130, 246, 0.1)',
         border: '1px solid rgba(59, 130, 246, 0.3)',
-        borderRadius: '8px',
-        fontSize: '12px',
-        color: '#60a5fa',
+        borderRadius: 'var(--radius-md)',
+        fontSize: 'var(--text-xs)',
+        color: 'var(--color-blue-400)',
       }}>
         Video processing draait op de server. Je kunt dit sluiten — de verwerking gaat door.
       </div>
@@ -58,7 +58,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
       {/* Progress bar */}
       <div style={{
         height: '4px',
-        borderRadius: '2px',
+        borderRadius: 'var(--radius-sm)',
         background: 'var(--app-border, #333)',
         overflow: 'hidden',
       }}>

@@ -22,8 +22,8 @@
 }
 
 .legendsBadge {
-  --legends-badge-bg: #fffbeb;
-  --legends-badge-color: #d97706;
+  --legends-badge-bg: var(--color-amber-50);
+  --legends-badge-color: var(--color-amber-500);
   margin-left: var(--space-2);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);

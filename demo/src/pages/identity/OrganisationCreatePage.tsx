@@ -96,7 +96,7 @@ export const OrganisationCreatePage: React.FC = () => {
             )}
 
             <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'var(--font-medium)' }}>
                 Name
               </label>
               <Input
@@ -111,7 +111,7 @@ export const OrganisationCreatePage: React.FC = () => {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>
+              <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'var(--font-medium)' }}>
                 Description
               </label>
               <Input

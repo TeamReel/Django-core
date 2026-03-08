@@ -152,7 +152,7 @@ const ClubBackgrounds: React.FC<{ d: AssetsTabData }> = ({ d }) => {
           disabled={d.uploading === 'club_background_upload'}
           className={s.bgUploadBtn}
           style={{
-            background: d.uploading === 'club_background_upload' ? '#555' : 'linear-gradient(135deg, #10b981, #059669)',
+            background: d.uploading === 'club_background_upload' ? 'var(--app-muted-text)' : 'linear-gradient(135deg, #10b981, #059669)',
             cursor: d.uploading === 'club_background_upload' ? 'not-allowed' : 'pointer',
           }}
         >

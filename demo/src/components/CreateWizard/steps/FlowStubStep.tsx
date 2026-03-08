@@ -32,14 +32,14 @@ export function FlowStubStep() {
       <button
         onClick={back}
         style={{
-          marginTop: 8,
-          padding: '10px 24px',
-          borderRadius: 10,
+          marginTop: 'var(--space-2)',
+          padding: 'var(--space-3) var(--space-6)',
+          borderRadius: 'var(--radius-lg)',
           border: '1px solid var(--app-border, #e5e7eb)',
           background: 'var(--app-surface, #fff)',
           color: 'var(--app-text-primary)',
-          fontWeight: 600,
-          fontSize: 14,
+          fontWeight: 'var(--font-semibold)',
+          fontSize: 'var(--text-sm)',
           cursor: 'pointer',
         }}
       >

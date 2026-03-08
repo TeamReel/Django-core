@@ -286,7 +286,7 @@ export default function UsersTable({
                 {isTeamRoute ? (
                   <td className="detail-td">
                     {functionalRoles.length ? (
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
                         {functionalRoles.map((r) => (
                           <Badge key={r} variant="default" style={noBorderBadgeStyle}>
                             {r}

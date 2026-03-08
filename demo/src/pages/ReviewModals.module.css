@@ -6,15 +6,15 @@
   --rm-green-700: #15803d;
   --rm-green-50: #f0fdf4;
   --rm-green-200: #c6f0d4;
-  --rm-red-600: #dc2626;
-  --rm-red-100: #fee2e2;
+  --rm-red-600: var(--color-red-500);
+  --rm-red-100: var(--color-red-100);
   --rm-red-50: #fff5f5;
   --rm-red-300: #fca5a5;
-  --rm-gray-200: #e5e7eb;
-  --rm-slate-900: #0f172a;
-  --rm-slate-800: #1e293b;
-  --rm-slate-700: #334155;
-  --rm-slate-500: #475569;
+  --rm-gray-200: var(--app-border);
+  --rm-slate-900: var(--color-neutral-900);
+  --rm-slate-800: var(--color-neutral-800);
+  --rm-slate-700: var(--color-neutral-600);
+  --rm-slate-500: var(--color-neutral-500);
 }
 
 /* ─── Modal Panel ────────────────────────────────────────────── */

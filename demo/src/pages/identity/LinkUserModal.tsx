@@ -166,8 +166,8 @@ export default function LinkUserModal(props: LinkUserModalProps) {
               <div
                 style={{
                   display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                  gap: '8px 12px', padding: '10px',
-                  border: '1px solid var(--app-border)', borderRadius: '6px',
+                  gap: 'var(--space-2) var(--space-3)', padding: 'var(--space-3)',
+                  border: '1px solid var(--app-border)', borderRadius: 'var(--radius-md)',
                   backgroundColor: 'var(--app-surface)', opacity: d.teamId ? 1 : 0.6,
                 }}
               >

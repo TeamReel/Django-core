@@ -28,7 +28,7 @@ export function TileGrid({ items, columns = 3 }: TileGridProps) {
     <div style={{
       display: 'grid',
       gridTemplateColumns,
-      gap: '16px',
+      gap: 'var(--space-4)',
     }}>
       {items.map((item) => (
         <Link
@@ -38,11 +38,11 @@ export function TileGrid({ items, columns = 3 }: TileGridProps) {
         >
           <Card
             style={{
-              padding: '24px',
+              padding: 'var(--space-6)',
               height: '100%',
               display: 'flex',
               flexDirection: 'column',
-              gap: '12px',
+              gap: 'var(--space-3)',
               transition: 'all var(--duration-fast) var(--ease-default)',
               cursor: 'pointer',
               border: '1px solid var(--app-border)',
@@ -52,7 +52,7 @@ export function TileGrid({ items, columns = 3 }: TileGridProps) {
             <div style={{
               width: 48,
               height: 48,
-              borderRadius: '12px',
+              borderRadius: 'var(--radius-lg)',
               backgroundColor: item.color || 'var(--app-link)',
               display: 'flex',
               alignItems: 'center',
@@ -62,7 +62,7 @@ export function TileGrid({ items, columns = 3 }: TileGridProps) {
               <AppIcon icon={item.icon} size={24} />
             </div>
             <div>
-              <Text weight="bold" size="md" style={{ marginBottom: '4px' }}>
+              <Text weight="bold" size="md" style={{ marginBottom: 'var(--space-1)' }}>
                 {item.label}
               </Text>
               {item.description && (

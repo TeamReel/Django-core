@@ -62,13 +62,13 @@ export function getNotificationLevelDisplay(level: string): {
 } {
   switch (level) {
     case 'success':
-      return { color: '#059669', bgColor: '#d1fae5', icon: 'check-circle-2' };
+      return { color: 'var(--color-green-600)', bgColor: 'var(--color-green-100)', icon: 'check-circle-2' };
     case 'warning':
-      return { color: '#d97706', bgColor: '#fef3c7', icon: 'alert-triangle' };
+      return { color: 'var(--color-amber-500)', bgColor: 'var(--color-amber-100)', icon: 'alert-triangle' };
     case 'error':
-      return { color: '#dc2626', bgColor: '#fee2e2', icon: 'x-circle' };
+      return { color: 'var(--color-red-500)', bgColor: 'var(--color-red-100)', icon: 'x-circle' };
     default: // 'info'
-      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: 'info' };
+      return { color: 'var(--color-blue-600)', bgColor: 'var(--color-blue-100)', icon: 'info' };
   }
 }
 

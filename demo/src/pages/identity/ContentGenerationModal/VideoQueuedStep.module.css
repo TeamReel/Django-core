@@ -9,11 +9,11 @@
   --color-error-bg-light: rgba(239, 68, 68, 0.1);
   --color-error-bg-active: rgba(239, 68, 68, 0.3);
   --color-error-border: rgba(239, 68, 68, 0.25);
-  --color-info: #3b82f6;
-  --color-info-light: #60a5fa;
+  --color-info: var(--color-blue-500);
+  --color-info-light: var(--color-blue-400);
   --color-info-bg: rgba(59, 130, 246, 0.12);
   --color-info-ring: rgba(59, 130, 246, 0.25);
-  --color-video-bg: #000;
+  --color-video-bg: var(--color-black, #000);
   --color-progress-track: rgba(255, 255, 255, 0.08);
 }
 

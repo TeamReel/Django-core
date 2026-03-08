@@ -77,7 +77,7 @@ export const getThemeColors = () => {
     error: style.getPropertyValue('--color-error-500') || 'var(--color-red-500)',
     text: style.getPropertyValue('--color-text-primary') || '#1f2937',
     textSecondary: style.getPropertyValue('--color-text-secondary') || 'var(--app-muted-text)',
-    border: style.getPropertyValue('--color-border-subtle') || '#e5e7eb',
-    background: style.getPropertyValue('--color-background-surface') || '#ffffff',
+    border: style.getPropertyValue('--color-border-subtle') || 'var(--app-border)',
+    background: style.getPropertyValue('--color-background-surface') || 'var(--color-white, #fff)',
   };
 };

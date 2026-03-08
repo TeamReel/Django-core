@@ -39,8 +39,8 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div className="lg:col-span-3">
       <Card>
-        <div style={{ padding: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '16px' }}>
+        <div style={{ padding: 'var(--space-4)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)', flexWrap: 'wrap', marginBottom: 'var(--space-4)' }}>
             <h3 className={s.sectionTitle}>Competitions</h3>
             {userCanEditProject ? (
               <button
@@ -76,9 +76,9 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                     </td>
                     <td className="detail-td">
                       {competition.sport ? (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
                           <span>{competition.sport.sport_icon}</span>
-                          <span style={{ fontSize: '12px' }}>{competition.sport.name}</span>
+                          <span style={{ fontSize: 'var(--text-xs)' }}>{competition.sport.name}</span>
                         </span>
                       ) : (
                         <span className="text-muted">\u2014</span>

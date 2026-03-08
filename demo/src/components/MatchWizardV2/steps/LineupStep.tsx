@@ -127,7 +127,7 @@ export function LineupStep() {
 
           {showGuestForm ? (
             <div className={styles.guestForm}>
-              <div className="fw-600 fs-13 text-primary" style={{ marginBottom: 8 }}>Gast toevoegen</div>
+              <div className="fw-600 fs-13 text-primary" style={{ marginBottom: 'var(--space-2)' }}>Gast toevoegen</div>
               <div className="flex-row gap-8">
                 <input
                   className={styles.guestInput}
@@ -146,7 +146,7 @@ export function LineupStep() {
                   style={{ maxWidth: 56 }}
                 />
               </div>
-              <div className="flex-row gap-8" style={{ marginTop: 8 }}>
+              <div className="flex-row gap-8" style={{ marginTop: 'var(--space-2)' }}>
                 <button onClick={handleAddGuest} disabled={!guestName.trim()} className={styles.guestAddBtn}>
                   Toevoegen
                 </button>

@@ -11,8 +11,8 @@ export function SectionPageLayout({ title, description, children }: SectionPageL
   return (
     <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
       {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <Text size="xl" weight="bold" style={{ marginBottom: '8px' }}>
+      <div style={{ marginBottom: 'var(--space-8)' }}>
+        <Text size="xl" weight="bold" style={{ marginBottom: 'var(--space-2)' }}>
           {title}
         </Text>
         {description && (

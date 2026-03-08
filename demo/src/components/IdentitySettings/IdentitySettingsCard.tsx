@@ -107,7 +107,7 @@ export default function IdentitySettingsCard({
         </div>
       )}
 
-      <div className="mt-12 grid" style={{ gridTemplateColumns: '140px 1fr', gap: '10px 16px' }}>
+      <div className="mt-12 grid" style={{ gridTemplateColumns: '140px 1fr', gap: 'var(--space-3) var(--space-4)' }}>
         <div className="text-sm fw-600">
           Logo
         </div>

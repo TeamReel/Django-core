@@ -45,7 +45,7 @@
 }
 
 .saveBtn {
-  --save-btn-color: #fff;
+  --save-btn-color: var(--color-white, #fff);
   padding: var(--space-2) var(--space-4);
   border: 1px solid var(--app-primary, #2563eb);
   background-color: var(--app-primary, #2563eb);

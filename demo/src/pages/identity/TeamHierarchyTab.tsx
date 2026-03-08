@@ -185,7 +185,7 @@ export function TeamHierarchyTab({
                             className={h.compHeader}
                             onClick={() => toggleComp(cid)}
                           >
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', minWidth: 0 }}>
                               <span className={h.compName}>{String((comp as any)?.name || 'Competitie')}</span>
                               {compPath && (
                                 <span

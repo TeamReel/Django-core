@@ -104,7 +104,7 @@
 }
 
 .typeBadge[data-type="club"] {
-  --type-color: #dc2626;
+  --type-color: var(--color-red-500);
 }
 
 .typeBadge[data-type="team"] {
@@ -116,7 +116,7 @@
 }
 
 .typeBadge[data-type="competition"] {
-  --type-color: #d97706;
+  --type-color: var(--color-amber-500);
 }
 
 .typeBadge[data-type="match"] {

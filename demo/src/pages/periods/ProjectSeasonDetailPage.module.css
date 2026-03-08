@@ -231,7 +231,7 @@
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
 .previewModalContainer {
-  background-color: var(--app-card-bg, #1e293b); border-radius: var(--radius-lg); max-width: 900px;
+  background-color: var(--app-card-bg, var(--color-neutral-800)); border-radius: var(--radius-lg); max-width: 900px;
   width: 100%; max-height: 90vh; overflow: hidden; border: 1px solid var(--app-border, #334155);
 }
 .previewModalHeader {
@@ -246,9 +246,9 @@
 .hierarchyHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pill {
   display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px;
-  border-radius: 1000px; font-size: 12px; font-weight: var(--font-semibold);
+  border-radius: var(--radius-full); font-size: 12px; font-weight: var(--font-semibold);
 }
-.competitionCard { border: 1px solid var(--app-border, #334155); border-radius: var(--radius-lg); background: var(--app-surface); overflow: hidden; }
+.competitionCard { border: 1px solid var(--app-border, var(--color-neutral-600)); border-radius: var(--radius-lg); background: var(--app-surface); overflow: hidden; }
 .competitionCardHeader {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 12px; border-bottom: 1px solid var(--app-border, #334155);

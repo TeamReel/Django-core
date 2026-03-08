@@ -133,9 +133,9 @@ export const ProjectsPage: React.FC = () => {
       {/* Org Selection Modal */}
       {isOrgSelectionModalOpen && (
         <div
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 'var(--z-modal)' }}
           onClick={() => setIsOrgSelectionModalOpen(false)}>
-          <div style={{ backgroundColor: 'var(--app-surface)', borderRadius: 8, padding: 24, minWidth: 400, maxWidth: 500, boxShadow: '0 4px 6px rgba(0,0,0,.1)' }}
+          <div style={{ backgroundColor: 'var(--app-surface)', borderRadius: 'var(--radius-md)', padding: 'var(--space-6)', minWidth: 400, maxWidth: 500, boxShadow: 'var(--shadow-md)' }}
             onClick={e => e.stopPropagation()}>
             <h2 className="mb-16" style={{ marginTop: 0, color: 'var(--app-text)' }}>Select Organisation</h2>
             <p className="text-muted mb-24">Choose an organisation to create the project in:</p>
@@ -143,11 +143,11 @@ export const ProjectsPage: React.FC = () => {
               {organisations.map(org => (
                 <button key={org.id}
                   onClick={() => { setIsOrgSelectionModalOpen(false); navigate(`/organisations/${org.slug}/projects/create`); }}
-                  style={{ padding: '12px 16px', border: '1px solid var(--app-border)', borderRadius: 4, backgroundColor: 'var(--app-surface-2)', cursor: 'pointer', textAlign: 'left', transition: 'all .2s', color: 'var(--app-text)' }}
+                  style={{ padding: 'var(--space-3) var(--space-4)', border: '1px solid var(--app-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--app-surface-2)', cursor: 'pointer', textAlign: 'left', transition: 'all .2s', color: 'var(--app-text)' }}
                   onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--app-table-row-hover-bg)'; e.currentTarget.style.borderColor = '#2196f3'; }}
                   onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2)'; e.currentTarget.style.borderColor = 'var(--app-border)'; }}>
                   <div className="fw-500">{org.name}</div>
-                  {org.description && <div className="fs-12 mt-4" style={{ color: '#666' }}>{org.description}</div>}
+                  {org.description && <div className="fs-12 mt-4" style={{ color: 'var(--app-muted-text)' }}>{org.description}</div>}
                 </button>
               ))}
             </div>

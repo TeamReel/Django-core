@@ -24,7 +24,7 @@ export default function FavoritesPage() {
             <Link
               to="/recents"
               className="inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600"
-              style={{ padding: '8px 10px', color: 'var(--app-text)', textDecoration: 'none' }}
+              style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--app-text)', textDecoration: 'none' }}
             >
               Back to Recents
             </Link>
@@ -33,7 +33,7 @@ export default function FavoritesPage() {
               type="button"
               onClick={() => clearFavorites()}
               className="inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600 cursor-pointer"
-              style={{ padding: '8px 10px', color: 'var(--app-text)' }}
+              style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--app-text)' }}
               title="Clear favorites"
             >
               <AppIcon icon={Trash2} size={16} /> Clear
@@ -55,8 +55,8 @@ export default function FavoritesPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 12,
-                padding: '12px 14px',
+                gap: 'var(--space-3)',
+                padding: 'var(--space-3) var(--space-4)',
                 borderTop: '1px solid var(--app-border)',
               }}
             >
@@ -65,7 +65,7 @@ export default function FavoritesPage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 10,
+                  gap: 'var(--space-3)',
                   color: 'var(--app-text)',
                   textDecoration: 'none',
                   minWidth: 0,
@@ -82,7 +82,7 @@ export default function FavoritesPage() {
                 type="button"
                 onClick={() => removeFavorite(item.path)}
                 className="inline-flex gap-6 rounded-8 border bg-surface-2 cursor-pointer fs-12 fw-600"
-                style={{ padding: '6px 8px', color: 'var(--app-text)' }}
+                style={{ padding: 'var(--space-2) var(--space-2)', color: 'var(--app-text)' }}
                 title="Remove"
               >
                 <AppIcon icon={X} size={14} />

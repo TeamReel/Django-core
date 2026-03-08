@@ -176,7 +176,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
           Kit images should be high-quality photos or renders showing the complete kit design.
           Recommended image size: 600x800 pixels (3:4 aspect ratio).
         </p>
-        <ul className="m-0 text-muted fs-13" style={{ paddingLeft: 20 }}>
+        <ul className="m-0 text-muted fs-13" style={{ paddingLeft: 'var(--space-5)' }}>
           <li>Use PNG or JPEG format for best quality</li>
           <li>Include front view of the full kit (shirt, shorts, socks)</li>
           <li>Keep background transparent or neutral for cleaner display</li>

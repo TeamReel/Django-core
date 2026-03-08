@@ -34,14 +34,14 @@ export function useSeasonDetailPageData() {
   } = ctx;
 
   const backButtonStyle: React.CSSProperties = {
-    padding: '6px 12px',
-    borderRadius: '4px',
+    padding: 'var(--space-2) var(--space-3)',
+    borderRadius: 'var(--radius-sm)',
     border: '1px solid var(--app-border)',
     backgroundColor: 'var(--app-surface-2)',
     color: 'var(--app-text)',
     cursor: 'pointer',
-    fontSize: '12px',
-    fontWeight: 500,
+    fontSize: 'var(--text-xs)',
+    fontWeight: 'var(--font-medium)',
   };
 
   // ── Navigation: active tab ──

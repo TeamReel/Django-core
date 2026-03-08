@@ -1,6 +1,6 @@
 .errorBanner {
-  --error-bg: #fee2e2;
-  --error-color: #dc2626;
+  --error-bg: var(--color-red-100);
+  --error-color: var(--color-red-500);
   padding: var(--space-3) var(--space-4);
   background-color: var(--error-bg);
   color: var(--error-color);

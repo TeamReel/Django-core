@@ -379,7 +379,7 @@ export const ContentOverviewCard: React.FC = () => {
           )}
 
           {openSections.has(sec.key) && sec.items && (
-            <div className={styles.typeChips} style={{ paddingTop: 8 }}>
+            <div className={styles.typeChips} style={{ paddingTop: 'var(--space-2)' }}>
               {sec.items.map(item => (
                 <span
                   key={item.subtype}
@@ -399,7 +399,7 @@ export const ContentOverviewCard: React.FC = () => {
       {/* Empty state */}
       {!loading && sections.length === 0 && (
         <div className={styles.emptyState}>
-          <Sparkles size={16} style={{ marginRight: 6 }} />
+          <Sparkles size={16} style={{ marginRight: 'var(--space-2)' }} />
           Nog geen content gegenereerd
         </div>
       )}

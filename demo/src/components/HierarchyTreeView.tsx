@@ -42,7 +42,7 @@ function TreeNode({ node, depth = 0, anchorPath, anchorId }: TreeNodeProps) {
   return (
     <div
       className={styles.treeNode}
-      style={depth > 0 ? { marginLeft: 24 } : undefined}
+      style={depth > 0 ? { marginLeft: 'var(--space-6)' } : undefined}
     >
       <div
         className={styles.nodeRow}

@@ -72,7 +72,7 @@ const UserDetailPage: React.FC = () => {
               <div className="mt-12 grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
                 <Card>
                   <div className="text-muted fs-12">Current balance</div>
-                  <div style={{ fontWeight: 900, fontSize: '28px', marginTop: '6px' }}>
+                  <div style={{ fontWeight: 900, fontSize: '28px', marginTop: 'var(--space-2)' }}>
                     {userBalanceLoading ? 'Loading…' : userBalance != null ? userBalance : '—'}
                   </div>
                 </Card>

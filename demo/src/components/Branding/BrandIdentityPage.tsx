@@ -104,7 +104,7 @@ export default function BrandIdentityPage({
 
   if (loading) {
     return (
-      <div className="text-center" style={{ padding: '48px' }}>
+      <div className="text-center" style={{ padding: 'var(--space-12)' }}>
         <Loader2 size={32} className="opacity-50" style={{ animation: 'spin 1s linear infinite' }} />
         <Text color="secondary" className="mt-16">Loading brand identity...</Text>
         <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>

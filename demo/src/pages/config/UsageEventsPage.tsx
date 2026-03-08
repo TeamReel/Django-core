@@ -40,7 +40,7 @@ export const UsageEventsPage: React.FC = () => {
           <div className="flex-row gap-12">
             {/* Role badge */}
             <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
-              padding: '4px 10px',
+              padding: 'var(--space-1) var(--space-3)',
               backgroundColor: d.isSuperadmin ? 'var(--color-blue-500)' : '#a855f7',
               color: 'white',
               letterSpacing: '0.5px',
@@ -168,7 +168,7 @@ export const UsageEventsPage: React.FC = () => {
 
         {/* Pagination */}
         {!d.loading && d.events.length > 0 && (
-          <div className="flex-center gap-12" style={{ marginTop: '20px' }}>
+          <div className="flex-center gap-12" style={{ marginTop: 'var(--space-5)' }}>
             <Button
               variant="secondary"
               onClick={() => {
@@ -217,7 +217,7 @@ const ScopeToggle: React.FC<{
   editMode: 'global' | 'org';
   onSetEditMode: (m: 'global' | 'org') => void;
 }> = ({ editMode, onSetEditMode }) => (
-  <div className="gap-4 bg-surface rounded-6 border" style={{ display: 'flex', padding: '3px' }}>
+  <div className="gap-4 bg-surface rounded-6 border" style={{ display: 'flex', padding: 'var(--space-1)' }}>
     {(['global', 'org'] as const).map((mode) => (
       <button
         key={mode}

@@ -221,7 +221,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
                 </Badge>
               ),
               actions: (
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   <Button
                     size="sm"
                     variant={effectiveValue ? 'outline' : 'primary'}

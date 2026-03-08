@@ -31,8 +31,8 @@ export function CompetitionMembershipDetailModal({
           type="button"
           onClick={onClose}
           style={{
-            padding: '8px 12px',
-            borderRadius: '6px',
+            padding: 'var(--space-2) var(--space-3)',
+            borderRadius: 'var(--radius-md)',
             border: '1px solid var(--app-border)',
             backgroundColor: 'var(--app-surface-2)',
             color: 'var(--app-text)',
@@ -43,7 +43,7 @@ export function CompetitionMembershipDetailModal({
         </button>
       }
     >
-      <div style={{ display: 'grid', gap: '8px' }}>
+      <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
         <div>
           <div className="text-muted fs-12">Name</div>
           <div className="fw-600">{name}</div>
@@ -58,7 +58,7 @@ export function CompetitionMembershipDetailModal({
             <Badge variant="default">{roleLabel(role)}</Badge>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
           <div>
             <div className="text-muted fs-12">Position</div>
             <div className="fw-600">{position}</div>

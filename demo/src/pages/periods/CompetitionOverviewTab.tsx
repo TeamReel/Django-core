@@ -57,13 +57,13 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
       </Card>
       <Card className="p-16">
         <div className="text-sm font-medium text-gray-500">Sport Variant</div>
-        <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
           {competition?.sport ? (
             <>
               <span>{competition.sport.sport_icon}</span>
               <span>{competition.sport.name}</span>
               {competition.sport.category_name && (
-                <span style={{ color: 'var(--app-muted-text)', fontSize: '12px' }}>
+                <span style={{ color: 'var(--app-muted-text)', fontSize: 'var(--text-xs)' }}>
                   ({competition.sport.category_name})
                 </span>
               )}
@@ -101,7 +101,7 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
       <div className="space-y-6">
         <Card className="p-16">
           <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
-          <div style={{ display: 'grid', gap: '8px' }}>
+          <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
             <Button variant="secondary" onClick={() => navigateToTab('hierarchy')}>View Hierarchy</Button>
             <Button variant="secondary" onClick={() => navigateToTab('users')}>View Users</Button>
             <Button variant="secondary" onClick={() => navigateToTab('audit')}>View Audit</Button>

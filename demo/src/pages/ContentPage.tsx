@@ -10,7 +10,7 @@ export default function ContentPage() {
       label: 'Content Library',
       description: 'Browse all generated content: flyers, lineups, reels, and more',
       icon: Clapperboard,
-      color: '#dc2626',
+      color: 'var(--color-red-500)',
     },
     {
       path: '/medialib',
@@ -24,7 +24,7 @@ export default function ContentPage() {
       label: 'AI Studio',
       description: 'Generate highlights, thumbnails, and content with AI',
       icon: Sparkles,
-      color: '#8b5cf6',
+      color: 'var(--color-violet-500)',
     },
     {
       path: '/studio/videos',

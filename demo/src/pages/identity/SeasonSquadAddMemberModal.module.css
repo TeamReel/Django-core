@@ -53,7 +53,7 @@
 
 .submitButton {
   --submit-border: #1e5aa5;
-  --submit-color: #fff;
+  --submit-color: var(--color-white, #fff);
   border: 1px solid var(--submit-border);
   background-color: var(--color-blue-600);
   color: var(--submit-color);

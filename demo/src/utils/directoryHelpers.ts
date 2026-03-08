@@ -212,10 +212,10 @@ export interface DirectoryListProps {
 // ────────────────────────────────────────────
 
 export const filterSelectStyle: React.CSSProperties = {
-  padding: '8px 12px',
+  padding: 'var(--space-2) var(--space-3)',
   border: '1px solid var(--app-border)',
-  borderRadius: '4px',
-  fontSize: '14px',
+  borderRadius: 'var(--radius-sm)',
+  fontSize: 'var(--text-sm)',
   backgroundColor: 'var(--app-surface)',
 };
 

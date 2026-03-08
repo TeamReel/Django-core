@@ -145,7 +145,7 @@ export const ContentStreakWidget: React.FC = () => {
             </div>
             <div className={styles.streakLabel}>
               Content streak! {streak >= 5 ? '🔥' : ''}
-              {streak >= 10 && <Trophy size={12} style={{ marginLeft: 4, verticalAlign: 'middle' }} />}
+              {streak >= 10 && <Trophy size={12} style={{ marginLeft: 'var(--space-1)', verticalAlign: 'middle' }} />}
             </div>
           </>
         ) : (

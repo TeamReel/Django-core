@@ -36,7 +36,7 @@
 }
 
 .editBtn {
-  --edit-btn-bg: #8b5cf6;
+  --edit-btn-bg: var(--color-violet-500);
   --edit-btn-bg-disabled: #555555;
   cursor: pointer;
   background: var(--edit-btn-bg);

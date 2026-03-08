@@ -95,7 +95,7 @@ export function useMemberBatchAction({
             ];
         }
         return [
-            { value: 'admin', label: 'Club Admin', badge: '🏟️', color: '#8b5cf6', description: 'Volledige toegang tot alle teams, content en instellingen van de club' },
+            { value: 'admin', label: 'Club Admin', badge: '🏟️', color: 'var(--color-violet-500)', description: 'Volledige toegang tot alle teams, content en instellingen van de club' },
             { value: 'viewer', label: 'Supporter', badge: '📣', color: 'var(--color-green-400)', description: 'Kan wedstrijden bekijken (read-only)' },
         ];
     }, [isTeamContext]);

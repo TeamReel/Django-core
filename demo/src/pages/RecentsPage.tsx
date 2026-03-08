@@ -30,7 +30,7 @@ export default function RecentsPage() {
             to="/favorites"
             className="inline-flex gap-8 rounded-8 border bg-surface text-primary fs-13 fw-600"
             style={{
-              padding: '8px 10px',
+              padding: 'var(--space-2) var(--space-3)',
               textDecoration: 'none',
             }}
           >
@@ -42,7 +42,7 @@ export default function RecentsPage() {
             onClick={() => clearRecents()}
             className="inline-flex gap-8 rounded-8 border bg-surface text-primary cursor-pointer fs-13 fw-600"
             style={{
-              padding: '8px 10px',
+              padding: 'var(--space-2) var(--space-3)',
             }}
             title="Clear recents"
           >
@@ -66,7 +66,7 @@ export default function RecentsPage() {
                 key={item.path}
                 className="flex-between gap-12 border-top"
                 style={{
-                  padding: '12px 14px',
+                  padding: 'var(--space-3) var(--space-4)',
                 }}
               >
                 <Link
@@ -89,7 +89,7 @@ export default function RecentsPage() {
                     onClick={() => onToggleFavorite(item)}
                     className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600"
                     style={{
-                      padding: '6px 8px',
+                      padding: 'var(--space-2) var(--space-2)',
                       color: isFav ? 'var(--color-amber-400)' : 'var(--app-text)',
                     }}
                     title={isFav ? 'Unfavorite' : 'Add to favorites'}
@@ -103,7 +103,7 @@ export default function RecentsPage() {
                     onClick={() => removeRecent(item.path)}
                     className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600 text-primary"
                     style={{
-                      padding: '6px 8px',
+                      padding: 'var(--space-2) var(--space-2)',
                     }}
                     title="Remove"
                   >

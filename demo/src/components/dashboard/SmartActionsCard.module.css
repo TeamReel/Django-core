@@ -72,8 +72,8 @@
   height: 36px;
   border-radius: var(--radius-lg);
   flex-shrink: 0;
-  color: var(--_accent, var(--app-primary, #6366f1));
-  background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 12%, transparent);
+  color: var(--_accent, var(--app-primary, var(--color-indigo-500)));
+  background: color-mix(in srgb, var(--_accent, var(--app-primary, var(--color-indigo-500))) 12%, transparent);
 }
 
 .actionText {
@@ -132,5 +132,5 @@
 }
 
 :global([data-theme="dark"]) .actionIcon {
-  background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 18%, transparent);
+  background: color-mix(in srgb, var(--_accent, var(--app-primary, var(--color-indigo-500))) 18%, transparent);
 }

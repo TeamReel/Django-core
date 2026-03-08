@@ -5,15 +5,15 @@
 /* --- Color tokens (replaces hardcoded hex) --- */
 .root {
   --ajl-green-600: #16a34a;
-  --ajl-red-600: #dc2626;
-  --ajl-amber-600: #d97706;
-  --ajl-gray-400: #9ca3af;
+  --ajl-red-600: var(--color-red-500);
+  --ajl-amber-600: var(--color-amber-500);
+  --ajl-gray-400: var(--color-neutral-400);
   --ajl-red-300: #fca5a5;
-  --ajl-amber-200: #fde68a;
-  --ajl-blue-300: #93c5fd;
-  --ajl-violet-500: #8b5cf6;
+  --ajl-amber-200: var(--color-amber-200);
+  --ajl-blue-300: var(--color-blue-300);
+  --ajl-violet-500: var(--color-violet-500);
   --ajl-fuchsia-500: #d946ef;
-  --ajl-indigo-500: #6366f1;
+  --ajl-indigo-500: var(--color-indigo-500);
   --ajl-cyan-600: #0891b2;
   --ajl-emerald-600: #059669;
 }

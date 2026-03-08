@@ -56,8 +56,8 @@ export function MemberOverviewTab({
   const totalCount = allItems.length;
 
   const renderPhase = (title: string, emoji: string, items: typeof inputItems) => (
-    <div style={{ marginBottom: '20px' }}>
-      <div className={`${s.flexCenterGap8}`} style={{ marginBottom: '10px' }}>
+    <div style={{ marginBottom: 'var(--space-5)' }}>
+      <div className={`${s.flexCenterGap8}`} style={{ marginBottom: 'var(--space-3)' }}>
         <span className="fs-18">{emoji}</span>
         <div className={s.sectionTitle}>{title}</div>
         <div className="fs-12" style={{ opacity: 0.6 }}>
@@ -112,7 +112,7 @@ export function MemberOverviewTab({
           <div className="fs-13 fw-600">
             Voortgang: {completedCount} / {totalCount} assets
           </div>
-          <div className="mt-8 rounded-4 overflow-hidden" style={{ height: '8px', background: '#e5e7eb' }}>
+          <div className="mt-8 rounded-4 overflow-hidden" style={{ height: '8px', background: 'var(--app-border)' }}>
             <div
               style={{
                 height: '100%',

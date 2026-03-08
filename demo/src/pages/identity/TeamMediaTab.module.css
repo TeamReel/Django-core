@@ -37,7 +37,7 @@
   color: var(--color-green-400);
   background: rgba(34, 197, 94, 0.1);
   padding: var(--space-1) var(--space-2);
-  border-radius: 1000px;
+  border-radius: var(--radius-full);
 }
 
 .summarySlots {

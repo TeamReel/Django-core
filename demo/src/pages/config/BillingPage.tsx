@@ -18,13 +18,13 @@ export const BillingPage: React.FC = () => {
       />
 
       <PageContent>
-        <Alert variant="info" style={{ marginBottom: 16 }}>
+        <Alert variant="info" style={{ marginBottom: 'var(--space-4)' }}>
           This area is a placeholder. We’ll use it later for invoices, subscription plans, and license seats.
         </Alert>
 
         <Card>
           <h3 className="text-lg font-semibold mb-2">Planned</h3>
-          <div className="text-sm text-gray-600" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="text-sm text-gray-600" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
             <div>• Current plan + renewal</div>
             <div>• Invoice history (PDF)</div>
             <div>• Payment method</div>

@@ -134,17 +134,17 @@ export function getJobStatusDisplay(status: VideoJobStatus): {
 } {
   switch (status) {
     case 'queued':
-      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: 'clock', label: 'Queued' };
+      return { color: 'var(--app-muted-text)', bgColor: 'var(--app-surface-2)', icon: 'clock', label: 'Queued' };
     case 'processing':
-      return { color: 'var(--color-blue-600)', bgColor: '#dbeafe', icon: 'refresh-cw', label: 'Processing' };
+      return { color: 'var(--color-blue-600)', bgColor: 'var(--color-blue-100)', icon: 'refresh-cw', label: 'Processing' };
     case 'completed':
-      return { color: '#059669', bgColor: '#d1fae5', icon: 'check-circle-2', label: 'Completed' };
+      return { color: 'var(--color-green-600)', bgColor: 'var(--color-green-100)', icon: 'check-circle-2', label: 'Completed' };
     case 'failed':
-      return { color: '#dc2626', bgColor: '#fee2e2', icon: 'x-circle', label: 'Failed' };
+      return { color: 'var(--color-red-500)', bgColor: 'var(--color-red-100)', icon: 'x-circle', label: 'Failed' };
     case 'cancelled':
-      return { color: '#9ca3af', bgColor: '#f3f4f6', icon: 'ban', label: 'Cancelled' };
+      return { color: 'var(--color-neutral-400)', bgColor: 'var(--app-surface-2)', icon: 'ban', label: 'Cancelled' };
     default:
-      return { color: 'var(--app-muted-text)', bgColor: '#f3f4f6', icon: 'file-question', label: status || 'Unknown' };
+      return { color: 'var(--app-muted-text)', bgColor: 'var(--app-surface-2)', icon: 'file-question', label: status || 'Unknown' };
   }
 }
 

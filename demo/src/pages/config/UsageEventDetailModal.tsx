@@ -16,21 +16,21 @@ export const UsageEventDetailModal: React.FC<UsageEventDetailModalProps> = ({ ev
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 1000,
+      zIndex: 'var(--z-modal)',
     }}
     onClick={onClose}
   >
     <div
       className="bg-surface rounded-8 max-w-800 overflow-auto p-24"
-      style={{ width: '90%', maxHeight: '80vh', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}
+      style={{ width: '90%', maxHeight: '80vh', boxShadow: 'var(--shadow-md)' }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex-between" style={{ marginBottom: '20px' }}>
+      <div className="flex-between" style={{ marginBottom: 'var(--space-5)' }}>
         <h2 className="m-0 fs-18 fw-600 text-primary">Usage Event Details</h2>
         <button
           onClick={onClose}
           className="fs-24 border-none bg-transparent cursor-pointer text-primary"
-          style={{ padding: '0 8px' }}
+          style={{ padding: '0 var(--space-2)' }}
           aria-label="Close"
         >
           ×
