@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** 🔲 Niet gestart (0/10 fases)
+**Status:** 🔲 Niet gestart (0/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -28,7 +28,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 
 | Fase | Naam | Scope | Waarden | Effort | Status |
 |------|------|-------|---------|--------|--------|
-| **Q1** | Quick Wins (base.css) | `::selection`, `scroll-padding`, `overscroll-behavior`, `text-rendering` | — | 15 min | 🔲 Todo |
+| **Q1** | Quick Wins (base.css) | `::selection`, `scroll-padding`, `overscroll-behavior`, `text-rendering`, `prefers-color-scheme`, `content-visibility`, `--border-default` token | — | 30 min | 🔲 Todo |
 | **A1** | Radius Token Adoption | `border-radius: Npx` → `var(--radius-*)` | 717 | 30 min | 🔲 Todo |
 | **A2** | Shadow Token Adoption | `box-shadow: ...` → `var(--shadow-*)` | 110 | 30 min | 🔲 Todo |
 | **A3** | Motion Token Adoption | `transition` / `animation` → `var(--duration-*)` + `var(--ease-*)` | 321 | 45 min | 🔲 Todo |
@@ -38,20 +38,22 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **A7** | Line-height + Font-family Cleanup | `line-height` / `font-family` → tokens | 130 | 20 min | 🔲 Todo |
 | **H1** | Touch-safe Hovers | `@media (hover: hover)` wrappers | ~150 | 1 uur | 🔲 Todo |
 | **H2** | Fluid Typography | `clamp()` in `--text-*` tokens | 5 tokens | 30 min | 🔲 Todo |
+| **L1** | CSS @layer Refactor | `!important` verwijderen via cascade layers | 40+ | 2 uur | 🔲 Todo |
 
 ## Volgorde
 
 ```
-Q1 (base.css) → A1 (radius) → A2 (shadow) → A3 (motion) → A4 (font-weight) → A5 (font-size) → A7 (line-height) → A6 (spacing) → H1 (hover) → H2 (fluid type)
+Q1 (quick wins) → A1 (radius) → A2 (shadow) → A3 (motion) → A4 (font-weight) → A5 (font-size) → A7 (line-height) → A6 (spacing) → H1 (hover) → H2 (fluid type) → L1 (@layer)
 ```
 
 **Rationale:**
-- **Q1** eerst — geen risico, maximale polish
+- **Q1** eerst — geen risico, maximale polish + system dark mode + perf
 - **A1–A3** — kleinste sets, hoogste visuele impact (radius + shadow + motion = "feel")
 - **A4–A5** — typografie tokens, medium set
 - **A7** — kleine cleanup, afhankelijk van A5 (font-size eerst)
 - **A6** — grootste set (2.552 waarden), als laatste want meest mechanisch
 - **H1–H2** — UX verbeteringen die onafhankelijk van token adoptie kunnen
+- **L1** als laatste — architectuur refactor, vereist dat alle andere fases stabiel zijn
 
 ## Aanpak per fase
 
