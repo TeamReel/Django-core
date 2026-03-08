@@ -1,6 +1,6 @@
 # 8pt Grid Alignment — Phase Overview
 
-**Status:** Gepland
+**Status:** Grotendeels afgerond (6/7 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -19,11 +19,11 @@ Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit) en design token 
 
 | Metric | Waarde |
 |--------|--------|
-| **Totale compliance** | ~62% |
-| **Token-laag** | 100% (spacing + radius) |
-| **Utility CSS** | ~66% |
-| **Component CSS** | ~52-71% |
-| **Grootste overtreders** | 6px (30+×), 10px (25+×), 14px padding (18×) |
+| **Totale compliance** | ~98% (spatial 100%, kleuren ~85%) |
+| **Token-laag** | 100% (spacing + radius + typography) |
+| **Utility CSS** | 100% |
+| **Component CSS** | 100% spatial, ~85% kleuren |
+| **Resterend** | ~35 `#fff` direct, ~145 hex als var() fallback, G1 lint |
 
 ## Toegestane waarden (4px grid)
 
@@ -40,12 +40,12 @@ Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit) en design token 
 
 | Fase | Naam | Scope | Impact | Status |
 |------|------|-------|--------|--------|
-| **T1** | Token & Typography | 5-stappen font-size, font-family token, line-height koppeling, radius | Fundament | 🔲 Todo |
-| **T2** | Utility Classes | utility.css off-grid spacing + deprecated font-size utils | ~40 fixes | 🔲 Todo |
-| **K1** | Color Cleanup | Hardcoded hex → design tokens (30+ voorkomens) | Dark mode + theming | 🔲 Todo |
-| **C1** | Core Shell | Sidebar, MobileBottomNav, BottomSheet | ~30 fixes | 🔲 Todo |
-| **C2** | Wizard CSS | Wizard.module.css + CreateWizard.module.css | ~40 fixes | 🔲 Todo |
-| **P1** | Page Styles | Dashboard, MatchDetail, AIStudio, overige pages | ~35 fixes | 🔲 Todo |
+| **T1** | Token & Typography | 5-stappen font-size, font-family token, line-height koppeling, radius | Fundament | ✅ Done |
+| **T2** | Utility Classes | utility.css off-grid spacing + deprecated font-size utils | ~40 fixes | ✅ Done |
+| **K1** | Color Cleanup | Hardcoded hex → design tokens (181 vervangingen) | Dark mode + theming | ✅ Done |
+| **C1** | Core Shell | Sidebar, MobileBottomNav, BottomSheet, TopNavbar | ~80 fixes | ✅ Done |
+| **C2** | Wizard CSS | Wizard.module.css + CreateWizard.module.css | ~75 fixes | ✅ Done |
+| **P1** | Page Styles | Dashboard, MatchDetail, AIStudio, overige pages | ~1200 fixes | ✅ Done |
 | **G1** | Guardrails | Stylelint regels tegen off-grid px + hardcoded hex | Preventie | 🔲 Todo |
 
 ## Volgorde

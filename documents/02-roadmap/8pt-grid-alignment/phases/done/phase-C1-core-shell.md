@@ -1,6 +1,7 @@
 # C1 — Core Shell Components
 
-**Status:** Todo
+**Status:** ✅ Done — bulk script, alle spatial waarden op grid
+**Voltooid:** 2026-03-08 (commit 26bd78c6)
 **Geschatte effort:** 25 min
 **Bestanden:**
 - `demo/src/components/Sidebar.module.css`

@@ -1,6 +1,7 @@
 # C2 — Wizard CSS
 
-**Status:** Todo
+**Status:** ✅ Done — bulk script, alle spatial waarden op grid
+**Voltooid:** 2026-03-08 (commit 26bd78c6)
 **Geschatte effort:** 30 min
 **Bestanden:**
 - `demo/src/components/Wizard/Wizard.module.css`

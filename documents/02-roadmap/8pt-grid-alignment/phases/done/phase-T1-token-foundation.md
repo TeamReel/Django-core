@@ -1,6 +1,7 @@
 # T1 — Token & Typography Foundation
 
-**Status:** Todo
+**Status:** ✅ Done
+**Voltooid:** 2026-03-08 (commit 26bd78c6)
 **Geschatte effort:** 25 min
 **Bestanden:**
 - `demo/src/styles/tokens.css`

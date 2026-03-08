@@ -1,6 +1,7 @@
 # T2 — Utility Classes
 
-**Status:** Todo
+**Status:** ✅ Done
+**Voltooid:** 2026-03-08 (commit 26bd78c6)
 **Geschatte effort:** 20 min
 **Bestanden:** `demo/src/styles/utility.css`
 

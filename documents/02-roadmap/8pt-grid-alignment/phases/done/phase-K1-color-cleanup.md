@@ -1,6 +1,7 @@
 # K1 — Hardcoded Color Cleanup
 
-**Status:** Todo
+**Status:** ✅ Done — 181 hex waarden getokenized in 41 bestanden
+**Voltooid:** 2026-03-08 (commit 26bd78c6)
 **Geschatte effort:** 30 min
 **Bestanden:** Alle `demo/src/**/*.module.css` + `demo/src/styles/*.css`
 
