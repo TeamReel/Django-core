@@ -37,7 +37,7 @@
   border-radius: 12px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s ease-out, box-shadow 0.15s ease-out;
   -webkit-tap-highlight-color: transparent;
   min-height: 44px;
 }
@@ -45,11 +45,14 @@
 .flowCard:hover {
   background: var(--app-surface-2, #f9fafb);
   border-color: var(--app-primary, #3B8EA5);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  transform: scale(1.02);
 }
 
 .flowCard:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
   background: var(--app-surface-2, #f3f4f6);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 /* Icon circle */

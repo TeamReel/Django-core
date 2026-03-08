@@ -21,6 +21,9 @@ export interface WizardStepConfig {
   requires?: string[];
 }
 
+/** Navigation direction for step transition animations */
+export type WizardDirection = 'forward' | 'backward' | 'initial';
+
 export interface WizardState {
   /** Current step ID */
   currentStepId: string;
@@ -36,6 +39,8 @@ export interface WizardState {
   isSubmitting: boolean;
   /** Error message if any */
   error: string | null;
+  /** Navigation direction for transition animations */
+  direction: WizardDirection;
 }
 
 export interface WizardActions {
@@ -119,6 +124,7 @@ export function WizardProvider({
   const [data, setDataState] = useState<Record<string, unknown>>(initialData);
   const [isSubmitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [direction, setDirection] = useState<WizardDirection>('initial');
 
   // Derived state
   const currentStepIndex = steps.findIndex(s => s.id === currentStepId);
@@ -141,6 +147,7 @@ export function WizardProvider({
   // Actions
   const next = useCallback(() => {
     if (currentStepIndex < steps.length - 1) {
+      setDirection('forward');
       setCurrentStepId(steps[currentStepIndex + 1].id);
       setError(null);
     }
@@ -148,17 +155,20 @@ export function WizardProvider({
 
   const back = useCallback(() => {
     if (currentStepIndex > 0) {
+      setDirection('backward');
       setCurrentStepId(steps[currentStepIndex - 1].id);
       setError(null);
     }
   }, [currentStepIndex, steps]);
 
   const goTo = useCallback((stepId: string) => {
-    if (steps.some(s => s.id === stepId) && isAvailable(stepId)) {
+    const targetIndex = steps.findIndex(s => s.id === stepId);
+    if (targetIndex >= 0 && isAvailable(stepId)) {
+      setDirection(targetIndex > currentStepIndex ? 'forward' : 'backward');
       setCurrentStepId(stepId);
       setError(null);
     }
-  }, [steps, isAvailable]);
+  }, [steps, isAvailable, currentStepIndex]);
 
   const markCompleted = useCallback((stepId: string) => {
     setCompletedSteps(prev => new Set(prev).add(stepId));
@@ -187,6 +197,7 @@ export function WizardProvider({
     setDataState(initialData);
     setSubmitting(false);
     setError(null);
+    setDirection('initial');
   }, [initialStepId, initialData, steps]);
 
   const close = useCallback(() => {
@@ -204,6 +215,7 @@ export function WizardProvider({
     data,
     isSubmitting,
     error,
+    direction,
     // Derived
     currentStep,
     isFirstStep,
@@ -225,7 +237,7 @@ export function WizardProvider({
     reset,
     close,
   }), [
-    currentStepId, currentStepIndex, steps, completedSteps, data, isSubmitting, error,
+    currentStepId, currentStepIndex, steps, completedSteps, data, isSubmitting, error, direction,
     currentStep, isFirstStep, isLastStep, progress,
     isCompleted, isAvailable,
     next, back, goTo, complete, markCompleted, setData, updateData, setSubmitting, setError, reset, close,

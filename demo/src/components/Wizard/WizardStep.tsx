@@ -2,10 +2,11 @@
  * WizardStep – Wrapper for individual wizard step content
  *
  * Only renders its children when the step is active.
- * Provides a clean API for defining steps.
+ * Wraps content in WizardTransition for slide/fade animations (P1).
  */
 import React, { type ReactNode } from 'react';
 import { useWizard } from './WizardContext';
+import { WizardTransition } from './WizardTransition';
 
 export interface WizardStepProps {
   /** Step ID that must match the config */
@@ -21,5 +22,9 @@ export function WizardStep({ stepId, children }: WizardStepProps) {
     return null;
   }
 
-  return <>{children}</>;
+  return (
+    <WizardTransition stepId={stepId}>
+      {children}
+    </WizardTransition>
+  );
 }

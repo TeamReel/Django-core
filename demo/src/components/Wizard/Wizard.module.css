@@ -73,7 +73,7 @@
 .progressBar {
   height: 100%;
   background-color: var(--app-primary, #3B8EA5);
-  transition: width 0.3s ease;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Primary action button ──────────────────────────── */
@@ -187,4 +187,65 @@
   text-align: center;
   padding: 32px;
   color: var(--app-text-muted, #6b7280);
+}
+
+/* ══════════════════════════════════════════════════════
+   Step Transitions (P1)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Forward navigation: slide in from right ─────────── */
+.slideFromRight {
+  animation: wizardSlideFromRight 220ms ease-out both;
+}
+
+@keyframes wizardSlideFromRight {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ── Backward navigation: slide in from left ─────────── */
+.slideFromLeft {
+  animation: wizardSlideFromLeft 220ms ease-out both;
+}
+
+@keyframes wizardSlideFromLeft {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* ── Initial / flow-switch: fade + subtle scale ──────── */
+.scaleIn {
+  animation: wizardScaleIn 180ms ease-out both;
+}
+
+@keyframes wizardScaleIn {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .slideFromRight,
+  .slideFromLeft,
+  .scaleIn {
+    animation: none;
+  }
 }

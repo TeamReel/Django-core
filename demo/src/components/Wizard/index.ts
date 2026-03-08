@@ -32,6 +32,7 @@
 export {
   WizardProvider,
   useWizard,
+  type WizardDirection,
   type WizardStepConfig,
   type WizardState,
   type WizardActions,
@@ -44,6 +45,9 @@ export { WizardShell, type WizardShellProps } from './WizardShell';
 
 // Step Wrapper
 export { WizardStep, type WizardStepProps } from './WizardStep';
+
+// Transition Wrapper
+export { WizardTransition, type WizardTransitionProps } from './WizardTransition';
 
 // Footer Components
 export {
