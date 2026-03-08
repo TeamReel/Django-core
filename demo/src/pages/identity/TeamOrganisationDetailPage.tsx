@@ -91,7 +91,7 @@ export default function TeamOrganisationDetailPage() {
   });
 
   /* ── Derive edit mode from user's team membership role ── */
-  const currentUserId = String((authUser as any)?.id || '').trim();
+  const currentUserId = String(authUser?.id || '').trim();
   const userEditMode: 'all' | 'own' | 'none' = useMemo(() => {
     // System / Org / Club admins always get full edit access
     if (isGlobalAdmin) return 'all';
@@ -396,8 +396,8 @@ export default function TeamOrganisationDetailPage() {
                     });
                     if (res.ok) {
                       const raw = await res.json().catch(() => null);
-                      const updated: any = (raw?.data ?? raw) as any;
-                      setTeam((prev) => ({ ...(prev as any), ...(updated as any) }));
+                      const updated: any = raw?.data ?? raw;
+                      setTeam((prev) => ({ ...prev, ...updated }));
                     }
                   }}
                 />

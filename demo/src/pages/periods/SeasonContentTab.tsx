@@ -308,8 +308,8 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
           <div className={s.videoGrid}>
             {completedVideoJobs.map(job => {
               const typeDisplay = getJobTypeDisplay(job.job_type);
-              const videoType = (job.config as any)?.video_type;
-              const compStyle = (job.config as any)?.composition_style;
+              const videoType = job.config?.video_type;
+              const compStyle = job.config?.composition_style;
               const tileLabel = (() => {
                 if (videoType === 'transformation') return { icon: '\uD83D\uDD04', label: 'Transformation' };
                 if (videoType === 'walking_composite') return { icon: '\uD83D\uDEB6', label: 'Walking Composite' };
@@ -334,7 +334,7 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
                 return `${Math.floor(hrs / 24)}d ago`;
               })();
               const fileSize = (() => {
-                const bytes = (job as any).output_file?.size;
+                const bytes = (job.output_file as any)?.file_size;
                 if (!bytes) return null;
                 if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
                 return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;

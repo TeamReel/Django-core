@@ -278,8 +278,8 @@ export function TeamOverviewTab({
               <span className={ov.breakdownCol}>Wedstr.</span>
             </div>
             {hierarchySeasons.slice(0, 8).map((season) => {
-              const sid = String((season as any)?.id ?? '').trim();
-              const seasonKey = String((season as any)?.slug || sid).trim();
+              const sid = String(season?.id ?? '').trim();
+              const seasonKey = String(season?.slug || sid).trim();
               const matchCount = hierarchyMatchesCountBySeasonId[sid] || 0;
               const compCount = (hierarchyCompetitionsBySeasonId[sid] || []).length;
               const seasonPath =
@@ -294,7 +294,7 @@ export function TeamOverviewTab({
                   className={ov.breakdownRow}
                   onClick={() => seasonPath && navigate(seasonPath)}
                 >
-                  <span className={ov.breakdownColName}>{String((season as any)?.name || 'Season')}</span>
+                  <span className={ov.breakdownColName}>{String(season?.name || 'Season')}</span>
                   <span className={ov.breakdownCol}>{compCount}</span>
                   <span className={ov.breakdownCol}>{matchCount}</span>
                   {seasonPath && <span className={ov.breakdownArrow}>›</span>}

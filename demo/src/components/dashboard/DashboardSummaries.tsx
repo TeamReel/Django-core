@@ -32,7 +32,7 @@ export const SquadReadinessCard: React.FC = () => {
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
   const org = context.organisation as any;
-  const project = context.project as any;
+  const project = context.project;
   const [memberCount, setMemberCount] = useState<number>(0);
 
   useEffect(() => {
@@ -93,7 +93,7 @@ export const ContentStatsCard: React.FC = () => {
   const [count, setCount] = useState<number | null>(null);
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
-  const project = context.project as any;
+  const project = context.project;
 
   useEffect(() => {
     (async () => {
@@ -153,7 +153,7 @@ export const UpcomingMatchesCard: React.FC = () => {
   const [matches, setMatches] = useState<CompactMatch[]>([]);
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
-  const project = context.project as any;
+  const project = context.project;
 
   useEffect(() => {
     (async () => {
@@ -271,7 +271,7 @@ export const AIQueueCard: React.FC = () => {
 export const CreditsTrendCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const org = context.organisation as any;
+  const org = context.organisation;
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
     org?.slug,

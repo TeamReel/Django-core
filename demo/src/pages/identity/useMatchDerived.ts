@@ -120,9 +120,9 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
     const resolvedOrgId =
       !String(selectedOrganisationId || '').trim() && selectedTeamDetail
         ? String(
-            typeof (selectedTeamDetail as any)?.organisation === 'string'
-              ? (selectedTeamDetail as any).organisation
-              : (selectedTeamDetail as any)?.organisation?.id || ''
+            typeof selectedTeamDetail?.organisation === 'string'
+              ? selectedTeamDetail.organisation
+              : selectedTeamDetail?.organisation?.id || ''
           ).trim()
         : '';
 

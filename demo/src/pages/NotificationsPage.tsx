@@ -283,37 +283,37 @@ export default function NotificationsPage() {
             ) : (
               <div className="flex-col gap-12">
                 {notificationsList.map((notification) => {
-                const isUnread = (notification as any)?.is_read === undefined
+                const isUnread = notification?.is_read === undefined
                   ? !notification.read_at
-                  : !Boolean((notification as any)?.is_read);
+                  : !Boolean(notification?.is_read);
 
                 const notificationType =
-                  String((notification as any)?.level || (notification as any)?.metadata?.event_type || 'info').toLowerCase();
+                  String(notification?.level || notification?.metadata?.event_type || 'info').toLowerCase();
 
                 const title =
                   String(
-                    (notification as any)?.title ||
-                    (notification as any)?.payload?.title ||
-                    (notification as any)?.metadata?.title ||
-                    (notification as any)?.type?.name ||
-                    (notification as any)?.metadata?.event_type ||
+                    notification?.title ||
+                    notification?.payload?.title ||
+                    notification?.metadata?.title ||
+                    notification?.type?.name ||
+                    notification?.metadata?.event_type ||
                     'Notification'
                   );
 
                 const body =
                   String(
-                    (notification as any)?.message ||
-                    (notification as any)?.payload?.message ||
-                    (notification as any)?.payload?.body ||
-                    (notification as any)?.metadata?.body ||
-                    (notification as any)?.metadata?.message ||
+                    notification?.message ||
+                    notification?.payload?.message ||
+                    notification?.payload?.body ||
+                    notification?.metadata?.body ||
+                    notification?.metadata?.message ||
                     ''
                   );
 
                 let createdLabel = '';
                 try {
-                  if ((notification as any)?.created_at) {
-                    createdLabel = new Date((notification as any).created_at).toLocaleString('nl-NL', {
+                  if (notification?.created_at) {
+                    createdLabel = new Date(notification.created_at).toLocaleString('nl-NL', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',

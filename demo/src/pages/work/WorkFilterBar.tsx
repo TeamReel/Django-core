@@ -19,9 +19,12 @@ export type ProjectOption = {
   name: string;
   slug?: string;
   organisation?: string | { id: string };
+  organisation_id?: string | number;
   parent_id?: string | number | null;
   parent?: string | number | null;
   parent_name?: string | null;
+  parent_project_id?: string | number | null;
+  parent_project?: string | number | { id: string } | null;
 };
 
 type Props = {
@@ -145,8 +148,8 @@ export default function WorkFilterBar({
                   ? clubs.find((c) => String(c.id) === String(selectedClubId))
                   : null;
 
-                const teamParentId = (team as any).parent_id ?? (team as any).parent ?? null;
-                const teamParentName = (team as any).parent_name ?? null;
+                const teamParentId = team.parent_id ?? team.parent ?? null;
+                const teamParentName = team.parent_name ?? null;
 
                 if (selectedClub) {
                   const matchesById = teamParentId !== null && String(teamParentId) === String(selectedClub.id);

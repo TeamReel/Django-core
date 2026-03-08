@@ -59,10 +59,10 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     }
 
     const raw = await res.json().catch(() => null);
-    const server = (raw as any)?.data || raw;
-    const updated = server && typeof server === 'object' ? { ...periodToEdit, ...patch, ...(server as any) } : { ...periodToEdit, ...patch };
+    const server = raw?.data || raw;
+    const updated = server && typeof server === 'object' ? { ...periodToEdit, ...patch, ...server } : { ...periodToEdit, ...patch };
     if (String(updated?.id) === String(season?.id)) {
-      setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+      setSeason((prev) => prev ? { ...prev, ...updated } : updated);
     }
     setCompetitions((prev) => prev.map((p: any) => (String(p.id) === String(updated?.id) ? { ...p, ...updated } : p)));
   };
@@ -90,7 +90,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     }
 
     const raw = await res.json().catch(() => null);
-    const updated = (raw as any)?.data || raw || { ...matchToEdit, ...patch };
+    const updated = raw?.data || raw || { ...matchToEdit, ...patch };
     setMatches((prev) => prev.map((m: any) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } : m)));
   };
 

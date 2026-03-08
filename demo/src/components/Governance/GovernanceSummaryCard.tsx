@@ -81,10 +81,10 @@ export default function GovernanceSummaryCard(props: {
           // If backend doesn't have the effective endpoint yet, fall back to org-only.
           if (effRes.ok) {
             const effRaw = (await effRes.json().catch(() => null)) as EffectivePolicyResponse | null;
-            const effPolicy = unwrapBalancePolicy((effRaw as any)?.policy);
+            const effPolicy = unwrapBalancePolicy(effRaw?.policy);
             if (!cancelled) {
               setPolicy(effPolicy);
-              setSource((effRaw as any)?.source || 'default');
+              setSource(effRaw?.source || 'default');
             }
             return;
           }

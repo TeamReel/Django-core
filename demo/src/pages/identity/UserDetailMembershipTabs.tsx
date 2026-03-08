@@ -98,9 +98,9 @@ export function UserDetailMembershipTabs({ data }: Props) {
             {clubsForTab.map((c: any) => {
               const projectId = String(c?.id || '').trim();
               const direct = projectId ? directClubMembershipById.get(projectId) : null;
-              const slug = String(c?.slug || (direct as any)?.slug || '').trim();
+              const slug = String(c?.slug || direct?.slug || '').trim();
               const clubPath = primaryOrgSlug && slug ? `/organisations/${primaryOrgSlug}/projects/${slug}` : '';
-              const membershipId = (direct as any)?.membership_id;
+              const membershipId = direct?.membership_id;
               return (
                 <tr key={String(c?.id)}>
                   <td className="detail-td-text">{renderNavLink(String(c?.name || ''), clubPath)}</td>
@@ -108,10 +108,10 @@ export function UserDetailMembershipTabs({ data }: Props) {
                     {direct ? (
                       <button type="button" disabled={!projectId} onClick={() => {
                         if (!projectId) return;
-                        setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String((direct as any)?.role || 'viewer'), membershipId });
+                        setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
                       }} className="border-none bg-transparent p-0 fw-700" style={{ color: projectId ? 'var(--app-primary)' : 'var(--app-muted-text)', cursor: projectId ? 'pointer' : 'not-allowed', textDecoration: projectId ? 'underline' : 'none' }} title={projectId ? 'Click to edit role' : 'Missing project id'}>
-                        {String((direct as any)?.role || '') || '—'}
+                        {String(direct?.role || '') || '—'}
                       </button>
                     ) : (
                       <span title="This user is linked to this club via team membership."><span className="text-muted fw-700">Via team</span></span>
@@ -122,7 +122,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
                       <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => clubPath && navigate(clubPath)} disabled={!clubPath}>View</button>
                       <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => {
                         if (!projectId || !direct) return;
-                        setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String((direct as any)?.role || 'viewer'), membershipId });
+                        setEditingMembership({ projectId, projectName: String(c?.name || 'Club'), currentRole: String(direct?.role || 'viewer'), membershipId });
                         setIsEditMembershipModalOpen(true);
                       }} disabled={!projectId || !direct}>Edit</button>
                       <button type="button" className="app-action-button action-btn action-btn-danger" disabled={!projectId || !direct} onClick={async () => {
@@ -166,7 +166,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
               const teamPath = primaryOrgSlug && clubSlug && teamSlugOrId ? `/${primaryOrgSlug}/${clubSlug}/${teamSlugOrId}` : '';
               const clubPath = primaryOrgSlug && clubSlug ? `/${primaryOrgSlug}/${clubSlug}` : '';
               const projectId = String(t?.id || '').trim();
-              const membershipId = (t as any)?.membership_id;
+              const membershipId = t?.membership_id;
               return (
                 <tr key={String(t?.id)}>
                   <td className="detail-td-text">{renderNavLink(String(t?.parent_name || ''), clubPath)}</td>

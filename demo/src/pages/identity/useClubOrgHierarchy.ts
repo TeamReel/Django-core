@@ -68,7 +68,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                 const teamsList: any[] = Array.isArray(teamsRaw?.results) ? teamsRaw.results : Array.isArray(teamsRaw) ? teamsRaw : [];
                 const filteredTeams = teamsList
                     .filter((t: any) => {
-                        const parent = (t as any)?.parent_id ?? (t as any)?.parent_project_id ?? (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project) ?? (typeof (t as any)?.parent === 'object' ? (t as any)?.parent?.id : (t as any)?.parent);
+                        const parent = t?.parent_id ?? t?.parent_project_id ?? (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ?? (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
                         if (parent == null) return false;
                         return String(typeof parent === 'object' ? parent.id : parent) === String(clubIdForDirectoryLists);
                     })
@@ -102,7 +102,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                         return extractList(unwrapEnvelope<any>(untypedJson)).filter(isSeasonPeriod);
                     }),
                 );
-                const mergedSeasons = mergeUniqueById(seasonsChunks.flat() as any[]);
+                const mergedSeasons = mergeUniqueById(seasonsChunks.flat());
                 const byTeam: Record<string, Period[]> = {};
                 for (const season of mergedSeasons) {
                     const pid = season?.project_id ?? season?.project?.id ?? '';
@@ -153,7 +153,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                         matchesCountByTeamId[teamId] = (matchesCountByTeamId[teamId] || 0) + getRecursiveActivitiesCount(p);
                     }
                     for (const season of mergedSeasons || []) {
-                        const seasonId = String((season as any)?.id ?? '').trim();
+                        const seasonId = String(season?.id ?? '').trim();
                         if (!seasonId) continue;
                         const children = childrenMap.get(seasonId) || [];
                         const competitions = (children || []).filter((c) => isCompetitionPeriod(c));

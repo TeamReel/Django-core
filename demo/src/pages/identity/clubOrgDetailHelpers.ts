@@ -12,6 +12,9 @@ export type Project = {
   slug?: string;
   organisation_id?: string;
   organisation?: { id?: string; slug?: string };
+  description?: string;
+  is_active?: boolean;
+  metadata?: Record<string, any>;
 };
 
 export type Period = {
@@ -75,10 +78,10 @@ export const looksLikeIdentifier = (value: string): boolean => {
 
 export const getTeamParentId = (t: any): string => {
   const parent =
-    (t as any)?.parent_id ??
-    (t as any)?.parent_project_id ??
-    (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project) ??
-    (typeof (t as any)?.parent === 'object' ? (t as any)?.parent?.id : (t as any)?.parent);
+    t?.parent_id ??
+    t?.parent_project_id ??
+    (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ??
+    (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
   return parent != null ? String(typeof parent === 'object' ? parent.id : parent) : '';
 };
 
@@ -86,7 +89,7 @@ export const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
   const seen = new Set<string>();
   const out: T[] = [];
   for (const item of items || []) {
-    const key = String((item as any)?.id ?? '').trim();
+    const key = String(item?.id ?? '').trim();
     if (!key || seen.has(key)) continue;
     seen.add(key);
     out.push(item);

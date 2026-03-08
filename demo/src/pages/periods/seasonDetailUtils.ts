@@ -64,13 +64,13 @@ export const getAccessRoleOptions = (isTeamRoute: boolean): AccessRoleOption[] =
 
 export const getFunctionalRolesFromMembership = (m: any): string[] => {
   // Try top-level functional_roles field first (from API)
-  const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+  const direct = m?.functional_roles ?? m?.functionalRoles;
   if (Array.isArray(direct) && direct.length > 0) {
     return direct.map((r: any) => String(r || '').trim()).filter(Boolean);
   }
 
   // Then try metadata.functional_roles (where we save it)
-  const meta = (m as any)?.metadata || {};
+  const meta = m?.metadata || {};
   if (Array.isArray(meta.functional_roles) && meta.functional_roles.length > 0) {
     return meta.functional_roles.map((r: any) => String(r || '').trim()).filter(Boolean);
   }
@@ -84,16 +84,16 @@ export const getFunctionalRolesFromMembership = (m: any): string[] => {
 
 export const getMatchParticipantsCount = (match: any): number => {
   const direct = Number(
-    (match as any)?.participants_count ??
-      (match as any)?.participations_count ??
-      (match as any)?.participantsCount ??
-      (match as any)?.participationsCount
+    match?.participants_count ??
+      match?.participations_count ??
+      match?.participantsCount ??
+      match?.participationsCount
   );
   if (Number.isFinite(direct) && direct >= 0) return direct;
 
-  const maybeParticipants = (match as any)?.participants;
+  const maybeParticipants = match?.participants;
   if (Array.isArray(maybeParticipants)) return maybeParticipants.length;
-  const maybeParticipations = (match as any)?.participations;
+  const maybeParticipations = match?.participations;
   if (Array.isArray(maybeParticipations)) return maybeParticipations.length;
 
   return 0;

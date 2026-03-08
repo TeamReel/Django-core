@@ -132,7 +132,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
 
   const competitionMatchesCount = useMemo(() => {
     if (matches.length) return matches.length;
-    const annotated = Number((competition as any)?.matches_count ?? (competition as any)?.children_matches_count);
+    const annotated = Number(competition?.matches_count ?? competition?.children_matches_count);
     return Number.isFinite(annotated) && annotated >= 0 ? annotated : 0;
   }, [competition, matches.length]);
 
@@ -182,8 +182,8 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
   useEffect(() => {
     const needs = ['hierarchy', 'matches', 'overview', 'content'].includes(activeTab);
     if (!needs) return;
-    const pid = String((project as any)?.id || '').trim();
-    const cid = String(resolvedCompetitionId || (competition as any)?.id || '').trim();
+    const pid = String(project?.id || '').trim();
+    const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!pid || !cid) return;
 
     let cancelled = false;
@@ -226,8 +226,8 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
   // ── Fetch members ──────────────────────────────────────────────────
   useEffect(() => {
     if (!['users', 'overview'].includes(activeTab)) return;
-    const pid = String((project as any)?.id || '').trim();
-    const cid = String(resolvedCompetitionId || (competition as any)?.id || '').trim();
+    const pid = String(project?.id || '').trim();
+    const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!pid || !cid) return;
 
     let cancelled = false;

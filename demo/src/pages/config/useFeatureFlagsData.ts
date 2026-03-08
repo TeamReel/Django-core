@@ -56,7 +56,7 @@ export function useFeatureFlagsData() {
   const [syncing, setSyncing] = useState(false);
 
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
-  const isSuperadmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
+  const isSuperadmin = Boolean(user?.is_superuser) || String(user?.role || '').toLowerCase() === 'superadmin';
 
   // Breadcrumb context switcher setup (side-effect only)
   useBreadcrumbContextSwitcher({

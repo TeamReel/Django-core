@@ -202,7 +202,7 @@ export function useSeasonSquadAddMemberData({
         const rawList = await fetchAllPages(baseUrl, { credentials: 'include', signal: abortController.signal }, 1000);
         const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
-        if (!cancelled) setRemoteClubs(unique as any);
+        if (!cancelled) setRemoteClubs(unique);
       } catch { /* ignore */ } finally { if (!cancelled) setLoadingClubs(false); }
     };
     load();
@@ -229,7 +229,7 @@ export function useSeasonSquadAddMemberData({
         const rawList = await fetchAllPages(baseUrl, { credentials: 'include', signal: abortController.signal }, 1000);
         const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
-        if (!cancelled) setRemoteTeams(unique as any);
+        if (!cancelled) setRemoteTeams(unique);
       } catch { /* ignore */ } finally { if (!cancelled) setLoadingTeams(false); }
     };
     load();

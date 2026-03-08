@@ -215,7 +215,7 @@ interface VideoReviewModalProps {
 export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, approveJob, rejectJob }: VideoReviewModalProps) {
   const [reviewing, setReviewing] = useState<'approve' | 'reject' | null>(null);
   const wf = job.workflow_instance;
-  const metaStatus = (job as any).metadata?.approval_status;
+  const metaStatus = job.metadata?.approval_status;
   const isApproved = wf?.current_state === 'approved' || metaStatus === 'approved';
   const isRejected = wf?.current_state === 'rejected' || metaStatus === 'rejected';
   const isCompleted = job.status === 'completed';

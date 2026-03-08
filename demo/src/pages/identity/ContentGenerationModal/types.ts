@@ -105,6 +105,7 @@ export interface Participation {
     position?: string;
     shirt_number?: string;
     functional_roles?: string[];
+    teamreel_assets?: Record<string, any>;
     [key: string]: unknown;
   };
 }

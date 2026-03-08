@@ -75,7 +75,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
 
   // ── Fetch season squad memberships (season-scoped roster) ──
   useEffect(() => {
-    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const projectIdForMembers = String(project?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
 
     if (!projectIdForMembers || !seasonUuid) return;
@@ -115,7 +115,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
   // Only fetch org members on the selectie tab (orgs can have thousands of members).
   useEffect(() => {
     if (activeTab !== 'selectie' && activeTab !== 'overview') return;
-    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const projectIdForMembers = String(project?.id || '').trim();
     if (!projectIdForMembers) return;
 
     let cancelled = false;
@@ -141,7 +141,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
         }
 
         if (activeTab === 'selectie') {
-          const orgSlugForMembers = String((org as any)?.slug || orgSlugOrId || '').trim();
+          const orgSlugForMembers = String(org?.slug || orgSlugOrId || '').trim();
           if (orgSlugForMembers) {
             try {
               const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForMembers)}/members/?page_size=500`;
@@ -185,7 +185,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
       activeTab === 'competitions' ||
       activeTab === 'content';
     if (!needsMatches) return;
-    const projectNumericId = String((project as any)?.id || '').trim();
+    const projectNumericId = String(project?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
     if (!projectNumericId || !seasonUuid) return;
 

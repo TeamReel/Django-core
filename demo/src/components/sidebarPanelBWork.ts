@@ -29,6 +29,11 @@ export interface PanelBResult {
 /*  Shared helpers                                                     */
 /* ------------------------------------------------------------------ */
 
+/** Safely extract a named route param from any matchPath result (returns '' when absent). */
+type AnyParams = Record<string, string | undefined>;
+const getParam = (match: { params: unknown } | null | undefined, key: string): string =>
+    String((match?.params as AnyParams)?.[key] ?? '');
+
 export const makeTabUrl = (baseUrl: string, tab: string): string => {
     const t = String(tab || '').trim().toLowerCase();
     if (!t || t === 'overview') return baseUrl;
@@ -172,9 +177,9 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
 
     if (orgClubsMatch || orgTeamsMatch || orgSeasonsMatch || orgCompetitionsMatch || orgMatchesMatch || orgUsersMatch) {
         const orgId = String(
-            (orgClubsMatch?.params as any)?.orgId || (orgTeamsMatch?.params as any)?.orgId ||
-            (orgSeasonsMatch?.params as any)?.orgId || (orgCompetitionsMatch?.params as any)?.orgId ||
-            (orgMatchesMatch?.params as any)?.orgId || (orgUsersMatch?.params as any)?.orgId || '',
+            orgClubsMatch?.params?.orgId || orgTeamsMatch?.params?.orgId ||
+            orgSeasonsMatch?.params?.orgId || orgCompetitionsMatch?.params?.orgId ||
+            orgMatchesMatch?.params?.orgId || orgUsersMatch?.params?.orgId || '',
         ).trim();
         title = 'Federation';
         items = [
@@ -196,7 +201,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
     /* ── Federation detail ──────────────────────────────────────── */
 
     if (orgDetailMatch && !clubDetailMatch && !teamDetailMatch) {
-        const orgId = String((orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
+        const orgId = String(getParam(orgDetailMatch, 'orgId') || getParam(orgDetailMatch, 'id') || '').trim();
         if (orgId) {
             const baseUrl = path.startsWith('/organisations/') ? `/organisations/${orgId}` : `/${orgId}`;
             title = 'Federation';
@@ -223,7 +228,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
     /* ── User detail ────────────────────────────────────────────── */
 
     if (userDetailMatch?.params?.userId) {
-        const { userId } = userDetailMatch.params as any;
+        const { userId } = userDetailMatch.params;
         const baseUrl = `/users/${userId}`;
         title = 'User';
         items = [
@@ -246,7 +251,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
     /* ── Team detail ────────────────────────────────────────────── */
 
     if (teamDetailMatch?.params?.orgId && teamDetailMatch?.params?.clubId && teamDetailMatch?.params?.projectId) {
-        const { orgId, clubId, projectId } = teamDetailMatch.params as any;
+        const { orgId, clubId, projectId } = teamDetailMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}`
             : `/${orgId}/${clubId}/${projectId}`;
@@ -269,8 +274,8 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
 
     /* ── Club detail ────────────────────────────────────────────── */
 
-    if (clubDetailMatch?.params?.orgId && clubDetailMatch?.params?.projectId && !('clubId' in (clubDetailMatch.params as any))) {
-        const { orgId, projectId } = clubDetailMatch.params as any;
+    if (clubDetailMatch?.params?.orgId && clubDetailMatch?.params?.projectId && !getParam(clubDetailMatch, 'clubId')) {
+        const { orgId, projectId } = clubDetailMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${projectId}`
             : `/${orgId}/${projectId}`;
@@ -298,7 +303,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
     /* ── Season detail (team, explicit routes) ──────────────────── */
 
     if (seasonDetailTeamMatch?.params?.orgId && seasonDetailTeamMatch?.params?.clubId && seasonDetailTeamMatch?.params?.projectId && seasonDetailTeamMatch?.params?.seasonId) {
-        const { orgId, clubId, projectId, seasonId } = seasonDetailTeamMatch.params as any;
+        const { orgId, clubId, projectId, seasonId } = seasonDetailTeamMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`
             : `/${orgId}/projects/${clubId}/teams/${projectId}/seasons/${seasonId}`;
@@ -328,7 +333,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         competitionDetailVanityTeamMatch?.params?.seasonId &&
         competitionDetailVanityTeamMatch?.params?.competitionId
     ) {
-        const { orgId, clubId, projectId, seasonId, competitionId } = competitionDetailVanityTeamMatch.params as any;
+        const { orgId, clubId, projectId, seasonId, competitionId } = competitionDetailVanityTeamMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}`
             : `/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}`;
@@ -363,7 +368,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
     /* ── Season detail (vanity team) ────────────────────────────── */
 
     if (seasonDetailVanityTeamMatch?.params?.orgId && seasonDetailVanityTeamMatch?.params?.clubId && seasonDetailVanityTeamMatch?.params?.projectId && seasonDetailVanityTeamMatch?.params?.seasonId) {
-        const { orgId, clubId, projectId, seasonId } = seasonDetailVanityTeamMatch.params as any;
+        const { orgId, clubId, projectId, seasonId } = seasonDetailVanityTeamMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}`
             : `/${orgId}/${clubId}/${projectId}/${seasonId}`;
@@ -391,9 +396,9 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         memberDetailVanityMatch?.params?.clubId &&
         memberDetailVanityMatch?.params?.projectId &&
         memberDetailVanityMatch?.params?.seasonId &&
-        (memberDetailVanityMatch?.params as any)?.memberId
+        memberDetailVanityMatch?.params?.memberId
     ) {
-        const { orgId, clubId, projectId, seasonId, memberId } = memberDetailVanityMatch.params as any;
+        const { orgId, clubId, projectId, seasonId, memberId } = memberDetailVanityMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}/members/${memberId}`
             : `/${orgId}/${clubId}/${projectId}/${seasonId}/members/${memberId}`;
@@ -423,7 +428,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         matchDetailVanityTeamMatch?.params?.competitionId &&
         matchDetailVanityTeamMatch?.params?.matchId
     ) {
-        const { orgId, clubId, projectId, seasonId, competitionId, matchId: mId } = matchDetailVanityTeamMatch.params as any;
+        const { orgId, clubId, projectId, seasonId, competitionId, matchId: mId } = matchDetailVanityTeamMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}/${mId}`
             : `/${orgId}/${clubId}/${projectId}/${seasonId}/${competitionId}/${mId}`;
@@ -440,7 +445,7 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
     /* ── Season detail (project-scoped) ─────────────────────────── */
 
     if (seasonDetailProjectMatch?.params?.orgId && seasonDetailProjectMatch?.params?.projectId && seasonDetailProjectMatch?.params?.seasonId) {
-        const { orgId, projectId, seasonId } = seasonDetailProjectMatch.params as any;
+        const { orgId, projectId, seasonId } = seasonDetailProjectMatch.params;
         const baseUrl = path.startsWith('/organisations/')
             ? `/organisations/${orgId}/projects/${projectId}/seasons/${seasonId}`
             : `/${orgId}/projects/${projectId}/seasons/${seasonId}`;
@@ -491,8 +496,8 @@ export function buildWorkSectionPanelB(params: WorkSectionParams): PanelBResult 
         items.push({ label: 'Overview', path: baseUrl, icon: LayoutDashboard });
         items.push({ label: 'Teams', path: `${baseUrl}/teams`, icon: Shirt });
         items.push({ label: 'Seasons', path: `${baseUrl}/seasons`, icon: CalendarDays });
-    } else if ((orgSlug && locationPathname.startsWith(`/organisations/${orgSlug}`)) || (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id) {
-        const orgId = String(orgSlug || (orgDetailMatch?.params as any)?.orgId || (orgDetailMatch?.params as any)?.id || '').trim();
+    } else if ((orgSlug && locationPathname.startsWith(`/organisations/${orgSlug}`)) || getParam(orgDetailMatch, 'orgId') || getParam(orgDetailMatch, 'id')) {
+        const orgId = String(orgSlug || getParam(orgDetailMatch, 'orgId') || getParam(orgDetailMatch, 'id') || '').trim();
         title = 'Federation Actions';
         items.push({ label: 'Overview', path: makeOrgSectionUrl(orgId, 'overview'), icon: LayoutDashboard });
         items.push({ label: 'Clubs', path: makeOrgSectionUrl(orgId, 'clubs'), icon: Shield });

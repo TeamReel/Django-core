@@ -60,9 +60,9 @@ export function getUserSeasonCompetitionMatchCounts(u: any, ctx: UsersRowContext
     let matchesCount = 0;
     for (const teamId of allowedTeamIds) {
         const t = teamsById.get(String(teamId));
-        seasonsCount += Number((t as any)?.seasons_count ?? 0) || 0;
-        competitionsCount += Number((t as any)?.competitions_count ?? 0) || 0;
-        matchesCount += Number((t as any)?.matches_count ?? 0) || 0;
+        seasonsCount += Number(t?.seasons_count ?? 0) || 0;
+        competitionsCount += Number(t?.competitions_count ?? 0) || 0;
+        matchesCount += Number(t?.matches_count ?? 0) || 0;
     }
     return { seasonsCount, competitionsCount, matchesCount };
 }
@@ -73,9 +73,9 @@ export function getPreferredScopeIdsForRow(u: any, ctx: UsersRowContext): { club
     if (selectedTeamId) {
         const team = teamsById.get(String(selectedTeamId));
         const clubId = String(
-            (team as any)?.parent_id ??
-            (team as any)?.parent_project?.id ??
-            (team as any)?.parent_project_id ?? '',
+            team?.parent_id ??
+            team?.parent_project?.id ??
+            team?.parent_project_id ?? '',
         ).trim();
         return { clubId, teamId: String(selectedTeamId) };
     }
@@ -100,9 +100,9 @@ export function getPreferredScopeIdsForRow(u: any, ctx: UsersRowContext): { club
     if (pickedTeamId) {
         const team = teamsById.get(String(pickedTeamId));
         const clubId = String(
-            (team as any)?.parent_id ??
-            (team as any)?.parent_project?.id ??
-            (team as any)?.parent_project_id ?? '',
+            team?.parent_id ??
+            team?.parent_project?.id ??
+            team?.parent_project_id ?? '',
         ).trim();
         return { clubId, teamId: pickedTeamId };
     }
@@ -169,7 +169,7 @@ export function getClubAndTeamLinksForRow(u: any, ctx: UsersRowContext) {
     if (selectedTeamId) {
         const team = teamsById.get(String(selectedTeamId));
         const clubId =
-            String((team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? '') || undefined;
+            String(team?.parent_id ?? team?.parent_project?.id ?? '') || undefined;
         teamTuples.push({ teamId: String(selectedTeamId), clubId });
     }
     if (selectedClubId) {
@@ -215,7 +215,7 @@ export function getClubAndTeamForRow(u: any, ctx: UsersRowContext) {
     if (selectedTeamId) {
         const team = teamsById.get(String(selectedTeamId));
         const clubId = String(
-            (team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? '',
+            team?.parent_id ?? team?.parent_project?.id ?? '',
         );
         const club = clubId ? clubsById.get(clubId) : undefined;
         return {
@@ -234,7 +234,7 @@ export function getClubAndTeamForRow(u: any, ctx: UsersRowContext) {
             .map((id: string) => teamsById.get(id))
             .find((t: ProjectOption | undefined) => {
                 const parentId = String(
-                    (t as any)?.parent_id ?? (t as any)?.parent_project?.id ?? '',
+                    t?.parent_id ?? t?.parent_project?.id ?? '',
                 );
                 return parentId && club && String(parentId) === String(club.id);
             });
@@ -256,7 +256,7 @@ export function getClubAndTeamForRow(u: any, ctx: UsersRowContext) {
         if (team?.name) {
             teamNames.push(String(team.name));
             const clubId = String(
-                (team as any)?.parent_id ?? (team as any)?.parent_project?.id ?? '',
+                team?.parent_id ?? team?.parent_project?.id ?? '',
             );
             const club = clubId ? clubsById.get(clubId) : undefined;
             if (club?.name) clubNames.push(String(club.name));

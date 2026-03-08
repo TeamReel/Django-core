@@ -34,7 +34,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return <ProjectSeasonMemberDetailPage />;
   }
 
-  const isActiveCtx = !!d.competition && String(d.activeContext?.competition?.id ?? '') === String((d.competition as any)?.id ?? '');
+  const isActiveCtx = !!d.competition && String(d.activeContext?.competition?.id ?? '') === String(d.competition?.id ?? '');
 
   return (
     <div>
@@ -175,7 +175,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               onClose={() => d.setIsPeriodEditModalOpen(false)}
               period={d.selectedEditPeriod}
               showDates={false}
-              organisationSportId={(d.org as any)?.sport?.id || null}
+              organisationSportId={d.org?.sport?.id ? String(d.org.sport.id) : null}
               onSave={async (patch) => { if (d.selectedEditPeriod) await d.savePeriodEdits(d.selectedEditPeriod, patch); }}
             />
             <PeriodDetailModal opened={d.isPeriodDetailModalOpen} onClose={() => d.setIsPeriodDetailModalOpen(false)} period={d.selectedDetailPeriod} />
@@ -196,12 +196,12 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               onClose={() => d.setIsMatchCreateModalOpen(false)}
               mode={d.isTeamRoute ? 'team-context' : 'default'}
               apiBaseUrl={d.apiBaseUrl}
-              initialOrganisationId={String((d.org as any)?.id || '')}
-              initialClubId={String((d.club as any)?.id || '')}
-              initialTeamId={String((d.project as any)?.id || '')}
-              initialSeasonId={String(d.resolvedSeasonId || (d.season as any)?.id || '')}
-              initialCompetitionId={String(d.resolvedCompetitionId || (d.competition as any)?.id || '')}
-              onCreate={async (payload) => { await d.createMatchInCompetition(payload as any); }}
+              initialOrganisationId={String(d.org?.id || '')}
+              initialClubId={String(d.club?.id || '')}
+              initialTeamId={String(d.project?.id || '')}
+              initialSeasonId={String(d.resolvedSeasonId || d.season?.id || '')}
+              initialCompetitionId={String(d.resolvedCompetitionId || d.competition?.id || '')}
+              onCreate={async (payload) => { await d.createMatchInCompetition(payload); }}
             />
             <MembershipDetailModal
               opened={d.isMembershipDetailModalOpen}

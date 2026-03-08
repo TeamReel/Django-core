@@ -29,6 +29,8 @@ export type ProjectOption = {
   name: string;
   organisation?: string | { id: string };
   parent_id?: string | number | null;
+  parent?: string | number | null;
+  parent_name?: string | null;
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -126,8 +128,8 @@ export function useUsersData() {
   const orgIdParam = orgId || searchParams.get('organisation_id');
 
   // ── Auth / permissions ─────────────────────────────────────────────
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
   const currentOrg = myOrganisations.find(o => o.slug?.toLowerCase() === currentOrgSlug);
   const isOrgAdmin = (currentOrg as any)?.user_role === 'admin';

@@ -43,8 +43,8 @@ export const FederationsList: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
 
   const sort = searchParams.get('sort') || 'name';
   const order = searchParams.get('order') || 'asc';
@@ -244,7 +244,7 @@ export const FederationsList: React.FC = () => {
                   {filteredOrganisations.map((org) => {
                     const orgWithRole = myOrganisations.find(o => o.id === org.id);
                     const permissionContext = {
-                      currentOrganisation: (orgWithRole || org) as any,
+                      currentOrganisation: orgWithRole || org,
                       isSuperAdmin,
                     };
                     const userCanEdit = canPerformAction('update', 'organisation', permissionContext);
@@ -280,7 +280,7 @@ export const FederationsList: React.FC = () => {
                         </td>
                         <td className="dir-td">
                           <Badge variant="default">
-                            {(org as any).seasons_count || 0}
+                            {org.seasons_count || 0}
                           </Badge>
                         </td>
                         <td className="dir-td">
@@ -290,7 +290,7 @@ export const FederationsList: React.FC = () => {
                         </td>
                         <td className="dir-td">
                           <Badge variant="default">
-                            {(org as any).matches_count || 0}
+                            {org.matches_count || 0}
                           </Badge>
                         </td>
                         <td className="dir-td">

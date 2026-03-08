@@ -3,7 +3,14 @@
  */
 import React from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
+import type { User as ApiUser } from '../../types/api/user';
 import type { usePreferencesData } from './usePreferencesData';
+
+/** Extended user profile — superset of auth User with backend-computed fields. */
+interface ProfileUser extends ApiUser {
+  name?: string;
+  username?: string;
+}
 
 type Data = ReturnType<typeof usePreferencesData>;
 
@@ -29,6 +36,9 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
     setAvatarFile, setAvatarError,
     applyActiveContextSelection,
   } = d;
+
+  // Single typed assertion: auth User is structurally a subset of ApiUser at runtime
+  const u = user as unknown as ProfileUser | null;
 
   const applyContext = (overrides: Partial<Record<'orgId' | 'clubId' | 'teamId' | 'seasonId' | 'competitionId' | 'matchId', string>>) => {
     void applyActiveContextSelection({
@@ -61,25 +71,25 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
                 setAvatarError(null); setAvatarFile(null); setIsAvatarModalOpen(true);
               }}
             >
-              {String((user as any)?.avatar_url || '').trim() ? (
-                <img src={String((user as any)?.avatar_url)} alt="Profile" className="w-full h-full" style={{ objectFit: 'cover' }} />
+              {String(u?.avatar_url || '').trim() ? (
+                <img src={String(u?.avatar_url)} alt="Profile" className="w-full h-full" style={{ objectFit: 'cover' }} />
               ) : (
                 <span className="text-primary">
-                  {String((user as any)?.first_name || (user as any)?.email || 'U').trim().slice(0, 1).toUpperCase()}
+                  {String(u?.first_name || u?.email || 'U').trim().slice(0, 1).toUpperCase()}
                 </span>
               )}
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-1">Profile</h3>
               <div className="text-sm fw-700">
-                {String((user as any)?.name || `${(user as any)?.first_name || ''} ${(user as any)?.last_name || ''}` || '').trim() || '—'}
+                {String(u?.name || `${u?.first_name || ''} ${u?.last_name || ''}` || '').trim() || '—'}
               </div>
-              <div className="text-sm text-gray-600">{String((user as any)?.email || (user as any)?.username || '—')}</div>
+              <div className="text-sm text-gray-600">{String(u?.email || u?.username || '—')}</div>
               <div className="flex-row flex-wrap gap-8 mt-8">
-                <Badge variant={Boolean((user as any)?.two_factor_enabled) ? 'success' : 'default'}>
-                  2FA: {Boolean((user as any)?.two_factor_enabled) ? 'On' : 'Off'}
+                <Badge variant={u?.two_factor_enabled ? 'success' : 'default'}>
+                  2FA: {u?.two_factor_enabled ? 'On' : 'Off'}
                 </Badge>
-                <span className="text-xs text-gray-500">User ID: {String((user as any)?.id ?? '—')}</span>
+                <span className="text-xs text-gray-500">User ID: {String(u?.id ?? '—')}</span>
               </div>
             </div>
           </div>
@@ -87,10 +97,10 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
           <div className="flex-wrap gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="secondary" size="sm" onClick={() => {
               setProfileError(null);
-              setProfileFirstName(String((user as any)?.first_name || '').trim());
-              setProfileLastName(String((user as any)?.last_name || '').trim());
-              setProfileEmail(String((user as any)?.email || '').trim());
-              setProfileTwoFactorEnabled(Boolean((user as any)?.two_factor_enabled));
+              setProfileFirstName(String(u?.first_name || '').trim());
+              setProfileLastName(String(u?.last_name || '').trim());
+              setProfileEmail(String(u?.email || '').trim());
+              setProfileTwoFactorEnabled(Boolean(u?.two_factor_enabled));
               setProfileCurrentPassword('');
               setIsProfileModalOpen(true);
             }}>Edit</Button>
@@ -114,13 +124,13 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
         </div>
 
         {(() => {
-          const membership = (activeContext as any)?.membership;
+          const membership = activeContext?.membership;
           const membershipId = String(membership?.id || '').trim();
           const memberName = String(membership?.user?.name || membership?.user?.email || '').trim();
-          const orgSlug = String((activeContext as any)?.organisation?.slug || '').trim();
-          const clubSlug = String((activeContext as any)?.club?.slug || '').trim();
-          const teamSlug = String((activeContext as any)?.team?.slug || '').trim();
-          const seasonKey = String((activeContext as any)?.season?.key || '').trim();
+          const orgSlug = String(activeContext?.organisation?.slug || '').trim();
+          const clubSlug = String(activeContext?.club?.slug || '').trim();
+          const teamSlug = String(activeContext?.team?.slug || '').trim();
+          const seasonKey = String(activeContext?.season?.key || '').trim();
           if (!membershipId) return null;
           const canLink = Boolean(orgSlug && clubSlug && teamSlug && seasonKey);
           const href = canLink

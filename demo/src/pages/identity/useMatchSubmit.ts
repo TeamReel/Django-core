@@ -73,9 +73,9 @@ export function useMatchSubmit({
       const metadataFinal = {
         ...(derived.metadataBase || {}),
         teamreel: {
-          ...((derived.metadataBase as any)?.teamreel || {}),
+          ...(derived.metadataBase?.teamreel || {}),
           match_context: {
-            ...(((derived.metadataBase as any)?.teamreel || {})?.match_context || {}),
+            ...((derived.metadataBase?.teamreel || {})?.match_context || {}),
             title: finalTitle,
             venue,
             is_home: venue === 'Home',
@@ -87,7 +87,7 @@ export function useMatchSubmit({
             description: finalDescription || null,
           },
           vars: {
-            ...(((derived.metadataBase as any)?.teamreel || {})?.vars || {}),
+            ...((derived.metadataBase?.teamreel || {})?.vars || {}),
             match_title: finalTitle,
             match_venue: venue,
             match_date: matchDate || null,

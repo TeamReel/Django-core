@@ -153,13 +153,13 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   const json = await response.json().catch(() => ({}));
                   if (!response.ok) {
                     const message =
-                      (json as any)?.error?.message ||
-                      (json as any)?.message ||
+                      json?.error?.message ||
+                      json?.message ||
                       `Failed to update profile (${response.status})`;
                     throw new Error(message);
                   }
 
-                  const updatedUser = (json as any)?.data || json;
+                  const updatedUser = json?.data || json;
                   if (typeof setUser === 'function') {
                     setUser(updatedUser);
                   }
@@ -281,8 +281,8 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   const json = await response.json().catch(() => ({}));
                   if (!response.ok) {
                     const message =
-                      (json as any)?.error?.message ||
-                      (json as any)?.message ||
+                      json?.error?.message ||
+                      json?.message ||
                       `Failed to change password (${response.status})`;
                     throw new Error(message);
                   }
@@ -388,13 +388,13 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   const json = await response.json().catch(() => ({}));
                   if (!response.ok) {
                     const message =
-                      (json as any)?.error?.message ||
-                      (json as any)?.message ||
+                      json?.error?.message ||
+                      json?.message ||
                       `Failed to upload avatar (${response.status})`;
                     throw new Error(message);
                   }
 
-                  const updatedUser = (json as any)?.data || json;
+                  const updatedUser = json?.data || json;
                   if (typeof setUser === 'function') {
                     setUser(updatedUser);
                   }

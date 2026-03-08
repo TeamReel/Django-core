@@ -97,8 +97,8 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
             if (!res.ok) {
                 const data = await res.json().catch(() => null);
-                alert((data as any)?.message || 'Failed to update user');
-                throw new Error((data as any)?.message || 'Failed to update user');
+                alert(data?.message || 'Failed to update user');
+                throw new Error(data?.message || 'Failed to update user');
             }
         } catch (e) {
           console.error(e);
@@ -140,7 +140,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         const slugOrId = String(orgSlugOrId || '').trim();
         if (!slugOrId) throw new Error('Missing federation');
 
-        const orgs = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+        const orgs = Array.isArray(user?.organisations) ? user.organisations : [];
         const direct = orgs.find(
             (o: any) =>
                 String(o?.slug || o?.id || '') === slugOrId || String(o?.id || '') === slugOrId,

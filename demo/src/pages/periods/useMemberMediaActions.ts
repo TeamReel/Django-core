@@ -149,7 +149,7 @@ export function useMemberMediaActions({
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
 
   const handleProfilePhotoUpload = useCallback(async (file: File) => {
-    const userId = membership?.user?.id || (membership as any)?.user_id;
+    const userId = membership?.user?.id || membership?.user_id;
     if (!userId) { alert('Geen user ID gevonden.'); return; }
     setProfileUploading(true);
     setProfilePreview(URL.createObjectURL(file));
@@ -179,7 +179,7 @@ export function useMemberMediaActions({
 
   const handleLegacyPhotoUpload = useCallback(async (file: File) => {
     if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
-    const organizationId = org?.id || (project as any)?.organisation?.id;
+    const organizationId = org?.id || project?.organisation?.id;
     if (!organizationId) { alert('Organization ID ontbreekt.'); return; }
     setLegacyPhotoUploading(true);
     setLegacyPhotoPreview(URL.createObjectURL(file));
@@ -205,9 +205,9 @@ export function useMemberMediaActions({
           metadata: {
             ...(membership?.metadata || {}),
             teamreel_assets: {
-              ...((membership?.metadata as any)?.teamreel_assets || {}),
+              ...(membership?.metadata?.teamreel_assets || {}),
               media: {
-                ...((membership?.metadata as any)?.teamreel_assets?.media || {}),
+                ...(membership?.metadata?.teamreel_assets?.media || {}),
                 legacy_photo: { url: storagePath, caption: '' },
               },
             },

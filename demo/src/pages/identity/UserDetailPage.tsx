@@ -93,7 +93,7 @@ const UserDetailPage: React.FC = () => {
             <TransactionsPanel
               title="Transactions"
               description="User-scoped transactions (charged_user_id)"
-              filters={{ organization_id: getPreferredOrganisationId(), charged_user_id: String((user as any)?.id || userId) }}
+              filters={{ organization_id: getPreferredOrganisationId(), charged_user_id: String(user?.id || userId) }}
             />
           </div>
         )}

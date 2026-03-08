@@ -157,10 +157,10 @@ export default function UsersPage() {
       <LinkUserModal
         opened={d.isLinkModalOpen}
         onClose={() => d.setIsLinkModalOpen(false)}
-        user={d.linkUser as any}
-        organisations={(d.isSuperAdmin ? d.organisations : d.myOrganisations) as any}
-        clubs={d.clubs as any}
-        teams={d.teams as any}
+        user={d.linkUser}
+        organisations={d.isSuperAdmin ? d.organisations : d.myOrganisations}
+        clubs={d.clubs}
+        teams={d.teams}
         initialOrganisationSlugOrId={String(d.orgIdParam || d.context.organisation?.slug || '')}
         onSuccess={() => { d.fetchUsers(); d.setIsLinkModalOpen(false); }}
       />

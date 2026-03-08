@@ -68,10 +68,10 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
   const [hierarchySearch, setHierarchySearch] = useState('');
 
   const getMatchesForCompetition = (competition: any) => {
-    const competitionId = String((competition as any)?.id || '').trim();
+    const competitionId = String(competition?.id || '').trim();
     if (!competitionId) return [];
     return matches.filter((m: any) => {
-      const periodId = String(m.period_id || m.period?.id || (m as any)?.period || '');
+      const periodId = String(m.period_id || m.period?.id || m?.period || '');
       return periodId === competitionId;
     });
   };
@@ -226,7 +226,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                       ) : (
                         <div className={s.verticalListTight}>
                           {visibleMatches.map((match: any) => {
-                            const matchKey = (match as any).slug || match.id;
+                            const matchKey = match.slug || match.id;
                             const matchPath = isTeamRoute
                               ? `${seasonsBasePath}/${seasonPathKey}/${competitionKey}/${String(matchKey)}`
                               : `/matches/${String(matchKey)}`;

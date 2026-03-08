@@ -31,6 +31,7 @@ export type Organisation = {
 export type Period = {
   id: string;
   name: string;
+  slug?: string;
   start_date?: string;
   end_date?: string;
   project?: { id: string; name: string } | null;
@@ -65,7 +66,7 @@ export function useSquadPageData() {
 
   const orgSlugOrId = String(params.orgId || '').trim();
   const projectSlugOrId = String(params.projectId || '').trim();
-  const clubSlugOrId = String((params as any).clubId || '').trim();
+  const clubSlugOrId = String(params.clubId || '').trim();
   const effectiveSeasonId = String(params.seasonId || '').trim();
   const isTeamRoute = Boolean(clubSlugOrId);
 
@@ -97,22 +98,22 @@ export function useSquadPageData() {
 
   // ── Permissions ────────────────────────────────────────────────────
 
-  const userRole = String((user as any)?.role || '').toLowerCase();
+  const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin =
-    Boolean((user as any)?.is_superuser) ||
-    Boolean((user as any)?.is_staff) ||
+    Boolean(user?.is_superuser) ||
+    Boolean(user?.is_staff) ||
     userRole === 'superadmin' ||
     userRole === 'super admin';
 
   const orgForPermissions = useMemo(() => {
-    const contextOrg = context?.organisation as any;
+    const contextOrg = context?.organisation;
     const route = String(orgSlugOrId || '').trim();
     const orgIdMatches = (candidate: any) => {
       if (!candidate) return false;
       const cid = String(candidate.id || '').trim();
       const cslug = String(candidate.slug || '').trim();
-      const oid = String((organisation as any)?.id || '').trim();
-      const oslug = String((organisation as any)?.slug || '').trim();
+      const oid = String(organisation?.id || '').trim();
+      const oslug = String(organisation?.slug || '').trim();
       return (
         (cid && oid && cid === oid) ||
         (cslug && oslug && cslug === oslug) ||
@@ -122,7 +123,7 @@ export function useSquadPageData() {
     };
     const fromList = (myOrganisations as any[])?.find((o: any) => orgIdMatches(o));
     if (fromList?.user_role) return fromList;
-    if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
+    if (orgIdMatches(contextOrg) && (contextOrg as any)?.user_role) return contextOrg;
     const projectOrg = (project as any)?.organisation;
     if (projectOrg?.user_role) return projectOrg;
     if ((organisation as any)?.user_role) return organisation as any;
@@ -289,7 +290,7 @@ export function useSquadPageData() {
     });
     if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to save season'); }
     const raw = await res.json().catch(() => null);
-    const updated = (raw as any)?.data || raw || { ...selectedEditPeriod, ...payload };
+    const updated = raw?.data || raw || { ...selectedEditPeriod, ...payload };
     setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
   };
 

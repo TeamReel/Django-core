@@ -59,19 +59,19 @@ export function OrgOverviewTab({
         <div className={ov.heroStats}>
           <div className={ov.heroStat}>
             <span className={ov.heroStatValue}>
-              {clubsLoading ? '…' : (org as any).clubs_count || clubsCount || 0}
+              {clubsLoading ? '…' : org.clubs_count || clubsCount || 0}
             </span>
             <span className={ov.heroStatLabel}>Clubs</span>
           </div>
           <div className={ov.heroStat}>
             <span className={ov.heroStatValue}>
-              {teamsLoading ? '…' : (org as any).teams_count || teamsCount || 0}
+              {teamsLoading ? '…' : org.teams_count || teamsCount || 0}
             </span>
             <span className={ov.heroStatLabel}>Teams</span>
           </div>
           <div className={ov.heroStat}>
             <span className={ov.heroStatValue}>
-              {membersLoading ? '…' : (org as any).member_count || members.length || 0}
+              {membersLoading ? '…' : org.member_count || members.length || 0}
             </span>
             <span className={ov.heroStatLabel}>Leden</span>
           </div>
@@ -126,7 +126,7 @@ export function OrgOverviewTab({
         ) : teams.length === 0 ? (
           <div className={ov.emptyText}>Geen teams gevonden.</div>
         ) : (
-          (teams as any[]).slice(0, 6).map((t: any) => (
+          teams.slice(0, 6).map((t: any) => (
             <div key={String(t?.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
               <span className={ov.itemName}>{String(t?.name || 'Team')}</span>
             </div>
@@ -147,7 +147,7 @@ export function OrgOverviewTab({
         ) : members.length === 0 ? (
           <div className={ov.emptyText}>Geen leden gevonden.</div>
         ) : (
-          (members as any[]).slice(0, 6).map((m: any) => {
+          members.slice(0, 6).map((m: any) => {
             const u = m?.user || m;
             const label =
               `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||

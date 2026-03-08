@@ -27,11 +27,11 @@ export function useMediaLibData() {
     const location = useLocation();
     const { context, organisations: myOrganisations } = useContextSwitcher();
     const { user } = useAuth();
-    const orgId = (context as any)?.organisation?.id as string | undefined;
-    const orgSlug = (context as any)?.organisation?.slug as string | undefined;
+    const orgId = context.organisation?.id as string | undefined;
+    const orgSlug = context.organisation?.slug as string | undefined;
 
-    const userRole = String((user as any)?.role || '').toLowerCase();
-    const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+    const userRole = String(user?.role || '').toLowerCase();
+    const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
 
     const rawTab = new URLSearchParams(location.search).get('tab') || 'organisation';
     const activeLevel = (
@@ -77,7 +77,7 @@ export function useMediaLibData() {
                 myOrganisations.map((o) => ({
                     id: String(o.id),
                     name: o.name,
-                    slug: (o as any).slug,
+                    slug: o.slug,
                 })),
             );
             return;
@@ -162,31 +162,31 @@ export function useMediaLibData() {
         let result = brandAssets;
         if (activeLevel === 'organisation') {
             result = result.filter((a) => {
-                const pt = (a as any).project_type;
+                const pt = a.project_type;
                 return (pt === null || pt === undefined) && !a.asset_type.startsWith('member_');
             });
         } else if (activeLevel === 'club') {
             result = result.filter(
-                (a) => (a as any).project_type === 'club' && !a.asset_type.startsWith('member_'),
+                (a) => a.project_type === 'club' && !a.asset_type.startsWith('member_'),
             );
         } else if (activeLevel === 'team') {
             result = result.filter(
-                (a) => (a as any).project_type === 'team' && !a.asset_type.startsWith('member_'),
+                (a) => a.project_type === 'team' && !a.asset_type.startsWith('member_'),
             );
         } else if (activeLevel === 'member') {
             result = [];
         }
         if (selectedClubId) {
             result = result.filter((a) => {
-                const pid = (a as any).project_id;
-                const ppid = (a as any).parent_project_id;
+                const pid = a.project_id;
+                const ppid = a.parent_project_id;
                 if (activeLevel === 'club') return String(pid) === String(selectedClubId);
                 if (activeLevel === 'team') return String(ppid) === String(selectedClubId);
                 return true;
             });
         }
         if (selectedTeamId) {
-            result = result.filter((a) => String((a as any).project_id) === String(selectedTeamId));
+            result = result.filter((a) => String(a.project_id) === String(selectedTeamId));
         }
         if (subFilter !== 'all') {
             if (activeLevel === 'member') {
@@ -247,9 +247,9 @@ export function useMediaLibData() {
                     asset_type: a.asset_type,
                     member_id: '',
                     member_name: '',
-                    project_id: (a as any).project_id || '',
-                    project_name: (a as any).project_name || '',
-                    parent_project_id: (a as any).parent_project_id || null,
+                    project_id: a.project_id || '',
+                    project_name: a.project_name || '',
+                    parent_project_id: a.parent_project_id || null,
                     kit_type: undefined,
                     created_at: a.created_at,
                 }));
@@ -300,7 +300,7 @@ export function useMediaLibData() {
                     .filter((a) => a.asset_type.startsWith('member_'))
                     .map((a) => ({
                         asset_type: a.asset_type,
-                        project_id: (a as any).project_id || '',
+                        project_id: a.project_id || '',
                     }));
             }
             if (selectedTeamId) {
@@ -330,9 +330,9 @@ export function useMediaLibData() {
             activeLevel === 'files'
                 ? []
                 : brandAssets.filter((a) => {
-                      if (activeLevel === 'organisation') return (a as any).project_type === null;
-                      if (activeLevel === 'club') return (a as any).project_type === 'club';
-                      if (activeLevel === 'team') return (a as any).project_type === 'team';
+                      if (activeLevel === 'organisation') return a.project_type === null;
+                      if (activeLevel === 'club') return a.project_type === 'club';
+                      if (activeLevel === 'team') return a.project_type === 'team';
                       return false;
                   });
         const counts: Record<string, number> = { all: levelAssets.length };

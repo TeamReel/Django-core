@@ -24,10 +24,10 @@ interface PermissionGuardProps {
 export function useUserRole() {
   const { user } = useAuth();
 
-  const role = String((user as any)?.role || '').toLowerCase();
-  const isSystemAdmin = Boolean((user as any)?.is_superuser) || role === 'superadmin';
+  const role = String(user?.role || '').toLowerCase();
+  const isSystemAdmin = Boolean(user?.is_superuser) || role === 'superadmin';
 
-  const orgs = (user as any)?.organisations || [];
+  const orgs = user?.organisations || [];
   const isLandAdmin = orgs.some((org: any) => {
     const role = String(org?.role || '').toLowerCase().replace(/[_-]/g, ' ').trim();
     return role.includes('land admin');

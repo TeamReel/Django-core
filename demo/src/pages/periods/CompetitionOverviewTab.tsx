@@ -136,7 +136,7 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
             if (!res.ok) { const d = await res.text().catch(() => ''); throw new Error(d || `Failed to save (${res.status})`); }
             const raw = await res.json().catch(() => null);
             const updated: any = raw?.data?.data || raw?.data || raw;
-            setCompetition((prev: any) => ({ ...(prev as any), ...(updated as any) }));
+            setCompetition((prev: any) => ({ ...prev, ...updated }));
           }}
         />
       </div>

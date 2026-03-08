@@ -107,7 +107,7 @@ export function useMemberDetailData(): MemberDetailData {
     apiBaseUrl,
   } = useSeasonContext();
 
-  const membershipId = String((params as any).memberId || (params as any).competitionId || '').trim();
+  const membershipId = String(params.memberId || params.competitionId || '').trim();
 
   // ── Tab navigation ──
   const activeTab = useMemo(() => {
@@ -174,7 +174,7 @@ export function useMemberDetailData(): MemberDetailData {
     if (!membership) return;
     try {
       setActivatingContext(true);
-      await setActiveContext('membership', String((membership as any).id));
+      await setActiveContext('membership', String(membership.id));
       const ctx = await getActiveContext();
       setActiveContextState(ctx);
     } finally {
@@ -252,7 +252,7 @@ export function useMemberDetailData(): MemberDetailData {
     setSaving(true);
     setSaveError(null);
     try {
-      const nextMetadata = mergeAssetsIntoMetadata((membership as any)?.metadata, form, videoVariants);
+      const nextMetadata = mergeAssetsIntoMetadata(membership?.metadata, form, videoVariants);
       const res = await fetch(
         `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membership.id)}/`,
         {
@@ -264,8 +264,8 @@ export function useMemberDetailData(): MemberDetailData {
       );
       if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to save'); }
       const raw = await res.json().catch(() => null);
-      const updated = (raw as any)?.data || raw || null;
-      setMembership(updated ? { ...(membership as any), ...(updated as any) } : membership);
+      const updated = raw?.data || raw || null;
+      setMembership(updated ? { ...membership, ...updated } : membership);
     } catch (e) {
       console.error(e);
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
@@ -274,7 +274,7 @@ export function useMemberDetailData(): MemberDetailData {
     }
   }, [apiBaseUrl, membership, project, userCanEditProject]);
 
-  const isOwnProfile = !!(membership && user && String((membership as any)?.user?.id ?? '') === String((user as any)?.id ?? ''));
+  const isOwnProfile = !!(membership && user && String(membership?.user?.id ?? '') === String(user?.id ?? ''));
 
   return {
     membership, setMembership, membershipId, user,

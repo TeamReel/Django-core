@@ -268,15 +268,15 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                         first_name: u?.first_name,
                         last_name: u?.last_name,
                         organisations: u?.organisations,
-                        is_superuser: Boolean((u as any)?.is_superuser),
+                        is_superuser: Boolean(u?.is_superuser),
                         is_active: u?.is_active ?? item?.is_active ?? true,
-                        role: (u as any)?.role ?? 'User',
-                        role_label: (u as any)?.role_label ?? (item as any)?.role_label,
+                        role: u?.role ?? 'User',
+                        role_label: u?.role_label ?? item?.role_label,
                         role_assignments:
-                            (u as any)?.role_assignments ||
-                            (item as any)?.role_assignments ||
-                            (u as any)?.rbac_role_assignments ||
-                            (item as any)?.rbac_role_assignments ||
+                            u?.role_assignments ||
+                            item?.role_assignments ||
+                            u?.rbac_role_assignments ||
+                            item?.rbac_role_assignments ||
                             [],
                         membership: {
                             id: item?.id,

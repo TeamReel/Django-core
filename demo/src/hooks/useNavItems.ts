@@ -8,11 +8,11 @@ function useNavStorage(eventName: string, getter: () => NavStoredItem[]) {
     const refresh = () => setItems(getter());
 
     window.addEventListener('storage', refresh);
-    window.addEventListener(eventName, refresh as any);
+    window.addEventListener(eventName, refresh);
 
     return () => {
       window.removeEventListener('storage', refresh);
-      window.removeEventListener(eventName, refresh as any);
+      window.removeEventListener(eventName, refresh);
     };
   }, [eventName, getter]);
 

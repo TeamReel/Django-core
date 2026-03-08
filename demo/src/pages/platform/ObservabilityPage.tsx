@@ -71,7 +71,7 @@ export const ObservabilityPage: React.FC = () => {
       const rawData = await response.json();
 
       // Handle B13 envelope if present
-      const data: BackendObservabilityMetrics = (rawData as any).data || rawData;
+      const data: BackendObservabilityMetrics = rawData.data || rawData;
 
       // Check if backend returned an error flag
       if (data.error) {

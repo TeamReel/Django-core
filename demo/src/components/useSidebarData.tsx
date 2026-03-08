@@ -47,9 +47,9 @@ export function useSidebarData() {
     const resolvedAppContext = useResolvedAppContext(
         user,
         orgSlug,
-        (context as any)?.organisation?.slug,
-        (context as any)?.organisation?.id,
-        (organisations as any)?.length,
+        context?.organisation?.slug,
+        context?.organisation?.id,
+        organisations?.length,
     );
 
     useSidebarRecents(resolvedAppContext);
@@ -181,7 +181,7 @@ export function useSidebarData() {
             ? memberDetailPath
             : (seasonKey ? withTab(seasonPath, 'squad') : '/directory?tab=users');
 
-        const currentUserId = String((user as any)?.id || '').trim();
+        const currentUserId = String(user?.id || '').trim();
 
         return [
             { label: 'Federation', path: federationPath, icon: Globe, visibility: 'staff' as const },

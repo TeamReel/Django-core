@@ -65,7 +65,7 @@ const MatchRow: React.FC<MatchRowProps> = ({
     : undefined;
   const compTarget = periodPathKey(compFromList || competition) || compId;
 
-  const matchKey = (m as any).slug || m.id;
+  const matchKey = m.slug || m.id;
   const matchPath =
     row.orgSlug && row.clubSlug && row.teamSlug && seasonTarget && compTarget
       ? `/${row.orgSlug}/${row.clubSlug}/${row.teamSlug}/${seasonTarget}/${compTarget}/${matchKey}`
@@ -141,17 +141,17 @@ const MatchRow: React.FC<MatchRowProps> = ({
         ) : compName}
       </td>
       <td className="hide-mobile dir-td">
-        {(m as any).period?.sport?.category_name ? (
-          <span className="fs-11">{(m as any).period.sport.category_name}</span>
+        {m.period?.sport?.category_name ? (
+          <span className="fs-11">{m.period.sport.category_name}</span>
         ) : (
           <span className="text-muted">—</span>
         )}
       </td>
       <td className="hide-mobile dir-td">
-        {(m as any).period?.sport ? (
+        {m.period?.sport ? (
           <span className="flex-row gap-4">
-            <span>{(m as any).period.sport.sport_icon}</span>
-            <span className="fs-11">{(m as any).period.sport.name}</span>
+            <span>{m.period.sport.sport_icon}</span>
+            <span className="fs-11">{m.period.sport.name}</span>
           </span>
         ) : (
           <span className="text-muted">—</span>
@@ -314,7 +314,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
         metadata: {
           venue: payload.venue || 'Home',
           is_home: (payload.venue || 'Home') === 'Home',
-          ...(payload as any)?.metadata,
+          ...payload?.metadata,
         },
       }),
     });

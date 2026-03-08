@@ -64,7 +64,7 @@ export function createEmptyMediaForm(): MemberMediaForm {
  */
 export function readAssetsFromMembership(membership: any): MemberMediaForm {
   const meta = membership?.metadata || {};
-  const tr = (meta as any)?.teamreel_assets || (meta as any)?.teamreelAssets || {};
+  const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const media = tr.media || {};
   const form = createEmptyMediaForm();
 

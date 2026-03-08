@@ -28,6 +28,8 @@ export interface BrandAsset {
   profile_name?: string;
   project_name?: string;
   project_type?: string | null;  // 'club' | 'team' | null (org-level)
+  project_id?: string;
+  parent_project_id?: string | null;
   organisation_name?: string;
   file: string;
   asset_type: string;
@@ -239,7 +241,7 @@ export function useBrandAssets(): UseBrandAssetsReturn {
       setAssets(filtered);
     } catch (err: unknown) {
       console.error(err);
-      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && (err as any).name === 'AbortError')) {
+      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load brand assets');
       }
     } finally {

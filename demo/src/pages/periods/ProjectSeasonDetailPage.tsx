@@ -115,7 +115,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           orgId={String(d.org?.id || '').trim()}
           projectId={d.project?.id != null ? String(d.project.id) : ''}
           seasonId={String(d.resolvedSeasonId || d.effectiveSeasonId || '').trim()}
-          currentUserId={Number((d.user as any)?.id)}
+          currentUserId={Number(d.user?.id)}
           seasonWalletOptions={d.seasonWalletOptions}
           isPeriodEditModalOpen={d.isPeriodEditModalOpen}
           onClosePeriodEdit={() => {
@@ -152,8 +152,8 @@ export const ProjectSeasonDetailPage: React.FC = () => {
           createModalClubs={d.createModalClubs}
           createModalTeams={d.createModalTeams}
           initialOrganisationId={String(d.org?.id || '')}
-          initialClubId={String((d.club as any)?.id || '')}
-          initialTeamId={String((d.project as any)?.id || '')}
+          initialClubId={String(d.club?.id || '')}
+          initialTeamId={String(d.project?.id || '')}
           initialSeasonId={String(d.resolvedSeasonId || d.season?.id || '')}
           isCreateMatchModalOpen={d.isCreateMatchModalOpen}
           onCloseCreateMatch={() => d.setIsCreateMatchModalOpen(false)}

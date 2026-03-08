@@ -95,7 +95,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                     const row = resolveRowContext(season, rowConfig);
 
                     // Season shows its own sport VARIANT only (not org category as fallback)
-                    const seasonSport = (season as any).sport;
+                    const seasonSport = season.sport;
                     const sportDisplay = seasonSport
                       ? { name: seasonSport.name, sport_icon: seasonSport.sport_icon, category_name: seasonSport.category_name }
                       : null;
@@ -181,7 +181,7 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                             <button
                               type="button"
                               onClick={() => {
-                                setDetailSeason(season as any);
+                                setDetailSeason(season);
                                 setIsDetailModalOpen(true);
                               }}
                               className={`bg-transparent border-none p-0 m-0 cursor-pointer ${styles.seasonNameBtn}`}
@@ -216,12 +216,12 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
                         </td>
                         <td className="dir-td">
                             <Badge variant="default">
-                            {(season as any).matches_total_count ?? season.matches_count ?? 0}
+                            {season.matches_total_count ?? season.matches_count ?? 0}
                             </Badge>
                         </td>
                         <td className="dir-td">
                             <Badge variant="default">
-                                {(season as any).members_count || 0}
+                                {season.members_count || 0}
                             </Badge>
                         </td>
                          <td className="dir-td">
@@ -290,13 +290,13 @@ export const SeasonsList: React.FC<DirectoryListProps> = (props) => {
       <PeriodDetailModal
         opened={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
-        period={detailSeason as any}
+        period={detailSeason}
       />
 
       <PeriodEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        period={editSeason as any}
+        period={editSeason}
         showSportVariant={false}
         onSave={async (payload) => {
           if (!editSeason) return;

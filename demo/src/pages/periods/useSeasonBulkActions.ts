@@ -40,7 +40,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
   // ── Assign users to season squad ──
 
   const assignUsersToSeasonSquad = async (userIds: string[]) => {
-    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const projectIdForMembers = String(project?.id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
     if (!projectIdForMembers || !seasonUuid) return;
 
@@ -125,7 +125,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
   // ── Unassign memberships from season squad ──
 
   const unassignMembershipsFromSeasonSquad = async (membershipIds: string[]) => {
-    const projectIdForMembers = String((project as any)?.id || '').trim();
+    const projectIdForMembers = String(project?.id || '').trim();
     if (!projectIdForMembers) return;
 
     const ids = (membershipIds || []).map((x) => String(x || '').trim()).filter(Boolean);
@@ -193,7 +193,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
 
   const handleCreateCompetition = useCallback(async (payload: any) => {
     const orgIdValue = String(payload.organisation_id || org?.id || '').trim();
-    const teamIdValue = String(payload.project_id || (project as any)?.id || '').trim();
+    const teamIdValue = String(payload.project_id || project?.id || '').trim();
     const seasonIdValue = String(payload.parent_period_id || resolvedSeasonId || season?.id || '').trim();
     if (!orgIdValue) throw new Error('Select a federation first');
     if (!teamIdValue) throw new Error('Select a team first');
@@ -232,8 +232,8 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       if (createdId) {
         setCompetitions((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String((p as any)?.id || '').trim() === createdId)) return list;
-          return [created as any, ...list];
+          if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+          return [created, ...list];
         });
       }
     }
@@ -260,7 +260,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
   // ── Create match handler ──
 
   const handleCreateMatch = useCallback(async (payload: any) => {
-    const teamIdValue = String(payload.project_id || (project as any)?.id || '').trim();
+    const teamIdValue = String(payload.project_id || project?.id || '').trim();
     const competitionIdValue = String(payload.period_id || '').trim();
     if (!teamIdValue) throw new Error('Select a team first');
     if (!competitionIdValue) throw new Error('Select a competition first');
@@ -285,7 +285,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
         metadata: {
           venue: payload.venue || 'Home',
           is_home: (payload.venue || 'Home') === 'Home',
-          ...(payload as any)?.metadata,
+          ...payload?.metadata,
         },
       }),
     });
@@ -314,7 +314,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       void (async () => {
         setMatchesLoading(true);
         try {
-          const projectNumericId = String((project as any)?.id || '').trim();
+            const projectNumericId = String(project?.id || '').trim();
           const seasonUuid = String(resolvedSeasonId || '').trim();
           if (projectNumericId && seasonUuid) {
             const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(

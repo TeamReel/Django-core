@@ -87,10 +87,10 @@ export function TeamHierarchyTab({
   const visibleSeasons = useMemo(() => {
     if (!q) return hierarchySeasons;
     return (hierarchySeasons || []).filter((s) => {
-      const seasonName = String((s as any)?.name || '').toLowerCase();
+      const seasonName = String(s?.name || '').toLowerCase();
       if (seasonName.includes(q)) return true;
-      const comps = hierarchyCompetitionsBySeasonId[String((s as any)?.id)] || [];
-      return comps.some((c) => String((c as any)?.name || '').toLowerCase().includes(q));
+      const comps = hierarchyCompetitionsBySeasonId[String(s?.id)] || [];
+      return comps.some((c) => String(c?.name || '').toLowerCase().includes(q));
     });
   }, [hierarchySeasons, hierarchyCompetitionsBySeasonId, q]);
 
@@ -104,7 +104,7 @@ export function TeamHierarchyTab({
       <div className={h.searchRow}>
         <Input
           value={hierarchySearch}
-          onChange={(e) => setHierarchySearch((e.target as any).value)}
+          onChange={(e) => setHierarchySearch((e.target as HTMLInputElement).value)}
           placeholder="Zoek seizoen of competitie…"
         />
       </div>
@@ -117,8 +117,8 @@ export function TeamHierarchyTab({
         <div className={h.empty}>Geen seizoenen gevonden.</div>
       ) : (
         visibleSeasons.map((season) => {
-          const sid = String((season as any)?.id ?? '').trim();
-          const seasonKey = String((season as any)?.slug || sid).trim();
+          const sid = String(season?.id ?? '').trim();
+          const seasonKey = String(season?.slug || sid).trim();
           const seasonPath =
             orgKeyForRoutes && clubKeyForRoutes && teamKeyForRoutes && seasonKey
               ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKeyForRoutes)}/${encodeURIComponent(seasonKey)}`
@@ -127,7 +127,7 @@ export function TeamHierarchyTab({
           const competitionsAll = hierarchyCompetitionsBySeasonId[sid] || [];
           const competitions = !q
             ? competitionsAll
-            : competitionsAll.filter((c) => String((c as any)?.name || '').toLowerCase().includes(q));
+            : competitionsAll.filter((c) => String(c?.name || '').toLowerCase().includes(q));
 
           const seasonMatches = hierarchyMatchesCountBySeasonId[sid] ?? 0;
           const isSeasonOpen = effectiveExpandedSeasons.has(sid);
@@ -141,7 +141,7 @@ export function TeamHierarchyTab({
                 onClick={() => toggleSeason(sid)}
               >
                 <div className={h.seasonLeft}>
-                  <span className={h.seasonName}>{String((season as any)?.name || 'Seizoen')}</span>
+                  <span className={h.seasonName}>{String(season?.name || 'Seizoen')}</span>
                   {seasonPath && (
                     <span
                       className={h.seasonNavLink}
@@ -167,13 +167,13 @@ export function TeamHierarchyTab({
                     <div className={h.empty}>Geen competities.</div>
                   ) : (
                     competitions.map((comp) => {
-                      const cid = String((comp as any)?.id ?? '').trim();
-                      const compKey = String((comp as any)?.slug || cid).trim();
+                      const cid = String(comp?.id ?? '').trim();
+                      const compKey = String(comp?.slug || cid).trim();
                       const compPath =
                         seasonPath && compKey
                           ? `${seasonPath}/${encodeURIComponent(compKey)}`
                           : '';
-                      const compMatchCount = hierarchyMatchesCountByCompetitionId[cid] ?? (comp as any)?.activities_count ?? 0;
+                      const compMatchCount = hierarchyMatchesCountByCompetitionId[cid] ?? comp?.activities_count ?? 0;
                       const isCompOpen = expandedComps.has(cid);
                       const compMatches = teamMatchesByPeriodId[cid] || [];
 
@@ -186,7 +186,7 @@ export function TeamHierarchyTab({
                             onClick={() => toggleComp(cid)}
                           >
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)', minWidth: 0 }}>
-                              <span className={h.compName}>{String((comp as any)?.name || 'Competitie')}</span>
+                              <span className={h.compName}>{String(comp?.name || 'Competitie')}</span>
                               {compPath && (
                                 <span
                                   className={h.seasonNavLink}

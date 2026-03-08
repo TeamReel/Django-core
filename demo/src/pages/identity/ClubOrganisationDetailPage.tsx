@@ -99,7 +99,7 @@ export default function ClubOrganisationDetailPage() {
     );
   }
 
-  const isActive = !!club && String((activeContext as any)?.club?.id ?? '') === String(club.id ?? '');
+  const isActive = !!club && String(activeContext?.club?.id ?? '') === String(club.id ?? '');
 
   return (
     <>
@@ -296,8 +296,8 @@ export default function ClubOrganisationDetailPage() {
         projectId={club?.slug || club?.id}
         initialEntityData={club ? {
           id: String(club.id), name: club.name || '', slug: club.slug,
-          description: (club as any).description, is_active: (club as any).is_active ?? true,
-          metadata: (club as any).metadata || {},
+          description: club.description, is_active: club.is_active ?? true,
+          metadata: club.metadata || {},
         } : undefined}
         canEditGeneral={true}
         canEditBrand={true}

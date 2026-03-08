@@ -69,8 +69,8 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const org = d.org;
   const isActive =
-    String(d.activeContext?.organisation?.id ?? '') === String((org as any)?.id ?? '') ||
-    d.activeContext?.organisation?.slug === (org as any)?.slug;
+    String(d.activeContext?.organisation?.id ?? '') === String(org?.id ?? '') ||
+    d.activeContext?.organisation?.slug === org?.slug;
 
   return (
     <>

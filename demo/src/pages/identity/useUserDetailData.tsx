@@ -73,8 +73,8 @@ export function useUserDetailData(): UserDetailDataReturn {
     const [hierarchySearch, setHierarchySearch] = useState('');
 
     /* ---------- transaction helpers -------------------------------- */
-    const currentUserIdForTxn = Number((currentUser as any)?.id);
-    const targetUserIdForTxn = Number((api.user as any)?.id || userId);
+    const currentUserIdForTxn = Number(currentUser?.id);
+    const targetUserIdForTxn = Number(api.user?.id || userId);
     const userWalletOptions = useMemo<WalletOption[]>(
         () => [
             { kind: 'default', label: 'Default (charge this user)' },
@@ -113,9 +113,9 @@ export function useUserDetailData(): UserDetailDataReturn {
         const fromStorage = String(localStorage.getItem('django-core:currentOrgId') || '').trim();
         if (fromStorage) return fromStorage;
         const memberships =
-            (api.user as any)?.memberships ||
-            (api.user as any)?.organisation_memberships ||
-            (api.user as any)?.organization_memberships;
+            api.user?.memberships ||
+            api.user?.organisation_memberships ||
+            api.user?.organization_memberships;
         if (Array.isArray(memberships) && memberships.length > 0) {
             const first = memberships[0];
             const oid =
@@ -310,8 +310,8 @@ export function useUserDetailData(): UserDetailDataReturn {
                 );
                 if (!response.ok) throw new Error(`Failed to fetch balance (${response.status})`);
                 const raw = await response.json();
-                const data = (raw as any)?.data ?? raw;
-                const v = (data as any)?.current_balance;
+                const data = raw?.data ?? raw;
+                const v = data?.current_balance;
                 if (!cancelled) setUserBalance(v != null ? String(v) : null);
             } catch (e: unknown) {
               console.error(e);

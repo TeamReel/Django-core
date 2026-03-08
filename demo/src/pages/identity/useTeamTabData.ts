@@ -253,7 +253,7 @@ export function useTeamTabData({
         const matchesCountByCompetitionId: Record<string, number> = {};
         for (const list of Object.values(bySeason)) {
           for (const c of list || []) {
-            const cid = String((c as any)?.id ?? '').trim();
+            const cid = String(c?.id ?? '').trim();
             if (!cid) continue;
             matchesCountByCompetitionId[cid] = getRecursiveActivitiesCount(c);
           }
@@ -261,11 +261,11 @@ export function useTeamTabData({
 
         const matchesCountBySeasonId: Record<string, number> = {};
         for (const season of seasons) {
-          const sid = String((season as any)?.id ?? '').trim();
+          const sid = String(season?.id ?? '').trim();
           if (!sid) continue;
           const comps = bySeason[sid] || [];
           matchesCountBySeasonId[sid] = comps.reduce((sum, c) => {
-            const cid = String((c as any)?.id ?? '').trim();
+            const cid = String(c?.id ?? '').trim();
             return sum + (matchesCountByCompetitionId[cid] ?? 0);
           }, 0);
         }

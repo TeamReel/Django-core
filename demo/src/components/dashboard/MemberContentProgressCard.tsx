@@ -50,8 +50,8 @@ export const MemberContentProgressCard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
-  const org = context.organisation as any;
-  const project = context.project as any;
+  const org = context.organisation;
+  const project = context.project;
 
   useEffect(() => {
     if (!project || !org) {

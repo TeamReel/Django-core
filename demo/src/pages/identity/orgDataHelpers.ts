@@ -65,26 +65,26 @@ export interface MatchPathDeps {
  * hierarchy data when available.
  */
 export const getBestMatchDetailPath = (m: any, deps: MatchPathDeps): string => {
-  const matchSlugOrId = String((m as any)?.slug || m?.id || '').trim();
+  const matchSlugOrId = String(m?.slug || m?.id || '').trim();
   if (!matchSlugOrId) return '/matches';
 
   const orgSlug = String(deps.currentOrgSlug || '').trim();
   if (!orgSlug) return `/matches/${matchSlugOrId}`;
 
   const clubById = new Map<string, any>();
-  for (const c of deps.clubs as any[]) {
+  for (const c of deps.clubs) {
     if (!c) continue;
     clubById.set(String(c.id), c);
   }
 
   const teamById = new Map<string, any>();
-  for (const t of deps.teams as any[]) {
+  for (const t of deps.teams) {
     if (!t) continue;
     teamById.set(String(t.id), t);
   }
 
   const periodById = new Map<string, any>();
-  for (const p of deps.orgPeriods as any[]) {
+  for (const p of deps.orgPeriods) {
     if (!p) continue;
     periodById.set(String(p.id), p);
   }
@@ -104,14 +104,14 @@ export const getBestMatchDetailPath = (m: any, deps: MatchPathDeps): string => {
   const periodId = String(m?.period?.id ?? m?.period_id ?? '').trim();
   const competition = periodId ? (periodById.get(periodId) || m?.period) : m?.period;
   const competitionKeyOrId = String(
-    periodPathKey(competition) || (competition as any)?.slug || (competition as any)?.id || periodId || '',
+    periodPathKey(competition) || competition?.slug || competition?.id || periodId || '',
   ).trim();
   const seasonId = String(
-    (competition as any)?.parent_period_id ?? (competition as any)?.parent_period?.id ?? '',
+    competition?.parent_period_id ?? competition?.parent_period?.id ?? '',
   ).trim();
-  const season = seasonId ? periodById.get(seasonId) : (competition as any)?.parent_period;
+  const season = seasonId ? periodById.get(seasonId) : competition?.parent_period;
   const seasonKeyOrId = String(
-    periodPathKey(season) || (season as any)?.slug || (season as any)?.id || seasonId || '',
+    periodPathKey(season) || season?.slug || season?.id || seasonId || '',
   ).trim();
 
   if (orgSlug && clubSlugOrId && teamSlugOrId && seasonKeyOrId && competitionKeyOrId) {

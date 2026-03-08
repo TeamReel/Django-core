@@ -68,7 +68,7 @@ export function useProjectsPageData() {
 
   // Permissions
   const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   const permissionContext = { currentOrganisation: resolvedOrg, isSuperAdmin };
   const userCanCreateProject = canCreateProject(permissionContext);
   const userCanEditProject = canEditProject(permissionContext);

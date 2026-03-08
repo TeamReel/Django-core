@@ -145,11 +145,11 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     if (selectedOrgId && !selectedOrg) return '';
 
     if (orgLocked) {
-      return (selectedOrg as any)?.slug || lockedOrgSlug || '';
+      return selectedOrg?.slug || lockedOrgSlug || '';
     }
 
     return (
-      (selectedOrg as any)?.slug ||
+      selectedOrg?.slug ||
       (!selectedOrgId ? context.organisation?.slug : '') ||
       ''
     );
@@ -161,7 +161,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
           (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
         )
       : null;
-    const resolved = selectedOrg ? String((selectedOrg as any).id ?? '') : '';
+    const resolved = selectedOrg ? String(selectedOrg.id ?? '') : '';
     if (resolved && isUuid(resolved)) return resolved;
     if (selectedOrgId && isUuid(selectedOrgId)) return String(selectedOrgId);
     return '';
@@ -174,7 +174,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
           (o) => String(o.id) === String(selectedOrgId) || String(o.slug) === String(selectedOrgId),
         )
       : null;
-    const orgSlugOrId = (selectedOrg as any)?.slug || selectedOrg?.id || selectedOrgId;
+    const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || selectedOrgId;
     return String(
       orgSlugOrId ||
         (context as any)?.organisation?.slug ||

@@ -146,9 +146,9 @@ export default function ProjectSeasonMemberDetailPage() {
         actions={
           <div className="hide-mobile flex-row gap-8 flex-wrap">
             {(() => {
-              const isActive = !!membership && String(activeContext?.membership?.id ?? '') === String((membership as any)?.id ?? '');
-              const canMakeActive = !!membership && String((membership as any)?.user?.id ?? '') && String((user as any)?.id ?? '') &&
-                String((membership as any)?.user?.id ?? '') === String((user as any)?.id ?? '');
+              const isActive = !!membership && String(activeContext?.membership?.id ?? '') === String(membership?.id ?? '');
+              const canMakeActive = !!membership && String(membership?.user?.id ?? '') && String(user?.id ?? '') &&
+                String(membership?.user?.id ?? '') === String(user?.id ?? '');
               return (
                 <button
                   type="button" className={`app-action-button ${s.activeContextButton}`}

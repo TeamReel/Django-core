@@ -32,9 +32,9 @@ export function UserDetailIdentityTab({ data }: Props) {
           <div
             className={`overflow-hidden flex-center rounded-full ${styles.avatarContainer}`}
           >
-            {(user as any).avatar_url ? (
+            {user.avatar_url ? (
               <img
-                src={(user as any).avatar_url}
+                src={user.avatar_url}
                 alt={`${userDisplayName} avatar`}
                 className={`w-full h-full ${styles.avatarImage}`}
                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
@@ -49,11 +49,11 @@ export function UserDetailIdentityTab({ data }: Props) {
             <div className="text-muted fs-13 mb-8">
               This is the user's primary profile photo. It's displayed across the platform.
             </div>
-            {(user as any).avatar_url && (
+            {user.avatar_url && (
               <div className="mt-8 fs-12 text-muted">
                 <strong>URL:</strong>{' '}
-                <a href={(user as any).avatar_url} target="_blank" rel="noopener noreferrer" className={`word-break-all ${styles.avatarLink}`}>
-                  {(user as any).avatar_url}
+                <a href={user.avatar_url} target="_blank" rel="noopener noreferrer" className={`word-break-all ${styles.avatarLink}`}>
+                  {user.avatar_url}
                 </a>
               </div>
             )}
@@ -89,11 +89,11 @@ export function UserDetailIdentityTab({ data }: Props) {
           <div className="flex-col gap-16">
             <div>
               <label className={`block fw-600 ${styles.fieldLabel}`}>First Name</label>
-              <Input value={identityFirstName} onChange={(e) => setIdentityFirstName((e.target as any).value)} placeholder="First name" disabled={identitySaving} />
+              <Input value={identityFirstName} onChange={(e) => setIdentityFirstName(e.target.value)} placeholder="First name" disabled={identitySaving} />
             </div>
             <div>
               <label className={`block fw-600 ${styles.fieldLabel}`}>Last Name</label>
-              <Input value={identityLastName} onChange={(e) => setIdentityLastName((e.target as any).value)} placeholder="Last name" disabled={identitySaving} />
+              <Input value={identityLastName} onChange={(e) => setIdentityLastName(e.target.value)} placeholder="Last name" disabled={identitySaving} />
             </div>
             <div>
               <label className={`block fw-600 ${styles.fieldLabel}`}>Email</label>

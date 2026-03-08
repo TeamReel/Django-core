@@ -271,7 +271,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 selectedType={selectedType}
                 selectedTemplate={selectedTemplate}
                 contentTypeLabel={selectedContentTypeLabel}
-                matchData={matchDataForApi}
+                matchData={matchDataForApi as any}
                 seasonSquad={seasonSquad.seasonSquad}
                 matchFlyerVariant={options.matchFlyerVariant}
                 setMatchFlyerVariant={options.setMatchFlyerVariant}
@@ -355,10 +355,10 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       om {matchDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  {(selectedMatch as any).location && (
+                  {selectedMatch.location && (
                     <div className={styles.reviewRow}>
                       <MapPin size={16} className={styles.reviewRowIcon} />
-                      <span className="fs-13 text-muted">{(selectedMatch as any).location}</span>
+                      <span className="fs-13 text-muted">{selectedMatch.location}</span>
                     </div>
                   )}
                   {needsLineup && (
@@ -431,7 +431,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               savedVariantIndices={savedVariantIndices}
               selectedType={selectedType}
               selectedTemplate={selectedTemplate}
-              matchData={matchDataForApi}
+              matchData={matchDataForApi as any}
               handleSaveAsAsset={handleSaveAsAsset}
               handleSaveAllAsAssets={handleSaveAllAsAssets}
               handleSaveVariantByIndex={handleSaveVariantByIndex}

@@ -27,8 +27,8 @@ interface PeriodDetailModalProps {
 export default function PeriodDetailModal({ opened, onClose, period }: PeriodDetailModalProps) {
   if (!opened || !period) return null;
 
-  const data = (period as any).data ?? (period as any).metadata ?? {};
-  const type = String((data as any)?.type ?? '');
+  const data = period.data ?? period.metadata ?? {};
+  const type = String(data?.type ?? '');
 
   return (
     <div

@@ -57,8 +57,8 @@ export const OrganisationsPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Permission checks - can user create organisations?
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   // Note: Organisation creation is typically a superadmin action
   // Individual org edit/delete uses per-org permissions
 

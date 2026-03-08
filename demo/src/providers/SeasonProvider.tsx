@@ -299,10 +299,10 @@ export function SeasonProvider({ children }: PropsWithChildren) {
   );
 
   // ── Permissions ────────────────────────────────────────────────────
-  const userRole = String((user as any)?.role || '').toLowerCase();
+  const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin =
-    Boolean((user as any)?.is_superuser) ||
-    Boolean((user as any)?.is_staff) ||
+    Boolean(user?.is_superuser) ||
+    Boolean(user?.is_staff) ||
     userRole === 'superadmin' ||
     userRole === 'super admin';
 
@@ -324,15 +324,15 @@ export function SeasonProvider({ children }: PropsWithChildren) {
     };
 
     if (orgIdMatches(contextOrg) && contextOrg?.user_role) return contextOrg;
-    const projectOrg = (project as any)?.organisation;
+    const projectOrg = project?.organisation;
     if (projectOrg?.user_role) return projectOrg;
-    if ((org as any)?.user_role) return org;
+    if (org?.user_role) return org;
     if (orgIdMatches(contextOrg)) return contextOrg;
     return projectOrg || org || contextOrg || null;
   }, [context?.organisation, org, orgSlugOrId, project]);
 
   const permissionContext = useMemo(
-    () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
+    () => ({ currentOrganisation: orgForPermissions, isSuperAdmin }),
     [orgForPermissions, isSuperAdmin],
   );
 

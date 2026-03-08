@@ -134,7 +134,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                                     profile_name: profile.name,
                                     project_id: profile.project
                                         ? String(profile.project)
-                                        : null,
+                                        : undefined,
                                     project_name: profile.project_name ?? null,
                                     project_type: profile.project_type ?? null,
                                     parent_project_id: profile.parent_project_id

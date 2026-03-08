@@ -29,7 +29,7 @@ function MemberRoleRow({
   editForm: EditFormState;
   setEditForm: React.Dispatch<React.SetStateAction<EditFormState>>;
 }) {
-  const roleData = (editForm.input_requirements?.members as any)?.[roleKey];
+  const roleData = editForm.input_requirements?.members?.[roleKey];
   const count = roleData?.count ?? 0;
   const isDisabled = !count;
 
@@ -45,10 +45,10 @@ function MemberRoleRow({
           if (!newReqs.members) newReqs.members = {};
           const newCount = parseInt(e.target.value);
           if (newCount === 0) {
-            delete (newReqs.members as any)[roleKey];
+            delete newReqs.members[roleKey];
           } else {
-            (newReqs.members as any)[roleKey] = {
-              ...(newReqs.members as any)[roleKey],
+            newReqs.members[roleKey] = {
+              ...newReqs.members[roleKey],
               count: newCount,
               asset_types: roleData?.asset_types || [roleKey === 'coach' || roleKey === 'assistant' ? 'profile_photo' : 'in_tenue'],
             };
@@ -77,7 +77,7 @@ function MemberRoleRow({
                 disabled={isDisabled}
                 onChange={(e) => {
                   const newReqs = { ...editForm.input_requirements };
-                  const role = (newReqs.members as any)?.[roleKey];
+                  const role = newReqs.members?.[roleKey];
                   if (role) {
                     const currentTypes = role.asset_types || [];
                     if (e.target.checked) {

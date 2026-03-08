@@ -72,10 +72,10 @@ export default function UsersTable({
   const getMemberProjectMemberships = (item: any): any[] => {
     const u = item?.user || item;
     const list =
-      (item as any)?.project_memberships ||
-      (u as any)?.project_memberships ||
-      (item as any)?.project_membership_details ||
-      (u as any)?.project_membership_details ||
+      item?.project_memberships ||
+      u?.project_memberships ||
+      item?.project_membership_details ||
+      u?.project_membership_details ||
       [];
     return Array.isArray(list) ? list : [];
   };
@@ -126,7 +126,7 @@ export default function UsersTable({
       const teamId = getPmTeamId(pm);
       const team = teamId ? teamById.get(String(teamId)) : null;
       const hasParent = Boolean(
-        (team as any)?.parent_id ?? (team as any)?.parent_project_id ?? (team as any)?.parent?.id
+        team?.parent_id ?? team?.parent_project_id ?? team?.parent?.id
       );
       roles.push(mapMembershipToTeamreelRole(roleRaw, hasParent ? 'team' : 'club'));
     }
@@ -149,10 +149,10 @@ export default function UsersTable({
   };
 
   const getFunctionalRolesForProjectMembership = (pm: any): string[] => {
-    const roles = (pm as any)?.functional_roles ?? (pm as any)?.functionalRoles;
+    const roles = pm?.functional_roles ?? pm?.functionalRoles;
     if (Array.isArray(roles)) return roles.map((r) => String(r || '').trim()).filter(Boolean);
 
-    const meta = (pm as any)?.metadata || {};
+    const meta = pm?.metadata || {};
     const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
     return legacy ? [legacy] : [];
   };
@@ -190,7 +190,7 @@ export default function UsersTable({
         <tbody>
           {pageItems.map((item: any) => {
             const userObj = item.user || item;
-            const membershipId = String((item as any)?.organisation_membership_id || (item as any)?.organisationMembershipId || item.id);
+            const membershipId = String(item?.organisation_membership_id || item?.organisationMembershipId || item.id);
             const hasOrgMembership = looksLikeUuid(membershipId);
 
             const roleDisplay = getRoleDisplay(item);
@@ -198,10 +198,10 @@ export default function UsersTable({
             const pms = (() => {
               const u = item?.user || item;
               const list =
-                (item as any)?.project_memberships ||
-                (u as any)?.project_memberships ||
-                (item as any)?.project_membership_details ||
-                (u as any)?.project_membership_details ||
+                item?.project_memberships ||
+                u?.project_memberships ||
+                item?.project_membership_details ||
+                u?.project_membership_details ||
                 [];
               return Array.isArray(list) ? list : [];
             })();
@@ -242,10 +242,10 @@ export default function UsersTable({
             const team = teamId ? teamById.get(String(teamId)) : null;
             const pmForTeam = teamId ? pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId)) : null;
             const teamSlugOrId =
-              (team ? String((team as any).slug || (team as any).id || '') : '') ||
+              (team ? String(team.slug || team.id || '') : '') ||
               (pmForTeam ? getTeamSlugFromPm(pmForTeam) : '') ||
               teamId;
-            const teamName = (team ? String((team as any).name || '').trim() : '') || (pmForTeam ? getTeamNameFromPm(pmForTeam) : '') || teamId;
+            const teamName = (team ? String(team.name || '').trim() : '') || (pmForTeam ? getTeamNameFromPm(pmForTeam) : '') || teamId;
 
             const canViewUser = typeof onViewUser === 'function';
             const canViewMembership = hasOrgMembership && typeof onViewMembership === 'function';
@@ -255,11 +255,11 @@ export default function UsersTable({
                 const t = teamById.get(String(id));
                 const pm = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(id));
                 const name =
-                  String((t as any)?.name || '').trim() ||
+                  String(t?.name || '').trim() ||
                   String(pm?.project?.name ?? pm?.project_name ?? '').trim() ||
                   id;
                 const slugOrId =
-                  String((t as any)?.slug || '').trim() ||
+                  String(t?.slug || '').trim() ||
                   String(pm?.project?.slug ?? pm?.project_slug ?? '').trim() ||
                   id;
                 return { id, name, slugOrId };

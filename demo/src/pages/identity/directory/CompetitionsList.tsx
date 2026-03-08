@@ -109,7 +109,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                   })
                   .map((comp) => {
                     const row = resolveRowContext(comp, rowConfig);
-                    const seasonId = (comp as any).parent_period_id || comp.parent_period?.id;
+                    const seasonId = comp.parent_period_id || comp.parent_period?.id;
 
                     // Use matches_count
                     const matchesCount = comp.matches_count || 0;

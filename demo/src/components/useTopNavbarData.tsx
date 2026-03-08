@@ -83,8 +83,8 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     const isNonAppRoute = checkIsNonAppRoute(location.pathname);
     const showBreadcrumbs = !isNonAppRoute;
 
-    const orgIdForMyBalance = String((context as any)?.organisation?.id || '').trim();
-    const currentUserId = (user as any)?.id;
+    const orgIdForMyBalance = String(context?.organisation?.id || '').trim();
+    const currentUserId = user?.id;
 
     const myCreditsNumber = useMemo(() => {
         if (myCreditsBalance == null) return null;
@@ -238,8 +238,8 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
                 );
                 if (!response.ok) return;
                 const raw = await response.json();
-                const data = (raw as any)?.data ?? raw;
-                const v = (data as any)?.current_balance;
+                const data = raw?.data ?? raw;
+                const v = data?.current_balance;
                 if (!cancelled) setMyCreditsBalance(v != null ? String(v) : null);
             } catch { /* ignore */ }
         };

@@ -21,7 +21,7 @@ export function useSquadData() {
   const fetchSquad = useCallback(async () => {
     if (!selectedMatch) return;
 
-    const pid = (selectedMatch as any).project?.id;
+    const pid = selectedMatch.project?.id;
     if (!pid) return;
 
     setSquadLoading(true);
@@ -103,8 +103,8 @@ export function useSquadData() {
   const loadSavedLineup = useCallback(() => {
     if (!selectedMatch) return;
 
-    const metadata = (selectedMatch as any).metadata;
-    const saved = metadata?.lineup;
+    const metadata = selectedMatch.metadata;
+    const saved = metadata?.lineup as { formation?: string; goalkeeper?: string[]; player?: string[] } | undefined;
 
     if (saved) {
       if (saved.formation) setLineupFormation(saved.formation);
@@ -114,8 +114,8 @@ export function useSquadData() {
           player: saved.player || [],
         });
       }
-    } else if (metadata?.formation) {
-      setLineupFormation(metadata.formation);
+    } else if ((metadata as any)?.formation) {
+      setLineupFormation((metadata as any).formation);
     }
   }, [selectedMatch, setLineupFormation, setLineupSlots]);
 
@@ -124,8 +124,8 @@ export function useSquadData() {
     if (!selectedMatch) return false;
 
     try {
-      const matchId = (selectedMatch as any).slug || selectedMatch.id;
-      const existingMetadata = (selectedMatch as any).metadata || {};
+      const matchId = selectedMatch.slug || selectedMatch.id;
+      const existingMetadata = selectedMatch.metadata || {};
       const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
 
       await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {

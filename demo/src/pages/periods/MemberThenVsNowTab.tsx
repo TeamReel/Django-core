@@ -104,7 +104,7 @@ export function MemberThenVsNowTab({
               const resolvedUrl = hasVideo ? resolveDisplayUrl(variantUrl) : null;
               const variantLineupReady = isLineupReady(variantRaw);
               const variantProcessing = isProcessing(variantRaw);
-              const normalizedVariant = normalizeVariantValue(variantRaw as any);
+              const normalizedVariant = normalizeVariantValue(variantRaw);
               const isCancellingOrProcessing =
                 normalizedVariant?.processing_state === 'processing' ||
                 normalizedVariant?.processing_state === 'cancelling';

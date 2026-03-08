@@ -278,7 +278,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
       await refreshMatch();
       return;
     }
-    const p = (match?.participations || []).find(x => String((x as any)?.id || '') === ids[0]);
+    const p = (match?.participations || []).find(x => String(x?.id || '') === ids[0]);
     if (p) await deleteParticipation(p);
   };
 

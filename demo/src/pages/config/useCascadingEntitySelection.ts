@@ -249,7 +249,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
           if (!nextUrl) break;
         }
         const rootProjects = collected.filter((p: any) => {
-          const parentId = (p as any)?.parent_id;
+          const parentId = p?.parent_id;
           return parentId === null || parentId === undefined || String(parentId).trim() === '';
         });
         if (!cancelled) setClubs(rootProjects);

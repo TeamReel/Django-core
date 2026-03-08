@@ -189,10 +189,10 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
       <ProjectEditModal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        project={selectedEditProject as any}
+        project={selectedEditProject}
         onSave={(patch) => {
           if (!selectedEditProject) return Promise.resolve();
-          return saveProjectEdits(selectedEditProject, patch as any);
+          return saveProjectEdits(selectedEditProject, patch);
         }}
       />
 
@@ -297,7 +297,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
       <OrganisationDetailModal
         opened={isOrgDetailModalOpen}
         onClose={() => setIsOrgDetailModalOpen(false)}
-        organisation={org as any}
+        organisation={org}
       />
 
       <EntityEditModal
@@ -312,9 +312,9 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
           id: String(org.id),
           name: org.name,
           slug: org.slug,
-          description: (org as any).description,
-          is_active: (org as any).is_active ?? true,
-          sport_id: (org as any).sport?.id || (org as any).sport_id || null,
+          description: org.description,
+          is_active: org.is_active ?? true,
+          sport_id: org.sport?.id || (org as any).sport_id || null,
         } : undefined}
         canEditGeneral={canEditOrganisation(permissionContext)}
         canEditBrand={canEditOrganisation(permissionContext)}

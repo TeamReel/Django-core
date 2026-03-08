@@ -88,7 +88,7 @@ export function useBreadcrumbsData({
           const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(userDetailUserId)}/`, { credentials: 'include' });
           if (res.ok) {
             const raw = await res.json();
-            const u = (raw as any)?.data ?? raw;
+            const u = raw?.data ?? raw;
             const id = String(u?.id || userDetailUserId).trim();
             const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
             const email = String(u?.email || '').trim();

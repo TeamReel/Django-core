@@ -198,7 +198,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
           for (const v of Object.values(obj)) {
             if (!v) continue;
             if (typeof v === 'string') return v;
-            if (typeof v === 'object') return (v as any).processed || (v as any).raw || null;
+            if (typeof v === 'object') return (v as Record<string, any>).processed || (v as Record<string, any>).raw || null;
           }
           return null;
         };

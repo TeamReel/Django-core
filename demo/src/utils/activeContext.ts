@@ -67,5 +67,5 @@ export async function getActiveContext() {
   }
 
   const raw = await res.json().catch(() => null);
-  return (raw?.data ?? raw) as any;
+  return raw?.data ?? raw;
 }

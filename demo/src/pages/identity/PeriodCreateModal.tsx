@@ -79,16 +79,16 @@ export default function PeriodCreateModal({
   const getClubOrganisationId = (clubId: string): string | null => {
     const club = clubs.find((c) => String(c.id) === String(clubId));
     if (!club) return null;
-    const org = typeof (club as any).organisation === 'string' ? (club as any).organisation : (club as any).organisation?.id;
+    const org = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
     return org ? String(org) : null;
   };
 
   const getTeamParentId = (t: ProjectOption): string | null => {
     const parent =
-      (t as any)?.parent_id ??
-      (t as any)?.parent ??
-      (t as any)?.parent_project_id ??
-      (typeof (t as any)?.parent_project === 'object' ? (t as any)?.parent_project?.id : (t as any)?.parent_project);
+      t?.parent_id ??
+      t?.parent ??
+      t?.parent_project_id ??
+      (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project);
     if (parent == null) return null;
     return String(typeof parent === 'object' ? parent.id : parent);
   };
@@ -174,7 +174,7 @@ export default function PeriodCreateModal({
         );
         const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
         const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
-        setSeasonOptions(sorted as any);
+        setSeasonOptions(sorted);
       } catch {
         setSeasonOptions([]);
       } finally {
@@ -342,7 +342,7 @@ export default function PeriodCreateModal({
 
                     // If user picks a season before picking a team, infer team/club/federation.
                     if (!selectedTeamId && seasonId) {
-                      const season = seasonOptions.find((s: any) => String(s?.id) === String(seasonId)) as any;
+                      const season = seasonOptions.find((s) => String(s?.id) === String(seasonId));
                       const inferredTeamId = season?.project?.id ?? season?.project_id;
                       if (inferredTeamId != null) autoFillFromTeamId(String(inferredTeamId));
                     }

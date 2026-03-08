@@ -37,8 +37,8 @@ export const ProjectEditPage: React.FC = () => {
   const resolvedOrg = organisations.find(o => o.slug === orgId || o.id === orgId) || context.organisation;
 
   // Try to find project in context first (if loaded), otherwise use projectId as slug
-  const resolvedProject = projects.find(p => (p as any).slug === projectId || p.id === projectId);
-  const currentProjectSlug = (resolvedProject as any)?.slug || projectId; // Use slug for API calls
+  const resolvedProject = projects.find(p => p.slug === projectId || p.id === projectId);
+  const currentProjectSlug = resolvedProject?.slug || projectId; // Use slug for API calls
 
   const {
     organisationOptions,

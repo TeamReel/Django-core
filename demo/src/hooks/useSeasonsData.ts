@@ -125,16 +125,16 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
           const merged = [...typed, ...untyped, ...parentSeasons].filter((p: any) => isLikelySeasonRoot(p));
           const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
-          setSeasons(unique as any);
+          setSeasons(unique);
           return;
         } else if (selectedClubId) {
           const clubTeams = teams.filter((t) => {
             const parent =
-              (t as any).parent_id ??
-              (t as any).parent_project_id ??
-              (typeof (t as any).parent_project === 'object' ? (t as any).parent_project?.id : (t as any).parent_project) ??
-              (typeof (t as any).parent === 'object' ? (t as any).parent?.id : (t as any).parent);
-            const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+              t.parent_id ??
+              t.parent_project_id ??
+              (typeof t.parent_project === 'object' && t.parent_project !== null ? t.parent_project.id : t.parent_project) ??
+              (typeof (t as any).parent === 'object' && (t as any).parent !== null ? (t as any).parent.id : (t as any).parent);
+            const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as any).id : parent);
             return parentId && parentId === String(selectedClubId);
           });
           if (clubTeams.length > 0) {
@@ -162,12 +162,12 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
             const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p: any) => isLikelySeasonRoot(p));
             const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
-            setSeasons(unique as any);
+            setSeasons(unique);
             return;
           }
         } else if (selectedOrgId) {
           if (teams.length > 0) {
-            const teamIds = teams.map((t) => String((t as any).id)).filter(Boolean);
+            const teamIds = teams.map((t) => String(t.id)).filter(Boolean);
             const chunks = chunkArray(teamIds, 25);
             const typedChunks = await Promise.all(
               chunks.map(async (ids) => {
@@ -189,7 +189,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
             const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p: any) => isLikelySeasonRoot(p));
             const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
-            setSeasons(unique as any);
+            setSeasons(unique);
             return;
           }
 
@@ -223,13 +223,13 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
           const inferred = (Array.isArray(fallback) ? fallback : []).filter((p: any) => isLikelySeasonRoot(p));
           const unique = [...new Map(inferred.map((p: any) => [String(p.id), p])).values()];
-          setSeasons(unique as any);
+          setSeasons(unique);
           return;
         }
 
         const filteredSeasons = results.filter((p: any) => isLikelySeasonRoot(p));
         const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p: any) => [String(p.id), p])).values()];
-        setSeasons(unique as any);
+        setSeasons(unique);
       } catch (e) {
         console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');

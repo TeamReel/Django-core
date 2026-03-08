@@ -76,7 +76,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
 
   // ── Guest player data from project metadata ──
   useEffect(() => {
-    const guestPlayerData = (project as any)?.metadata?.guest_player;
+    const guestPlayerData = project?.metadata?.guest_player;
     if (guestPlayerData) {
       const fullbodyHome = guestPlayerData?.images?.fullbody?.home;
       const closeupHome = guestPlayerData?.images?.closeup?.home;

@@ -90,13 +90,13 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
     return {
       id: String(mw.selectedMatch.id),
       title: mw.selectedMatch.title,
-      project: (mw.selectedMatch as any)?.project,
-      opponent_project: (mw.selectedMatch as any)?.opponent_project,
-      participations: (mw.selectedMatch as any)?.participations,
+      project: mw.selectedMatch.project,
+      opponent_project: mw.selectedMatch.opponent_project ?? undefined,
+      participations: mw.selectedMatch.participations,
       start_time: mw.selectedMatch.start_time,
-      location: (mw.selectedMatch as any)?.location,
+      location: mw.selectedMatch.location,
       metadata: {
-        ...((mw.selectedMatch as any)?.metadata || {}),
+        ...(mw.selectedMatch.metadata || {}),
         formation: mw.lineupFormation,
         lineup: {
           formation: mw.lineupFormation,
@@ -107,9 +107,9 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
     };
   }, [mw.selectedMatch, mw.lineupFormation, mw.lineupSlots]);
 
-  const projectId = (mw.selectedMatch as any)?.project?.id || null;
-  const organisationId = (mw.selectedMatch as any)?.project?.organisation_id
-    || (mw.selectedMatch as any)?.organisation?.id || null;
+  const projectId = mw.selectedMatch?.project?.id || undefined;
+  const organisationId = mw.selectedMatch?.project?.organisation_id
+    || mw.selectedMatch?.organisation?.id || null;
 
   const selectedType = useMemo(() => {
     if (!mw.pendingContent) return null;
@@ -151,7 +151,7 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
   useEffect(() => {
     if (isOpen && !mw.selectedMatch && initialMatchId && mw.upcomingMatches.length > 0) {
       const found = mw.upcomingMatches.find(
-        a => a.id === initialMatchId || (a as any).slug === initialMatchId,
+        a => a.id === initialMatchId || a.slug === initialMatchId,
       );
       if (found) {
         mw.setSelectedMatch(found);
@@ -354,9 +354,9 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
               mime_type: variant.mime_type || 'image/png',
             };
         if (result.storage_path) nextStorageInfo.storage_path = result.storage_path;
-        if (result.file_asset_id) (nextStorageInfo as any).file_asset_id = result.file_asset_id;
-        if (result.brand_asset_id) (nextStorageInfo as any).brand_asset_id = result.brand_asset_id;
-        if (result.media_item_id) (nextStorageInfo as any).media_item_id = result.media_item_id;
+        if (result.file_asset_id) nextStorageInfo.file_asset_id = result.file_asset_id;
+        if (result.brand_asset_id) nextStorageInfo.brand_asset_id = result.brand_asset_id;
+        if (result.media_item_id) nextStorageInfo.media_item_id = result.media_item_id;
 
         const updated = [...generatedVariants];
         updated[variantIdx] = { ...variant, storage_info: nextStorageInfo };

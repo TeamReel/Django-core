@@ -52,7 +52,7 @@ export function useTemplatesData() {
     if ((subtype === 'lineup' || subtype === 'lineup_flyer') && templates.length > 0) {
       if (lineupFormation) {
         matchedTemplate = templates.find(t =>
-          (t as any).formation_detail?.code === lineupFormation ||
+          t.formation_detail?.code === lineupFormation ||
           t.name.toLowerCase().includes(lineupFormation.toLowerCase().replace(/-/g, '')),
         );
       }
@@ -65,9 +65,9 @@ export function useTemplatesData() {
     const syntheticAllowed = ['match_intro', 'goal', 'poster'];
     if (!matchedTemplate && syntheticAllowed.includes(subtype)) {
       const synthetic: Record<string, ContentTemplate> = {
-        match_intro: { id: 0, name: 'Match Intro', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'match_intro', is_active: true, input_requirements: {} } as any,
-        goal: { id: 0, name: 'Goal Celebration', description: '', style_variant: '', template_type: 'during_match', template_subtype: 'goal', is_active: true, input_requirements: {} } as any,
-        poster: { id: 0, name: 'Elftalfoto', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'poster', is_active: true, input_requirements: {} } as any,
+        match_intro: { id: 0, name: 'Match Intro', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'match_intro', is_active: true, input_requirements: {} },
+        goal: { id: 0, name: 'Goal Celebration', description: '', style_variant: '', template_type: 'during_match', template_subtype: 'goal', is_active: true, input_requirements: {} },
+        poster: { id: 0, name: 'Elftalfoto', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'poster', is_active: true, input_requirements: {} },
       };
       matchedTemplate = synthetic[subtype];
     }

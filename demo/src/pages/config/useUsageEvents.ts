@@ -59,7 +59,7 @@ export function useUsageEvents() {
   const currentOrgName = context.organisation?.name || '';
   const currentOrganisation = context.organisation;
   const currentProject = context.project;
-  const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'Superadmin';
+  const isSuperadmin = user?.is_superuser || user?.role === 'superadmin';
 
   // Breadcrumb context switcher
   const { organisationOptions } = useBreadcrumbContextSwitcher({
@@ -215,7 +215,7 @@ export function useUsageEvents() {
       return;
     }
 
-    if (!user || !(user as any).id) {
+    if (!user || !user.id) {
       setError('User information not available');
       return;
     }
@@ -224,7 +224,7 @@ export function useUsageEvents() {
       setGenerating(true);
       setError(null);
 
-      const userId = (user as any).id;
+      const userId = user.id;
       const testEvent: any = {
         event_type: 'test_action',
         user_id: userId,
@@ -241,8 +241,8 @@ export function useUsageEvents() {
         id: `temp-${Date.now()}`,
         timestamp: new Date().toISOString(),
         event_type: 'test_action',
-        user_email: (user as any).email,
-        user_full_name: (user as any).name || (user as any).email,
+        user_email: user.email,
+        user_full_name: user.name || user.email,
         organization_name: editMode === 'org' ? currentOrganisation?.name : undefined,
         project_name: editMode === 'org' ? currentProject?.name : undefined,
         metadata: { source: 'demo', mode: editMode },

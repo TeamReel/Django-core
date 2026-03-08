@@ -51,10 +51,10 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   const { matchId, teamIdForApi } = useAppSelection();
   const { context, organisations: myOrganisations } = useContextSwitcher();
   const { user } = useAuth();
-  const orgId = (context as any)?.organisation?.id as string | undefined;
-  const orgSlug = (context as any)?.organisation?.slug as string | undefined;
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const orgId = context.organisation?.id as string | undefined;
+  const orgSlug = context.organisation?.slug as string | undefined;
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
 
   // URL params
   const params = new URLSearchParams(location.search);

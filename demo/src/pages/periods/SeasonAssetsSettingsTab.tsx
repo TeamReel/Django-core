@@ -73,8 +73,8 @@ const SeasonAssetsSettingsTab: React.FC<SeasonAssetsSettingsTabProps> = ({
         }
 
         const raw = await res.json().catch(() => null);
-        const updated: any = (raw?.data?.data || raw?.data || raw) as any;
-        onSeasonUpdate((prev: any) => ({ ...(prev as any), ...(updated as any) }));
+        const updated: any = raw?.data?.data || raw?.data || raw;
+        onSeasonUpdate((prev: any) => ({ ...prev, ...updated }));
       }}
     />
 
@@ -83,7 +83,7 @@ const SeasonAssetsSettingsTab: React.FC<SeasonAssetsSettingsTabProps> = ({
       seasonId={String(season?.id || '')}
       seasonName={String(season?.name || '')}
       seasonMetadata={(season as any)?.metadata || {}}
-      clubAssets={(club as any)?.metadata?.teamreel_assets}
+      clubAssets={club?.metadata?.teamreel_assets}
       onAssetsUpdated={() => {
         window.location.reload();
       }}

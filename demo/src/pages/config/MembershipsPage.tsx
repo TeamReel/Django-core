@@ -29,8 +29,8 @@ export const MembershipsPage: React.FC = () => {
   const { context } = useContextSwitcher();
   useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
-  const organisations: any[] = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
-  const projects: any[] = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+  const organisations: any[] = Array.isArray(user?.organisations) ? user.organisations : [];
+  const projects: any[] = Array.isArray(user?.projects) ? user.projects : [];
 
   const clubs = useMemo(() => {
     return projects.filter((p) => !p?.parent && !p?.parent_id && !p?.parentId);
@@ -41,7 +41,7 @@ export const MembershipsPage: React.FC = () => {
   }, [projects]);
 
   const orgIdForSeasons = useMemo(() => {
-    const ctxOrgId = String((context as any)?.organisation?.id || '').trim();
+    const ctxOrgId = String(context.organisation?.id || '').trim();
     if (ctxOrgId) return ctxOrgId;
     const firstOrgId = String(organisations?.[0]?.id || '').trim();
     return firstOrgId;

@@ -12,8 +12,8 @@ export const OrganisationAuditPage: React.FC = () => {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
 
-  const organisationId = String((context as any)?.organisation?.id || '').trim();
-  const organisationName = String((context as any)?.organisation?.name || (context as any)?.organisation?.title || '').trim();
+  const organisationId = String(context?.organisation?.id || '').trim();
+  const organisationName = String(context?.organisation?.name || (context?.organisation as any)?.title || '').trim();
 
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export const OrganisationAuditPage: React.FC = () => {
 
   const projectLabelByKey = useMemo(() => {
     const map = new Map<string, string>();
-    const userProjects: any[] = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    const userProjects: any[] = Array.isArray(user?.projects) ? user.projects : [];
     for (const p of userProjects) {
       const id = String(p?.id || '').trim();
       const slug = String(p?.slug || '').trim();
@@ -61,7 +61,7 @@ export const OrganisationAuditPage: React.FC = () => {
         const raw = await response.json();
         const data = unwrap<any>(raw);
         const list = extractList(data);
-        const next = (list as AuditEvent[]).sort((a, b) => String((b as any)?.timestamp || '').localeCompare(String((a as any)?.timestamp || '')));
+        const next = (list as AuditEvent[]).sort((a, b) => String(b?.timestamp || '').localeCompare(String(a?.timestamp || '')));
 
         if (!cancelled) setEvents(next);
       } catch (e) {

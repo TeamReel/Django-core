@@ -115,7 +115,7 @@ export function UserDetailOverviewTab({ data }: Props) {
           ) : (
             <div className="space-y-2">
               {linkedMatches.slice(0, 6).map((m: any) => {
-                const matchKeyOrId = String((m as any)?.slug || (m as any)?.id || '').trim();
+                const matchKeyOrId = String(m?.slug || m?.id || '').trim();
                 const matchPath = matchKeyOrId ? `/matches/${encodeURIComponent(matchKeyOrId)}` : '';
                 return matchPath ? (
                   <button key={String(m?.id || matchKeyOrId)} type="button" className="app-unstyled-button text-blue-600 hover:underline text-left fw-600" onClick={() => navigate(matchPath)}>

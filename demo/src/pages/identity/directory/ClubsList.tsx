@@ -162,7 +162,7 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
     selectedOrg?.id ||
     d.selectedOrgId;
   const clubSlugOrId = club.slug || club.id;
-  const orgSport = (club.organisation as any)?.sport || (orgFromList as any)?.sport;
+  const orgSport = (club.organisation as any)?.sport || orgFromList?.sport;
 
   const teamsForClub = d.teams.filter((t: any) => {
     const parent =

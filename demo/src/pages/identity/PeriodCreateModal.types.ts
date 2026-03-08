@@ -10,11 +10,12 @@ export type ProjectOption = {
   slug?: string;
   organisation?: any;
   parent_id?: any;
+  parent?: any;
   parent_project_id?: any;
   parent_project?: any;
 };
 
-export type PeriodOption = { id: string; name: string; slug?: string; project?: any; parent_period?: any; parent_period_id?: any };
+export type PeriodOption = { id: string; name: string; slug?: string; project?: any; project_id?: string | number; parent_period?: any; parent_period_id?: any };
 
 export interface PeriodCreatePayload {
   name: string;

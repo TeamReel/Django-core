@@ -138,7 +138,7 @@ export const getSeasonName = (
   const fromList = seasonId
     ? seasons.find((s: any) => String(s.id) === String(seasonId))
     : undefined;
-  return (fromList as any)?.name || '';
+  return fromList?.name || '';
 };
 
 // ────────────────────────────────────────────
@@ -244,24 +244,40 @@ export type Period = {
   matches_total_count?: number;
   members_count?: number;
   data?: Record<string, any>;
+  sport?: { id: string | number; name: string; slug?: string; sport_icon?: string; category_name?: string } | null;
+  period_type?: string;
 };
 
 /** A match activity as returned by the API. */
 export type Activity = {
   id: string;
+  slug?: string;
   title: string;
   activity_type: string;
   start_time?: string;
   end_time?: string;
-  project?: { id: string; name: string } | null;
+  project?: { id: string; name: string; slug?: string; organisation_id?: string } | null;
   period?: {
     id: string;
     name: string;
     parent_period?: { id: string; name: string; slug?: string };
     slug?: string;
+    sport?: {
+      id: string | number;
+      name: string;
+      slug?: string;
+      sport_icon?: string;
+      category_name?: string;
+      parent_sport_id?: string | number | null;
+    } | null;
   } | null;
   organisation?: { id: string; name: string; slug: string } | null;
+  organisation_id?: string;
+  opponent_project?: { id: string; name: string; slug?: string } | null;
+  metadata?: Record<string, any>;
   data?: Record<string, any>;
+  location?: string;
+  description?: string;
 };
 
 // ────────────────────────────────────────────
@@ -341,7 +357,7 @@ export function resolveRowContext(
   // ── Club ────────────────────────────────────────────────────────
   const clubId = String(
     getTeamParentId(teamObj) ??
-      (typeof project === 'object' ? (project as any)?.parent_id : undefined) ??
+      (typeof project === 'object' ? project?.parent_id : undefined) ??
       '',
   );
   const clubObj: any = clubId
@@ -357,8 +373,8 @@ export function resolveRowContext(
     (typeof rawOrg === 'object' ? rawOrg?.id : rawOrg) ||
       item?.organisation_id ||
       selectedOrgId ||
-      (clubObj as any)?.organisation ||
-      (teamObj as any)?.organisation ||
+      clubObj?.organisation ||
+      teamObj?.organisation ||
       '',
   );
   const orgObj = orgId
@@ -373,15 +389,15 @@ export function resolveRowContext(
   const orgSlugResolved =
     lockedOrgSlug ||
     orgObj?.slug ||
-    (typeof rawOrg === 'object' ? (rawOrg as any)?.slug : undefined) ||
+    (typeof rawOrg === 'object' ? rawOrg?.slug : undefined) ||
     orgId;
   const orgSlug = String(orgSlugResolved || fallbackOrgSlug || '').trim();
   const clubSlug = String(
-    (clubObj as any)?.slug || preselectedClubSlug || clubId || selectedClubId || '',
+    clubObj?.slug || preselectedClubSlug || clubId || selectedClubId || '',
   ).trim();
   const teamSlug = String(
-    (teamObj as any)?.slug ||
-      (typeof project === 'object' ? (project as any)?.slug : undefined) ||
+    teamObj?.slug ||
+      (typeof project === 'object' ? project?.slug : undefined) ||
       preselectedTeamSlug ||
       teamId ||
       '',

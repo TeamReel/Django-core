@@ -142,7 +142,7 @@ export function TeamMediaTab({ members, membersLoading }: TeamMediaTabProps) {
       <div className={st.searchRow}>
         <Input
           value={search}
-          onChange={(e) => setSearch((e.target as any).value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Zoek speler…"
         />
       </div>

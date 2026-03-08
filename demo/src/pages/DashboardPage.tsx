@@ -26,8 +26,8 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const org = context.organisation as any;
-  const project = context.project as any;
+  const org = context.organisation;
+  const project = context.project;
   const hasProjectContext = !!project;
 
   const { balance, lowBalanceAlert, threshold } = useCreditBalance(
@@ -49,8 +49,8 @@ export default function DashboardPage() {
 
   // Activity filter scope
   const isSuperadmin =
-    Boolean((user as any)?.is_superuser) ||
-    String((user as any)?.role || '').toLowerCase() === 'superadmin';
+    Boolean(user?.is_superuser) ||
+    String(user?.role || '').toLowerCase() === 'superadmin';
 
   const activityFilterProps = isSuperadmin
     ? {}

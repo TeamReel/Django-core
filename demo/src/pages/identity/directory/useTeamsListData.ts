@@ -28,8 +28,8 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
   const { user } = useAuth();
   const { context, organisations: myOrganisations } = useContextSwitcher();
 
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +108,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
   // ── Permissions ──
 
   const permissionContext = useMemo(
-    () => ({ currentOrganisation: context.organisation as any, isSuperAdmin }),
+    () => ({ currentOrganisation: context.organisation ?? undefined, isSuperAdmin }),
     [context.organisation, isSuperAdmin],
   );
   const userCanEditProject = canEditProject(permissionContext);
@@ -267,14 +267,14 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
     if (sportFilter !== 'all') {
       list = list.filter((team) => {
-        const nestedOrg = (team as any)?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
+        const nestedOrg = team?.organisation;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as any)?.sport?.id : undefined;
         if (nestedSportId) return String(nestedSportId) === String(sportFilter);
         const orgId =
           (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
-          (team as any)?.organisation_id;
+          team?.organisation_id;
         const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        return String((org as any)?.sport?.id || '') === String(sportFilter);
+        return String(org?.sport?.id || '') === String(sportFilter);
       });
     }
 
@@ -314,7 +314,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     if (!editProject) return;
     const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     const baseUrl = getApiBaseUrl();
-    const projectSlugOrId = (editProject as any).slug || editProject.id;
+    const projectSlugOrId = editProject.slug || editProject.id;
     const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/?include_archived=true`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },

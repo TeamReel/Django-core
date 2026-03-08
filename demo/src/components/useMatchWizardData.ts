@@ -87,13 +87,13 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     return {
       id: String(selectedMatch.id),
       title: selectedMatch.title,
-      project: (selectedMatch as any).project,
-      opponent_project: (selectedMatch as any).opponent_project,
-      participations: (selectedMatch as any).participations,
+      project: selectedMatch.project,
+      opponent_project: selectedMatch.opponent_project ?? undefined,
+      participations: selectedMatch.participations,
       start_time: selectedMatch.start_time,
-      location: (selectedMatch as any).location,
+      location: selectedMatch.location,
       metadata: {
-        ...((selectedMatch as any).metadata || {}),
+        ...(selectedMatch.metadata || {}),
         formation: lineupFormation,
         lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player },
       },
@@ -105,7 +105,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   // Keep options hook's formation in sync with wizard's
   useEffect(() => { options.setLineupFormation(lineupFormation); }, [lineupFormation]);
 
-  const projectId = (selectedMatch as any)?.project?.id || null;
+  const projectId = selectedMatch?.project?.id || undefined;
 
   const seasonSquad = useSeasonSquadData({
     isOpen: isOpen && !!selectedMatch,
@@ -157,8 +157,8 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   const homeTeamName = matchDataForApi?.project?.name || 'Thuis';
   const awayTeamName = matchDataForApi?.opponent_project?.name || 'Uit';
 
-  const organisationId = (selectedMatch as any)?.project?.organisation_id
-    || (selectedMatch as any)?.organisation?.id || null;
+  const organisationId = selectedMatch?.project?.organisation_id
+    || selectedMatch?.organisation?.id || null;
 
   // ── Effects ─────────────────────────────────────────────
 
@@ -166,7 +166,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   useEffect(() => {
     if (isOpen && !selectedMatch) {
       if (initialMatchId) {
-        const m = activities.find(a => a.id === initialMatchId || (a as any).slug === initialMatchId);
+        const m = activities.find(a => a.id === initialMatchId || a.slug === initialMatchId);
         if (m) {
           setSelectedMatch(m);
           setCurrentStep('content');
@@ -224,13 +224,13 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
   // Load saved lineup from match metadata
   useEffect(() => {
     if (!selectedMatch) return;
-    const metadata = (selectedMatch as any).metadata;
-    const saved = metadata?.lineup;
+    const metadata = selectedMatch.metadata;
+    const saved = metadata?.lineup as { formation?: string; goalkeeper?: string[]; player?: string[] } | undefined;
     if (saved) {
       if (saved.formation) setLineupFormation(saved.formation);
       if (saved.goalkeeper || saved.player) setLineupSlots({ goalkeeper: saved.goalkeeper || [], player: saved.player || [] });
-    } else if (metadata?.formation) {
-      setLineupFormation(metadata.formation);
+    } else if ((metadata as any)?.formation) {
+      setLineupFormation((metadata as any).formation);
     }
   }, [selectedMatch]);
 
@@ -248,7 +248,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
   const fetchSquad = async () => {
     if (!selectedMatch) return;
-    const pid = (selectedMatch as any).project?.id;
+    const pid = selectedMatch.project?.id;
     if (!pid) return;
 
     setSquadLoading(true);
@@ -337,8 +337,8 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     setLineupSaving(true);
     setSaveError(null);
     try {
-      const matchId = (selectedMatch as any).slug || selectedMatch.id;
-      const existingMetadata = (selectedMatch as any).metadata || {};
+      const matchId = selectedMatch.slug || selectedMatch.id;
+      const existingMetadata = selectedMatch.metadata || {};
       const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
       await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {
         method: 'PATCH',
@@ -569,7 +569,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
       // ── Generic AI generation (catch-all) ──
       const result = await generateGenericAI({
-        selectedType, selectedTemplate, matchData, organisationId, assetType: null,
+        selectedType, selectedTemplate, matchData: matchData as any, organisationId, assetType: null,
       });
       clearInterval(progressInterval);
       setGeneratedVariants(result.variants);
@@ -613,9 +613,9 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
             };
 
         if (result.storage_path) nextStorageInfo.storage_path = result.storage_path;
-        if (result.file_asset_id) (nextStorageInfo as any).file_asset_id = result.file_asset_id;
-        if (result.brand_asset_id) (nextStorageInfo as any).brand_asset_id = result.brand_asset_id;
-        if (result.media_item_id) (nextStorageInfo as any).media_item_id = result.media_item_id;
+        if (result.file_asset_id) nextStorageInfo.file_asset_id = result.file_asset_id;
+        if (result.brand_asset_id) nextStorageInfo.brand_asset_id = result.brand_asset_id;
+        if (result.media_item_id) nextStorageInfo.media_item_id = result.media_item_id;
 
         const updatedVariants = [...generatedVariants];
         updatedVariants[variantIdx] = { ...variant, storage_info: nextStorageInfo };

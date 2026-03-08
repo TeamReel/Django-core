@@ -53,10 +53,10 @@ export default function ProjectSeasonSquadPage() {
       {
         label: (
           <BreadcrumbContextSwitcher
-            currentId={String(d.resolvedSeasonId || (d.season as any)?.id || '')}
+            currentId={String(d.resolvedSeasonId || d.season?.id || '')}
             options={d.seasonsForSwitcher.map((s) => ({
               id: String(s.id),
-              label: String(s.name || (s as any).slug || s.id),
+              label: String(s.name || s.slug || s.id),
               slug: periodPathKey(s) || String(s.id),
             }))}
             onSelect={d.handleSeasonSwitch}

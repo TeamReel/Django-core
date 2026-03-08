@@ -52,8 +52,8 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
 
   if (!opened || !match) return null;
 
-  const idsFromMetadata = (match as any)?.metadata?.teamreel?.match_context || {};
-  const identityFromMetadata = (match as any)?.metadata?.identity || {};
+  const idsFromMetadata = match?.metadata?.teamreel?.match_context || {};
+  const identityFromMetadata = match?.metadata?.identity || {};
 
   const organisationId =
     (match.organisation?.id != null ? String(match.organisation.id) : '') ||
@@ -82,7 +82,7 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
     (match.period_id != null ? String(match.period_id) : '');
 
   const parts = splitIsoToParts(match.start_time);
-  const venueRaw = String((match as any)?.metadata?.venue || '').toLowerCase();
+  const venueRaw = String(match?.metadata?.venue || '').toLowerCase();
   const initialVenue: 'Home' | 'Away' = venueRaw === 'away' ? 'Away' : 'Home';
 
   return (

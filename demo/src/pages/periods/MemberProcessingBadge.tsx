@@ -11,7 +11,7 @@ import s from './ProjectSeasonMemberDetailPage.module.css';
  * Small badge component for processing state.
  */
 export function ProcessingBadge({ value }: { value: AssetVariantRaw | null | undefined }) {
-  const normalized = normalizeVariantValue(value as any);
+  const normalized = normalizeVariantValue(value);
   if (!normalized) return null;
 
   // Detect false 'processed' state: if processed URL equals raw URL,

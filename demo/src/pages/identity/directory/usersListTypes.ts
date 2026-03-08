@@ -29,6 +29,10 @@ export type ProjectOption = {
   organisation?: string | { id: string };
   parent_id?: string | number | null;
   parent_project?: any;
+  parent_project_id?: string | number | null;
+  seasons_count?: number;
+  competitions_count?: number;
+  matches_count?: number;
 };
 
 export interface UsersListProps {

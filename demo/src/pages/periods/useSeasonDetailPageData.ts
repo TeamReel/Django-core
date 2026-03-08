@@ -73,7 +73,7 @@ export function useSeasonDetailPageData() {
 
   // Tab navigation (needs season from formState)
   const navigateToTab = useCallback((tabId: string) => {
-    const seasonKeyOrId = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+    const seasonKeyOrId = periodPathKey(season) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
     if (!seasonKeyOrId) return;
 
     if (tabId === 'overview') {
@@ -93,7 +93,7 @@ export function useSeasonDetailPageData() {
     activeTab,
   });
 
-  const currentUserId = String((user as any)?.id || '').trim();
+  const currentUserId = String(user?.id || '').trim();
 
   const derived = useSeasonDerived({
     org, project, club, season, isPlayer,

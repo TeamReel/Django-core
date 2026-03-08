@@ -74,11 +74,11 @@ export function OrgHierarchyTab({
       const clubId = parent != null ? String(parent) : '';
       if (!clubId) continue;
       if (!teamsByClubId.has(clubId)) teamsByClubId.set(clubId, []);
-      teamsByClubId.get(clubId)!.push(t as any);
+      teamsByClubId.get(clubId)!.push(t);
     }
 
     const clubRows = (clubsForHierarchy || []).map((c) => {
-      const clubId = String((c as any)?.id || '').trim();
+      const clubId = String(c?.id || '').trim();
       const clubName = toName(c) || '—';
       const clubSlugOrId = toSlugOrId(c);
 

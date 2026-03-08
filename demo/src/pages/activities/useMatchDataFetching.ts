@@ -130,7 +130,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
           } catch { /* ignore */ }
         }
 
-        const desiredMatchKey = String((matchJson as any)?.slug || '').trim();
+        const desiredMatchKey = String(matchJson?.slug || '').trim();
         if (desiredMatchKey && desiredMatchKey !== String(effectiveMatchIdVal)) {
           const suffix = location.search ? location.search : '';
           const compKey = periodPathKey(competitionJson) || String(effectiveCompetitionIdVal);
@@ -185,7 +185,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
           const res = await fetch(`${baseMembersUrl}?${p.toString()}`, { credentials: 'include' });
           if (!res.ok) {
             const detail = await res.text().catch(() => '');
-            return { ok: false, status: res.status, detail, list: [] as any[] };
+            return { ok: false, status: res.status, detail, list: [] };
           }
           const raw = await res.json().catch(() => null);
           return { ok: true, status: res.status, detail: '', list: extractList(raw) };
@@ -257,7 +257,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
             const p = new URLSearchParams(baseSquadParams);
             if (withRoleFilter) p.set('role', 'squad_member');
             const res = await fetch(`${apiBaseUrl}/api/v1/participations/?${p.toString()}`, { credentials: 'include' });
-            if (!res.ok) { const d = await res.text().catch(() => ''); return { ok: false, status: res.status, detail: d, list: [] as any[] }; }
+            if (!res.ok) { const d = await res.text().catch(() => ''); return { ok: false, status: res.status, detail: d, list: [] }; }
             return { ok: true, status: res.status, detail: '', list: extractList(await res.json().catch(() => null)) };
           };
 

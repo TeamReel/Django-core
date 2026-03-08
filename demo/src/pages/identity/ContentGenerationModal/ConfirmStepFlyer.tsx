@@ -53,7 +53,7 @@ function deduplicateMembers(seasonSquad: Record<string, Participation[]>) {
 
 /** Extract style keys from action_photo metadata (composite keys like "home_dribbling") */
 function extractMemberStyles(member: Participation): string[] {
-  const tr = (member.metadata as any)?.teamreel_assets || {};
+  const tr = member.metadata?.teamreel_assets || {};
   const actionImgs = tr?.images?.action_photo || {};
   const styles = new Set<string>();
   for (const key of Object.keys(actionImgs)) {
@@ -85,7 +85,7 @@ export function ConfirmStepFlyer({
   const allMembers = deduplicateMembers(seasonSquad);
 
   const membersWithActionPhotos = allMembers.filter((member) => {
-    const tr = (member.metadata as any)?.teamreel_assets || {};
+    const tr = member.metadata?.teamreel_assets || {};
     const actionImgs = tr?.images?.action_photo || {};
     return Object.keys(actionImgs).length > 0;
   });
@@ -223,7 +223,7 @@ function SingleMemberSelector({
         <option value="">-- Automatisch (eerste beschikbare) --</option>
         {membersWithActionPhotos.map((member) => {
           const name = memberName(member);
-          const shirtNr = (member.metadata as any)?.shirt_number;
+          const shirtNr = member.metadata?.shirt_number;
           return <option key={member.id} value={member.id}>{shirtNr ? `#${shirtNr} ` : ''}{name}</option>;
         })}
         {membersWithActionPhotos.length === 0 && <option disabled>Geen spelers met actiefoto's</option>}
@@ -296,7 +296,7 @@ function MultiSlotSelector({
               <option value="">-- Automatisch --</option>
               {membersWithActionPhotos.map((member) => {
                 const name = memberName(member);
-                const shirtNr = (member.metadata as any)?.shirt_number;
+                const shirtNr = member.metadata?.shirt_number;
                 return <option key={member.id} value={member.id}>{shirtNr ? `#${shirtNr} ` : ''}{name}</option>;
               })}
             </select>

@@ -64,7 +64,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           body: JSON.stringify({
             role: editAccessRole,
             metadata: {
-              ...((member as any)?.metadata || {}),
+              ...(member?.metadata || {}),
               functional_roles: functionalRoles,
             },
           }),

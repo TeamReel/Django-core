@@ -45,7 +45,7 @@ export function MemberPhotoCompositeTab({
   const compositeVideoData = videoVariants.photo_composite?.default;
   const compositeVideoUrl = compositeVideoData ? resolveDisplayUrl(getBestUrl(compositeVideoData)) : null;
   const hasCompositeVideo = Boolean(compositeVideoData && getBestUrl(compositeVideoData));
-  const compositeVideoNormalized = normalizeVariantValue(compositeVideoData as any);
+  const compositeVideoNormalized = normalizeVariantValue(compositeVideoData);
   const compositeVideoLineupReady = isLineupReady(compositeVideoData);
   const compositeVideoProcessing = isProcessing(compositeVideoData);
   const compositeVideoCancellingOrProcessing =

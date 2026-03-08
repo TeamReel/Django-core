@@ -247,10 +247,10 @@ export function ReviewStep({
             om {matchDate.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
-        {(selectedMatch as any).location && (
+        {selectedMatch.location && (
           <div className={styles.reviewRow}>
             <MapPin size={16} className={styles.reviewRowIcon} />
-            <span className="fs-13 text-muted">{(selectedMatch as any).location}</span>
+            <span className="fs-13 text-muted">{selectedMatch.location}</span>
           </div>
         )}
         {needsLineup && lineupFormation && (

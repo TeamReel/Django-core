@@ -69,7 +69,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         // on every page/view hurts performance.
 
         // Check useAuth user object
-        if (!isSuperadmin && user && ((user as any).is_superuser || (user as any).role === 'superadmin')) {
+        if (!isSuperadmin && user && (user.is_superuser || user.role === 'superadmin')) {
           isSuperadmin = true;
         }
 

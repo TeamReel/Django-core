@@ -33,23 +33,23 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
 
   const createModalOrganisations = useMemo(() => {
     if (!org) return [];
-    return [{ id: String(org.id), name: String(org.name || ''), slug: (org as any).slug }];
+    return [{ id: String(org.id), name: String(org.name || ''), slug: org.slug }];
   }, [org]);
 
   const createModalClubs = useMemo(() => {
     const baseOrgId = String(org?.id || '').trim();
     const c = club || null;
     if (c) {
-      return [{ id: String((c as any).id), name: String((c as any).name || ''), slug: (c as any).slug, organisation: baseOrgId || undefined } as any];
+      return [{ id: String(c.id), name: String(c.name || ''), slug: c.slug, organisation: baseOrgId || undefined }];
     }
-    return [] as any[];
+    return [];
   }, [club, org]);
 
   const createModalTeams = useMemo(() => {
     const team = project || null;
-    if (!team) return [] as any[];
-    const clubIdValue = String((club as any)?.id || '').trim();
-    return [{ id: String((team as any).id), name: String((team as any).name || ''), slug: (team as any).slug, parent_id: clubIdValue || undefined } as any];
+    if (!team) return [];
+    const clubIdValue = String(club?.id || '').trim();
+    return [{ id: String(team.id), name: String(team.name || ''), slug: team.slug, parent_id: clubIdValue || undefined }];
   }, [project, club]);
 
   // ── Membership helpers ──
@@ -68,28 +68,28 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
 
   const getMatchCountForCompetition = useCallback((competition: any): number => {
     const annotated = Number(
-      (competition as any)?.matches_count ?? (competition as any)?.children_matches_count
+      competition?.matches_count ?? competition?.children_matches_count
     );
     if (!matches.length && Number.isFinite(annotated) && annotated >= 0) return annotated;
 
-    const competitionId = String((competition as any)?.id || '').trim();
+    const competitionId = String(competition?.id || '').trim();
     if (!competitionId) return 0;
     return matches.filter((m: any) => {
-      const periodId = String(m.period_id || m.period?.id || (m as any)?.period || '');
+      const periodId = String(m.period_id || m.period?.id || m?.period || '');
       return periodId === competitionId;
     }).length;
   }, [matches]);
 
   const getCompetitionParticipantsCount = useCallback((competition: any): number => {
     const direct = Number(
-      (competition as any)?.participants_count ??
-        (competition as any)?.participations_count ??
-        (competition as any)?.participantsCount ??
-        (competition as any)?.participationsCount
+      competition?.participants_count ??
+        competition?.participations_count ??
+        competition?.participantsCount ??
+        competition?.participationsCount
     );
     if (Number.isFinite(direct) && direct >= 0) return direct;
 
-    const competitionId = String((competition as any)?.id || '').trim();
+    const competitionId = String(competition?.id || '').trim();
     if (!competitionId) return 0;
 
     // Best-effort aggregation from loaded matches.
@@ -100,7 +100,7 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
 
   const seasonMatchesCount = useMemo(() => {
     if (matches.length) return matches.length;
-    const annotated = Number((season as any)?.children_matches_count ?? (season as any)?.matches_count);
+    const annotated = Number(season?.children_matches_count ?? season?.matches_count);
     if (Number.isFinite(annotated) && annotated >= 0) return annotated;
     return 0;
   }, [matches.length, season]);

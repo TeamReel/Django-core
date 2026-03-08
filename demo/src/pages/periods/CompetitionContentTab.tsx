@@ -77,9 +77,9 @@ export function CompetitionContentTab({
                     <tr key={matchId} className={styles.matchRow}>
                       <td className={styles.tdMatch}>
                         {(() => {
-                          const compId = String((match as any).period_id || match.period?.id || '').trim();
-                          const compKey = periodPathKey((match as any).period || null) || compId;
-                          const matchKey = (match as any).slug || match.id;
+                          const compId = String(match.period_id || match.period?.id || '').trim();
+                          const compKey = periodPathKey(match.period || null) || compId;
+                          const matchKey = match.slug || match.id;
                           const matchPath = isTeamRoute
                             ? `/${orgSlugOrId}/${clubSlugOrId}/${projectSlugOrId}/${seasonKeyOrId}/${compKey}/${String(matchKey)}`
                             : `/matches/${String(matchKey)}`;

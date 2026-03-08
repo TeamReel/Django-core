@@ -48,7 +48,7 @@ export const RoutingRulesPage: React.FC = () => {
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
   const currentOrgName = context.organisation?.name || '';
 
-  const isSystemAdmin = Boolean((user as any)?.is_superuser) || String((user as any)?.role || '').toLowerCase() === 'superadmin';
+  const isSystemAdmin = Boolean(user?.is_superuser) || String(user?.role || '').toLowerCase() === 'superadmin';
 
   const {
     organisationOptions,

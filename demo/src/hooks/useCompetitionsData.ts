@@ -84,11 +84,11 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
 
           const clubTeams = teams.filter((t) => {
             const parent =
-              (t as any).parent_id ??
-              (t as any).parent ??
-              (t as any).parent_project_id ??
-              (typeof (t as any).parent_project === 'object' ? (t as any).parent_project?.id : (t as any).parent_project);
-            const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+              t.parent_id ??
+              t.parent ??
+              t.parent_project_id ??
+              (typeof t.parent_project === 'object' && t.parent_project !== null ? t.parent_project.id : t.parent_project);
+            const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as any).id : parent);
             return parentId && parentId === String(selectedClubId);
           });
 
@@ -97,7 +97,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
             return;
           }
 
-          const teamIds = clubTeams.map((t) => String((t as any).id));
+          const teamIds = clubTeams.map((t) => String(t.id));
           const projectIds = [String(selectedClubId), ...teamIds].filter(Boolean);
 
           const typedResults = (
@@ -130,7 +130,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
           return;
         } else if (selectedOrgId) {
           if (teams.length > 0) {
-            const teamIds = teams.map((t) => String((t as any).id)).filter(Boolean);
+            const teamIds = teams.map((t) => String(t.id)).filter(Boolean);
             const chunks = chunkArray(teamIds, 25);
             const results = (
               await Promise.all(
@@ -205,14 +205,14 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
           clubTeamIds = teams
             .filter((t) => {
               const parent =
-                (t as any).parent_id ??
-                (t as any).parent ??
-                (t as any).parent_project_id ??
-                (typeof (t as any).parent_project === 'object' ? (t as any).parent_project?.id : (t as any).parent_project);
-              const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+                t.parent_id ??
+                t.parent ??
+                t.parent_project_id ??
+                (typeof t.parent_project === 'object' && t.parent_project !== null ? t.parent_project.id : t.parent_project);
+              const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as any).id : parent);
               return parentId && parentId === String(selectedClubId);
             })
-            .map((t) => String((t as any).id));
+            .map((t) => String(t.id));
 
           if (clubTeamIds.length === 0) {
             setCompetitions([]);
@@ -237,7 +237,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
               params.set(
                 'project_id__in',
                 teams
-                  .map((t) => String((t as any).id))
+                  .map((t) => String(t.id))
                   .filter(Boolean)
                   .join(','),
               );
@@ -252,12 +252,12 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
 
         const teamIdsForOrg =
           selectedOrgId && !selectedClubId && !selectedTeamId
-            ? teams.map((t) => String((t as any).id)).filter(Boolean)
+            ? teams.map((t) => String(t.id)).filter(Boolean)
             : null;
 
         const teamIdsGlobal =
           !selectedOrgId && !selectedClubId && !selectedTeamId && teams.length > 0
-            ? teams.map((t) => String((t as any).id)).filter(Boolean)
+            ? teams.map((t) => String(t.id)).filter(Boolean)
             : null;
 
         const scopedTeamIds =
@@ -321,7 +321,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
           const all = (await Promise.all(requests)).flat();
           const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
 
-          setCompetitions(unique as any);
+          setCompetitions(unique);
           return;
         }
 
@@ -332,7 +332,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
           const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
           const merged = [...typed, ...fallback];
           const unique = [...new Map(merged.map((c: any) => [String(c.id), c])).values()];
-          setCompetitions(unique as any);
+          setCompetitions(unique);
           return;
         }
 
@@ -458,7 +458,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
       list = list.filter((comp) => matchesSportFilter(comp, sportFilter, organisations));
     }
     if (variantFilter !== 'all') {
-      list = list.filter((comp) => (comp as any).sport?.id === variantFilter);
+      list = list.filter((comp) => comp.sport?.id === variantFilter);
     }
     return list;
   }, [competitions, statusFilter, sportFilter, variantFilter, organisations]);

@@ -142,7 +142,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
       );
       if (!res.ok) throw new Error('Save failed');
       const raw = await res.json().catch(() => null);
-      const updated = (raw as any)?.data || raw || null;
+      const updated = raw?.data || raw || null;
       setMembership(updated ? { ...membership, ...updated } : membership);
       onMemberUpdated?.();
     } catch {

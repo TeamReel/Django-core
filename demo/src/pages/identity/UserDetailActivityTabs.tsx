@@ -191,8 +191,8 @@ export function UserDetailActivityTabs({ data }: Props) {
                 const teamPath = primaryOrgSlug && clubKeyOrId && teamSlugOrId ? `/${primaryOrgSlug}/${clubKeyOrId}/${teamSlugOrId}` : '';
                 const teamName = String(team?.name || m?.project?.name || m?.project_name || '').trim();
 
-                const matchKeyOrId = String((m as any)?.slug || (m as any)?.id || '').trim();
-                const competition = (m as any)?.period || null;
+                const matchKeyOrId = String(m?.slug || m?.id || '').trim();
+                const competition = m?.period || null;
                 const competitionKeyOrId = String(periodPathKey(competition) || competition?.slug || competition?.id || '').trim();
                 const season = competition?.parent_period || null;
                 const seasonKeyOrId = String(periodPathKey(season) || season?.slug || season?.id || competition?.parent_period_id || '').trim();

@@ -231,7 +231,7 @@ export function useClubOrgDetailData() {
                             return extractList(unwrapEnvelope<any>(untypedJson)).filter(isSeasonPeriod);
                         }),
                     );
-                    mergedSeasons = mergeUniqueById(seasonsChunks.flat() as any[]);
+                    mergedSeasons = mergeUniqueById(seasonsChunks.flat());
                 }
 
                 const memberParams = new URLSearchParams();

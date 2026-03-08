@@ -52,7 +52,7 @@ export function ClubOverviewTab({
   navigate,
   makeTabHref,
 }: ClubOverviewTabProps) {
-  const clubLocation = String((club as any)?.metadata?.identity?.default_location || '').trim();
+  const clubLocation = String(club?.metadata?.identity?.default_location || '').trim();
 
   return (
     <div className={ov.overviewRoot}>
@@ -191,7 +191,7 @@ export function ClubOverviewTab({
           )}
           <div className={ov.infoRow}>
             <span className={ov.infoLabel}>Slug</span>
-            <span className={ov.infoValue}>{String((club as any)?.slug || '—')}</span>
+            <span className={ov.infoValue}>{String(club?.slug || '—')}</span>
           </div>
         </div>
       </div>

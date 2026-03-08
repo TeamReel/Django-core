@@ -25,6 +25,7 @@ export type Period = {
   type?: string;
   data?: any;
   metadata?: any;
+  activities_count?: number;
 };
 
 export type OverviewMember = {
@@ -83,7 +84,7 @@ export const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
   const seen = new Set<string>();
   const out: T[] = [];
   for (const item of items || []) {
-    const key = String((item as any)?.id ?? '').trim();
+    const key = String(item?.id ?? '').trim();
     if (!key || seen.has(key)) continue;
     seen.add(key);
     out.push(item);

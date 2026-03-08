@@ -77,6 +77,7 @@ export type ProjectMember = {
 
 export type MatchDetail = {
   id: string;
+  slug?: string;
   title: string;
   start_time: string;
   end_time?: string;

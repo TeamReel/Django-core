@@ -9,8 +9,10 @@ export interface User {
   last_name: string;
   is_active: boolean;
   role?: string;
+  avatar_url?: string;
   organisations?: any[];
   projects?: any[];
+  project_memberships?: any[];
 }
 
 export interface UserEditModalProps {

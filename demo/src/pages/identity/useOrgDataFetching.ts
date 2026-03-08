@@ -328,8 +328,8 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
     if (membersLoading) return;
     const haveMembershipDetails = members.some((item: any) => {
       const u = item?.user || item;
-      const details = (item as any)?.project_membership_details || (u as any)?.project_membership_details ||
-        (item as any)?.project_memberships_details || (u as any)?.project_memberships_details;
+      const details = item?.project_membership_details || u?.project_membership_details ||
+        item?.project_memberships_details || u?.project_memberships_details;
       return Array.isArray(details);
     });
     if (!force && members.length > 0 && haveMembershipDetails) return;

@@ -222,9 +222,9 @@ export function buildBrandAssetPageHref(asset: BrandAsset, orgSlugOrId?: string)
   const orgKey = String(orgSlugOrId || '').trim();
   if (!orgKey) return null;
 
-  const projectType = String((asset as any)?.project_type || asset.project_type || '').trim().toLowerCase();
-  const projectId = String((asset as any)?.project_id || '').trim();
-  const parentProjectId = String((asset as any)?.parent_project_id || '').trim();
+  const projectType = String(asset.project_type || '').trim().toLowerCase();
+  const projectId = String(asset?.project_id || '').trim();
+  const parentProjectId = String(asset?.parent_project_id || '').trim();
 
   if (projectType === 'team') {
     if (!parentProjectId || !projectId) return null;

@@ -80,7 +80,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
     let list = matches;
 
     if (selectedTeamId) {
-      list = list.filter((m) => String((m as any)?.project?.id) === String(selectedTeamId));
+      list = list.filter((m) => String(m?.project?.id) === String(selectedTeamId));
     } else if (selectedClubId && teams.length > 0) {
       const clubTeamIds = new Set(
         teams
@@ -88,7 +88,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
           .map((t) => String(t.id)),
       );
       if (clubTeamIds.size > 0) {
-        list = list.filter((m) => clubTeamIds.has(String((m as any)?.project?.id)));
+        list = list.filter((m) => clubTeamIds.has(String(m?.project?.id)));
       }
     }
 
@@ -108,25 +108,25 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
 
     if (sportFilter !== 'all') {
       list = list.filter((match) => {
-        const periodSportId = (match as any)?.period?.sport?.id;
-        const periodSportCategoryId = (match as any)?.period?.sport?.parent_sport_id || periodSportId;
+        const periodSportId = match?.period?.sport?.id;
+        const periodSportCategoryId = match?.period?.sport?.parent_sport_id || periodSportId;
         if (periodSportCategoryId && String(periodSportCategoryId) === String(sportFilter)) return true;
 
-        const nestedOrg = (match as any)?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
+        const nestedOrg = match?.organisation;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as any)?.sport?.id : undefined;
         if (nestedSportId && String(nestedSportId) === String(sportFilter)) return true;
 
         const orgId =
           (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
-          (match as any)?.organisation_id;
+          match?.organisation_id;
         const org = orgId ? organisations.find((o) => String(o.id) === String(orgId)) : undefined;
-        const orgSportId = (org as any)?.sport?.id;
+        const orgSportId = org?.sport?.id;
         return orgSportId && String(orgSportId) === String(sportFilter);
       });
     }
 
     if (variantFilter !== 'all') {
-      list = list.filter((match) => (match as any).period?.sport?.id === variantFilter);
+      list = list.filter((match) => match.period?.sport?.id === variantFilter);
     }
 
     return list;
@@ -135,8 +135,8 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
   // ── Sorted Matches ────────────────────────────────────────────────
 
   const sortedMatches = useMemo(() => {
-    const getCompetitionName = (m: Activity) => String((m as any)?.period?.name || '');
-    const getMatchName = (m: Activity) => String((m as any)?.title || '');
+    const getCompetitionName = (m: Activity) => String(m?.period?.name || '');
+    const getMatchName = (m: Activity) => String(m?.title || '');
 
     const list = [...filteredMatches];
     list.sort((a, b) => {
@@ -152,8 +152,8 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
         sortKey(getTeamName(b, teams)),
       );
       if (byTeam !== 0) return byTeam;
-      const bySeason = sortKey((a as any)?.period?.parent_period?.name || '').localeCompare(
-        sortKey((b as any)?.period?.parent_period?.name || ''),
+      const bySeason = sortKey(a?.period?.parent_period?.name || '').localeCompare(
+        sortKey(b?.period?.parent_period?.name || ''),
       );
       if (bySeason !== 0) return bySeason;
       const byCompetition = sortKey(getCompetitionName(a)).localeCompare(sortKey(getCompetitionName(b)));
@@ -316,7 +316,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
 
         const all = (await Promise.all(requests)).flat();
         const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
-        setCompetitions(unique as any);
+        setCompetitions(unique);
       } catch {
         setCompetitions([]);
       }
@@ -384,7 +384,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
         if (seq !== loadMatchesSeqRef.current) return;
 
         const guardedByOrg = orgIdForApi
-          ? all.filter((m) => String((m as any)?.organisation?.id || '') === String(orgIdForApi))
+          ? all.filter((m) => String(m?.organisation?.id || '') === String(orgIdForApi))
           : all;
 
         const guarded = (() => {
@@ -397,16 +397,16 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
               : selectedClubId
                 ? teams
                     .filter((t) => getTeamParentId(t) === String(selectedClubId))
-                    .map((t) => String((t as any).id))
-                : teams.map((t) => String((t as any).id)),
+                    .map((t) => String(t.id))
+                : teams.map((t) => String(t.id)),
           );
 
-          return guardedByOrg.filter((m) => allowedTeamIds.has(String((m as any)?.project?.id || '')));
+          return guardedByOrg.filter((m) => allowedTeamIds.has(String(m?.project?.id || '')));
         })();
 
         if (selectedSeasonIds.length > 1 && selectedSeasonName) {
           const filtered = guarded.filter((m) => {
-            const seasonName = (m as any)?.period?.parent_period?.name;
+            const seasonName = m?.period?.parent_period?.name;
             return String(seasonName || '').trim() === selectedSeasonName;
           });
           setMatches(filtered);

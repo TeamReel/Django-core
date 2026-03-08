@@ -86,8 +86,8 @@ export function createEmptyVideoVariants(): AssetVariantsMap {
 }
 
 export function readAssetsFromMembership(membership: any): MemberMediaForm {
-  const meta = (membership as any)?.metadata || {};
-  const tr = (meta as any)?.teamreel_assets || (meta as any)?.teamreelAssets || {};
+  const meta = membership?.metadata || {};
+  const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const media = tr?.media || {};
 
   const legacyKit = tr?.kit || {};
@@ -119,7 +119,7 @@ export function readAssetsFromMembership(membership: any): MemberMediaForm {
     form.legacy_photo.url = String(legacyOld.profile_photo_url).trim();
   }
 
-  const avatarUrl = (membership as any)?.user?.avatar_url;
+  const avatarUrl = membership?.user?.avatar_url;
   if (!form.profile.url && avatarUrl) {
     form.profile.url = String(avatarUrl).trim();
   }
@@ -128,7 +128,7 @@ export function readAssetsFromMembership(membership: any): MemberMediaForm {
 }
 
 export function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
-  const meta = (membership as any)?.metadata || {};
+  const meta = membership?.metadata || {};
   const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const videos = tr?.videos || {};
   const images = tr?.images || {};

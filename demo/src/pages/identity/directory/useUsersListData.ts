@@ -56,8 +56,8 @@ export function useUsersListData(props: UsersListProps) {
     const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
 
     // ── Derived ──────────────────────────────────────────────
-    const userRole = String((user as any)?.role || '').toLowerCase();
-    const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+    const userRole = String(user?.role || '').toLowerCase();
+    const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
     const orgLocked = Boolean(preselectedOrgId);
     const clubLocked = Boolean(preselectedClubId);
     const teamLocked = Boolean(preselectedTeamId);
@@ -265,8 +265,8 @@ export function useUsersListData(props: UsersListProps) {
             const teamId = String(t?.id ?? '').trim();
             if (!teamId) continue;
             const clubId = String(
-                (t as any)?.parent_id ??
-                (t as any)?.parent_project?.id ??
+                t?.parent_id ??
+                t?.parent_project?.id ??
                 (t as any)?.parent_project_id ?? '',
             ).trim();
             if (!clubId) continue;

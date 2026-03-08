@@ -1,8 +1,8 @@
 # T2 — `as any` → Typed Casts
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 4 uur
-**Scope:** ~1.117 `as any` casts → proper types
+**Scope:** 1,006 → 193 `as any` casts (81% reduction)
 **Vereist:** T1 (API types beschikbaar)
 
 ---
@@ -34,6 +34,7 @@ Focus op deze bestanden eerst — ze bevatten de meeste casts.
 
 ## Verificatie
 
-- [ ] `as any` count < 200 (van 1.117)
-- [ ] Geen nieuwe `as any` geïntroduceerd
-- [ ] `npx vite build` slaagt
+- [x] `as any` count < 200 (van 1.006 → 193)
+- [x] Geen nieuwe `as any` geïntroduceerd
+- [x] `npx vite build` slaagt
+- [x] 30/30 tests passing

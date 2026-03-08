@@ -208,10 +208,10 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
       <LinkUserModal
         opened={isLinkModalOpen}
         onClose={() => setIsLinkModalOpen(false)}
-        user={user as any}
-        organisations={(linkOrgs.length ? linkOrgs : userOrgs) as any}
-        clubs={linkClubs as any}
-        teams={linkTeams as any}
+        user={user}
+        organisations={linkOrgs.length ? linkOrgs : userOrgs}
+        clubs={linkClubs}
+        teams={linkTeams}
         initialOrganisationSlugOrId={String(primaryOrgSlug || '')}
         onSuccess={() => {
           fetchUser();
@@ -233,7 +233,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
 
           if (!membershipId) {
             const project = userProjects.find((p: any) => String(p?.id) === String(projectId));
-            membershipId = (project as any)?.membership_id;
+            membershipId = project?.membership_id;
           }
 
           await updateProjectMembershipRole(projectId, membershipId, role);

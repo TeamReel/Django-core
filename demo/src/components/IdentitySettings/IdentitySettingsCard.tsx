@@ -113,7 +113,7 @@ export default function IdentitySettingsCard({
           Logo
         </div>
         {isEditing ? (
-          <Input value={logoUrl} onChange={(e) => setLogoUrl((e.target as any).value)} placeholder="https://…" />
+          <Input value={logoUrl} onChange={(e) => setLogoUrl((e.target as HTMLInputElement).value)} placeholder="https://…" />
         ) : hasLogo ? (
           <div className="flex-row gap-10 min-w-0">
             <img
@@ -123,7 +123,7 @@ export default function IdentitySettingsCard({
               style={{ width: 28, height: 28, objectFit: 'cover' }}
               onError={(e) => {
                 try {
-                  (e.currentTarget as any).style.display = 'none';
+                  e.currentTarget.style.display = 'none';
                 } catch {
                   // ignore
                 }
@@ -150,7 +150,7 @@ export default function IdentitySettingsCard({
         {isEditing ? (
           <Input
             value={defaultLocation}
-            onChange={(e) => setDefaultLocation((e.target as any).value)}
+            onChange={(e) => setDefaultLocation((e.target as HTMLInputElement).value)}
             placeholder="e.g. Sportpark X, City"
           />
         ) : current.defaultLocation ? (

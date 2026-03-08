@@ -107,7 +107,7 @@ export const ProfilePage: React.FC = () => {
       }
 
       const updatedData = await response.json();
-      const updatedUser = (updatedData as any).data || updatedData;
+      const updatedUser = updatedData.data || updatedData;
 
       setUser(updatedUser);
       setFirstName(updatedUser.first_name || '');

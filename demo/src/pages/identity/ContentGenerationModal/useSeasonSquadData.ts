@@ -142,17 +142,17 @@ export function useSeasonSquadData({
             k.toLowerCase().includes(roleKey) || k.toLowerCase().startsWith(roleKey),
           );
           for (const [, val] of roleVariantEntries) {
-            if (val && typeof val === 'object' && (val as any).processed) return (val as any).processed;
+            if (val && typeof val === 'object' && (val as Record<string, any>).processed) return (val as Record<string, any>).processed;
           }
           for (const [, val] of roleVariantEntries) {
-            if (val && typeof val === 'object' && (val as any).raw) return (val as any).raw;
+            if (val && typeof val === 'object' && (val as Record<string, any>).raw) return (val as Record<string, any>).raw;
             if (val && typeof val === 'string' && val.trim()) return val;
           }
           for (const [, val] of Object.entries(variants)) {
-            if (val && typeof val === 'object' && (val as any).processed) return (val as any).processed;
+            if (val && typeof val === 'object' && (val as Record<string, any>).processed) return (val as Record<string, any>).processed;
           }
           for (const [, val] of Object.entries(variants)) {
-            if (val && typeof val === 'object' && (val as any).raw) return (val as any).raw;
+            if (val && typeof val === 'object' && (val as Record<string, any>).raw) return (val as Record<string, any>).raw;
             if (val && typeof val === 'string' && val.trim()) return val;
           }
         }

@@ -119,7 +119,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
             ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
                 credentials: 'include',
               })
-            : Promise.resolve(null as any),
+            : Promise.resolve(null),
         ]);
 
         if (!orgRes.ok) throw new Error('Failed to load organisation');
@@ -162,9 +162,9 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         setSeason(rawSeason?.data || rawSeason);
         setCompetition(rawCompetition?.data || rawCompetition);
 
-        if (isTeamRoute && clubRes && (clubRes as any).ok) {
+        if (isTeamRoute && clubRes && clubRes.ok) {
           try {
-            setClub(await (clubRes as any).json());
+            setClub(await clubRes.json());
           } catch {
             // ignore
           }

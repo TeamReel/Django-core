@@ -99,7 +99,7 @@ async function tryProcessExistingVariant(
   let existingVariant: { key: string; rawUrl: string } | null = null;
   for (const [key, val] of Object.entries(videoCategory)) {
     if (!val || typeof val !== 'object') continue;
-    const v = val as any;
+    const v = val as Record<string, any>;
     const state = v.processing_state || 'raw';
     if (v.raw && state !== 'processed' && state !== 'processing') {
       existingVariant = { key, rawUrl: v.raw };
@@ -185,7 +185,7 @@ async function pollVariantProcessing(
 
     for (const [, pollVal] of Object.entries(videoCategoryPoll)) {
       if (!pollVal || typeof pollVal !== 'object') continue;
-      const pollState = (pollVal as any).processing_state || 'raw';
+      const pollState = (pollVal as Record<string, any>).processing_state || 'raw';
       if (pollState === 'processing' || pollState === 'cancelling') stillProcessing++;
       else if (pollState === 'processed') processed++;
       else if (pollState === 'failed') failed++;

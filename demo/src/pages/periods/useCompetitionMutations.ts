@@ -46,8 +46,8 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     });
     if (!res.ok) { const d = await res.text().catch(() => ''); throw new Error(d || 'Failed to save period'); }
     const raw = await res.json().catch(() => null);
-    const updated = (raw as any)?.data || raw || { ...periodToEdit, ...patch };
-    if (String(updated?.id) === String(competition?.id)) setCompetition((prev) => prev ? { ...(prev as any), ...(updated as any) } as any : updated as any);
+    const updated = raw?.data || raw || { ...periodToEdit, ...patch };
+    if (String(updated?.id) === String(competition?.id)) setCompetition((prev) => prev ? { ...prev, ...updated } : updated);
     setSelectedEditPeriod((prev: any) => {
       const pId = String(prev?.id || prev?.data?.id || '').trim();
       const nId = String(updated?.id || updated?.data?.id || '').trim();
@@ -64,13 +64,13 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     });
     if (!res.ok) { const d = await res.text().catch(() => ''); throw new Error(d || 'Failed to save match'); }
     const raw = await res.json().catch(() => null);
-    const updated = (raw as any)?.data || raw || { ...matchToEdit, ...patch };
+    const updated = raw?.data || raw || { ...matchToEdit, ...patch };
     setMatches((prev) => prev.map((m: any) => String(m.id) === String(updated?.id) ? { ...m, ...updated } : m));
   };
 
   const deleteMembership = async (membership: any) => {
     const mid = String(membership?.id || '').trim();
-    const pid = String((project as any)?.id || '').trim();
+    const pid = String(project?.id || '').trim();
     if (!mid || !pid) return;
     const u = membership.user || {};
     const name = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email || 'this member';
@@ -86,7 +86,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
 
   const saveMembershipRole = async (membership: any, role: string) => {
     const mid = String(membership?.id || '').trim();
-    const pid = String((project as any)?.id || '').trim();
+    const pid = String(project?.id || '').trim();
     if (!mid || !pid) throw new Error('Missing membership id');
     const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(mid)}/`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
@@ -97,11 +97,11 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
   };
 
   const updateFunctionalRoles = async (membership: any, nextRoles: string[]) => {
-    const pid = String((project as any)?.id || '').trim();
+    const pid = String(project?.id || '').trim();
     const uid = Number(membership?.user?.id);
     if (!pid) throw new Error('Missing project id');
     if (!uid) throw new Error('Missing user id');
-    const prevDirect = (membership as any)?.functional_roles ?? (membership as any)?.functionalRoles;
+    const prevDirect = membership?.functional_roles ?? membership?.functionalRoles;
     const prevRoles = Array.isArray(prevDirect) ? prevDirect.map((r: any) => String(r || '').trim()).filter(Boolean) : [];
     const normalized = (Array.isArray(nextRoles) ? nextRoles : []).map((r) => String(r || '').trim()).filter(Boolean);
     const prevSet = new Set(prevRoles);
@@ -124,7 +124,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
   };
 
   const deleteCompetition = async () => {
-    const cid = String(resolvedCompetitionId || (competition as any)?.id || '').trim();
+    const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!cid) return;
     if (!window.confirm(`Are you sure you want to delete competition ${competition?.name}?`)) return;
     try {
@@ -137,11 +137,11 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
   };
 
   const createMatchInCompetition = async (payload: {
-    title: string; start_time: string; end_time: string;
+    title: string; start_time?: string; end_time?: string;
     opponent_project_id?: string; venue?: 'Home' | 'Away'; location?: string; description?: string; metadata?: any;
   }) => {
-    const pid = String((project as any)?.id || '').trim();
-    const cid = String(resolvedCompetitionId || (competition as any)?.id || '').trim();
+    const pid = String(project?.id || '').trim();
+    const cid = String(resolvedCompetitionId || competition?.id || '').trim();
     if (!pid) throw new Error('Missing team id');
     if (!cid) throw new Error('Missing competition id');
     const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
@@ -151,12 +151,12 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
         opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
         period_id: cid, start_time: payload.start_time, end_time: payload.end_time,
         location: payload.location, description: payload.description,
-        metadata: { venue: payload.venue || 'Home', is_home: (payload.venue || 'Home') === 'Home', ...(payload as any)?.metadata },
+        metadata: { venue: payload.venue || 'Home', is_home: (payload.venue || 'Home') === 'Home', ...payload?.metadata },
       }),
     });
     if (!res.ok) { const d = await res.text().catch(() => ''); throw new Error(d || 'Failed to create match'); }
     const raw = await res.json().catch(() => null);
-    const created = (raw as any)?.data || raw;
+    const created = raw?.data || raw;
     if (created?.id) {
       setMatches((prev) => [...new Map([[String(created.id), created], ...prev.map((m: any) => [String(m.id), m] as [string, any])]).values()]);
     }

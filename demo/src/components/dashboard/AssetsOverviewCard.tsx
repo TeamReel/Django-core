@@ -74,8 +74,8 @@ export const AssetsOverviewCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
-  const org = context.organisation as any;
-  const project = context.project as any;
+  const org = context.organisation;
+  const project = context.project;
 
   const [teamAssets, setTeamAssets] = useState<TeamAssetStatus[]>([]);
   const [memberProgress, setMemberProgress] = useState<MemberAssetProgress[]>([]);

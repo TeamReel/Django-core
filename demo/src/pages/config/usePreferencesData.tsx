@@ -84,7 +84,7 @@ export function usePreferencesData(): PreferencesDataReturn {
   /* ---------- derived label maps --------------------------------- */
   const organisationLabelByKey = useMemo(() => {
     const map = new Map<string, string>();
-    const userOrgs: any[] = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+    const userOrgs: any[] = Array.isArray(user?.organisations) ? user.organisations : [];
     for (const o of [...entities.organisations, ...userOrgs]) {
       const id = String(o?.id || '').trim();
       const slug = String(o?.slug || '').trim();
@@ -96,7 +96,7 @@ export function usePreferencesData(): PreferencesDataReturn {
 
   const projectLabelByKey = useMemo(() => {
     const map = new Map<string, string>();
-    const userProjects: any[] = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    const userProjects: any[] = Array.isArray(user?.projects) ? user.projects : [];
     for (const p of [...entities.clubs, ...entities.teams, ...userProjects]) {
       const id = String(p?.id || '').trim();
       const slug = String(p?.slug || '').trim();
@@ -148,7 +148,7 @@ export function usePreferencesData(): PreferencesDataReturn {
 
     setChannelPrefsSaving(true);
     try {
-      const userId = (user as any)?.id;
+      const userId = user?.id;
       if (!userId) throw new Error('User ID not available');
       const baseUrl = getApiBaseUrl();
       const response = await fetch(
@@ -258,8 +258,8 @@ export function usePreferencesData(): PreferencesDataReturn {
   // Audit events
   useEffect(() => {
     if (activeTab !== 'audit') return;
-    const myUserId = String((user as any)?.id || '').trim();
-    const myEmail = String((user as any)?.email || '').trim().toLowerCase();
+    const myUserId = String(user?.id || '').trim();
+    const myEmail = String(user?.email || '').trim().toLowerCase();
     if (!myUserId && !myEmail) return;
 
     let cancelled = false;
@@ -276,12 +276,12 @@ export function usePreferencesData(): PreferencesDataReturn {
         });
         if (!response.ok) throw new Error(`Failed to load audit events (${response.status})`);
         const raw = await response.json();
-        const data = (raw?.data ?? raw) as any;
+        const data = (raw?.data ?? raw);
         const results: AuditEvent[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
         const filtered = results
           .filter((e) => {
-            const uid = String((e as any)?.user?.id || '').trim();
-            const email = String((e as any)?.user?.email || '').trim().toLowerCase();
+            const uid = String(e?.user?.id || '').trim();
+            const email = String(e?.user?.email || '').trim().toLowerCase();
             return (myUserId && uid === myUserId) || (myEmail && email === myEmail);
           })
           .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
@@ -370,8 +370,8 @@ export function usePreferencesData(): PreferencesDataReturn {
   useEffect(() => {
     const loadChannelPreferences = async () => {
       setChannelPrefsLoading(true);
-      if (!user || !(user as any).id) { setChannelPrefsLoading(false); return; }
-      const userId = (user as any).id;
+      if (!user || !user.id) { setChannelPrefsLoading(false); return; }
+      const userId = user.id;
       try {
         const baseUrl = getApiBaseUrl();
         const response = await fetch(`${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}`, {

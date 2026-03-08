@@ -122,7 +122,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
           { ttlMs: 10_000, cacheKey: `projects:clubs:${orgId || 'all'}`, maxItems: 3000 }
         );
         const unique = [...new Map((list || []).map((p: any) => [String(p.id), p])).values()];
-        if (!cancelled) setRemoteClubs(unique as any);
+        if (!cancelled) setRemoteClubs(unique);
       } catch {
         // ignore
       } finally {
@@ -157,7 +157,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
         const rawList = await fetchAllPagesLocal(baseUrl, { credentials: 'include', signal: abortController.signal }, 3000);
         const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
-        if (!cancelled) setRemoteTeams(unique as any);
+        if (!cancelled) setRemoteTeams(unique);
       } catch {
         // ignore
       } finally {
@@ -193,7 +193,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
           { ttlMs: 10_000, cacheKey: `projects:clubs:opponent:${orgId}`, maxItems: 3000 }
         );
         const unique = [...new Map((list || []).map((p: any) => [String(p.id), p])).values()];
-        if (!cancelled) setOpponentClubs(unique as any);
+        if (!cancelled) setOpponentClubs(unique);
       } catch {
         if (!cancelled) setOpponentClubs([]);
       } finally {
@@ -262,7 +262,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
         );
         const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
         const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
-        setSeasonOptions(sorted as any);
+        setSeasonOptions(sorted);
       } catch { setSeasonOptions([]); } finally { setLoadingSeasons(false); }
     };
 
@@ -302,7 +302,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
         const list = Array.isArray(results) ? results : [];
         const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
         const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
-        setCompetitionOptions(sorted as any);
+        setCompetitionOptions(sorted);
       } catch { setCompetitionOptions([]); } finally { setLoadingCompetitions(false); }
     };
 
@@ -360,7 +360,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const orgId = String(selectedOpponentOrganisationId || '').trim();
     const list = orgId
       ? (opponentClubs || []).filter((c) => {
-          const cOrg = typeof (c as any).organisation === 'string' ? (c as any).organisation : (c as any).organisation?.id;
+          const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
           return !cOrg || String(cOrg) === String(orgId);
         })
       : opponentClubs || [];

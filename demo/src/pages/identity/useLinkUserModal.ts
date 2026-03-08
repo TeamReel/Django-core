@@ -59,7 +59,7 @@ export function useLinkUserModal({
   }, [orgById, organisationId]);
 
   const getProjectOrgId = (p: ProjectOption): string => {
-    const org = (p as any)?.organisation;
+    const org = p?.organisation;
     if (!org) return '';
     if (typeof org === 'string' || typeof org === 'number') return String(org);
     return String((org as any)?.id || '');
@@ -78,7 +78,7 @@ export function useLinkUserModal({
     const list = Array.isArray(teams) ? teams : [];
     return list.filter((t) => {
       if (oid && String(getProjectOrgId(t)) !== oid) return false;
-      if (cid && String((t as any)?.parent_id || '') !== cid) return false;
+      if (cid && String(t?.parent_id || '') !== cid) return false;
       return true;
     });
   }, [clubId, organisationId, teams]);
@@ -89,13 +89,13 @@ export function useLinkUserModal({
   }, [user]);
 
   const existingProjectIds = useMemo(() => {
-    const projects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    const projects = Array.isArray(user?.projects) ? user.projects : [];
     return new Set(projects.map((p: any) => String(p?.id ?? p?.slug ?? '')).filter(Boolean));
   }, [user]);
 
   const projectMembershipIdByProjectId = useMemo(() => {
     const map = new Map<string, string>();
-    const projects = Array.isArray((user as any)?.projects) ? (user as any).projects : [];
+    const projects = Array.isArray(user?.projects) ? user.projects : [];
     for (const p of projects) {
       const projectId = String(p?.id ?? '').trim();
       const membershipId = String(p?.membership_id ?? '').trim();
@@ -130,7 +130,7 @@ export function useLinkUserModal({
     if (!opened) return;
     if (!teamId) return;
     const t = (teams || []).find((x) => String(x.id) === String(teamId));
-    const parent = String((t as any)?.parent_id || '').trim();
+    const parent = String(t?.parent_id || '').trim();
     if (parent && !clubId) setClubId(parent);
   }, [clubId, opened, teamId, teams]);
 
@@ -165,7 +165,7 @@ export function useLinkUserModal({
   // ── API mutations ──────────────────────────────────────────
   const resolveOrgSlugOrIdForApi = (): string => {
     const org = resolvedOrg;
-    const fromResolved = String((org as any)?.slug || (org as any)?.id || '').trim();
+    const fromResolved = String(org?.slug || org?.id || '').trim();
     if (fromResolved) return fromResolved;
     return String(initialOrganisationSlugOrId || '').trim();
   };
@@ -176,7 +176,7 @@ export function useLinkUserModal({
     if (!org) return;
     if (existingOrgIds.has(String(org.id))) return;
 
-    const orgSlugOrId = String((org as any)?.slug || (org as any)?.id || '').trim();
+    const orgSlugOrId = String(org?.slug || org?.id || '').trim();
     if (!orgSlugOrId) throw new Error('Organisation slug/id missing');
 
     const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/`, {
@@ -239,7 +239,7 @@ export function useLinkUserModal({
     const orgIdValue = String(organisationId || '').trim();
     if (!orgIdValue) throw new Error('Select a federation first');
 
-    const orgs = Array.isArray((user as any)?.organisations) ? (user as any).organisations : [];
+    const orgs = Array.isArray(user?.organisations) ? user.organisations : [];
     const direct = orgs.find((o: any) => String(o?.id ?? '') === orgIdValue);
     const directMembershipId = String(direct?.membership_id ?? '').trim();
     if (directMembershipId) return directMembershipId;

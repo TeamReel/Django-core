@@ -65,20 +65,20 @@ export default function ProfileHubPage() {
 
   /* ── Derived user info ─────────────────────────────────────────────── */
   const fullName = user
-    ? `${(user as any).first_name || ''} ${(user as any).last_name || ''}`.trim() || (user as any).email?.split('@')[0] || 'User'
+    ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email?.split('@')[0] || 'User'
     : 'User';
-  const initials = user && (user as any).first_name && (user as any).last_name
-    ? `${(user as any).first_name[0]}${(user as any).last_name[0]}`.toUpperCase()
-    : ((user as any)?.email || 'U').slice(0, 2).toUpperCase();
-  const avatarUrl = String((user as any)?.avatar_url || '').trim();
+  const initials = user && user.first_name && user.last_name
+    ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase()
+    : (user?.email || 'U').slice(0, 2).toUpperCase();
+  const avatarUrl = String(user?.avatar_url || '').trim();
 
   /* ── Helpers ───────────────────────────────────────────────────────── */
   const openEditProfile = useCallback(() => {
     d.setProfileError(null);
-    d.setProfileFirstName(String((user as any)?.first_name || '').trim());
-    d.setProfileLastName(String((user as any)?.last_name || '').trim());
-    d.setProfileEmail(String((user as any)?.email || '').trim());
-    d.setProfileTwoFactorEnabled(Boolean((user as any)?.two_factor_enabled));
+    d.setProfileFirstName(String(user?.first_name || '').trim());
+    d.setProfileLastName(String(user?.last_name || '').trim());
+    d.setProfileEmail(String(user?.email || '').trim());
+    d.setProfileTwoFactorEnabled(Boolean(user?.two_factor_enabled));
     d.setProfileCurrentPassword('');
     d.setIsProfileModalOpen(true);
   }, [user, d]);
@@ -156,7 +156,7 @@ export default function ProfileHubPage() {
         </div>
         <div className={s.headerText}>
           <h1 className={s.name}>{fullName}</h1>
-          <p className={s.email}>{(user as any).email}</p>
+          <p className={s.email}>{user.email}</p>
         </div>
       </div>
 

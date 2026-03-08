@@ -293,13 +293,13 @@ export function MemberIdentityTab({
                 <div>
                   <div className={s.formLabel}>Position</div>
                   <div className={s.fieldValue}>
-                    {membership?.metadata?.position || (membership as any)?.position || '—'}
+                    {membership?.metadata?.position || membership?.position || '—'}
                   </div>
                 </div>
                 <div>
                   <div className={s.formLabel}>Jersey Number</div>
                   <div className={s.fieldValue}>
-                    {membership?.metadata?.jersey_number || (membership as any)?.jersey_number || '—'}
+                    {membership?.metadata?.jersey_number || membership?.jersey_number || '—'}
                   </div>
                 </div>
               </div>

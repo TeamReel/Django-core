@@ -79,7 +79,7 @@ export function useAppSelection() {
   const parsedPath = useMemo(() => parseAppPath(location.pathname), [location.pathname]);
 
   // Stable context dependencies
-  const contextOrg = (context as any)?.organisation;
+  const contextOrg = context?.organisation;
   const contextOrgSlug = contextOrg?.slug;
   const contextOrgId = contextOrg?.id;
   const userEmail = user?.email;

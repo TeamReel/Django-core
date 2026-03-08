@@ -70,8 +70,8 @@ export default function UserEditModal({
                 {/* Avatar */}
                 <div className="flex-row gap-16">
                   <div className={`rounded-full overflow-hidden border bg-surface-2 flex-center ${styles.avatar}`}>
-                    {d.avatarPreview || (user as any)?.avatar_url ? (
-                      <img src={d.avatarPreview || (user as any)?.avatar_url} alt="Avatar" className={`w-full h-full ${styles.avatarImg}`} />
+                    {d.avatarPreview || user?.avatar_url ? (
+                      <img src={d.avatarPreview || user?.avatar_url} alt="Avatar" className={`w-full h-full ${styles.avatarImg}`} />
                     ) : (
                       <span className="fs-24 text-muted">
                         {(user?.first_name?.[0] || user?.email?.[0] || '?').toUpperCase()}
@@ -148,7 +148,7 @@ export default function UserEditModal({
                     <div className="flex-row gap-10 flex-wrap">
                       <div className="flex-1">
                         <label className="block fw-700 mb-4">Role</label>
-                        <select value={d.inviteOrgRole} onChange={e => d.setInviteOrgRole(e.target.value as any)} className="form-input" disabled={d.addingToOrg || d.saving}>
+                        <select value={d.inviteOrgRole} onChange={e => d.setInviteOrgRole(e.target.value as 'member' | 'admin')} className="form-input" disabled={d.addingToOrg || d.saving}>
                           <option value="member">member</option><option value="admin">admin</option>
                         </select>
                       </div>
@@ -189,7 +189,7 @@ export default function UserEditModal({
                   <div className="flex-row gap-10 mt-16 flex-wrap">
                     <div className="flex-1">
                       <label className="block fw-700 mb-4">Initial Role</label>
-                      <select value={d.linkAccessRole} onChange={e => d.setLinkAccessRole(e.target.value as any)} disabled={d.addingToProject} className="form-input">
+                      <select value={d.linkAccessRole} onChange={e => d.setLinkAccessRole(e.target.value as 'viewer' | 'editor' | 'admin')} disabled={d.addingToProject} className="form-input">
                         <option value="viewer">viewer</option><option value="editor">editor</option><option value="admin">admin</option>
                       </select>
                     </div>

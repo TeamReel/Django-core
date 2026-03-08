@@ -68,20 +68,20 @@ export function ClubHierarchyTab({
     const teamsCount = teams.length;
 
     const seasonsCount = teams.reduce((sum, t) => {
-      const list = hierarchySeasonsByTeamId[String((t as any)?.id || '')] || [];
+      const list = hierarchySeasonsByTeamId[String(t?.id || '')] || [];
       return sum + list.length;
     }, 0);
 
     const competitionsCount = teams.reduce((sum, t) => {
-      return sum + (hierarchyCompetitionsCountByTeamId[String((t as any)?.id || '')] ?? 0);
+      return sum + (hierarchyCompetitionsCountByTeamId[String(t?.id || '')] ?? 0);
     }, 0);
 
     const matchesCount = teams.reduce((sum, t) => {
-      return sum + (hierarchyMatchesCountByTeamId[String((t as any)?.id || '')] ?? 0);
+      return sum + (hierarchyMatchesCountByTeamId[String(t?.id || '')] ?? 0);
     }, 0);
 
     const membersCountFallback = teams.reduce((sum, t) => {
-      return sum + (hierarchyMembersCountByTeamId[String((t as any)?.id || '')] ?? 0);
+      return sum + (hierarchyMembersCountByTeamId[String(t?.id || '')] ?? 0);
     }, 0);
 
     const membersCount = typeof hierarchyMembersCountForClub === 'number' ? hierarchyMembersCountForClub : membersCountFallback;
@@ -176,7 +176,7 @@ export function ClubHierarchyTab({
             const q = String(hierarchySearch || '').trim().toLowerCase();
             const seasons = !q
               ? seasonsAll
-              : seasonsAll.filter((s) => String((s as any)?.name || '').toLowerCase().includes(q));
+              : seasonsAll.filter((s) => String(s?.name || '').toLowerCase().includes(q));
 
             const membersCount = hierarchyMembersCountByTeamId[String(team.id)] ?? 0;
             const competitionsCount = hierarchyCompetitionsCountByTeamId[String(team.id)] ?? 0;
@@ -223,18 +223,18 @@ export function ClubHierarchyTab({
                   ) : (
                     <div className="flex-col gap-8">
                       {seasons.map((s) => {
-                        const seasonKey = String((s as any)?.slug || (s as any)?.id || '').trim();
+                        const seasonKey = String(s?.slug || s?.id || '').trim();
                         const seasonPath =
                           teamPath && seasonKey
                             ? `/${encodeURIComponent(orgKeyForRoutes)}/${encodeURIComponent(clubKeyForRoutes)}/${encodeURIComponent(teamKey)}/${encodeURIComponent(seasonKey)}`
                             : '';
 
-                        const seasonId = String((s as any)?.id ?? '').trim();
+                        const seasonId = String(s?.id ?? '').trim();
                         const seasonCompetitions = hierarchyCompetitionsCountBySeasonId[seasonId] ?? 0;
                         const seasonMatches = hierarchyMatchesCountBySeasonId[seasonId] ?? 0;
 
                         return (
-                          <div key={String((s as any)?.id)} style={seasonRowStyle}>
+                          <div key={String(s?.id)} style={seasonRowStyle}>
                             <div className="min-w-0">
                               {seasonPath ? (
                                 <button
@@ -243,11 +243,11 @@ export function ClubHierarchyTab({
                                   onClick={() => navigate(seasonPath)}
                                   style={{ color: 'var(--color-blue-400)' }}
                                 >
-                                  {String((s as any)?.name || 'Season')}
+                                  {String(s?.name || 'Season')}
                                 </button>
                               ) : (
                                 <div className="fw-700 fs-13 text-primary">
-                                  {String((s as any)?.name || 'Season')}
+                                  {String(s?.name || 'Season')}
                                 </div>
                               )}
                             </div>

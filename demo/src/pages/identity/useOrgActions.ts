@@ -50,7 +50,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
   const handleActivateContext = async () => {
     try {
       setActivatingContext(true);
-      await setActiveContext('organisation', String((org as any)?.slug || (org as any)?.id || ''));
+      await setActiveContext('organisation', String(org?.slug || org?.id || ''));
       const context = await getActiveContext();
       setActiveContextState(context);
     } finally {
@@ -178,7 +178,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       throw new Error(detail || `Failed to update organisation (${response.status})`);
     }
     const raw = await response.json().catch(() => null);
-    const updatedOrg = (raw as any)?.data || raw;
+    const updatedOrg = raw?.data || raw;
     if (updatedOrg) setOrg(updatedOrg);
     invalidateFetchAllPagesCache();
     try {
@@ -187,7 +187,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       });
       if (refreshedRes.ok) {
         const refreshedRaw = await refreshedRes.json().catch(() => null);
-        const refreshed = (refreshedRaw as any)?.data || refreshedRaw;
+        const refreshed = refreshedRaw?.data || refreshedRaw;
         if (refreshed) setOrg(refreshed);
       }
     } catch { /* Best-effort */ }
@@ -195,7 +195,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
 
   const saveProjectEdits = async (project: Project, patch: Partial<Project>) => {
     const apiV1BaseUrl = getApiV1BaseUrl();
-    const projectSlugOrId = (project as any).slug || project.id;
+    const projectSlugOrId = project.slug || project.id;
     const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
@@ -208,7 +208,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       throw new Error(msg);
     }
     const json = await res.json();
-    const updated = (json?.data || json) as any;
+    const updated = json?.data || json;
     setClubs((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
     setTeams((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
     setAllClubsForTeams((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));

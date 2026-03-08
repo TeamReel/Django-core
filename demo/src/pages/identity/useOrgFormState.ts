@@ -86,8 +86,8 @@ export function useOrgFormState() {
   const currentOrgId = resolvedOrg?.id;
 
   /* ── Permissions ── */
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   const permissionContext = { currentOrganisation: (org || resolvedOrg) as any, isSuperAdmin };
   const userCanEditOrg = canEditOrganisation(permissionContext);
   const userCanDeleteOrg = canDeleteOrganisation(permissionContext);

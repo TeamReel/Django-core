@@ -112,7 +112,7 @@ export function useFileAssets(): UseFileAssetsReturn {
       setFiles(all);
     } catch (err: unknown) {
       console.error(err);
-      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && (err as any).name === 'AbortError')) {
+      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load files');
       }
     } finally {

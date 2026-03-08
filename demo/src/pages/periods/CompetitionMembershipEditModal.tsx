@@ -28,12 +28,12 @@ export function CompetitionMembershipEditModal({
   ];
 
   const readFunctionalRolesFromMembership = (m: any): string[] => {
-    const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+    const direct = m?.functional_roles ?? m?.functionalRoles;
     if (Array.isArray(direct)) {
       return direct.map((r) => String(r || '').trim()).filter(Boolean);
     }
 
-    const meta = (m as any)?.metadata || {};
+    const meta = m?.metadata || {};
     const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
     return legacy ? [legacy] : [];
   };

@@ -150,7 +150,7 @@ function resolveTeamRow(
     ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
     : undefined;
 
-  const orgSport = (team.organisation as any)?.sport || (orgFromList as any)?.sport;
+  const orgSport = team.organisation?.sport || orgFromList?.sport;
 
   const contextSlug = lockedOrgSlug || (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined);
   const orgSlugOrId =
