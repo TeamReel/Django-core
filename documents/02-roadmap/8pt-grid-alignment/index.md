@@ -8,7 +8,12 @@
 
 ## Doel
 
-Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit). Alle spacing, padding, margin, gap, border-radius en sizing moeten multiples zijn van 4px. Typography is het enige waar bewust wordt afgeweken (standaard typografische schaal).
+Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit) en design token gebruik afdwingen. Concreet:
+
+1. **Spacing** — padding, margin, gap, border-radius, sizing → multiples van 4px
+2. **Typography** — font-size schaal vereenvoudigen van 9 → 5 stappen, font-family tokenizen, line-height koppelen
+3. **Kleuren** — alle hardcoded hex-waarden → design tokens (voor dark mode + theming)
+4. **Guardrails** — lint regels om regressie te voorkomen
 
 ## Huidige staat
 
@@ -35,20 +40,21 @@ Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit). Alle spacing, p
 
 | Fase | Naam | Scope | Impact | Status |
 |------|------|-------|--------|--------|
-| **T1** | Token & Typography | tokens.css typography + radius | Fundament | 🔲 Todo |
-| **T2** | Utility Classes | utility.css off-grid values | ~40 fixes | 🔲 Todo |
+| **T1** | Token & Typography | 5-stappen font-size, font-family token, line-height koppeling, radius | Fundament | 🔲 Todo |
+| **T2** | Utility Classes | utility.css off-grid spacing + deprecated font-size utils | ~40 fixes | 🔲 Todo |
+| **K1** | Color Cleanup | Hardcoded hex → design tokens (30+ voorkomens) | Dark mode + theming | 🔲 Todo |
 | **C1** | Core Shell | Sidebar, MobileBottomNav, BottomSheet | ~30 fixes | 🔲 Todo |
 | **C2** | Wizard CSS | Wizard.module.css + CreateWizard.module.css | ~40 fixes | 🔲 Todo |
 | **P1** | Page Styles | Dashboard, MatchDetail, AIStudio, overige pages | ~35 fixes | 🔲 Todo |
-| **G1** | Guardrails | Stylelint regel tegen off-grid hardcoded px | Preventie | 🔲 Todo |
+| **G1** | Guardrails | Stylelint regels tegen off-grid px + hardcoded hex | Preventie | 🔲 Todo |
 
 ## Volgorde
 
 ```
-T1 (tokens) → T2 (utilities) → C1 (shell) → C2 (wizard) → P1 (pages) → G1 (lint)
+T1 (tokens) → T2 (utilities) → K1 (kleuren) → C1 (shell) → C2 (wizard) → P1 (pages) → G1 (lint)
 ```
 
-T1 en T2 eerst omdat ze de basis leggen. C1/C2/P1 zijn onafhankelijk van elkaar (kunnen parallel). G1 als laatste om regressie te voorkomen.
+T1 en T2 eerst omdat ze de basis leggen. K1 daarna voor dark mode correctheid. C1/C2/P1 zijn onafhankelijk van elkaar (kunnen parallel). G1 als laatste om regressie te voorkomen.
 
 ## Snap-regels
 

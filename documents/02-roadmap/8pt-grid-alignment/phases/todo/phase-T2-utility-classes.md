@@ -61,9 +61,23 @@ Alle off-grid waarden in utility.css snappen naar de 4px grid. Dit zijn de bouwb
 | `.detail-td` | padding | 6px 8px | **8px** |
 | `.status-label` | margin-bottom | 6px | **8px** |
 
-### Font-size utilities (bewust off-grid — typography schaal)
+### Font-size utilities (migratie naar 5-stappen schaal)
 
-Font-size utilities zoals `.fs-11`, `.fs-13`, `.fs-14`, `.fs-15`, `.fs-18` blijven **onveranderd** — typography volgt een eigen schaal (zie T1 rationaal). Wel: `.fs-11` verwijderen/depreceren als `--text-xs` naar 12px gaat.
+Na T1 zijn er nog maar 5 font-size tokens. Utility classes moeten mee:
+
+| Klasse | Huidig | Actie |
+|--------|--------|-------|
+| `.fs-11` | 11px | **verwijder** — vervang door `--text-xs` (12px) |
+| `.fs-12` | 12px | **behoud** als `font-size: var(--text-xs)` |
+| `.fs-13` | 13px | **verwijder** — vervang door `--text-sm` (14px) |
+| `.fs-14` | 14px | **behoud** als `font-size: var(--text-sm)` |
+| `.fs-15` | 15px | **verwijder** — vervang door `--text-base` (16px) |
+| `.fs-16` | 16px | **behoud** als `font-size: var(--text-base)` |
+| `.fs-18` | 18px | **verwijder** — vervang door `--text-lg` (20px) |
+| `.fs-20` | 20px | **behoud** als `font-size: var(--text-lg)` |
+| `.fs-24` | 24px | **behoud** als `font-size: var(--text-xl)` |
+
+Alternatief: vervang `.fs-*` classes door semantische namen (`.text-caption`, `.text-body`, `.text-title`, `.text-heading`).
 
 ## Aanpak
 

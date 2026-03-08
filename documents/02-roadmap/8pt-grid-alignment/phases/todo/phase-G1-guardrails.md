@@ -10,7 +10,11 @@
 
 ## Doel
 
-Een stylelint regel opzetten die voorkomt dat nieuwe off-grid px-waarden worden toegevoegd. Regressie-preventie.
+Stylelint regels opzetten die twee dingen afdwingen:
+1. **Geen off-grid px-waarden** voor spatial properties (padding, margin, gap, etc.)
+2. **Geen hardcoded hex-kleuren** in component CSS — altijd via tokens
+
+Regressie-preventie na T1-P1 + K1.
 
 ## Aanpak
 
@@ -79,6 +83,18 @@ const spatialProps = [
 
 Voeg toe aan lint-staged of husky.
 
+### 6. Kleur-regel: geen hardcoded hex
+
+```json
+{
+  "rules": {
+    "color-no-hex": true
+  }
+}
+```
+
+Of custom regel die hex-waarden in `color`, `background-color`, `border-color` blokkeert en `var(--color-*)` of `var(--app-*)` vereist.
+
 ## Uitzonderingen configuratie
 
 | Waarde | Reden | Hoe |
@@ -90,6 +106,9 @@ Voeg toe aan lint-staged of husky.
 | `letter-spacing` | Typography | Exclude property |
 | `box-shadow` | Elevation tokens | Exclude property |
 | `transform` | Animatie | Exclude property |
+| `white` / `transparent` | CSS keywords | Auto-allow |
+| `currentColor` | Inherit pattern | Auto-allow |
+| `rgba()` met token | Opacity varianten | Auto-allow |
 
 ## Verificatie
 
