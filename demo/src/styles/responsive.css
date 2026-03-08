@@ -4,6 +4,9 @@
    Extracted from index.css for maintainability.
    ====================================================================== */
 
+
+@layer base {
+
 /* =============================================================================
    RESPONSIVE UTILITIES
    Mobile-first approach: base styles for mobile, then enhance for larger screens
@@ -458,3 +461,5 @@
     min-height: 44px;
   }
 }
+
+} /* end @layer base */

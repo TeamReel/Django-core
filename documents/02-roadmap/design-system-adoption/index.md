@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** 🔄 In uitvoering (10/11 fases)
+**Status:** ✅ Voltooid (11/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -38,7 +38,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **A7** | Line-height + Font-family Cleanup | `line-height` / `font-family` → tokens | 112 | 20 min | ✅ Done |
 | **H1** | Touch-safe Hovers | `@media (hover: hover)` wrappers + z-index tokens | 123 | 1 uur | ✅ Done |
 | **H2** | Fluid Typography | `clamp()` in `--text-*` tokens | 5 tokens | 30 min | ✅ Done |
-| **L1** | CSS @layer Refactor | `!important` verwijderen via cascade layers | 40+ | 2 uur | 🔲 Todo |
+| **L1** | CSS @layer Refactor | `!important` verwijderen via cascade layers | 24 verwijderd | 2 uur | ✅ Done |
 
 ## Volgorde
 

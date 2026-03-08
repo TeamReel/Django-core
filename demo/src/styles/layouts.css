@@ -4,6 +4,9 @@
    Extracted from responsive.css for maintainability.
    ====================================================================== */
 
+
+@layer layouts {
+
 /* =============================================================================
    DASHBOARD RESPONSIVE LAYOUT
    ============================================================================= */
@@ -472,3 +475,5 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+} /* end @layer layouts */

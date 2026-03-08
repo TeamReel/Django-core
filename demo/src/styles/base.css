@@ -4,6 +4,9 @@
    Extracted from index.css for maintainability.
    ====================================================================== */
 
+
+@layer base {
+
 /* ─── Q1 Quick Wins: Premium UX polish ──────────────────────────────── */
 
 /* Brand-colored text selection */
@@ -128,7 +131,7 @@ form button[type="submit"],
 form button[type="button"],
 [class*="Button"]:not(nav *),
 [class*="button"]:not(nav *) {
-  border: 1px solid var(--app-border) !important;
+  border: 1px solid var(--app-border);
 }
 
 /* Primary buttons - stronger styling (excluding nav) */
@@ -138,7 +141,7 @@ button[style*="backgroundColor: 'var(--color-blue-600)'"]:not(nav *),
 button[style*="backgroundColor: '#0066cc'"]:not(nav *),
 button[style*="backgroundColor: var(--color-blue-600)"]:not(nav *),
 button[style*="backgroundColor: #0066cc"]:not(nav *) {
-  border: 1px solid var(--color-blue-700) !important;
+  border: 1px solid var(--color-blue-700);
 }
 
 /* Secondary/Cancel buttons - subtle but visible (excluding nav) */
@@ -151,7 +154,7 @@ button[type="button"]:not(nav *):not([type="submit"]):not(.app-action-button):no
 /* Danger buttons (excluding nav) */
 button[style*="backgroundColor: #dc3545"]:not(nav *),
 button[style*="backgroundColor: '#dc3545'"]:not(nav *) {
-  border: 1px solid var(--color-red-600) !important;
+  border: 1px solid var(--color-red-600);
 }
 
 /* Button hover states (excluding nav) */
@@ -222,34 +225,34 @@ table {
 }
 
 thead, th {
-  background-color: var(--app-table-header-bg) !important;
-  color: var(--app-text) !important;
-  border-color: var(--app-border) !important;
+  background-color: var(--app-table-header-bg);
+  color: var(--app-text);
+  border-color: var(--app-border);
 }
 
 tbody, td {
-  background-color: var(--app-table-row-bg) !important;
-  color: var(--app-text) !important;
-  border-color: var(--app-border) !important;
+  background-color: var(--app-table-row-bg);
+  color: var(--app-text);
+  border-color: var(--app-border);
 }
 
 @media (hover: hover) {
   tbody tr:hover td {
-  background-color: var(--app-table-row-hover-bg) !important;
+  background-color: var(--app-table-row-hover-bg);
   }
 }
 
 /* Table container backgrounds */
 [class*="Table"], [class*="table"], div[role="table"] {
-  background-color: var(--app-surface) !important;
+  background-color: var(--app-surface);
   color: var(--app-text);
 }
 
 /* Form controls */
 input, select, textarea {
-  background-color: var(--app-input-bg) !important;
-  color: var(--app-input-text) !important;
-  border: 1px solid var(--app-input-border) !important;
+  background-color: var(--app-input-bg);
+  color: var(--app-input-text);
+  border: 1px solid var(--app-input-border);
 }
 
 input:focus, select:focus, textarea:focus {
@@ -259,7 +262,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Form labels */
 label {
-  color: var(--app-text) !important;
+  color: var(--app-text);
 }
 
 /* Span elements (used for checkbox/radio labels) */
@@ -269,9 +272,9 @@ span {
 
 /* Design System Input component override */
 [class*="Input"], input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"] {
-  background-color: var(--app-input-bg) !important;
-  color: var(--app-input-text) !important;
-  border-color: var(--app-input-border) !important;
+  background-color: var(--app-input-bg);
+  color: var(--app-input-text);
+  border-color: var(--app-input-border);
 }
 
 /* Ensure placeholder text is visible */
@@ -289,25 +292,25 @@ input::placeholder, textarea::placeholder {
 
 /* Button component styles - ensure visibility in both themes */
 [class*="Button"], button[class*="Button"] {
-  border: 1px solid var(--app-border) !important;
+  border: 1px solid var(--app-border);
   min-height: 36px;
 }
 
 /* Primary variant buttons */
 [class*="Button"][class*="primary"], button[class*="primary"] {
-  border-color: var(--color-blue-700) !important;
+  border-color: var(--color-blue-700);
 }
 
 /* Secondary variant buttons */
 [class*="Button"][class*="secondary"], button[class*="secondary"] {
-  background-color: var(--app-surface-2) !important;
-  color: var(--app-text) !important;
-  border: 1px solid var(--app-border) !important;
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
 }
 
 /* Destructive/danger variant buttons */
 [class*="Button"][class*="destructive"], button[class*="destructive"] {
-  border: 1px solid var(--color-red-600) !important;
+  border: 1px solid var(--color-red-600);
 }
 
 /* Horizontal rules */
@@ -418,3 +421,5 @@ header [role="alert"] {
   content-visibility: auto;
   contain-intrinsic-size: auto 60px;
 }
+
+} /* end @layer base */

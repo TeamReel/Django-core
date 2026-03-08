@@ -16,6 +16,9 @@
    All values use the --app-* CSS custom properties from index.css.
    ============================================================================= */
 
+
+@layer utilities {
+
 /* ---------------------------------------------------------------------------
    Layout — Flex
    --------------------------------------------------------------------------- */
@@ -747,3 +750,5 @@
   container-type: inline-size;
   container-name: card-grid;
 }
+
+} /* end @layer utilities */

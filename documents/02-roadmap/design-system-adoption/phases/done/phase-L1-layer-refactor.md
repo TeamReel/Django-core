@@ -1,6 +1,6 @@
 # L1 — CSS @layer Refactor (Important Cleanup)
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 2 uur
 **Bestanden:**
 - `demo/src/styles/base.css` (40+ `!important` declaraties)

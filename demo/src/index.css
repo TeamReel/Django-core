@@ -2,6 +2,8 @@
    GLOBAL STYLES — Barrel import file
    Split into thematic modules for maintainability (<500 lines each).
    ====================================================================== */
+@layer base, layouts, utilities;
+
 @import './styles/tokens.css';
 @import './styles/theme.css';
 @import './styles/base.css';
