@@ -75,7 +75,7 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
       } catch (err: unknown) {
         console.error(err);
         if (DEBUG_LOGS) console.error('[useActivities] Error fetching activities:', err);
-        setError(err.message || 'Unknown error');
+        setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);
       }

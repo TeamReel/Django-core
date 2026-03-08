@@ -104,10 +104,10 @@ export function useSearch() {
     } catch (err: unknown) {
       console.error(err);
       console.error('[useSearch] Error:', err);
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }
-      setError(err.message || 'Search failed');
+      setError(err instanceof Error ? err.message : 'Search failed');
       return null;
     } finally {
       setIsSearching(false);
@@ -154,10 +154,10 @@ export function useSearch() {
         return response.data ?? null;
       } catch (err: unknown) {
         console.error(err);
-        if (err.name === 'AbortError') {
+        if (err instanceof Error && err.name === 'AbortError') {
           return null;
         }
-        setError(err.message || 'Search failed');
+        setError(err instanceof Error ? err.message : 'Search failed');
         return null;
       } finally {
         setIsSearching(false);
@@ -203,10 +203,10 @@ export function useSearch() {
     } catch (err: unknown) {
       console.error(err);
       console.error('[useSearch] Hierarchy Error:', err);
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }
-      setError(err.message || 'Hierarchical search failed');
+      setError(err instanceof Error ? err.message : 'Hierarchical search failed');
       return null;
     } finally {
       setIsSearching(false);

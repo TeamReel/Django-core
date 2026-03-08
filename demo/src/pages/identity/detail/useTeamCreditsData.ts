@@ -139,7 +139,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps) {
     } catch (e: unknown) {
       console.error(e);
       setBalance(null);
-      setBalanceError(e?.message || 'Failed to load team credits balance');
+      setBalanceError(e instanceof Error ? e.message : 'Failed to load team credits balance');
     } finally {
       setBalanceLoading(false);
     }
@@ -166,7 +166,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps) {
     } catch (e: unknown) {
       console.error(e);
       setUserBalance(null);
-      setUserBalanceError(e?.message || 'Failed to load your credits balance');
+      setUserBalanceError(e instanceof Error ? e.message : 'Failed to load your credits balance');
     } finally {
       setUserBalanceLoading(false);
     }
@@ -187,7 +187,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps) {
     } catch (e: unknown) {
       console.error(e);
       setTransactions([]);
-      setTransactionsError(e?.message || 'Failed to load team transactions');
+      setTransactionsError(e instanceof Error ? e.message : 'Failed to load team transactions');
     } finally {
       setTransactionsLoading(false);
     }

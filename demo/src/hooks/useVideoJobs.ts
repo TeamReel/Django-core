@@ -222,12 +222,13 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
         console.error(err);
         if (!cancelled) {
           // 403 = user isn't a member of this project → treat as empty, not error
-          if (err?.status === 403) {
+          const status = typeof err === 'object' && err !== null && 'status' in err ? (err as any).status : undefined;
+          if (status === 403) {
             console.warn(`[useVideoJobs] No access to project ${projectId}, returning empty jobs`);
             setJobs([]);
             setError(null);
           } else {
-            setError(err.message || 'Failed to load video jobs');
+            setError(err instanceof Error ? err.message : 'Failed to load video jobs');
           }
         }
       } finally {

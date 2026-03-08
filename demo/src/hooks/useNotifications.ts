@@ -110,7 +110,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       setError(null);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Failed to load notifications');
+      setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
       setLoading(false);
     }

@@ -12,6 +12,7 @@ import {
 } from '../hooks/useVideoJobs';
 import s from './ApprovalsPage.module.css';
 import styles from './ReviewModals.module.css';
+import { getErrorMessage } from '../utils/errorHelpers';
 
 // ─── AI Review Modal ─────────────────────────────────────────────
 
@@ -235,7 +236,7 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
       onActionComplete();
     } catch (err: unknown) {
       console.error(err);
-      pushToast(err?.message || `Actie "${action}" mislukt`, 'error');
+      pushToast(getErrorMessage(err) || `Actie "${action}" mislukt`, 'error');
     } finally {
       setReviewing(null);
     }

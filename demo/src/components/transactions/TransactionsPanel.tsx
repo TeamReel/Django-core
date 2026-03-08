@@ -5,6 +5,7 @@ import SmartEmptyState from '../SmartEmptyState';
 import styles from './TransactionsPanel.module.css';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getErrorMessage } from '../../utils/errorHelpers';
 
 type Transaction = {
   id: string;
@@ -86,7 +87,7 @@ export default function TransactionsPanel(props: {
     } catch (e: unknown) {
       console.error(e);
       setItems([]);
-      setError(e?.message || 'Failed to load transactions');
+      setError(getErrorMessage(e) || 'Failed to load transactions');
     } finally {
       setLoading(false);
     }

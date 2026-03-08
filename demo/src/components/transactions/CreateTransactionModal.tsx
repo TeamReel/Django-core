@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button } from '@django-core/design-system';
 import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './CreateTransactionModal.module.css';
 
 export type WalletOption =
@@ -216,7 +217,7 @@ export default function CreateTransactionModal(props: {
                 onCreated?.();
               } catch (e: unknown) {
                 console.error(e);
-                setError(e?.message || 'Failed to create transaction');
+                setError(getErrorMessage(e) || 'Failed to create transaction');
               } finally {
                 setSubmitting(false);
               }

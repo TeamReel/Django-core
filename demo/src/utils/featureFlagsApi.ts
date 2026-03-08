@@ -59,7 +59,7 @@ export async function fetchFlagsForScope(scopeType: ScopeType, scopeId?: string)
   }
 
   while (nextUrl) {
-    const response = await fetch(nextUrl, {
+    const response: Response = await fetch(nextUrl, {
       headers: {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -71,7 +71,7 @@ export async function fetchFlagsForScope(scopeType: ScopeType, scopeId?: string)
       throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const data: Record<string, any> = await response.json();
     const results = data.data?.results || data.results || data.data || data || [];
     allFlags.push(...(Array.isArray(results) ? results : []));
 

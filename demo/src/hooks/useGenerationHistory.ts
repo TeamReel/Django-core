@@ -142,8 +142,8 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
       }
     } catch (err: unknown) {
       console.error(err);
-      if (err.name !== 'AbortError') {
-        setError(err.message || 'Failed to load templates');
+      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && (err as any).name === 'AbortError')) {
+        setError(err instanceof Error ? err.message : 'Failed to load templates');
       }
     } finally {
       setLoading(false);
@@ -169,7 +169,7 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
       }
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Failed to load history');
+      setError(err instanceof Error ? err.message : 'Failed to load history');
     } finally {
       setLoading(false);
     }

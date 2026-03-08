@@ -293,7 +293,7 @@ export function useSeasonSquadAddMemberData({
         }
       } catch (e: unknown) {
         console.error(e);
-        if (!cancelled && e?.name !== 'AbortError') {
+        if (!cancelled && !(e instanceof Error && e.name === 'AbortError')) {
           setUserOptions([]);
           setError(e instanceof Error ? e.message : 'Failed to load users');
         }

@@ -51,12 +51,12 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 const all: T[] = [];
                 let nextUrl: string | null = url;
                 while (nextUrl) {
-                    const res = await fetch(nextUrl, { credentials: 'include' });
+                    const res: Response = await fetch(nextUrl, { credentials: 'include' });
                     if (!res.ok) {
                         console.warn('[MediaLib] Fetch failed:', url, res.status);
                         break;
                     }
-                    const json = await res.json();
+                    const json: Record<string, any> = await res.json();
                     const items: T[] = Array.isArray(json.data?.results)
                         ? json.data.results
                         : Array.isArray(json.data)
@@ -160,7 +160,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
             setBrandAssets(allAssets);
         } catch (err: unknown) {
           console.error(err);
-            setBrandError(err.message || 'Failed to load brand assets');
+            setBrandError(err instanceof Error ? err.message : 'Failed to load brand assets');
         } finally {
             setBrandLoading(false);
         }
@@ -182,9 +182,9 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 const all: T[] = [];
                 let nextUrl: string | null = url;
                 while (nextUrl) {
-                    const res = await fetch(nextUrl, { credentials: 'include' });
+                    const res: Response = await fetch(nextUrl, { credentials: 'include' });
                     if (!res.ok) break;
-                    const json = await res.json();
+                    const json: Record<string, any> = await res.json();
                     const items: T[] = Array.isArray(json.data?.results)
                         ? json.data.results
                         : Array.isArray(json.data)

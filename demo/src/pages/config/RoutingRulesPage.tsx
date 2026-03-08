@@ -15,6 +15,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './RoutingRulesPage.module.css';
 
 interface RoutingRule {
@@ -117,7 +118,7 @@ export const RoutingRulesPage: React.FC = () => {
       setRules(rawResults as RoutingRule[]);
     } catch (e: unknown) {
       console.error(e);
-      setError(e?.message || 'Failed to load');
+      setError(getErrorMessage(e) || 'Failed to load');
       setRules([]);
     } finally {
       setLoading(false);
@@ -164,7 +165,7 @@ export const RoutingRulesPage: React.FC = () => {
       await fetchRules();
     } catch (e: unknown) {
       console.error(e);
-      setError(e?.message || 'Failed to create');
+      setError(getErrorMessage(e) || 'Failed to create');
     } finally {
       setCreating(false);
     }
@@ -188,7 +189,7 @@ export const RoutingRulesPage: React.FC = () => {
       setRules(prev => prev.map(r => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
     } catch (e: unknown) {
       console.error(e);
-      setError(e?.message || 'Failed to update');
+      setError(getErrorMessage(e) || 'Failed to update');
     }
   }
 
@@ -209,7 +210,7 @@ export const RoutingRulesPage: React.FC = () => {
       setRules(prev => prev.filter(r => r.id !== rule.id));
     } catch (e: unknown) {
       console.error(e);
-      setError(e?.message || 'Failed to delete');
+      setError(getErrorMessage(e) || 'Failed to delete');
     }
   }
 

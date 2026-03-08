@@ -74,7 +74,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     const createMenuRef = useRef<HTMLDivElement | null>(null);
     const dropdownRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const hoverTimerRef = useRef<Record<string, number>>({});
-    const closeTimerRef = useRef<number | null>(null);
+    const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isDropdownHoveredRef = useRef(false);
     const [isTouchDevice, setIsTouchDevice] = useState(false);
     const currentThemeMode = mode || 'light';

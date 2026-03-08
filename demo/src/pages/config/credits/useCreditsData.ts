@@ -238,7 +238,7 @@ export function useCreditsData() {
       } catch (err: unknown) {
         console.error(err);
         console.error('[CreditsPage] Credits fetch exception:', err);
-        setError(err.message || 'Failed to load credits balance');
+        setError(err instanceof Error ? err.message : 'Failed to load credits balance');
         setCredits(null);
       } finally {
         setLoading(false);
@@ -290,7 +290,7 @@ export function useCreditsData() {
       } catch (err: unknown) {
         console.error(err);
         console.error('[CreditsPage] Personal credits fetch exception:', err);
-        setPersonalError(err.message || 'Failed to load personal credits balance');
+        setPersonalError(err instanceof Error ? err.message : 'Failed to load personal credits balance');
         setPersonalCredits(null);
       } finally {
         setPersonalLoading(false);
@@ -407,7 +407,7 @@ export function useCreditsData() {
     } catch (err: unknown) {
       console.error(err);
       console.error('[CreditsPage] Exception creating transaction:', err);
-      setToastMessage(`Error: ${err.message || 'Failed to create transaction'}`);
+      setToastMessage(`Error: ${err instanceof Error ? err.message : 'Failed to create transaction'}`);
     } finally {
       setTimeout(() => setToastMessage(null), 5000);
     }

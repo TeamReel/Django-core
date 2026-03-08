@@ -78,7 +78,7 @@ export const OrganisationEditPage: React.FC = () => {
         setIsActive(data.is_active !== undefined ? data.is_active : true);
       } catch (err: unknown) {
         console.error(err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Failed to load organisation');
       } finally {
         setLoading(false);
       }
@@ -135,7 +135,7 @@ export const OrganisationEditPage: React.FC = () => {
       navigate(`/organisations/${slugOrId}`);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Failed to update organisation');
     } finally {
       setSaving(false);
     }

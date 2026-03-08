@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button, Alert } from '@django-core/design-system';
 import { useUserRole } from '../PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './PolicyList.module.css';
 
 interface PolicyListProps {
@@ -150,7 +151,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
       setBalanceSaveSuccess('Saved');
     } catch (e: unknown) {
       console.error(e);
-      setBalanceSaveError(e?.message || 'Failed to save');
+      setBalanceSaveError(getErrorMessage(e) || 'Failed to save');
     } finally {
       setBalanceSaving(false);
       setTimeout(() => setBalanceSaveSuccess(null), 2000);

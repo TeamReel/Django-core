@@ -82,7 +82,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       onSaved(membershipId, editAccessRole, functionalRoles);
     } catch (err: unknown) {
       console.error(err);
-      alert(err.message || 'Failed to update member');
+      alert(err instanceof Error ? err.message : 'Failed to update member');
     }
   };
 

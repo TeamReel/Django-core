@@ -14,6 +14,7 @@
  * "Already exists" errors are swallowed (idempotent cascade).
  */
 import React, { useCallback, useMemo, useState } from 'react';
+import { getErrorMessage } from '../../../utils/errorHelpers';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
@@ -247,7 +248,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
       setIsSaving(false);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Lid toevoegen mislukt');
+      setError(getErrorMessage(err) || 'Lid toevoegen mislukt');
       setIsSaving(false);
       throw err; // re-throw so MemberConfirmStep knows it failed
     }

@@ -104,7 +104,7 @@ export const useMediaLibrary = () => {
 
         } catch (err: unknown) {
           console.error(err);
-            setError(err.message || 'Unknown error');
+            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
         }

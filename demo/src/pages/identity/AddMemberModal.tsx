@@ -202,7 +202,7 @@ export default function AddMemberModal({
       }, 1200);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Failed to add member');
+      setError(err instanceof Error ? err.message : 'Failed to add member');
     } finally {
       setLoading(false);
     }
@@ -249,7 +249,7 @@ export default function AddMemberModal({
       await addExistingUser(createdUser);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Failed to create user');
+      setError(err instanceof Error ? err.message : 'Failed to create user');
       setLoading(false);
     }
   };

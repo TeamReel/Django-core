@@ -315,7 +315,7 @@ export function useUserDetailData(): UserDetailDataReturn {
                 if (!cancelled) setUserBalance(v != null ? String(v) : null);
             } catch (e: unknown) {
               console.error(e);
-                if (!cancelled) setUserBalanceError(e?.message || 'Failed to fetch balance');
+                if (!cancelled) setUserBalanceError(e instanceof Error ? e.message : 'Failed to fetch balance');
             } finally {
                 if (!cancelled) setUserBalanceLoading(false);
             }

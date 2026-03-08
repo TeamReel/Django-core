@@ -127,7 +127,7 @@ export function useWorkflowTemplates() {
       } catch (err: unknown) {
         console.error(err);
         if (DEBUG_LOGS) console.error('[useWorkflowTemplates] Error:', err);
-        setError(err.message || 'Failed to load workflow templates');
+        setError(err instanceof Error ? err.message : 'Failed to load workflow templates');
       } finally {
         setLoading(false);
       }
@@ -188,7 +188,7 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}) 
       } catch (err: unknown) {
         console.error(err);
         if (DEBUG_LOGS) console.error('[useWorkflowInstances] Error:', err);
-        setError(err.message || 'Failed to load workflow instances');
+        setError(err instanceof Error ? err.message : 'Failed to load workflow instances');
       } finally {
         setLoading(false);
       }
@@ -221,7 +221,7 @@ export function useWorkflowInstance(instanceId: number | string | null) {
       } catch (err: unknown) {
         console.error(err);
         if (DEBUG_LOGS) console.error('[useWorkflowInstance] Error:', err);
-        setError(err.message || 'Failed to load workflow instance');
+        setError(err instanceof Error ? err.message : 'Failed to load workflow instance');
       } finally {
         setLoading(false);
       }
@@ -251,7 +251,7 @@ export function useTransitionHistory(instanceId: number | string | null) {
       } catch (err: unknown) {
         console.error(err);
         if (DEBUG_LOGS) console.error('[useTransitionHistory] Error:', err);
-        setError(err.message || 'Failed to load transition history');
+        setError(err instanceof Error ? err.message : 'Failed to load transition history');
       } finally {
         setLoading(false);
       }

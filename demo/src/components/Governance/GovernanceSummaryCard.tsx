@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './GovernanceSummaryCard.module.css';
 
 type BalancePolicy = {
@@ -114,7 +115,7 @@ export default function GovernanceSummaryCard(props: {
         if (cancelled) return;
         setPolicy(null);
         setSource(null);
-        setError(e?.message || 'Failed to load governance policy');
+        setError(getErrorMessage(e) || 'Failed to load governance policy');
       } finally {
         if (!cancelled) setLoading(false);
       }

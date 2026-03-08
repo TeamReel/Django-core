@@ -186,9 +186,9 @@ export function useBrandAssets(): UseBrandAssetsReturn {
         const all: T[] = [];
         let nextUrl: string | null = url;
         while (nextUrl) {
-          const res = await fetch(nextUrl, { headers: getHeaders(), credentials: 'include', signal });
+          const res: Response = await fetch(nextUrl, { headers: getHeaders(), credentials: 'include', signal });
           if (!res.ok) break;
-          const json = await res.json();
+          const json: Record<string, any> = await res.json();
           // Handle envelope formats
           const items: T[] = Array.isArray(json.data?.results) ? json.data.results
             : Array.isArray(json.data) ? json.data
@@ -239,8 +239,8 @@ export function useBrandAssets(): UseBrandAssetsReturn {
       setAssets(filtered);
     } catch (err: unknown) {
       console.error(err);
-      if (err.name !== 'AbortError') {
-        setError(err.message || 'Failed to load brand assets');
+      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && (err as any).name === 'AbortError')) {
+        setError(err instanceof Error ? err.message : 'Failed to load brand assets');
       }
     } finally {
       setLoading(false);

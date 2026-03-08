@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getErrorMessage } from '../../utils/errorHelpers';
 import SmartEmptyState from '../SmartEmptyState';
 import styles from './AuditLogTable.module.css';
 
@@ -65,9 +66,8 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         setEvents(results);
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
         console.error('Error fetching audit log:', err);
-        setError(err.message || 'Unknown error');
+        setError(getErrorMessage(err) || 'Unknown error');
       } finally {
         setLoading(false);
       }

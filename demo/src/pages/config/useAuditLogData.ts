@@ -115,7 +115,7 @@ export function useAuditLogData() {
   useEffect(() => {
     if (page !== '1' || dateFrom || dateTo || !authUser) return;
     let ws: WebSocket | null = null;
-    let reconnectTimer: number;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
     let isMounted = true;
 
     const connect = async () => {

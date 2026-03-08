@@ -11,6 +11,7 @@
  *   - Competition: { ..., parent_period_id, metadata: { type: 'competition' } }
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { getErrorMessage } from '../../../utils/errorHelpers';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
@@ -212,7 +213,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
       setIsSaving(false);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || `${periodTypeLabel} aanmaken mislukt`);
+      setError(getErrorMessage(err) || `${periodTypeLabel} aanmaken mislukt`);
       setIsSaving(false);
       throw err;
     }

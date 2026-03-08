@@ -73,7 +73,7 @@ export const OrganisationCreatePage: React.FC = () => {
       }
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Failed to create organisation');
     } finally {
       setLoading(false);
     }

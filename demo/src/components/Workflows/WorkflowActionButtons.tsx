@@ -43,7 +43,7 @@ export function WorkflowActionButtons({
       onTransitionComplete?.(entry);
     } catch (err: unknown) {
       console.error(err);
-      onError?.(err.message || `Failed to execute "${action}"`);
+      onError?.(err instanceof Error ? err.message : `Failed to execute "${action}"`);
     } finally {
       setExecuting(null);
     }

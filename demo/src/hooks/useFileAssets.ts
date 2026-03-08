@@ -98,13 +98,13 @@ export function useFileAssets(): UseFileAssetsReturn {
       const all: FileAsset[] = [];
       let nextUrl: string | null = `${base}/api/v1/files/?page_size=100`;
       while (nextUrl) {
-        const res = await fetch(nextUrl, {
+        const res: Response = await fetch(nextUrl, {
           headers: getHeaders(orgId),
           credentials: 'include',
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`Failed to load files: ${res.statusText}`);
-        const json = await res.json();
+        const json: Record<string, any> = await res.json();
         const arr = Array.isArray(json.data) ? json.data : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.results) ? json.results : [];
         all.push(...arr);
         nextUrl = json.meta?.pagination?.next || json.data?.next || json.next || null;
@@ -112,8 +112,8 @@ export function useFileAssets(): UseFileAssetsReturn {
       setFiles(all);
     } catch (err: unknown) {
       console.error(err);
-      if (err.name !== 'AbortError') {
-        setError(err.message || 'Failed to load files');
+      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && (err as any).name === 'AbortError')) {
+        setError(err instanceof Error ? err.message : 'Failed to load files');
       }
     } finally {
       setLoading(false);

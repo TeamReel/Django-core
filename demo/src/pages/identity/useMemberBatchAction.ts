@@ -240,7 +240,7 @@ export function useMemberBatchAction({
             } catch (err: unknown) {
               console.error(err);
                 failed++;
-                newErrors.push(`${name}: ${err?.message || 'Onbekende fout'}`);
+                newErrors.push(`${name}: ${err instanceof Error ? err.message : 'Onbekende fout'}`);
             }
 
             setProgress({ current: i + 1, total, success, failed });

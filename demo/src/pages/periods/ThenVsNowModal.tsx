@@ -182,7 +182,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
       setTimeout(() => onClose(), 2500);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || 'Failed to start compilation');
+      setError(err instanceof Error ? err.message : 'Failed to start compilation');
       setStep('error');
     }
   };

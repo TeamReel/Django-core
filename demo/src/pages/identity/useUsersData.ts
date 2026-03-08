@@ -326,7 +326,7 @@ export function useUsersData() {
     } catch (err: unknown) {
       console.error(err);
       console.error(err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Failed to load users');
     } finally {
       setIsLoading(false);
     }

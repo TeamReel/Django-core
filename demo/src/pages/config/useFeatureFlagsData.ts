@@ -127,7 +127,8 @@ export function useFeatureFlagsData() {
           console.error(err);
           console.warn('API failed:', err);
 
-          if (err.message && (err.message.includes('401') || err.message.includes('403'))) {
+          const errMsg = err instanceof Error ? err.message : '';
+          if (errMsg && (errMsg.includes('401') || errMsg.includes('403'))) {
             setApiError('Permission denied. Please ensure you are logged in with the correct permissions.');
             setFlags([]);
             return;

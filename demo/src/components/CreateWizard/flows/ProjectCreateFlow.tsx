@@ -11,6 +11,7 @@
  *   - Team: { name, description, parent_project_id }
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { getErrorMessage } from '../../../utils/errorHelpers';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
@@ -158,7 +159,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
       setIsSaving(false);
     } catch (err: unknown) {
       console.error(err);
-      setError(err.message || `${projectTypeLabel} aanmaken mislukt`);
+      setError(getErrorMessage(err) || `${projectTypeLabel} aanmaken mislukt`);
       setIsSaving(false);
       throw err;
     }

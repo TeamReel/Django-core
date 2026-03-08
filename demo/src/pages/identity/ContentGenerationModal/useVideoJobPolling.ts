@@ -117,7 +117,7 @@ export function useVideoJobPolling({
           }
         } catch (err: unknown) {
           console.error(err);
-          if (err?.name === 'AbortError') return;
+          if (err instanceof Error && err.name === 'AbortError') return;
           console.warn('Poll error:', err);
         }
         await new Promise(r => setTimeout(r, 5000));
