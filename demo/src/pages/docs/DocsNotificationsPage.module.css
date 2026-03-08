@@ -18,7 +18,7 @@
 }
 
 .filterBtn {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid var(--filter-btn-border, #6c757d);
   background-color: var(--app-surface);
@@ -75,11 +75,11 @@
 }
 
 .toggleBtn {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 4px;
-  border: 1px solid #6c757d;
+  border: 1px solid var(--color-neutral-400);
   background-color: var(--app-surface);
-  color: #6c757d;
+  color: var(--color-neutral-400);
   cursor: pointer;
   font-size: 12px;
   font-weight: 500;

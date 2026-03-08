@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 12px 12px;
   border-bottom: 1px solid var(--app-border, #333);
   background: var(--app-surface, #1e1e30);
   flex-shrink: 0;
@@ -35,7 +35,7 @@
 .navRow {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
@@ -45,7 +45,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border, #444);
   background: var(--app-surface, #1e1e30);
   color: var(--app-text);
@@ -76,7 +76,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .memberName {
@@ -96,7 +96,7 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -104,8 +104,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 12px;
-  border-radius: 6px;
+  padding: 4px 12px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -130,7 +130,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border, #444);
   background: transparent;
   color: var(--app-muted-text);
@@ -147,8 +147,8 @@
 .tabBar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--app-border, #333);
   background: var(--app-surface, #1e1e30);
   flex-shrink: 0;
@@ -157,7 +157,7 @@
 }
 
 .tabBtn {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 20px;
   border: none;
   background: transparent;
@@ -214,7 +214,7 @@
 .errorState {
   padding: 24px 16px;
   text-align: center;
-  color: #ef4444;
+  color: var(--color-red-400);
   font-size: 13px;
 }
 

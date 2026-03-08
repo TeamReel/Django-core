@@ -154,6 +154,30 @@
 .text-error     { color: var(--app-error); }
 .text-danger    { color: var(--app-danger, var(--app-error)); }
 .text-inverse   { color: var(--app-bg); }
+.text-info      { color: var(--app-info); }
+.text-blue      { color: var(--color-blue-400); }
+.text-disabled  { color: var(--color-neutral-300); }
+
+/* ---------------------------------------------------------------------------
+   Colors — Status / Icon (semantic status colours for icons & badges)
+   Uses `color` so Lucide icons inherit via currentColor.
+   --------------------------------------------------------------------------- */
+.status-success    { color: var(--color-green-400); }
+.status-warning    { color: var(--color-amber-400); }
+.status-error      { color: var(--color-red-400); }
+.status-info       { color: var(--color-blue-400); }
+.status-processing { color: var(--color-amber-400); }
+.status-raw        { color: var(--color-amber-500); }
+.status-muted      { color: var(--color-neutral-300); }
+.status-running    { color: var(--color-blue-400); }
+.status-skipped    { color: var(--color-amber-400); }
+
+/* Status badge pill backgrounds */
+.badge-success    { background: var(--color-green-50);  color: var(--color-green-800); }
+.badge-error      { background: var(--color-red-50);    color: var(--color-red-700); }
+.badge-warning    { background: var(--color-amber-100); color: var(--color-amber-700); }
+.badge-info       { background: var(--color-blue-100);  color: var(--color-blue-800); }
+.badge-neutral    { background: var(--color-neutral-100); color: var(--color-neutral-500); }
 
 /* ---------------------------------------------------------------------------
    Colors — Background
@@ -357,15 +381,15 @@
 /* Composites — form controls */
 .form-input {
   width: 100%;
-  padding: 10px;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background: var(--app-input-bg, var(--app-surface-2));
   color: var(--app-text);
 }
 .form-textarea {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   font-size: var(--text-md);
   border-radius: var(--radius-md);
   resize: vertical;
@@ -381,7 +405,7 @@
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 /* Composites — modal tab button */
@@ -403,7 +427,7 @@
 
 /* Composites — modal button */
 .btn-modal {
-  padding: 10px 14px;
+  padding: 12px 16px;
   border-radius: var(--radius-md);
   font-weight: var(--font-extrabold);
   cursor: pointer;
@@ -425,14 +449,14 @@
 
 /* Composites — error / success callouts */
 .callout-error {
-  padding: 10px;
+  padding: 12px;
   border: 1px solid rgba(220, 53, 69, 0.3);
   background: rgba(220, 53, 69, 0.08);
   color: var(--app-error);
-  border-radius: 6px;
+  border-radius: 8px;
 }
 .callout-success {
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   background: rgba(40, 167, 69, 0.1);
@@ -484,7 +508,7 @@
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -494,8 +518,8 @@
   position: absolute;
   font-size: 10px;
   font-weight: var(--font-bold);
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 4px 8px;
+  border-radius: 12px;
   color: #fff;
 }
 
@@ -503,7 +527,7 @@
    Composites — small danger button
    --------------------------------------------------------------------------- */
 .btn-danger-sm {
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 4px;
   border: 1px solid var(--app-error, #dc3545);
   background-color: var(--app-surface);
@@ -533,10 +557,10 @@
   min-width: 900px;
   border-collapse: collapse;
   font-size: 13px;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 .dir-th {
-  padding: 6px 8px;
+  padding: 8px 8px;
   font-size: 0.8rem;
   text-align: left;
   border-bottom: 2px solid var(--app-border);
@@ -580,19 +604,19 @@
   border-collapse: collapse;
 }
 .detail-th {
-  padding: 6px 8px;
+  padding: 8px 8px;
   font-size: 0.8rem;
   text-align: left;
   border-bottom: 2px solid var(--app-border);
 }
 .detail-td {
-  padding: 6px 8px;
+  padding: 8px 8px;
   font-size: 0.85rem;
   vertical-align: middle;
   border-bottom: 1px solid #eee;
 }
 .detail-td-text {
-  padding: 6px 8px;
+  padding: 8px 8px;
   font-size: 0.85rem;
   vertical-align: middle;
   border-bottom: 1px solid #eee;

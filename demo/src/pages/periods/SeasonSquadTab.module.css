@@ -55,7 +55,7 @@
 
 .badgeGroup {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -63,7 +63,7 @@
 .viewToggle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
   color: var(--app-muted-text, #6b7280);
   cursor: pointer;
@@ -86,7 +86,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 8px;
   background: var(--app-surface, #fff);
@@ -120,7 +120,7 @@
 .memberCardRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -149,8 +149,8 @@
 
 /* Expanded details */
 .memberCardDetails {
-  margin-top: 6px;
-  padding-top: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -162,13 +162,13 @@
 
 .memberCardActions {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .memberCardActions button {
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 4px 8px;
 }
 
 /* ── Mobile overrides ───────────────────────────────────────────────── */

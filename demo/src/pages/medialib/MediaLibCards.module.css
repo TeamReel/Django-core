@@ -16,7 +16,7 @@
 }
 
 .closeButton {
-  padding: 6px 10px;
+  padding: 8px 12px;
 }
 
 .previewMedia {
@@ -83,7 +83,7 @@
 
 .downloadButton {
   align-self: flex-start;
-  padding: 4px 10px;
+  padding: 4px 12px;
 }
 
 /* --------------------------------------------------------------------------
@@ -92,7 +92,7 @@
 
 .filterChip {
   align-items: center;
-  padding: 5px 12px;
+  padding: 4px 12px;
   font-weight: 400;
   border: 1px solid var(--app-border);
   background-color: transparent;
@@ -108,7 +108,7 @@
 
 .filterChipCount {
   font-size: 10px;
-  padding: 0 5px;
+  padding: 0 4px;
   background-color: var(--app-surface-2, #f3f4f6);
   color: var(--app-text-secondary);
 }

@@ -5,7 +5,7 @@
 }
 
 .tokenItem {
-  padding: 6px 10px;
+  padding: 8px 12px;
   background-color: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
 }
 

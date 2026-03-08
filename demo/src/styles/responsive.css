@@ -129,7 +129,7 @@
 .overflow-x-auto {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
 }
 
 /* --- Responsive Tables --- */
@@ -150,7 +150,7 @@
   /* Compact table cells */
   table th,
   table td {
-    padding: 8px 6px !important;
+    padding: 8px 8px !important;
     font-size: 13px !important;
     white-space: nowrap;
   }
@@ -214,7 +214,7 @@
   /* Compact badges */
   [style*="padding: '4px 8px'"],
   [style*="padding:'4px 8px'"] {
-    padding: 2px 6px !important;
+    padding: 4px 8px !important;
     font-size: 11px !important;
   }
 }

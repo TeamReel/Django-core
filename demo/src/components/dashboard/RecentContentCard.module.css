@@ -4,14 +4,14 @@
   background: var(--app-surface);
   border-radius: 12px;
   border: 1px solid var(--app-border);
-  padding: 14px;
+  padding: 16px;
   margin-bottom: 12px;
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--app-text);
   font-size: 14px;
   font-weight: 700;
@@ -25,7 +25,7 @@
 .seeAll {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   font-size: 12px;
   font-weight: 600;
   color: var(--app-primary);
@@ -100,7 +100,7 @@
 
 /* ── Meta ──────────────────────────────────────── */
 .thumbMeta {
-  padding: 4px 2px 0;
+  padding: 4px 4px 0;
 }
 
 .thumbTitle {
@@ -116,7 +116,7 @@
 .thumbTime {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-size: 10px;
   color: var(--app-muted-text);
   margin-top: 1px;

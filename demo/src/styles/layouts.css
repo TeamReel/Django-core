@@ -172,7 +172,7 @@
 
   /* Smaller media slot cards */
   [style*="gridTemplateColumns: repeat(auto-fill, minmax(200px"] > div {
-    padding: 10px !important;
+    padding: 12px !important;
   }
 
   [style*="gridTemplateColumns: repeat(auto-fill, minmax(200px"] > div span[style*="fontSize: '20px'"] {
@@ -240,7 +240,7 @@
   /* 3 columns on mobile, tighter gap */
   .media-asset-grid {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 6px !important;
+    gap: 8px !important;
   }
 
   /* Smaller preview area */
@@ -250,19 +250,19 @@
 
   /* Compact info area */
   .media-asset-grid > div > div:last-child {
-    padding: 4px 6px !important;
+    padding: 4px 8px !important;
   }
 
   /* Smaller label text */
   .media-asset-grid > div > div:last-child > div:first-child {
     font-size: 10px !important;
     line-height: 1.2 !important;
-    margin-bottom: 2px !important;
+    margin-bottom: 4px !important;
   }
 
   /* Smaller action buttons */
   .media-asset-grid > div > div:last-child button {
-    padding: 3px 4px !important;
+    padding: 4px 4px !important;
     font-size: 10px !important;
   }
 
@@ -300,12 +300,12 @@
   div[style*="gridTemplateColumns: 'repeat(auto-fill, minmax(220px"],
   div[style*="repeat(auto-fill, minmax(220px"] {
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 2px !important;
+    gap: 4px !important;
   }
 
   /* Gallery content area: reduce padding for edge-to-edge grid */
   .gallery-content {
-    padding: 4px 2px !important;
+    padding: 4px 4px !important;
   }
 
   /* Filter chips: horizontal scroll, no wrap */

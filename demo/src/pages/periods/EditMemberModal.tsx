@@ -132,8 +132,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                   key={opt.value}
                   className={s.radioCard}
                   style={{
-                    border: isSelected ? '2px solid #3b82f6' : '1px solid #475569',
-                    backgroundColor: isSelected ? '#1e3a5f' : '#334155',
+                    border: isSelected ? '2px solid var(--color-blue-500)' : '1px solid var(--color-neutral-500)',
+                    backgroundColor: isSelected ? 'var(--color-neutral-800)' : 'var(--color-neutral-600)',
                   }}
                 >
                   <input
@@ -168,8 +168,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                   key={role}
                   className={s.checkboxCard}
                   style={{
-                    backgroundColor: isChecked ? '#1e40af' : '#334155',
-                    borderColor: isChecked ? 'var(--color-blue-500)' : '#475569',
+                    backgroundColor: isChecked ? 'var(--color-blue-800)' : 'var(--color-neutral-600)',
+                    borderColor: isChecked ? 'var(--color-blue-500)' : 'var(--color-neutral-500)',
                   }}
                 >
                   <input

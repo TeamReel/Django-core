@@ -1,9 +1,9 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 2px 8px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 1000px;
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   font-size: 12px;
@@ -12,12 +12,12 @@
 }
 
 .clubCard {
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface);
 }
 
 .clubHeader {
-  padding: 10px 12px;
+  padding: 12px 12px;
   background: var(--app-surface-2);
 }
 
@@ -31,10 +31,10 @@
 }
 
 .clubContent {
-  padding: 10px 12px;
+  padding: 12px 12px;
 }
 
 .teamRow {
-  padding: 8px 10px;
+  padding: 8px 12px;
   background: var(--app-surface);
 }

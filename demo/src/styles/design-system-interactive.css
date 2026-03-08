@@ -42,7 +42,7 @@
 .glow-input:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  border-color: #3b82f6;
+  border-color: var(--color-blue-500);
 }
 
 .badge-hover {
@@ -93,7 +93,7 @@
   width: 100%;
   height: 4px;
   background-color: var(--app-border);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
@@ -101,7 +101,7 @@
   height: 100%;
   background: linear-gradient(90deg, var(--app-link), var(--app-focus-ring));
   animation: progress-indeterminate 2s infinite;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 @keyframes progress-indeterminate {
@@ -112,12 +112,12 @@
 
 .wave-loader {
   display: flex;
-  gap: 2px;
+  gap: 4px;
   align-items: center;
 }
 
 .wave-loader div {
-  width: 3px;
+  width: 4px;
   height: 20px;
   background-color: var(--app-link);
   border-radius: 1px;
@@ -146,10 +146,10 @@
 .breathing-loader::before {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  bottom: 2px;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
   background-color: var(--app-link);
   border-radius: 50%;
   animation: breathing 2s infinite ease-in-out;

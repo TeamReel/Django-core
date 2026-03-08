@@ -186,7 +186,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
           <div className={ov.brandGrid}>
             {brandAssets.map((a) => (
               <div key={a.label} className={ov.brandItem} data-present={a.present ? 'true' : 'false'}>
-                <span className={ov.brandIcon}>{a.present ? <CheckCircle2 size={14} color="#22c55e" /> : <Circle size={14} color="#d1d5db" />}</span>
+                <span className={ov.brandIcon}>{a.present ? <span className="status-success"><CheckCircle2 size={14} /></span> : <span className="status-muted"><Circle size={14} /></span>}</span>
                 <span className={ov.brandLabel}>{a.label}</span>
               </div>
             ))}

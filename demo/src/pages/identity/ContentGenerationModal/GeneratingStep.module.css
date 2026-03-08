@@ -38,8 +38,8 @@
 .progressTrack {
   width: 100%;
   background: var(--app-border, #e5e5e5);
-  border-radius: 9999px;
-  height: 10px;
+  border-radius: 10000px;
+  height: 12px;
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -47,7 +47,7 @@
 .progressFill {
   background: var(--app-primary, #3B8EA5);
   height: 100%;
-  border-radius: 9999px;
+  border-radius: 10000px;
   transition: all 150ms ease;
 }
 

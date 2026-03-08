@@ -65,7 +65,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
         <div style={{
           height: '100%',
           width: `${members.length > 0 ? (completedCount / members.length) * 100 : 0}%`,
-          background: errorCount > 0 ? 'var(--color-amber-400)' : '#22c55e',
+          background: errorCount > 0 ? 'var(--color-amber-400)' : 'var(--color-green-400)',
           transition: 'width 0.3s ease',
         }} />
       </div>
@@ -75,11 +75,11 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
     {members.map((member) => {
       const job = jobStatuses[member.id];
       const statusIcon =
-        job?.status === 'running' ? <Loader2 size={14} className="animate-spin" style={{ color: '#60a5fa' }} /> :
-        job?.status === 'success' ? <CheckCircle2 size={14} color="#22c55e" /> :
-        job?.status === 'error' ? <XCircle size={14} color="#ef4444" /> :
-        job?.status === 'skipped' ? <SkipForward size={14} color="#f59e0b" /> :
-        <Circle size={14} color="#6b7280" />;
+        job?.status === 'running' ? <span className="status-running"><Loader2 size={14} className="animate-spin" /></span> :
+        job?.status === 'success' ? <span className="status-success"><CheckCircle2 size={14} /></span> :
+        job?.status === 'error' ? <span className="status-error"><XCircle size={14} /></span> :
+        job?.status === 'skipped' ? <span className="status-skipped"><SkipForward size={14} /></span> :
+        <span className="status-muted"><Circle size={14} /></span>;
 
       return (
         <div key={member.id} className={configStyles.memberRow} style={{ cursor: 'default' }}>
@@ -96,7 +96,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
               <div className="fs-10" style={{ color: 'var(--color-red-500)' }}>{job.error}</div>
             )}
             {job?.status === 'running' && (
-              <div className="fs-10" style={{ color: '#60a5fa' }}>
+              <div className="fs-10 status-running">
                 {job.totalFrames && job.progressFrames
                   ? `Frame ${job.progressFrames}/${job.totalFrames} (${Math.round((job.progressFrames / job.totalFrames) * 100)}%)`
                   : 'Bezig...'}

@@ -3,7 +3,7 @@
 /* ── Shared ──────────────────────────────────────────────────────── */
 
 .sectionLabel {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: var(--vscode-foreground, #ccc);
 }
 
@@ -19,7 +19,7 @@
   border: 1px solid var(--vscode-widget-border, #333);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   text-align: center;
@@ -53,7 +53,7 @@
 }
 
 .backgroundButton[data-selected='true'] {
-  border: 3px solid #10b981;
+  border: 3px solid var(--color-green-400);
 }
 
 .backgroundImage {
@@ -64,13 +64,13 @@
 
 .checkmark {
   position: absolute;
-  bottom: 2px;
-  right: 2px;
+  bottom: 4px;
+  right: 4px;
   background: var(--color-green-400);
   color: #fff;
   border-radius: 50%;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,11 +82,11 @@
 .modelButton {
   flex: 1 1 auto;
   min-width: 80px;
-  padding: 6px 8px;
+  padding: 8px 8px;
   border: 1px solid var(--vscode-widget-border, #333);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 11px;
   text-align: center;

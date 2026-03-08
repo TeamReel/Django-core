@@ -125,7 +125,7 @@ export const ContentStatsCard: React.FC = () => {
       role="button"
       tabIndex={0}
     >
-      <div className={styles.cardIcon} style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+      <div className={styles.cardIcon} style={{ background: 'rgba(236, 72, 153, 0.1)', color: 'var(--color-red-400)' }}>
         <Image size={18} />
       </div>
       <div className={styles.cardContent}>
@@ -239,7 +239,7 @@ export const AIQueueCard: React.FC = () => {
     >
       <div className={styles.cardIcon} style={{
         background: hasWork ? 'rgba(245, 158, 11, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-        color: hasWork ? '#f59e0b' : '#22c55e',
+        color: hasWork ? 'var(--color-amber-400)' : 'var(--color-green-400)',
       }}>
         <Cpu size={18} />
       </div>
@@ -287,7 +287,7 @@ export const CreditsTrendCard: React.FC = () => {
     >
       <div className={styles.cardIcon} style={{
         background: lowBalanceAlert ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-        color: lowBalanceAlert ? '#ef4444' : '#22c55e',
+        color: lowBalanceAlert ? 'var(--color-red-400)' : 'var(--color-green-400)',
       }}>
         <CreditCard size={18} />
       </div>

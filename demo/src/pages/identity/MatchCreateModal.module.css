@@ -20,14 +20,14 @@
 
 .formGrid {
   grid-template-columns: 140px 1fr;
-  gap: 10px 16px;
+  gap: 12px 16px;
 }
 
 /* ── Base form control (selects) ─────────────────────────────────────────── */
 
 .control {
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -70,7 +70,7 @@
 /* ── Mobile bottom-sheet ─────────────────────────────────────────────── */
 @media (max-width: 639px) {
   .backdrop {
-    top: 57px;
+    top: 56px;
     bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     flex-direction: column;
     justify-content: flex-end;
@@ -98,7 +98,7 @@
     display: block;
     width: 36px;
     height: 4px;
-    border-radius: 2px;
+    border-radius: 4px;
     background-color: var(--app-border, #d0d5dd);
     margin: 0 auto 8px;
     flex-shrink: 0;
@@ -113,7 +113,7 @@
 
   .formGrid {
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: 8px;
   }
 
   .closeButton {

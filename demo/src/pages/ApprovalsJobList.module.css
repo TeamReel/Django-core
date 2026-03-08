@@ -27,13 +27,13 @@
    AI Job Card
    ============================================================ */
 .aiCard {
-  padding: 14px 16px;
+  padding: 16px 16px;
   background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border, #e5e7eb);
   cursor: default;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   transition: box-shadow 0.15s, transform 0.1s;
 }
 
@@ -59,13 +59,13 @@
 
 /* --- AI progress --- */
 .aiProgressTrack {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .aiProgressBar {
   height: 100%;
   background-color: var(--color-blue-600);
-  border-radius: 99px;
+  border-radius: 100px;
   transition: width 0.4s ease;
 }
 
@@ -76,7 +76,7 @@
 /* --- Type badge (AI) --- */
 .typeBadge {
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   letter-spacing: 0.04em;
 }
 
@@ -98,7 +98,7 @@
 /* --- AI status badge --- */
 .aiStatusBadge {
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   letter-spacing: 0.04em;
 }
 
@@ -136,7 +136,7 @@
 /* --- AI approval badge --- */
 .approvalBadge {
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 4px 8px;
 }
 
 .approvalBadge[data-approval="approved"] {
@@ -158,10 +158,10 @@
    Video Job Card
    ============================================================ */
 .videoCard {
-  padding: 14px 16px;
+  padding: 16px 16px;
   background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border, #e5e7eb);
-  gap: 10px;
+  gap: 12px;
   cursor: default;
   transition: box-shadow 0.15s, transform 0.1s;
 }
@@ -199,7 +199,7 @@
 /* --- Video status badge --- */
 .videoStatusBadge {
   font-size: 10px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   letter-spacing: 0.04em;
 }
 
@@ -231,7 +231,7 @@
 /* --- Video progress bar --- */
 .videoProgressBar {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   transition: width 0.5s ease-out;
   background-color: var(--color-blue-600);
 }
@@ -260,7 +260,7 @@
    Swipe-to-Approve / Reject (X1)
    ============================================================ */
 .swipeWrapper {
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .swipeRevealApprove,

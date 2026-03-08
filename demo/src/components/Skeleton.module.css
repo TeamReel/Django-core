@@ -90,7 +90,7 @@
 }
 
 .mb6 {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 /* ── SkeletonPageHeader ── */
@@ -166,7 +166,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 16px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--app-border);
 }
 

@@ -70,7 +70,7 @@
 @media (max-width: 639px) {
   .tabButton,
   .tabButtonActive {
-    padding: 10px 16px;
+    padding: 12px 16px;
     font-size: 14px;
   }
 

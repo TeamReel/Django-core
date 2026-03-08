@@ -6,7 +6,7 @@
 /* ─── Layout ──────────────────────────────────────────────────────────────── */
 
 .wrapper {
-  height: 57px;
+  height: 56px;
   position: relative;
   z-index: 1100;
 }
@@ -51,7 +51,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .logoImg {
@@ -87,7 +87,7 @@
   color: var(--app-primary, #1976d2);
   font-size: 14px;
   font-weight: 600;
-  padding: 6px 10px 6px 4px;
+  padding: 8px 12px 8px 4px;
   border-radius: 8px;
   white-space: nowrap;
   max-width: 180px;
@@ -132,7 +132,7 @@
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--app-text);
   background-color: transparent;
   font-weight: 500;
@@ -152,9 +152,9 @@
 
 .megaPanel {
   position: absolute;
-  top: calc(100% - 10px);
+  top: calc(100% - 12px);
   left: 0;
-  padding-top: 10px;
+  padding-top: 12px;
   min-width: 600px;
   z-index: 100;
 }
@@ -169,16 +169,16 @@
 
 .megaGrid {
   column-gap: 40px;
-  row-gap: 10px;
+  row-gap: 12px;
 }
 
 .megaItem {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px 12px;
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: background-color 0.15s;
   pointer-events: auto;
   cursor: pointer;
@@ -196,13 +196,13 @@
 
 .megaItemIcon {
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .megaItemTextWrap {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -244,11 +244,11 @@
 }
 
 .quickSwitchBtn {
-  padding: 8px 10px;
+  padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 /* Keyboard shortcut badge */
@@ -256,7 +256,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1px 5px;
+  padding: 1px 4px;
   font-size: 10px;
   font-weight: 600;
   font-family: inherit;
@@ -265,7 +265,7 @@
   background: var(--app-bg);
   border: 1px solid var(--app-border);
   border-radius: 4px;
-  margin-left: 2px;
+  margin-left: 4px;
   pointer-events: none;
 }
 
@@ -282,16 +282,16 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border-radius: 10px;
+  border-radius: 12px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 .createChevronBtn {
-  padding: 8px 10px;
+  padding: 8px 12px;
   display: inline-flex;
   align-items: center;
-  border-radius: 10px;
+  border-radius: 12px;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   border-left: 1px solid var(--app-border);
@@ -304,9 +304,9 @@
 
 .createDropdown {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 12px);
   right: 0;
-  min-width: 260px;
+  min-width: 256px;
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 12px;
@@ -320,13 +320,13 @@
   text-align: left;
   border: none;
   background: transparent;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   cursor: pointer;
   color: var(--app-text);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .createMenuItem:hover {
@@ -345,7 +345,7 @@
 .langBtn {
   padding: 8px 12px;
   background-color: transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   color: var(--app-text);
@@ -361,7 +361,7 @@
   margin-top: 4px;
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: var(--shadow-md);
   min-width: 120px;
   z-index: 1000;
@@ -370,7 +370,7 @@
 .langItem {
   display: block;
   width: 100%;
-  padding: 10px 16px;
+  padding: 12px 16px;
   text-align: left;
   border: none;
   font-size: 14px;
@@ -400,7 +400,7 @@
   position: relative;
   padding: 8px;
   background-color: transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 20px;
   flex-shrink: 0;
@@ -410,7 +410,7 @@
   position: relative;
   padding: 8px;
   background-color: transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 20px;
   color: var(--app-text);
@@ -421,8 +421,8 @@
   top: 4px;
   right: 4px;
   color: white;
-  border-radius: 10px;
-  padding: 2px 6px;
+  border-radius: 12px;
+  padding: 4px 8px;
   font-size: 10px;
   font-weight: bold;
 }
@@ -439,7 +439,7 @@
 
 .signInLink {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--app-text);
   border: 1px solid var(--app-border);
@@ -447,7 +447,7 @@
 
 .registerLink {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-decoration: none;
   color: white;
   background-color: var(--color-blue-600, #2563eb);
@@ -475,7 +475,7 @@
   gap: 8px;
   padding: 12px;
   margin-bottom: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-decoration: none;
   color: var(--app-text);
   font-weight: 500;
@@ -499,9 +499,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   margin-left: 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-decoration: none;
   font-size: 14px;
   color: var(--app-text);
@@ -585,13 +585,13 @@
 }
 
 .modalHeader {
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--app-border, #334155);
   flex-shrink: 0;
 }
 
 .modalHeaderRow {
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--app-border, #334155);
   display: flex;
   align-items: center;
@@ -600,7 +600,7 @@
 }
 
 .modalFooter {
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-top: 1px solid var(--app-border, #334155);
   flex-shrink: 0;
 }
@@ -622,7 +622,7 @@
 .modalSubtitle {
   font-size: 11px;
   color: var(--app-text-secondary, #9ca3af);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .modalSubtitle12 {
@@ -669,17 +669,17 @@
 .closeBtnMuted {
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--color-neutral-300);
   cursor: pointer;
   font-size: 20px;
   padding: 4px 8px;
 }
 
 .btnPrimary {
-  padding: 9px 24px;
+  padding: 8px 24px;
   border-radius: 8px;
   border: none;
-  background: #2563eb;
+  background: var(--color-blue-600);
   color: #fff;
   font-weight: 600;
   font-size: 13px;
@@ -687,7 +687,7 @@
 }
 
 .btnSecondary {
-  padding: 9px 16px;
+  padding: 8px 16px;
   border-radius: 8px;
   border: 1px solid var(--app-border);
   background: transparent;
@@ -698,7 +698,7 @@
 }
 
 .btnGhost {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--app-border, #475569);
   background-color: transparent;
@@ -718,7 +718,7 @@
 }
 
 .tabBtnSmall {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
@@ -727,20 +727,20 @@
 }
 
 .rejectBtn {
-  padding: 9px 20px;
+  padding: 8px 20px;
   border-radius: 8px;
-  border: 1px solid #dc2626;
+  border: 1px solid var(--color-red-500);
   background: transparent;
-  color: #dc2626;
+  color: var(--color-red-500);
   font-weight: 600;
   font-size: 13px;
 }
 
 .approveBtn {
-  padding: 9px 24px;
+  padding: 8px 24px;
   border-radius: 8px;
   border: none;
-  background: #16a34a;
+  background: var(--color-green-500);
   color: #fff;
   font-weight: 600;
   font-size: 13px;
@@ -783,7 +783,7 @@
 .jobIcon {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -799,7 +799,7 @@
 .variantCard {
   border-radius: 12px;
   overflow: hidden;
-  background-color: #0f172a;
+  background-color: var(--color-neutral-900);
   width: 100%;
   transition: all 0.15s ease;
   position: relative;
@@ -864,7 +864,7 @@
 
 .creditsLink {
   margin-top: 20px;
-  padding: 10px 24px;
+  padding: 12px 24px;
   border-radius: 8px;
   border: 1px solid var(--app-border, #475569);
   background-color: transparent;
@@ -919,21 +919,21 @@
 .followUpError {
   margin: 0 24px 16px;
   font-size: 12px;
-  color: #dc2626;
-  background-color: #fee2e2;
+  color: var(--color-red-500);
+  background-color: var(--color-red-50);
   border-radius: 8px;
   padding: 8px 12px;
 }
 
 .followUpFooter {
-  padding: 14px 24px;
+  padding: 16px 24px;
   border-top: 1px solid var(--app-border, #334155);
   display: flex;
   align-items: center;
 }
 
 .followUpSkipBtn {
-  padding: 9px 18px;
+  padding: 8px 20px;
   border-radius: 8px;
   border: 1px solid var(--app-border, #334155);
   background: transparent;
@@ -943,10 +943,10 @@
 }
 
 .followUpSubmitBtn {
-  padding: 9px 24px;
+  padding: 8px 24px;
   border-radius: 8px;
   border: none;
-  background: #2563eb;
+  background: var(--color-blue-600);
   color: #fff;
   font-weight: 600;
   font-size: 13px;
@@ -973,7 +973,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 12px 12px;
   border-bottom: 1px solid var(--app-border);
   background: var(--app-surface);
 }

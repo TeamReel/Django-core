@@ -12,7 +12,7 @@
   padding: 8px 12px 8px 36px;
   font-size: 16px;
   border: 1px solid var(--app-border, var(--color-border));
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: var(--app-surface, var(--color-background-secondary));
   color: var(--app-text, var(--color-text-primary));
   outline: none;

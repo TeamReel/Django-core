@@ -43,7 +43,7 @@
 }
 
 .tabButton {
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-weight: 400;
   background-color: transparent;
   color: var(--app-text-secondary);

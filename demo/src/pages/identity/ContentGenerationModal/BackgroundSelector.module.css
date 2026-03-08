@@ -9,13 +9,13 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--column-min, 72px), 1fr));
-  gap: 6px;
+  gap: 8px;
 }
 
 .bgButton {
   position: relative;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   padding: 0;
@@ -30,7 +30,7 @@
 .defaultGradient {
   width: 100%;
   aspect-ratio: 9/16;
-  background: linear-gradient(to bottom, #16a34a, #14532d);
+  background: linear-gradient(to bottom, var(--color-green-500), #14532d);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -42,7 +42,7 @@
 }
 
 .bgLabel {
-  padding: 2px 0;
+  padding: 4px 0;
   text-align: center;
   font-weight: 600;
   font-size: 9px;
@@ -60,10 +60,10 @@
 
 .checkBadge {
   position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: var(--color-green-400);
   display: flex;

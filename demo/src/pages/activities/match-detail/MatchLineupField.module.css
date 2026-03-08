@@ -12,7 +12,7 @@
 
 /* Field pitch */
 .fieldContainer {
-  max-width: 500px;
+  max-width: 480px;
   width: 100%;
   aspect-ratio: 3 / 4;
   background: linear-gradient(to bottom, var(--field-green), var(--field-green-dark));
@@ -97,8 +97,8 @@
 .positionSelect {
   width: 72px;
   max-width: 72px;
-  height: 26px;
-  padding: 0 2px;
+  height: 24px;
+  padding: 0 4px;
   font-size: 11px;
   line-height: 24px;
   font-weight: 400;
@@ -115,7 +115,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 3px center;
-  padding-right: 13px;
+  padding-right: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -147,7 +147,7 @@
   font-weight: 600;
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-  max-width: 70px;
+  max-width: 72px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -158,9 +158,9 @@
 
 /* Summary bar */
 .summaryBar {
-  padding: 10px 14px;
+  padding: 12px 16px;
   background: var(--app-surface-secondary, #2a2a2a);
-  max-width: 500px;
+  max-width: 480px;
   width: 100%;
 }
 
@@ -182,7 +182,7 @@
 
 /* Bench section */
 .benchContainer {
-  max-width: 500px;
+  max-width: 480px;
   width: 100%;
 }
 
@@ -191,12 +191,12 @@
 }
 
 .benchRow {
-  padding: 6px 14px;
+  padding: 8px 16px;
 }
 
 /* Bench status button — base */
 .benchButton {
-  padding: 3px 10px;
+  padding: 4px 12px;
   font-size: 11px;
   font-weight: 600;
   border-radius: 4px;
@@ -222,15 +222,15 @@
 
 /* ── Guest player section ── */
 .guestSection {
-  max-width: 500px;
+  max-width: 480px;
   width: 100%;
 }
 
 .addGuestBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 8px;
+  padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
   color: var(--app-text-secondary, #999);
@@ -255,10 +255,10 @@
 
 .guestInput {
   height: 36px;
-  padding: 0 10px;
+  padding: 0 12px;
   font-size: 13px;
   line-height: 36px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border, #444);
   background: var(--app-surface-secondary, #2a2a2a);
   color: var(--app-text-primary, #fff);
@@ -279,24 +279,24 @@
 }
 
 .guestAddBtn {
-  padding: 0 14px;
+  padding: 0 16px;
   height: 36px;
   font-size: 13px;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--field-green, #16a34a);
   color: #fff;
   cursor: pointer;
 }
 
 .guestCancelBtn {
-  padding: 0 10px;
+  padding: 0 12px;
   height: 36px;
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--app-border, #444);
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   color: var(--app-text-secondary, #999);
   cursor: pointer;
@@ -305,7 +305,7 @@
 .guestTags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
@@ -313,10 +313,10 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   font-size: 12px;
   font-weight: 600;
-  border-radius: 999px;
+  border-radius: 1000px;
   background: rgba(22, 163, 74, 0.15);
   color: var(--color-green-400, #4ade80);
   border: 1px solid rgba(22, 163, 74, 0.3);
@@ -331,7 +331,7 @@
   color: inherit;
   cursor: pointer;
   padding: 0;
-  margin-left: 2px;
+  margin-left: 4px;
   opacity: 0.7;
 }
 

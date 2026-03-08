@@ -39,7 +39,7 @@
   text-decoration: none;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   -webkit-tap-highlight-color: transparent;
   transition: color 0.15s;
 }
@@ -51,18 +51,18 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .activeBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 8px;
+  padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   color: var(--app-text);
@@ -77,8 +77,8 @@
 }
 
 .activeBtnOn {
-  border-color: #10b981;
-  background: #dcfce7;
+  border-color: var(--color-green-400);
+  background: var(--color-green-50);
   color: #166534;
   font-weight: 700;
 }
@@ -109,7 +109,7 @@
   top: 100%;
   right: 0;
   margin-top: 4px;
-  min-width: 170px;
+  min-width: 168px;
   background: var(--app-surface, #1e293b);
   border: 1px solid var(--app-border, #334155);
   border-radius: 12px;
@@ -123,7 +123,7 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px 16px;
   font-size: 14px;
   font-weight: 500;
   border: none;
@@ -137,13 +137,13 @@
   background: var(--app-hover-bg, rgba(255, 255, 255, 0.06));
 }
 
-.overflowDanger { color: #ef4444 !important; }
+.overflowDanger { color: var(--color-red-400) !important; }
 
 /* ── Loading skeleton ── */
 .skeleton { padding: 16px; }
 
 .skeletonBar {
-  height: 14px;
+  height: 16px;
   width: 60%;
   background: var(--app-surface-2);
   border-radius: 4px;
@@ -161,7 +161,7 @@
 .errorMsg { font-size: 15px; color: var(--color-red-500, #ef4444); margin-bottom: 16px; }
 .backBtn {
   display: inline-flex; align-items: center; gap: 6px;
-  padding: 10px 20px; font-size: 14px; font-weight: 600;
+  padding: 12px 20px; font-size: 16px; font-weight: 600;
   border-radius: 8px; border: 1px solid var(--app-border);
   background: var(--app-surface); color: var(--app-text); cursor: pointer;
 }
@@ -184,14 +184,14 @@
 .mutedSubtitle { color: var(--app-muted-text); font-size: 13px; }
 .sectionSubtitle { margin-top: 4px; color: var(--app-muted-text); font-size: 13px; }
 .sectionLabel { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-muted-text); margin-bottom: 8px; }
-.appLink { text-decoration: none; background-color: transparent; color: #60a5fa; cursor: pointer; border: none; font: inherit; padding: 0; }
-.competitionLink { text-align: left; font-weight: 800; font-size: 14px; color: #60a5fa; text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
-.matchLink { text-align: left; font-weight: 700; font-size: 13px; color: #60a5fa; text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
-.downloadLink { font-size: 11px; color: #2563eb; font-weight: 600; text-decoration: none; margin-top: 2px; }
-.downloadLink12 { font-size: 12px; color: #2563eb; font-weight: 600; text-decoration: none; }
+.appLink { text-decoration: none; background-color: transparent; color: var(--color-blue-400); cursor: pointer; border: none; font: inherit; padding: 0; }
+.competitionLink { text-align: left; font-weight: 800; font-size: 14px; color: var(--color-blue-400); text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
+.matchLink { text-align: left; font-weight: 700; font-size: 13px; color: var(--color-blue-400); text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
+.downloadLink { font-size: 11px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; margin-top: 2px; }
+.downloadLink12 { font-size: 12px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; }
 .monoId { font-family: monospace; font-size: 10px; }
 .creditsText { font-size: 9px; color: var(--app-muted-text); }
-.dangerText { color: #dc2626; }
+.dangerText { color: var(--color-red-500); }
 
 /* ── Content Tiles ── */
 .contentTile {
@@ -210,7 +210,7 @@
 
 /* ── Video Cards ── */
 .videoCard { border-radius: 10px; overflow: hidden; }
-.videoThumbnail { position: relative; width: 100%; height: 180px; background-color: #0f172a; }
+.videoThumbnail { position: relative; width: 100%; height: 180px; background-color: var(--color-neutral-900); }
 .videoFill { width: 100%; height: 100%; object-fit: cover; display: block; }
 .videoCardMeta { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
 .videoCardHeader { display: flex; align-items: center; justify-content: space-between; }
@@ -242,19 +242,19 @@
 .hierarchyHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pill {
   display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px;
-  border-radius: 999px; font-size: 12px; font-weight: 600;
+  border-radius: 1000px; font-size: 12px; font-weight: 600;
 }
 .competitionCard { border: 1px solid var(--app-border, #334155); border-radius: 10px; background: var(--app-surface); overflow: hidden; }
 .competitionCardHeader {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 12px; border-bottom: 1px solid var(--app-border, #334155);
+  padding: 12px 12px; border-bottom: 1px solid var(--app-border, #334155);
   background: var(--app-surface-2); gap: 12px;
 }
 .competitionCardInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .sportInfo { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--app-muted-text); }
 .matchRow {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 10px; border-bottom: 1px solid var(--app-border, #1e293b);
+  padding: 8px 12px; border-bottom: 1px solid var(--app-border, #1e293b);
   border-radius: 8px;
 }
 .matchDate { font-size: 12px; color: var(--app-muted-text); }
@@ -290,33 +290,33 @@
   justify-content: center; z-index: 9999;
 }
 .editMemberModal {
-  background-color: #1e293b; padding: 32px; border-radius: 8px;
-  max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: #f1f5f9;
+  background-color: var(--color-neutral-800); padding: 32px; border-radius: 8px;
+  max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--color-neutral-50);
 }
-.editMemberTitle { margin-top: 0; margin-bottom: 24px; font-size: 24px; font-weight: 600; color: #f1f5f9; }
+.editMemberTitle { margin-top: 0; margin-bottom: 24px; font-size: 24px; font-weight: 600; color: var(--color-neutral-50); }
 .memberInfoRow { margin-bottom: 16px; color: #e2e8f0; }
 .memberInfoLabel { color: #cbd5e1; }
-.fieldLabel { display: block; margin-bottom: 12px; font-weight: 600; color: #f1f5f9; }
+.fieldLabel { display: block; margin-bottom: 12px; font-weight: 600; color: var(--color-neutral-50); }
 .radioGroup { display: flex; flex-direction: column; gap: 10px; }
 .radioCard {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
 }
-.radioInput { cursor: pointer; accent-color: #3b82f6; }
-.radioCardTitle { font-weight: 600; color: #f1f5f9; font-size: 14px; }
-.radioCardDesc { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+.radioInput { cursor: pointer; accent-color: var(--color-blue-500); }
+.radioCardTitle { font-weight: 600; color: var(--color-neutral-50); font-size: 14px; }
+.radioCardDesc { font-size: 12px; color: var(--color-neutral-300); margin-top: 2px; }
 .checkboxCard {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
 }
-.roleLabel { text-transform: capitalize; color: #f1f5f9; }
+.roleLabel { text-transform: capitalize; color: var(--color-neutral-50); }
 .btnCancel {
-  padding: 10px 20px; border-radius: 6px; border: 1px solid #475569;
-  background-color: #334155; color: #f1f5f9; cursor: pointer;
+  padding: 12px 20px; border-radius: 8px; border: 1px solid var(--color-neutral-500);
+  background-color: var(--color-neutral-600); color: var(--color-neutral-50); cursor: pointer;
 }
 .btnSave {
-  padding: 10px 20px; border-radius: 6px; border: none;
-  background-color: #3b82f6; color: white; cursor: pointer; font-weight: 500;
+  padding: 12px 20px; border-radius: 8px; border: none;
+  background-color: var(--color-blue-500); color: white; cursor: pointer; font-weight: 500;
 }
 
 /* ── Then vs Now Modal ── */
@@ -340,7 +340,7 @@
 .modalCloseBtn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--app-muted-text); }
 .selectAllRow { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; border-bottom: 1px solid var(--app-border); }
 .selectionCounter { font-size: 12px; color: var(--app-muted-text); }
-.selectAllBtn { font-size: 12px; color: #60a5fa; background: none; border: none; cursor: pointer; }
+.selectAllBtn { font-size: 12px; color: var(--color-blue-400); background: none; border: none; cursor: pointer; }
 .orderedList { max-height: 260px; overflow-y: auto; }
 .orderedMemberRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; }
 .orderNumber {
@@ -366,7 +366,7 @@
 .bgOptionLabel { font-size: 9px; margin-top: 2px; text-align: center; }
 .checkBadge {
   position: absolute; top: 4px; right: 4px; width: 18px; height: 18px;
-  border-radius: 50%; background: #10b981; color: #fff; font-size: 12px;
+  border-radius: 50%; background: var(--color-green-400); color: #fff; font-size: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 .statusStep { padding: 40px 20px; text-align: center; }
@@ -375,16 +375,16 @@
 .statusTitleError { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: var(--app-danger, #ef4444); }
 .statusDesc { font-size: 13px; color: var(--app-muted-text); }
 .modalSearchInput {
-  width: 100%; padding: 8px 12px; border-radius: 6px;
+  width: 100%; padding: 8px 12px; border-radius: 8px;
   border: 1px solid var(--app-border); background: var(--app-surface-2);
   color: var(--app-text); font-size: 12px;
 }
 .modalBtnSecondary {
-  padding: 8px 18px; border-radius: 6px; border: 1px solid var(--app-border);
+  padding: 8px 20px; border-radius: 8px; border: 1px solid var(--app-border);
   background: transparent; color: var(--app-text); cursor: pointer; font-size: 13px;
 }
 .modalBtnPrimary {
-  padding: 8px 18px; border-radius: 6px; border: none;
+  padding: 8px 20px; border-radius: 8px; border: none;
   background: #6366f1; color: #fff; cursor: pointer; font-weight: 600; font-size: 13px;
 }
 
@@ -417,7 +417,7 @@
 
   .activeBtn {
     min-height: 44px;
-    padding: 10px 16px;
+    padding: 12px 16px;
   }
 
   .matchRow {
@@ -518,10 +518,10 @@
   .iconBtn {
     width: auto;
     height: auto;
-    padding: 6px 12px;
+    padding: 8px 12px;
     font-size: 12px;
     font-weight: 500;
-    gap: 6px;
+    gap: 8px;
   }
 
   .videoGrid {

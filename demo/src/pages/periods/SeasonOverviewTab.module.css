@@ -20,14 +20,14 @@
   font-size: 22px;
   font-weight: 800;
   color: var(--app-text);
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .heroDates {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--app-muted-text);
   margin-bottom: 20px;
@@ -43,7 +43,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .heroStatValue {
@@ -65,7 +65,7 @@
 .sectionCard {
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--app-border, #334155);
 }
 
@@ -106,7 +106,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 12px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--app-border, #1e293b);
 }
 
@@ -146,22 +146,22 @@
 
 .progressTrack {
   grid-column: 1 / -1;
-  height: 3px;
+  height: 4px;
   background: var(--app-border, #334155);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .progressFill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: 4px;
   background: #818cf8;
   transition: width 0.3s ease;
 }
 
 .progressFill[data-complete='true'] {
-  background: #10b981;
+  background: var(--color-green-400);
 }
 
 /* ── Match list (upcoming + recent) ── */
@@ -194,7 +194,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: 70px;
+  min-width: 72px;
   flex-shrink: 0;
 }
 
@@ -255,7 +255,7 @@
 .compInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .compName {
@@ -279,8 +279,8 @@
 .brandItem {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--app-border, #1e293b);
   border-right: 1px solid var(--app-border, #1e293b);
 }
@@ -314,7 +314,7 @@
 
 /* ── Content hint ── */
 .contentHint {
-  padding: 14px 16px;
+  padding: 16px 16px;
   font-size: 13px;
   color: var(--app-muted-text);
   line-height: 1.4;

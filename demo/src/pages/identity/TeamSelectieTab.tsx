@@ -68,16 +68,16 @@ const ACCESS_ROLE_LABELS: Record<string, string> = {
 };
 
 const ACCESS_ROLE_COLORS: Record<string, string> = {
-  admin: '#f59e0b',
-  editor: '#3b82f6',
-  viewer: '#64748b',
+  admin: 'var(--color-amber-400)',
+  editor: 'var(--color-blue-500)',
+  viewer: 'var(--color-neutral-400)',
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  player: '#818cf8',
-  coach: '#f59e0b',
-  keeper: '#06b6d4',
-  supporter: '#94a3b8',
+  player: 'var(--color-blue-300)',
+  coach: 'var(--color-amber-400)',
+  keeper: 'var(--color-primary-400)',
+  supporter: 'var(--color-neutral-300)',
 };
 
 function getFunctionalRoles(m: any): string[] {
@@ -96,7 +96,7 @@ function getRoleLabel(role: string): string {
 }
 
 function getRoleColor(role: string): string {
-  return ROLE_COLORS[role.toLowerCase()] || '#818cf8';
+  return ROLE_COLORS[role.toLowerCase()] || 'var(--color-blue-300)';
 }
 
 function getAccessRoleLabel(m: any): string {
@@ -106,7 +106,7 @@ function getAccessRoleLabel(m: any): string {
 
 function getAccessRoleColor(m: any): string {
   const role = String(m?.role || '').trim().toLowerCase();
-  return ACCESS_ROLE_COLORS[role] || '#64748b';
+  return ACCESS_ROLE_COLORS[role] || 'var(--color-neutral-400)';
 }
 
 const S3_BASE = 'https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/';

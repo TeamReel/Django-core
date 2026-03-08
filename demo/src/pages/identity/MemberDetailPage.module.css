@@ -28,7 +28,7 @@
   width: 100%;
   max-width: 200px;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border, #d1d5db);
   min-height: 44px;
   box-sizing: border-box;
@@ -70,8 +70,8 @@
 /* ────────────────── Small phones (≤ 480px) ────────────────── */
 @media (max-width: 480px) {
   .breadcrumbSelect {
-    max-width: 90px;
+    max-width: 88px;
     font-size: 0.75rem;
-    padding: 4px 6px;
+    padding: 4px 8px;
   }
 }

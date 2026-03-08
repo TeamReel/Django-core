@@ -60,7 +60,7 @@
 
 .feedbackInput {
   width: 100%;
-  padding: 6px 8px;
+  padding: 8px 8px;
   font-size: 12px;
   background: var(--vscode-input-background, #3c3c3c);
   color: var(--vscode-input-foreground, #ccc);

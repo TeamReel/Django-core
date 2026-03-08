@@ -4,6 +4,7 @@ import { SkeletonList } from '../../../components/Skeleton';
 import SmartEmptyState from '../../../components/SmartEmptyState';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
+import cl from './ContentList.module.css';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,33 +39,29 @@ function fmtTokens(input: number | null | undefined, output: number | null | und
   return `${fmt(input ?? 0)} / ${fmt(output ?? 0)}`;
 }
 
-const statusColors: Record<string, { bg: string; fg: string }> = {
-  completed: { bg: '#dcfce7', fg: '#166534' },
-  processing: { bg: '#dbeafe', fg: '#1e40af' },
-  queued: { bg: '#fef9c3', fg: '#854d0e' },
-  waiting: { bg: '#fef9c3', fg: '#854d0e' },
-  failed: { bg: '#fde2e2', fg: '#991b1b' },
-  cancelled: { bg: '#f3f4f6', fg: 'var(--app-muted-text)' },
+const statusColors: Record<string, string> = {
+  completed: cl.pillCompleted,
+  processing: cl.pillProcessing,
+  queued: cl.pillQueued,
+  waiting: cl.pillWaiting,
+  failed: cl.pillFailed,
+  cancelled: cl.pillCancelled,
 };
 
-const approvalColors: Record<string, { bg: string; fg: string }> = {
-  pending_review: { bg: '#fef3c7', fg: '#92400e' },
-  approved: { bg: '#dcfce7', fg: '#166534' },
-  rejected: { bg: '#fde2e2', fg: '#991b1b' },
+const approvalColors: Record<string, string> = {
+  pending_review: cl.pillPendingReview,
+  approved: cl.pillApproved,
+  rejected: cl.pillRejected,
 };
 
-function Pill({ text, colors }: { text: string; colors: Record<string, { bg: string; fg: string }> }) {
-  const c = colors[text] ?? { bg: '#f3f4f6', fg: '#374151' };
+function Pill({ text, colors }: { text: string; colors: Record<string, string> }) {
+  const cls = colors[text] ?? cl.pillDefault;
   return (
-    <span className="rounded-full fs-11 fw-600 whitespace-nowrap" style={{ padding: '2px 8px', background: c.bg, color: c.fg }}>
+    <span className={`${cl.pill} ${cls}`}>
       {text.replace(/_/g, ' ')}
     </span>
   );
 }
-
-const selectStyle: React.CSSProperties = {
-  padding: '4px 8px', fontSize: 13, border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', minWidth: 100,
-};
 
 const thSort = 'dir-th cursor-pointer';
 const thSortR = 'dir-th text-right cursor-pointer';
@@ -161,21 +158,21 @@ export const ContentList: React.FC = () => {
       {/* ── Filter bar ──────────────────────────────────────────────────────────── */}
       <div className="flex-row gap-8 flex-wrap">
         <input type="text" placeholder="Search label, member, model…" value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} style={{ ...selectStyle, minWidth: 180 }} />
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
+          onChange={(e) => setSearchQuery(e.target.value)} className={cl.filterSelect} style={{ minWidth: 180 }} />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Status</option>
           {filterOptions.statuses.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={selectStyle}>
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Types</option>
           <option value="image">🖼️ Image</option>
           <option value="video">🎬 Video</option>
         </select>
-        <select value={providerFilter} onChange={(e) => setProviderFilter(e.target.value)} style={selectStyle}>
+        <select value={providerFilter} onChange={(e) => setProviderFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Providers</option>
           {filterOptions.providers.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
-        <select value={approvalFilter} onChange={(e) => setApprovalFilter(e.target.value)} style={selectStyle}>
+        <select value={approvalFilter} onChange={(e) => setApprovalFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Approvals</option>
           <option value="pending_review">Pending Review</option>
           <option value="approved">Approved</option>
@@ -183,7 +180,7 @@ export const ContentList: React.FC = () => {
           <option value="none">No Review</option>
         </select>
         {filterOptions.clubs.length > 1 && (
-          <select value={clubFilter} onChange={(e) => setClubFilter(e.target.value)} style={selectStyle}>
+          <select value={clubFilter} onChange={(e) => setClubFilter(e.target.value)} className={cl.filterSelect}>
             <option value="">All Clubs</option>
             {filterOptions.clubs.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
@@ -226,7 +223,7 @@ export const ContentList: React.FC = () => {
             </thead>
             <tbody>
               {filtered.map((job) => (
-                <tr key={job.task_id} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                <tr key={job.task_id} className={cl.tableRow}>
                   <td className="dir-td">
                     <span style={{ fontSize: 15, marginRight: 3 }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
                     <span className="fs-11 text-muted">{job.output_asset_type || job.output_type}</span>
@@ -239,11 +236,11 @@ export const ContentList: React.FC = () => {
                   <td className="dir-td-text">{job.model || '—'}</td>
                   <td className="dir-td"><Pill text={job.status} colors={statusColors} /></td>
                   <td className="dir-td">
-                    {job.approval_status ? <Pill text={job.approval_status} colors={approvalColors} /> : <span className="fs-11" style={{ color: '#d1d5db' }}>—</span>}
+                    {job.approval_status ? <Pill text={job.approval_status} colors={approvalColors} /> : <span className={cl.dash}>—</span>}
                   </td>
                   <td className="dir-td">
                     <span className="fs-12 whitespace-nowrap">{fmtDate(job.created_at)}</span>{' '}
-                    <span style={{ fontSize: 10, color: '#9ca3af' }}>{fmtTime(job.created_at)}</span>
+                    <span className={cl.timeLabel}>{fmtTime(job.created_at)}</span>
                   </td>
                   <td className="dir-td text-right tabular-nums">{fmtDur(job.duration_seconds)}</td>
                   <td className="dir-td text-right tabular-nums">{fmtDur(job.content_duration_seconds)}</td>
@@ -253,7 +250,7 @@ export const ContentList: React.FC = () => {
                   <td className="dir-td">
                     {job.output_url
                       ? <a href={job.output_url} target="_blank" rel="noopener noreferrer" className="action-btn action-btn-primary text-decoration-none fs-11">View</a>
-                      : <span className="fs-11" style={{ color: '#d1d5db' }}>—</span>}
+                      : <span className={cl.dash}>—</span>}
                   </td>
                 </tr>
               ))}

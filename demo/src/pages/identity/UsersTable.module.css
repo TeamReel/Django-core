@@ -27,7 +27,7 @@
 
 /* ── Inline tag / badge ────────────────────────────────────────────── */
 .tagBadge {
-  padding: 2px 6px;
+  padding: 4px 8px;
 }
 
 /* ── Actions row container ─────────────────────────────────────────── */
@@ -51,7 +51,7 @@
 }
 
 .btnLink {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--ut-color-primary);
 }
 
@@ -60,6 +60,6 @@
 }
 
 .btnAssign {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--ut-color-success);
 }

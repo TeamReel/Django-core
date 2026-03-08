@@ -11,7 +11,7 @@
 }
 
 .header {
-  padding: 14px 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface-2, #f3f4f6);
 }
@@ -24,7 +24,7 @@
 }
 
 .label {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: var(--app-text-muted, #6b7280);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -39,7 +39,7 @@
 
 .select {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 14px;
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 8px;
@@ -60,7 +60,7 @@
 
 .errorHint {
   color: var(--color-error, #e11d48);
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 /* ─── ScoreColumn ─── */
@@ -79,12 +79,12 @@
 .teamName {
   font-size: 11px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: var(--app-text-muted, #6b7280);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 90px;
+  max-width: 88px;
 }
 
 .stepperRow {

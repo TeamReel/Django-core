@@ -30,8 +30,8 @@
 .flowCard {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
+  gap: 16px;
+  padding: 16px 16px;
   background: var(--app-surface, #fff);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 12px;
@@ -78,7 +78,7 @@
 .flowContent {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -143,14 +143,14 @@
 .smartMatchSectionTitle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--app-muted-text, #6b7280);
   margin: 0;
-  padding: 0 2px;
+  padding: 0 4px;
 }
 
 .smartMatchAccentIcon {
@@ -168,7 +168,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   background: var(--app-surface, #fff);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 12px;
@@ -241,7 +241,7 @@
 .smartMatchInfo {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
   flex: 1;
 }
@@ -312,7 +312,7 @@
   font-size: 14px;
   color: var(--app-muted-text, #6b7280);
   margin: 0;
-  max-width: 260px;
+  max-width: 256px;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -330,13 +330,13 @@
 .matchFieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .matchFieldLabel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--app-text-primary, #111827);
@@ -352,10 +352,10 @@
 .matchInput,
 .matchSelect {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 15px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #111827);
   transition: border-color 0.15s;
@@ -388,13 +388,13 @@
   display: flex;
   gap: 4px;
   background: var(--app-surface-2, #f3f4f6);
-  border-radius: 10px;
-  padding: 3px;
+  border-radius: 12px;
+  padding: 4px;
 }
 
 .matchVenueBtn {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   font-size: 14px;
   font-weight: 500;
   border: none;
@@ -418,7 +418,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   font-size: 15px;
   font-weight: 600;
   border: none;
@@ -454,7 +454,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -484,8 +484,8 @@
   font-size: 14px;
   color: var(--app-error, #ef4444);
   background: var(--app-error-bg, rgba(239, 68, 68, 0.08));
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
 }
 
 /* ── Spinner ─────────────────────────────────────────── */
@@ -584,7 +584,7 @@
 .memberContextBanner {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--app-muted-text, #6b7280);
   background: var(--app-surface-2, #f3f4f6);
@@ -608,10 +608,10 @@
 
 .memberSearchInput {
   width: 100%;
-  padding: 10px 12px 10px 40px;
+  padding: 12px 12px 12px 40px;
   font-size: 15px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #111827);
   transition: border-color 0.15s;
@@ -652,9 +652,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px 12px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   cursor: pointer;
   text-align: left;
@@ -751,13 +751,13 @@
 .memberFieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .memberFieldLabel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--app-text-primary, #111827);
@@ -772,10 +772,10 @@
 .memberInput,
 .memberSelect {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 15px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #111827);
   transition: border-color 0.15s;
@@ -803,13 +803,13 @@
   display: flex;
   gap: 4px;
   background: var(--app-surface-2, #f3f4f6);
-  border-radius: 10px;
-  padding: 3px;
+  border-radius: 12px;
+  padding: 4px;
 }
 
 .memberRoleBtn {
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   font-size: 14px;
   font-weight: 500;
   border: none;
@@ -833,7 +833,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   font-size: 15px;
   font-weight: 600;
   border: none;
@@ -869,7 +869,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -899,8 +899,8 @@
   font-size: 14px;
   color: var(--app-error, #ef4444);
   background: var(--app-error-bg, rgba(239, 68, 68, 0.08));
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
 }
 
 /* ── Spinner ─────────────────────────────────────────── */
@@ -998,7 +998,7 @@
 .projectContextBanner {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--app-muted-text, #6b7280);
   background: var(--app-surface-2, #f3f4f6);
@@ -1018,7 +1018,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 12px;
+  padding: 16px 12px;
   font-size: 15px;
   font-weight: 500;
   border: 2px solid var(--app-border, #e5e7eb);
@@ -1040,20 +1040,20 @@
   font-size: 12px;
   color: var(--app-muted-text, #6b7280);
   margin: 0;
-  padding: 0 2px;
+  padding: 0 4px;
 }
 
 /* ── Form fields ─────────────────────────────────────── */
 .projectFieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .projectFieldLabel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--app-text-primary, #111827);
@@ -1062,10 +1062,10 @@
 .projectInput,
 .projectSelect {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 15px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #111827);
   transition: border-color 0.15s;
@@ -1095,10 +1095,10 @@
 
 .projectTextarea {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 15px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #111827);
   transition: border-color 0.15s;
@@ -1120,7 +1120,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   font-size: 15px;
   font-weight: 600;
   border: none;
@@ -1156,7 +1156,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -1186,8 +1186,8 @@
   font-size: 14px;
   color: var(--app-error, #ef4444);
   background: var(--app-error-bg, rgba(239, 68, 68, 0.08));
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
 }
 
 .projectSpinner {
@@ -1284,7 +1284,7 @@
 .periodContextBanner {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--app-muted-text, #6b7280);
   background: var(--app-surface-2, #f3f4f6);
@@ -1304,7 +1304,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 14px 12px;
+  padding: 16px 12px;
   font-size: 15px;
   font-weight: 500;
   border: 2px solid var(--app-border, #e5e7eb);
@@ -1326,13 +1326,13 @@
 .periodFieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .periodFieldLabel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--app-text-primary, #111827);
@@ -1340,7 +1340,7 @@
 
 .periodFieldRow {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .periodFieldRow > * {
@@ -1350,10 +1350,10 @@
 .periodInput,
 .periodSelect {
   width: 100%;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 15px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #111827);
   transition: border-color 0.15s;
@@ -1385,7 +1385,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   font-size: 12px;
   font-weight: 500;
   border: 1px solid var(--app-primary, #3B8EA5);
@@ -1408,7 +1408,7 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   font-size: 15px;
   font-weight: 600;
   border: none;
@@ -1444,7 +1444,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 14px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -1474,8 +1474,8 @@
   font-size: 14px;
   color: var(--app-error, #ef4444);
   background: var(--app-error-bg, rgba(239, 68, 68, 0.08));
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
 }
 
 .periodSpinner {
@@ -1560,7 +1560,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 36px 24px 28px;
   text-align: center;
 }
@@ -1590,7 +1590,7 @@
   flex-direction: column;
   gap: 8px;
   width: 100%;
-  max-width: 260px;
+  max-width: 256px;
   margin-top: 8px;
 }
 

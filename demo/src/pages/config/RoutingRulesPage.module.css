@@ -3,7 +3,7 @@
 }
 
 .orgInfo {
-  margin-top: 6px;
+  margin-top: 8px;
   color: var(--app-text-muted);
 }
 
@@ -12,11 +12,11 @@
 }
 
 .formInput {
-  padding: 8px 10px;
+  padding: 8px 12px;
 }
 
 .enabledLabel {
-  margin-top: 22px;
+  margin-top: 24px;
 }
 
 .emptyState {
@@ -24,7 +24,7 @@
 }
 
 .ruleDetails {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 13px;
   color: var(--app-text-muted);
 }

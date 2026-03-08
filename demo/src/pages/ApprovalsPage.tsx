@@ -260,7 +260,7 @@ export default function ApprovalsPage() {
       {/* Toasts */}
       <div className={s.toastContainer} style={{ pointerEvents: 'none' }}>
         {toasts.map(t => (
-          <div key={t.id} style={{ padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 500, color: '#fff', backgroundColor: t.type === 'success' ? '#16a34a' : '#dc2626', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', pointerEvents: 'auto', maxWidth: 360 }}>
+          <div key={t.id} style={{ padding: '12px 18px', borderRadius: 10, fontSize: 13, fontWeight: 500, color: 'white', backgroundColor: t.type === 'success' ? 'var(--color-green-600)' : 'var(--color-red-600)', boxShadow: '0 4px 16px rgba(0,0,0,0.18)', pointerEvents: 'auto', maxWidth: 360 }}>
             {t.message}
           </div>
         ))}

@@ -5,7 +5,7 @@
 }
 
 .memberItem {
-  padding: 10px 12px;
+  padding: 12px 12px;
 }
 
 .seasonsHeader {
@@ -24,14 +24,14 @@
 
 .accordionContainer {
   border: 1px solid var(--app-border);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
 .accordionButton {
   width: 100%;
   text-align: left;
-  padding: 10px 12px;
+  padding: 12px 12px;
   background: var(--app-surface);
   border: none;
   cursor: pointer;
@@ -42,10 +42,10 @@
 }
 
 .accordionPanel {
-  padding: 10px 12px;
+  padding: 12px 12px;
   background: var(--app-surface-1);
 }
 
 .matchItem {
-  padding: 8px 10px;
+  padding: 8px 12px;
 }

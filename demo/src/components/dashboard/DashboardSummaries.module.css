@@ -8,7 +8,7 @@
   background: var(--app-surface);
   border-radius: 12px;
   border: 1px solid var(--app-border);
-  padding: 14px;
+  padding: 16px;
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
   min-height: 64px;
@@ -32,7 +32,7 @@
   flex-shrink: 0;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,7 +51,7 @@
   line-height: 1.2;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cardLabel {
@@ -69,10 +69,10 @@
 .reviewBadge {
   font-size: 12px;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 4px 8px;
   border-radius: 4px;
   background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+  color: var(--color-amber-400);
 }
 
 .warnIcon {
@@ -90,7 +90,7 @@
 .tallHeader {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--app-text);
   font-size: 14px;
   font-weight: 700;
@@ -103,7 +103,7 @@
 .seeAll {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   font-size: 12px;
   font-weight: 600;
   color: var(--app-primary);
@@ -139,7 +139,7 @@
 .matchItem {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
@@ -156,7 +156,7 @@
 
 .matchDate {
   flex-shrink: 0;
-  width: 38px;
+  width: 40px;
   text-align: center;
   line-height: 1.1;
 }
@@ -201,7 +201,7 @@
 .miniStats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  gap: 8px;
 }
 
 .miniStat {
@@ -223,5 +223,5 @@
   display: block;
   font-size: 10px;
   color: var(--app-muted-text);
-  margin-top: 2px;
+  margin-top: 4px;
 }

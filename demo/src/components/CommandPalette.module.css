@@ -12,13 +12,13 @@
   margin: 10vh auto 0;
   background: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--shadow-xl);
 }
 
 .searchRow {
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .searchInput {
@@ -29,8 +29,8 @@
 .favButton {
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
-  border-radius: 10px;
-  padding: 6px 10px;
+  border-radius: 12px;
+  padding: 8px 12px;
   cursor: pointer;
   color: var(--app-text);
   display: inline-flex;
@@ -49,7 +49,7 @@
 }
 
 .noResults {
-  padding: 14px;
+  padding: 16px;
   color: var(--app-muted-text);
 }
 
@@ -57,7 +57,7 @@
   border: none;
   background: transparent;
   color: var(--app-text);
-  padding: 12px 14px;
+  padding: 12px 16px;
   gap: 12px;
   border-top: 1px solid var(--app-border);
 }
@@ -69,7 +69,7 @@
 .resultLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -89,7 +89,7 @@
 }
 
 .footer {
-  padding: 10px;
+  padding: 12px;
   color: var(--app-muted-text);
-  gap: 10px;
+  gap: 12px;
 }

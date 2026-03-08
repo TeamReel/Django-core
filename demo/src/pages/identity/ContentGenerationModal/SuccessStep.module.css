@@ -60,13 +60,13 @@
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.6);
-  padding-top: 6px;
-  padding-bottom: 6px;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 
 .tileSaveButton {
-  padding-top: 2px;
-  padding-bottom: 2px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   background: var(--app-primary, #3B8EA5);
 }
 
@@ -97,7 +97,7 @@
 .mediaBadge {
   top: 8px;
   right: 8px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   background: var(--color-primary, #3b82f6);
 }
 
@@ -108,7 +108,7 @@
 .sizeBadge {
   bottom: 8px;
   left: 8px;
-  padding: 2px 8px;
+  padding: 4px 8px;
   background: rgba(0, 0, 0, 0.6);
 }
 
@@ -117,18 +117,18 @@
 }
 
 .regenerateButton {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-color: var(--color-primary, #3b82f6);
   color: var(--color-primary, #3b82f6);
 }
 
 .secondaryButton {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-color: var(--color-muted, #6b7280);
 }
 
 .acceptButton {
-  padding: 6px 12px;
+  padding: 8px 12px;
   border: 1px solid var(--color-success, #22c55e);
   color: var(--color-success, #22c55e);
   cursor: pointer;
@@ -163,7 +163,7 @@
 }
 
 .cardFooter {
-  padding: 10px 14px;
+  padding: 12px 16px;
 }
 
 /* Fallback no-preview */

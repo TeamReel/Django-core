@@ -71,11 +71,11 @@ export const ContentBreakdownCard: React.FC = () => {
           if (!cancelled) {
             const cats: CategoryCount[] = [];
             if (memberCount > 0 || matchCount > 0 || seasonCount > 0 || otherCount > 0) {
-              cats.push({ label: 'Spelers', icon: <User size={14} />, count: memberCount, color: '#6366f1' });
-              cats.push({ label: 'Wedstrijd', icon: <Trophy size={14} />, count: matchCount, color: '#ec4899' });
-              cats.push({ label: 'Seizoen', icon: <Calendar size={14} />, count: seasonCount, color: '#f59e0b' });
+              cats.push({ label: 'Spelers', icon: <User size={14} />, count: memberCount, color: 'var(--color-blue-400)' });
+              cats.push({ label: 'Wedstrijd', icon: <Trophy size={14} />, count: matchCount, color: 'var(--color-red-400)' });
+              cats.push({ label: 'Seizoen', icon: <Calendar size={14} />, count: seasonCount, color: 'var(--color-amber-400)' });
               if (otherCount > 0) {
-                cats.push({ label: 'Overig', icon: <BarChart3 size={14} />, count: otherCount, color: '#22c55e' });
+                cats.push({ label: 'Overig', icon: <BarChart3 size={14} />, count: otherCount, color: 'var(--color-green-400)' });
               }
             }
             setCategories(cats);

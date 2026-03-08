@@ -15,7 +15,7 @@
 .clubBadge {
   color: var(--badge-text, #666);
   background-color: var(--badge-bg, #eee);
-  padding: 2px 6px;
+  padding: 4px 8px;
 }
 
 .descriptionNoMargin {

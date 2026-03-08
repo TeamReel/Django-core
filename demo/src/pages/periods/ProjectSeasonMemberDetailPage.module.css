@@ -50,7 +50,7 @@
   background: rgba(99, 102, 241, 0.85); color: #fff;
   font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px;
 }
-.readyIndicator { font-size: 9px; padding: 3px 6px; color: #10b981; font-weight: 600; }
+.readyIndicator { font-size: 9px; padding: 3px 6px; color: var(--color-green-400); font-weight: 600; }
 .processingOverlay {
   position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4);
   display: flex; align-items: center; justify-content: center;
@@ -62,11 +62,11 @@
 .btnXSmall { font-size: 10px; padding: 4px 6px; }
 .btnProcess {
   font-size: 10px; padding: 4px 8px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, var(--color-amber-400), var(--color-amber-500));
   border: none; color: #fff; border-radius: 4px; cursor: pointer;
 }
-.btnDelete { font-size: 10px; padding: 4px 6px; color: #ef4444; }
-.btnCancelOrange { font-size: 10px; padding: 4px 6px; color: #f59e0b; }
+.btnDelete { font-size: 10px; padding: 4px 6px; color: var(--color-red-400); }
+.btnCancelOrange { font-size: 10px; padding: 4px 6px; color: var(--color-amber-400); }
 
 /* ── Media ── */
 .mediaCoverContain { width: 100%; height: 100%; object-fit: contain; }
@@ -74,7 +74,7 @@
 .kitIconImg { width: 32px; height: 42px; object-fit: contain; }
 .prereqThumbnail { width: 80px; height: 120px; object-fit: contain; border-radius: 4px; }
 .photoThumbnailSquare {
-  width: 100%; aspect-ratio: 1 / 1; max-width: 220px; border-radius: 10px;
+  width: 100%; aspect-ratio: 1 / 1; max-width: 220px; border-radius: 12px;
   overflow: hidden; background: var(--app-surface-secondary);
   border: 2px solid var(--app-border); display: flex; align-items: center;
   justify-content: center; margin-bottom: 12px;
@@ -82,7 +82,7 @@
 
 /* ── Upload Zone ── */
 .uploadDropZone {
-  padding: 16px; border: 2px dashed var(--app-border); border-radius: 8px;
+  padding: 16px; border: 4px dashed var(--app-border); border-radius: 8px;
   text-align: center; max-width: 220px;
 }
 
@@ -105,7 +105,7 @@
 .accessDeniedPage { padding: 48px 24px; text-align: center; }
 .activeJobsBanner {
   display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-  background: #1d4ed820; border: 1px solid #3b82f6; border-radius: 8px; font-size: 13px;
+  background: #1d4ed820; border: 1px solid var(--color-blue-500); border-radius: 8px; font-size: 13px;
 }
 .progressBar { margin-top: 8px; padding: 12px; background: var(--app-muted); border-radius: 8px; }
 .sectionDivider { border-top: 1px solid var(--app-border); padding-top: 20px; }
@@ -126,15 +126,15 @@
 
 /* ── Active Context Button ── */
 .activeContextButton {
-  padding: 6px 12px; border-radius: 8px;
+  padding: 8px 12px; border-radius: 8px;
   border: 1px solid var(--app-border);
   background: var(--app-surface);
   color: var(--app-text);
   font-weight: 500;
 }
 .activeContextButton[data-active="true"] {
-  border-color: #10b981;
-  background: #dcfce7;
+  border-color: var(--color-green-400);
+  background: var(--color-green-50);
   color: #166534;
   font-weight: 600;
 }

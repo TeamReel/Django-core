@@ -13,6 +13,7 @@
  */
 import React, { createContext, useCallback, useContext, useState, useRef, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import styles from './Toast.module.css';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -77,11 +78,11 @@ export function useToast() {
   return ctx;
 }
 
-const TYPE_STYLES: Record<ToastType, React.CSSProperties> = {
-  success: { backgroundColor: 'var(--color-green-500, #16a34a)', color: '#fff' },
-  error:   { backgroundColor: 'var(--color-red-500, #dc2626)', color: '#fff' },
-  warning: { backgroundColor: 'var(--color-amber-500, #d97706)', color: '#fff' },
-  info:    { backgroundColor: 'var(--color-blue-500, #3b82f6)', color: '#fff' },
+const TYPE_CLASS: Record<ToastType, string> = {
+  success: styles.toastSuccess,
+  error: styles.toastError,
+  warning: styles.toastWarning,
+  info: styles.toastInfo,
 };
 
 export function ToastContainer() {
@@ -89,42 +90,20 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        bottom: 24,
-        right: 24,
-        zIndex: 9999,
-        display: 'flex',
-        flexDirection: 'column-reverse',
-        gap: 8,
-        pointerEvents: 'none',
-      }}
-    >
+    <div className={styles.container}>
       {toasts.map((t) => (
         <div
           key={t.id}
           role="alert"
           onClick={() => removeToast(t.id)}
-          style={{
-            ...TYPE_STYLES[t.type],
-            padding: '12px 18px',
-            borderRadius: 10,
-            fontSize: 13,
-            fontWeight: 500,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
-            pointerEvents: 'auto',
-            maxWidth: 360,
-            cursor: 'pointer',
-            animation: 'toast-slide-in 0.2s ease-out',
-          }}
+          className={`${styles.toast} ${TYPE_CLASS[t.type]}`}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {t.icon && <t.icon size={16} strokeWidth={2} style={{ flexShrink: 0 }} />}
+          <div className={styles.body}>
+            {t.icon && <t.icon size={16} strokeWidth={2} className={styles.icon} />}
             <span>{t.message}</span>
           </div>
           {t.actions && t.actions.length > 0 && (
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div className={styles.actions}>
               {t.actions.map((action, i) => (
                 <button
                   key={i}
@@ -133,19 +112,7 @@ export function ToastContainer() {
                     removeToast(t.id);
                     action.onClick();
                   }}
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    borderRadius: 6,
-                    color: '#fff',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    padding: '4px 12px',
-                    cursor: 'pointer',
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.background = 'rgba(255,255,255,0.35)'; }}
-                  onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.background = 'rgba(255,255,255,0.2)'; }}
+                  className={styles.actionBtn}
                 >
                   {action.label}
                 </button>

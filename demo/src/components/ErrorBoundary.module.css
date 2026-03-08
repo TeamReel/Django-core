@@ -24,7 +24,7 @@
 }
 
 .dashboardLink {
-  background-color: #6c757d;
+  background-color: var(--color-neutral-400);
 }
 
 .detailsSection {

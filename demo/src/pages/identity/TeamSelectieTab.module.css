@@ -12,7 +12,7 @@
 .searchRow {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .searchInputWrap {
@@ -22,7 +22,7 @@
   gap: 8px;
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 10px;
+  border-radius: 12px;
   padding: 0 12px;
   height: 40px;
   transition: border-color 0.15s ease;
@@ -55,11 +55,11 @@
 .countBadge {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 8px 12px;
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 10px;
+  border-radius: 12px;
   color: var(--app-muted-text);
   font-size: 13px;
   font-weight: 600;
@@ -70,18 +70,18 @@
 /* ── Role filter chips ── */
 .roleFilters {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 0 2px;
+  padding: 0 4px;
 }
 
 .roleFilters::-webkit-scrollbar { display: none; }
 
 .roleChip {
   flex-shrink: 0;
-  padding: 5px 12px;
+  padding: 4px 12px;
   font-size: 12px;
   font-weight: 600;
   border-radius: 20px;
@@ -108,14 +108,14 @@
 .letterGroup {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .letterHeader {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 2px;
+  gap: 12px;
+  padding: 0 4px;
 }
 
 .letterBadge {
@@ -150,7 +150,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 12px 16px;
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
   border-radius: 12px;
@@ -179,7 +179,7 @@
 .avatar {
   width: 48px;
   height: 48px;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
   background: var(--app-surface, #0f172a);
@@ -255,7 +255,7 @@
 .cardRight {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -268,7 +268,7 @@
   border-radius: 8px;
   border: 1px solid rgba(245, 158, 11, 0.3);
   background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
+  color: var(--color-amber-400);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -312,19 +312,19 @@
   width: 48px;
   height: 4px;
   background: var(--app-surface, #0f172a);
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .miniProgressFill {
   height: 100%;
   background: #818cf8;
-  border-radius: 2px;
+  border-radius: 4px;
   transition: width 0.3s ease;
 }
 
 .miniProgressFill[data-complete='true'] {
-  background: #22c55e;
+  background: var(--color-green-400);
 }
 
 .memberArrow {
@@ -372,7 +372,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   padding: 40px 0;
 }
 
@@ -404,7 +404,7 @@
   color: #818cf8;
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.15s ease;
@@ -421,7 +421,7 @@
   border-top: none;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
-  padding: 12px 14px 16px;
+  padding: 12px 16px 16px;
   animation: expandIn 0.2s ease-out;
 }
 
@@ -500,12 +500,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #f59e0b;
+  color: var(--color-amber-400);
   background: rgba(245, 158, 11, 0.08);
   border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 8px;
@@ -522,9 +522,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   flex: 1;
-  padding: 10px;
+  padding: 12px;
   font-size: 13px;
   font-weight: 600;
   color: #818cf8;

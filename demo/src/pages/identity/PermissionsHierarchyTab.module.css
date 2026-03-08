@@ -5,7 +5,7 @@
 }
 
 .subtitle {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   font-size: 0.9rem;
 }
 
@@ -16,7 +16,7 @@
 .roleCard {
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
-  padding: 14px;
+  padding: 16px;
   box-shadow: none;
 }
 
@@ -35,24 +35,24 @@
 }
 
 .levelBadge {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   background-color: var(--app-table-header-bg);
 }
 
 .roleScope {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 0.8rem;
 }
 
 .roleDescription {
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 0.9rem;
   color: var(--app-text);
 }
 
 .highlightList {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .highlightItem {
@@ -62,18 +62,18 @@
 /* Hierarchy Ladder */
 
 .ladderContainer {
-  margin-top: 14px;
-  padding: 14px;
+  margin-top: 16px;
+  padding: 16px;
 }
 
 .ladderLineCol {
-  width: 18px;
+  width: 20px;
   align-items: center;
 }
 
 .ladderDot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background-color: var(--app-border);
 }
 
@@ -82,7 +82,7 @@
 }
 
 .ladderLine {
-  width: 2px;
+  width: 4px;
   background-color: var(--app-border);
 }
 

@@ -335,7 +335,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
               key={toast.id}
               className={s.toast}
               style={{
-                background: toast.type === 'success' ? '#166534' : toast.type === 'error' ? '#991b1b' : toast.type === 'warning' ? '#92400e' : '#1e40af',
+                background: toast.type === 'success' ? 'var(--color-green-800)' : toast.type === 'error' ? 'var(--color-red-800)' : toast.type === 'warning' ? 'var(--color-amber-700)' : 'var(--color-blue-800)',
               }}
             >
               <span style={{ flex: 1 }}>{toast.message}</span>

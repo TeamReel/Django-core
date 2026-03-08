@@ -49,9 +49,9 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               disabled={d.activatingContext || isActiveCtx}
               title="Set this competition as your active context"
               style={{
-                backgroundColor: isActiveCtx ? '#dcfce7' : undefined,
-                color: isActiveCtx ? '#166534' : undefined,
-                border: isActiveCtx ? '1px solid #10b981' : undefined,
+                backgroundColor: isActiveCtx ? 'var(--color-green-50)' : undefined,
+                color: isActiveCtx ? 'var(--color-green-800)' : undefined,
+                border: isActiveCtx ? '1px solid var(--color-green-400)' : undefined,
                 cursor: d.activatingContext || isActiveCtx ? 'not-allowed' : 'pointer',
                 opacity: d.activatingContext || isActiveCtx ? 0.8 : 1,
                 fontWeight: isActiveCtx ? 600 : undefined,
@@ -65,7 +65,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <Button variant="secondary" size="sm" onClick={() => d.setIsMatchCreateModalOpen(true)}>Create Match</Button>
             <Button variant="secondary" size="sm" onClick={() => { d.setSelectedDetailPeriod(d.competition); d.setIsPeriodDetailModalOpen(true); }}>View</Button>
             <Button variant="secondary" size="sm" onClick={() => { d.setSelectedEditPeriod(d.competition); d.setIsPeriodEditModalOpen(true); }}>Edit</Button>
-            <Button variant="secondary" size="sm" onClick={d.deleteCompetition} style={{ color: '#dc2626' }}>Delete</Button>
+            <Button variant="secondary" size="sm" onClick={d.deleteCompetition} style={{ color: 'var(--color-red-500)' }}>Delete</Button>
           </div>
         }
       />

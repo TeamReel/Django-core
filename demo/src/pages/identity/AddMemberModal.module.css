@@ -23,7 +23,7 @@
 }
 
 .tab {
-  padding: 10px 24px;
+  padding: 12px 24px;
   border: none;
   background: transparent;
   color: var(--app-text, #333);
@@ -49,7 +49,7 @@
 }
 
 .userRow {
-  padding: 10px 12px;
+  padding: 12px 12px;
   transition: background 0.1s;
 }
 

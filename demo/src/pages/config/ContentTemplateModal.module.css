@@ -5,9 +5,9 @@
 }
 
 .tabButton {
-  padding: 10px 20px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 6px 6px 0 0;
+  border-radius: 8px 8px 0 0;
 }
 
 .tabButton[data-active="true"] {
@@ -35,8 +35,8 @@
 }
 
 .checkbox {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .creditsInput {

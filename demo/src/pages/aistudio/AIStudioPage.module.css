@@ -32,7 +32,7 @@
 .headerTitleBlock {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .headerIcon {
@@ -57,7 +57,7 @@
 
 .statsPills {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -84,15 +84,15 @@
   padding: 4px;
   margin-top: 12px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid var(--app-border, rgba(255, 255, 255, 0.06));
 }
 
 .viewToggleBtn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 8px 12px;
   border: none;
   border-radius: 8px;
   font-size: 12px;
@@ -125,7 +125,7 @@
 .activeJobsHeader {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
@@ -140,7 +140,7 @@
 .activeJobsList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* ── Video Job Card ── */
@@ -148,10 +148,10 @@
 .jobCard {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
   overflow: hidden;
@@ -182,11 +182,11 @@
 }
 
 .jobCard[data-status='completed'] .jobIcon {
-  color: #10b981;
+  color: var(--color-green-400);
 }
 
 .jobCard[data-status='failed'] .jobIcon {
-  color: #ef4444;
+  color: var(--color-red-400);
 }
 
 .jobSpinner {
@@ -227,14 +227,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 2px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.06);
 }
 
 .jobProgressFill {
   height: 100%;
   background: var(--app-primary, #6366f1);
-  border-radius: 0 2px 2px 0;
+  border-radius: 0 4px 4px 0;
   transition: width 0.5s ease;
 }
 
@@ -286,13 +286,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px 6px;
+  padding: 0 16px 8px;
 }
 
 .sectionTitleRow {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -314,7 +314,7 @@
 .sectionViewAll {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   padding: 0;
   border: none;
   background: none;
@@ -334,7 +334,7 @@
 
 .sectionScroll {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scroll-snap-type: x mandatory;
@@ -407,7 +407,7 @@
 }
 
 .contentCardInfo {
-  padding: 6px 8px 7px;
+  padding: 8px 8px 8px;
   display: flex;
   flex-direction: column;
 }
@@ -427,7 +427,7 @@
 .viewAllGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
   padding: 8px 0 24px;
 }
 
@@ -466,21 +466,21 @@
 .recentJobsTitle {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 0 0 10px;
+  gap: 8px;
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 700;
   color: var(--app-text);
 }
 
 .recentJobsTitle svg {
-  color: #10b981;
+  color: var(--color-green-400);
 }
 
 .recentJobsList {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* ── States ── */
@@ -489,7 +489,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   padding: 64px 16px;
   color: var(--app-text-secondary, #888);
   font-size: 14px;
@@ -499,14 +499,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 48px 16px;
   color: var(--app-text-secondary);
   text-align: center;
 }
 
 .errorState svg {
-  color: #ef4444;
+  color: var(--color-red-400);
 }
 
 .retryBtn {
@@ -548,7 +548,7 @@
   margin: 0;
   font-size: 14px;
   color: var(--app-text-secondary, #888);
-  max-width: 300px;
+  max-width: 320px;
   line-height: 1.5;
 }
 
@@ -573,7 +573,7 @@
 
 .previewContent {
   width: 100%;
-  max-width: 500px;
+  max-width: 480px;
   max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
@@ -660,9 +660,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px;
-  border-radius: 10px;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
   border: 1px solid var(--app-border, rgba(255, 255, 255, 0.1));
   background: rgba(255, 255, 255, 0.04);
   color: var(--app-text);

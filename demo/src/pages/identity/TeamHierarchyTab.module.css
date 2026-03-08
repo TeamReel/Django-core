@@ -23,7 +23,7 @@
 .seasonCard {
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -32,7 +32,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 14px;
+  padding: 16px 16px;
   min-height: 52px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -52,7 +52,7 @@
 .seasonLeft {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -66,7 +66,7 @@
 }
 
 .seasonLink {
-  color: #60a5fa;
+  color: var(--color-blue-400);
   text-decoration: none;
 }
 
@@ -85,8 +85,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 8px;
-  border-radius: 999px;
+  padding: 4px 8px;
+  border-radius: 1000px;
   border: 1px solid var(--app-border);
   background: var(--app-surface, #0f172a);
   font-size: 11px;
@@ -109,7 +109,7 @@
 /* ── Season body (expanded) ── */
 .seasonBody {
   border-top: 1px solid var(--app-border, #334155);
-  padding: 10px 14px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -118,7 +118,7 @@
 /* ── Competition row ── */
 .compRow {
   border: 1px solid var(--app-border, #334155);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--app-surface, #0f172a);
 }
@@ -128,7 +128,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 12px 16px;
   min-height: 48px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -155,7 +155,7 @@
 }
 
 .compLink {
-  color: #60a5fa;
+  color: var(--color-blue-400);
   text-decoration: none;
 }
 
@@ -173,8 +173,8 @@
 .matchRow {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px 10px 20px;
+  gap: 12px;
+  padding: 12px 16px 12px 20px;
   min-height: 48px;
   border-bottom: 1px solid var(--app-border, #1e293b);
   cursor: pointer;
@@ -255,7 +255,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: 12px;
   color: #818cf8;
   font-weight: 600;
@@ -264,7 +264,7 @@
   border: none;
   padding: 4px 8px;
   margin-left: -8px;
-  border-radius: 6px;
+  border-radius: 8px;
   min-height: 32px;
   -webkit-tap-highlight-color: transparent;
 }

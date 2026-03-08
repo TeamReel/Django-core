@@ -29,8 +29,8 @@
 
 /* ─── Navigation Buttons ─────────────────────────────────────── */
 .navBtn {
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 4px 12px;
+  border-radius: 8px;
   border: 1px solid var(--rm-gray-200);
   background: transparent;
   cursor: pointer;
@@ -62,7 +62,7 @@
 /* ─── Variant Wrapper ────────────────────────────────────────── */
 .variantWrapper {
   width: calc(50% - 8px);
-  min-width: 260px;
+  min-width: 256px;
   max-width: 460px;
 }
 
@@ -88,11 +88,11 @@
 /* ─── Variant Media ──────────────────────────────────────────── */
 .variantMedia {
   width: 100%;
-  max-height: 260px;
+  max-height: 256px;
 }
 
 .variantMedia[data-single="true"] {
-  max-height: 450px;
+  max-height: 448px;
 }
 
 /* ─── No Preview ─────────────────────────────────────────────── */
@@ -112,8 +112,8 @@
 /* ─── Variant Approve / Reject Buttons ───────────────────────── */
 .variantApproveBtn {
   flex: 1;
-  padding: 7px 0;
-  border-radius: 7px;
+  padding: 8px 0;
+  border-radius: 8px;
   border: 1.5px solid var(--rm-green-200);
   background: var(--rm-green-50);
   color: var(--rm-green-700);
@@ -135,8 +135,8 @@
 
 .variantRejectBtn {
   flex: 1;
-  padding: 7px 0;
-  border-radius: 7px;
+  padding: 8px 0;
+  border-radius: 8px;
   border: 1.5px solid var(--rm-red-300);
   background: var(--rm-red-50);
   color: var(--rm-red-600);

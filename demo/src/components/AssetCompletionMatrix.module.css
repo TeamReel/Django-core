@@ -4,7 +4,7 @@
 .matrixCard {
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -13,7 +13,7 @@
 }
 
 .matrixHeader {
-  padding: 14px 16px;
+  padding: 16px 16px;
   border-bottom: 1px solid var(--app-border, #334155);
 }
 
@@ -34,20 +34,20 @@
 .matrixBadge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: 99px;
+  padding: 4px 12px;
+  border-radius: 100px;
   font-size: 12px;
   font-weight: 600;
 }
 
 .matrixBadge[data-state='complete'] {
   background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+  color: var(--color-green-400);
 }
 
 .matrixBadge[data-state='partial'] {
   background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  color: var(--color-amber-400);
 }
 
 .matrixBadge[data-state='empty'] {
@@ -79,7 +79,7 @@
 
 /* ── Table header cells ── */
 .th {
-  padding: 8px 10px;
+  padding: 8px 12px;
   font-size: 11px;
   font-weight: 600;
   text-align: center;
@@ -95,7 +95,7 @@
 
 .phaseBadge {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 4px 8px;
   background: var(--phase-color);
   font-size: 10px;
   font-weight: 600;
@@ -105,7 +105,7 @@
 
 /* ── Table body cells ── */
 .td {
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 12px;
   border-bottom: 1px solid var(--app-border);
 }
@@ -122,14 +122,14 @@
 }
 
 .rowIcon {
-  margin-right: 6px;
+  margin-right: 8px;
 }
 
 .cellContent {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cellStatus {
@@ -163,7 +163,7 @@
 .progressLabel {
   font-size: 13px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .progressTrack {
@@ -180,11 +180,11 @@
 }
 
 .progressBar[data-complete='true'] {
-  background: #22c55e;
+  background: var(--color-green-400);
 }
 
 .progressBar[data-complete='false'] {
-  background: #f59e0b;
+  background: var(--color-amber-400);
 }
 
 /* ── Legend ── */
@@ -205,9 +205,9 @@
 
 .legendSwatch {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
   background: var(--phase-color);
 }
 

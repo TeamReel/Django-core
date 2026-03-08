@@ -51,8 +51,8 @@
 }
 
 .approveButton {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
   background: var(--color-success-bg);
   color: var(--color-success);
   border: 1px solid var(--color-success-border);
@@ -69,8 +69,8 @@
 }
 
 .rejectButton {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 12px;
+  padding-bottom: 12px;
   background: var(--color-error-bg-light);
   color: var(--color-error);
   border: 1px solid var(--color-error-border);

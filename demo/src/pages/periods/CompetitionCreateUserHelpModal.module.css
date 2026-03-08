@@ -37,13 +37,13 @@
 .actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   margin-top: 16px;
 }
 
 .btnSecondary {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -52,7 +52,7 @@
 
 .btnPrimary {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-primary, #1976d2);
   color: #fff;

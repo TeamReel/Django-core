@@ -12,8 +12,8 @@
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 16px;
+  gap: 12px;
+  padding: 8px 16px;
   background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
   backdrop-filter: blur(12px);
@@ -30,7 +30,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-primary);
@@ -85,7 +85,7 @@
 }
 
 .titleBlock p {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: 13px;
   color: var(--app-muted-text);
 }
@@ -102,7 +102,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 12px;
   font-weight: 600;
   border-radius: 8px;
@@ -126,8 +126,8 @@
 }
 
 .activeBtnOn {
-  border-color: #10b981;
-  background: #dcfce7;
+  border-color: var(--color-green-400);
+  background: var(--color-green-50);
   color: #166534;
   font-weight: 700;
 }
@@ -160,11 +160,11 @@
 .labelBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
+  gap: 8px;
+  padding: 8px 12px;
   font-size: 12px;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   color: var(--app-text);
@@ -191,7 +191,7 @@
   top: calc(100% + 4px);
   right: 0;
   z-index: 200;
-  min-width: 170px;
+  min-width: 168px;
   background: var(--app-surface, #1e1e1e);
   border: 1px solid var(--app-border);
   border-radius: 12px;
@@ -202,7 +202,7 @@
 .overflowMenu button {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   padding: 12px 16px;
   font-size: 14px;
@@ -232,7 +232,7 @@
 }
 
 .skeletonBar {
-  height: 14px;
+  height: 16px;
   width: 60%;
   background: var(--app-surface-2);
   border-radius: 4px;
@@ -287,8 +287,8 @@
 .backBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
+  gap: 8px;
+  padding: 12px 20px;
   font-size: 14px;
   font-weight: 600;
   border-radius: 8px;
@@ -318,11 +318,11 @@
   }
 
   .actions {
-    gap: 6px;
+    gap: 8px;
   }
 
   .activeBtn {
-    padding: 6px 14px;
+    padding: 8px 16px;
     font-size: 13px;
   }
 
@@ -333,9 +333,9 @@
   .iconBtn {
     width: auto;
     height: auto;
-    padding: 6px 12px;
+    padding: 8px 12px;
     font-size: 12px;
     font-weight: 500;
-    gap: 6px;
+    gap: 8px;
   }
 }

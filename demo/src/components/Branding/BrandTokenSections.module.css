@@ -1,6 +1,6 @@
 /* ── CopyableValue ──────────────────────────────────────── */
 .copyableButton {
-  padding: 2px 6px;
+  padding: 4px 8px;
   background: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
   font-family: monospace;
 }
@@ -25,11 +25,11 @@
 }
 
 .colorTokenValue {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .colorTokenDescription {
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .combinedPreviewBar {

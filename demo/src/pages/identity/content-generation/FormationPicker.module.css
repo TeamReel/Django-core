@@ -4,7 +4,7 @@
   display: block;
   font-size: 11px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: var(--vscode-foreground, #ccc);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -19,7 +19,7 @@
 .formationButton {
   position: relative;
   border: 1px solid var(--vscode-widget-border, #333);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   padding: 0;
@@ -40,7 +40,7 @@
 }
 
 .formationButton[data-selected="true"] .miniField {
-  background: linear-gradient(to bottom, #16a34a, #15803d);
+  background: linear-gradient(to bottom, var(--color-green-500), #15803d);
 }
 
 .fieldMarkingTop {
@@ -65,8 +65,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   transform: translate(-50%, -50%);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
@@ -74,8 +74,8 @@
 
 .positionDot {
   position: absolute;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.6);
   transform: translate(-50%, -50%);
@@ -88,8 +88,8 @@
 
 .checkBadge {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   width: 12px;
   height: 12px;
   border-radius: 50%;
@@ -103,7 +103,7 @@
 }
 
 .formationLabel {
-  padding: 2px 0;
+  padding: 4px 0;
   text-align: center;
   font-weight: 700;
   font-size: 9px;

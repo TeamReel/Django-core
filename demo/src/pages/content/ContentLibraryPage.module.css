@@ -41,7 +41,7 @@
 .galleryTitleBlock {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -79,7 +79,7 @@
 .searchInput {
   flex: 1;
   min-width: 0;
-  padding: 10px 12px;
+  padding: 12px 12px;
   font-size: 14px;
   border-radius: 8px;
   border: 1px solid var(--app-border);
@@ -120,13 +120,13 @@
 .galleryGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 /* ── Filter chips ── */
 .chipsRow {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -142,7 +142,7 @@
 @media (min-width: 640px) {
   .galleryGrid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
+    gap: 16px;
   }
 
   .contentArea {

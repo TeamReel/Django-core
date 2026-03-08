@@ -4,8 +4,8 @@
 
 .filterBadge {
   background: var(--color-primary);
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 .hierarchyToggle {
@@ -29,7 +29,7 @@
 }
 
 .categoryCount {
-  padding: 2px 8px;
+  padding: 4px 8px;
 }
 
 .viewAllButton {

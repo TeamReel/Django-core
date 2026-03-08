@@ -38,7 +38,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 10px;
+    padding: 4px 12px;
     border-radius: 12px;
     background: var(--batch-chip-bg);
     color: var(--app-text, #e0e0e0);
@@ -55,8 +55,8 @@
 .radioOption {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 12px 14px;
+    gap: 12px;
+    padding: 12px 16px;
     border-radius: 8px;
     border: 1px solid var(--app-border, #333);
     background: transparent;
@@ -70,7 +70,7 @@
 }
 
 .radioInput {
-    margin-top: 2px;
+    margin-top: 4px;
     accent-color: var(--color-blue-500);
 }
 
@@ -78,7 +78,7 @@
 
 .roleBadge {
     font-size: 10px;
-    padding: 1px 6px;
+    padding: 1px 8px;
     background: color-mix(in srgb, var(--role-color) 13%, transparent);
     color: var(--role-color);
     border: 1px solid color-mix(in srgb, var(--role-color) 27%, transparent);
@@ -87,7 +87,7 @@
 /* ── Cards ── */
 
 .card {
-    padding: 14px 16px;
+    padding: 16px 16px;
     border-radius: 8px;
     border: 1px solid var(--app-border, #333);
     background: var(--app-surface-2, #252540);
@@ -117,14 +117,14 @@
 /* ── Progress bar ── */
 
 .progressBarBg {
-    height: 6px;
-    border-radius: 3px;
+    height: 8px;
+    border-radius: 4px;
     background: var(--app-border, #333);
 }
 
 .progressBarFill {
     height: 100%;
-    border-radius: 3px;
+    border-radius: 4px;
     background: var(--color-blue-500);
     transition: width 0.3s ease;
 }
@@ -138,9 +138,9 @@
 /* ── Error list ── */
 
 .errorTitle {
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .errorList {
-    padding-left: 18px;
+    padding-left: 20px;
 }

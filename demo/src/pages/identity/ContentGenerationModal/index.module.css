@@ -19,7 +19,7 @@
 /* Mobile: sit between dynamic top & bottom nav offsets (runtime measured). */
 @media (max-width: 639px) {
   .overlay {
-    top: var(--tr-top-navbar-offset, 57px);
+    top: var(--tr-top-navbar-offset, 56px);
     bottom: var(--tr-bottom-navbar-offset, calc(80px + env(safe-area-inset-bottom, 0px)));
     padding: 0;
     align-items: stretch;
@@ -63,7 +63,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: var(--app-surface-2, #f3f4f6);
   border: 1px solid var(--app-border, #e5e7eb);
   cursor: pointer;
@@ -83,7 +83,7 @@
 }
 
 .headerSubtitle {
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .contentArea {
@@ -100,7 +100,30 @@
   flex-shrink: 0;
 }
 
+/* Mobile: stack footer rows so buttons never overflow off-screen. */
+@media (max-width: 639px) {
+  .footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    background-color: var(--app-surface, white);
+  }
+}
+
 .footerActions {
   display: flex;
   gap: 8px;
+}
+
+/* Mobile: wrap action buttons and let them fill available width. */
+@media (max-width: 639px) {
+  .footerActions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .footerActions > * {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }

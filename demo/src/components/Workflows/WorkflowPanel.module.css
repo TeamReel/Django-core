@@ -28,7 +28,7 @@
 }
 
 .instanceButton {
-  padding: 4px 10px;
+  padding: 4px 12px;
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: transparent;
   color: var(--app-text, #111);

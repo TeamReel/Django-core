@@ -4,8 +4,8 @@
   border: 4px solid var(--spinner-track, #f3f3f3);
   border-top: 4px solid var(--spinner-color, #3498db);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px;
 }
@@ -72,12 +72,12 @@
 }
 
 .timelineNotes {
-  min-width: 150px;
+  min-width: 152px;
 }
 
 .recentTxnTitle {
   font-size: 15px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .recentTxnAmount {

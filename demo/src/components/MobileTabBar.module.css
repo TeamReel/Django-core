@@ -21,11 +21,11 @@
 
 .inlineBar {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  padding: 2px 0;
+  padding: 4px 0;
 }
 
 .inlineBar::-webkit-scrollbar {
@@ -36,7 +36,7 @@
   flex-shrink: 0;
   padding: 8px 16px;
   min-height: 44px;
-  border-radius: 22px;
+  border-radius: 24px;
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-muted-text, #888);
@@ -70,7 +70,7 @@
   padding: 12px 16px;
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: none;
@@ -83,7 +83,7 @@
 .triggerLeft {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .sectionLabel {
@@ -103,7 +103,7 @@
 .triggerRight {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--app-primary);
 }
 
@@ -130,10 +130,10 @@
   right: 0;
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   z-index: 100;
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -142,7 +142,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 14px 16px;
+  padding: 16px 16px;
   background-color: transparent;
   border: none;
   border-bottom: 1px solid var(--app-border);

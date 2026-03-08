@@ -101,16 +101,30 @@
    TYPOGRAPHY TOKENS — Modular scale
    ====================================================================== */
 :root {
-  /* Font size scale */
-  --text-2xs: 0.625rem;   /* 10px */
-  --text-xs:  0.6875rem;  /* 11px */
-  --text-sm:  0.75rem;    /* 12px */
-  --text-md:  0.8125rem;  /* 13px */
-  --text-base: 0.875rem;  /* 14px */
-  --text-lg:  1rem;       /* 16px */
-  --text-xl:  1.125rem;   /* 18px */
-  --text-2xl: 1.25rem;    /* 20px */
-  --text-3xl: 1.5rem;     /* 24px */
+  /* Font family */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --font-mono: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+
+  /* Font size scale — 5 steps */
+  --text-xs:   0.75rem;   /* 12px — captions, badges, timestamps */
+  --text-sm:   0.875rem;  /* 14px — secondary text, form labels */
+  --text-base: 1rem;      /* 16px — body text, inputs */
+  --text-lg:   1.25rem;   /* 20px — titles, card headers */
+  --text-xl:   1.5rem;    /* 24px — page headings */
+
+  /* Deprecated aliases — will be removed in next phase */
+  --text-2xs:  0.75rem;   /* → use --text-xs (12px) */
+  --text-md:   0.875rem;  /* → use --text-sm (14px) */
+  --text-2xl:  1.25rem;   /* → use --text-lg (20px) */
+  --text-3xl:  1.5rem;    /* → use --text-xl (24px) */
+
+  /* Compound type tokens: font-size / line-height */
+  --type-xs:   var(--text-xs) / 1.5;     /* 12px / 18px */
+  --type-sm:   var(--text-sm) / 1.5;     /* 14px / 21px */
+  --type-base: var(--text-base) / 1.5;   /* 16px / 24px */
+  --type-lg:   var(--text-lg) / 1.3;     /* 20px / 26px */
+  --type-xl:   var(--text-xl) / 1.25;    /* 24px / 30px */
 
   /* Font weight scale */
   --font-normal:   400;

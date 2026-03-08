@@ -33,7 +33,7 @@
 }
 
 .displayName {
-  margin-top: 10px;
+  margin-top: 12px;
 }
 
 .roleLabel {
@@ -41,8 +41,8 @@
 }
 
 .roleSelect {
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -60,13 +60,13 @@
 .footerActions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 6px;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .cancelButton {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -78,7 +78,7 @@
 
 .saveButton {
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-primary, #1976d2);
   color: #fff;

@@ -4,7 +4,7 @@
 }
 
 .container[data-size="sm"] {
-  gap: 6px;
+  gap: 8px;
 }
 
 .container[data-size="md"] {
@@ -25,7 +25,7 @@
 }
 
 .actionsRow[data-size="sm"] {
-  gap: 6px;
+  gap: 8px;
 }
 
 .actionsRow[data-size="md"] {
@@ -40,7 +40,7 @@
   color: var(--action-color);
   background-color: var(--action-bg);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: background-color 0.15s, opacity 0.15s, transform 0.1s;
   white-space: nowrap;
   cursor: pointer;
@@ -52,12 +52,12 @@
 
 .actionButton[data-size="sm"] {
   font-size: 11px;
-  padding: 4px 10px;
+  padding: 4px 12px;
 }
 
 .actionButton[data-size="md"] {
   font-size: 13px;
-  padding: 6px 14px;
+  padding: 8px 16px;
 }
 
 .actionButton[data-executing="self"] {
@@ -92,8 +92,8 @@
 
 .commentTextarea {
   font-size: 13px;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: var(--app-surface, #fff);
   color: var(--app-text, #111);
@@ -114,14 +114,14 @@
   color: var(--confirm-color);
   background-color: var(--confirm-bg);
   border: none;
-  border-radius: 6px;
-  padding: 6px 14px;
+  border-radius: 8px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;
 }
 
 .confirmButton:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-red-600);
 }
 
 .confirmButton:active {
@@ -134,8 +134,8 @@
   color: var(--app-text, #111);
   background-color: transparent;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 6px;
-  padding: 6px 14px;
+  border-radius: 8px;
+  padding: 8px 16px;
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;
 }

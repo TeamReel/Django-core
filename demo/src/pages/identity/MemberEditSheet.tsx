@@ -22,10 +22,10 @@ const ACCESS_ROLES: Array<{ value: string; label: string; desc: string }> = [
 ];
 
 const ROLE_COLORS: Record<string, string> = {
-  player: '#818cf8',
-  coach: '#f59e0b',
-  keeper: '#06b6d4',
-  supporter: '#94a3b8',
+  player: 'var(--color-blue-300)',
+  coach: 'var(--color-amber-400)',
+  keeper: 'var(--color-primary-400)',
+  supporter: 'var(--color-neutral-300)',
 };
 
 function readFunctionalRoles(m: any): string[] {
@@ -241,7 +241,7 @@ export function MemberEditSheet({
           <div className={st.functionalGrid}>
             {FUNCTIONAL_ROLE_OPTIONS.map((opt) => {
               const isActive = functionalRoles.has(opt.value);
-              const color = ROLE_COLORS[opt.value] || '#818cf8';
+              const color = ROLE_COLORS[opt.value] || 'var(--color-blue-300)';
               return (
                 <button
                   key={opt.value}

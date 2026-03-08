@@ -7,7 +7,7 @@
 .heroCard {
   background: linear-gradient(135deg, var(--app-surface-2, #1a1a2e) 0%, var(--app-surface, #16213e) 100%);
   border-radius: 16px;
-  padding: 20px 12px 14px;
+  padding: 20px 12px 16px;
   text-align: center;
 }
 
@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 
@@ -60,8 +60,8 @@
 }
 
 .heroMeta {
-  margin-top: 14px;
-  padding-top: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 11px;
   color: var(--app-muted-text);
@@ -80,11 +80,11 @@
 
 /* ── Quick-status cards ──────────────────────────────────────── */
 .statusCard {
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .statusCardLabel {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 /* Content count — color driven by data-attribute */
@@ -102,7 +102,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 2px;
+  padding: 0 4px;
 }
 
 .categoryLabel {
@@ -120,17 +120,17 @@
 }
 
 .progressTrack {
-  height: 3px;
+  height: 4px;
   background: var(--app-border, #333);
-  border-radius: 2px;
-  margin: 6px 0 8px;
+  border-radius: 4px;
+  margin: 8px 0 8px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
   background: var(--color-green-400, #4ade80);
-  border-radius: 2px;
+  border-radius: 4px;
   transition: width 0.3s ease;
 }
 

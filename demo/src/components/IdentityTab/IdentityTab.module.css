@@ -22,7 +22,7 @@
 }
 
 .sponsorModeBtn {
-  padding: 6px 12px;
+  padding: 8px 12px;
   font-size: 12px;
   cursor: pointer;
   border: 1px solid var(--vscode-widget-border, #333);
@@ -37,5 +37,5 @@
 }
 
 .sectionLabel {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }

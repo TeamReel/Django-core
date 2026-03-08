@@ -1,7 +1,7 @@
 /* UsageEventsPage — extracted inline styles */
 
 .roleBadge {
-  padding: 4px 10px;
+  padding: 4px 12px;
   color: white;
   letter-spacing: 0.5px;
 }
@@ -22,7 +22,7 @@
 
 .scopeToggle {
   display: flex;
-  padding: 3px;
+  padding: 4px;
 }
 
 .scopeButton {

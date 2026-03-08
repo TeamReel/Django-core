@@ -16,7 +16,7 @@
   transition: width 0.2s ease-in-out;
   flex-shrink: 0;
   border-right: 1px solid var(--sidebar-a-border);
-  padding-top: 57px;
+  padding-top: 56px;
 }
 
 .panelA[data-open='true'] {
@@ -40,7 +40,7 @@
 .sectionTitle {
   flex: 1;
   padding: 0 12px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -64,7 +64,7 @@
   transition: all 0.15s ease;
   flex-shrink: 0;
   margin-right: 12px;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .collapseButton:hover {
@@ -112,10 +112,10 @@
 /* ── Queue badge (expanded sidebar) ── */
 .queueBadge {
   color: var(--sidebar-badge-text, #fff);
-  border-radius: 10px;
-  padding: 1px 6px;
+  border-radius: 12px;
+  padding: 1px 8px;
   font-size: 10px;
-  min-width: 18px;
+  min-width: 20px;
   line-height: 16px;
 }
 
@@ -132,10 +132,10 @@
   top: 4px;
   right: 4px;
   color: var(--sidebar-badge-text, #fff);
-  border-radius: 10px;
-  padding: 1px 5px;
+  border-radius: 12px;
+  padding: 1px 4px;
   font-size: 9px;
-  min-width: 14px;
+  min-width: 16px;
   line-height: 14px;
 }
 
@@ -149,8 +149,8 @@
 
 /* ── Expand button (collapsed state) ── */
 .expandButton {
-  top: 65px;
-  right: -14px;
+  top: 64px;
+  right: -16px;
   width: 32px;
   height: 32px;
   color: var(--sidebar-a-text);
@@ -168,7 +168,7 @@
   background-color: var(--sidebar-b-bg);
   border-right: 1px solid var(--sidebar-b-border);
   flex-shrink: 0;
-  padding-top: 57px;
+  padding-top: 56px;
 }
 
 /* ── Panel B header ── */
@@ -181,7 +181,7 @@
 .panelBTabItem {
   display: inline-flex;
   align-items: center;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
@@ -201,7 +201,7 @@
 
 /* ── Panel B tab icon ── */
 .panelBTabIcon {
-  margin-right: 10px;
+  margin-right: 12px;
   display: flex;
 }
 
@@ -231,7 +231,7 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   text-decoration: none;
   font-size: 14px;
   color: var(--sidebar-b-text);
@@ -247,6 +247,6 @@
 
 /* ── Panel B item icon ── */
 .panelBItemIcon {
-  margin-right: 10px;
+  margin-right: 12px;
   display: flex;
 }

@@ -1,5 +1,5 @@
 .superadminBadge {
-  padding: 4px 10px;
+  padding: 4px 12px;
   background-color: var(--color-blue-500);
   color: white;
   letter-spacing: 0.5px;
@@ -34,11 +34,11 @@
 }
 
 .descriptionCell {
-  max-width: 250px;
+  max-width: 248px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .flagBadge {
-  padding: 2px 6px;
+  padding: 4px 8px;
 }

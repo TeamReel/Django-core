@@ -24,8 +24,8 @@ export function OfflineBanner() {
         zIndex: 9999,
         padding: '8px 16px',
         textAlign: 'center',
-        backgroundColor: isOnline ? '#16a34a' : '#dc2626',
-        color: '#fff',
+        backgroundColor: isOnline ? 'var(--color-green-600)' : 'var(--color-red-600)',
+        color: 'white',
         transition: 'background-color 0.3s, opacity 0.3s',
         opacity: 1,
       }}
