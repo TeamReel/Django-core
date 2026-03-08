@@ -1,6 +1,6 @@
 # D1 — Dark Mode Gaps
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 3 uur
 **Scope:** 117 CSS modules met hardcoded light kleuren + geen dark mode regels
 

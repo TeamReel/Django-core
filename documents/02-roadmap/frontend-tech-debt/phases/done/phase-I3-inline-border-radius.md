@@ -1,6 +1,6 @@
 # I3 — Inline Border-Radius → Tokens
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1 uur
 **Scope:** 134 hardcoded `borderRadius` in inline styles → CSS tokens
 

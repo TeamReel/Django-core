@@ -1,6 +1,6 @@
 # I5 — Inline Spacing → Tokens
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1.5 uur
 **Scope:** 166 `padding/margin` + 81 `gap` in inline styles → `var(--space-*)`
 

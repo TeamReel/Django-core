@@ -1,6 +1,6 @@
 # I6 — Inline Colors → Tokens
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1 uur
 **Scope:** 111 `color: '#hex'` + 23 `backgroundColor: '#hex'` in inline styles → tokens
 

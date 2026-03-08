@@ -1,6 +1,6 @@
 # Frontend Technical Debt — Cleanup Roadmap
 
-**Status:** � In uitvoering (7/12 fases)
+**Status:** ✅ Voltooid (12/12 fases)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmap:** `design-system-adoption/` (11/11 ✅ voltooid)
 
@@ -56,16 +56,16 @@ De design-system-adoption roadmap heeft ~4.800 hardcoded CSS-waarden getokenized
 
 | Fase | Naam | Scope | Waarden | Effort | Status |
 |------|------|-------|---------|--------|--------|
-| **C1** | Console Cleanup | `console.log/warn/error` → proper logging of verwijderen | 374 | 1 uur | 🔲 Todo |
-| **C2** | TypeScript `any` Audit | Meest-gebruikte `any` → typed interfaces | 2.002 | 4 uur | 🔲 Todo |
-| **C3** | Error Handling | Empty catch → proper error handling/logging | 371 | 2 uur | 🔲 Todo |
+| **C1** | Console Cleanup | `console.log/warn/error` → proper logging of verwijderen | 131 | 1 uur | ✅ Done |
+| **C2** | TypeScript `any` Audit | Meest-gebruikte `any` → typed interfaces (catch params) | 51 | 4 uur | ✅ Done |
+| **C3** | Error Handling | Empty catch → proper error handling/logging | 370 | 2 uur | ✅ Done |
 
 ### Track D — Dark Mode & Accessibility
 
 | Fase | Naam | Scope | Waarden | Effort | Status |
 |------|------|-------|---------|--------|--------|
-| **D1** | Dark Mode Gaps | Hardcoded light colors → semantic tokens in 117 modules | 117 | 3 uur | 🔲 Todo |
-| **D2** | Accessibility Quick Wins | `onClick` div/span → `role="button"` + `tabIndex`, icon buttons → `aria-label` | 39 | 1 uur | 🔲 Todo |
+| **D1** | Dark Mode Gaps | Hardcoded light colors → semantic tokens in 117 modules | 466 | 3 uur | ✅ Done |
+| **D2** | Accessibility Quick Wins | `onClick` div/span → `role="button"` + `tabIndex`, icon buttons → `aria-label` | 50 | 1 uur | ✅ Done |
 
 ## Volgorde
 

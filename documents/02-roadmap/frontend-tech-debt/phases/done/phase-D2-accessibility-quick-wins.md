@@ -1,6 +1,6 @@
 # D2 — Accessibility Quick Wins
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1 uur
 **Scope:** 33 clickable div/span + 6 icon buttons zonder aria-label
 

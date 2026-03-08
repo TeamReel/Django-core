@@ -1,6 +1,6 @@
 # C1 — Console Statement Cleanup
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1 uur
 **Scope:** 374 `console.log/warn/error` statements in productie-code
 

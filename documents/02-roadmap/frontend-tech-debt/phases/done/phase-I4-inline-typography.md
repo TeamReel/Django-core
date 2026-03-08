@@ -1,6 +1,6 @@
 # I4 — Inline Typography → Tokens
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1.5 uur
 **Scope:** 229 `fontSize` + 114 `fontWeight` in inline styles → tokens
 

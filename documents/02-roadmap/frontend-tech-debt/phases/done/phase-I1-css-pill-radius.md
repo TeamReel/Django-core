@@ -1,6 +1,6 @@
 # I1 — CSS Pill Radius Fix
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 15 min
 **Scope:** 9 bestanden, `border-radius: 1000px/10000px` → `var(--radius-full)`
 

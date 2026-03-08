@@ -1,6 +1,6 @@
 # I2 — CSS Hardcoded Hex Cleanup
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 45 min
 **Scope:** ~122 hardcoded hex kleuren in CSS modules → semantic/color tokens
 

@@ -1,6 +1,6 @@
 # I7 — Inline Shadow + Z-index → Tokens
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 30 min
 **Scope:** 16 `boxShadow` + 10 `zIndex` in inline styles → tokens
 

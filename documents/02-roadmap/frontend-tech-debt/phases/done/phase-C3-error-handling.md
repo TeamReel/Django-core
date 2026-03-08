@@ -1,6 +1,6 @@
 # C3 — Error Handling Cleanup
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 2 uur
 **Scope:** 371 empty catch blocks / 588 total try-catch
 

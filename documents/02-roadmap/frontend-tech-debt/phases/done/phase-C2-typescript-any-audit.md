@@ -1,6 +1,6 @@
 # C2 — TypeScript `any` Audit
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 4 uur (iteratief, kan in sprints)
 **Scope:** 2.002 `: any` / `as any` usages → typed interfaces
 
