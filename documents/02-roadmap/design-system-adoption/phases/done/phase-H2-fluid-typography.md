@@ -1,6 +1,6 @@
 # H2 — Fluid Typography
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 30 min
 **Scope:** 5 `--text-*` tokens upgraden naar `clamp()` + Stylelint update
 **Dependency:** Na A5 (alle font-sizes moeten eerst tokenized zijn)

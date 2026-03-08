@@ -119,18 +119,18 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   --font-mono: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 
-  /* Font size scale — 5 steps */
-  --text-xs:   0.75rem;   /* 12px — captions, badges, timestamps */
-  --text-sm:   0.875rem;  /* 14px — secondary text, form labels */
-  --text-base: 1rem;      /* 16px — body text, inputs */
-  --text-lg:   1.25rem;   /* 20px — titles, card headers */
-  --text-xl:   1.5rem;    /* 24px — page headings */
+  /* Font size scale — 5 fluid steps (320px → 1280px viewport) */
+  --text-xs:   clamp(0.6875rem, 0.65rem + 0.19vw, 0.75rem);   /* 11px → 12px */
+  --text-sm:   clamp(0.8125rem, 0.78rem + 0.16vw, 0.875rem);  /* 13px → 14px */
+  --text-base: clamp(0.9375rem, 0.88rem + 0.31vw, 1rem);      /* 15px → 16px */
+  --text-lg:   clamp(1.125rem, 1rem + 0.63vw, 1.25rem);       /* 18px → 20px */
+  --text-xl:   clamp(1.25rem, 1.06rem + 0.94vw, 1.5rem);      /* 20px → 24px */
 
-  /* Deprecated aliases — will be removed in next phase */
-  --text-2xs:  0.75rem;   /* → use --text-xs (12px) */
-  --text-md:   0.875rem;  /* → use --text-sm (14px) */
-  --text-2xl:  1.25rem;   /* → use --text-lg (20px) */
-  --text-3xl:  1.5rem;    /* → use --text-xl (24px) */
+  /* Deprecated aliases — point to fluid tokens */
+  --text-2xs:  var(--text-xs);   /* → use --text-xs */
+  --text-md:   var(--text-sm);   /* → use --text-sm */
+  --text-2xl:  var(--text-lg);   /* → use --text-lg */
+  --text-3xl:  var(--text-xl);   /* → use --text-xl */
 
   /* Compound type tokens: font-size / line-height */
   --type-xs:   var(--text-xs) / 1.5;     /* 12px / 18px */
