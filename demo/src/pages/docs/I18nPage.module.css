@@ -9,11 +9,11 @@
 }
 
 .welcomeHeading {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .sectionHeading {
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--space-4) 0;
 }
 
 .mutedText {
@@ -23,8 +23,8 @@
 .currentLangDisplay {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: var(--space-3);
+  padding: var(--space-4);
   background-color: var(--i18n-bg-muted);
   border-radius: var(--radius-md);
 }
@@ -38,7 +38,7 @@
 }
 
 .langButton {
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--i18n-border);
   border-radius: var(--radius-md);
   background-color: var(--i18n-white);
@@ -56,7 +56,7 @@
 }
 
 .sampleTextBox {
-  padding: 16px;
+  padding: var(--space-4);
   background-color: var(--i18n-bg-muted);
   border-radius: var(--radius-md);
   border-left: 4px solid var(--i18n-primary);

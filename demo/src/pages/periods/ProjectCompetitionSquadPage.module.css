@@ -1,7 +1,7 @@
 /* ProjectCompetitionSquadPage — extracted inline styles */
 
 .loadingText {
-  padding: 16px;
+  padding: var(--space-4);
   color: var(--app-text-secondary);
 }
 

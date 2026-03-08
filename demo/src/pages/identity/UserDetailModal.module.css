@@ -13,7 +13,7 @@
 
 .modal {
   background-color: var(--app-surface);
-  padding: 24px;
+  padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 600px;
   max-width: 90%;
@@ -26,34 +26,34 @@
 
 .title {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   color: var(--app-text);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .sectionTitle {
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   color: var(--app-text);
 }
 
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .fieldLabel {
   display: block;
   font-size: var(--text-xs);
   color: var(--app-muted-text);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .fieldValue {
@@ -64,11 +64,11 @@
 .footer {
   display: flex;
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: var(--space-6);
 }
 
 .closeButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);

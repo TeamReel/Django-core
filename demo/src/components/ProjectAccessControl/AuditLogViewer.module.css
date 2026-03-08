@@ -3,11 +3,11 @@
 }
 
 .tableCell {
-  padding: 12px 8px;
+  padding: var(--space-3) var(--space-2);
 }
 
 .actionBadge {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   background-color: var(--badge-bg, #e3f2fd);
   color: var(--badge-color, #1565c0);
 }

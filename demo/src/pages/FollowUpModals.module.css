@@ -12,8 +12,8 @@
 .chip {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 16px;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   cursor: pointer;
   border: 2px solid var(--app-border, #e5e7eb);
@@ -45,7 +45,7 @@
 
 /* Error alert with inset margin */
 .errorAlertInset {
-  margin: 0 24px 16px;
+  margin: 0 var(--space-6) var(--space-4);
 }
 
 /* Footer alignment */

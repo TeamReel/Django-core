@@ -5,14 +5,14 @@
 .overviewRoot {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 /* ── Hero card ── */
 .heroCard {
   background: linear-gradient(135deg, var(--app-surface-2, #1e293b) 0%, var(--app-surface, #0f172a) 100%);
   border-radius: var(--radius-lg);
-  padding: 24px 20px;
+  padding: var(--space-6) var(--space-5);
   text-align: center;
 }
 
@@ -20,30 +20,30 @@
   font-size: var(--text-xl);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .heroDates {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--app-muted-text);
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .heroStats {
   display: flex;
   justify-content: center;
-  gap: 32px;
+  gap: var(--space-8);
 }
 
 .heroStat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .heroStatValue {
@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 16px;
+  padding: var(--space-4) var(--space-4);
   border-bottom: 1px solid var(--app-border, #334155);
 }
 
@@ -99,14 +99,14 @@
 .assetList {
   display: flex;
   flex-direction: column;
-  padding: 4px 0;
+  padding: var(--space-1) 0;
 }
 
 .assetRow {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 4px 12px;
-  padding: 12px 16px;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--app-border, #1e293b);
 }
 
@@ -117,7 +117,7 @@
 .assetInfo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .assetIcon {
@@ -150,7 +150,7 @@
   background: var(--app-border, #334155);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .progressFill {
@@ -173,8 +173,8 @@
 .matchRow {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--app-border, #1e293b);
   text-decoration: none;
   color: var(--app-text);
@@ -228,7 +228,7 @@
 }
 
 .loadingRow {
-  padding: 16px;
+  padding: var(--space-4);
   text-align: center;
   font-size: var(--text-sm);
   color: var(--app-muted-text);
@@ -244,7 +244,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--app-border, #1e293b);
 }
 
@@ -255,7 +255,7 @@
 .compInfo {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .compName {
@@ -279,8 +279,8 @@
 .brandItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--app-border, #1e293b);
   border-right: 1px solid var(--app-border, #1e293b);
 }
@@ -314,7 +314,7 @@
 
 /* ── Content hint ── */
 .contentHint {
-  padding: 16px 16px;
+  padding: var(--space-4) var(--space-4);
   font-size: var(--text-sm);
   color: var(--app-muted-text);
   line-height: var(--leading-normal);
@@ -354,7 +354,7 @@
   .overviewRoot {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: var(--space-4);
   }
 
   .heroCard {

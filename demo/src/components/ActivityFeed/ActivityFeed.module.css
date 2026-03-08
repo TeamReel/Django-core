@@ -38,7 +38,7 @@
 }
 
 .activityTitle {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .urgencyTime {
@@ -51,7 +51,7 @@
 }
 
 .filterBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   transition: all var(--duration-normal);
 }
 

@@ -7,7 +7,7 @@
 .heroCard {
   background: linear-gradient(135deg, var(--app-surface-2, #1a1a2e) 0%, var(--app-surface, #16213e) 100%);
   border-radius: var(--radius-lg);
-  padding: 20px 12px 16px;
+  padding: var(--space-5) var(--space-3) var(--space-4);
   text-align: center;
 }
 
@@ -15,7 +15,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .heroTeam {
@@ -23,7 +23,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -45,10 +45,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 72px;
   flex-shrink: 0;
-  padding-top: 8px;
+  padding-top: var(--space-2);
 }
 
 .heroScoreValue {
@@ -60,8 +60,8 @@
 }
 
 .heroMeta {
-  margin-top: 16px;
-  padding-top: 12px;
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: var(--text-xs);
   color: var(--app-muted-text);
@@ -84,7 +84,7 @@
 }
 
 .statusCardLabel {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 /* Content count — color driven by data-attribute */
@@ -101,8 +101,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  padding: 0 4px;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
 }
 
 .categoryLabel {
@@ -123,7 +123,7 @@
   height: 4px;
   background: var(--app-border, #333);
   border-radius: var(--radius-sm);
-  margin: 8px 0 8px;
+  margin: var(--space-2) 0 var(--space-2);
   overflow: hidden;
 }
 

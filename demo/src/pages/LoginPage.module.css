@@ -6,27 +6,27 @@
 }
 
 .form {
-  gap: 16px;
-  margin-top: 32px;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .errorBox {
   --error-bg: #ffeeee;
   --error-border: #ffcccc;
   --error-text: #cc0000;
-  padding: 12px;
+  padding: var(--space-3);
   background-color: var(--error-bg);
   border: 1px solid var(--error-border);
   color: var(--error-text);
 }
 
 .label {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .submitBtn {
   --submit-bg-disabled: #cccccc;
-  padding: 12px;
+  padding: var(--space-3);
   background-color: var(--app-primary);
   border: none;
   cursor: pointer;
@@ -38,7 +38,7 @@
 }
 
 .registerPrompt {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .registerLink {

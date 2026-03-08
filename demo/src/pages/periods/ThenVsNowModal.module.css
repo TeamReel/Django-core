@@ -9,13 +9,13 @@
 /* ─── Header ─────────────────────────────────────────────────── */
 
 .subtitle {
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 /* ─── Members Step ───────────────────────────────────────────── */
 
 .membersStep {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
 }
 
 /* ─── Ordered Member Row ─────────────────────────────────────── */
@@ -57,14 +57,14 @@
 /* ─── Unselected Header Row ──────────────────────────────────── */
 
 .unselectedHeaderRow {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 /* ─── Search Input ───────────────────────────────────────────── */
 
 .searchInput {
   flex: 1;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);

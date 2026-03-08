@@ -1,7 +1,7 @@
 /* AssetGenResultsWidgets — extracted inline styles */
 
 .centeredSection {
-  padding: 40px 0;
+  padding: var(--space-10) 0;
 }
 
 .emojiIcon {
@@ -19,8 +19,8 @@
 .queuedInfoBox {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   background: var(--vscode-editorWidget-background, #252526);
   border: 1px solid var(--vscode-widget-border, #333);
   border-radius: var(--radius-md);
@@ -35,13 +35,13 @@
 }
 
 .errorSection {
-  padding: 40px 0;
+  padding: var(--space-10) 0;
   color: var(--vscode-errorForeground, #f44);
 }
 
 .variantGrid {
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: start;
 }
 
@@ -60,7 +60,7 @@
 
 .feedbackInput {
   width: 100%;
-  padding: 8px 8px;
+  padding: var(--space-2) var(--space-2);
   font-size: var(--text-xs);
   background: var(--vscode-input-background, #3c3c3c);
   color: var(--vscode-input-foreground, #ccc);

@@ -6,7 +6,7 @@
 }
 
 .closeButton {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
   height: fit-content;
 }
@@ -16,7 +16,7 @@
 }
 
 .label {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .textarea {

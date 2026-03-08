@@ -19,7 +19,7 @@
 }
 
 .closeButton {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
   height: fit-content;
 }
@@ -30,15 +30,15 @@
 
 .formGrid {
   grid-template-columns: 140px 1fr;
-  gap: 12px 16px;
+  gap: var(--space-3) var(--space-4);
 }
 
 .formControl {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .textarea {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   resize: vertical;
 }
 
@@ -83,7 +83,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .modal::before {
@@ -93,7 +93,7 @@
     height: 4px;
     border-radius: var(--radius-sm);
     background-color: var(--app-border, #d0d5dd);
-    margin: 0 auto 8px;
+    margin: 0 auto var(--space-2);
     flex-shrink: 0;
   }
 
@@ -106,11 +106,11 @@
 
   .formGrid {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .closeButton {
     font-size: var(--text-sm);
-    padding: 4px 8px;
+    padding: var(--space-1) var(--space-2);
   }
 }

@@ -12,8 +12,8 @@
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
   background: var(--app-surface);
   border-bottom: 1px solid var(--app-border);
   backdrop-filter: blur(12px);
@@ -28,8 +28,8 @@
 .stickyBackBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: transparent;
@@ -62,8 +62,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
-  padding: 12px 16px 0;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4) 0;
 }
 
 .titleBlock {
@@ -85,7 +85,7 @@
 }
 
 .titleBlock p {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
   font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
@@ -94,15 +94,15 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   flex-shrink: 0;
 }
 
 .activeBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
@@ -160,8 +160,8 @@
 .labelBtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
   border-radius: var(--radius-md);
@@ -202,9 +202,9 @@
 .overflowMenu button {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   border: none;
@@ -228,7 +228,7 @@
 
 /* ── Loading skeleton ────────────────────────────────────────────────── */
 .skeleton {
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .skeletonBar {
@@ -242,14 +242,14 @@
 .skeletonBarShort {
   composes: skeletonBar;
   width: 35%;
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .skeletonBarFull {
   composes: skeletonBar;
   width: 100%;
   height: 44px;
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }
 
 .skeletonCard {
@@ -257,7 +257,7 @@
   width: 100%;
   background: var(--app-surface-2);
   border-radius: var(--radius-lg);
-  margin-top: 16px;
+  margin-top: var(--space-4);
   animation: shimmer 1.4s infinite;
 }
 
@@ -269,26 +269,26 @@
 
 /* ── Tab content area ────────────────────────────────────────────────── */
 .tabContent {
-  padding: 0 16px 120px;
+  padding: 0 var(--space-4) 120px;
 }
 
 /* ── Error state ─────────────────────────────────────────────────────── */
 .errorBox {
-  padding: 24px 16px;
+  padding: var(--space-6) var(--space-4);
   text-align: center;
 }
 
 .errorMsg {
   font-size: var(--text-base);
   color: var(--color-red-500, #ef4444);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .backBtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
@@ -310,7 +310,7 @@
 /* ── Desktop ─────────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
   .headerRow {
-    padding: 24px 24px 0;
+    padding: var(--space-6) var(--space-6) 0;
   }
 
   .titleBlock h1 {
@@ -318,24 +318,24 @@
   }
 
   .actions {
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .activeBtn {
-    padding: 8px 16px;
+    padding: var(--space-2) var(--space-4);
     font-size: var(--text-sm);
   }
 
   .tabContent {
-    padding: 0 24px 64px;
+    padding: 0 var(--space-6) var(--space-16);
   }
 
   .iconBtn {
     width: auto;
     height: auto;
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
     font-size: var(--text-xs);
     font-weight: var(--font-medium);
-    gap: 8px;
+    gap: var(--space-2);
   }
 }

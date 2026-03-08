@@ -109,13 +109,13 @@
 
   /* Main content takes full width on mobile */
   .main-content {
-    padding: 16px !important;
+    padding: var(--space-4) !important;
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Reduce padding on mobile */
   main {
-    padding: 12px !important;
+    padding: var(--space-3) !important;
     padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
@@ -129,7 +129,7 @@
 .overflow-x-auto {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
 }
 
 /* --- Responsive Tables --- */
@@ -150,7 +150,7 @@
   /* Compact table cells */
   table th,
   table td {
-    padding: 8px 8px !important;
+    padding: var(--space-2) var(--space-2) !important;
     font-size: var(--text-sm) !important;
     white-space: nowrap;
   }
@@ -170,7 +170,7 @@
   [style*="grid-template-columns"] {
     display: flex !important;
     flex-direction: column !important;
-    gap: 16px !important;
+    gap: var(--space-4) !important;
   }
 
   /* Override span-based grid children */
@@ -183,7 +183,7 @@
   [style*="repeat(4, 1fr)"] {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    gap: var(--space-3) !important;
   }
 }
 
@@ -193,7 +193,7 @@
   .list-item,
   [class*="ListItem"],
   li {
-    padding: 12px !important;
+    padding: var(--space-3) !important;
   }
 
   /* Reduce avatar/icon sizes */
@@ -214,7 +214,7 @@
   /* Compact badges */
   [style*="padding: '4px 8px'"],
   [style*="padding:'4px 8px'"] {
-    padding: 4px 8px !important;
+    padding: var(--space-1) var(--space-2) !important;
     font-size: var(--text-xs) !important;
   }
 }
@@ -263,14 +263,14 @@
 /* --- Responsive Grid Layouts --- */
 .responsive-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 @media (max-width: 639px) {
   .responsive-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: var(--space-3);
   }
 }
 
@@ -278,13 +278,13 @@
 .responsive-flex {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 @media (max-width: 639px) {
   .responsive-flex {
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3);
   }
 }
 
@@ -308,14 +308,14 @@
   .page-header {
     flex-direction: column !important;
     align-items: flex-start !important;
-    gap: 12px !important;
+    gap: var(--space-3) !important;
   }
 
   .page-header-actions {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .page-header-actions button {
@@ -326,7 +326,7 @@
   /* Compact page titles */
   h1 {
     font-size: var(--text-lg) !important;
-    margin-bottom: 12px !important;
+    margin-bottom: var(--space-3) !important;
   }
 
   h2 {
@@ -430,15 +430,15 @@
 /* --- Responsive Spacing Utilities --- */
 @media (max-width: 639px) {
   .p-responsive {
-    padding: 12px !important;
+    padding: var(--space-3) !important;
   }
 
   .m-responsive {
-    margin: 12px !important;
+    margin: var(--space-3) !important;
   }
 
   .gap-responsive {
-    gap: 12px !important;
+    gap: var(--space-3) !important;
   }
 }
 

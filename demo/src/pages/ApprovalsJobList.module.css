@@ -20,20 +20,20 @@
 
 /* --- Root container --- */
 .root[data-has-workflow="true"] {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 /* ============================================================
    AI Job Card
    ============================================================ */
 .aiCard {
-  padding: 16px 16px;
+  padding: var(--space-4) var(--space-4);
   background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border, #e5e7eb);
   cursor: default;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   transition: box-shadow var(--duration-fast), transform var(--duration-fast);
 }
 
@@ -59,7 +59,7 @@
 
 /* --- AI progress --- */
 .aiProgressTrack {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .aiProgressBar {
@@ -76,7 +76,7 @@
 /* --- Type badge (AI) --- */
 .typeBadge {
   font-size: var(--text-xs);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   letter-spacing: 0.04em;
 }
 
@@ -98,7 +98,7 @@
 /* --- AI status badge --- */
 .aiStatusBadge {
   font-size: var(--text-xs);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   letter-spacing: 0.04em;
 }
 
@@ -136,7 +136,7 @@
 /* --- AI approval badge --- */
 .approvalBadge {
   font-size: var(--text-xs);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 
 .approvalBadge[data-approval="approved"] {
@@ -158,10 +158,10 @@
    Video Job Card
    ============================================================ */
 .videoCard {
-  padding: 16px 16px;
+  padding: var(--space-4) var(--space-4);
   background-color: var(--app-surface, #fff);
   border: 1px solid var(--app-border, #e5e7eb);
-  gap: 12px;
+  gap: var(--space-3);
   cursor: default;
   transition: box-shadow var(--duration-fast), transform var(--duration-fast);
 }
@@ -199,7 +199,7 @@
 /* --- Video status badge --- */
 .videoStatusBadge {
   font-size: var(--text-xs);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   letter-spacing: 0.04em;
 }
 
@@ -267,8 +267,8 @@
 .swipeRevealReject {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 0 20px;
+  gap: var(--space-2);
+  padding: 0 var(--space-5);
   height: 100%;
   font-weight: var(--font-bold);
   font-size: var(--text-sm);

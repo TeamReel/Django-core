@@ -1,7 +1,7 @@
 /* UsageEventsPage — extracted inline styles */
 
 .roleBadge {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   color: white;
   letter-spacing: 0.5px;
 }
@@ -22,7 +22,7 @@
 
 .scopeToggle {
   display: flex;
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .scopeButton {
@@ -55,5 +55,5 @@
 }
 
 .pagination {
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }

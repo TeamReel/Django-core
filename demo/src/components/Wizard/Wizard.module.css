@@ -30,7 +30,7 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px;
+  padding: var(--space-4);
   touch-action: pan-y;
 }
 
@@ -42,7 +42,7 @@
 
 /* ── Header ─────────────────────────────────────────── */
 .header {
-  padding: 4px 16px 12px;
+  padding: var(--space-1) var(--space-4) var(--space-3);
   flex-shrink: 0;
 }
 
@@ -116,8 +116,8 @@
 .card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 16px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
@@ -144,8 +144,8 @@
 .errorBanner {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px 16px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   background-color: var(--color-red-50, #fef2f2);
   border: 1px solid var(--color-red-200, #fecaca);
@@ -154,14 +154,14 @@
 .errorIcon {
   color: var(--color-red-500, #ef4444);
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .retryBtn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
@@ -178,14 +178,14 @@
 /* ── Loading state ──────────────────────────────────── */
 .loading {
   text-align: center;
-  padding: 32px;
+  padding: var(--space-8);
   color: var(--app-text-muted, #6b7280);
 }
 
 /* ── Empty state ────────────────────────────────────── */
 .empty {
   text-align: center;
-  padding: 32px;
+  padding: var(--space-8);
   color: var(--app-text-muted, #6b7280);
 }
 

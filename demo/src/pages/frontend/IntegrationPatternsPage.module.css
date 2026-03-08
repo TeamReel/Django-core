@@ -22,7 +22,7 @@
 
 /* PatternSection */
 .patternSection {
-  margin-bottom: 48px;
+  margin-bottom: var(--space-12);
   scroll-margin-top: 100px;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .practiceList {
-  padding-left: 20px;
+  padding-left: var(--space-5);
 }
 
 /* Page layout */
@@ -57,7 +57,7 @@
 }
 
 .navButton {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   background-color: transparent;
   color: var(--app-text-secondary);
   font-weight: var(--font-normal);
@@ -71,12 +71,12 @@
 
 /* Main content */
 .mainContent {
-  padding: 48px;
+  padding: var(--space-12);
   max-width: 1000px;
 }
 
 .headerSection {
-  margin-bottom: 48px;
+  margin-bottom: var(--space-12);
 }
 
 .pageTitle {

@@ -13,7 +13,7 @@
 .prerequisiteHeading {
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .prerequisiteMissing {
@@ -28,7 +28,7 @@
 }
 
 .transformationHeader {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .transformationIcon {
@@ -38,7 +38,7 @@
 .transformationCaption {
   font-size: var(--text-xs);
   opacity: 0.6;
-  margin-left: 4px;
+  margin-left: var(--space-1);
 }
 
 /* ── Variant grid + cards ── */
@@ -84,5 +84,5 @@
 /* ── Alert wrapper ── */
 
 .alertWrapper {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }

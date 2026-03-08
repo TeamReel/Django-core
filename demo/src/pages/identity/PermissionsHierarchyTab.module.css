@@ -5,7 +5,7 @@
 }
 
 .subtitle {
-  margin: 8px 0 0;
+  margin: var(--space-2) 0 0;
   font-size: 0.9rem;
 }
 
@@ -16,7 +16,7 @@
 .roleCard {
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
-  padding: 16px;
+  padding: var(--space-4);
   box-shadow: none;
 }
 
@@ -41,18 +41,18 @@
 }
 
 .roleScope {
-  margin-top: 4px;
+  margin-top: var(--space-1);
   font-size: var(--text-xs);
 }
 
 .roleDescription {
-  margin-top: 12px;
+  margin-top: var(--space-3);
   font-size: 0.9rem;
   color: var(--app-text);
 }
 
 .highlightList {
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .highlightItem {
@@ -62,8 +62,8 @@
 /* Hierarchy Ladder */
 
 .ladderContainer {
-  margin-top: 16px;
-  padding: 16px;
+  margin-top: var(--space-4);
+  padding: var(--space-4);
 }
 
 .ladderLineCol {
@@ -87,7 +87,7 @@
 }
 
 .ladderContent {
-  padding-bottom: 12px;
+  padding-bottom: var(--space-3);
 }
 
 .ladderContent[data-last="true"] {

@@ -1,7 +1,7 @@
 /* WebSocketTestPage — extracted from inline styles */
 
 .tabButton {
-  padding: 16px 4px;
+  padding: var(--space-4) var(--space-1);
   border-bottom: 2px solid transparent;
 }
 
@@ -23,7 +23,7 @@
 }
 
 .logEntry {
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
 }
 
 .logType {

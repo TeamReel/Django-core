@@ -1,5 +1,5 @@
 .photoSectionLabel {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .emptyPlaceholder {

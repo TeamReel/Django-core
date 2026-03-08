@@ -10,7 +10,7 @@
 .normalInputHint {
   font-size: var(--text-xs);
   color: var(--app-muted-text);
-  margin: 4px 0 0 0;
+  margin: var(--space-1) 0 0 0;
 }
 
 .successInput {

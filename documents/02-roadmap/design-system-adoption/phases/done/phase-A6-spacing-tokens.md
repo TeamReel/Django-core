@@ -1,8 +1,8 @@
 # A6 — Spacing Token Adoption
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 2 uur
-**Scope:** 2.552 hardcoded `padding` / `margin` / `gap` → `var(--space-*)`
+**Scope:** 2.111 hardcoded `padding`/`margin`/`gap` → `var(--space-*)` (202 bestanden)
 
 ---
 

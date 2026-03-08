@@ -1,5 +1,5 @@
 .pageHeader {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .pageTitle {
@@ -8,13 +8,13 @@
 }
 
 .pageSubtitle {
-  margin: 4px 0;
+  margin: var(--space-1) 0;
   color: var(--subtitle-color);
 }
 
 .pageContent {
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .tableWrapper {
@@ -23,7 +23,7 @@
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
+  padding-bottom: var(--space-1);
 }
 
 .table {
@@ -41,7 +41,7 @@
 }
 
 .tableHeaderCell {
-  padding: 12px;
+  padding: var(--space-3);
   cursor: default;
 }
 
@@ -50,5 +50,5 @@
 }
 
 .tableCell {
-  padding: 12px;
+  padding: var(--space-3);
 }

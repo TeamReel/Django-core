@@ -4,16 +4,16 @@
   background: var(--app-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 
 /* ── Header ────────────────────────────────── */
 .header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
 .headerIcon {
@@ -38,7 +38,7 @@
 .totalBadge {
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--color-violet-500) 10%, transparent);
   color: var(--color-violet-500);
@@ -46,33 +46,33 @@
 
 /* ── Section ───────────────────────────────── */
 .section {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .sectionLabel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--app-muted-text);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 /* ── Asset checklist (team-level) ──────────── */
 .assetGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .assetItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-lg);
   background: var(--app-surface-alt, var(--app-bg));
   border: 1px solid transparent;
@@ -115,7 +115,7 @@
 
 /* ── Summary progress (team brand) ─────────── */
 .summaryBar {
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .summaryLabel {
@@ -123,7 +123,7 @@
   align-items: center;
   justify-content: space-between;
   font-size: var(--text-xs);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .summaryText {
@@ -164,23 +164,23 @@
 
 /* ── Member progress rows ──────────────────── */
 .memberSection {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
 .memberTeamBar {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .memberList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .memberRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .memberAvatar {
@@ -220,7 +220,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .memberTrack {
@@ -252,8 +252,8 @@
 /* ── Type indicator dots ───────────────────── */
 .typeDots {
   display: flex;
-  gap: 4px;
-  margin-top: 4px;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
 }
 
 .typeDot {
@@ -274,15 +274,15 @@
 .missingCallout {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 12px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3);
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--color-amber-400) 8%, var(--app-surface));
   border: 1px solid rgba(245, 158, 11, 0.2);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--app-text);
-  margin-top: 12px;
+  margin-top: var(--space-3);
   cursor: pointer;
   transition: background var(--duration-fast);
 }
@@ -315,7 +315,7 @@
   background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease infinite;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 @keyframes shimmer {

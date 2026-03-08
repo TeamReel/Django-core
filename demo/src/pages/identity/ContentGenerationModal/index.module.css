@@ -13,7 +13,7 @@
   z-index: 1200;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 /* Mobile: sit between dynamic top & bottom nav offsets (runtime measured). */
@@ -83,7 +83,7 @@
 }
 
 .headerSubtitle {
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .contentArea {
@@ -91,12 +91,12 @@
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 16px;
+  padding: var(--space-4);
   touch-action: pan-y;
 }
 
 .footer {
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   flex-shrink: 0;
 }
 
@@ -105,21 +105,21 @@
   .footer {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: var(--space-3);
     background-color: var(--app-surface, white);
   }
 }
 
 .footerActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* Mobile: wrap action buttons and let them fill available width. */
 @media (max-width: 639px) {
   .footerActions {
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
   }
 
   .footerActions > * {

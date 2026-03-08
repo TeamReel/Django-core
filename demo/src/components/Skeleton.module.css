@@ -28,27 +28,27 @@
 .multiLineWrapper {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* ── SkeletonCard ── */
 
 .card {
-  padding: 16px;
+  padding: var(--space-4);
   background-color: var(--app-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
 }
 
 .cardImage {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
 }
 
 /* ── SkeletonList ── */
@@ -62,8 +62,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--space-3);
+  padding: var(--space-3);
   background-color: var(--app-surface);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
@@ -90,7 +90,7 @@
 }
 
 .mb6 {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 /* ── SkeletonPageHeader ── */
@@ -98,42 +98,42 @@
 .breadcrumbs {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .headerRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .headerActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 /* ── SkeletonTabBar ── */
 
 .tabBar {
   display: flex;
-  gap: 8px;
-  padding: 8px 0;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
   border-bottom: 1px solid var(--app-border);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   overflow-x: auto;
 }
 
 /* ── SkeletonDetailPage ── */
 
 .detailPage {
-  padding: 24px;
+  padding: var(--space-6);
 }
 
 .detailContent {
-  padding: 20px;
+  padding: var(--space-5);
   background-color: var(--app-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
@@ -144,12 +144,12 @@
 .tablePage {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .filterBar {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -165,8 +165,8 @@
 .tableRow {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 16px;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-4);
   border-bottom: 1px solid var(--app-border);
 }
 
@@ -177,25 +177,25 @@
 /* ── SkeletonDashboard ── */
 
 .dashboard {
-  padding: 24px;
+  padding: var(--space-6);
 }
 
 .dashboardGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+  gap: var(--space-4);
+  margin-top: var(--space-5);
 }
 
 /* ── Responsive ── */
 
 @media (max-width: 640px) {
   .detailPage {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .dashboard {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .dashboardGrid {

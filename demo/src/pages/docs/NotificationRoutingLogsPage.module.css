@@ -1,7 +1,7 @@
 /* NotificationRoutingLogsPage — extracted inline styles */
 
 .roleBadge {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   color: var(--color-white, white);
   letter-spacing: 0.5px;
 }
@@ -22,7 +22,7 @@
 
 .scopeWrapper {
   display: flex;
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .scopeBtn {

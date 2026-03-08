@@ -29,7 +29,7 @@
 
 /* ─── Navigation Buttons ─────────────────────────────────────── */
 .navBtn {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--rm-gray-200);
   background: transparent;
@@ -56,7 +56,7 @@
 }
 
 .galleryArea[data-multi="true"] {
-  padding: 12px;
+  padding: var(--space-3);
 }
 
 /* ─── Variant Wrapper ────────────────────────────────────────── */
@@ -112,7 +112,7 @@
 /* ─── Variant Approve / Reject Buttons ───────────────────────── */
 .variantApproveBtn {
   flex: 1;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--rm-green-200);
   background: var(--rm-green-50);
@@ -135,7 +135,7 @@
 
 .variantRejectBtn {
   flex: 1;
-  padding: 8px 0;
+  padding: var(--space-2) 0;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--rm-red-300);
   background: var(--rm-red-50);

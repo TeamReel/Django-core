@@ -38,7 +38,7 @@
 }
 
 .statusBadge {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   color: var(--status-color);
   background-color: var(--status-bg);
 }
@@ -58,13 +58,13 @@
 }
 
 .cancelButton {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   border: 1px solid var(--vq-color-danger, #dc2626);
   color: var(--vq-color-danger, #dc2626);
 }
 
 .retryButton {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   border: 1px solid var(--vq-color-blue-primary, #2563eb);
   background-color: var(--color-blue-600);
 }
@@ -72,13 +72,13 @@
 /* ── Main Page ────────────────────────────────────────────────────────────── */
 
 .refreshButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--app-border, #e5e7eb);
   color: var(--app-text, #111);
 }
 
 .filterButton {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: transparent;
@@ -94,7 +94,7 @@
 }
 
 .loadingState {
-  padding: 40px;
+  padding: var(--space-10);
 }
 
 .errorAlert {

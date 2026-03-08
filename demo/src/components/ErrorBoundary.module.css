@@ -4,11 +4,11 @@
 }
 
 .content {
-  padding: 60px 20px;
+  padding: 60px var(--space-5);
 }
 
 .header {
-  margin-bottom: 40px;
+  margin-bottom: var(--space-10);
 }
 
 .icon {
@@ -28,7 +28,7 @@
 }
 
 .detailsSection {
-  margin-top: 48px;
+  margin-top: var(--space-12);
   background-color: var(--color-neutral-50);
 }
 
@@ -38,12 +38,12 @@
 }
 
 .preBlock {
-  margin: 8px 0 0 0;
+  margin: var(--space-2) 0 0 0;
   white-space: pre-wrap;
 }
 
 .helpSection {
-  margin-top: 48px;
+  margin-top: var(--space-12);
   background-color: var(--color-amber-100);
   border: 1px solid var(--color-amber-300);
 }

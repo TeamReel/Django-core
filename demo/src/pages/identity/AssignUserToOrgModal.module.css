@@ -13,7 +13,7 @@
 
 .modal {
   background-color: var(--app-surface);
-  padding: 24px;
+  padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 480px;
   max-width: 90%;
@@ -24,18 +24,18 @@
 
 .title {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   color: var(--app-text);
 }
 
 .formBody {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .errorAlert {
-  padding: 12px;
+  padding: var(--space-3);
   background-color: rgba(220, 53, 69, 0.1);
   color: var(--app-error);
   border: 1px solid rgba(220, 53, 69, 0.2);
@@ -45,7 +45,7 @@
 
 .fieldLabel {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   font-weight: var(--font-medium);
   color: var(--app-text);
   font-size: var(--text-sm);
@@ -53,7 +53,7 @@
 
 .selectInput {
   width: 100%;
-  padding: 8px;
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-input-bg);
@@ -64,12 +64,12 @@
 .footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
 .cancelBtn {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
@@ -85,7 +85,7 @@
 
 .submitBtn {
   --submit-bg: #0066cc;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: none;
   background-color: var(--submit-bg);

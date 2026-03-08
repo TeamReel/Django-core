@@ -48,7 +48,7 @@
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   color: var(--color-text-muted);
-  margin-bottom: 32px;
+  margin-bottom: var(--space-8);
   max-width: 320px;
 }
 

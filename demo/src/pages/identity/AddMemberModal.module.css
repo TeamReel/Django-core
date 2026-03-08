@@ -19,11 +19,11 @@
 
 .tabBar {
   border-bottom: 2px solid var(--app-border, #e0e0e0);
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .tab {
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   border: none;
   background: transparent;
   color: var(--app-text, #333);
@@ -49,7 +49,7 @@
 }
 
 .userRow {
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   transition: background var(--duration-fast);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .emptyState {
-  padding: 32px 16px;
+  padding: var(--space-8) var(--space-4);
 }
 
 .formBody {

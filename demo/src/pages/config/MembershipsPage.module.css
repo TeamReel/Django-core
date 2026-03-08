@@ -5,13 +5,13 @@
 }
 
 .memberItem {
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
 }
 
 .seasonsHeader {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
   align-items: flex-start;
 }
 
@@ -31,21 +31,21 @@
 .accordionButton {
   width: 100%;
   text-align: left;
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   background: var(--app-surface);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .accordionPanel {
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   background: var(--app-surface-1);
 }
 
 .matchItem {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }

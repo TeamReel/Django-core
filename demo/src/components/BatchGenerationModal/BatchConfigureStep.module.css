@@ -1,12 +1,12 @@
 /* BatchConfigureStep.module.css */
 
 .templateLabel {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .templateSelect {
   width: 100%;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #555);
   background: var(--app-surface-2, #252540);
@@ -19,9 +19,9 @@
 .templateInfo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  padding: 4px 0;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-1) 0;
 }
 
 .videoBadge {
@@ -30,7 +30,7 @@
 }
 
 .defaultParamsLabel {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .paramGroup {
@@ -39,11 +39,11 @@
 }
 
 .paramLabel {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .select {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #555);
   background: var(--app-surface-2, #252540);
@@ -54,7 +54,7 @@
 }
 
 .autoProcessNotice {
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   background: var(--color-success-alpha-10, rgba(34, 197, 94, 0.1));
   border: 1px solid var(--color-success-alpha-25, rgba(34, 197, 94, 0.25));
 }
@@ -71,11 +71,11 @@
 .memberRow {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #333);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   cursor: pointer;
 }
 
@@ -115,7 +115,7 @@
 
 .expandedBody {
   margin-left: 0;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .overrideParamsRow {
@@ -128,7 +128,7 @@
 }
 
 .overrideParamLabel {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   color: var(--app-muted-text);
   font-weight: var(--font-normal);
 }
@@ -147,22 +147,22 @@
 }
 
 .resetButton {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   align-self: flex-end;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 /* ── Mobile-specific tweaks ── */
 @media (max-width: 767px) {
   .templateSelect {
     font-size: var(--text-xs);
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
   }
 
   .memberRow {
-    padding: 8px 8px;
-    gap: 8px;
-    margin-bottom: 4px;
+    padding: var(--space-2) var(--space-2);
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
   }
 
   .avatar {
@@ -178,13 +178,13 @@
 
   .expandedBody {
     margin-left: 0;
-    padding: 8px 8px;
+    padding: var(--space-2) var(--space-2);
   }
 }
 
 /* ── Desktop overrides ── */
 @media (min-width: 768px) {
   .expandedBody {
-    margin-left: 40px;
+    margin-left: var(--space-10);
   }
 }

@@ -1,7 +1,7 @@
 .loadingWrapper {
   display: flex;
   justify-content: center;
-  padding: 48px;
+  padding: var(--space-12);
 }
 
 .errorText {
@@ -9,16 +9,16 @@
 }
 
 .totalText {
-  margin: 4px 0 0 0;
+  margin: var(--space-1) 0 0 0;
 }
 
 .filterGroup {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .filterBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--filter-btn-border, #6c757d);
   background-color: var(--app-surface);
@@ -39,7 +39,7 @@
 }
 
 .emptyCard {
-  padding: 48px;
+  padding: var(--space-12);
 }
 
 .emptyText {
@@ -47,7 +47,7 @@
 }
 
 .notifCard {
-  padding: 16px;
+  padding: var(--space-4);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
 }
@@ -67,15 +67,15 @@
 }
 
 .notifTitle {
-  margin: 0 0 4px 0;
+  margin: 0 0 var(--space-1) 0;
 }
 
 .notifMessage {
-  margin: 0 0 8px 0;
+  margin: 0 0 var(--space-2) 0;
 }
 
 .toggleBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-neutral-400);
   background-color: var(--app-surface);

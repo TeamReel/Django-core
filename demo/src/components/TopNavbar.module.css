@@ -31,13 +31,13 @@
 }
 
 .navContainer[data-mobile="true"] {
-  padding: 0 12px;
-  gap: 8px;
+  padding: 0 var(--space-3);
+  gap: var(--space-2);
 }
 
 .navContainer[data-mobile="false"] {
-  padding: 0 24px;
-  gap: 16px;
+  padding: 0 var(--space-6);
+  gap: var(--space-4);
 }
 
 .desktopNavWrap {
@@ -47,11 +47,11 @@
 /* ─── Logo ────────────────────────────────────────────────────────────────── */
 
 .logoLink {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .logoImg {
@@ -66,7 +66,7 @@
   background: transparent;
   cursor: pointer;
   color: var(--app-text);
-  padding: 8px;
+  padding: var(--space-2);
   border: none;
   align-items: center;
   justify-content: center;
@@ -80,14 +80,14 @@
 .backBtn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   background: transparent;
   border: none;
   cursor: pointer;
   color: var(--app-primary, #1976d2);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  padding: 8px 12px 8px 4px;
+  padding: var(--space-2) var(--space-3) var(--space-2) var(--space-1);
   border-radius: var(--radius-md);
   white-space: nowrap;
   max-width: 180px;
@@ -124,7 +124,7 @@
 }
 
 .groupTrigger {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
@@ -132,7 +132,7 @@
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--app-text);
   background-color: transparent;
   font-weight: var(--font-medium);
@@ -154,7 +154,7 @@
   position: absolute;
   top: calc(100% - 12px);
   left: 0;
-  padding-top: 12px;
+  padding-top: var(--space-3);
   min-width: 600px;
   z-index: 100;
 }
@@ -164,19 +164,19 @@
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: 20px;
+  padding: var(--space-5);
 }
 
 .megaGrid {
-  column-gap: 40px;
-  row-gap: 12px;
+  column-gap: var(--space-10);
+  row-gap: var(--space-3);
 }
 
 .megaItem {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 12px;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
   text-decoration: none;
   border-radius: var(--radius-lg);
   transition: background-color var(--duration-fast);
@@ -196,13 +196,13 @@
 
 .megaItemIcon {
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .megaItemTextWrap {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
   min-width: 0;
 }
 
@@ -230,11 +230,11 @@
 }
 
 .userControls[data-mobile="true"] {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .userControls[data-mobile="false"] {
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .searchWrap {
@@ -244,10 +244,10 @@
 }
 
 .quickSwitchBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   border-radius: var(--radius-lg);
 }
 
@@ -256,7 +256,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1px 4px;
+  padding: 1px var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   font-family: inherit;
@@ -265,7 +265,7 @@
   background: var(--app-bg);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-sm);
-  margin-left: 4px;
+  margin-left: var(--space-1);
   pointer-events: none;
 }
 
@@ -278,17 +278,17 @@
 }
 
 .createMainBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   border-radius: var(--radius-lg);
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
 .createChevronBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   display: inline-flex;
   align-items: center;
   border-radius: var(--radius-lg);
@@ -311,7 +311,7 @@
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  padding: 8px;
+  padding: var(--space-2);
   z-index: 1200;
 }
 
@@ -320,13 +320,13 @@
   text-align: left;
   border: none;
   background: transparent;
-  padding: 12px;
+  padding: var(--space-3);
   border-radius: var(--radius-lg);
   cursor: pointer;
   color: var(--app-text);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .createMenuItem:hover {
@@ -336,14 +336,14 @@
 /* ─── Theme / Language ────────────────────────────────────────────────────── */
 
 .themeBtn {
-  padding: 8px;
+  padding: var(--space-2);
   position: relative;
   z-index: 1000;
   pointer-events: auto;
 }
 
 .langBtn {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   background-color: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -351,14 +351,14 @@
   color: var(--app-text);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .langDropdown {
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
@@ -370,7 +370,7 @@
 .langItem {
   display: block;
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   text-align: left;
   border: none;
   font-size: var(--text-sm);
@@ -398,7 +398,7 @@
 
 .navIconBtn {
   position: relative;
-  padding: 8px;
+  padding: var(--space-2);
   background-color: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -408,7 +408,7 @@
 
 .creditsBtn {
   position: relative;
-  padding: 8px;
+  padding: var(--space-2);
   background-color: transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -422,7 +422,7 @@
   right: 4px;
   color: white;
   border-radius: var(--radius-lg);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
 }
@@ -438,7 +438,7 @@
 /* ─── Auth Links ──────────────────────────────────────────────────────────── */
 
 .signInLink {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   text-decoration: none;
   color: var(--app-text);
@@ -446,7 +446,7 @@
 }
 
 .registerLink {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   text-decoration: none;
   color: white;
@@ -466,15 +466,15 @@
   border-top: 1px solid var(--app-border);
   overflow-y: auto;
   z-index: 999;
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .mobileDashLink {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
   border-radius: var(--radius-md);
   text-decoration: none;
   color: var(--app-text);
@@ -488,7 +488,7 @@
 }
 
 .mobileGroupLabel {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   font-weight: var(--font-semibold);
   color: var(--app-text);
   font-size: var(--text-sm);
@@ -498,9 +498,9 @@
 .mobileGroupItem {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  margin-left: 12px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  margin-left: var(--space-3);
   border-radius: var(--radius-md);
   text-decoration: none;
   font-size: var(--text-sm);
@@ -534,7 +534,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-6);
   animation: navOverlayFadeIn 0.2s ease-out;
 }
 
@@ -550,7 +550,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: var(--space-6);
   animation: navOverlayFadeIn 0.2s ease-out;
 }
 
@@ -570,7 +570,7 @@
 .modalPanelCentered {
   background-color: var(--app-surface, #1e293b);
   border-radius: var(--radius-lg);
-  padding: 24px 32px;
+  padding: var(--space-6) var(--space-8);
   text-align: center;
   box-shadow: var(--shadow-xl);
   min-width: 400px;
@@ -579,28 +579,28 @@
 .modalPanelCenteredLarge {
   background-color: var(--app-surface, #1e293b);
   border-radius: var(--radius-lg);
-  padding: 40px 48px;
+  padding: var(--space-10) var(--space-12);
   text-align: center;
   box-shadow: var(--shadow-xl);
 }
 
 .modalHeader {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--app-border, #334155);
   flex-shrink: 0;
 }
 
 .modalHeaderRow {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--app-border, #334155);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   flex-shrink: 0;
 }
 
 .modalFooter {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   border-top: 1px solid var(--app-border, #334155);
   flex-shrink: 0;
 }
@@ -622,13 +622,13 @@
 .modalSubtitle {
   font-size: var(--text-xs);
   color: var(--app-text-secondary, #9ca3af);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .modalSubtitle12 {
   font-size: var(--text-xs);
   color: var(--app-text-secondary, #9ca3af);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .textSecondary13 {
@@ -644,7 +644,7 @@
 .textSecondary10 {
   font-size: var(--text-xs);
   color: var(--app-text-secondary, #6b7280);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .emptyIcon {
@@ -663,7 +663,7 @@
   color: var(--app-text-secondary);
   cursor: pointer;
   font-size: var(--text-lg);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 
 .closeBtnMuted {
@@ -672,11 +672,11 @@
   color: var(--color-neutral-300);
   cursor: pointer;
   font-size: var(--text-lg);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 
 .btnPrimary {
-  padding: 8px 24px;
+  padding: var(--space-2) var(--space-6);
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-blue-600);
@@ -687,7 +687,7 @@
 }
 
 .btnSecondary {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: transparent;
@@ -698,7 +698,7 @@
 }
 
 .btnGhost {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #475569);
   background-color: transparent;
@@ -708,7 +708,7 @@
 }
 
 .tabBtn {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: none;
   color: white;
@@ -718,7 +718,7 @@
 }
 
 .tabBtnSmall {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
@@ -727,7 +727,7 @@
 }
 
 .rejectBtn {
-  padding: 8px 20px;
+  padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-red-500);
   background: transparent;
@@ -737,7 +737,7 @@
 }
 
 .approveBtn {
-  padding: 8px 24px;
+  padding: var(--space-2) var(--space-6);
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-green-500);
@@ -762,19 +762,19 @@
 
 .tabsRow {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .tabsRowCenter {
   display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
   justify-content: center;
 }
 
 .actionsRowCenter {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: center;
 }
 
@@ -830,7 +830,7 @@
 }
 
 .noPreview {
-  padding: 40px;
+  padding: var(--space-10);
   text-align: center;
   color: var(--app-text-secondary);
 }
@@ -845,7 +845,7 @@
 .notifDetail {
   font-size: var(--text-xs);
   color: var(--app-text-secondary, #9ca3af);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 /* ─── Credits Modal ───────────────────────────────────────────────────────── */
@@ -859,12 +859,12 @@
 .creditsLabel {
   font-size: var(--text-sm);
   color: var(--app-text-secondary, #9ca3af);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .creditsLink {
-  margin-top: 20px;
-  padding: 12px 24px;
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #475569);
   background-color: transparent;
@@ -887,7 +887,7 @@
 }
 
 .followUpHeader {
-  padding: 20px 24px 12px;
+  padding: var(--space-5) var(--space-6) var(--space-3);
   border-bottom: 1px solid var(--app-border, #334155);
 }
 
@@ -900,11 +900,11 @@
 .followUpSubtitle {
   font-size: var(--text-xs);
   color: var(--app-text-secondary, #9ca3af);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .followUpPreview {
-  padding: 16px 24px;
+  padding: var(--space-4) var(--space-6);
   display: flex;
   justify-content: center;
 }
@@ -917,23 +917,23 @@
 }
 
 .followUpError {
-  margin: 0 24px 16px;
+  margin: 0 var(--space-6) var(--space-4);
   font-size: var(--text-xs);
   color: var(--color-red-500);
   background-color: var(--color-red-50);
   border-radius: var(--radius-md);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .followUpFooter {
-  padding: 16px 24px;
+  padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--app-border, #334155);
   display: flex;
   align-items: center;
 }
 
 .followUpSkipBtn {
-  padding: 8px 20px;
+  padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #334155);
   background: transparent;
@@ -943,7 +943,7 @@
 }
 
 .followUpSubmitBtn {
-  padding: 8px 24px;
+  padding: var(--space-2) var(--space-6);
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-blue-600);
@@ -972,8 +972,8 @@
 .mobileSearchHeader {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 12px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3);
   border-bottom: 1px solid var(--app-border);
   background: var(--app-surface);
 }

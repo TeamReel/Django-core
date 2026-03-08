@@ -3,7 +3,7 @@
 }
 
 .sectionTitle {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
 }
 
 .emptyState {
@@ -11,7 +11,7 @@
 }
 
 .formControl {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .plainLink {

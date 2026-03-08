@@ -16,7 +16,7 @@
   --submit-bg: #0066cc;
 
   background-color: var(--app-surface);
-  padding: 24px;
+  padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 480px;
   max-width: 90%;
@@ -27,36 +27,36 @@
 
 .title {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
   color: var(--app-text);
 }
 
 .errorWrapper {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .fieldGroup {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .label {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   font-weight: var(--font-medium);
 }
 
 .input {
   width: 100%;
-  padding: 8px;
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   border: 1px solid var(--input-border);
 }
 
 .textarea {
   width: 100%;
-  padding: 8px;
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   border: 1px solid var(--input-border);
   min-height: 80px;
@@ -65,18 +65,18 @@
 .checkboxLabel {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .actions {
   display: flex;
-  gap: 12px;
-  margin-top: 24px;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
   justify-content: flex-end;
 }
 
 .cancelButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
@@ -89,7 +89,7 @@
 }
 
 .submitButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: none;
   background-color: var(--submit-bg);

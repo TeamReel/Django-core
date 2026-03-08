@@ -3,13 +3,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: var(--space-12) var(--space-6);
   text-align: center;
   min-height: 200px;
 }
 
 .compact {
-  padding: 32px 16px;
+  padding: var(--space-8) var(--space-4);
   min-height: 120px;
 }
 
@@ -21,13 +21,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .compact .iconWrapper {
   width: 56px;
   height: 56px;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .icon {
@@ -38,7 +38,7 @@
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--app-text);
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .compact .title {
@@ -48,20 +48,20 @@
 .description {
   font-size: var(--text-base);
   color: var(--app-muted-text);
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
   max-width: 320px;
   line-height: var(--leading-normal);
 }
 
 .compact .description {
   font-size: var(--text-sm);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
   max-width: 248px;
 }

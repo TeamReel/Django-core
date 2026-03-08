@@ -34,7 +34,7 @@
 /* ── EmptyState ─────────────────────────────────── */
 
 .emptyCard {
-  padding: 48px;
+  padding: var(--space-12);
 }
 
 .emptyIconWrapper {
@@ -61,5 +61,5 @@
 
 .alertIcon {
   vertical-align: middle;
-  margin-right: 8px;
+  margin-right: var(--space-2);
 }

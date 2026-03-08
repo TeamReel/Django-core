@@ -28,7 +28,7 @@
 }
 
 .inheritedSection {
-  margin-top: 32px;
+  margin-top: var(--space-8);
 }
 
 .inheritedDescription {

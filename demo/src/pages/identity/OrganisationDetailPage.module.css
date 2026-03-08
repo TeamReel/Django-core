@@ -12,8 +12,8 @@
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px 16px 0;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) 0;
 }
 
 .titleBlock h1 {
@@ -25,7 +25,7 @@
 }
 
 .titleBlock p {
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
   font-size: var(--text-sm);
   color: var(--app-muted-text);
 }
@@ -33,15 +33,15 @@
 .actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
 .activeBtn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   min-height: 44px;
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
@@ -91,7 +91,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  margin-top: 4px;
+  margin-top: var(--space-1);
   min-width: 168px;
   background: var(--app-surface, #1e293b);
   border: 1px solid var(--app-border, #334155);
@@ -104,9 +104,9 @@
 .overflowMenu button {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   border: none;
@@ -155,7 +155,7 @@
 /* ── Responsive ── */
 @media (min-width: 768px) {
   .headerRow {
-    padding: 24px 24px 0;
+    padding: var(--space-6) var(--space-6) 0;
   }
 
   .titleBlock h1 {
@@ -163,15 +163,15 @@
   }
 
   .tabContent {
-    padding: 0 24px 64px;
+    padding: 0 var(--space-6) var(--space-16);
   }
 
   .iconBtn {
     width: auto;
     height: auto;
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
     font-size: var(--text-xs);
     font-weight: var(--font-medium);
-    gap: 8px;
+    gap: var(--space-2);
   }
 }

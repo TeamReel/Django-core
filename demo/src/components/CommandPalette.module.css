@@ -18,7 +18,7 @@
 
 .searchRow {
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .searchInput {
@@ -30,12 +30,12 @@
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   border-radius: var(--radius-lg);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
   color: var(--app-text);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
 }
@@ -49,7 +49,7 @@
 }
 
 .noResults {
-  padding: 16px;
+  padding: var(--space-4);
   color: var(--app-muted-text);
 }
 
@@ -57,8 +57,8 @@
   border: none;
   background: transparent;
   color: var(--app-text);
-  padding: 12px 16px;
-  gap: 12px;
+  padding: var(--space-3) var(--space-4);
+  gap: var(--space-3);
   border-top: 1px solid var(--app-border);
 }
 
@@ -69,7 +69,7 @@
 .resultLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   min-width: 0;
 }
 
@@ -84,12 +84,12 @@
 .resultRight {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: var(--app-muted-text);
 }
 
 .footer {
-  padding: 12px;
+  padding: var(--space-3);
   color: var(--app-muted-text);
-  gap: 12px;
+  gap: var(--space-3);
 }

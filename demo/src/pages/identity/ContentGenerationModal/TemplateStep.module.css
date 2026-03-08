@@ -1,8 +1,8 @@
 /* TemplateStep — CSS Module */
 
 .loadingContainer {
-  padding-top: 40px;
-  padding-bottom: 40px;
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-10);
 }
 
 .spinner {
@@ -29,8 +29,8 @@
 }
 
 .emptyState {
-  padding-top: 40px;
-  padding-bottom: 40px;
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-10);
 }
 
 .emptyIcon {

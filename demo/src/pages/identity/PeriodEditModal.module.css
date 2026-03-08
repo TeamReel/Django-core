@@ -15,29 +15,29 @@
 }
 
 .input {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
 }
 
 .dateGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .textarea {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   resize: vertical;
 }
 
 .footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 8px;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 .cancelBtn {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
 }
 
 .cancelBtn[data-saving="true"] {
@@ -46,7 +46,7 @@
 
 .saveBtn {
   --save-btn-color: #fff;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--app-primary, #2563eb);
   background-color: var(--app-primary, #2563eb);
   color: var(--save-btn-color);

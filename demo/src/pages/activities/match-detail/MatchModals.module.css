@@ -23,7 +23,7 @@
 }
 
 .modalHeader {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
 }
 
 .closeButton {
@@ -59,7 +59,7 @@
 /* ─── Footer ─── */
 
 .modalFooter {
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   background-color: var(--app-bg);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
@@ -68,7 +68,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 16px 20px;
+  padding: var(--space-4) var(--space-5);
   background-color: var(--app-bg);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }

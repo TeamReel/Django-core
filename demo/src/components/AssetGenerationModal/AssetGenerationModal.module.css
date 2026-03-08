@@ -37,7 +37,7 @@
 }
 
 .variantLabel {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   color: var(--vscode-foreground, #ccc);
 }
 
@@ -59,7 +59,7 @@
 }
 
 .instructionsTextarea {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   background: var(--vscode-input-background, #3c3c3c);
   color: var(--vscode-input-foreground, #ccc);
   border: 1px solid var(--vscode-input-border, #3c3c3c);
@@ -69,13 +69,13 @@
 }
 
 .footerBackButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   color: var(--vscode-foreground, #ccc);
   border: 1px solid var(--vscode-widget-border, #333);
 }
 
 .footerCloseButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
   border: 1px solid var(--vscode-widget-border, #333);
@@ -90,7 +90,7 @@
 }
 
 .footerGenerateButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--vscode-button-background, #0078d4);
   color: var(--vscode-button-foreground, #fff);
   cursor: pointer;
@@ -103,13 +103,13 @@
 }
 
 .footerRefreshButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   color: var(--vscode-foreground, #ccc);
   border: 1px solid var(--vscode-widget-border, #333);
 }
 
 .footerSaveButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   background: var(--color-green-400);
   cursor: pointer;
   opacity: 1;

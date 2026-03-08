@@ -7,7 +7,7 @@
 
 .description {
   color: var(--app-text-muted);
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .mutedText {
@@ -20,7 +20,7 @@
 
 .policyMode {
   color: var(--app-text-muted);
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .policyThreshold {

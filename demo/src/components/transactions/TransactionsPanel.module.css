@@ -9,11 +9,11 @@
 }
 
 .tableCell {
-  padding: 8px 8px;
+  padding: var(--space-2) var(--space-2);
 }
 
 .amountCell {
-  padding: 8px 8px;
+  padding: var(--space-2) var(--space-2);
   font-variant-numeric: tabular-nums;
   color: var(--app-text);
 }

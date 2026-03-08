@@ -41,7 +41,7 @@
 .savedAssetOverlay {
   z-index: 1100;
   background-color: rgba(0, 0, 0, 0.7);
-  padding: 16px 8px 80px;
+  padding: var(--space-4) var(--space-2) 80px;
 }
 
 .savedAssetCard {

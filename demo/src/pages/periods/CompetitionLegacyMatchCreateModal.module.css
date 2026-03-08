@@ -13,7 +13,7 @@
 
 .modal {
   background-color: var(--app-surface);
-  padding: 24px;
+  padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 640px;
   max-width: 95%;
@@ -25,17 +25,17 @@
 .header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .headerTitle {
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
   color: var(--app-text);
 }
 
 .closeButton {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
@@ -51,11 +51,11 @@
 .formGrid {
   display: grid;
   grid-template-columns: 140px 1fr;
-  gap: 12px 16px;
+  gap: var(--space-3) var(--space-4);
 }
 
 .formControl {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
@@ -68,19 +68,19 @@
 }
 
 .errorMessage {
-  margin-top: 12px;
+  margin-top: var(--space-3);
   color: var(--app-danger, #d32f2f);
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .submitButton {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--submit-btn-border, #1e5aa5);
   background-color: var(--color-blue-600);

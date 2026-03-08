@@ -2,7 +2,7 @@
 
 /* ── Page container ──────────────────────────────────────────────────── */
 .page {
-  padding: 16px 16px 120px;
+  padding: var(--space-4) var(--space-4) 120px;
   max-width: 480px;
   margin: 0 auto;
 }
@@ -12,8 +12,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 16px 0 24px;
+  gap: var(--space-3);
+  padding: var(--space-4) 0 var(--space-6);
 }
 
 .avatar {
@@ -76,7 +76,7 @@
 .email {
   font-size: var(--text-sm);
   color: var(--app-muted-text);
-  margin: 4px 0 0;
+  margin: var(--space-1) 0 0;
 }
 
 /* ── Section label ───────────────────────────────────────────────────── */
@@ -86,8 +86,8 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--app-muted-text);
-  padding: 0 4px;
-  margin: 20px 0 8px;
+  padding: 0 var(--space-1);
+  margin: var(--space-5) 0 var(--space-2);
 }
 
 /* ── Card section ────────────────────────────────────────────────────── */
@@ -96,16 +96,16 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   overflow: hidden;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 /* ── Row (menu item / setting row) ───────────────────────────────────── */
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   width: 100%;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--space-4);
   border: none;
   background: transparent;
   color: var(--app-text);
@@ -146,16 +146,16 @@ button.row:active {
 /* ── Theme pills — iOS segmented control ──────────────────────────────── */
 .themePills {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   border-radius: var(--radius-md);
-  padding: 4px;
+  padding: var(--space-1);
   background: var(--app-bg, rgba(0, 0, 0, 0.08));
   position: relative;
 }
 
 .themePill {
   flex: 1;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   min-width: 52px;
   border: none;
   border-radius: var(--radius-md);
@@ -192,7 +192,7 @@ button.row:active {
   color: var(--app-muted-text);
   text-align: right;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 var(--space-1);
   max-width: 160px;
 }
 
@@ -248,14 +248,14 @@ button.row:active {
 
 /* ── Collapsible content ─────────────────────────────────────────────── */
 .collapseContent {
-  padding: 4px 16px 16px;
+  padding: var(--space-1) var(--space-4) var(--space-4);
 }
 
 .cascadeRow {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 0;
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
 }
 
 .cascadeRow:not(:last-child) {
@@ -272,7 +272,7 @@ button.row:active {
   width: 100%;
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   font-size: var(--text-sm);
   background: var(--app-bg);
   color: var(--app-text);
@@ -305,14 +305,14 @@ button.row:active {
 /* ── Desktop: wider layout ───────────────────────────────────────────── */
 @media (min-width: 640px) {
   .page {
-    padding: 32px 24px 64px;
+    padding: var(--space-8) var(--space-6) var(--space-16);
     max-width: 560px;
   }
 
   .header {
     flex-direction: row;
-    gap: 20px;
-    padding: 24px 0;
+    gap: var(--space-5);
+    padding: var(--space-6) 0;
   }
 
   .headerText {

@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  padding: var(--space-3) 0;
   border-bottom: 1px solid var(--app-border);
 }
 
@@ -14,7 +14,7 @@
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--app-text);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .itemDate {
@@ -35,11 +35,11 @@
 }
 
 .widgetBody {
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .widgetTitle {
-  margin: 0 0 16px;
+  margin: 0 0 var(--space-4);
   font-size: var(--text-lg);
   color: var(--app-text);
 }

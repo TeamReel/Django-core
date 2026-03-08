@@ -16,7 +16,7 @@
 
 .balanceAmount {
   font-size: 36px;
-  margin: 8px 0;
+  margin: var(--space-2) 0;
 }
 
 .balanceAmount[data-status='warning'] {

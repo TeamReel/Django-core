@@ -16,7 +16,7 @@
 /* ── Checkbox column (shared by th + td) ────────── */
 .checkboxCell {
   width: 36px;
-  padding: 4px;
+  padding: var(--space-1);
 }
 
 .checkbox {

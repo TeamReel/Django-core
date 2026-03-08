@@ -61,19 +61,19 @@
 }
 
 .layoutIcon {
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .layoutDesc {
   font-size: 9px;
   opacity: 0.7;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 /* ── Select inputs ── */
 
 .selectInput {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -88,7 +88,7 @@
 .slotList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .slotBadge {
@@ -101,7 +101,7 @@
 /* Slot select — base */
 
 .slotSelect {
-  padding: 8px 8px;
+  padding: var(--space-2) var(--space-2);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-sm);
 }
@@ -110,5 +110,5 @@
 
 .slotSelectMember {
   composes: slotSelect;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }

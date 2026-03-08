@@ -66,7 +66,7 @@
   flex: 1 1 calc(33% - 8px);
   min-width: 80px;
   align-items: center;
-  padding: 12px 8px;
+  padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, white);
@@ -80,7 +80,7 @@
 /* ── Intro style buttons ── */
 .introButton {
   align-items: center;
-  padding: 12px 8px;
+  padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, white);
@@ -131,7 +131,7 @@
 
 /* ── Background label ── */
 .bgLabel {
-  padding: 4px 0;
+  padding: var(--space-1) 0;
   font-size: var(--text-xs);
   color: var(--app-text, #111);
   background: var(--app-surface-2, #f3f4f6);

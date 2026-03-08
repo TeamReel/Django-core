@@ -15,7 +15,7 @@
 
 .modal {
   background-color: var(--app-surface, white);
-  padding: 24px;
+  padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 100%;
   max-width: 400px;
@@ -24,38 +24,38 @@
 
 .heading {
   margin-top: 0;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
 }
 
 .errorBox {
-  padding: 8px;
+  padding: var(--space-2);
   background-color: var(--color-error-bg, #fee);
   color: var(--color-error-text, #c00);
   border-radius: var(--radius-sm);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
   font-size: var(--text-sm);
 }
 
 .formField {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .formFieldLarge {
-  margin-bottom: 24px;
+  margin-bottom: var(--space-6);
 }
 
 .fieldLabel {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
 }
 
 .selectInput {
   width: 100%;
-  padding: 8px;
+  padding: var(--space-2);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border, #ccc);
   background-color: var(--app-surface, white);
@@ -64,5 +64,5 @@
 .buttonRow {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
 }

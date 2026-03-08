@@ -5,7 +5,7 @@
 }
 
 .tokenItem {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   background-color: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
 }
 
@@ -23,7 +23,7 @@
 .assetsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .assetCard {

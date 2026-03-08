@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: var(--space-4);
 }
 
 .modal {
@@ -21,17 +21,17 @@
 }
 
 .header {
-  padding: 16px 16px;
+  padding: var(--space-4) var(--space-4);
   border-bottom: 1px solid rgba(255, 255, 255, 0.10);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .headerInfo {
   display: grid;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .headerTitle {
@@ -49,14 +49,14 @@
 }
 
 .body {
-  padding: 16px;
+  padding: var(--space-4);
   display: grid;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .seasonLabel {
   display: grid;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .seasonLabelText {
@@ -66,7 +66,7 @@
 
 .seasonSelect {
   width: 100%;
-  padding: 12px;
+  padding: var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
@@ -79,11 +79,11 @@
 }
 
 .footer {
-  padding: 16px;
+  padding: var(--space-4);
   border-top: 1px solid rgba(255, 255, 255, 0.10);
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .cancelButton {

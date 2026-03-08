@@ -20,7 +20,7 @@
 }
 
 .statusBadge {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   background-color: var(--status-color-bg);
   border: 1px solid var(--status-color);
   border-radius: var(--radius-lg);
@@ -34,16 +34,16 @@
 }
 
 .closeButton {
-  margin-left: 16px;
+  margin-left: var(--space-4);
   line-height: var(--leading-tight);
 }
 
 .categoryTag {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
 }
 
 .featureList {
-  padding: 0 0 0 20px;
+  padding: 0 0 0 var(--space-5);
 }
 
 .featureItem {
@@ -55,6 +55,6 @@
 }
 
 .testUrlButton {
-  padding: 12px 20px;
+  padding: var(--space-3) var(--space-5);
   background-color: var(--app-primary);
 }

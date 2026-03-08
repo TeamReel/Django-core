@@ -4,11 +4,11 @@
 }
 
 .container[data-size="sm"] {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .container[data-size="md"] {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .actionsRow {
@@ -25,17 +25,17 @@
 }
 
 .actionsRow[data-size="sm"] {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .actionsRow[data-size="md"] {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .actionButton {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   font-weight: var(--font-semibold);
   color: var(--action-color);
   background-color: var(--action-bg);
@@ -52,12 +52,12 @@
 
 .actionButton[data-size="sm"] {
   font-size: var(--text-xs);
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
 }
 
 .actionButton[data-size="md"] {
   font-size: var(--text-sm);
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
 }
 
 .actionButton[data-executing="self"] {
@@ -77,8 +77,8 @@
 .commentDialog {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px;
+  gap: var(--space-2);
+  padding: var(--space-3);
   background-color: var(--app-surface-2, #f9fafb);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #e5e7eb);
@@ -92,7 +92,7 @@
 
 .commentTextarea {
   font-size: var(--text-sm);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: var(--app-surface, #fff);
@@ -103,7 +103,7 @@
 
 .commentActions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .confirmButton {
@@ -115,7 +115,7 @@
   background-color: var(--confirm-bg);
   border: none;
   border-radius: var(--radius-md);
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   cursor: pointer;
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
@@ -135,7 +135,7 @@
   background-color: transparent;
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-md);
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   cursor: pointer;
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }

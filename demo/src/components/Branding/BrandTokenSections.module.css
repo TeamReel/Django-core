@@ -1,6 +1,6 @@
 /* ── CopyableValue ──────────────────────────────────────── */
 .copyableButton {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   background: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
   font-family: var(--font-mono);
 }
@@ -25,11 +25,11 @@
 }
 
 .colorTokenValue {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .colorTokenDescription {
-  margin-top: 8px;
+  margin-top: var(--space-2);
 }
 
 .combinedPreviewBar {
@@ -66,7 +66,7 @@
 
 /* ── BrandAssetsSection ────────────────────────────────── */
 .emptyState {
-  padding: 48px;
+  padding: var(--space-12);
   background-color: var(--app-surface-alt, rgba(0, 0, 0, 0.02));
   border: 2px dashed var(--app-border);
 }

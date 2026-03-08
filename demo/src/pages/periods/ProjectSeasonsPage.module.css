@@ -1,7 +1,7 @@
 /* ProjectSeasonsPage — extracted inline styles */
 
 .emptyState {
-  padding: 16px;
+  padding: var(--space-4);
   color: var(--app-text-secondary);
 }
 
@@ -24,10 +24,10 @@
 .legendsBadge {
   --legends-badge-bg: #fffbeb;
   --legends-badge-color: #d97706;
-  margin-left: 8px;
+  margin-left: var(--space-2);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
   background: var(--legends-badge-bg);
   color: var(--legends-badge-color);

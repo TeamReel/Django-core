@@ -1,7 +1,7 @@
 /* EntityGeneralTab.module.css — extracted from inline styles */
 
 .formInput {
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   background: var(--app-surface);
 }
 
@@ -49,7 +49,7 @@
 }
 
 .removeBtn {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   color: var(--app-error, #dc2626);
   text-decoration: underline;
 }

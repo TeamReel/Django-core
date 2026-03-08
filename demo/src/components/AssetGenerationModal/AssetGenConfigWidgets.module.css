@@ -3,7 +3,7 @@
 /* ── Shared ──────────────────────────────────────────────────────── */
 
 .sectionLabel {
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   color: var(--vscode-foreground, #ccc);
 }
 
@@ -15,7 +15,7 @@
 
 .sourceButton {
   flex: 1;
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--vscode-widget-border, #333);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
@@ -33,7 +33,7 @@
 /* ── Background Selector ─────────────────────────────────────────── */
 
 .backgroundSelector {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .backgroundLabel {
@@ -82,7 +82,7 @@
 .modelButton {
   flex: 1 1 auto;
   min-width: 80px;
-  padding: 8px 8px;
+  padding: var(--space-2) var(--space-2);
   border: 1px solid var(--vscode-widget-border, #333);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
@@ -112,6 +112,6 @@
 .costEstimate {
   font-size: var(--text-xs);
   color: var(--vscode-charts-green, #4ec);
-  margin-top: 4px;
+  margin-top: var(--space-1);
   font-weight: var(--font-semibold);
 }

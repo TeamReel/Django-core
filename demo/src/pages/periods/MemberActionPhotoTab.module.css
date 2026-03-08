@@ -1,5 +1,5 @@
 .kitHeader {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .kitIconFallback {
@@ -49,5 +49,5 @@
 }
 
 .alertWrapper {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }

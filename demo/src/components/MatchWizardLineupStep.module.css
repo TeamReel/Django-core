@@ -4,8 +4,8 @@
 .card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 16px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
@@ -40,12 +40,12 @@
 
 /* Editing section header row */
 .editingHeader {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 /* Cancel button */
 .cancelButton {
-  padding: 4px 12px;
+  padding: var(--space-1) var(--space-3);
   color: var(--app-text-muted);
 }
 
@@ -57,14 +57,14 @@
 /* Empty player option ("Geen speler") */
 .emptyPlayerButton {
   composes: card;
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   color: var(--app-text-muted);
 }
 
 /* Player option in the dropdown */
 .playerButton {
   composes: card;
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   color: var(--app-text);
 }
 
@@ -124,8 +124,8 @@
 .errorBanner {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px 16px;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-error, #ef4444);
   background-color: color-mix(in srgb, var(--color-error, #ef4444) 6%, var(--app-surface));
@@ -140,8 +140,8 @@
 .retryBtn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   min-height: 44px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
@@ -165,8 +165,8 @@
 .addGuestBtn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px dashed var(--app-border);
   background-color: transparent;
@@ -189,7 +189,7 @@
 }
 
 .guestForm {
-  padding: 16px 16px;
+  padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-primary);
   background-color: var(--app-surface);
@@ -197,7 +197,7 @@
 
 .guestInput {
   flex: 1;
-  padding: 12px 12px;
+  padding: var(--space-3) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: var(--app-surface);
@@ -217,7 +217,7 @@
 }
 
 .guestAddBtn {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: none;
   background-color: var(--app-primary);
@@ -235,7 +235,7 @@
 }
 
 .guestCancelBtn {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: transparent;
@@ -247,22 +247,22 @@
 }
 
 .guestSection {
-  padding-bottom: 8px;
+  padding-bottom: var(--space-2);
   border-bottom: 1px solid var(--app-border);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .guestSectionLabel {
   color: var(--app-text-muted);
   letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .guestTag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 12px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
   background-color: color-mix(in srgb, var(--app-primary) 8%, transparent);
   color: var(--app-primary);
@@ -286,7 +286,7 @@
   color: var(--app-text-muted);
   cursor: pointer;
   padding: 0;
-  margin-left: 4px;
+  margin-left: var(--space-1);
   transition: color var(--duration-fast), background var(--duration-fast);
 }
 
@@ -298,7 +298,7 @@
 .guestBadge {
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
   background-color: color-mix(in srgb, var(--app-primary) 10%, transparent);
   color: var(--app-primary);
@@ -310,12 +310,12 @@
   display: inline-block;
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
-  padding: 1px 8px;
+  padding: 1px var(--space-2);
   border-radius: var(--radius-full);
   background-color: color-mix(in srgb, var(--app-primary) 10%, transparent);
   color: var(--app-primary);
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  margin-left: 8px;
+  margin-left: var(--space-2);
   vertical-align: middle;
 }

@@ -21,7 +21,7 @@
 }
 
 .clearFilterInline {
-  margin-left: 12px;
+  margin-left: var(--space-3);
 }
 
 .emptyIcon {
@@ -29,7 +29,7 @@
 }
 
 .categoryCount {
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
 }
 
 .viewAllButton {

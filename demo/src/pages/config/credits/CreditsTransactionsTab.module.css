@@ -20,7 +20,7 @@
 }
 
 .filterSelect {
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-color, #d1d5db);
   background-color: var(--app-surface);
   color: var(--text-primary);
@@ -38,7 +38,7 @@
   width: 32px;
   height: 32px;
   animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
+  margin: 0 auto var(--space-4);
 }
 
 .transactionTitle {
@@ -66,6 +66,6 @@
 }
 
 .testNote {
-  margin: 8px 0 0 0;
+  margin: var(--space-2) 0 0 0;
   font-style: italic;
 }

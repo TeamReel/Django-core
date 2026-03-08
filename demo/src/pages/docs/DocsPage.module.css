@@ -3,21 +3,21 @@
 .loadingWrapper {
   display: flex;
   justify-content: center;
-  padding: 48px;
+  padding: var(--space-12);
 }
 
 .sectionHeading {
-  margin: 0 0 16px 0;
+  margin: 0 0 var(--space-4) 0;
 }
 
 .linkButtonGroup {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
 .linkButton {
-  padding: 8px 16px;
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-neutral-400);
   background-color: var(--app-surface);
