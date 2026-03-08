@@ -90,7 +90,7 @@
   font-size: var(--text-lg);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   margin-bottom: 4px;
 }
 

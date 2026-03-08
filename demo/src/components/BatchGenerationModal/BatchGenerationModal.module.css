@@ -34,7 +34,7 @@
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-md);
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 .closeBtn:disabled {

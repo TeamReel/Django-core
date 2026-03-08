@@ -415,13 +415,13 @@
 
 .mediaCardSlotIcon {
   font-size: var(--text-sm);
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 .mediaCardSlotLabel {
   font-size: 7px;
   text-align: center;
-  line-height: 1.1;
+  line-height: var(--leading-tight);
   letter-spacing: -0.01em;
   max-width: 100%;
   overflow: hidden;

@@ -103,7 +103,7 @@
 .permissionKey {
   font-size: 0.72rem;
   opacity: 0.55;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .roleCell {

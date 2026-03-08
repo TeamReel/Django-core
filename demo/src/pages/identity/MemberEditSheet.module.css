@@ -177,7 +177,7 @@
 .accessRoleDesc {
   font-size: var(--text-xs);
   color: var(--app-muted-text);
-  line-height: 1.3;
+  line-height: var(--leading-normal);
 }
 
 .accessRoleCheck {
@@ -220,7 +220,7 @@
 .roleEmoji {
   font-size: var(--text-base);
   flex-shrink: 0;
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 .roleToggleLabel {

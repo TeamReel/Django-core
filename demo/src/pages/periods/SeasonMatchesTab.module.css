@@ -190,7 +190,7 @@
   flex-shrink: 0;
   width: 40px;
   text-align: center;
-  line-height: 1.1;
+  line-height: var(--leading-tight);
 }
 
 .dateDay {
@@ -220,7 +220,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
+  line-height: var(--leading-normal);
 }
 
 .matchMeta {
@@ -229,7 +229,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 /* Mini status indicators (right side of header) */

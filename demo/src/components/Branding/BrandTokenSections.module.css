@@ -2,7 +2,7 @@
 .copyableButton {
   padding: 4px 8px;
   background: var(--app-surface-alt, rgba(0, 0, 0, 0.03));
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .copiedIcon {
@@ -47,7 +47,7 @@
 
 .typographyPreview {
   font-family: var(--font-family);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 .typographyLargePreview {

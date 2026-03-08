@@ -11,5 +11,5 @@
 }
 
 .ipCell {
-  font-family: monospace;
+  font-family: var(--font-mono);
 }

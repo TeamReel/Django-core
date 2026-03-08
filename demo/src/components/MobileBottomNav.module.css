@@ -64,7 +64,7 @@
 .tabLabel {
   font-size: var(--text-xs);
   font-weight: var(--font-normal);
-  line-height: 1;
+  line-height: var(--leading-tight);
   color: var(--app-muted-text);
 }
 

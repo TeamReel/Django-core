@@ -256,7 +256,7 @@
   /* Smaller label text */
   .media-asset-grid > div > div:last-child > div:first-child {
     font-size: var(--text-xs) !important;
-    line-height: 1.2 !important;
+    line-height: var(--leading-tight) !important;
     margin-bottom: 4px !important;
   }
 

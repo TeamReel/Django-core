@@ -50,7 +50,7 @@
   font-size: var(--text-xl);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 .gallerySub {

@@ -19,7 +19,7 @@
 
 .logContainer {
   max-height: 480px;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .logEntry {

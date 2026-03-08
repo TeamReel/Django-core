@@ -34,7 +34,7 @@
   font-size: var(--text-lg);
   font-weight: var(--font-bold);
   color: var(--app-text);
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 .statLabel {
@@ -142,7 +142,7 @@
   font-size: var(--text-lg);
   font-weight: var(--font-extrabold);
   color: white;
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 .matchMonth {
@@ -151,7 +151,7 @@
   color: rgba(255, 255, 255, 0.8);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  line-height: 1.3;
+  line-height: var(--leading-normal);
 }
 
 .matchInfo {
@@ -166,7 +166,7 @@
   font-size: var(--text-base);
   font-weight: var(--font-bold);
   color: var(--app-text);
-  line-height: 1.3;
+  line-height: var(--leading-normal);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -449,7 +449,7 @@
   font-size: var(--text-sm);
   color: var(--app-text-secondary, #999);
   max-width: 280px;
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 
 .emptyBtn {

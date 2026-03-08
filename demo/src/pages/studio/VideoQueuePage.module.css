@@ -34,7 +34,7 @@
 }
 
 .jobId {
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .statusBadge {

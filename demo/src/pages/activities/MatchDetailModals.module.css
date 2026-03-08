@@ -116,6 +116,6 @@
 }
 
 .toastDismiss {
-  line-height: 1;
+  line-height: var(--leading-tight);
   opacity: 0.7;
 }

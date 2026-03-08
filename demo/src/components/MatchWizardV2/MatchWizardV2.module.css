@@ -163,7 +163,7 @@
   letter-spacing: 0.06em;
   padding: 1px 4px;
   border-radius: var(--radius-sm);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   text-transform: uppercase;
 }
 
@@ -229,7 +229,7 @@
   letter-spacing: 0.06em;
   padding: 4px 12px;
   border-radius: var(--radius-md);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   text-transform: uppercase;
   backdrop-filter: blur(8px);
 }

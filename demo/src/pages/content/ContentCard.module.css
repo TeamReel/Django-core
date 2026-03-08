@@ -282,7 +282,7 @@
   letter-spacing: 0.06em;
   padding: 4px 12px;
   border-radius: var(--radius-md);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   text-transform: uppercase;
   backdrop-filter: blur(8px);
   background: rgba(0, 0, 0, 0.5);

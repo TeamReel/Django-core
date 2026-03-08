@@ -91,7 +91,7 @@
 .flowDescription {
   font-size: var(--text-sm);
   color: var(--app-muted-text, #6b7280);
-  line-height: 1.35;
+  line-height: var(--leading-normal);
 }
 
 /* ── Stub step (placeholder for unbuilt flows) ──────── */
@@ -258,7 +258,7 @@
 .smartMatchMeta {
   font-size: var(--text-sm);
   color: var(--app-muted-text, #6b7280);
-  line-height: 1.35;
+  line-height: var(--leading-normal);
 }
 
 .smartMatchChevron {

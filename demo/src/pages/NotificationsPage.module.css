@@ -56,7 +56,7 @@
 }
 
 .notificationBody {
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 .readHint {
@@ -110,7 +110,7 @@
 
   .notificationBody {
     font-size: var(--text-sm);
-    line-height: 1.5;
+    line-height: var(--leading-normal);
   }
 
   .swipeReveal {

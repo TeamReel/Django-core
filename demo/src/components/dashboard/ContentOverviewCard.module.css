@@ -137,7 +137,7 @@
   font-weight: var(--font-semibold);
   padding: 4px 8px;
   border-radius: var(--radius-md);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 .typeChip[data-type='image'] {
@@ -176,7 +176,7 @@
   font-size: var(--text-lg);
   font-weight: var(--font-extrabold);
   color: var(--app-text);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
 }
 
 .statLabel {

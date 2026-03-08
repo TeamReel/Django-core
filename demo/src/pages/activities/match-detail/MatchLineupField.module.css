@@ -90,7 +90,7 @@
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 /* Select dropdown — base (empty) */
@@ -152,7 +152,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
-  line-height: 1;
+  line-height: var(--leading-tight);
   margin-top: 1px;
 }
 

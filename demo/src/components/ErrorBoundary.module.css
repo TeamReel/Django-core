@@ -34,7 +34,7 @@
 
 .detailsInner {
   background-color: white;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .preBlock {
@@ -49,5 +49,5 @@
 }
 
 .helpList {
-  line-height: 1.8;
+  line-height: var(--leading-relaxed);
 }

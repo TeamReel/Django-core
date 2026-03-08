@@ -19,7 +19,7 @@
 }
 
 .userId {
-  font-family: monospace;
+  font-family: var(--font-mono);
   word-break: break-all;
 }
 

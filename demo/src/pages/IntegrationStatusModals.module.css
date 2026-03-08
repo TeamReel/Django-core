@@ -35,7 +35,7 @@
 
 .closeButton {
   margin-left: 16px;
-  line-height: 1;
+  line-height: var(--leading-tight);
 }
 
 .categoryTag {
@@ -47,11 +47,11 @@
 }
 
 .featureItem {
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 
 .notesText {
-  line-height: 1.6;
+  line-height: var(--leading-relaxed);
 }
 
 .testUrlButton {

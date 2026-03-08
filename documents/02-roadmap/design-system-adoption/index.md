@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** 🔄 In uitvoering (6/11 fases)
+**Status:** 🔄 In uitvoering (7/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -21,7 +21,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **Border-radius tokens** | ~99% adoptie (707 gefixt) |
 | **Motion tokens** | ~95% adoptie (234 gefixt, rest = none/keyframes/linear) |
 | **Shadow tokens** | ~85% adoptie (28 gefixt, rest = none/focus/directional) |
-| **Line-height tokens** | 0.0% adoptie (0 / 106) |
+| **Line-height tokens** | ~95% adoptie (112 gefixt) |
 | **Premium UX patronen** | 17/28 aanwezig, 11 ontbreken |
 
 ## Fasering
@@ -35,7 +35,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **A4** | Font-weight Token Adoption | `font-weight: N` → `var(--font-*)` | 586 | 30 min | ✅ Done |
 | **A5** | Font-size Token Adoption | `font-size: Nrem` → `var(--text-*)` | 900 | 45 min | ✅ Done |
 | **A6** | Spacing Token Adoption | `padding/margin/gap: Npx` → `var(--space-*)` | 2.552 | 2 uur | 🔲 Todo |
-| **A7** | Line-height + Font-family Cleanup | `line-height` / `font-family` → tokens | 130 | 20 min | 🔲 Todo |
+| **A7** | Line-height + Font-family Cleanup | `line-height` / `font-family` → tokens | 112 | 20 min | ✅ Done |
 | **H1** | Touch-safe Hovers | `@media (hover: hover)` wrappers | ~150 | 1 uur | 🔲 Todo |
 | **H2** | Fluid Typography | `clamp()` in `--text-*` tokens | 5 tokens | 30 min | 🔲 Todo |
 | **L1** | CSS @layer Refactor | `!important` verwijderen via cascade layers | 40+ | 2 uur | 🔲 Todo |

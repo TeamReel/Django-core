@@ -47,7 +47,7 @@
 /* ── Photo layout picker ── */
 
 .layoutButton {
-  line-height: 1.4;
+  line-height: var(--leading-normal);
   transition: all var(--duration-fast) var(--ease-default);
   border: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface-2, #f3f4f6);

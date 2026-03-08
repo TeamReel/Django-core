@@ -1,8 +1,8 @@
 # A7 — Line-height & Font-family Cleanup
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 20 min
-**Scope:** 106 hardcoded `line-height` + 24 hardcoded `font-family` → tokens
+**Scope:** 112 hardcoded `line-height` + `font-family` → tokens (71 bestanden)
 **Dependency:** Na A5 (font-size), want line-height is gekoppeld aan font-size
 
 ---

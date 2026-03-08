@@ -51,7 +51,7 @@
   height: 44px;
   min-width: 44px;
   min-height: 44px;
-  line-height: 1;
+  line-height: var(--leading-tight);
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 

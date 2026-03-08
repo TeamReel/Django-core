@@ -69,7 +69,7 @@
   cursor: pointer;
   color: var(--app-text, #111);
   font-size: var(--text-lg);
-  line-height: 1;
+  line-height: var(--leading-tight);
   flex-shrink: 0;
 }
 

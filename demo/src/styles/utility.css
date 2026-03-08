@@ -482,8 +482,8 @@
    --------------------------------------------------------------------------- */
 .text-white             { color: white; }
 .text-decoration-none   { text-decoration: none; }
-.leading-tight          { line-height: 1.2; }
-.leading-snug           { line-height: 1.35; }
+.leading-tight          { line-height: var(--leading-tight); }
+.leading-snug           { line-height: var(--leading-normal); }
 .pointer-events-none    { pointer-events: none; }
 
 /* ---------------------------------------------------------------------------
@@ -641,7 +641,7 @@
   background-color: transparent;
   cursor: pointer;
   font-size: var(--text-xs);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   white-space: nowrap;
   flex-shrink: 0;
   display: inline-flex;
@@ -677,7 +677,7 @@
   background-color: transparent;
   cursor: pointer;
   font-size: var(--text-sm);
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   white-space: nowrap;
   flex-shrink: 0;
   display: inline-flex;

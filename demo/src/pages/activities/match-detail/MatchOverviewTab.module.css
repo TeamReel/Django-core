@@ -32,7 +32,7 @@
   font-weight: var(--font-bold);
   color: var(--app-text);
   text-align: center;
-  line-height: 1.25;
+  line-height: var(--leading-tight);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -54,7 +54,7 @@
 .heroScoreValue {
   font-size: 36px;
   font-weight: var(--font-extrabold);
-  line-height: 1;
+  line-height: var(--leading-tight);
   color: var(--app-text);
   letter-spacing: -1px;
 }
@@ -65,7 +65,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: var(--text-xs);
   color: var(--app-muted-text);
-  line-height: 1.4;
+  line-height: var(--leading-normal);
 }
 
 /* Team name in scoreboard — clamp to 2 lines */
@@ -169,7 +169,7 @@
 }
 
 .eventMinute {
-  font-family: monospace;
+  font-family: var(--font-mono);
   min-width: 28px;
 }
 

@@ -19,7 +19,7 @@
   font-weight: var(--font-bold);
   color: var(--app-text);
   margin: 0 0 4px;
-  line-height: 1.3;
+  line-height: var(--leading-normal);
 }
 
 .orgSubtitle {

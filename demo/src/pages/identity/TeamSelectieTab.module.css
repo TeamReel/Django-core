@@ -246,7 +246,7 @@
   border-radius: var(--radius-lg);
   border: 1px solid;
   white-space: nowrap;
-  line-height: 16px;
+  line-height: var(--leading-normal);
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
@@ -482,7 +482,7 @@
   font-weight: var(--font-medium);
   color: var(--app-muted-text);
   text-align: center;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

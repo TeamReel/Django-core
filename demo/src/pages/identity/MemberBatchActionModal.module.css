@@ -29,7 +29,7 @@
 /* ── Close button ── */
 
 .closeButton {
-    line-height: 1;
+    line-height: var(--leading-tight);
 }
 
 /* ── Member chips ── */
