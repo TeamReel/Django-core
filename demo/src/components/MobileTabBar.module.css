@@ -51,7 +51,7 @@
 .inlinePill[data-active="true"] {
   border-color: var(--app-primary, #3B8EA5);
   background: var(--app-primary, #3B8EA5);
-  color: #fff;
+  color: white;
   font-weight: 600;
 }
 

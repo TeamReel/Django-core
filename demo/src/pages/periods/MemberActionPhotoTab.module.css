@@ -31,7 +31,7 @@
 
 .previewBg[data-has-url="true"] {
   background: var(--preview-url) center/cover no-repeat,
-    repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px;
+    repeating-conic-gradient(var(--color-neutral-500) 0% 25%, var(--color-neutral-800) 0% 50%) 50% / 16px 16px;
   cursor: zoom-in;
 }
 

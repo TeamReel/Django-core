@@ -36,11 +36,11 @@
   position: relative;
   width: 100%;
   aspect-ratio: 3/3.5;
-  background: linear-gradient(to bottom, #166534, #14532d);
+  background: linear-gradient(to bottom, var(--color-green-700), var(--color-green-900));
 }
 
 .formationButton[data-selected="true"] .miniField {
-  background: linear-gradient(to bottom, var(--color-green-500), #15803d);
+  background: linear-gradient(to bottom, var(--color-green-500), var(--color-green-500));
 }
 
 .fieldMarkingTop {
@@ -82,7 +82,7 @@
 }
 
 .formationButton[data-selected="true"] .positionDot {
-  background: #fff;
+  background: white;
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
 }
 
@@ -98,7 +98,7 @@
   align-items: center;
   justify-content: center;
   font-size: 7px;
-  color: #fff;
+  color: white;
   font-weight: 700;
 }
 
@@ -112,6 +112,6 @@
 }
 
 .formationButton[data-selected="true"] .formationLabel {
-  color: #fff;
+  color: white;
   background: var(--vscode-focusBorder, #007fd4);
 }

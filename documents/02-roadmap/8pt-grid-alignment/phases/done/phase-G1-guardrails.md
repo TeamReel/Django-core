@@ -1,10 +1,11 @@
 # G1 — Guardrails (Stylelint)
 
-**Status:** Todo
-**Geschatte effort:** 20 min
+**Status:** ✅ Done
+**Werkelijke effort:** 25 min
 **Bestanden:**
-- `.stylelintrc.json` (nieuw)
-- `demo/package.json` (dependency toevoegen)
+- `demo/.stylelintrc.json` (nieuw)
+- `demo/stylelint-plugin-8pt-grid.cjs` (nieuw — custom plugin)
+- `demo/package.json` (devDependencies + lint:css script)
 
 ---
 

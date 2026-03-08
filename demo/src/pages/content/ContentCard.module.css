@@ -286,7 +286,7 @@
   text-transform: uppercase;
   backdrop-filter: blur(8px);
   background: rgba(0, 0, 0, 0.5);
-  color: #fff;
+  color: white;
 }
 
 .detailTypeBadge[data-video='true'] {

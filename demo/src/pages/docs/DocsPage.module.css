@@ -38,12 +38,12 @@
 }
 
 .tableHeadRow {
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e5e5;
+  background-color: var(--color-neutral-50);
+  border-bottom: 1px solid var(--app-border);
 }
 
 .tableRow {
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--app-border);
 }
 
 .checkMark {

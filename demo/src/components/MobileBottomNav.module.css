@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: white;
   cursor: pointer;
   background-color: var(--app-primary, #3B8EA5);
   border: 3px solid var(--app-surface, #fff);

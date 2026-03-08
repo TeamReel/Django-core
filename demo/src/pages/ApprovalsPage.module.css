@@ -174,7 +174,7 @@
   border-radius: 8px;
   border: none;
   background: var(--color-blue-600);
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -205,7 +205,7 @@
   border-radius: 8px;
   border: none;
   background: var(--color-green-500);
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -213,7 +213,7 @@
 }
 
 .btnApprove:hover {
-  background: #15803d;
+  background: var(--color-green-500);
 }
 
 .btnApprove:active {
@@ -224,7 +224,7 @@
   padding: 8px 20px;
   border-radius: 8px;
   border: 1px solid var(--color-red-200);
-  background: #fff5f5;
+  background: var(--color-red-50);
   color: var(--color-red-500);
   font-weight: 600;
   font-size: 13px;
@@ -245,7 +245,7 @@
   border-radius: 8px;
   border: 1px solid var(--color-blue-600);
   background: var(--color-blue-600);
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -330,9 +330,9 @@
 .btnSelectAll {
   padding: 4px 12px;
   border-radius: 8px;
-  border: 1px solid #c6f0d4;
-  background: #f0fdf4;
-  color: #15803d;
+  border: 1px solid var(--color-green-100);
+  background: var(--color-green-50);
+  color: var(--color-green-500);
   font-weight: 600;
   font-size: 11px;
   cursor: pointer;
@@ -347,7 +347,7 @@
   padding: 4px 12px;
   border-radius: 8px;
   border: 1px solid var(--color-red-200);
-  background: #fff5f5;
+  background: var(--color-red-50);
   color: var(--color-red-500);
   font-weight: 600;
   font-size: 11px;
@@ -421,7 +421,7 @@
 
 .errorBordered {
   color: var(--color-red-500);
-  background: #fef2f2;
+  background: var(--color-red-50);
   border-left: 3px solid var(--color-red-500);
   padding: 8px 12px;
   font-size: 12px;
@@ -550,7 +550,7 @@
 
 .emptyHint {
   font-size: 11px;
-  color: #4b5563;
+  color: var(--color-neutral-500);
 }
 
 .storagePath {
@@ -834,7 +834,7 @@
 .chipActive {
   border-color: var(--color-blue-600, #2563eb);
   background: var(--color-blue-600, #2563eb);
-  color: #fff;
+  color: white;
 }
 
 .chipBadge {

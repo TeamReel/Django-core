@@ -1,6 +1,6 @@
 .root {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: var(--color-neutral-50);
 }
 
 .content {
@@ -29,11 +29,11 @@
 
 .detailsSection {
   margin-top: 48px;
-  background-color: #f8f9fa;
+  background-color: var(--color-neutral-50);
 }
 
 .detailsInner {
-  background-color: #fff;
+  background-color: white;
   font-family: monospace;
 }
 
@@ -44,8 +44,8 @@
 
 .helpSection {
   margin-top: 48px;
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
+  background-color: var(--color-amber-100);
+  border: 1px solid var(--color-amber-300);
 }
 
 .helpList {

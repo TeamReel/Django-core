@@ -23,7 +23,7 @@
   top: 8px;
   right: 8px;
   background: var(--badge-color);
-  color: #fff;
+  color: white;
   font-size: 10px;
   padding: 4px 8px;
   border-radius: 4px;
@@ -35,7 +35,7 @@
   top: 8px;
   left: 8px;
   background: var(--color-amber-400);
-  color: #000;
+  color: var(--app-text);
   font-size: 10px;
   padding: 4px 8px;
   border-radius: 4px;

@@ -25,7 +25,7 @@
 }
 
 .variantPreviewBg {
-  background: repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px;
+  background: repeating-conic-gradient(var(--color-neutral-900) 0% 25%, var(--color-neutral-800) 0% 50%) 50% / 20px 20px;
   cursor: default;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .variantPreviewBg[data-dark-bg] {
-  background: #000;
+  background: var(--app-text);
 }
 
 .btnFlex1 {

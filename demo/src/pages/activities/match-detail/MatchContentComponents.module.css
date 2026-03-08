@@ -15,7 +15,7 @@
   width: 56px;
   height: 56px;
   flex-shrink: 0;
-  background: #000;
+  background: var(--app-text);
 }
 
 .thumbnailMedia {

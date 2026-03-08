@@ -78,6 +78,19 @@
   --color-blue-700: #1d4ed8;
   --color-blue-800: #1e40af;
   --color-blue-900: #1e3a8a;
+
+  /* Indigo (AI / Generation accent) */
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-400: #818cf8;
+  --color-indigo-500: #6366f1;
+
+  /* Violet (AI gradient accent) */
+  --color-violet-400: #a855f7;
+  --color-violet-500: #8b5cf6;
+
+  /* Orange (Alert / Highlight) */
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f97316;
 }
 
 /* ======================================================================

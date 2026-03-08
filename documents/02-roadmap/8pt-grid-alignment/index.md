@@ -1,8 +1,8 @@
 # 8pt Grid Alignment — Phase Overview
 
-**Status:** Grotendeels afgerond (6/7 fases)
+**Status:** ✅ Volledig afgerond (7/7 fases)
 **Aangemaakt:** 2026-03-08
-**Laatste update:** 2026-03-08
+**Laatste update:** 2025-06-25
 
 ---
 
@@ -19,11 +19,12 @@ Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit) en design token 
 
 | Metric | Waarde |
 |--------|--------|
-| **Totale compliance** | ~98% (spatial 100%, kleuren ~85%) |
-| **Token-laag** | 100% (spacing + radius + typography) |
+| **Totale compliance** | 100% (spatial + kleuren) |
+| **Token-laag** | 100% (spacing + radius + typography + kleuren) |
 | **Utility CSS** | 100% |
-| **Component CSS** | 100% spatial, ~85% kleuren |
-| **Resterend** | ~35 `#fff` direct, ~145 hex als var() fallback, G1 lint |
+| **Component CSS** | 100% spatial, 100% kleuren |
+| **Guardrails** | Stylelint custom plugin (2 regels), 0 violations |
+| **Resterend** | Geen — volledige compliance |
 
 ## Toegestane waarden (4px grid)
 
@@ -46,7 +47,7 @@ Alle frontend CSS uitlijnen op het **8pt grid** (4px base unit) en design token 
 | **C1** | Core Shell | Sidebar, MobileBottomNav, BottomSheet, TopNavbar | ~80 fixes | ✅ Done |
 | **C2** | Wizard CSS | Wizard.module.css + CreateWizard.module.css | ~75 fixes | ✅ Done |
 | **P1** | Page Styles | Dashboard, MatchDetail, AIStudio, overige pages | ~1200 fixes | ✅ Done |
-| **G1** | Guardrails | Stylelint regels tegen off-grid px + hardcoded hex | Preventie | 🔲 Todo |
+| **G1** | Guardrails | Stylelint regels tegen off-grid px + hardcoded hex | Preventie | ✅ Done |
 
 ## Volgorde
 

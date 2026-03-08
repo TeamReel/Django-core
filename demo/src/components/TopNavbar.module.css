@@ -680,7 +680,7 @@
   border-radius: 8px;
   border: none;
   background: var(--color-blue-600);
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -711,7 +711,7 @@
   padding: 8px 16px;
   border-radius: 8px;
   border: none;
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -741,7 +741,7 @@
   border-radius: 8px;
   border: none;
   background: var(--color-green-500);
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 13px;
 }
@@ -817,7 +817,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: white;
   font-size: 14px;
   font-weight: 700;
 }
@@ -947,7 +947,7 @@
   border-radius: 8px;
   border: none;
   background: var(--color-blue-600);
-  color: #fff;
+  color: white;
   font-weight: 600;
   font-size: 13px;
 }

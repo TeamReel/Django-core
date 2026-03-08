@@ -10,14 +10,14 @@
 }
 
 /* ── Table header columns ──────────────────────────────────────────── */
-.thUser         { min-width: 150px; }
+.thUser         { min-width: 152px; }
 .thEmail        { min-width: 200px; }
 .thRole         { min-width: 100px; }
 .thStatus       { min-width: 100px; }
-.thOrganisations{ min-width: 150px; }
-.thClub         { min-width: 150px; }
-.thTeam         { min-width: 150px; }
-.thActions      { min-width: 150px; }
+.thOrganisations{ min-width: 152px; }
+.thClub         { min-width: 152px; }
+.thTeam         { min-width: 152px; }
+.thActions      { min-width: 152px; }
 
 /* ── User name link ────────────────────────────────────────────────── */
 .userNameLink {

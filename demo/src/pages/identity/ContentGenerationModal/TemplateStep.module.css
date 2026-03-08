@@ -20,7 +20,7 @@
 }
 
 .errorBox {
-  background: #fefce8;
+  background: var(--color-amber-50);
   border: 1px solid var(--color-amber-200);
 }
 

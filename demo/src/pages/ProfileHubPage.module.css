@@ -239,7 +239,7 @@ button.row:active {
 }
 
 .toggleOn {
-  background: #34C759;
+  background: var(--color-green-400);
 }
 
 .toggleOn::after {

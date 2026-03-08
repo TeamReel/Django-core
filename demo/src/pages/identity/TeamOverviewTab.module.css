@@ -84,7 +84,7 @@
 .sectionLink {
   font-size: 13px;
   font-weight: 600;
-  color: #818cf8;
+  color: var(--color-indigo-400);
   background: none;
   border: none;
   cursor: pointer;
@@ -198,7 +198,7 @@
 
 .progressFill {
   height: 100%;
-  background: #818cf8;
+  background: var(--color-indigo-400);
   border-radius: 4px;
   transition: width 0.3s ease;
 }

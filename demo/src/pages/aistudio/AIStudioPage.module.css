@@ -110,7 +110,7 @@
 
 .viewToggleBtnActive {
   background: var(--app-primary, #6366f1);
-  color: #fff;
+  color: white;
   box-shadow: 0 1px 4px rgba(99, 102, 241, 0.3);
 }
 

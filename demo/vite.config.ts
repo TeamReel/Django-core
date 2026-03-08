@@ -50,6 +50,10 @@ export default defineConfig({
         manualChunks: {
           // Keep Chart.js in its own chunk for lazy loading
           'chartjs-vendor': ['chart.js', 'react-chartjs-2'],
+          // Heavy icon library — own chunk, cached long-term
+          'lucide-vendor': ['lucide-react'],
+          // Recharts charting library
+          'recharts-vendor': ['recharts'],
         },
       },
     },

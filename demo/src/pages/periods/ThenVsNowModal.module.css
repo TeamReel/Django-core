@@ -39,7 +39,7 @@
 .variantPill[data-active="true"] {
   border-color: var(--app-primary, #2563eb);
   background-color: var(--app-primary, #2563eb);
-  color: #fff;
+  color: white;
 }
 
 /* ─── Arrow Buttons ──────────────────────────────────────────── */
@@ -119,7 +119,7 @@
 }
 
 .bgOptionLabel[data-active="true"] {
-  color: #fff;
+  color: white;
   background: var(--app-primary, #2563eb);
 }
 

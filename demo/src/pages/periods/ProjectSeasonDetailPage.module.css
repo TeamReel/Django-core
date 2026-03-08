@@ -79,7 +79,7 @@
 .activeBtnOn {
   border-color: var(--color-green-400);
   background: var(--color-green-50);
-  color: #166534;
+  color: var(--color-green-700);
   font-weight: 700;
 }
 
@@ -160,7 +160,7 @@
 .errorBox { padding: 24px 16px; text-align: center; }
 .errorMsg { font-size: 15px; color: var(--color-red-500, #ef4444); margin-bottom: 16px; }
 .backBtn {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 20px; font-size: 16px; font-weight: 600;
   border-radius: 8px; border: 1px solid var(--app-border);
   background: var(--app-surface); color: var(--app-text); cursor: pointer;
@@ -174,7 +174,7 @@
 .videoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .roleGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
 .bgSelectorGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
-.verticalList { display: flex; flex-direction: column; gap: 10px; }
+.verticalList { display: flex; flex-direction: column; gap: 12px; }
 .verticalListTight { display: flex; flex-direction: column; gap: 8px; }
 .modalActions { display: flex; gap: 12px; justify-content: flex-end; }
 
@@ -187,7 +187,7 @@
 .appLink { text-decoration: none; background-color: transparent; color: var(--color-blue-400); cursor: pointer; border: none; font: inherit; padding: 0; }
 .competitionLink { text-align: left; font-weight: 800; font-size: 14px; color: var(--color-blue-400); text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
 .matchLink { text-align: left; font-weight: 700; font-size: 13px; color: var(--color-blue-400); text-decoration: none; background: transparent; border: none; cursor: pointer; padding: 0; }
-.downloadLink { font-size: 11px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; margin-top: 2px; }
+.downloadLink { font-size: 11px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; margin-top: 4px; }
 .downloadLink12 { font-size: 12px; color: var(--color-blue-600); font-weight: 600; text-decoration: none; }
 .monoId { font-family: monospace; font-size: 10px; }
 .creditsText { font-size: 9px; color: var(--app-muted-text); }
@@ -204,20 +204,20 @@
 }
 .contentTileIcon { font-size: 20px; margin-bottom: 4px; }
 .contentTileLabel { font-weight: 600; font-size: 11px; line-height: 1.3; text-align: center; }
-.contentTileMeta { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; align-items: center; }
-.badgeXs { font-size: 9px; padding: 2px 4px; }
+.contentTileMeta { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.badgeXs { font-size: 9px; padding: 4px; }
 .noTemplate { font-size: 9px; color: var(--app-muted-text); margin-top: 4px; }
 
 /* ── Video Cards ── */
-.videoCard { border-radius: 10px; overflow: hidden; }
+.videoCard { border-radius: 12px; overflow: hidden; }
 .videoThumbnail { position: relative; width: 100%; height: 180px; background-color: var(--color-neutral-900); }
 .videoFill { width: 100%; height: 100%; object-fit: cover; display: block; }
-.videoCardMeta { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.videoCardMeta { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .videoCardHeader { display: flex; align-items: center; justify-content: space-between; }
 .videoCardTitle { font-size: 13px; font-weight: 600; color: var(--app-text); }
 .statusPillComplete {
-  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px;
-  color: #059669; background-color: #d1fae5; text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 100px;
+  color: var(--color-green-500); background-color: var(--color-green-50); text-transform: uppercase; letter-spacing: 0.04em;
 }
 .videoCardInfo { font-size: 11px; color: var(--app-muted-text); display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -236,21 +236,21 @@
 }
 .previewTitle { font-size: 15px; font-weight: 700; color: var(--app-text); }
 .closeButton { background: none; border: none; color: var(--app-muted-text); cursor: pointer; font-size: 20px; }
-.videoPlayerFull { width: 100%; max-height: 85vh; display: block; background-color: #000; }
+.videoPlayerFull { width: 100%; max-height: 85vh; display: block; background-color: var(--app-text); }
 
 /* ── Hierarchy ── */
 .hierarchyHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .pill {
-  display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px;
+  display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px;
   border-radius: 1000px; font-size: 12px; font-weight: 600;
 }
-.competitionCard { border: 1px solid var(--app-border, #334155); border-radius: 10px; background: var(--app-surface); overflow: hidden; }
+.competitionCard { border: 1px solid var(--app-border, #334155); border-radius: 12px; background: var(--app-surface); overflow: hidden; }
 .competitionCardHeader {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 12px; border-bottom: 1px solid var(--app-border, #334155);
   background: var(--app-surface-2); gap: 12px;
 }
-.competitionCardInfo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.competitionCardInfo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .sportInfo { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--app-muted-text); }
 .matchRow {
   display: flex; justify-content: space-between; align-items: center;
@@ -271,17 +271,17 @@
 }
 .slotIcon { font-size: 16px; }
 .guestRow { background: rgba(167, 139, 250, 0.06); }
-.guestLabel { color: #a78bfa; font-weight: 600; }
+.guestLabel { color: var(--color-violet-400); font-weight: 600; }
 .guestIndicator { font-size: 14px; cursor: pointer; }
 .indicatorIcon { font-size: 14px; }
 .indicatorDisabled { font-size: 14px; opacity: 0.3; }
 .legendBox { margin-top: 16px; padding: 12px; background: var(--app-muted); border-radius: 8px; }
 .legendTitle { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
-.legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 10px; }
-.legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 10px; border-top: 1px solid var(--app-border, #334155); padding-top: 8px; }
+.legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; }
+.legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; border-top: 1px solid var(--app-border, #334155); padding-top: 8px; }
 .legendItem { display: flex; align-items: center; gap: 4px; }
 .legendLabel { opacity: 0.8; }
-.mediaHeaderBtn { font-size: 13px; padding: 6px 14px; }
+.mediaHeaderBtn { font-size: 13px; padding: 8px 16px; }
 
 /* ── Edit Member Modal ── */
 .modalOverlay {
@@ -294,17 +294,17 @@
   max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--color-neutral-50);
 }
 .editMemberTitle { margin-top: 0; margin-bottom: 24px; font-size: 24px; font-weight: 600; color: var(--color-neutral-50); }
-.memberInfoRow { margin-bottom: 16px; color: #e2e8f0; }
-.memberInfoLabel { color: #cbd5e1; }
+.memberInfoRow { margin-bottom: 16px; color: var(--color-neutral-200); }
+.memberInfoLabel { color: var(--color-neutral-200); }
 .fieldLabel { display: block; margin-bottom: 12px; font-weight: 600; color: var(--color-neutral-50); }
-.radioGroup { display: flex; flex-direction: column; gap: 10px; }
+.radioGroup { display: flex; flex-direction: column; gap: 12px; }
 .radioCard {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
 }
 .radioInput { cursor: pointer; accent-color: var(--color-blue-500); }
 .radioCardTitle { font-weight: 600; color: var(--color-neutral-50); font-size: 14px; }
-.radioCardDesc { font-size: 12px; color: var(--color-neutral-300); margin-top: 2px; }
+.radioCardDesc { font-size: 12px; color: var(--color-neutral-300); margin-top: 4px; }
 .checkboxCard {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
@@ -334,7 +334,7 @@
   padding: 16px 20px; border-bottom: 1px solid var(--app-border);
 }
 .thenNowFooter {
-  display: flex; justify-content: flex-end; padding: 14px 20px;
+  display: flex; justify-content: flex-end; padding: 16px 20px;
   border-top: 1px solid var(--app-border); gap: 8px;
 }
 .modalCloseBtn { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--app-muted-text); }
@@ -351,7 +351,7 @@
 .memberName { font-size: 13px; font-weight: 600; }
 .memberMeta { font-size: 11px; color: var(--app-muted-text); }
 .variantRow { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-.variantPill { padding: 2px 8px; border-radius: 99px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+.variantPill { padding: 4px 8px; border-radius: 100px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
 .arrowBtn { background: none; border: none; font-size: 16px; padding: 4px; }
 .removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, #ef4444); opacity: 0.5; }
 .addIcon { font-size: 18px; color: var(--app-muted-text); }
@@ -361,12 +361,12 @@
 .clickableRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; cursor: pointer; transition: background 0.15s; }
 .bgPreviewDefault {
   width: 100%; aspect-ratio: 9 / 16; border-radius: 4px;
-  background: linear-gradient(135deg, #1a1a2e, #2d1b69);
+  background: linear-gradient(135deg, var(--color-neutral-900), var(--color-violet-500));
 }
-.bgOptionLabel { font-size: 9px; margin-top: 2px; text-align: center; }
+.bgOptionLabel { font-size: 9px; margin-top: 4px; text-align: center; }
 .checkBadge {
-  position: absolute; top: 4px; right: 4px; width: 18px; height: 18px;
-  border-radius: 50%; background: var(--color-green-400); color: #fff; font-size: 12px;
+  position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
+  border-radius: 50%; background: var(--color-green-400); color: white; font-size: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 .statusStep { padding: 40px 20px; text-align: center; }
@@ -385,7 +385,7 @@
 }
 .modalBtnPrimary {
   padding: 8px 20px; border-radius: 8px; border: none;
-  background: #6366f1; color: #fff; cursor: pointer; font-weight: 600; font-size: 13px;
+  background: var(--color-indigo-500); color: white; cursor: pointer; font-weight: 600; font-size: 13px;
 }
 
 /* ── Toasts ── */
@@ -394,12 +394,12 @@
   display: flex; flex-direction: column; gap: 8px; max-width: 420px;
 }
 .toast {
-  border-radius: 8px; padding: 12px 16px; color: #fff;
-  display: flex; align-items: flex-start; gap: 10px; font-size: 13px;
+  border-radius: 8px; padding: 12px 16px; color: white;
+  display: flex; align-items: flex-start; gap: 12px; font-size: 13px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); animation: slideInRight 0.3s ease-out;
 }
 .toastDismiss {
-  background: none; border: none; color: #fff; cursor: pointer;
+  background: none; border: none; color: white; cursor: pointer;
   font-size: 18px; opacity: 0.7; flex-shrink: 0; margin-left: auto;
 }
 
@@ -427,7 +427,7 @@
     min-height: 44px;
   }
 
-  .competitionCard { border-radius: 14px; }
+  .competitionCard { border-radius: 16px; }
 
   .competitionCardHeader {
     flex-direction: column;

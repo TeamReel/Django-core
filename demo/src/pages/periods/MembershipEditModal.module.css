@@ -81,7 +81,7 @@
   border-radius: 8px;
   border: 1px solid var(--app-border);
   background-color: var(--app-primary, #1976d2);
-  color: #fff;
+  color: white;
 }
 
 .saveButton[data-saving="true"] {

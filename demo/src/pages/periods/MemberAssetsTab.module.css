@@ -13,12 +13,12 @@
 
 .previewBgContain[data-has-url="true"] {
   background: var(--preview-url) center/contain no-repeat,
-    repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 16px 16px;
+    repeating-conic-gradient(var(--color-neutral-500) 0% 25%, var(--color-neutral-800) 0% 50%) 50% / 16px 16px;
   cursor: zoom-in;
 }
 
 .previewBgContain[data-has-url="false"] {
-  background: repeating-conic-gradient(#2a2a2a 0% 25%, #1e1e1e 0% 50%) 50% / 20px 20px;
+  background: repeating-conic-gradient(var(--color-neutral-900) 0% 25%, var(--color-neutral-800) 0% 50%) 50% / 20px 20px;
   cursor: default;
 }
 

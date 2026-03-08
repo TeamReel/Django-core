@@ -48,13 +48,13 @@
 }
 
 .previewBgMedia {
-  background: #000;
+  background: var(--app-text);
 }
 
 .previewBgEmpty {
   background:
     repeating-conic-gradient(
-      #2a2a2a 0% 25%,
+      var(--color-neutral-900) 0% 25%,
       var(--vscode-editor-background, #1e1e1e) 0% 50%
     )
     50% / 20px 20px;
@@ -186,7 +186,7 @@
   width: 80px;
   height: 48px;
   flex-shrink: 0;
-  background: #000;
+  background: var(--app-text);
 }
 
 .historyEmptyThumb {

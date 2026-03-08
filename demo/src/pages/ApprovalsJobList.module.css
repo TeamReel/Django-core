@@ -279,13 +279,13 @@
 
 .swipeRevealApprove {
   background-color: var(--ajl-green-600);
-  color: #fff;
+  color: white;
   justify-content: flex-start;
 }
 
 .swipeRevealReject {
   background-color: var(--ajl-red-600);
-  color: #fff;
+  color: white;
   justify-content: flex-end;
 }
 

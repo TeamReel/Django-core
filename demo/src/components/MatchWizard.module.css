@@ -184,11 +184,11 @@
 }
 
 .thumbArea[data-output='video'] {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+  background: linear-gradient(135deg, var(--color-indigo-500) 0%, var(--color-violet-500) 50%, var(--color-violet-400) 100%);
 }
 
 .thumbArea[data-output='image'] {
-  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%);
+  background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-400) 50%, var(--color-primary-200) 100%);
 }
 
 .thumbArea[data-output='text'] {
@@ -222,17 +222,17 @@
 
 .outputBadge[data-output='video'] {
   background: rgba(99, 102, 241, 0.85);
-  color: #fff;
+  color: white;
 }
 
 .outputBadge[data-output='image'] {
   background: rgba(13, 148, 136, 0.85);
-  color: #fff;
+  color: white;
 }
 
 .outputBadge[data-output='text'] {
   background: rgba(217, 119, 6, 0.85);
-  color: #fff;
+  color: white;
 }
 
 /* ── Content icon wrapper (legacy, kept for compat) ─── */
@@ -311,11 +311,11 @@
 }
 
 .reviewPreview[data-output='video'] {
-  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 40%, #a78bfa 100%);
+  background: linear-gradient(135deg, var(--color-indigo-500) 0%, var(--color-violet-500) 40%, var(--color-violet-400) 100%);
 }
 
 .reviewPreview[data-output='image'] {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 40%, #5eead4 100%);
+  background: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-primary-700) 40%, var(--color-primary-200) 100%);
 }
 
 .reviewPreview[data-output='text'] {
@@ -349,17 +349,17 @@
 
 .reviewOutputBadge[data-output='video'] {
   background: rgba(99, 102, 241, 0.7);
-  color: #fff;
+  color: white;
 }
 
 .reviewOutputBadge[data-output='image'] {
   background: rgba(13, 148, 136, 0.7);
-  color: #fff;
+  color: white;
 }
 
 .reviewOutputBadge[data-output='text'] {
   background: rgba(217, 119, 6, 0.7);
-  color: #fff;
+  color: white;
 }
 
 /* ── Review summary card ────────────────────────────── */

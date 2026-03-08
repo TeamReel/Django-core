@@ -142,12 +142,12 @@
 
 .typeChip[data-type='image'] {
   background: rgba(13, 148, 136, 0.1);
-  color: #0d9488;
+  color: var(--color-primary-400);
 }
 
 .typeChip[data-type='video'] {
   background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
+  color: var(--color-indigo-500);
 }
 
 .typeChip[data-type='text'] {

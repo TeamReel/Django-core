@@ -257,7 +257,7 @@
   gap: 4px;
   margin-top: 4px;
   font-size: 12px;
-  color: #818cf8;
+  color: var(--color-indigo-400);
   font-weight: 600;
   cursor: pointer;
   background: none;
