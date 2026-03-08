@@ -71,6 +71,29 @@
   font-weight: 600;
 }
 
+/* ── Phase recommended dot (C2) ─────────────────────── */
+.phaseRecommendedDot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--app-warning, #f59e0b);
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+.phaseTab[data-active='true'] .phaseRecommendedDot {
+  background: white;
+}
+
+.phaseHint {
+  font-size: 12px;
+  color: var(--app-muted-text, #6b7280);
+  text-align: center;
+  padding: 0 8px;
+  margin-top: -8px;
+}
+
 /* ── Content type card ──────────────────────────────── */
 .contentCard {
   display: flex;

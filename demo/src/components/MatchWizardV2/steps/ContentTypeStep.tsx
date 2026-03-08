@@ -1,11 +1,15 @@
 /**
  * ContentTypeStep – Step 2: Select content type
+ *
+ * C2: Auto-selects the content phase (pre/during/post) based on
+ * match.start_time using useMatchPhase. User can still switch manually.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ChevronRight, Clock, Play, Check, AlertTriangle, RefreshCw } from 'lucide-react';
 import { useWizard } from '../../Wizard';
 import { useMatchWizard } from '../MatchWizardContext';
 import { useTemplatesData } from '../hooks';
+import { useMatchPhase } from '../../../hooks/useMatchPhase';
 import { CONTENT_TYPES, LINEUP_REQUIRED_SUBTYPES, HAS_OPTIONS_SUBTYPES, type ContentType } from '../types';
 import styles from '../MatchWizardV2.module.css';
 
@@ -22,10 +26,23 @@ export function ContentTypeStep() {
 
   const { fetchTemplates, selectTemplateForSubtype } = useTemplatesData();
 
+  // C2: Detect phase from match time
+  const { selectedMatch } = useMatchWizard();
+  const matchPhase = useMatchPhase(selectedMatch?.start_time);
+  const hasAutoSelected = useRef(false);
+
   // Fetch templates when step mounts
   useEffect(() => {
     fetchTemplates();
   }, [fetchTemplates]);
+
+  // Auto-select phase once when step first mounts
+  useEffect(() => {
+    if (!hasAutoSelected.current && matchPhase.confidence === 'auto') {
+      setSelectedContentPhase(matchPhase.phase);
+      hasAutoSelected.current = true;
+    }
+  }, [matchPhase.phase, matchPhase.confidence, setSelectedContentPhase]);
 
   const handleContentSelect = (content: ContentType) => {
     // Set pending content
@@ -59,17 +76,28 @@ export function ContentTypeStep() {
     <div className="flex-col gap-16">
       {/* Phase tabs */}
       <div className={`flex-row gap-4 bg-surface-2 rounded-10 ${styles.phaseTabBar}`}>
-        {phases.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setSelectedContentPhase(key)}
-            className={`flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer transition ${styles.phaseTab}`}
-            data-active={selectedContentPhase === key}
-          >
-            <Icon size={14} />{label}
-          </button>
-        ))}
+        {phases.map(({ key, label, icon: Icon }) => {
+          const isRecommended = matchPhase.confidence === 'auto' && matchPhase.phase === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setSelectedContentPhase(key)}
+              className={`flex-1 flex-center gap-6 rounded-8 border-none fs-13 cursor-pointer transition ${styles.phaseTab}`}
+              data-active={selectedContentPhase === key}
+            >
+              <Icon size={14} />{label}
+              {isRecommended && <span className={styles.phaseRecommendedDot} />}
+            </button>
+          );
+        })}
       </div>
+
+      {/* Phase hint */}
+      {matchPhase.confidence === 'auto' && (
+        <div className={styles.phaseHint}>
+          {matchPhase.hint}
+        </div>
+      )}
 
       {/* Error banner */}
       {templatesError && (
