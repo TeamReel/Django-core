@@ -51,6 +51,7 @@ export default function IdentitySettingsCard({
       });
       setIsEditing(false);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to save settings');
     } finally {
       setSaving(false);

@@ -187,6 +187,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
                 }
               }
             } catch (err) {
+              console.error(err);
               console.error('[MatchWizard] Failed to fetch match by id:', err);
             }
           })();
@@ -296,6 +297,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       });
       setSquadGroups(groups);
     } catch (err) {
+      console.error(err);
       console.error('Failed to fetch squad:', err);
       setSquadError('Kon spelers niet laden. Controleer je verbinding.');
     } finally {
@@ -322,6 +324,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       });
       setAvailableTemplates(grouped);
     } catch (err) {
+      console.error(err);
       console.error('Failed to fetch templates:', err);
       setTemplatesError('Kon sjablonen niet laden. Controleer je verbinding.');
     } finally {
@@ -346,6 +349,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
         }),
       });
     } catch (err) {
+      console.error(err);
       console.error('Failed to save lineup:', err);
       setSaveError('Opslaan mislukt. Probeer opnieuw.');
     } finally {
@@ -573,6 +577,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
       setProgress(100);
       setTimeout(() => setCurrentStep('success'), 300);
     } catch (err) {
+      console.error(err);
       clearInterval(progressInterval);
       if ((err as any)?.name === 'AbortError') return;
       console.error('[!] Generation failed:', err);
@@ -633,6 +638,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
         setTimeout(() => handleClose(), 1200);
       }
     } catch (err) {
+      console.error(err);
       console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
       setGenerationError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally {

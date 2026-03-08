@@ -124,7 +124,6 @@ export function useAppSelection() {
     if (import.meta.env.DEV) {
         console.group(`[AppSelection] Re-computing context (${auditId})`);
         console.time(`[AppSelection] Computation ${auditId}`);
-        console.log('[AppSelection] Triggered by:', { path: location.pathname });
     }
 
     const apiBaseUrl = getApiBaseUrl();

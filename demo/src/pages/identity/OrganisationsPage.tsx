@@ -103,6 +103,7 @@ export const OrganisationsPage: React.FC = () => {
         const results = data.data?.results || data.results || [];
         setOrganisations(results);
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
         console.error('Organisations fetch error:', err);
       } finally {
@@ -145,6 +146,7 @@ export const OrganisationsPage: React.FC = () => {
 
       setRefreshKey(k => k + 1);
     } catch (err) {
+      console.error(err);
       console.error('Delete error:', err);
       alert('Failed to delete organisation');
     }

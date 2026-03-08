@@ -140,7 +140,8 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
         const arr = Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.results) ? json.results : [];
         setContentTemplates(arr);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       if (err.name !== 'AbortError') {
         setError(err.message || 'Failed to load templates');
       }
@@ -166,7 +167,8 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
         const arr = Array.isArray(json.data?.history) ? json.data.history : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.history) ? json.history : [];
         setHistory(arr);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || 'Failed to load history');
     } finally {
       setLoading(false);

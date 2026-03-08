@@ -55,6 +55,7 @@ export const ApiDocsPage: React.FC = () => {
           });
         }
       } catch (err) {
+        console.error(err);
         console.error('Failed to fetch API schema:', err);
         // Don't show metadata if we can't fetch real data
       }

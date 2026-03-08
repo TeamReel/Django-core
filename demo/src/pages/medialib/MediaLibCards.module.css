@@ -109,13 +109,13 @@
 .filterChipCount {
   font-size: var(--text-xs);
   padding: 0 var(--space-1);
-  background-color: var(--app-surface-2, #f3f4f6);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-secondary);
 }
 
 .filterChipCountActive {
   background-color: var(--color-primary, #2563eb);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--app-surface));
 }
 
 /* --------------------------------------------------------------------------

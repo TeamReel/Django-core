@@ -172,6 +172,7 @@ export function CompetitionHierarchyTab({
                                   }
                                 } catch (e) {
                                   console.error(e);
+                                  console.error(e);
                                   alert('Error deleting match');
                                 }
                               }}

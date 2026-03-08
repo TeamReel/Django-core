@@ -212,6 +212,7 @@ export default function ApprovalsPage() {
         }
       }
     } catch (e) {
+      console.error(e);
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
       setOptimisticApprovals(prev => { const n = { ...prev }; delete n[taskId]; return n; });
     }
@@ -234,6 +235,7 @@ export default function ApprovalsPage() {
       await approveVideoJob(jobId);
       pushToast('✅ Video goedgekeurd!', 'success');
     } catch (e) {
+      console.error(e);
       pushToast(e instanceof Error ? e.message : 'Goedkeuren mislukt', 'error');
     }
   }, [approveVideoJob, pushToast]);
@@ -243,6 +245,7 @@ export default function ApprovalsPage() {
       await rejectVideoJob(jobId);
       pushToast('❌ Video afgewezen', 'success');
     } catch (e) {
+      console.error(e);
       pushToast(e instanceof Error ? e.message : 'Afwijzen mislukt', 'error');
     }
   }, [rejectVideoJob, pushToast]);

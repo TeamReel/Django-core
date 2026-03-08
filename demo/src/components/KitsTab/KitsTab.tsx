@@ -94,6 +94,7 @@ export function KitsTab({
       setKits(assetList.filter((a: any) => String(a.asset_type || '').startsWith('kit_')));
       setLoading(false);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to load kits');
       setLoading(false);
     }
@@ -174,6 +175,7 @@ export function KitsTab({
       await loadKits();
       onKitUploaded?.();
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploadingType(null);

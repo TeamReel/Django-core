@@ -14,7 +14,7 @@
 }
 
 .modal {
-  background-color: var(--app-surface, white);
+  background-color: var(--app-surface, var(--app-surface));
   padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 100%;
@@ -58,7 +58,7 @@
   padding: var(--space-2);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border, #ccc);
-  background-color: var(--app-surface, white);
+  background-color: var(--app-surface, var(--app-surface));
 }
 
 .buttonRow {

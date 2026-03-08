@@ -125,6 +125,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
           setBackgrounds(bgs);
         }
       } catch (err) {
+        console.error(err);
         console.warn('Failed to fetch app backgrounds:', err);
       }
     })();
@@ -179,7 +180,8 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
 
       setStep('submitted');
       setTimeout(() => onClose(), 2500);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || 'Failed to start compilation');
       setStep('error');
     }
@@ -221,7 +223,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
       className={s.thenNowBackdrop}
       onClick={() => { if (step !== 'generating') onClose(); }}
     >
-      <div className={s.thenNowModal} onClick={(e) => e.stopPropagation()}>
+      <div className={s.thenNowModal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
         {/* Header */}
         <div className={s.thenNowHeader}>
           <div>

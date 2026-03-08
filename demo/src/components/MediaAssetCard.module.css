@@ -12,7 +12,7 @@
  * -------------------------------------------------------------------------- */
 
 .card {
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   background: var(--vscode-editor-background, #1e1e1e);
   transition: all var(--duration-normal) var(--ease-default);
   cursor: default;

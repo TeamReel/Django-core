@@ -53,6 +53,7 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
       }
       setSubmitted(true);
     } catch (e) {
+      console.error(e);
       console.error('Failed to submit photo_composite_video:', e);
       setError(e instanceof Error ? e.message : 'Generatie mislukt');
       setSubmitting(false);
@@ -172,8 +173,8 @@ export function NavbarQuickReviewModal({
   // Empty state
   if (jobsToShow.length === 0) {
     return (
-      <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered}>
+      <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
+        <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered} role="button" tabIndex={0}>
           <div className={s.tabsRowCenter}>
             <button
               onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
@@ -209,8 +210,8 @@ export function NavbarQuickReviewModal({
   // In-progress tab: list view
   if (queueModalTab === 'in-progress') {
     return (
-      <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`}>
+      <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`} role="button" tabIndex={0}>
           <div className={s.modalHeader}>
             <div className="flex-between mb-12">
               <div className={s.modalTitle}>Queue</div>
@@ -260,8 +261,8 @@ export function NavbarQuickReviewModal({
   // Review tab: no current job
   if (!job) {
     return (
-      <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge}>
+      <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
+        <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge} role="button" tabIndex={0}>
           <div className={`mb-12 ${s.emptyIcon}`}>{'\u2705'}</div>
           <div className={`mb-8 ${s.modalTitle}`}>Alles beoordeeld!</div>
           <div className="fs-13 mb-8 text-secondary">Er zijn geen items meer die review nodig hebben.</div>
@@ -282,7 +283,7 @@ export function NavbarQuickReviewModal({
     v.mime_type?.startsWith('video/') || v.filename?.endsWith('.mp4') || job.output_type === 'video';
 
   return (
-    <div onClick={onClose} className={s.modalOverlay}>
+    <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
       <div
         onClick={e => e.stopPropagation()}
         className={`w-full ${s.modalPanel} ${styles.reviewPanel}`} data-multi={variants.length > 1}
@@ -411,8 +412,8 @@ export interface NotificationsModalProps {
 
 export function NavbarNotificationsModal({ notificationsList, onClose, onNavigate }: NotificationsModalProps) {
   return (
-    <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`}>
+    <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`} role="button" tabIndex={0}>
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Notificaties</div>
@@ -469,8 +470,8 @@ export interface CreditsModalProps {
 
 export function NavbarCreditsModal({ myCreditsBalance, onClose, onNavigate }: CreditsModalProps) {
   return (
-    <div onClick={onClose} className={s.modalOverlay}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`}>
+    <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`} role="button" tabIndex={0}>
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Credits</div>

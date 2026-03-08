@@ -6,7 +6,7 @@
 .header {
   padding: var(--space-6);
   border-bottom: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
 }
 
 .headerTitle {
@@ -29,7 +29,7 @@
 
 .card {
   padding: var(--space-6);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border: 1px solid var(--app-border);
 }
 
@@ -44,7 +44,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-inactive, #6c757d);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--color-neutral-400);
   cursor: pointer;
   font-size: var(--text-sm);
@@ -61,7 +61,7 @@
 .flowButton[data-active="true"] {
   border-color: var(--app-primary);
   background-color: var(--app-primary);
-  color: var(--color-white, #ffffff);
+  color: var(--color-white, var(--app-surface));
 }
 
 @media (hover: hover) {

@@ -29,6 +29,7 @@ export function DocsNotificationsPage() {
       const results = data.data?.results || data.results || data.data || data || [];
       setNotifications(Array.isArray(results) ? results : []);
     } catch (err) {
+      console.error(err);
       console.error('Failed to fetch notifications:', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
@@ -56,6 +57,7 @@ export function DocsNotificationsPage() {
       setNotifications(prev => prev.map(n => n.id === id ? updated : n));
       window.dispatchEvent(new CustomEvent('notificationChanged'));
     } catch (err) {
+      console.error(err);
       console.error('Failed to toggle notification:', err);
       alert(err instanceof Error ? err.message : 'Failed to update notification');
     } finally {
@@ -78,6 +80,7 @@ export function DocsNotificationsPage() {
       await fetchNotifications();
       window.dispatchEvent(new Event('notificationChanged'));
     } catch (err) {
+      console.error(err);
       console.error('Error marking all as read:', err);
       alert('Failed to mark all as read');
     }

@@ -77,34 +77,17 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 `${apiBaseUrl}/api/v1/branding/profiles/?organisation_scope=${orgId}&page_size=500`,
             );
 
-            console.log(
-                '[MediaLib] All brand profiles (organisation_scope):',
-                allProfiles.length,
-            );
-
             const orgProfiles = allProfiles.filter((p: any) => !p.project);
             const clubProfiles = allProfiles.filter((p: any) => p.project_type === 'club');
             const teamProfiles = allProfiles.filter((p: any) => p.project_type === 'team');
 
-            console.log('[MediaLib] Profiles by type:', {
-                org: orgProfiles.length,
-                club: clubProfiles.length,
-                team: teamProfiles.length,
-            });
-
             let allAssets: BrandAsset[] = [];
             try {
                 const bulkUrl = `${apiBaseUrl}/api/v1/branding/assets/?organisation_scope=${orgId}&page_size=500`;
-                console.log('[MediaLib] Fetching bulk assets from:', bulkUrl);
                 const bulkRes = await fetch(bulkUrl, { credentials: 'include' });
-                console.log('[MediaLib] Bulk assets response status:', bulkRes.status);
 
                 if (bulkRes.ok) {
                     const bulkJson = await bulkRes.json();
-                    console.log(
-                        '[MediaLib] Bulk assets raw response keys:',
-                        Object.keys(bulkJson),
-                    );
                     allAssets = Array.isArray(bulkJson.data?.results)
                         ? bulkJson.data.results
                         : Array.isArray(bulkJson.data)
@@ -114,9 +97,9 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                             : Array.isArray(bulkJson)
                               ? bulkJson
                               : [];
-                    console.log('[MediaLib] Bulk assets parsed count:', allAssets.length);
                 }
             } catch (bulkErr) {
+              console.error(bulkErr);
                 console.warn(
                     '[MediaLib] Bulk assets fetch failed, using fallback:',
                     bulkErr,
@@ -125,7 +108,6 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
 
             // Fallback: if bulk endpoint returned 0 assets, fetch per-profile
             if (allAssets.length === 0 && allProfiles.length > 0) {
-                console.log('[MediaLib] Using fallback: fetching assets per profile');
                 const BATCH_SIZE = 10;
                 for (let i = 0; i < allProfiles.length; i += BATCH_SIZE) {
                     const batch = allProfiles.slice(i, i + BATCH_SIZE);
@@ -167,7 +149,6 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                     );
                     allAssets.push(...batchResults.flat());
                 }
-                console.log('[MediaLib] Fallback fetched:', allAssets.length, 'assets');
             }
 
             const orgAssets = allAssets.filter(
@@ -175,15 +156,10 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
             );
             const clubAssets = allAssets.filter((a: any) => a.project_type === 'club');
             const teamAssets = allAssets.filter((a: any) => a.project_type === 'team');
-            console.log('[MediaLib] Brand assets by level:', {
-                organisation: orgAssets.length,
-                club: clubAssets.length,
-                team: teamAssets.length,
-                total: allAssets.length,
-            });
 
             setBrandAssets(allAssets);
-        } catch (err: any) {
+        } catch (err: unknown) {
+          console.error(err);
             setBrandError(err.message || 'Failed to load brand assets');
         } finally {
             setBrandLoading(false);
@@ -230,12 +206,6 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
             );
             const teamProjects = allProjects.filter((p: any) => !!p.parent_id);
 
-            console.log(
-                '[MediaLib] Fetching member assets from',
-                teamProjects.length,
-                'teams',
-            );
-
             const memberAssets: MemberMediaItem[] = [];
 
             const BATCH_SIZE = 5;
@@ -275,23 +245,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 allMembershipData.push(...batchResults.flat());
             }
 
-            console.log(
-                '[MediaLib] Total memberships fetched:',
-                allMembershipData.length,
-                failedTeamCount > 0 ? `(${failedTeamCount} teams failed)` : '',
-            );
-
             if (allMembershipData.length > 0) {
                 const sample = allMembershipData[0].membership;
-                console.log('[MediaLib] Sample membership:', {
-                    id: sample.id,
-                    hasMetadata: !!sample.metadata,
-                    metadataKeys: sample.metadata ? Object.keys(sample.metadata) : [],
-                    hasTeamreelAssets: !!sample.metadata?.teamreel_assets,
-                    teamreelAssetsKeys: sample.metadata?.teamreel_assets
-                        ? Object.keys(sample.metadata.teamreel_assets)
-                        : [],
-                });
             }
 
             for (const { membership, team } of allMembershipData) {
@@ -349,8 +304,6 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 }
             }
 
-            console.log('[MediaLib] Member assets extracted:', memberAssets.length);
-
             // Convert storage paths to presigned URLs
             const pathsToConvert = Array.from(
                 new Set(
@@ -366,11 +319,6 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
             );
 
             if (pathsToConvert.length > 0) {
-                console.log(
-                    '[MediaLib] Converting',
-                    pathsToConvert.length,
-                    'storage paths to presigned URLs',
-                );
                 try {
                     const csrfToken = getCsrfToken();
 
@@ -414,8 +362,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                         if (maybeUrl) asset.url = maybeUrl;
                     }
 
-                    console.log('[MediaLib] Converted paths to presigned URLs');
                 } catch (presignErr) {
+                  console.error(presignErr);
                     console.warn(
                         '[MediaLib] Presigned URL conversion error:',
                         presignErr,
@@ -425,6 +373,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
 
             setMemberMedia(memberAssets);
         } catch (err) {
+          console.error(err);
             console.error('[MediaLib] Failed to fetch member assets:', err);
             setMemberMedia([]);
         } finally {

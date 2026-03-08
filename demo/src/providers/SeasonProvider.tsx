@@ -227,6 +227,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
           setCompetitionsLoading(false);
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load season');
       } finally {
         setLoading(false);

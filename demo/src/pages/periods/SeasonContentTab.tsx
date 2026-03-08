@@ -93,6 +93,7 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
         setAvailableTemplates(grouped);
       }
     } catch (err) {
+      console.error(err);
       console.error('Error fetching templates:', err);
     } finally {
       setTemplatesLoading(false);

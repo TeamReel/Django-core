@@ -32,7 +32,6 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
     const queueBadgeColor = queueCounts.review > 0 ? 'var(--app-error)' : 'var(--color-amber-400)';
 
     const debugLog = (...args: unknown[]) => {
-        if (import.meta.env.DEV) console.log(...args);
     };
 
     const { isSystemAdmin, isLandAdmin, isOrgAdmin, hasOrgRole } = useUserRole();
@@ -203,6 +202,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
                     console.error('[TopNavbar] Notifications API error:', response.status, response.statusText);
                 }
             } catch (err) {
+              console.error(err);
                 console.error('Failed to fetch notification count:', err);
             }
         };
@@ -362,6 +362,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
                 }
             }
         } catch (e) {
+          console.error(e);
             console.error('Quick review failed:', e);
         } finally {
             setQuickReviewBusy(false);

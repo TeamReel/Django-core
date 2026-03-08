@@ -110,7 +110,8 @@ export function useFileAssets(): UseFileAssetsReturn {
         nextUrl = json.meta?.pagination?.next || json.data?.next || json.next || null;
       }
       setFiles(all);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       if (err.name !== 'AbortError') {
         setError(err.message || 'Failed to load files');
       }

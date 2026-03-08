@@ -313,7 +313,8 @@ export function useUserDetailData(): UserDetailDataReturn {
                 const data = (raw as any)?.data ?? raw;
                 const v = (data as any)?.current_balance;
                 if (!cancelled) setUserBalance(v != null ? String(v) : null);
-            } catch (e: any) {
+            } catch (e: unknown) {
+              console.error(e);
                 if (!cancelled) setUserBalanceError(e?.message || 'Failed to fetch balance');
             } finally {
                 if (!cancelled) setUserBalanceLoading(false);

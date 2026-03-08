@@ -17,7 +17,7 @@
 
 .filterButton[data-active] {
   background: var(--app-primary, #3b82f6);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .filterBadge {
@@ -28,7 +28,7 @@
   height: 20px;
   border-radius: var(--radius-full);
   background: var(--app-primary, #3b82f6);
-  color: white;
+  color: var(--color-white, #fff);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
 }

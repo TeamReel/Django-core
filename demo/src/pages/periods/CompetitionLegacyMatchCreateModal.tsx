@@ -118,6 +118,7 @@ export function CompetitionLegacyMatchCreateModal({
       });
       onClose();
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to create match');
     } finally {
       setIsSaving(false);

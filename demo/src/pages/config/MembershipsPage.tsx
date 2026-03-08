@@ -82,6 +82,7 @@ export const MembershipsPage: React.FC = () => {
         const list = extractList(data);
         if (!cancelled) setSeasons(list as Period[]);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setSeasonsError(e instanceof Error ? e.message : 'Failed to load seasons');
       } finally {
         if (!cancelled) setSeasonsLoading(false);

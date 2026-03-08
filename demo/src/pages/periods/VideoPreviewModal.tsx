@@ -12,7 +12,7 @@ interface VideoPreviewModalProps {
  * Extracted from ProjectSeasonDetailPage.
  */
 const VideoPreviewModal: React.FC<VideoPreviewModalProps> = ({ videoUrl, videoLabel, onClose }) => (
-  <div onClick={onClose} className={s.modalBackdrop}>
+  <div onClick={onClose} className={s.modalBackdrop} role="button" tabIndex={0}>
     <div
       onClick={(e) => e.stopPropagation()}
       className={s.previewModalContainer}

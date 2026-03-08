@@ -35,7 +35,7 @@
 
 .card {
   padding: var(--space-4);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
 }
@@ -64,7 +64,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
 }
@@ -134,7 +134,7 @@
 
 .detailContent {
   padding: var(--space-5);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
 }
@@ -156,7 +156,7 @@
 .tableContainer {
   display: flex;
   flex-direction: column;
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   overflow: hidden;

@@ -172,6 +172,7 @@ export function useUsersData() {
           setOrganisations(orgs);
         }
       } catch (e) {
+        console.error(e);
         console.error('Failed to fetch organisations for filter', e);
       }
     };
@@ -186,6 +187,7 @@ export function useUsersData() {
         const results = await fetchAllFilterOptions(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`);
         setClubs(results);
       } catch (e) {
+        console.error(e);
         console.error('Failed to fetch clubs for filter', e);
       }
     };
@@ -200,6 +202,7 @@ export function useUsersData() {
         const results = await fetchAllFilterOptions(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`);
         setTeams(results);
       } catch (e) {
+        console.error(e);
         console.error('Failed to fetch teams for filter', e);
       }
     };
@@ -221,6 +224,7 @@ export function useUsersData() {
         const roleNames = results.map((role: any) => role.name);
         setAvailableRoles(['Superadmin', ...roleNames].sort());
       } catch (e) {
+        console.error(e);
         console.error('[UsersPage] Failed to fetch roles:', e);
         setAvailableRoles(FALLBACK_ROLES);
       }
@@ -319,7 +323,8 @@ export function useUsersData() {
       const count = data.data?.count || data.count || 0;
       setUsers(results);
       setTotal(count);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       console.error(err);
       setError(err.message);
     } finally {
@@ -361,6 +366,7 @@ export function useUsersData() {
       });
       if (!res.ok) throw new Error('Failed to update user');
     } catch (e) {
+      console.error(e);
       console.error(e);
       alert('Failed to save user changes');
       throw e;

@@ -12,7 +12,7 @@
 
 .swipeReveal {
   background: var(--app-success, #22c55e);
-  color: white;
+  color: var(--color-white, #fff);
   justify-content: flex-end;
   min-width: 120px;
 }

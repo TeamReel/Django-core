@@ -83,6 +83,7 @@ export const ProjectCreatePage: React.FC = () => {
       const project = await response.json();
       navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);

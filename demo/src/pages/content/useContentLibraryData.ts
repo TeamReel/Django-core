@@ -190,6 +190,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
         setError('Kon content niet laden');
       }
     } catch (err) {
+      console.error(err);
       setError('Fout bij laden van content');
       console.error('[ContentLibrary] Error:', err);
     } finally {

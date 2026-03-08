@@ -113,7 +113,7 @@
 
 /* ── Queue badge (expanded sidebar) ── */
 .queueBadge {
-  color: var(--sidebar-badge-text, #fff);
+  color: var(--sidebar-badge-text, var(--app-surface));
   border-radius: var(--radius-lg);
   padding: 1px var(--space-2);
   font-size: var(--text-xs);
@@ -133,7 +133,7 @@
 .queueBadgeCollapsed {
   top: 4px;
   right: 4px;
-  color: var(--sidebar-badge-text, #fff);
+  color: var(--sidebar-badge-text, var(--app-surface));
   border-radius: var(--radius-lg);
   padding: 1px var(--space-1);
   font-size: 9px;

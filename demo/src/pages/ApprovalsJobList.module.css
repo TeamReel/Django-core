@@ -28,7 +28,7 @@
    ============================================================ */
 .aiCard {
   padding: var(--space-4) var(--space-4);
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface, var(--app-surface));
   border: 1px solid var(--app-border, #e5e7eb);
   cursor: default;
   display: flex;
@@ -161,7 +161,7 @@
    ============================================================ */
 .videoCard {
   padding: var(--space-4) var(--space-4);
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface, var(--app-surface));
   border: 1px solid var(--app-border, #e5e7eb);
   gap: var(--space-3);
   cursor: default;
@@ -283,13 +283,13 @@
 
 .swipeRevealApprove {
   background-color: var(--ajl-green-600);
-  color: white;
+  color: var(--color-white, #fff);
   justify-content: flex-start;
 }
 
 .swipeRevealReject {
   background-color: var(--ajl-red-600);
-  color: white;
+  color: var(--color-white, #fff);
   justify-content: flex-end;
 }
 

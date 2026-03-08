@@ -28,7 +28,7 @@
 }
 
 .panel {
-  background-color: var(--app-surface, white);
+  background-color: var(--app-surface, var(--app-surface));
   padding: 0;
   border-radius: var(--radius-lg);
   width: 100%;
@@ -64,7 +64,7 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-lg);
-  background-color: var(--app-surface-2, #f3f4f6);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   border: 1px solid var(--app-border, #e5e7eb);
   cursor: pointer;
   color: var(--app-text, #111);
@@ -106,7 +106,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-3);
-    background-color: var(--app-surface, white);
+    background-color: var(--app-surface, var(--app-surface));
   }
 }
 

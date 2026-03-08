@@ -84,6 +84,7 @@ export const FederationsList: React.FC = () => {
         const results = data.data?.results || data.results || [];
         setOrganisations(results);
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
       } finally {
         setLoading(false);
@@ -124,6 +125,7 @@ export const FederationsList: React.FC = () => {
 
       setRefreshKey(k => k + 1);
     } catch (err) {
+      console.error(err);
       console.error('Delete error:', err);
       alert('Failed to delete organisation');
     }

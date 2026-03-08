@@ -73,6 +73,7 @@ export async function executeBatch(ctx: BatchContext): Promise<void> {
         organisationId, projectId, apiBase, abortRef, setJobStatuses,
       );
     } catch (err) {
+      console.error(err);
       console.error(`Batch generation failed for ${member.name}:`, err);
       setJobStatuses((prev) => ({
         ...prev,
@@ -108,7 +109,6 @@ async function tryProcessExistingVariant(
 
   if (!existingVariant) return false;
 
-  console.log(`[Batch]: Found existing ${selectedTemplate.category} for ${member.name}: ${existingVariant.key}`);
   setJobStatuses((prev) => ({
     ...prev,
     [member.id]: { status: 'running', error: `Bestaande ${existingVariant!.key} verwerken…` },
@@ -131,6 +131,7 @@ async function tryProcessExistingVariant(
       await pollVariantProcessing(member, selectedTemplate, projectId, apiBase, abortRef, setJobStatuses, procJson.total_queued || 0);
     }
   } catch (err) {
+    console.error(err);
     console.error(`Batch processing existing variant failed for ${member.name}:`, err);
     setJobStatuses((prev) => ({
       ...prev,
@@ -273,13 +274,11 @@ async function generateForMember(
     if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
     if (routedToApproval) {
-      console.log(`[Batch]: image task ${taskId} for ${member.name} → approval queue`);
       setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'success', error: '→ Approvals wachtrij' } }));
       return;
     }
 
     // Video: poll for completion
-    console.log(`[Batch]: async video task ${taskId} for ${member.name}`);
     setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'running', error: 'Video wordt gegenereerd…' } }));
 
     const POLL_INTERVAL = 5_000;
@@ -436,6 +435,7 @@ export async function updateMembershipMetadata(
       console.error(`Failed to update metadata for ${member.name}:`, await res.text());
     }
   } catch (err) {
+    console.error(err);
     console.error(`Error updating metadata for ${member.name}:`, err);
   }
 }

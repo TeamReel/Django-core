@@ -48,7 +48,6 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         params.append('ordering', '-timestamp');
 
         const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
-        if (DEBUG_LOGS) console.log('[useTransactions] Fetching:', url);
 
         const response = await fetch(url, {
           credentials: 'include',
@@ -63,7 +62,6 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         }
 
         const rawPayload = await response.json();
-        if (DEBUG_LOGS) console.log('[useTransactions] Response:', rawPayload);
 
         // Unwrap envelope: { status: 'success', data: ... }
         const payload = rawPayload && rawPayload.status === 'success' && rawPayload.data ? rawPayload.data : rawPayload;
@@ -83,6 +81,7 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         setTransactions(results);
         setError(null);
       } catch (err) {
+        console.error(err);
         if (DEBUG_LOGS) console.error('[useTransactions] Error:', err);
         setError(err as Error);
       } finally {

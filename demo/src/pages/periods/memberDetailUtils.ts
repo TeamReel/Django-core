@@ -277,6 +277,7 @@ export async function triggerAssetProcessing(
     }
     return { ok: true };
   } catch (e) {
+    console.error(e);
     return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
   }
 }
@@ -312,6 +313,7 @@ export async function cancelAssetProcessing(
     }
     return { ok: true };
   } catch (e) {
+    console.error(e);
     return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
   }
 }

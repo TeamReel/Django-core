@@ -210,6 +210,7 @@ export function usePreferencesData(): PreferencesDataReturn {
         body: JSON.stringify({ language: preferences.language, timezone: preferences.timezone }),
       });
     } catch (err) {
+      console.error(err);
       console.error('[PreferencesPage] Failed to save preferences to backend:', err);
     }
 
@@ -286,6 +287,7 @@ export function usePreferencesData(): PreferencesDataReturn {
           .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
         if (!cancelled) setMyAuditEvents(filtered);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setMyAuditError(e instanceof Error ? e.message : 'Failed to load audit events');
       } finally {
         if (!cancelled) setMyAuditLoading(false);

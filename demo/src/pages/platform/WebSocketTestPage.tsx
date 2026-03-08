@@ -54,6 +54,7 @@ export const WebSocketTestPage: React.FC = () => {
           const data = JSON.parse(event.data);
           addLog('received', data);
         } catch (e) {
+          console.error(e);
           addLog('received', event.data);
         }
       };
@@ -71,6 +72,7 @@ export const WebSocketTestPage: React.FC = () => {
 
       socketRef.current = ws;
     } catch (e) {
+      console.error(e);
       addLog('error', `Failed to create WebSocket: ${e}`);
     }
   };

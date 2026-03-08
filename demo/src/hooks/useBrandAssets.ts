@@ -237,7 +237,8 @@ export function useBrandAssets(): UseBrandAssetsReturn {
         : allAssets;
 
       setAssets(filtered);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       if (err.name !== 'AbortError') {
         setError(err.message || 'Failed to load brand assets');
       }

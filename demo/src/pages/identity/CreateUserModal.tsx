@@ -75,6 +75,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
       onClose();
       setFormData({ email: '', first_name: '', last_name: '', password: '', password_confirm: '' });
     } catch (err) {
+      console.error(err);
       console.error('Create user error:', err);
       setError(err instanceof Error ? err.message : 'Failed to create user');
     } finally {

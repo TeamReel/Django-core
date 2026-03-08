@@ -80,7 +80,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   return (
     <div className={`${styles.card} ${isActive ? styles.cardActive : ''}`} data-expanded={expanded}>
       {/* Header row — always visible */}
-      <div className={styles.cardHeader} onClick={onToggle}>
+      <div className={styles.cardHeader} onClick={onToggle} role="button" tabIndex={0}>
         {/* Date badge */}
         {date ? (
           <div className={styles.dateBadge}>

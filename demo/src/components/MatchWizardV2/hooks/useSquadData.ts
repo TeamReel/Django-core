@@ -91,6 +91,7 @@ export function useSquadData() {
 
       setSquadGroups(groups);
     } catch (err) {
+      console.error(err);
       console.error('Failed to fetch squad:', err);
       setSquadError('Kon spelers niet laden. Controleer je verbinding.');
     } finally {
@@ -145,6 +146,7 @@ export function useSquadData() {
       });
       return true;
     } catch (err) {
+      console.error(err);
       console.error('Failed to save lineup:', err);
       return false;
     }

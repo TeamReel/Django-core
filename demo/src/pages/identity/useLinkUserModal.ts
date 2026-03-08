@@ -354,6 +354,7 @@ export function useLinkUserModal({
       onSuccess();
       onClose();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to link user');
     } finally {
       setSaving(false);
@@ -377,6 +378,7 @@ export function useLinkUserModal({
       onSuccess();
       onClose();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : `Failed to unlink ${kind}`);
     } finally {
       setSaving(false);

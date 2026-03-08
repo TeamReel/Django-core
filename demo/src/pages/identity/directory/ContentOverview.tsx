@@ -40,6 +40,7 @@ export const ContentOverview: React.FC = () => {
         const payload = data.data ?? data;
         if (!cancelled) setJobs(payload.results ?? []);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
       } finally {
         if (!cancelled) setLoading(false);

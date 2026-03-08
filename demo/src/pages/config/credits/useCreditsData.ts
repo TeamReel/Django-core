@@ -16,7 +16,6 @@ import type { CreditsBalance, UserCreditsBalance, Transaction, TabType } from '.
 import { parseTransactionEnvelope } from './creditsTypes';
 
 const debugLog = (...args: unknown[]) => {
-  if (import.meta.env.DEV) console.log(...args);
 };
 
 export function useCreditsData() {
@@ -140,6 +139,7 @@ export function useCreditsData() {
           setTransactions(creditTransactions);
         }
       } catch (err) {
+        console.error(err);
         console.error('[CreditsPage] Transactions fetch exception:', err);
         setTransactions([]);
       } finally {
@@ -172,6 +172,7 @@ export function useCreditsData() {
         window.location.href = '/login';
       }
     } catch (err) {
+      console.error(err);
       console.error('[CreditsPage] Recent transactions fetch exception:', err);
     }
   }, [scope, currentOrgId]);
@@ -234,7 +235,8 @@ export function useCreditsData() {
           const creditsData = (response.data as any).data || response.data;
           setCredits(creditsData);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         console.error('[CreditsPage] Credits fetch exception:', err);
         setError(err.message || 'Failed to load credits balance');
         setCredits(null);
@@ -285,7 +287,8 @@ export function useCreditsData() {
           const creditsData = (response.data as any).data || response.data;
           setPersonalCredits(creditsData);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         console.error('[CreditsPage] Personal credits fetch exception:', err);
         setPersonalError(err.message || 'Failed to load personal credits balance');
         setPersonalCredits(null);
@@ -329,6 +332,7 @@ export function useCreditsData() {
         const txns = parseTransactionEnvelope(response.data);
         setPersonalRecentTransactions(txns.slice(0, 5));
       } catch (err) {
+        console.error(err);
         console.error('[CreditsPage] Personal transactions fetch exception:', err);
         setPersonalRecentTransactions([]);
       }
@@ -400,7 +404,8 @@ export function useCreditsData() {
           setCredits(creditsResponse.data);
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       console.error('[CreditsPage] Exception creating transaction:', err);
       setToastMessage(`Error: ${err.message || 'Failed to create transaction'}`);
     } finally {

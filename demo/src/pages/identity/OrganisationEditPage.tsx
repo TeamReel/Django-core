@@ -76,7 +76,8 @@ export const OrganisationEditPage: React.FC = () => {
         setName(data.name);
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -123,6 +124,7 @@ export const OrganisationEditPage: React.FC = () => {
           const data = await response.json();
           errorMessage = data.detail || JSON.stringify(data);
         } catch (e) {
+          console.error(e);
           errorMessage = `Error ${response.status}: ${response.statusText}`;
         }
         throw new Error(errorMessage);
@@ -131,7 +133,8 @@ export const OrganisationEditPage: React.FC = () => {
       const updated = await response.json().catch(() => null);
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
       navigate(`/organisations/${slugOrId}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message);
     } finally {
       setSaving(false);

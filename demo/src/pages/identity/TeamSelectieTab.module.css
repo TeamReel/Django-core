@@ -101,7 +101,7 @@
 .roleChipActive {
   background: var(--color-indigo-400);
   border-color: var(--color-indigo-400);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 /* ── Letter group headers ── */

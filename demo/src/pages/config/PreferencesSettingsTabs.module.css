@@ -1,9 +1,9 @@
 /* ── Custom properties (hardcoded hex → tokens) ──────────────────── */
 
 :root {
-  --color-white: #ffffff;
+  --color-white: var(--app-surface);
   --color-gray-50: var(--color-neutral-50);
-  --color-gray-100: #f3f4f6;
+  --color-gray-100: var(--app-surface-2);
   --color-gray-200: var(--app-border);
   --color-gray-400: var(--color-neutral-400);
   --color-gray-700: #374151;

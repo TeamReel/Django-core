@@ -41,6 +41,7 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
       await onSave(formData);
       onClose();
     } catch (error) {
+      console.error(error);
       const message = error instanceof Error ? error.message : 'Failed to save changes';
       setError(message);
     } finally {

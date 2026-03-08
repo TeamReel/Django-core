@@ -43,7 +43,6 @@ export const ProfilePage: React.FC = () => {
         setError(null);
 
         const apiBaseUrl = getApiBaseUrl();
-        console.log('[ProfilePage] Fetching profile from:', `${apiBaseUrl}/api/v1/auth/me/`);
         const response = await fetch(`${apiBaseUrl}/api/v1/auth/me/`, {
           headers: {
             'Content-Type': 'application/json',
@@ -51,8 +50,6 @@ export const ProfilePage: React.FC = () => {
           },
           credentials: 'include',
         });
-
-        console.log('[ProfilePage] Response status:', response.status);
 
         if (!response.ok) {
           if (response.status === 401) {
@@ -62,17 +59,15 @@ export const ProfilePage: React.FC = () => {
         }
 
         const userData: User = await response.json();
-        console.log('[ProfilePage] Raw API response:', userData);
-        console.log('[ProfilePage] User data keys:', Object.keys(userData));
 
         // Handle B13 envelope if present
         const actualUser = (userData as any).data || userData;
-        console.log('[ProfilePage] Parsed user:', actualUser);
 
         setUser(actualUser);
         setFirstName(actualUser.first_name || '');
         setLastName(actualUser.last_name || '');
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch profile');
         console.error('Profile fetch error:', err);
       } finally {
@@ -122,6 +117,7 @@ export const ProfilePage: React.FC = () => {
 
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setSaving(false);

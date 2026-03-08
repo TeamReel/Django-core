@@ -116,7 +116,7 @@ export function StudioPreviewModal({
   };
 
   return (
-    <div className={styles.previewOverlay} onClick={onClose}>
+    <div className={styles.previewOverlay} onClick={onClose} role="button" tabIndex={0}>
       <div className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
         {/* Close button */}
         <button className={styles.previewClose} onClick={onClose} type="button">

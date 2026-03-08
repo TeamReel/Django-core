@@ -142,6 +142,7 @@ export const ProjectSeasonsPage: React.FC = () => {
         const seasonResults = allPeriods.filter((p: Period) => !p.parent_period);
         setSeasons(seasonResults);
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');
       } finally {
         setLoading(false);

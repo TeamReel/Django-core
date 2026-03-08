@@ -12,7 +12,7 @@
 }
 
 .modal {
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   padding: var(--space-6);
   border-radius: var(--radius-md);
   width: 100%;

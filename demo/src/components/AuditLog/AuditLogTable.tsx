@@ -64,7 +64,8 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         const results = Array.isArray(data) ? data : (data.results || []);
         setEvents(results);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         console.error('Error fetching audit log:', err);
         setError(err.message || 'Unknown error');
       } finally {

@@ -47,6 +47,7 @@ export default function BrandIdentityPage({
       }
       await fetchProfile();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to generate tokens');
     } finally {
       setGeneratingTokens(false);
@@ -76,6 +77,7 @@ export default function BrandIdentityPage({
       const detailRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${profileData.id}/`, { credentials: 'include' });
       setProfile(detailRes.ok ? unwrapEnvelope<BrandProfile>(await detailRes.json()) : profileData);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load brand profile');
     } finally {
       setLoading(false);

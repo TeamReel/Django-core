@@ -24,7 +24,7 @@
   width: 40px;
   height: 40px;
   background: var(--app-primary);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .closeButton {
@@ -52,7 +52,7 @@
 .tabButton[data-active="true"] {
   font-weight: var(--font-semibold);
   background-color: var(--app-primary, #3b82f6);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .spinner {

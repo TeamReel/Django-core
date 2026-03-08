@@ -44,7 +44,7 @@
   top: calc(100% + 8px);
   right: 0;
   min-width: 240px;
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);

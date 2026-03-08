@@ -177,6 +177,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
           : participationData?.results || participationData?.data?.results || [];
         setMembers(participationResults);
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load squad');
       } finally {
         setLoading(false);

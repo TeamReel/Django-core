@@ -39,6 +39,7 @@ const FilesPage: React.FC = () => {
         return JSON.parse(stored);
       }
     } catch (err) {
+      console.error(err);
       console.warn('Failed to load files from localStorage:', err);
     }
 
@@ -76,6 +77,7 @@ const FilesPage: React.FC = () => {
     try {
       localStorage.setItem('demo-files', JSON.stringify(fileList));
     } catch (err) {
+      console.error(err);
       console.warn('Failed to save files to localStorage:', err);
     }
   };
@@ -100,8 +102,9 @@ const FilesPage: React.FC = () => {
         throw new Error('API not available');
       }
     } catch (err) {
+      console.error(err);
       // Demo mode: Load files from localStorage
-      console.log('Loading demo mode files due to API unavailability');
+      console.error('Loading demo mode files due to API unavailability');
       const demoFiles = loadDemoFiles();
       setFiles(demoFiles);
       // Clear any error since we have demo data
@@ -170,11 +173,11 @@ const FilesPage: React.FC = () => {
                 return; // Exit success
             }
         } catch (e) {
+          console.error(e);
             console.warn("API upload failed, falling back to demo mode", e);
         }
 
         // Demo mode: Skip API call and simulate upload directly
-        console.log(`Demo mode upload for ${file.name}`);
 
         const demoFile: FileUploadResponse = {
           id: `demo-upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -204,6 +207,7 @@ const FilesPage: React.FC = () => {
         }, 500);
 
       } catch (err) {
+        console.error(err);
         const errorMsg = err instanceof Error ? err.message : 'Upload failed';
         setError(errorMsg);
 
@@ -245,6 +249,7 @@ const FilesPage: React.FC = () => {
 
       setSuccess(`Demo download started for ${file.original_filename} (saved as demo-${file.original_filename}.txt)`);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Download failed');
     }
   };
@@ -257,7 +262,6 @@ const FilesPage: React.FC = () => {
 
     try {
       // Demo mode: Simulate successful deletion
-      console.log(`Demo mode delete for ${file.original_filename}`);
       setFiles(prev => {
         const newFiles = prev.filter(f => f.id !== file.id);
         saveDemoFiles(newFiles);
@@ -265,6 +269,7 @@ const FilesPage: React.FC = () => {
       });
       setSuccess(`Successfully deleted ${file.original_filename} (demo mode)`);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Delete failed');
     }
   };

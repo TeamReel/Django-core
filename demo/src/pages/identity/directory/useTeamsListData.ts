@@ -210,6 +210,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
           setTeams(teamsData || []);
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load teams');
       } finally {
         setIsLoading(false);
@@ -303,6 +304,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       setTeams((prev) => prev.filter((p: any) => String(p.id) !== String(teamId)));
       if (String(selectedTeamId) === String(teamId)) setSelectedTeamId('');
     } catch (e) {
+      console.error(e);
       console.error(e);
       alert('Error deleting team');
     }

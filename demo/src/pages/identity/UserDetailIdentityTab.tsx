@@ -115,6 +115,7 @@ export function UserDetailIdentityTab({ data }: Props) {
                     setIdentitySaveSuccess(true);
                     setTimeout(() => setIdentitySaveSuccess(false), 3000);
                   } catch (e) {
+                    console.error(e);
                     setIdentitySaveError(e instanceof Error ? e.message : 'Failed to save');
                   } finally {
                     setIdentitySaving(false);

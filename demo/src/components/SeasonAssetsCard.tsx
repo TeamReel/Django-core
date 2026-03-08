@@ -105,6 +105,7 @@ export default function SeasonAssetsCard({
       setTimeout(() => setSaveSuccess(false), 3000);
       onAssetsUpdated?.();
     } catch (e) {
+      console.error(e);
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);

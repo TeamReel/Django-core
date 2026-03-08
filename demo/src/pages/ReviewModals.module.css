@@ -130,7 +130,7 @@
 .variantApproveBtn[data-selected="true"] {
   border-color: var(--rm-green-600);
   background: var(--rm-green-600);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .variantRejectBtn {
@@ -153,7 +153,7 @@
 .variantRejectBtn[data-selected="true"] {
   border-color: var(--rm-red-600);
   background: var(--rm-red-600);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 /* ─── Footer Action Buttons ──────────────────────────────────── */

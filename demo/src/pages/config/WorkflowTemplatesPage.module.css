@@ -24,7 +24,7 @@
 }
 
 .versionBadge {
-  --version-bg: #f3f4f6;
+  --version-bg: var(--app-surface-2);
   background-color: var(--version-bg);
   padding: var(--space-1) var(--space-2);
 }

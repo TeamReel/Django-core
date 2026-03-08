@@ -27,7 +27,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-3);
-  border-bottom: 1px solid var(--app-border, #333);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   background: var(--app-surface, #1e1e30);
   flex-shrink: 0;
 }
@@ -155,7 +155,7 @@
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--app-border, #333);
+  border-bottom: 1px solid var(--app-border, var(--app-text));
   background: var(--app-surface, #1e1e30);
   flex-shrink: 0;
   overflow-x: auto;

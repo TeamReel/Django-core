@@ -61,8 +61,6 @@ export function useUsageEvents() {
   const currentProject = context.project;
   const isSuperadmin = (user as any)?.is_superuser || (user as any)?.role === 'Superadmin';
 
-  console.log('[UsageEventsPage] User:', user, 'isSuperadmin:', isSuperadmin);
-
   // Breadcrumb context switcher
   const { organisationOptions } = useBreadcrumbContextSwitcher({
     organisations: organisations.map(o => ({ id: o.id, name: o.name, slug: o.slug })),
@@ -73,7 +71,6 @@ export function useUsageEvents() {
   });
 
   const handleOrganisationSwitch = async (option: BreadcrumbSwitcherOption) => {
-    console.log('[UsageEventsPage] Switching to org:', option.label, option.id);
     localStorage.setItem('django-core:currentOrgId', option.id);
     localStorage.removeItem('django-core:currentProjectId');
     localStorage.setItem('usage-events-edit-mode', 'org');
@@ -115,8 +112,6 @@ export function useUsageEvents() {
 
       if (params.toString()) url += `?${params.toString()}`;
 
-      console.log('[UsageEventsPage] Fetching events from:', url, 'mode:', editMode);
-
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
@@ -125,14 +120,8 @@ export function useUsageEvents() {
         credentials: 'include',
       });
 
-      console.log('[UsageEventsPage] Response status:', response.status);
-
       if (response.ok) {
         const result = await response.json();
-        console.log('[UsageEventsPage] Response data:', result);
-        console.log('[UsageEventsPage] result.data:', result.data);
-        console.log('[UsageEventsPage] result.data.count:', result.data?.count);
-        console.log('[UsageEventsPage] result.meta:', result.meta);
 
         // Extract from B13 envelope — handle multiple DRF pagination shapes
         let eventList: UsageEvent[] = [];
@@ -155,7 +144,6 @@ export function useUsageEvents() {
           totalCount = eventList.length;
         }
 
-        console.log('[UsageEventsPage] Extracted events:', eventList, 'Total:', totalCount);
         setEvents(eventList);
         setTotal(totalCount);
         setDemoMode(false);
@@ -198,6 +186,7 @@ export function useUsageEvents() {
         throw new Error(`API error: ${response.status}`);
       }
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to fetch usage events');
       console.error('Usage events fetch error:', err);
     } finally {
@@ -289,6 +278,7 @@ export function useUsageEvents() {
         }
       }
     } catch (err) {
+      console.error(err);
       console.error('Failed to generate test event:', err);
     } finally {
       setGenerating(false);

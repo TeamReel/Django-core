@@ -96,6 +96,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
         const c = await getActiveContext();
         if (!cancelled) setActiveContextState(c);
       } catch (e) {
+        console.error(e);
         console.error('Failed to load active context:', e);
       }
     };
@@ -168,6 +169,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
           );
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load competition');
       } finally {
         setLoading(false);

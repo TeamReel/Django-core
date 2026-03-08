@@ -49,8 +49,6 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
 
         const url = `${apiBaseUrl}/api/v1/activities/?${params.toString()}`;
         if (DEBUG_LOGS) {
-          console.log('[useActivities] Fetching from:', url);
-          console.log('[useActivities] Params:', { limit, project_id, organisation_id });
         }
 
         const response = await fetch(url, {
@@ -66,18 +64,16 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         }
 
         const jsonData = await response.json();
-        if (DEBUG_LOGS) console.log('[useActivities] Raw API response:', jsonData);
 
         // Unwrap "Envelope" response format ({ status: 'success', data: ... })
         const payload = (jsonData.status === 'success' && jsonData.data) ? jsonData.data : jsonData;
-        if (DEBUG_LOGS) console.log('[useActivities] Unwrapped payload:', payload);
 
         // Handle nested data structure: payload.data or payload.results or direct array
         const results = Array.isArray(payload) ? payload : (payload.data || payload.results || []);
-        if (DEBUG_LOGS) console.log('[useActivities] Final results:', results.length, 'activities');
         setActivities(results);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (DEBUG_LOGS) console.error('[useActivities] Error fetching activities:', err);
         setError(err.message || 'Unknown error');
       } finally {

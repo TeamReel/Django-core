@@ -35,8 +35,8 @@ export const MemberBatchActionModal: React.FC<MemberBatchActionModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className={`fixed inset-0 flex-center p-20 ${styles.overlay}`} onClick={() => d.step !== 'running' && onClose()}>
-            <div className={`w-full flex-col rounded-12 border ${styles.modal}`} onClick={(e) => e.stopPropagation()}>
+        <div className={`fixed inset-0 flex-center p-20 ${styles.overlay}`} onClick={() => d.step !== 'running' && onClose()} role="button" tabIndex={0}>
+            <div className={`w-full flex-col rounded-12 border ${styles.modal}`} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
                 {/* ── Header ── */}
                 <div className="flex-between border-bottom py-20 px-24">
                     <div className="flex-row gap-12">

@@ -50,6 +50,7 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
         // ProjectViewSet.members returns a list (Response(members_data))
         setMembers(data);
       } catch (err) {
+        console.error(err);
         console.error('Error fetching members:', err);
         setError('Failed to load project members');
       } finally {
@@ -71,7 +72,6 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
     if (!memberToRemove) return;
 
     // Simulate API call
-    console.log(`Removing member ${memberToRemove.user.name} from project ${projectId}`);
 
     // Optimistic update
     setMembers(members.filter(m => m.id !== memberToRemove.id));

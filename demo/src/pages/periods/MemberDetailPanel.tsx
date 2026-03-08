@@ -110,6 +110,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
         const json = unwrap<any>(await res.json());
         if (!cancelled) setMembership(json);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed');
       } finally {
         if (!cancelled) setLoading(false);
@@ -309,7 +310,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
       {/* Video preview overlay */}
       {videoPreviewUrl && (
-        <div className={styles.videoOverlay} onClick={() => setVideoPreviewUrl(null)}>
+        <div className={styles.videoOverlay} onClick={() => setVideoPreviewUrl(null)} role="button" tabIndex={0}>
           <video src={videoPreviewUrl} controls autoPlay className={styles.videoPlayer} onClick={(e) => e.stopPropagation()} />
         </div>
       )}

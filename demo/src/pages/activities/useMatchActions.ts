@@ -149,6 +149,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
       setLineupSaveSuccess(true);
       setTimeout(() => setLineupSaveSuccess(false), 3000);
     } catch (e) {
+      console.error(e);
       alert(e instanceof Error ? e.message : 'Failed to save lineup');
     } finally {
       setLineupSaving(false);

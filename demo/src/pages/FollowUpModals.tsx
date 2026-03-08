@@ -81,6 +81,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
         }
         succeeded++;
       } catch (e) {
+        console.error(e);
         console.error(`Failed to submit ${job.templateId}:`, e);
         setError(e instanceof Error ? e.message : 'Generatie mislukt');
       }
@@ -212,6 +213,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
       }
       setSubmitted(true);
     } catch (e) {
+      console.error(e);
       console.error('Failed to submit photo_composite_video:', e);
       setError(e instanceof Error ? e.message : 'Generatie mislukt');
       setSubmitting(false);

@@ -192,6 +192,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                     if (!cancelled) setHierarchyMembersCountByTeamId(membersCountByTeamId);
                 } catch { if (!cancelled) setHierarchyMembersCountByTeamId({}); }
             } catch (e) {
+              console.error(e);
                 if (cancelled) return;
                 setHierarchyError(e instanceof Error ? e.message : 'Failed to load hierarchy');
                 setHierarchyTeams([]); setHierarchySeasonsByTeamId({});

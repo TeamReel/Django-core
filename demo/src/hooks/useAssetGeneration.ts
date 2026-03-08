@@ -165,7 +165,6 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         workflowTemplateId: params.workflowTemplateId,
         label: params.label,
       };
-      console.log('[Log] Storing context for save:', saveContext);
 
       setContext(saveContext);
 
@@ -225,8 +224,6 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           const taskId = asyncData.task_id;
           if (!taskId) throw new Error('Backend returned 202 but no task_id');
 
-          console.log(`[Video] Generation queued. task_id=${taskId}`);
-
           // Store task_id in context so acceptVariant can auto-approve the job
           setContext(prev => prev ? { ...prev, taskId } : prev);
 
@@ -250,6 +247,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             setStep('completed');
             setProgress(100);
           } catch (pollErr) {
+            console.error(pollErr);
             if ((pollErr as Error).name === 'AbortError') return;
             setError(pollErr instanceof Error ? pollErr.message : 'Video generatie mislukt');
             setStep('error');
@@ -287,12 +285,11 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           })
         );
 
-        console.log(`Parsed ${generatedVariants.length} variants from response`);
-
         setVariants(generatedVariants);
         setStep('completed');
         setProgress(100);
       } catch (err) {
+        console.error(err);
         clearInterval(progressTimer);
         if ((err as Error).name === 'AbortError') {
           if (timedOut) {
@@ -321,18 +318,6 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
       const projId = context?.projectId;
       const assetType = context?.outputAssetType;
       const memberId = context?.membershipId;
-
-      console.log('[Save] Accepting variant:', {
-        variantIndex,
-        context,
-        orgId,
-        assetType,
-        hasImage: !!selectedVariant.image_base64,
-        hasVideo: !!selectedVariant.video_url,
-        hasPresigned: !!selectedVariant.presigned_url,
-        storagePath: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
-        error: selectedVariant.error,
-      });
 
       // Guard: variant with error should not be saved
       if (selectedVariant.error) {
@@ -398,6 +383,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
            try {
              errData = JSON.parse(errText);
            } catch (e) {
+             console.error(e);
              // ignore
            }
            console.error('Failed to save asset (json):', errData);
@@ -408,7 +394,6 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         // Parse save response to get authoritative storage_path
         const saveJson = await response.json();
         const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
-        console.log('[Save] Save response:', saveData);
 
         const result: SaveResult = {
           file_asset_id: saveData?.file_asset_id,
@@ -435,11 +420,11 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
                   brand_asset_id: result.brand_asset_id,
                 },
               });
-              console.log('[Refresh] Auto-created workflow instance for', context.workflowContentType, context.workflowObjectId);
               // Notify other components to refresh workflow data
               window.dispatchEvent(new Event('workflowChanged'));
             }
           } catch (wfErr) {
+            console.error(wfErr);
             // Non-blocking: workflow creation failure should not break the save flow
             console.warn('[Workflow] Auto-workflow creation failed (non-blocking):', wfErr);
           }
@@ -447,6 +432,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         return result;
       } catch (e) {
+        console.error(e);
         console.error('Error saving asset:', e);
         setError(e instanceof Error ? e.message : 'Opslaan mislukt');
         return null;

@@ -112,6 +112,7 @@ export function usePolling<T = unknown>(
 
       return result;
     } catch (err) {
+      console.error(err);
       const errorMsg = err instanceof Error ? err.message : 'Failed to fetch data';
       setError(errorMsg);
       onError(err instanceof Error ? err : new Error(errorMsg));

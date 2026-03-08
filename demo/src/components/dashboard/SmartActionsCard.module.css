@@ -46,7 +46,7 @@
 
 @media (hover: hover) {
   .actionItem:hover {
-  background: var(--app-surface-hover, #f3f4f6);
+  background: var(--app-surface-hover, var(--app-surface-2));
   transform: translateX(2px);
   }
 }

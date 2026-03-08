@@ -39,7 +39,7 @@
 .variantPill[data-active="true"] {
   border-color: var(--app-primary, #2563eb);
   background-color: var(--app-primary, #2563eb);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 /* ─── Arrow Buttons ──────────────────────────────────────────── */
@@ -91,7 +91,7 @@
 
 .bgButton {
   position: relative;
-  border: 1px solid var(--app-border, #333);
+  border: 1px solid var(--app-border, var(--app-text));
   border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
@@ -121,7 +121,7 @@
 }
 
 .bgOptionLabel[data-active="true"] {
-  color: white;
+  color: var(--color-white, #fff);
   background: var(--app-primary, #2563eb);
 }
 

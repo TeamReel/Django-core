@@ -47,6 +47,7 @@ export const useResolvedOrgId = (orgIdOrSlug?: string): ResolvedOrgIdState => {
         if (cancelled) return;
         setState({ orgId: resolved || k, loading: false });
       } catch (e) {
+        console.error(e);
         if (cancelled) return;
         setState({ orgId: k, loading: false, error: e instanceof Error ? e.message : 'Failed to resolve organisation' });
       }

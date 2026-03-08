@@ -45,7 +45,7 @@
 
 .submitBtn {
   background-color: var(--color-primary, #0066cc);
-  color: white;
+  color: var(--color-white, #fff);
   cursor: pointer;
 }
 

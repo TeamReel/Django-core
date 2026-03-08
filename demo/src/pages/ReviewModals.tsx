@@ -233,7 +233,8 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
         'success'
       );
       onActionComplete();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       pushToast(err?.message || `Actie "${action}" mislukt`, 'error');
     } finally {
       setReviewing(null);

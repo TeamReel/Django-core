@@ -388,6 +388,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
           setTeams(allTeams);
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load options');
       } finally {
         setIsLoading(false);

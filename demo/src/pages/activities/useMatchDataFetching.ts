@@ -141,6 +141,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
           return;
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load match');
       } finally {
         setLoading(false);
@@ -307,6 +308,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
           if (clubRes.ok) setClubProjectMembers(extractList(await clubRes.json().catch(() => null)) as ProjectMember[]);
         }
       } catch (e) {
+        console.error(e);
         setRosterError(e instanceof Error ? e.message : 'Failed to load roster');
       } finally {
         setRosterLoading(false);

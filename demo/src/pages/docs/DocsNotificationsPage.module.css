@@ -21,7 +21,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--filter-btn-border, #6c757d);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--filter-btn-color, #6c757d);
   cursor: pointer;
   font-size: var(--text-sm);
@@ -53,7 +53,7 @@
 }
 
 .notifCard[data-read="true"] {
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
 }
 
 .notifRow {
@@ -78,7 +78,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-neutral-400);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--color-neutral-400);
   cursor: pointer;
   font-size: var(--text-xs);

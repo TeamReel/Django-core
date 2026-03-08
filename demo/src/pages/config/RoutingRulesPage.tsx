@@ -115,7 +115,8 @@ export const RoutingRulesPage: React.FC = () => {
       const rawResults: any[] = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : Array.isArray(data?.data?.results) ? data.data.results : [];
 
       setRules(rawResults as RoutingRule[]);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setError(e?.message || 'Failed to load');
       setRules([]);
     } finally {
@@ -161,7 +162,8 @@ export const RoutingRulesPage: React.FC = () => {
       }
 
       await fetchRules();
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setError(e?.message || 'Failed to create');
     } finally {
       setCreating(false);
@@ -184,7 +186,8 @@ export const RoutingRulesPage: React.FC = () => {
       }
 
       setRules(prev => prev.map(r => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setError(e?.message || 'Failed to update');
     }
   }
@@ -204,7 +207,8 @@ export const RoutingRulesPage: React.FC = () => {
       }
 
       setRules(prev => prev.filter(r => r.id !== rule.id));
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setError(e?.message || 'Failed to delete');
     }
   }

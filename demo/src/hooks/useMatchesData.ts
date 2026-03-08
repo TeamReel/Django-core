@@ -414,6 +414,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
           setMatches(guarded);
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load matches');
       } finally {
         if (seq === loadMatchesSeqRef.current) setMatchesLoading(false);

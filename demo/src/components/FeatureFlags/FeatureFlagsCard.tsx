@@ -71,6 +71,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
         setFlags(Array.isArray(scopeArray) ? scopeArray : []);
       }
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load flags');
     } finally {
       setLoading(false);
@@ -95,6 +96,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       }
       await fetchData();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to update flag');
     } finally {
       setUpdating(null);

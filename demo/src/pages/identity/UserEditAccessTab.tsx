@@ -101,6 +101,7 @@ export function UserEditAccessTab({
                       <option value="admin">admin</option>
                     </select>
                     <button type="button" disabled={addingToOrg || saving} onClick={async () => { try { await linkToOrganisation(); } catch (e) { setExtraError(e instanceof Error ? e.message : 'Failed to add to federation'); } }} className={`btn-modal btn-modal-primary ${styles.addFedButton}`} data-busy={addingToOrg || saving}>
+                      console.error(e);
                       {addingToOrg ? 'Adding…' : 'Add to federation'}
                     </button>
                   </div>

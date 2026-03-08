@@ -79,6 +79,7 @@ export function MemberIdentityTab({
       setSuccess('Identity updated successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);
@@ -122,6 +123,7 @@ export function MemberIdentityTab({
       setSuccess('Profile photo updated! Refresh to see changes.');
       setTimeout(() => setSuccess(null), 5000);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to set profile photo');
     } finally {
       setSettingAsProfilePhoto(false);

@@ -70,6 +70,7 @@ export const PermissionsPage: React.FC = () => {
           setEffectivePermissionKeys(Array.from(new Set(keys.map(k => String(k).trim()).filter(Boolean))).sort());
         }
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch permissions');
       } finally {
         setLoading(false);

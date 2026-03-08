@@ -231,6 +231,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
         const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p: any) => [String(p.id), p])).values()];
         setSeasons(unique as any);
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');
       } finally {
         setSeasonsLoading(false);
@@ -321,6 +322,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
       }
       setSeasons((prev) => prev.filter((s) => s.id !== seasonId));
     } catch (err) {
+      console.error(err);
       console.error('Delete error:', err);
       alert('Failed to delete season');
     }

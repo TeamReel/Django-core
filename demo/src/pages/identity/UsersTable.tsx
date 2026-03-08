@@ -293,6 +293,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       }
     } catch (e) {
       console.error(e);
+      console.error(e);
       alert('Error deleting user');
     }
   };
@@ -310,6 +311,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       if (res.ok) fetchUsers();
       else alert('Failed to remove member');
     } catch (e) {
+      console.error(e);
       console.error(e);
       alert('Error removing member');
     }

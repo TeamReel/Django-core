@@ -92,20 +92,17 @@ export function useSearch() {
          endpoint = '/search/';
       }
 
-      console.log(`[useSearch] Searching global: "${query}" at ${baseUrl}${endpoint}`);
-
       const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
         signal: abortControllerRef.current.signal,
       });
-
-      console.log('[useSearch] Response:', response);
 
       // Handle envelope format { status: 'success', data: { ... } }
       if (response.data && response.data.data) {
           return response.data.data;
       }
       return response.data ?? null;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       console.error('[useSearch] Error:', err);
       if (err.name === 'AbortError') {
         return null;
@@ -155,7 +152,8 @@ export function useSearch() {
             return response.data.data;
         }
         return response.data ?? null;
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (err.name === 'AbortError') {
           return null;
         }
@@ -192,20 +190,18 @@ export function useSearch() {
       }
 
       const params = new URLSearchParams({ q: query, hierarchy: 'true' });
-      console.log(`[useSearch] Searching hierarchical: "${query}" at ${baseUrl}${endpoint}`);
 
       const response = await api.get<any>(`${endpoint}?${params.toString()}`, {
         signal: abortControllerRef.current.signal,
       });
-
-      console.log('[useSearch] Hierarchy Response:', response);
 
       // Handle envelope format { status: 'success', data: { ... } }
       if (response.data && response.data.data) {
         return response.data.data;
       }
       return response.data ?? null;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       console.error('[useSearch] Hierarchy Error:', err);
       if (err.name === 'AbortError') {
         return null;

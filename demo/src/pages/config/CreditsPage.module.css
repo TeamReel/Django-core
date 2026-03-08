@@ -40,7 +40,7 @@
 .tabButtonActive {
   composes: tabButton;
   background: var(--primary-bg, #1976d2);
-  color: white;
+  color: var(--color-white, #fff);
   border-bottom-color: var(--primary-bg, #1976d2);
   font-weight: var(--font-bold);
 }
@@ -51,7 +51,7 @@
   bottom: 24px;
   right: 24px;
   background-color: var(--color-neutral-900);
-  color: white;
+  color: var(--color-white, #fff);
   padding: var(--space-4) var(--space-6);
   border-radius: var(--radius-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);

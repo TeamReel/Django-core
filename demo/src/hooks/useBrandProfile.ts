@@ -125,6 +125,7 @@ export function useBrandProfile({
       setProfile(detail);
       setAssets(detail.assets || []);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Unknown error');
       console.error('[useBrandProfile] Error:', err);
     } finally {
@@ -187,12 +188,12 @@ export function useBrandProfile({
             const createJson = await createRes.json();
             activeProfile = createJson?.data || createJson;
             setProfile(activeProfile);
-            console.log('[useBrandProfile] Auto-created BrandProfile:', activeProfile?.id);
           } else {
             console.error('[useBrandProfile] Failed to auto-create profile:', createRes.status);
             return null;
           }
         } catch (err) {
+          console.error(err);
           console.error('[useBrandProfile] Auto-create profile error:', err);
           return null;
         }
@@ -278,6 +279,7 @@ export function useBrandProfile({
         await fetchProfile();
         return brandAsset;
       } catch (err) {
+        console.error(err);
         console.error('[useBrandProfile] Upload error:', err);
         setError(err instanceof Error ? err.message : 'Upload failed');
         return null;
@@ -305,6 +307,7 @@ export function useBrandProfile({
         await fetchProfile();
         return true;
       } catch (err) {
+        console.error(err);
         console.error('[useBrandProfile] DeleteById error:', err);
         setError(err instanceof Error ? err.message : 'Delete failed');
         return false;
@@ -335,6 +338,7 @@ export function useBrandProfile({
         await fetchProfile();
         return true;
       } catch (err) {
+        console.error(err);
         console.error('[useBrandProfile] Delete error:', err);
         setError(err instanceof Error ? err.message : 'Delete failed');
         return false;
@@ -358,6 +362,7 @@ export function useBrandProfile({
          const json = await res.json();
          return json.history || [];
       } catch (e) {
+        console.error(e);
          console.error(e);
          return [];
       }
@@ -386,6 +391,7 @@ export function useBrandProfile({
          await fetchProfile(); // Reload
          return true;
        } catch (e) {
+         console.error(e);
           console.error(e);
           return false;
        }

@@ -148,6 +148,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
       setHasEditedContext(false);
       window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
     } catch (e) {
+      console.error(e);
       setActiveContextError(e instanceof Error ? e.message : 'Failed to save active context');
     } finally {
       setSavingContext(false);
@@ -173,6 +174,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const data = await fetchActiveContext();
         if (!cancelled) setActiveContext(data);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setActiveContextError(e instanceof Error ? e.message : 'Failed to load active context');
       } finally {
         if (!cancelled) setActiveContextLoading(false);
@@ -212,6 +214,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const results = json.data?.results || json.results || json.data || json;
         if (!cancelled) setOrganisations(Array.isArray(results) ? results : []);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setActiveContextError(`Failed to load federations: ${e instanceof Error ? e.message : 'Unknown error'}`);
       } finally {
         if (!cancelled) setLoadingOrgs(false);

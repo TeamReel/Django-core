@@ -17,6 +17,7 @@ export function CopyableValue({ value, label }: { value: string; label?: string 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
+      console.error(err);
       console.error('Failed to copy:', err);
     }
   };

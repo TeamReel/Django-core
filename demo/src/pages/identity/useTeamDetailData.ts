@@ -61,6 +61,7 @@ export function useTeamDetailData() {
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
       } catch (e) {
+        console.error(e);
         console.error('Failed to load active context:', e);
       }
     };
@@ -124,6 +125,7 @@ export function useTeamDetailData() {
         setClub(loadedClub);
         setTeam(loadedTeam);
       } catch (e) {
+        console.error(e);
         if (cancelled) return;
         setError(e instanceof Error ? e.message : 'Failed to load team');
         setOrg(null);

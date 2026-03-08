@@ -319,6 +319,7 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
       setProgress(100);
       return 'success';
     } catch (err) {
+      console.error(err);
       clearInterval(progressInterval);
       if ((err as any)?.name === 'AbortError') return 'abort';
       console.error('[!] Generation failed:', err);
@@ -377,6 +378,7 @@ export function MatchWizardInner({ isOpen, initialMatchId }: { isOpen: boolean; 
         window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       }
     } catch (err) {
+      console.error(err);
       console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
       setSaveError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally {

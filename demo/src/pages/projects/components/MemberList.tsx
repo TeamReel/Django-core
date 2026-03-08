@@ -69,6 +69,7 @@ export const MemberList: React.FC<MemberListProps> = ({
            }
         }
       } catch (e) {
+        console.error(e);
         console.error("Failed to fetch seasons", e);
       }
     };
@@ -106,6 +107,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                  setMembers(data.results || []);
              }
           } catch (e) {
+            console.error(e);
               console.error("Failed to fetch members", e);
           } finally {
               setIsLoading(false);

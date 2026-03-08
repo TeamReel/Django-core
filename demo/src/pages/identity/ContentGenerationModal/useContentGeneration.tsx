@@ -329,6 +329,7 @@ export function useContentGeneration({
       setProgress(100);
       setTimeout(() => setStep('success'), 300);
     } catch (err) {
+      console.error(err);
       clearInterval(progressInterval);
       if ((err as any)?.name === 'AbortError') return;
       console.error('[!] Generation failed:', err);
@@ -390,6 +391,7 @@ export function useContentGeneration({
         }, 1200);
       }
     } catch (err) {
+      console.error(err);
       console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
       setGenerationError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally {

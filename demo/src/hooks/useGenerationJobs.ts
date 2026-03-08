@@ -126,6 +126,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
       });
       setError(null);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to load jobs');
     } finally {
       setLoading(false);

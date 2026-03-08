@@ -31,7 +31,6 @@ export const NotificationRoutingLogsPage: React.FC = () => {
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
   const debugLog = (...args: unknown[]) => {
-    if (import.meta.env.DEV) console.log(...args);
   };
   const [logs, setLogs] = useState<RoutingLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,6 +174,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           throw new Error(`API error: ${response.status}`);
         }
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch routing logs');
         console.error('Routing logs fetch error:', err);
       } finally {

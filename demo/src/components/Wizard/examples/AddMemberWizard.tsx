@@ -247,11 +247,11 @@ export function AddMemberWizard({
       };
 
       // TODO: API call to create member
-      console.log('[AddMemberWizard] Creating member:', member, 'in project:', projectId);
 
       onMemberAdded?.(member);
       onClose();
     } catch (err) {
+      console.error(err);
       console.error('Failed to add member:', err);
     } finally {
       setSubmitting(false);
@@ -309,11 +309,11 @@ function ConfirmStepWrapper({
       };
 
       // TODO: API call to create member
-      console.log('[AddMemberWizard] Creating member:', member, 'in project:', projectId);
 
       onMemberAdded?.(member);
       close();
     } catch (err) {
+      console.error(err);
       console.error('Failed to add member:', err);
     } finally {
       setSubmitting(false);

@@ -77,6 +77,6 @@
 
 .actionLink {
   background-color: var(--app-primary);
-  color: var(--action-link-text, #fff);
+  color: var(--action-link-text, var(--app-surface));
   text-decoration: none;
 }

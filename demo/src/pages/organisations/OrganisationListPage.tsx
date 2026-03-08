@@ -28,7 +28,6 @@ export default function OrganisationListPage() {
         return res.json();
       })
       .then(data => {
-        console.log('Organisations API response:', data);
         // Handle various API response formats:
         // 1. Array directly: [...]
         // 2. B13 envelope: { data: [...] }

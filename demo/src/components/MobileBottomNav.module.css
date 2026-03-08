@@ -92,10 +92,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-white, #fff);
   cursor: pointer;
   background-color: var(--app-primary, #3B8EA5);
-  border: 3px solid var(--app-surface, #fff);
+  border: 3px solid var(--app-surface, var(--app-surface));
   box-shadow: var(--shadow-sm);
   transition: transform var(--duration-fast) var(--ease-default);
 }

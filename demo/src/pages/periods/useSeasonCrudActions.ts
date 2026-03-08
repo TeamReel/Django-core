@@ -118,6 +118,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
       }
     } catch (e) {
       console.error(e);
+      console.error(e);
       alert('Error deleting season');
     }
   }, [apiBaseUrl, resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
@@ -132,6 +133,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
       const updated = await getActiveContext();
       setActiveContextState(updated);
     } catch (e) {
+      console.error(e);
       console.error('Failed to activate context:', e);
     } finally {
       setActivatingContext(false);
@@ -191,6 +193,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
 
       setMembersReloadToken((x) => x + 1);
     } catch (err) {
+      console.error(err);
       console.error('Add member error:', err);
     }
   }, [apiBaseUrl, resolvedSeasonId]);

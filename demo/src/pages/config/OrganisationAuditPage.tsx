@@ -65,6 +65,7 @@ export const OrganisationAuditPage: React.FC = () => {
 
         if (!cancelled) setEvents(next);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load organisation audit');
       } finally {
         if (!cancelled) setLoading(false);

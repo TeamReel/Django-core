@@ -47,14 +47,14 @@
 .editBtn {
   composes: actionBtn;
   border: 1px solid var(--app-warning);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--app-warning);
 }
 
 .deleteBtn {
   composes: actionBtn;
   border: 1px solid var(--delete-border, #bd2130);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--app-error);
 }
 

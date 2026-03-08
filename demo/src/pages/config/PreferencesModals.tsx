@@ -165,6 +165,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   }
                   setIsProfileModalOpen(false);
                 } catch (e) {
+                  console.error(e);
                   setProfileError(e instanceof Error ? e.message : 'Failed to update profile');
                 } finally {
                   setProfileSaving(false);
@@ -291,6 +292,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setPasswordNext('');
                   setPasswordConfirm('');
                 } catch (e) {
+                  console.error(e);
                   setPasswordError(e instanceof Error ? e.message : 'Failed to change password');
                 } finally {
                   setPasswordSaving(false);
@@ -400,6 +402,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setIsAvatarModalOpen(false);
                   setAvatarFile(null);
                 } catch (e) {
+                  console.error(e);
                   setAvatarError(e instanceof Error ? e.message : 'Failed to upload avatar');
                 } finally {
                   setAvatarSaving(false);

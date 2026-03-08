@@ -33,7 +33,7 @@
 }
 
 .detailsInner {
-  background-color: white;
+  background-color: var(--color-white, #fff);
   font-family: var(--font-mono);
 }
 

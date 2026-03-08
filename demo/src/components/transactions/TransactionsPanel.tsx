@@ -83,7 +83,8 @@ export default function TransactionsPanel(props: {
       const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
       const results = await fetchAllPages<Transaction>(url, { credentials: 'include' }, { ttlMs: 15_000, maxPages: 5 });
       setItems(Array.isArray(results) ? results : []);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setItems([]);
       setError(e?.message || 'Failed to load transactions');
     } finally {

@@ -79,7 +79,6 @@ export interface TransitionHistoryEntry {
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const apiBaseUrl = getApiBaseUrl();
   const url = `${apiBaseUrl}${path}`;
-  if (DEBUG_LOGS) console.log('[useWorkflows] Fetching:', url);
 
   const response = await fetch(url, {
     credentials: 'include',
@@ -125,7 +124,8 @@ export function useWorkflowTemplates() {
         const data = await apiFetch<any>('/api/v1/workflows/templates/?is_active=true');
         setTemplates(unwrapResults<WorkflowTemplate>(data));
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (DEBUG_LOGS) console.error('[useWorkflowTemplates] Error:', err);
         setError(err.message || 'Failed to load workflow templates');
       } finally {
@@ -185,7 +185,8 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}) 
 
         setInstances(results);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (DEBUG_LOGS) console.error('[useWorkflowInstances] Error:', err);
         setError(err.message || 'Failed to load workflow instances');
       } finally {
@@ -217,7 +218,8 @@ export function useWorkflowInstance(instanceId: number | string | null) {
         const data = await apiFetch<WorkflowInstance>(`/api/v1/workflows/instances/${instanceId}/`);
         setInstance(data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (DEBUG_LOGS) console.error('[useWorkflowInstance] Error:', err);
         setError(err.message || 'Failed to load workflow instance');
       } finally {
@@ -246,7 +248,8 @@ export function useTransitionHistory(instanceId: number | string | null) {
         const data = await apiFetch<any>(`/api/v1/workflows/history/?instance=${instanceId}&ordering=-created_at`);
         setHistory(unwrapResults<TransitionHistoryEntry>(data));
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (DEBUG_LOGS) console.error('[useTransitionHistory] Error:', err);
         setError(err.message || 'Failed to load transition history');
       } finally {

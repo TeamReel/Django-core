@@ -237,7 +237,8 @@ export function useMemberBatchAction({
                     }
                     success++;
                 }
-            } catch (err: any) {
+            } catch (err: unknown) {
+              console.error(err);
                 failed++;
                 newErrors.push(`${name}: ${err?.message || 'Onbekende fout'}`);
             }

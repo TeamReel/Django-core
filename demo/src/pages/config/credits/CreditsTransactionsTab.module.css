@@ -22,7 +22,7 @@
 .filterSelect {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-color, #d1d5db);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--text-primary);
 }
 

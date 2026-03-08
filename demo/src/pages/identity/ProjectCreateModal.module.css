@@ -1,5 +1,5 @@
 .container {
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   width: 520px;
   max-width: 92%;
   color: var(--app-text);

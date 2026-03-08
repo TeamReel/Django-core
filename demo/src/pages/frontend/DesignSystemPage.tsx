@@ -129,7 +129,6 @@ export function DesignSystemPage() {
                   placeholder="Focus me for glow effect!"
                   className="glow-input"
                   onFocus={() => {
-                    console.log('Input focused!');
                     // Visual feedback could be added here
                   }}
                 />

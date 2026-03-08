@@ -4,7 +4,7 @@
   justify-content: space-between;
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--app-text);
 }
 
@@ -61,7 +61,7 @@
   top: 100%;
   right: 0;
   margin-top: var(--space-1);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
@@ -116,7 +116,7 @@
   top: 4px;
   right: 4px;
   background-color: var(--app-error);
-  color: white;
+  color: var(--color-white, #fff);
   border-radius: var(--radius-lg);
   padding: var(--space-1) var(--space-2);
   font-size: var(--text-xs);
@@ -132,7 +132,7 @@
 .signOutButton {
   padding: var(--space-2) var(--space-4);
   background-color: var(--app-error);
-  color: white;
+  color: var(--color-white, #fff);
   border: none;
   border-radius: var(--radius-sm);
   font-size: var(--text-sm);

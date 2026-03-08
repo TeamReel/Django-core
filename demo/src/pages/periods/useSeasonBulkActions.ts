@@ -115,6 +115,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       setMembersReloadToken((x) => x + 1);
       setTeamRosterReloadToken((x) => x + 1);
     } catch (e) {
+      console.error(e);
       alert(e instanceof Error ? e.message : 'Failed to assign users');
     } finally {
       setBulkSubmitting(false);
@@ -181,6 +182,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       setMembersReloadToken((x) => x + 1);
       setTeamRosterReloadToken((x) => x + 1);
     } catch (e) {
+      console.error(e);
       alert(e instanceof Error ? e.message : 'Failed to unassign users');
     } finally {
       setBulkSubmitting(false);

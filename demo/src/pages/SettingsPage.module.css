@@ -1,8 +1,8 @@
 /* Custom properties scoped to settings page */
 .settingsContainer {
   --settings-saving-color: #6c757d;
-  --settings-btn-bg: white;
-  --settings-btn-text: #333;
+  --settings-btn-bg: var(--app-surface);
+  --settings-btn-text: var(--app-text);
   --settings-danger-badge-bg: #dc354520;
   --settings-success-badge-bg: #28a74520;
 

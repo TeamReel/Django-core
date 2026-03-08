@@ -14,13 +14,13 @@
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  background-color: var(--app-surface-2, #f3f4f6);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-primary, #3B8EA5);
 }
 
 .optionIcon[data-selected="true"] {
   background-color: var(--app-primary, #3B8EA5);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--app-surface));
 }
 
 /* ── Option description text ── */
@@ -36,7 +36,7 @@
   height: 20px;
   background: var(--color-green-400);
   font-size: var(--text-xs);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--app-surface));
 }
 
 /* ── Check badge — small (4px inset, 18px) ── */
@@ -47,7 +47,7 @@
   height: 20px;
   background: var(--color-green-400);
   font-size: var(--text-xs);
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--app-surface));
 }
 
 /* ── Check badge — tiny (3px inset, 16px) ── */
@@ -58,7 +58,7 @@
   height: 16px;
   background: var(--color-green-400);
   font-size: 9px;
-  color: var(--color-white, #fff);
+  color: var(--color-white, var(--app-surface));
 }
 
 /* ── Animation style buttons ── */
@@ -69,7 +69,7 @@
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
-  background: var(--app-surface, white);
+  background: var(--app-surface, var(--app-surface));
 }
 
 .animationButton[data-selected="true"] {
@@ -83,7 +83,7 @@
   padding: var(--space-3) var(--space-2);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
-  background: var(--app-surface, white);
+  background: var(--app-surface, var(--app-surface));
 }
 
 .introButton[data-selected="true"] {
@@ -104,7 +104,7 @@
 /* ── Background option buttons ── */
 .bgButton {
   border: 1px solid var(--app-border, #e5e7eb);
-  background: var(--app-surface, white);
+  background: var(--app-surface, var(--app-surface));
 }
 
 .bgButton[data-selected="true"] {

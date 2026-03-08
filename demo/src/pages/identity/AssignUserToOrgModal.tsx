@@ -73,6 +73,7 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
       onSuccess();
       onClose();
     } catch (err) {
+      console.error(err);
       console.error('Assign user error:', err);
       setError(err instanceof Error ? err.message : 'Failed to assign user');
     } finally {

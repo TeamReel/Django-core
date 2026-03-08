@@ -102,7 +102,8 @@ export const useMediaLibrary = () => {
             setItems(data.results);
             setPagination({ next: data.next || null, previous: data.previous || null });
 
-        } catch (err: any) {
+        } catch (err: unknown) {
+          console.error(err);
             setError(err.message || 'Unknown error');
         } finally {
             setLoading(false);

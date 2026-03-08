@@ -169,6 +169,7 @@ export async function apiFetchWithRetry(
 
       return res;
     } catch (err) {
+      console.error(err);
       lastError = err;
 
       // Network failure (no response) — safe to retry any method

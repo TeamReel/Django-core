@@ -275,6 +275,7 @@ export function useTeamTabData({
         setHierarchyMatchesCountByCompetitionId(matchesCountByCompetitionId);
         setHierarchyMatchesCountBySeasonId(matchesCountBySeasonId);
       } catch (e) {
+        console.error(e);
         if (cancelled) return;
         setHierarchyError(e instanceof Error ? e.message : 'Failed to load hierarchy');
         setHierarchySeasons([]);
@@ -357,6 +358,7 @@ export function useTeamTabData({
         setOverviewMembers(sorted.slice(0, 6));
         setOverviewMembersCount(extractMembersCount(json, normalized));
       } catch (e) {
+        console.error(e);
         if (cancelled) return;
         setOverviewMembers([]);
         setOverviewMembersCount(null);

@@ -100,6 +100,7 @@ export function ProjectMembershipEditModal({
                   await onSave({ role });
                   onClose();
                 } catch (e) {
+                  console.error(e);
                   setError(e instanceof Error ? e.message : 'Failed to save');
                 } finally {
                   setSaving(false);

@@ -35,6 +35,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
       onClose();
     } catch (error) {
       console.error(error);
+      console.error(error);
     } finally {
       setSaving(false);
     }

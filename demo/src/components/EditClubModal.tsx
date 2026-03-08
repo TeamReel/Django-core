@@ -94,6 +94,7 @@ export default function EditClubModal({
       setLogoUrl(s3Url);
       setPreviewUrl(s3Url);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploading(false);
@@ -146,6 +147,7 @@ export default function EditClubModal({
       onSave?.({ ...club, ...updated });
       onClose();
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSaving(false);

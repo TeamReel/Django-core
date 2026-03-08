@@ -5,7 +5,6 @@ import { getCsrfToken as _getCsrfTokenShared } from './csrf';
 const API_BASE = '/api/v1/settings/feature-flags';
 
 const debugLog = (...args: unknown[]) => {
-  if (import.meta.env.DEV) console.log(...args);
 };
 
 export interface ApiFeatureFlag extends FeatureFlag {
@@ -186,6 +185,7 @@ export async function updateOrgOverride(overrideId: string, enabled: boolean): P
 
     debugLog('[featureFlagsApi] updateOrgOverride completed successfully');
   } catch (error) {
+    console.error(error);
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Request timeout - server not responding');
@@ -290,6 +290,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
       debugLog('[seedDefaultFlags] Fetched templates:', allTemplates.length);
       return allTemplates;
     } catch (err) {
+      console.error(err);
       console.warn('Failed to fetch templates for seeding flags', err);
       return [];
     }
@@ -337,6 +338,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
         failed += 1;
       }
     } catch (e) {
+      console.error(e);
       failed += 1;
       console.warn(`Failed to seed flag ${flag.key} (might already exist)`);
     }
@@ -400,6 +402,7 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
       }
       return allTemplates;
     } catch (err) {
+      console.error(err);
       console.warn('Failed to fetch templates', err);
       return [];
     }

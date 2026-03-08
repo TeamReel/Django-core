@@ -26,7 +26,6 @@ import {
 // ── Helpers ──
 
 const debugLog = (...args: unknown[]) => {
-  if (import.meta.env.DEV) console.log(...args);
 };
 
 const isThemeFlagKey = (key: string): boolean => {
@@ -72,13 +71,6 @@ export function useFeatureFlagsData() {
   useEffect(() => {
     if (context.isLoading) return;
 
-    console.log('[FeatureFlagsPage] Redirect check:', {
-      isSuperadmin,
-      currentOrgId,
-      userRole: (user as any)?.role,
-      isSuper: (user as any)?.is_superuser
-    });
-
     if (isSuperadmin) {
       setInitialLoadDone(true);
       setLoading(false);
@@ -87,7 +79,6 @@ export function useFeatureFlagsData() {
 
     if (currentOrgId) {
       const orgSlug = organisations.find(o => String(o.id) === currentOrgId)?.slug || currentOrgId;
-      console.log('[FeatureFlagsPage] Redirecting non-superadmin to org settings:', orgSlug);
       navigate(`/organisations/${orgSlug}?tab=settings`);
     } else {
       setApiError('Feature flags management requires superadmin access. Please contact your administrator.');
@@ -132,7 +123,8 @@ export function useFeatureFlagsData() {
             }));
             setFlags(normalizedAfterSeed);
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
+          console.error(err);
           console.warn('API failed:', err);
 
           if (err.message && (err.message.includes('401') || err.message.includes('403'))) {
@@ -210,6 +202,7 @@ export function useFeatureFlagsData() {
         window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
         debugLog('[FeatureFlagsPage] Successfully updated flag and reloaded data');
       } catch (err) {
+        console.error(err);
         console.error('Failed to toggle flag via API:', err);
         alert('Failed to update flag. See console for details.');
       } finally {
@@ -309,6 +302,7 @@ export function useFeatureFlagsData() {
       setFlags(normalized);
       setSelectedIds(new Set());
     } catch (err) {
+      console.error(err);
       console.error('Bulk update failed:', err);
       alert('Bulk update failed. Check console for details.');
     } finally {
@@ -333,6 +327,7 @@ export function useFeatureFlagsData() {
       }));
       setFlags(normalized);
     } catch (err) {
+      console.error(err);
       console.error('Sync failed:', err);
       setSeedMessage('Sync failed. Check console for details.');
     } finally {

@@ -41,7 +41,8 @@ export function WorkflowActionButtons({
       setCommentAction(null);
       setComment('');
       onTransitionComplete?.(entry);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       onError?.(err.message || `Failed to execute "${action}"`);
     } finally {
       setExecuting(null);

@@ -85,6 +85,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
           setNotificationPolicy(null);
         }
       } catch (err) {
+        console.error(err);
         console.error('Error fetching policies', err);
         setBalancePolicy(null);
         setNotificationPolicy(null);
@@ -147,7 +148,8 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
       setBalancePolicy(updated);
       setIsEditingBalance(false);
       setBalanceSaveSuccess('Saved');
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setBalanceSaveError(e?.message || 'Failed to save');
     } finally {
       setBalanceSaving(false);

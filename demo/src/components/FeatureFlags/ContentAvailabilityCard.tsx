@@ -55,6 +55,7 @@ export default function ContentAvailabilityCard({
     try {
       await fetchAvailabilityFlags();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load content availability');
     } finally {
       setLoading(false);
@@ -231,6 +232,7 @@ export default function ContentAvailabilityCard({
       await fetchAvailabilityFlags();
       setSelectedIds(new Set());
     } catch (err) {
+      console.error(err);
       console.error('Bulk update failed:', err);
       alert('Bulk update failed. Check console for details.');
     } finally {
@@ -256,6 +258,7 @@ export default function ContentAvailabilityCard({
       }
       await fetchAvailabilityFlags();
     } catch (err) {
+      console.error(err);
       console.error('Failed to update availability flag:', err);
       alert('Failed to update availability. Check console for details.');
     } finally {
@@ -270,6 +273,7 @@ export default function ContentAvailabilityCard({
       await deleteOrgOverride(row.overrideId);
       await fetchAvailabilityFlags();
     } catch (err) {
+      console.error(err);
       console.error('Failed to reset availability flag:', err);
       alert('Failed to reset availability. Check console for details.');
     } finally {

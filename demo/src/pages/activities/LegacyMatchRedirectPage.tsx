@@ -250,6 +250,7 @@ export default function LegacyMatchRedirectPage() {
         navigate(target, { replace: true, state: location.state });
         setStatus('redirected');
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to redirect');
         setStatus('fallback');
       }

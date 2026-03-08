@@ -176,6 +176,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
         const unique = [...new Map([...typedAll, ...untypedAll].map((p: any) => [String(p.id), p])).values()];
         setSeasons(unique);
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');
         setSeasons([]);
       }
@@ -342,6 +343,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
         );
         setCompetitions(Array.isArray(results) ? results : []);
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load competitions');
       } finally {
         setCompetitionsLoading(false);
@@ -436,6 +438,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
       }
       setCompetitions((prev) => prev.filter((c) => c.id !== compId));
     } catch (err) {
+      console.error(err);
       console.error('Delete error:', err);
       alert('Failed to delete competition');
     }

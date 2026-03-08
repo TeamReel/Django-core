@@ -15,7 +15,7 @@
 
 .roleCard {
   border: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   padding: var(--space-4);
   box-shadow: none;
 }

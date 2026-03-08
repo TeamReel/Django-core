@@ -191,6 +191,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
           : matchesData?.results || matchesData?.data?.results || [];
         setMatches(matchResults);
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load matches');
       } finally {
         setLoading(false);

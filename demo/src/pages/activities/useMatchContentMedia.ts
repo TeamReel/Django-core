@@ -53,6 +53,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
         setMatchMedia(Array.isArray(items) ? items : []);
       }
     } catch (err) {
+      console.error(err);
       console.error('[Media] Error fetching match media:', err);
     } finally {
       setMatchMediaLoading(false);
@@ -107,6 +108,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
         setContentItems(Array.isArray(items) ? items : []);
       }
     } catch (err) {
+      console.error(err);
       console.error('[Content] Error fetching content items:', err);
     } finally {
       setContentItemsLoading(false);
@@ -155,6 +157,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       flags.forEach((flag) => { map[normalizeFlagKey(flag.key)] = Boolean(flag.enabled); });
       setTemplateFlagMap(map);
     } catch (err) {
+      console.error(err);
       console.error('[Content] Failed to fetch template availability flags:', err);
     } finally {
       setTemplateFlagsLoading(false);
@@ -211,6 +214,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       });
       setAvailableTemplates(grouped);
     } catch (err) {
+      console.error(err);
       console.error('[Content] Error fetching templates:', err);
     } finally {
       setTemplatesLoading(false);

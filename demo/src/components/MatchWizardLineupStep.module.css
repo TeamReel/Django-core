@@ -8,7 +8,7 @@
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -70,7 +70,7 @@
 
 .playerButton[data-selected="true"] {
   background-color: var(--app-primary);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .playerButton[data-used="true"] {
@@ -111,7 +111,7 @@
 
 .positionBadge[data-filled="true"] {
   background-color: var(--color-success);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 /* Chevron icon */
@@ -145,7 +145,7 @@
   min-height: 44px;
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--app-primary);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
@@ -194,7 +194,7 @@
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-primary);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
 }
 
 .guestInput {
@@ -223,7 +223,7 @@
   border-radius: var(--radius-md);
   border: none;
   background-color: var(--app-primary);
-  color: white;
+  color: var(--color-white, #fff);
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
   min-height: 40px;

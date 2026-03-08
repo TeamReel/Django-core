@@ -92,6 +92,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       setInviteEmail('');
       alert('Member added successfully');
     } catch (err) {
+      console.error(err);
       console.error('Invite error:', err);
       alert(err instanceof Error ? err.message : 'Failed to invite member');
     } finally {
@@ -113,6 +114,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       if (!response.ok) throw new Error(`Failed to delete organisation (${response.status})`);
       navigate('/federations');
     } catch (err) {
+      console.error(err);
       console.error('Delete error:', err);
       alert('Failed to delete organisation');
     } finally {
@@ -151,6 +153,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       setOrg(updatedOrg);
       setIsEditMode(false);
     } catch (err) {
+      console.error(err);
       console.error('Update error:', err);
       alert('Failed to update organisation');
     } finally {

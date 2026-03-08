@@ -166,11 +166,11 @@ export function useOrgData(): OrgDataReturn {
         if (!orgResponse.ok) throw new Error(`Failed to fetch organisation (${orgResponse.status})`);
         const rawOrgData = await orgResponse.json();
         const orgData = rawOrgData.data || rawOrgData;
-        if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Org data loaded', orgData);
         s.setOrg(orgData);
         const organisationIdForCounts = String(orgData.id || s.currentOrgId || '');
         if (organisationIdForCounts) fetching.fetchFederationCounts(organisationIdForCounts);
       } catch (err) {
+        console.error(err);
         s.setError(err instanceof Error ? err.message : 'Failed to fetch organisation details');
         console.error('Org detail fetch error:', err);
       } finally {

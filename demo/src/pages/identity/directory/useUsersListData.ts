@@ -342,12 +342,6 @@ export function useUsersListData(props: UsersListProps) {
         const csrfToken = getCsrfToken();
         const deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${projectMembershipId}/`;
 
-        console.log('\uD83D\uDDD1\uFE0F Deleting team member:', {
-            teamId: preselectedTeamId,
-            projectMembershipId,
-            deleteUrl,
-        });
-
         const res = await fetch(deleteUrl, {
             method: 'DELETE',
             headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
@@ -365,7 +359,6 @@ export function useUsersListData(props: UsersListProps) {
             return;
         }
 
-        console.log('\u2705 Member removed successfully');
         setUsers((prev) =>
             prev.filter(
                 (row: any) => String(row?.project_membership_id) !== String(projectMembershipId),

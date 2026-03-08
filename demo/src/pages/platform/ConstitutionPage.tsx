@@ -67,6 +67,7 @@ export const ConstitutionPage: React.FC = () => {
           throw new Error(`Failed to fetch constitution rules (${response.status})`);
         }
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch constitution rules');
         console.error('Constitution fetch error:', err);
       } finally {

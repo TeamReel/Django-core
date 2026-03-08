@@ -214,7 +214,6 @@ export function useAssetGenModal(props: AssetGenerationModalProps) {
         assetType: saveResult.asset_type || effectiveOutputAssetType(),
         presignedUrl: saveResult.presigned_url || selectedVariant?.presigned_url || null,
       };
-      console.log('\uD83D\uDCBE Saved asset info:', savedInfo);
       onAssetSaved?.(savedInfo);
       onClose();
     }
@@ -251,7 +250,6 @@ export function useAssetGenModal(props: AssetGenerationModalProps) {
 
       if (bestVariant?.presigned_url) {
         validInputs[primaryKey] = bestVariant.presigned_url;
-        console.log(`\u267B\uFE0F Regenerate: using presigned_url as ${primaryKey}`);
       } else if (bestVariant?.image_base64) {
         const backendKey =
           primaryKey === 'person'
@@ -261,7 +259,6 @@ export function useAssetGenModal(props: AssetGenerationModalProps) {
               : primaryKey;
         base64Inputs[backendKey] = bestVariant.image_base64;
         delete validInputs[primaryKey];
-        console.log(`\u267B\uFE0F Regenerate: using image_base64 as ${backendKey}`);
       } else if (referenceSource === 'previous' && previousResultUrl) {
         validInputs[primaryKey] = previousResultUrl;
       }

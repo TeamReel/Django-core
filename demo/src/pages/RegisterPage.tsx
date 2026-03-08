@@ -39,6 +39,7 @@ export default function RegisterPage() {
     try {
       await signUp(email, password, firstName, lastName);
     } catch (err) {
+      console.error(err);
       // Error is already handled by useSignUp hook
       console.error('Registration failed:', err);
     }

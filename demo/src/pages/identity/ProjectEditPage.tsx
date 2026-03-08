@@ -98,6 +98,7 @@ export const ProjectEditPage: React.FC = () => {
         setIsActive(data.is_active);
         setIsPrivate(data.is_private || false);
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
         setLoading(false);
@@ -157,6 +158,7 @@ export const ProjectEditPage: React.FC = () => {
       const nextSlug = slug || currentProjectSlug;
       navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${nextSlug}`);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setSaving(false);

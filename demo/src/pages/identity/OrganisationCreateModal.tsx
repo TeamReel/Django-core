@@ -30,6 +30,7 @@ export default function OrganisationCreateModal({
       onClose();
     } catch (error) {
       console.error(error);
+      console.error(error);
     } finally {
       setSaving(false);
     }

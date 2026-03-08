@@ -57,6 +57,7 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
       setEmail('');
       setRole('member');
     } catch (err) {
+      console.error(err);
       console.error('Invite error:', err);
       setError(err instanceof Error ? err.message : 'Failed to invite member');
     } finally {

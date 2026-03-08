@@ -43,6 +43,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
       } catch (e) {
+        console.error(e);
         console.error('Failed to load active context:', e);
       }
     };
@@ -96,6 +97,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
 
         if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
+        console.error(e);
         const msg = e instanceof Error ? e.message : 'Failed to load squad';
         if (!cancelled) setMembersError(msg);
       } finally {
@@ -160,6 +162,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
 
         if (!cancelled) setTeamRoster(Array.from(byUserId.values()));
       } catch (e) {
+        console.error(e);
         const msg = e instanceof Error ? e.message : 'Failed to load team roster';
         if (!cancelled) setTeamRosterError(msg);
       } finally {
@@ -208,6 +211,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
 
         if (!cancelled) setMatches(seasonMatches);
       } catch (e) {
+        console.error(e);
         console.error('Failed to fetch matches:', e);
       } finally {
         if (!cancelled) setMatchesLoading(false);

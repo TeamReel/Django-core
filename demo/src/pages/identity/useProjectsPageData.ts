@@ -168,6 +168,7 @@ export function useProjectsPageData() {
       const results = data.data?.results || data.results || [];
       setProjects(Array.isArray(results) ? results : []);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to fetch projects');
     } finally {
       setLoading(false);
@@ -220,6 +221,7 @@ export function useProjectsPageData() {
       setTimeout(() => setSuccessMessage(null), 3000);
       await fetchProjects();
     } catch (err) {
+      console.error(err);
       alert(err instanceof Error ? err.message : 'Failed to update project');
     }
   };

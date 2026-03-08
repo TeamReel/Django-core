@@ -136,6 +136,7 @@ export default function BrandProfileCard({
           setProfile(profileData);
         }
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to load brand profile');
       } finally {
         setLoading(false);

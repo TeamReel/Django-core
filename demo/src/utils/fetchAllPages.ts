@@ -86,6 +86,7 @@ async function fetchJsonWithCache(url: string, init: RequestInit, ttlMs: number,
       entry.expiresAt = Date.now() + ttlMs;
       return value;
     } catch (err) {
+      console.error(err);
       pageCache.delete(key);
       throw err;
     }
@@ -182,6 +183,7 @@ export async function fetchAllPages<T>(
       entry.expiresAt = Date.now() + ttlMs;
       return value;
     } catch (err) {
+      console.error(err);
       cache.delete(cacheKey);
       throw err;
     }

@@ -200,8 +200,8 @@ export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDele
   };
 
   return (
-    <div className={styles.detailOverlay} onClick={onClose}>
-      <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.detailOverlay} onClick={onClose} role="button" tabIndex={0}>
+      <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
 
         {/* Header */}
         <div className={styles.detailHeader}>

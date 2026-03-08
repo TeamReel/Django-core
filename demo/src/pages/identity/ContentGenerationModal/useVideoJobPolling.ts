@@ -115,7 +115,8 @@ export function useVideoJobPolling({
             setVideoJobError(job.error_message || null);
             break;
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
+          console.error(err);
           if (err?.name === 'AbortError') return;
           console.warn('Poll error:', err);
         }
@@ -146,6 +147,7 @@ export function useVideoJobPolling({
       setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
       if (isApprove) onGenerated?.('Video goedgekeurd en opgeslagen.');
     } catch (err) {
+      console.error(err);
       setVideoApprovalError(err instanceof Error ? err.message : `${action} failed`);
       setVideoApprovalStatus('idle');
     }

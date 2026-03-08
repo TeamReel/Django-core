@@ -178,6 +178,7 @@ export function MemberEditSheet({
         onClose();
       }, 600);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Opslaan mislukt');
     } finally {
       setSaving(false);
@@ -185,8 +186,8 @@ export function MemberEditSheet({
   };
 
   return (
-    <div className={st.overlay} onClick={onClose}>
-      <div className={st.sheet} onClick={(e) => e.stopPropagation()}>
+    <div className={st.overlay} onClick={onClose} role="button" tabIndex={0}>
+      <div className={st.sheet} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
         {/* ── Handle ── */}
         <div className={st.handleRow}>
           <div className={st.handle} />

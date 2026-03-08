@@ -71,6 +71,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
         setMatches(sorted);
         setIsLoading(false);
       } catch (err) {
+        console.error(err);
         console.error('Error fetching matches:', err);
         setError('Failed to load match schedule.');
         setIsLoading(false);

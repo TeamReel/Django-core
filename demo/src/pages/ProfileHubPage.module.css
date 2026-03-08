@@ -44,7 +44,7 @@
 .avatarInitials {
   font-size: 28px;
   font-weight: var(--font-extrabold);
-  color: white;
+  color: var(--color-white, #fff);
   line-height: var(--leading-tight);
 }
 
@@ -182,7 +182,7 @@ button.row:active {
 }
 
 .themePillActive {
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text);
   box-shadow: var(--shadow-sm);
 }
@@ -229,7 +229,7 @@ button.row:active {
   width: 28px;
   height: 28px;
   border-radius: var(--radius-full);
-  background: white;
+  background: var(--app-surface);
   box-shadow: var(--shadow-sm);
   transition: transform var(--duration-normal) var(--ease-default);
   will-change: transform;

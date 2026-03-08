@@ -245,7 +245,8 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
       // Refresh lists
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || 'Lid toevoegen mislukt');
       setIsSaving(false);
       throw err; // re-throw so MemberConfirmStep knows it failed

@@ -40,16 +40,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
       const isValidUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(membershipId);
 
-      console.log('[Save] Member data check:', {
-        membershipId,
-        isValidUuid,
-        memberData: member,
-        user: {
-          id: (member as any)?.user?.id,
-          email: (member as any)?.user?.email,
-        },
-      });
-
       if (!isValidUuid) {
         alert(`Cannot save: Invalid membership ID format (${membershipId}). This member may need to be re-added to the squad.`);
         return;
@@ -61,13 +51,6 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         alert('Project ID not found');
         return;
       }
-
-      console.log('[Save] Saving member roles:', {
-        membershipId,
-        projectId,
-        functionalRoles,
-        url: `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
-      });
 
       const res = await fetch(
         `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
@@ -95,17 +78,17 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       }
 
       const responseData = await res.json();
-      console.log('[OK] Save response:', responseData);
 
       onSaved(membershipId, editAccessRole, functionalRoles);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       alert(err.message || 'Failed to update member');
     }
   };
 
   return (
-    <div className={s.modalOverlay} onClick={onClose}>
-      <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()}>
+    <div className={s.modalOverlay} onClick={onClose} role="button" tabIndex={0}>
+      <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
         <h2 className={s.editMemberTitle}>Edit Member Roles</h2>
 
         <div style={{ marginBottom: 'var(--space-6)' }}>

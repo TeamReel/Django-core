@@ -291,7 +291,8 @@ export function useSeasonSquadAddMemberData({
           const selected = String(selectedUserId || '').trim();
           if (selected && !unique.some((u) => String(u.id) === selected)) setSelectedUserId('');
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
+        console.error(e);
         if (!cancelled && e?.name !== 'AbortError') {
           setUserOptions([]);
           setError(e instanceof Error ? e.message : 'Failed to load users');
@@ -339,6 +340,7 @@ export function useSeasonSquadAddMemberData({
       });
       // Will be closed by caller
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to add user');
     } finally {
       setSaving(false);

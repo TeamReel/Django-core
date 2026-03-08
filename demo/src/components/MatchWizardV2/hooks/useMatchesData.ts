@@ -54,6 +54,7 @@ export function useMatchesData(isOpen: boolean, initialMatchId?: string) {
               }
             }
           } catch (err) {
+            console.error(err);
             console.error('[MatchWizard] Failed to fetch match by id:', err);
           }
         })();

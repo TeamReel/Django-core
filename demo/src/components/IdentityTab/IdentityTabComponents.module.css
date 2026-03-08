@@ -23,7 +23,7 @@
   top: 8px;
   right: 8px;
   background: var(--badge-color);
-  color: white;
+  color: var(--color-white, #fff);
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
@@ -62,7 +62,7 @@
   font-size: var(--text-xs);
   cursor: pointer;
   background: var(--vscode-button-background, #0078d4);
-  color: var(--vscode-button-foreground, #fff);
+  color: var(--vscode-button-foreground, var(--app-surface));
   border: none;
   border-radius: var(--radius-sm);
 }

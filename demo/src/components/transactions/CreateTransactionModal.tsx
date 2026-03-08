@@ -214,7 +214,8 @@ export default function CreateTransactionModal(props: {
 
                 onClose();
                 onCreated?.();
-              } catch (e: any) {
+              } catch (e: unknown) {
+                console.error(e);
                 setError(e?.message || 'Failed to create transaction');
               } finally {
                 setSubmitting(false);

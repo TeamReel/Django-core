@@ -203,6 +203,7 @@ export function useMemberDetailData(): MemberDetailData {
         const memberJson = unwrap<any>(await memberRes.json());
         if (!cancelled) setMembership(memberJson);
       } catch (e) {
+        console.error(e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load member');
       }
     };
@@ -266,6 +267,7 @@ export function useMemberDetailData(): MemberDetailData {
       const updated = (raw as any)?.data || raw || null;
       setMembership(updated ? { ...(membership as any), ...(updated as any) } : membership);
     } catch (e) {
+      console.error(e);
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);

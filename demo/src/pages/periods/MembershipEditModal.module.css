@@ -14,7 +14,7 @@
 }
 
 .modal {
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   padding: var(--space-5);
   border-radius: var(--radius-md);
   width: 520px;
@@ -81,7 +81,7 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-primary, #1976d2);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .saveButton[data-saving="true"] {

@@ -109,7 +109,8 @@ export default function GovernanceSummaryCard(props: {
           setPolicy(data);
           setSource('organization');
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
+        console.error(e);
         if (cancelled) return;
         setPolicy(null);
         setSource(null);

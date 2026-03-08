@@ -19,7 +19,7 @@
 
 .filterButton[data-active="false"] {
   border-color: var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--app-text);
 }
 

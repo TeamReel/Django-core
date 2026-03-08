@@ -18,13 +18,13 @@
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  background-color: var(--app-surface-2, #f3f4f6);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-primary, #3B8EA5);
 }
 
 .variantIcon[data-selected='true'] {
   background-color: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 /* Variant option description */
@@ -50,14 +50,14 @@
   line-height: var(--leading-normal);
   transition: all var(--duration-fast) var(--ease-default);
   border: 1px solid var(--app-border, #e5e7eb);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text, #111);
 }
 
 .layoutButton[data-active='true'] {
   border: 2px solid var(--app-primary, #3B8EA5);
   background: var(--app-primary-light, rgba(59, 142, 165, 0.08));
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .layoutIcon {

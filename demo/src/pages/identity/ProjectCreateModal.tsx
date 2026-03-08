@@ -99,6 +99,7 @@ export default function ProjectCreateModal({
       setDescription('');
       onClose();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to create');
     } finally {
       setSaving(false);

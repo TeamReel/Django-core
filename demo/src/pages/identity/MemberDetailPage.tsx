@@ -61,17 +61,6 @@ export const MemberDetailPage: React.FC = () => {
   });
 
   // Debug logging
-  console.log('[MemberDetailPage] Debug:', {
-    orgMembersCount: orgMembers.length,
-    userOptionsCount: userOptions.length,
-    currentUserId: member?.id,
-    sampleMembers: orgMembers.slice(0, 2).map(m => ({
-      id: m.id,
-      name: `${m.user?.first_name} ${m.user?.last_name}`,
-      email: m.user?.email
-    })),
-    member: member ? { id: member.id, name: `${member.user?.first_name} ${member.user?.last_name}` } : null
-  });
 
   useEffect(() => {
     if (searchParams.get('action') === 'edit') {
@@ -84,14 +73,12 @@ export const MemberDetailPage: React.FC = () => {
     const fetchOrgMembers = async () => {
       if (waitingForOrgContext) return;
       if (!orgSlug) {
-        console.log('[MemberDetailPage] No orgSlug, skipping member fetch');
         return;
       }
 
       try {
         const apiBaseUrl = getApiBaseUrl();
         const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?page_size=100`;
-        console.log('[MemberDetailPage] Fetching org members from:', url);
 
         const response = await fetch(url, {
           headers: {
@@ -101,21 +88,14 @@ export const MemberDetailPage: React.FC = () => {
           credentials: 'include',
         });
 
-        console.log('[MemberDetailPage] Members fetch response:', {
-          ok: response.ok,
-          status: response.status,
-          statusText: response.statusText
-        });
-
         if (response.ok) {
           const data = await response.json();
-          console.log('[MemberDetailPage] Members data:', data);
           // API might return array directly or object with results
           const members = Array.isArray(data) ? data : (data.results || []);
-          console.log('[MemberDetailPage] Setting orgMembers:', members.length);
           setOrgMembers(members);
         }
       } catch (err) {
+        console.error(err);
         console.error('Failed to fetch org members for switcher:', err);
       }
     };
@@ -146,6 +126,7 @@ export const MemberDetailPage: React.FC = () => {
         setMember(data);
         setRole(data.role);
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
@@ -210,6 +191,7 @@ export const MemberDetailPage: React.FC = () => {
           setMember(data);
           setIsEditing(false);
       } catch (err) {
+        console.error(err);
           console.error('Failed to update member:', err);
           alert(err instanceof Error ? err.message : 'Failed to update member');
       } finally {

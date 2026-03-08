@@ -38,6 +38,7 @@ export function TasksPage() {
         setTasks(allTasks);
         setBeatSchedule(taskData.beat_schedule || []);
       } catch (err) {
+        console.error(err);
         console.error('Failed to fetch tasks:', err);
         setError('Failed to load tasks. Using demo data.');
         setTasks([

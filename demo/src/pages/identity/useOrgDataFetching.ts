@@ -83,6 +83,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       setFederationMatches(Array.isArray(all) ? all : []);
     } catch (e) {
       console.error(e);
+      console.error(e);
       setFederationMatches([]);
     } finally {
       setFederationMatchesLoading(false);
@@ -156,6 +157,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       setClubsCount(count);
     } catch (e) {
       console.error(e);
+      console.error(e);
       setClubs([]);
       setClubsCount(0);
     } finally {
@@ -168,13 +170,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
     if (!force && teamsFetchedForOrgRef.current === currentOrgSlug && teams.length > 0) return;
     if (teamsFetchInFlightRef.current) return;
     teamsFetchInFlightRef.current = true;
-    if (DEBUG_LOGS) console.log('[OrganisationDetailPage] fetchTeamsForOrg starting', { currentOrgSlug, orgId: org?.id || currentOrgId });
     setTeamsLoading(true);
     try {
       const apiV1BaseUrl = getApiV1BaseUrl();
       const clubsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=true`;
       const teamsUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=250&parent_project__isnull=false`;
-      if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Fetching teams from', teamsUrl);
       const headers = {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
@@ -192,11 +192,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
         const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
         return Boolean(parentId);
       });
-      if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Teams loaded:', teamsOnly.length, 'Clubs loaded:', clubsOnly.length);
       setAllClubsForTeams(clubsOnly);
       setTeams(teamsOnly);
       teamsFetchedForOrgRef.current = currentOrgSlug;
     } catch (e) {
+      console.error(e);
       console.error(e);
       setTeams([]);
       setAllClubsForTeams([]);
@@ -254,7 +254,6 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
   };
 
   const ensureOrgPeriodsLoaded = async () => {
-    if (DEBUG_LOGS) console.log('[OrganisationDetailPage] ensureOrgPeriodsLoaded called', { teamsCount: teams.length, orgPeriodsCount: orgPeriods.length, loading: orgPeriodsLoading });
     if (orgPeriodsFetchInFlightRef.current) return;
     if (orgPeriodsLoading) return;
     if (orgPeriods.length > 0) return;
@@ -270,7 +269,6 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       const chunkSize = 6;
       const teamChunks = [];
       for (let i = 0; i < teams.length; i += chunkSize) teamChunks.push(teams.slice(i, i + chunkSize));
-      if (DEBUG_LOGS) console.log(`[OrganisationDetailPage] Fetching periods for ${teams.length} teams in ${teamChunks.length} chunks`);
       for (const chunk of teamChunks) {
         await Promise.all(chunk.map(async (t: any) => {
           const teamId = t?.id;
@@ -284,11 +282,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
           } catch (e) { console.warn(`Failed to fetch periods for team ${teamId}`, e); }
         }));
       }
-      if (DEBUG_LOGS) console.log('[OrganisationDetailPage] Total unique periods fetched via teams:', unique.size);
       const merged = Array.from(unique.values());
       setOrgPeriods(merged);
       recomputePeriodCounts(merged);
     } catch (e) {
+      console.error(e);
       console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
     } finally {
       setOrgPeriodsLoading(false);
@@ -351,9 +349,9 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
         { headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-Organisation-ID': orgId }, credentials: 'include' },
         force ? { bypass: true } : { ttlMs: 5 * 60_000 },
       );
-      console.log('[OrganisationDetailPage] Members loaded:', allMembers.length);
       setMembers(allMembers);
     } catch (e) {
+      console.error(e);
       console.error('[OrganisationDetailPage] Members fetch failed:', e);
       setMembers([]);
     } finally {

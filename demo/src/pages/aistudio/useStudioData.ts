@@ -178,6 +178,7 @@ export function useStudioData(): StudioData {
       const items = data?.results || data?.data?.results || data?.data || [];
       setContentItems(Array.isArray(items) ? items : []);
     } catch (err) {
+      console.error(err);
       console.error('[Studio] Content fetch error:', err);
       setError('Fout bij laden van content');
     } finally {
@@ -211,6 +212,7 @@ export function useStudioData(): StudioData {
       }));
       setVideoJobs(jobs);
     } catch (err) {
+      console.error(err);
       console.error('[Studio] Video jobs fetch error:', err);
     } finally {
       setVideoJobsLoading(false);

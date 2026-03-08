@@ -15,7 +15,6 @@
 const STORAGE_KEY = 'feature_flags_tenant_aware';
 
 const debugLog = (...args: unknown[]) => {
-  if (import.meta.env.DEV) console.log(...args);
 };
 
 export interface FeatureFlag {
@@ -55,6 +54,7 @@ export function getFlagStorage(): FlagStorage {
       return parsed;
     }
   } catch (err) {
+    console.error(err);
     console.error('Error loading flag storage:', err);
   }
 
@@ -86,6 +86,7 @@ export function saveFlagStorage(storage: FlagStorage): void {
     window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
     // For cross-tab updates, the 'storage' event will fire automatically
   } catch (err) {
+    console.error(err);
     console.error('Error saving flag storage:', err);
   }
 }

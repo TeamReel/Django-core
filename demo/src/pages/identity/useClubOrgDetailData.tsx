@@ -173,6 +173,7 @@ export function useClubOrgDetailData() {
                 setOrg(loadedOrg);
                 setClub(loadedClub);
             } catch (e) {
+              console.error(e);
                 if (cancelled) return;
                 setError(e instanceof Error ? e.message : 'Failed to load club');
                 setOrg(null);
@@ -272,6 +273,7 @@ export function useClubOrgDetailData() {
                 setOverviewMembers(sortedMembers.slice(0, 6));
                 setOverviewCounts({ teams: clubTeams.length, seasons: sortedSeasons.length, members: sortedMembers.length });
             } catch (e) {
+              console.error(e);
                 if (cancelled) return;
                 setOverviewError(e instanceof Error ? e.message : 'Failed to load overview');
                 setOverviewTeams([]); setOverviewSeasons([]); setOverviewMembers([]); setOverviewCounts(null);

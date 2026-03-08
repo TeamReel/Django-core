@@ -121,6 +121,7 @@ export function OrgEditMemberRoleModal({
                 const updated = await res.json().catch(() => null);
                 onSaved(updated, editingMemberRole);
               } catch (e) {
+                console.error(e);
                 setError(e instanceof Error ? e.message : 'Failed to update member');
               } finally {
                 setSaving(false);

@@ -54,7 +54,6 @@ function AppWithProviders() {
       console.warn('Context switch error:', error);
       // Handle 401 Unauthorized by redirecting to login
       if (error?.code === 401 || error?.status === 401) {
-        console.log('[ContextSwitcher] 401 detected, redirecting to login');
         window.location.href = '/login';
         return;
       }

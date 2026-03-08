@@ -138,6 +138,7 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
                   await onSave({ role, functional_roles: functionalRoles });
                   onClose();
                 } catch (e) {
+                  console.error(e);
                   setError(e instanceof Error ? e.message : 'Failed to save');
                 } finally {
                   setSaving(false);

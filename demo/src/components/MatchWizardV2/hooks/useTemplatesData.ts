@@ -37,6 +37,7 @@ export function useTemplatesData() {
       });
       setAvailableTemplates(grouped);
     } catch (err) {
+      console.error(err);
       console.error('Failed to fetch templates:', err);
       setTemplatesError('Kon sjablonen niet laden. Controleer je verbinding.');
     } finally {

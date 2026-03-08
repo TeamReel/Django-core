@@ -218,7 +218,8 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
           setJobs(unwrapResults<VideoJob>(data));
           setError(null);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         if (!cancelled) {
           // 403 = user isn't a member of this project → treat as empty, not error
           if (err?.status === 403) {

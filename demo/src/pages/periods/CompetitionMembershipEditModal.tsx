@@ -52,8 +52,8 @@ export function CompetitionMembershipEditModal({
     user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Member';
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.overlay} onClick={onClose} role="button" tabIndex={0}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
         <div className="flex-between gap-12">
           <h2 className="m-0 fs-16 fw-700">Edit user role</h2>
           <button
@@ -133,6 +133,7 @@ export function CompetitionMembershipEditModal({
                   await onSave({ role, functional_roles: functionalRoles });
                   onClose();
                 } catch (e) {
+                  console.error(e);
                   setError(e instanceof Error ? e.message : 'Failed to save');
                 } finally {
                   setSaving(false);

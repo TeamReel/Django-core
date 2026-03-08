@@ -156,7 +156,8 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
 
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || `${projectTypeLabel} aanmaken mislukt`);
       setIsSaving(false);
       throw err;

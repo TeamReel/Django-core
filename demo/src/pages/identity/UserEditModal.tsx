@@ -28,6 +28,7 @@ export default function UserEditModal({
       await onSaved?.();
     } catch (error) {
       console.error(error);
+      console.error(error);
       d.setExtraError(error instanceof Error ? error.message : 'Failed to save');
     } finally {
       d.setSaving(false);
@@ -153,6 +154,7 @@ export default function UserEditModal({
                       </div>
                       <div className="mt-24">
                         <button type="button" disabled={d.addingToOrg || d.saving} onClick={async () => { try { await d.linkToOrganisation(); } catch (e) { d.setExtraError(e instanceof Error ? e.message : 'Failed to add to federation'); } }} className="btn-modal btn-modal-primary">
+                          console.error(e);
                           {d.addingToOrg ? 'Adding…' : 'Add to Federation'}
                         </button>
                       </div>

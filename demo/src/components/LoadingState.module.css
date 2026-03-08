@@ -98,7 +98,7 @@
 
 .overlayMessage {
   margin-top: var(--space-6);
-  color: var(--overlay-text, #333);
+  color: var(--overlay-text, var(--app-text));
   font-size: var(--text-lg);
   font-weight: var(--font-medium);
 }

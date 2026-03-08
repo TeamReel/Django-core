@@ -80,7 +80,7 @@
 .mobileHeader {
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--app-border, #e5e7eb);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
 }
 
 .mobileOverallRow {

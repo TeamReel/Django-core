@@ -60,6 +60,7 @@ async function fetchContentTypes(apiBase: string): Promise<void> {
         });
       }
     } catch (err) {
+      console.error(err);
       console.warn('[useContentTypes] Error fetching content types:', err);
     } finally {
       cacheFetchPromise = null;

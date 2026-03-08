@@ -80,12 +80,9 @@ export const CachePerformancePage: React.FC = () => {
       }
 
       const responseData = await response.json();
-      console.log('[CachePerformancePage] Full response:', responseData);
 
       // Unwrap the standard API response wrapper
       const data = responseData.data || responseData;
-      console.log('[CachePerformancePage] Unwrapped data:', data);
-      console.log('[CachePerformancePage] data.realtime:', data.realtime);
 
       // Validate response structure
       if (!data.realtime) {
@@ -95,6 +92,7 @@ export const CachePerformancePage: React.FC = () => {
 
       setMetrics(data);
     } catch (err) {
+      console.error(err);
       console.error('[CachePerformancePage] Fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
     } finally {
@@ -127,6 +125,7 @@ export const CachePerformancePage: React.FC = () => {
       // Refresh metrics
       await fetchMetrics();
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to clear cache');
     } finally {
       setActionLoading(null);
@@ -156,6 +155,7 @@ export const CachePerformancePage: React.FC = () => {
       const result = responseData.data || responseData;
       setBenchmarkResult(result);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to run benchmark');
     } finally {
       setActionLoading(null);

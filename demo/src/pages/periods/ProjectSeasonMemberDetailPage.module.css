@@ -47,14 +47,14 @@
   font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-sm);
 }
 .aiBadge {
-  background: rgba(99, 102, 241, 0.85); color: white;
+  background: rgba(99, 102, 241, 0.85); color: var(--color-white, #fff);
   font-size: 9px; font-weight: 700; padding: 4px 4px; border-radius: var(--radius-sm);
 }
 .readyIndicator { font-size: 9px; padding: 4px 8px; color: var(--color-green-400); font-weight: 600; }
 .processingOverlay {
   position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4);
   display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 13px; font-weight: var(--font-semibold);
+  color: var(--color-white, #fff); font-size: 13px; font-weight: var(--font-semibold);
 }
 
 /* ── Buttons ── */
@@ -63,7 +63,7 @@
 .btnProcess {
   font-size: var(--text-xs); padding: 4px 8px;
   background: linear-gradient(135deg, var(--color-amber-400), var(--color-amber-500));
-  border: none; color: white; border-radius: var(--radius-sm); cursor: pointer;
+  border: none; color: var(--color-white, #fff); border-radius: var(--radius-sm); cursor: pointer;
 }
 .btnDelete { font-size: 10px; padding: 4px 8px; color: var(--color-red-400); }
 .btnCancelOrange { font-size: 10px; padding: 4px 8px; color: var(--color-amber-400); }
@@ -97,7 +97,7 @@
 }
 .videoModalClose {
   position: absolute; top: 8px; right: 8px; background: rgba(0, 0, 0, 0.7);
-  color: white; border: none; border-radius: var(--radius-full); width: 32px; height: 32px;
+  color: var(--color-white, #fff); border: none; border-radius: var(--radius-full); width: 32px; height: 32px;
   font-size: var(--text-base); cursor: pointer; display: flex; align-items: center; justify-content: center;
 }
 

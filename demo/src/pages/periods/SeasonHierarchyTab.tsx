@@ -207,6 +207,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                 }
                               } catch (e) {
                                 console.error(e);
+                                console.error(e);
                                 alert('Error deleting competition');
                               }
                             }}
@@ -275,6 +276,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                             alert('Error deleting match');
                                           }
                                         } catch (e) {
+                                          console.error(e);
                                           console.error(e);
                                           alert('Error deleting match');
                                         }

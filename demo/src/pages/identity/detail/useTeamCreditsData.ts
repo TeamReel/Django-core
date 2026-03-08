@@ -136,7 +136,8 @@ export function useTeamCreditsData(props: TeamCreditsTabProps) {
       const raw = await res.json();
       const data = unwrapObject<ProjectCreditsBalance>(raw);
       setBalance(data);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setBalance(null);
       setBalanceError(e?.message || 'Failed to load team credits balance');
     } finally {
@@ -162,7 +163,8 @@ export function useTeamCreditsData(props: TeamCreditsTabProps) {
       const raw = await res.json();
       const data = unwrapObject<UserWalletBalance>(raw);
       setUserBalance(data);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setUserBalance(null);
       setUserBalanceError(e?.message || 'Failed to load your credits balance');
     } finally {
@@ -182,7 +184,8 @@ export function useTeamCreditsData(props: TeamCreditsTabProps) {
       const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
       const results = await fetchAllPages<Transaction>(url, { credentials: 'include' }, { ttlMs: 60_000, maxPages: 5 });
       setTransactions(Array.isArray(results) ? results : []);
-    } catch (e: any) {
+    } catch (e: unknown) {
+      console.error(e);
       setTransactions([]);
       setTransactionsError(e?.message || 'Failed to load team transactions');
     } finally {

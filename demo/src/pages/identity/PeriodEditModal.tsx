@@ -216,6 +216,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
       await onSave(payload);
       onClose();
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);

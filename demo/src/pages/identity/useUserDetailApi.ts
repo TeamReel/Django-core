@@ -73,6 +73,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             const userData = rawData.data || rawData;
             setUser(userData);
         } catch (err) {
+          console.error(err);
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
             setLoading(false);
@@ -100,6 +101,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
                 throw new Error((data as any)?.message || 'Failed to update user');
             }
         } catch (e) {
+          console.error(e);
             console.error(e);
             alert('Failed to save user changes');
             throw e;
@@ -124,6 +126,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             }
             navigate(orgId ? `/organisations/${orgId}/users` : '/users');
         } catch (e) {
+          console.error(e);
             alert(e instanceof Error ? e.message : 'Failed to delete user');
         }
     };
@@ -415,6 +418,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             setLinkClubs(Array.isArray(clubs) ? clubs : []);
             setLinkTeams(Array.isArray(teams) ? teams : []);
         } catch (e) {
+          console.error(e);
             setLinkOptionsError(e instanceof Error ? e.message : 'Failed to load link options');
             setLinkOrgs([]);
             setLinkClubs([]);

@@ -72,7 +72,8 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
         }
 
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        console.error(err);
         console.error('Error fetching credit balance:', err);
         setError(err.message || 'Unknown error');
       } finally {

@@ -97,7 +97,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #e5e7eb);
-  background-color: var(--app-surface, #fff);
+  background-color: var(--app-surface, var(--app-surface));
   color: var(--app-text, #111);
   resize: vertical;
   font-family: inherit;
@@ -110,7 +110,7 @@
 
 .confirmButton {
   --confirm-bg: var(--color-red-500);
-  --confirm-color: var(--color-white, #fff);
+  --confirm-color: var(--color-white, var(--app-surface));
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--confirm-color);
@@ -146,7 +146,7 @@
 
 @media (hover: hover) {
   .cancelButton:hover {
-  background-color: var(--app-surface-2, #f3f4f6);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   }
 }
 

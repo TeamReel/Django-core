@@ -88,6 +88,7 @@ export function useSeasonSquadData({
           setSeasonSquad(groupParticipationsByRole(members));
         }
       } catch (err) {
+        console.error(err);
         console.error('Error fetching season squad:', err);
       }
     };

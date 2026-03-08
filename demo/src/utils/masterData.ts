@@ -241,6 +241,7 @@ export function useMasterData<T>(
       }
       setData(result as T);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load master data');
     } finally {
       setLoading(false);

@@ -158,7 +158,7 @@
 
 /* ── Match card ── */
 .card {
-  border: 1px solid var(--app-border, #333);
+  border: 1px solid var(--app-border, var(--app-text));
   border-radius: var(--radius-lg);
   background: var(--app-surface, #1e1e30);
   margin-bottom: var(--space-2);

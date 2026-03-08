@@ -200,7 +200,8 @@ export default function AddMemberModal({
       setTimeout(() => {
         onClose();
       }, 1200);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || 'Failed to add member');
     } finally {
       setLoading(false);
@@ -246,7 +247,8 @@ export default function AddMemberModal({
 
       // 2) Add to hierarchy using the same logic as existing user
       await addExistingUser(createdUser);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || 'Failed to create user');
       setLoading(false);
     }
@@ -259,8 +261,8 @@ export default function AddMemberModal({
   const levelLabel = LEVEL_LABEL[contextLevel];
 
   return (
-    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className={`bg-surface p-24 rounded-12 text-primary flex-col ${modalStyles.panel}`}>
+    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose} role="button" tabIndex={0}>
+      <div onClick={(e) => e.stopPropagation()} className={`bg-surface p-24 rounded-12 text-primary flex-col ${modalStyles.panel}`} role="button" tabIndex={0}>
         {/* ── Header ── */}
         <div className="flex-between mb-4">
           <h2 className="m-0 fs-20 fw-700">

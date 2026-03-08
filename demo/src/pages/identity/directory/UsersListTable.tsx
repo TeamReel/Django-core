@@ -139,15 +139,6 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
 
               // Debug logging for team members
               if (teamLocked) {
-                console.log('🔍 Team member check:', {
-                  userId: u.id,
-                  projectMembershipId: u?.project_membership_id,
-                  membershipId,
-                  teamLocked,
-                  hasValidTeamMembershipId,
-                  isDirectMembership,
-                  source,
-                });
               }
 
               const usernameLabel =

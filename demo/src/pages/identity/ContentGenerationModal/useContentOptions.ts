@@ -59,6 +59,7 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
           );
         }
       } catch (err) {
+        console.error(err);
         console.warn('Failed to fetch app backgrounds:', err);
       }
     };

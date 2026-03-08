@@ -175,11 +175,13 @@ export const SecurityPage: React.FC = () => {
                 errorMessage += ` - ${errorData.detail}`;
             }
           } catch (e) {
+            console.error(e);
             // Ignore JSON parse error
           }
           throw new Error(errorMessage);
         }
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch security data');
         console.error('Security fetch error:', err);
       } finally {

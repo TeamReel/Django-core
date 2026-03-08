@@ -71,7 +71,6 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         // Check useAuth user object
         if (!isSuperadmin && user && ((user as any).is_superuser || (user as any).role === 'superadmin')) {
           isSuperadmin = true;
-          if (DEBUG_LOGS) console.log(`[useFeatureFlag] useAuth check: isSuperadmin=${isSuperadmin}`);
         }
 
         // DEMO MODE FALLBACK: check localStorage
@@ -100,7 +99,6 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
           const demoRole = localStorage.getItem('demo_user_role');
           if (demoRole === 'superadmin') {
             isSuperadmin = true;
-            if (DEBUG_LOGS) console.log(`[useFeatureFlag] Demo mode: found superadmin in localStorage`);
           }
         }
 
@@ -109,7 +107,6 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
           if (user.email === 'admin@example.com') {
             isSuperadmin = true;
             if (DEBUG_LOGS) {
-              console.log(`[useFeatureFlag] Demo mode: detected superadmin by email (${user.email})`);
             }
           }
         }
@@ -132,7 +129,8 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
               orgId = context.organisationId || null;
               projectId = context.projectId || null;
             } catch (e) {
-              if (DEBUG_LOGS) console.debug('[useFeatureFlag] Failed to parse demo_context:', e);
+              console.error(e);
+              if (DEBUG_LOGS) console.error('[useFeatureFlag] Failed to parse demo_context:', e);
             }
           }
         }
@@ -149,13 +147,6 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         // The only time we force global is if we are in a "Global Config" mode, but this hook is for *consuming* flags.
 
         if (DEBUG_LOGS) {
-          console.log(
-            `[useFeatureFlag] Checking flag "${flagKey}" for orgId/projectId:`,
-            orgId,
-            projectId,
-            'isSuperadmin:',
-            isSuperadmin
-          );
         }
 
         // If no org/project in localStorage, attempt to read active context from backend
@@ -167,13 +158,10 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
             if (!orgId && contextOrgId) orgId = String(contextOrgId);
             if (!projectId && contextProjectId) projectId = String(contextProjectId);
             if (DEBUG_LOGS) {
-              console.log('[useFeatureFlag] Active context fallback:', {
-                contextOrgId: orgId,
-                contextProjectId: projectId,
-              });
             }
           } catch (contextErr) {
-            if (DEBUG_LOGS) console.debug('[useFeatureFlag] Active context fetch failed:', contextErr);
+            console.error(contextErr);
+            if (DEBUG_LOGS) console.error('[useFeatureFlag] Active context fetch failed:', contextErr);
           }
         }
 
@@ -181,27 +169,26 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
         try {
           const apiFlags = await fetchFlags(orgId, projectId);
           const flag = resolveFlagMatch(apiFlags, flagKey);
-          if (DEBUG_LOGS) console.log(`[useFeatureFlag] API result for "${flagKey}":`, flag);
           if (flag !== undefined) {
             if (DEBUG_LOGS) {
-              console.log(`[useFeatureFlag] Setting "${flagKey}" enabled to:`, flag.enabled);
             }
             const normalizedEnabled = normalizeFlagValue(flag.enabled);
             setIsEnabled(normalizedEnabled ?? defaultEnabled);
             return;
           }
         } catch (apiErr) {
+          console.error(apiErr);
           // API failed, fall back to localStorage
           if (DEBUG_LOGS) {
-            console.debug(`[useFeatureFlag] API fetch failed for "${flagKey}", using localStorage:`, apiErr);
+            console.error(`[useFeatureFlag] API fetch failed for "${flagKey}", using localStorage:`, apiErr);
           }
         }
 
         // Fallback: Resolve flag from localStorage
         const resolved = getResolvedFlag(flagKey, orgId, defaultEnabled);
-        if (DEBUG_LOGS) console.log(`[useFeatureFlag] localStorage result for "${flagKey}":`, resolved);
         setIsEnabled(resolved);
       } catch (err) {
+        console.error(err);
         if (DEBUG_LOGS) console.error(`[useFeatureFlag] Error resolving feature flag "${flagKey}":`, err);
         setIsEnabled(defaultEnabled);
       }

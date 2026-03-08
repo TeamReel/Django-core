@@ -133,6 +133,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
       setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
       setTimeout(() => { window.location.reload(); }, 500);
     } catch (err) {
+      console.error(err);
       console.error('Guest closeup crop error:', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {

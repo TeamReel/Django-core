@@ -162,6 +162,7 @@ export function useContentTemplatesData() {
           setFormations(formationList);
         }
       } catch (e) {
+        console.error(e);
         console.error('Failed to fetch data:', e);
         setError('Failed to load templates');
       } finally {
@@ -301,6 +302,7 @@ export function useContentTemplatesData() {
         setTemplates(prev => prev.map(t => t.id === template.id ? { ...t, is_active: !t.is_active } : t));
       }
     } catch (e) {
+      console.error(e);
       console.error('Failed to toggle template:', e);
     }
   };
@@ -317,6 +319,7 @@ export function useContentTemplatesData() {
         setTemplates(prev => prev.filter(t => t.id !== template.id));
       }
     } catch (e) {
+      console.error(e);
       console.error('Failed to delete template:', e);
     }
   };
@@ -372,6 +375,7 @@ export function useContentTemplatesData() {
         alert(`Failed to save: ${JSON.stringify(errorData)}`);
       }
     } catch (e) {
+      console.error(e);
       console.error('Failed to save template:', e);
       alert('Failed to save template');
     } finally {

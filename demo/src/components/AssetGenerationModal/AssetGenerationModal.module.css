@@ -12,11 +12,11 @@
   max-width: 800px;
   max-height: 92vh;
   background: var(--vscode-editor-background, #1e1e1e);
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
 }
 
 .header {
-  border-bottom: 1px solid var(--vscode-widget-border, #333);
+  border-bottom: 1px solid var(--vscode-widget-border, var(--app-text));
 }
 
 .closeButton {
@@ -44,7 +44,7 @@
 .variantButton {
   width: 40px;
   height: 40px;
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   background: transparent;
   color: var(--vscode-foreground, #ccc);
 }
@@ -71,20 +71,20 @@
 .footerBackButton {
   padding: var(--space-2) var(--space-4);
   color: var(--vscode-foreground, #ccc);
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
 }
 
 .footerCloseButton {
   padding: var(--space-2) var(--space-4);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
   font-weight: var(--font-normal);
 }
 
 .footerCloseButton[data-queued='true'] {
   background: var(--vscode-button-background, #0078d4);
-  color: var(--vscode-button-foreground, #fff);
+  color: var(--vscode-button-foreground, var(--app-surface));
   border: none;
   font-weight: var(--font-semibold);
 }
@@ -92,7 +92,7 @@
 .footerGenerateButton {
   padding: var(--space-2) var(--space-4);
   background: var(--vscode-button-background, #0078d4);
-  color: var(--vscode-button-foreground, #fff);
+  color: var(--vscode-button-foreground, var(--app-surface));
   cursor: pointer;
   opacity: 1;
 }
@@ -105,7 +105,7 @@
 .footerRefreshButton {
   padding: var(--space-2) var(--space-4);
   color: var(--vscode-foreground, #ccc);
-  border: 1px solid var(--vscode-widget-border, #333);
+  border: 1px solid var(--vscode-widget-border, var(--app-text));
 }
 
 .footerSaveButton {

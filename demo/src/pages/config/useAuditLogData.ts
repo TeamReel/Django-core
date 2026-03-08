@@ -101,6 +101,7 @@ export function useAuditLogData() {
         setEvents(filteredEvents);
         setTotal(outcome ? filteredEvents.length : (data.count || 0));
       } catch (err) {
+        console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to load audit log. Backend error.');
         console.error('Audit fetch error:', err);
       } finally {
@@ -131,14 +132,10 @@ export function useAuditLogData() {
 
         const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
         const wsUrl = `${wsBaseUrl}/ws/notifications/?token=${token}`;
-        console.log(`[AuditLog] Connecting to WebSocket at ${wsUrl}...`);
         ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => console.log('[AuditLog] Connected to real-time updates');
 
         ws.onmessage = (event) => {
           try {
-            console.log('[AuditLog] Received message:', event.data);
             const data = JSON.parse(event.data);
             if (data.type === 'audit.created' && data.payload) {
               const newEvent = data.payload as AuditEvent;
@@ -150,15 +147,16 @@ export function useAuditLogData() {
               setTotal(prev => prev + 1);
             }
           } catch (e) {
+            console.error(e);
             console.error('[AuditLog] Failed to parse WebSocket message', e);
           }
         };
 
         ws.onclose = () => {
-          console.log('[AuditLog] Disconnected');
           if (isMounted) reconnectTimer = setTimeout(connect, 3000);
         };
       } catch (e) {
+        console.error(e);
         console.error('[AuditLog] Connection failed', e);
         if (isMounted) reconnectTimer = setTimeout(connect, 5000);
       }

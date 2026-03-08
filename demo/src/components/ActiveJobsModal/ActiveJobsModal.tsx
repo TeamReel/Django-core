@@ -78,6 +78,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       const data = json.data || json;
       setJobs(data.jobs || []);
     } catch (err) {
+      console.error(err);
       setError(String(err));
     } finally {
       setLoading(false);
@@ -119,6 +120,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
         // Refresh immediately
         await fetchJobs();
       } catch (err) {
+        console.error(err);
         console.error('Error cancelling job:', err);
       } finally {
         setCancellingIds((prev) => {

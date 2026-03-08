@@ -58,7 +58,7 @@
     gap: var(--space-3);
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--app-border, #333);
+    border: 1px solid var(--app-border, var(--app-text));
     background: transparent;
     cursor: pointer;
     transition: all var(--duration-fast) var(--ease-default);
@@ -89,7 +89,7 @@
 .card {
     padding: var(--space-4) var(--space-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--app-border, #333);
+    border: 1px solid var(--app-border, var(--app-text));
     background: var(--app-surface-2, #252540);
 }
 
@@ -119,7 +119,7 @@
 .progressBarBg {
     height: 8px;
     border-radius: var(--radius-sm);
-    background: var(--app-border, #333);
+    background: var(--app-border, var(--app-text));
 }
 
 .progressBarFill {

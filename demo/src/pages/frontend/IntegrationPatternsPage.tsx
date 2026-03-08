@@ -12,6 +12,7 @@ const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?:
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
+      console.error(err);
       console.error('Failed to copy:', err);
     }
   };
@@ -130,6 +131,7 @@ export function UserProfile() {
         const response = await apiClient.get<UserData>(\`/users/\${user?.id}\`);
         setData(response.data);
       } catch (err) {
+        console.error(err);
         setError(err as Error);
       } finally {
         setLoading(false);
@@ -183,7 +185,8 @@ export function CreateProjectForm() {
       await apiClient.post('/projects', { name });
       setSuccess(true);
       setName('');
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       // API errors are normalized
       setError(err.message || 'Failed to create project');
     } finally {

@@ -31,7 +31,7 @@
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-sm);
   border: 1px solid var(--clear-btn-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   color: var(--clear-btn-color);
   cursor: pointer;
   font-size: var(--text-sm);

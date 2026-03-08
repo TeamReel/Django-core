@@ -69,6 +69,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     (orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })),
                 );
             } catch (e) {
+              console.error(e);
                 console.error(e);
             }
         };
@@ -117,6 +118,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                 setClubs(allClubs);
                 setTeams(allTeams);
             } catch (e) {
+              console.error(e);
                 console.error(e);
             }
         };
@@ -348,6 +350,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
                 setUsers(results);
             } catch (e) {
+              console.error(e);
                 setError(e instanceof Error ? e.message : 'Error loading users');
             } finally {
                 setIsLoading(false);

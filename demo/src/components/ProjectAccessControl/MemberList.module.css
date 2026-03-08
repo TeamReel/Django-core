@@ -39,7 +39,7 @@
 
 /* Modal container */
 .modalContainer {
-  background-color: var(--color-surface, white);
+  background-color: var(--color-surface, var(--app-surface));
   width: 400px;
   max-width: 90%;
 }
@@ -58,7 +58,7 @@
 
 /* Cancel button */
 .cancelButton {
-  background: var(--color-surface, white);
+  background: var(--color-surface, var(--app-surface));
 }
 
 /* Confirm / danger button */

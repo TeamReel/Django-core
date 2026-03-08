@@ -67,16 +67,14 @@ export function useAssetAutoProcessing({
             alert('Bewerken mislukt: geen resultaat ontvangen van de server.');
             return;
           }
-          console.log('[Log] Postprocess auto-accept starting for', postProcessingAsset);
           const result = await postProcessGen.acceptVariant(0);
           if (result) {
-            console.log('[OK] Postprocess auto-saved:', postProcessingAsset, result);
             await refresh();
-            console.log('[Refresh] Profile refreshed after postprocess save');
           } else {
             console.error('[Error] Postprocess save failed for', postProcessingAsset);
           }
         } catch (err) {
+          console.error(err);
           console.error('[Error] Postprocess auto-accept error:', err);
         } finally {
           setPostProcessingAsset(null);
@@ -116,16 +114,14 @@ export function useAssetAutoProcessing({
             console.error('[Error] Upload auto-process variant has no content:', variant);
             return;
           }
-          console.log('[Log] Upload auto-accept starting for', uploadProcessingAsset);
           const result = await uploadAutoGen.acceptVariant(0);
           if (result) {
-            console.log('[OK] Upload auto-saved:', uploadProcessingAsset, result);
             await refresh();
-            console.log('[Refresh] Profile refreshed after upload auto-process');
           } else {
             console.error('[Error] Upload auto-save failed for', uploadProcessingAsset);
           }
         } catch (err) {
+          console.error(err);
           console.error('[Error] Upload auto-accept error:', err);
         } finally {
           setUploadProcessingAsset(null);

@@ -160,6 +160,7 @@ export function useClubsData(preselectedOrgId?: string) {
           setTeams(allTeams);
         }
       } catch (e) {
+        console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load clubs');
       } finally {
         setIsLoading(false);
@@ -255,6 +256,7 @@ export function useClubsData(preselectedOrgId?: string) {
       setClubs((prev) => prev.filter((p: any) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
       if (String(selectedClubId) === String(projectSlugOrId)) setSelectedClubId('');
     } catch (e) {
+      console.error(e);
       console.error(e);
       alert('Error deleting club');
     }

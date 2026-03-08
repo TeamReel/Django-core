@@ -164,6 +164,7 @@ export function useMemberMediaActions({
       const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`, { credentials: 'include' });
       if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
     } catch (err) {
+      console.error(err);
       console.error('Profile photo upload error:', err);
       alert(err instanceof Error ? err.message : 'Upload mislukt');
     } finally {
@@ -224,6 +225,7 @@ export function useMemberMediaActions({
       setLegacyPhotoPreview(null);
       alert('Legacy foto succesvol geüpload!');
     } catch (err) {
+      console.error(err);
       console.error('Legacy photo upload error:', err);
       alert(err instanceof Error ? err.message : 'Upload mislukt');
     } finally {
@@ -254,6 +256,7 @@ export function useMemberMediaActions({
         closeup: { ...prev.closeup, [kitType]: { raw: storagePath, processed: storagePath, processing_state: 'processed' as const } },
       }));
     } catch (err) {
+      console.error(err);
       console.error('Closeup crop error:', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {
@@ -284,6 +287,7 @@ export function useMemberMediaActions({
         halfbody: { ...prev.halfbody, [kitType]: { raw: storagePath, processed: storagePath, processing_state: 'processed' as const } },
       }));
     } catch (err) {
+      console.error(err);
       console.error('Halfbody crop error:', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {
@@ -318,6 +322,7 @@ export function useMemberMediaActions({
       const json = await res.json();
       setMembership(json?.data || json);
     } catch (e) {
+      console.error(e);
       setSaveError(e instanceof Error ? e.message : 'Failed to update');
       console.error('Metadata update failed:', e);
     } finally {

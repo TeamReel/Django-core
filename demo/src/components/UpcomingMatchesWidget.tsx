@@ -55,6 +55,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
             setMatches(extractItems<Match>(data));
         }
       } catch (err) {
+        console.error(err);
         console.error("Failed to fetch upcoming matches", err);
       } finally {
         setLoading(false);

@@ -118,6 +118,7 @@ export function useMatchFormState() {
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
       } catch (e) {
+        console.error(e);
         console.error('Failed to load active context:', e);
       }
     };

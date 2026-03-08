@@ -103,6 +103,7 @@ export function useSports(): UseSportsReturn {
       const sportsList = normalizeSportsList(data);
       setSports(sportsList);
     } catch (err) {
+      console.error(err);
       const message = err instanceof Error ? err.message : "Failed to fetch sports";
       setError(message);
       console.error("Error fetching sports:", err);

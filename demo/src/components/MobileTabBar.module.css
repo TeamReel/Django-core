@@ -51,7 +51,7 @@
 .inlinePill[data-active="true"] {
   border-color: var(--app-primary, #3B8EA5);
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   font-weight: var(--font-semibold);
 }
 
@@ -68,7 +68,7 @@
   justify-content: space-between;
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -128,7 +128,7 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);

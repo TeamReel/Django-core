@@ -19,7 +19,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  color: white;
+  color: var(--color-white, #fff);
   font-size: var(--text-xs);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
@@ -30,7 +30,7 @@
   position: absolute;
   top: 8px;
   background: rgba(0, 0, 0, 0.6);
-  color: white;
+  color: var(--color-white, #fff);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
@@ -73,7 +73,7 @@
 }
 
 .spinnerText {
-  color: white;
+  color: var(--color-white, #fff);
   font-size: var(--text-xs);
 }
 
@@ -109,7 +109,7 @@
   font-size: var(--text-xs);
   cursor: pointer;
   background: var(--vscode-button-background, #0078d4);
-  color: var(--vscode-button-foreground, #fff);
+  color: var(--vscode-button-foreground, var(--app-surface));
   border: none;
   border-radius: var(--radius-md);
 }
@@ -156,7 +156,7 @@
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   background: linear-gradient(135deg, var(--color-indigo-500), var(--color-violet-500));
-  color: white;
+  color: var(--color-white, #fff);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -244,7 +244,7 @@
   padding: var(--space-2) var(--space-4);
   min-height: 36px;
   background: var(--color-blue-800);
-  color: white;
+  color: var(--color-white, #fff);
   border: none;
   border-radius: var(--radius-md);
   font-size: var(--text-xs);
@@ -323,7 +323,7 @@
   padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
-  color: white;
+  color: var(--color-white, #fff);
   border: none;
   border-radius: var(--radius-md);
 }
@@ -352,7 +352,7 @@
 .clubBadge {
   font-size: var(--text-xs);
   background: var(--color-blue-700);
-  color: white;
+  color: var(--color-white, #fff);
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-sm);
 }
@@ -379,7 +379,7 @@
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-xs);
   background: linear-gradient(135deg, var(--color-indigo-500), var(--color-violet-500));
-  color: white;
+  color: var(--color-white, #fff);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;

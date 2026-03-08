@@ -88,6 +88,7 @@ export default function TopNavigation() {
           setUnreadCount(unread);
         }
       } catch (err) {
+        console.error(err);
         console.error('Failed to fetch notification count:', err);
       }
     };

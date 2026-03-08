@@ -56,6 +56,7 @@ export const OrganisationCreatePage: React.FC = () => {
           const data = await response.json();
           errorMessage = data.detail || JSON.stringify(data);
         } catch (e) {
+          console.error(e);
           // If JSON parsing fails, use status text
           errorMessage = `Error ${response.status}: ${response.statusText}`;
         }
@@ -70,7 +71,8 @@ export const OrganisationCreatePage: React.FC = () => {
         // Fallback if ID is missing
         navigate('/federations');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message);
     } finally {
       setLoading(false);

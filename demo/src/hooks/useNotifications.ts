@@ -108,7 +108,8 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       const raw = await response.json();
       setNotifications(unwrapNotifications(raw));
       setError(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || 'Failed to load notifications');
     } finally {
       setLoading(false);
@@ -162,6 +163,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       );
       dispatchChange();
     } catch (err) {
+      console.error(err);
       console.error('Failed to mark notification read:', err);
     }
   }, []);
@@ -185,6 +187,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       );
       dispatchChange();
     } catch (err) {
+      console.error(err);
       console.error('Failed to mark notification unread:', err);
     }
   }, []);
@@ -202,6 +205,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       dispatchChange();
     } catch (err) {
+      console.error(err);
       console.error('Failed to mark all read:', err);
     }
   }, []);
@@ -219,6 +223,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
       setNotifications(prev => prev.map(n => ({ ...n, is_read: false })));
       dispatchChange();
     } catch (err) {
+      console.error(err);
       console.error('Failed to mark all unread:', err);
     }
   }, []);

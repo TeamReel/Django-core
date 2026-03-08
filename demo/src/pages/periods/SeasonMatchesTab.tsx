@@ -201,6 +201,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
         [matchId]: { mediaCount, generatingCount, totalChecked: CONTENT_TOTAL, mediaSubtypes, generatingSubtypes },
       }));
     } catch (err) {
+      console.error(err);
       console.error('[MatchContent] Error loading content status:', err);
     } finally {
       setLoadingContent((prev) => {

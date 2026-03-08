@@ -32,6 +32,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       setKits(kitAssets);
       setLoading(false);
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to load kits');
       setLoading(false);
     }
@@ -89,6 +90,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       await loadKits();
       onKitUploaded?.();
     } catch (e) {
+      console.error(e);
       setError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploadingType(null);

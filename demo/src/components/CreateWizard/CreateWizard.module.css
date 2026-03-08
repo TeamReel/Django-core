@@ -13,7 +13,7 @@
 .contextHint {
   font-size: var(--text-sm);
   color: var(--app-muted-text, #6b7280);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   margin: 0;
@@ -32,7 +32,7 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-4);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -53,7 +53,7 @@
 
 .flowCard:active {
   transform: scale(0.97);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
@@ -171,7 +171,7 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -224,7 +224,7 @@
   border-radius: var(--radius-lg);
   font-weight: var(--font-bold);
   font-size: var(--text-base);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #111827);
 }
 
@@ -362,7 +362,7 @@
   font-size: var(--text-base);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   transition: border-color var(--duration-fast);
   -webkit-appearance: none;
@@ -393,7 +393,7 @@
 .matchVenueToggle {
   display: flex;
   gap: var(--space-1);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   border-radius: var(--radius-lg);
   padding: var(--space-1);
 }
@@ -413,7 +413,7 @@
 
 .matchVenueBtn[data-active='true'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   font-weight: var(--font-semibold);
 }
 
@@ -430,7 +430,7 @@
   border: none;
   border-radius: var(--radius-lg);
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   cursor: pointer;
   transition: opacity var(--duration-fast), transform var(--duration-fast);
   margin-top: var(--space-1);
@@ -561,11 +561,11 @@
 
 .matchConfirmActionBtn[data-variant='primary'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .matchConfirmActionBtn[data-variant='secondary'] {
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #111827);
 }
 
@@ -593,7 +593,7 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--app-muted-text, #6b7280);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
 }
@@ -618,7 +618,7 @@
   font-size: var(--text-base);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   transition: border-color var(--duration-fast);
   min-height: 44px;
@@ -661,7 +661,7 @@
   padding: var(--space-3) var(--space-3);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -680,7 +680,7 @@
   height: 36px;
   border-radius: var(--radius-full);
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -786,7 +786,7 @@
   font-size: var(--text-base);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   transition: border-color var(--duration-fast);
   -webkit-appearance: none;
@@ -812,7 +812,7 @@
 .memberRoleToggle {
   display: flex;
   gap: var(--space-1);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   border-radius: var(--radius-lg);
   padding: var(--space-1);
 }
@@ -832,7 +832,7 @@
 
 .memberRoleBtn[data-active='true'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   font-weight: var(--font-semibold);
 }
 
@@ -849,7 +849,7 @@
   border: none;
   border-radius: var(--radius-lg);
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   cursor: pointer;
   transition: opacity var(--duration-fast), transform var(--duration-fast);
   margin-top: var(--space-1);
@@ -980,11 +980,11 @@
 
 .memberConfirmActionBtn[data-variant='primary'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .memberConfirmActionBtn[data-variant='secondary'] {
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #111827);
 }
 
@@ -1011,7 +1011,7 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--app-muted-text, #6b7280);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
 }
@@ -1033,7 +1033,7 @@
   font-weight: var(--font-medium);
   border: 2px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   cursor: pointer;
   transition: border-color var(--duration-fast), background var(--duration-fast);
@@ -1076,7 +1076,7 @@
   font-size: var(--text-base);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   transition: border-color var(--duration-fast);
   -webkit-appearance: none;
@@ -1109,7 +1109,7 @@
   font-size: var(--text-base);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   transition: border-color var(--duration-fast);
   resize: vertical;
@@ -1136,7 +1136,7 @@
   border: none;
   border-radius: var(--radius-lg);
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   cursor: pointer;
   transition: opacity var(--duration-fast), transform var(--duration-fast);
   margin-top: var(--space-1);
@@ -1266,11 +1266,11 @@
 
 .projectConfirmActionBtn[data-variant='primary'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .projectConfirmActionBtn[data-variant='secondary'] {
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #111827);
 }
 
@@ -1297,7 +1297,7 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--app-muted-text, #6b7280);
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
 }
@@ -1319,7 +1319,7 @@
   font-weight: var(--font-medium);
   border: 2px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   cursor: pointer;
   transition: border-color var(--duration-fast), background var(--duration-fast);
@@ -1364,7 +1364,7 @@
   font-size: var(--text-base);
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: var(--radius-lg);
-  background: var(--app-surface, #fff);
+  background: var(--app-surface, var(--app-surface));
   color: var(--app-text-primary, #111827);
   transition: border-color var(--duration-fast);
   -webkit-appearance: none;
@@ -1426,7 +1426,7 @@
   border: none;
   border-radius: var(--radius-lg);
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
   cursor: pointer;
   transition: opacity var(--duration-fast), transform var(--duration-fast);
   margin-top: var(--space-1);
@@ -1556,11 +1556,11 @@
 
 .periodConfirmActionBtn[data-variant='primary'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .periodConfirmActionBtn[data-variant='secondary'] {
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #111827);
 }
 
@@ -1628,10 +1628,10 @@
 
 .wizardEmptyActionBtn[data-variant='primary'] {
   background: var(--app-primary, #3B8EA5);
-  color: white;
+  color: var(--color-white, #fff);
 }
 
 .wizardEmptyActionBtn[data-variant='secondary'] {
-  background: var(--app-surface-2, #f3f4f6);
+  background: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #111827);
 }

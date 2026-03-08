@@ -101,7 +101,7 @@
 /* ── Secondary action button ────────────────────────── */
 .secondaryBtn {
   height: 48px;
-  background-color: var(--app-surface-2, #f3f4f6);
+  background-color: var(--app-surface-2, var(--app-surface-2));
   color: var(--app-text-primary, #1f2937);
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
@@ -124,7 +124,7 @@
   padding: var(--space-4) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -170,7 +170,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   cursor: pointer;

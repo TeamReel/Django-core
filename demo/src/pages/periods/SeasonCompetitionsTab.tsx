@@ -144,6 +144,7 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                                 }
                               } catch (e) {
                                 console.error(e);
+                                console.error(e);
                                 alert('Error deleting competition');
                               }
                             }}

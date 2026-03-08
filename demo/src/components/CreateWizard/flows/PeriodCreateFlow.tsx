@@ -210,7 +210,8 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
 
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      console.error(err);
       setError(err.message || `${periodTypeLabel} aanmaken mislukt`);
       setIsSaving(false);
       throw err;

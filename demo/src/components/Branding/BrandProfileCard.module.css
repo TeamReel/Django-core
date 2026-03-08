@@ -32,7 +32,7 @@
 
 .assetPreview {
   aspect-ratio: 1;
-  background-color: var(--app-surface);
+  background-color: var(--color-white, #fff);
 }
 
 .assetImage {
