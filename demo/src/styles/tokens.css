@@ -201,3 +201,15 @@
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
 }
+
+/* ======================================================================
+   BORDER TOKENS — Compound shorthand
+   ====================================================================== */
+:root {
+  --border-default: 1px solid var(--app-border);
+  --border-subtle:  1px solid rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.08);
+}

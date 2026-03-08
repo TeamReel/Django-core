@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** 🔲 Niet gestart (0/11 fases)
+**Status:** � In uitvoering (1/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -28,7 +28,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 
 | Fase | Naam | Scope | Waarden | Effort | Status |
 |------|------|-------|---------|--------|--------|
-| **Q1** | Quick Wins (base.css) | `::selection`, `scroll-padding`, `overscroll-behavior`, `text-rendering`, `prefers-color-scheme`, `content-visibility`, `--border-default` token | — | 30 min | 🔲 Todo |
+| **Q1** | Quick Wins (base.css) | `::selection`, `scroll-padding`, `overscroll-behavior`, `text-rendering`, `prefers-color-scheme`, `content-visibility`, `--border-default` token | — | 30 min | ✅ Done |
 | **A1** | Radius Token Adoption | `border-radius: Npx` → `var(--radius-*)` | 717 | 30 min | 🔲 Todo |
 | **A2** | Shadow Token Adoption | `box-shadow: ...` → `var(--shadow-*)` | 110 | 30 min | 🔲 Todo |
 | **A3** | Motion Token Adoption | `transition` / `animation` → `var(--duration-*)` + `var(--ease-*)` | 321 | 45 min | 🔲 Todo |

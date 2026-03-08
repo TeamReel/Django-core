@@ -4,6 +4,33 @@
    Extracted from index.css for maintainability.
    ====================================================================== */
 
+/* ─── Q1 Quick Wins: Premium UX polish ──────────────────────────────── */
+
+/* Brand-colored text selection */
+::selection {
+  background-color: var(--color-primary-200);
+  color: var(--color-neutral-900);
+}
+
+[data-theme="dark"] ::selection {
+  background-color: var(--color-primary-700);
+  color: white;
+}
+
+/* Smooth scroll + anchor offset for fixed header */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+@media (max-width: 768px) {
+  html {
+    scroll-padding-top: 64px;
+  }
+}
+
+/* ─── End Q1 ───────────────────────────────────────────────────────── */
+
 /* Global Accessibility: Ensure visible focus indicator for all interactive elements */
 :focus-visible {
   outline: 2px solid var(--app-focus-ring) !important;
@@ -305,6 +332,7 @@ main {
 /* Better contrast for headings in both modes */
 h1, h2, h3, h4, h5, h6 {
   color: var(--app-text);
+  text-rendering: optimizeLegibility;
 }
 
 /* Better contrast for buttons with hardcoded colors */
@@ -353,4 +381,30 @@ header [role="alert"] {
   .page-transition {
     animation: none;
   }
+
+  html {
+    scroll-behavior: auto;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Prevent scroll chaining on overlay surfaces */
+[class*="modal"], [class*="Modal"],
+[class*="drawer"], [class*="Drawer"],
+[class*="bottomSheet"], [class*="BottomSheet"],
+[class*="overlay"], [class*="Overlay"],
+[class*="sidebar"], [class*="Sidebar"] {
+  overscroll-behavior: contain;
+}
+
+/* Performance: skip rendering off-screen list items */
+[class*="listItem"], [class*="ListItem"],
+[class*="tableRow"], [class*="TableRow"] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60px;
 }

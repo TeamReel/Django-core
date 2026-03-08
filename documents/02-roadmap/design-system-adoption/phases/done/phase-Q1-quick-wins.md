@@ -1,6 +1,6 @@
 # Q1 — Quick Wins (base.css + tokens.css)
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 30 min
 **Bestanden:**
 - `demo/src/styles/base.css`
