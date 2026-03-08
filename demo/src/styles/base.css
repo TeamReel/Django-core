@@ -155,9 +155,11 @@ button[style*="backgroundColor: '#dc3545'"]:not(nav *) {
 }
 
 /* Button hover states (excluding nav) */
-button:not([disabled]):not(nav *):not(.app-action-button):not(.app-unstyled-button):hover {
+@media (hover: hover) {
+  button:not([disabled]):not(nav *):not(.app-action-button):not(.app-unstyled-button):hover {
   opacity: 0.9;
   box-shadow: var(--shadow-xs);
+  }
 }
 
 /* Button focus states */
@@ -175,9 +177,11 @@ button:focus-visible, [class*="Button"]:focus-visible {
   opacity: 1 !important;
 }
 
-.app-unstyled-button:hover {
+@media (hover: hover) {
+  .app-unstyled-button:hover {
   box-shadow: none !important;
   opacity: 1 !important;
+  }
 }
 
 /* Utility: outlined action button (border uses current text color)
@@ -191,10 +195,12 @@ button.app-action-button[type="submit"] {
   opacity: 1 !important;
 }
 
-button.app-action-button:hover {
+@media (hover: hover) {
+  button.app-action-button:hover {
   background-color: var(--app-surface-2) !important;
   box-shadow: none !important;
   opacity: 1 !important;
+  }
 }
 
 a {
@@ -202,8 +208,10 @@ a {
   text-decoration: none;
 }
 
-a:hover {
+@media (hover: hover) {
+  a:hover {
   text-decoration: underline;
+  }
 }
 
 /* Global table styles for dark mode consistency */
@@ -225,8 +233,10 @@ tbody, td {
   border-color: var(--app-border) !important;
 }
 
-tbody tr:hover td {
+@media (hover: hover) {
+  tbody tr:hover td {
   background-color: var(--app-table-row-hover-bg) !important;
+  }
 }
 
 /* Table container backgrounds */

@@ -58,8 +58,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.filterBtn:hover {
+@media (hover: hover) {
+  .filterBtn:hover {
   background: var(--app-hover-bg, rgba(255, 255, 255, 0.06));
+  }
 }
 
 .filterBtnPrimary {
@@ -69,8 +71,10 @@
   color: var(--color-indigo-400);
 }
 
-.filterBtnPrimary:hover {
+@media (hover: hover) {
+  .filterBtnPrimary:hover {
   background: rgba(129, 140, 248, 0.25);
+  }
 }
 
 /* ── Table wrapper (premium card) ── */
@@ -118,8 +122,10 @@
   transition: background var(--duration-fast);
 }
 
-.batchBtn:hover {
+@media (hover: hover) {
+  .batchBtn:hover {
   background: var(--color-indigo-500);
+  }
 }
 
 .deselectBtn {

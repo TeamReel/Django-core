@@ -472,8 +472,10 @@
   text-decoration: none;
 }
 
-.actionBtn:hover {
+@media (hover: hover) {
+  .actionBtn:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
+  }
 }
 
 .actionBtnPrimary {
@@ -494,8 +496,10 @@
   color: var(--color-blue-500, #3b82f6);
 }
 
-.actionBtnPrimary:hover {
+@media (hover: hover) {
+  .actionBtnPrimary:hover {
   background: var(--color-blue-500-alpha-25, rgba(59, 130, 246, 0.25));
+  }
 }
 
 /* ── Empty state ── */

@@ -31,7 +31,9 @@
   transition: opacity var(--duration-fast);
 }
 
-.avatar:hover { opacity: 0.85; }
+@media (hover: hover) {
+  .avatar:hover { opacity: 0.85; }
+}
 
 .avatarImg {
   width: 100%;
@@ -119,8 +121,10 @@
   border-bottom: 1px solid var(--app-border);
 }
 
-button.row:hover {
+@media (hover: hover) {
+  button.row:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.03));
+  }
 }
 
 button.row:active {
@@ -171,8 +175,10 @@ button.row:active {
   -webkit-tap-highlight-color: transparent;
 }
 
-.themePill:hover:not(.themePillActive) {
+@media (hover: hover) {
+  .themePill:hover:not(.themePillActive) {
   color: var(--app-text);
+  }
 }
 
 .themePillActive {

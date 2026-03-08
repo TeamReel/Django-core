@@ -67,8 +67,10 @@
   margin-bottom: var(--space-2);
 }
 
-.collapseButton:hover {
+@media (hover: hover) {
+  .collapseButton:hover {
   background-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 /* ── Nav item (NavLink) ── */
@@ -158,8 +160,10 @@
   z-index: 25;
 }
 
-.expandButton:hover {
+@media (hover: hover) {
+  .expandButton:hover {
   background-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 /* ── Panel B: Secondary sidebar ── */

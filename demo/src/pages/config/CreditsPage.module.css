@@ -31,8 +31,10 @@
   transition: background var(--duration-fast), color var(--duration-fast);
 }
 
-.tabButton:hover {
+@media (hover: hover) {
+  .tabButton:hover {
   background: var(--app-hover, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .tabButtonActive {

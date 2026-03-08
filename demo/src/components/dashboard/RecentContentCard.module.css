@@ -35,7 +35,9 @@
   padding: 0;
 }
 
-.seeAll:hover { opacity: 0.8; }
+@media (hover: hover) {
+  .seeAll:hover { opacity: 0.8; }
+}
 
 /* ── Thumbnail grid ──────────────────────────────────── */
 .thumbGrid {
@@ -51,8 +53,10 @@
   transition: transform var(--duration-fast);
 }
 
-.thumbItem:hover {
+@media (hover: hover) {
+  .thumbItem:hover {
   transform: scale(1.02);
+  }
 }
 
 .thumbItem:active {

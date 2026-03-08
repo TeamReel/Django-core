@@ -13,8 +13,10 @@
   cursor: pointer;
 }
 
-.activityItem[data-clickable="true"]:hover {
+@media (hover: hover) {
+  .activityItem[data-clickable="true"]:hover {
   background-color: var(--app-surface-2);
+  }
 }
 
 .dateBox {

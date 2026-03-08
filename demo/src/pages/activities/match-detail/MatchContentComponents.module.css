@@ -63,8 +63,10 @@
   background: var(--app-active-bg, rgba(0, 0, 0, 0.06));
 }
 
-.contentRow[data-clickable='true']:hover {
+@media (hover: hover) {
+  .contentRow[data-clickable='true']:hover {
   background: var(--app-surface-hover, #2a2a2a);
+  }
 }
 
 .subtitle {

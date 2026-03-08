@@ -74,8 +74,10 @@
   color: var(--color-blue-400);
 }
 
-.matchLink:hover {
+@media (hover: hover) {
+  .matchLink:hover {
   text-decoration: underline;
+  }
 }
 
 .tdDate {

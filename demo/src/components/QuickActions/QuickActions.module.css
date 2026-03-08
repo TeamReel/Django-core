@@ -27,9 +27,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.action:hover {
+@media (hover: hover) {
+  .action:hover {
   background: var(--app-bg);
   border-color: var(--app-primary);
+  }
 }
 
 .action:active {

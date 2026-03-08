@@ -70,8 +70,10 @@
   text-decoration: none;
 }
 
-.seasonLink:hover {
+@media (hover: hover) {
+  .seasonLink:hover {
   text-decoration: underline;
+  }
 }
 
 .seasonRight {
@@ -159,8 +161,10 @@
   text-decoration: none;
 }
 
-.compLink:hover {
+@media (hover: hover) {
+  .compLink:hover {
   text-decoration: underline;
+  }
 }
 
 /* ── Matches list inside competition ── */

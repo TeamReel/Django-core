@@ -287,8 +287,10 @@
   transition: background var(--duration-fast);
 }
 
-.missingCallout:hover {
+@media (hover: hover) {
+  .missingCallout:hover {
   background: color-mix(in srgb, var(--color-amber-400) 14%, var(--app-surface));
+  }
 }
 
 .missingIcon {

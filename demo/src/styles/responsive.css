@@ -50,8 +50,10 @@
   height: 24px;
 }
 
-.mobile-menu-button:hover {
+@media (hover: hover) {
+  .mobile-menu-button:hover {
   background-color: var(--app-surface-2);
+  }
 }
 
 /* --- Responsive Sidebar --- */

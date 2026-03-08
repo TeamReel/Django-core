@@ -6,9 +6,11 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.matchCard:hover {
+@media (hover: hover) {
+  .matchCard:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+  }
 }
 
 .relativeTime {

@@ -54,8 +54,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.navBtn:hover:not(:disabled) {
+@media (hover: hover) {
+  .navBtn:hover:not(:disabled) {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
+  }
 }
 
 .navBtn:disabled {
@@ -115,8 +117,10 @@
   transition: all var(--duration-fast) var(--ease-default);
 }
 
-.saveBtn:hover:not(:disabled) {
+@media (hover: hover) {
+  .saveBtn:hover:not(:disabled) {
   background: var(--color-blue-500-alpha-25, rgba(59, 130, 246, 0.25));
+  }
 }
 
 .saveBtn:disabled {
@@ -138,9 +142,11 @@
   transition: all var(--duration-fast) var(--ease-default);
 }
 
-.closeBtn:hover {
+@media (hover: hover) {
+  .closeBtn:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
   color: var(--app-text);
+  }
 }
 
 /* ── Tab bar ── */
@@ -170,8 +176,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.tabBtn:hover {
+@media (hover: hover) {
+  .tabBtn:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
+  }
 }
 
 .tabBtn[data-active='true'] {

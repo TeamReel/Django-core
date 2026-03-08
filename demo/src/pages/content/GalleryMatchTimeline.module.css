@@ -100,8 +100,10 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.matchGroup:hover {
+@media (hover: hover) {
+  .matchGroup:hover {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
 }
 
 /* ── Match header ── */
@@ -118,8 +120,10 @@
   transition: background var(--duration-fast) var(--ease-default);
 }
 
-.matchHeader:hover {
+@media (hover: hover) {
+  .matchHeader:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.03));
+  }
 }
 
 .matchHeader:active {
@@ -284,9 +288,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.thumbCard:hover {
+@media (hover: hover) {
+  .thumbCard:hover {
   transform: scale(1.02);
   border-color: var(--app-primary, #2563eb);
+  }
 }
 
 .thumbCard:active {
@@ -378,9 +384,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.matchActionBtn:hover {
+@media (hover: hover) {
+  .matchActionBtn:hover {
   background: var(--app-surface-2, rgba(255, 255, 255, 0.06));
   color: var(--app-text);
+  }
 }
 
 .matchActionBtn:active {
@@ -469,8 +477,10 @@
   transition: opacity var(--duration-fast) var(--ease-default);
 }
 
-.emptyBtn:hover {
+@media (hover: hover) {
+  .emptyBtn:hover {
   opacity: 0.9;
+  }
 }
 
 /* ── Todaybanner — match today highlight ── */

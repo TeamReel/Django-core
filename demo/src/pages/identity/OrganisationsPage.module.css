@@ -23,8 +23,10 @@
   font-size: var(--text-sm);
 }
 
-.orgNameLink:hover {
+@media (hover: hover) {
+  .orgNameLink:hover {
   color: var(--org-link-hover, #1d4ed8);
+  }
 }
 
 .creditBalance {

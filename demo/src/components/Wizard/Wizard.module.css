@@ -83,8 +83,10 @@
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
-.primaryBtn:hover:not(:disabled) {
+@media (hover: hover) {
+  .primaryBtn:hover:not(:disabled) {
   background-color: var(--app-primary-hover, #327d91);
+  }
 }
 
 .primaryBtn:active:not(:disabled) {
@@ -104,8 +106,10 @@
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
-.secondaryBtn:hover:not(:disabled) {
+@media (hover: hover) {
+  .secondaryBtn:hover:not(:disabled) {
   background-color: var(--app-surface-3, #e5e7eb);
+  }
 }
 
 .secondaryBtn:active:not(:disabled) {
@@ -127,8 +131,10 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.card:hover {
+@media (hover: hover) {
+  .card:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .card:active {
@@ -171,8 +177,10 @@
   transition: background-color var(--duration-fast);
 }
 
-.retryBtn:hover {
+@media (hover: hover) {
+  .retryBtn:hover {
   background-color: var(--app-surface-2);
+  }
 }
 
 /* ── Loading state ──────────────────────────────────── */

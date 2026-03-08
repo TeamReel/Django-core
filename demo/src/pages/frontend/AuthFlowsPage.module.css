@@ -52,8 +52,10 @@
   transition: all var(--duration-fast) var(--ease-default);
 }
 
-.flowButton:hover {
+@media (hover: hover) {
+  .flowButton:hover {
   background-color: var(--app-surface-2);
+  }
 }
 
 .flowButton[data-active="true"] {
@@ -62,8 +64,10 @@
   color: var(--color-white, #ffffff);
 }
 
-.flowButton[data-active="true"]:hover {
+@media (hover: hover) {
+  .flowButton[data-active="true"]:hover {
   background-color: var(--app-primary);
+  }
 }
 
 .successAlert {

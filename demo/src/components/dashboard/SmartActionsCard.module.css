@@ -44,9 +44,11 @@
   color: inherit;
 }
 
-.actionItem:hover {
+@media (hover: hover) {
+  .actionItem:hover {
   background: var(--app-surface-hover, #f3f4f6);
   transform: translateX(2px);
+  }
 }
 
 .actionItem:active {

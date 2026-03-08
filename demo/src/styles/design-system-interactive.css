@@ -5,9 +5,11 @@
   transform: scale(1);
 }
 
-.interactive-button:hover {
+@media (hover: hover) {
+  .interactive-button:hover {
   transform: scale(1.05);
   box-shadow: var(--shadow-lg);
+  }
 }
 
 .interactive-button:active {
@@ -20,10 +22,12 @@
   border: 1px solid var(--app-border);
 }
 
-.interactive-card:hover {
+@media (hover: hover) {
+  .interactive-card:hover {
   box-shadow: var(--shadow-xl);
   border-color: var(--app-border);
   transform: translateY(-2px);
+  }
 }
 
 .pulse-animation {
@@ -50,9 +54,11 @@
   cursor: pointer;
 }
 
-.badge-hover:hover {
+@media (hover: hover) {
+  .badge-hover:hover {
   transform: scale(1.1);
   box-shadow: var(--shadow-sm);
+  }
 }
 
 /* Modern Loading Animations */

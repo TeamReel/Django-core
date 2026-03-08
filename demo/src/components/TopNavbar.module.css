@@ -96,8 +96,10 @@
   flex-shrink: 0;
 }
 
-.backBtn:hover {
+@media (hover: hover) {
+  .backBtn:hover {
   background: var(--app-hover, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .backBtn:active {
@@ -190,8 +192,10 @@
   background-color: rgba(59, 130, 246, 0.1);
 }
 
-.megaItem:not([data-active="true"]):hover {
+@media (hover: hover) {
+  .megaItem:not([data-active="true"]):hover {
   background-color: var(--app-surface-2);
+  }
 }
 
 .megaItemIcon {
@@ -329,8 +333,10 @@
   gap: var(--space-1);
 }
 
-.createMenuItem:hover {
+@media (hover: hover) {
+  .createMenuItem:hover {
   background-color: var(--app-surface-2);
+  }
 }
 
 /* ─── Theme / Language ────────────────────────────────────────────────────── */
@@ -390,8 +396,10 @@
   border-bottom: 1px solid var(--app-border);
 }
 
-.langItem:not([data-selected="true"]):hover {
+@media (hover: hover) {
+  .langItem:not([data-selected="true"]):hover {
   background-color: var(--app-surface-secondary);
+  }
 }
 
 /* ─── Nav Icon Buttons (Queue / Notification / Credits) ───────────────────── */

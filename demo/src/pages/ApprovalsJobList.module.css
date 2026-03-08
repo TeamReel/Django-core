@@ -41,8 +41,10 @@
   cursor: pointer;
 }
 
-.aiCard[data-clickable="true"]:hover {
+@media (hover: hover) {
+  .aiCard[data-clickable="true"]:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .aiCard[data-clickable="true"]:active {
@@ -170,8 +172,10 @@
   cursor: pointer;
 }
 
-.videoCard[data-clickable="true"]:hover {
+@media (hover: hover) {
+  .videoCard[data-clickable="true"]:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .videoCard[data-clickable="true"]:active {

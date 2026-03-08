@@ -83,8 +83,10 @@
   border-bottom: 1px solid var(--app-border);
 }
 
-.languageOption:hover {
+@media (hover: hover) {
+  .languageOption:hover {
   background-color: var(--app-surface-secondary);
+  }
 }
 
 .languageOption[data-active="true"] {
@@ -93,8 +95,10 @@
   font-weight: var(--font-semibold);
 }
 
-.languageOption[data-active="true"]:hover {
+@media (hover: hover) {
+  .languageOption[data-active="true"]:hover {
   background-color: rgba(59, 130, 246, 0.1);
+  }
 }
 
 .notificationButton {

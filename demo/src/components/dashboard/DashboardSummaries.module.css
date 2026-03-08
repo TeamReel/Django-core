@@ -14,9 +14,11 @@
   min-height: 64px;
 }
 
-.summaryCard:hover {
+@media (hover: hover) {
+  .summaryCard:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
 }
 
 .summaryCard:active {
@@ -114,8 +116,10 @@
   transition: opacity var(--duration-fast);
 }
 
-.seeAll:hover {
+@media (hover: hover) {
+  .seeAll:hover {
   opacity: 0.8;
+  }
 }
 
 .seeAll:active {
@@ -146,8 +150,10 @@
   transition: background var(--duration-fast);
 }
 
-.matchItem:hover {
+@media (hover: hover) {
+  .matchItem:hover {
   background: var(--app-bg);
+  }
 }
 
 .matchItem:active {

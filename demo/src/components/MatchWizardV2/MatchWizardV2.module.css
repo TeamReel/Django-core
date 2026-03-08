@@ -18,8 +18,10 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.matchCard:hover {
+@media (hover: hover) {
+  .matchCard:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .matchCard:active {
@@ -109,8 +111,10 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.contentCard:hover {
+@media (hover: hover) {
+  .contentCard:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .contentCard:active {
@@ -179,7 +183,9 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.primaryBtn:hover { filter: brightness(1.08); }
+@media (hover: hover) {
+  .primaryBtn:hover { filter: brightness(1.08); }
+}
 .primaryBtn:active:not(:disabled) { transform: scale(0.97); }
 .primaryBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
@@ -328,7 +334,9 @@
   transition: background-color var(--duration-fast);
 }
 
-.playerOption:hover { background-color: var(--app-surface-2); }
+@media (hover: hover) {
+  .playerOption:hover { background-color: var(--app-surface-2); }
+}
 .playerOption[data-selected='true'] { background-color: var(--app-primary-light, rgba(59, 142, 165, 0.08)); font-weight: 600; }
 .playerOption[data-disabled='true'] { opacity: 0.4; cursor: not-allowed; }
 
@@ -408,7 +416,9 @@
   transition: background-color var(--duration-fast);
 }
 
-.addGuestBtn:hover { background-color: var(--app-surface-2); }
+@media (hover: hover) {
+  .addGuestBtn:hover { background-color: var(--app-surface-2); }
+}
 
 /* ── Error banners ──────────────────────────────────── */
 .errorBanner {

@@ -57,8 +57,10 @@
   background: none;
 }
 
-.resultButton:hover {
+@media (hover: hover) {
+  .resultButton:hover {
   background-color: var(--color-background-secondary);
+  }
 }
 
 .highlight {

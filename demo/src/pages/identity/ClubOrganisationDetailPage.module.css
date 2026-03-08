@@ -39,8 +39,10 @@
   transition: color var(--duration-fast);
 }
 
-.titleBlock .parentLink:hover {
+@media (hover: hover) {
+  .titleBlock .parentLink:hover {
   color: var(--app-text);
+  }
 }
 
 .titleBlock p {
@@ -100,7 +102,9 @@
   transition: background var(--duration-fast);
 }
 
-.iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
+@media (hover: hover) {
+  .iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
+}
 .iconBtn:active { background: var(--app-active-bg, rgba(0, 0, 0, 0.08)); }
 
 /* ── Overflow menu ── */

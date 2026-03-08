@@ -65,8 +65,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.lowBannerBtn:hover {
+@media (hover: hover) {
+  .lowBannerBtn:hover {
   background: var(--color-amber-500, #f59e0b);
+  }
 }
 
 .lowBannerBtn:active {

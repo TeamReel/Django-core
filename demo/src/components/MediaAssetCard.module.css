@@ -34,9 +34,11 @@
   cursor: pointer;
 }
 
-.card[data-clickable]:hover {
+@media (hover: hover) {
+  .card[data-clickable]:hover {
   box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
+  }
 }
 
 /* --------------------------------------------------------------------------

@@ -38,8 +38,10 @@
   transition: background var(--duration-fast);
 }
 
-.typeBtn:hover {
+@media (hover: hover) {
+  .typeBtn:hover {
   background: var(--app-surface-2);
+  }
 }
 
 .typeIcon {

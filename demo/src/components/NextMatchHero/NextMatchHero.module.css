@@ -218,8 +218,10 @@
   transition: opacity var(--duration-fast), transform var(--duration-fast);
 }
 
-.ctaPrimary:hover {
+@media (hover: hover) {
+  .ctaPrimary:hover {
   opacity: 0.9;
+  }
 }
 
 .ctaPrimary:active {
@@ -243,8 +245,10 @@
   white-space: nowrap;
 }
 
-.ctaSecondary:hover {
+@media (hover: hover) {
+  .ctaSecondary:hover {
   background: var(--app-bg);
+  }
 }
 
 /* ── Empty state ─────────────────────────────────────────────────── */

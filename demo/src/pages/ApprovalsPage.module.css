@@ -118,8 +118,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.closeBtn:hover {
+@media (hover: hover) {
+  .closeBtn:hover {
   background: var(--app-surface-2, rgba(255,255,255,0.06));
+  }
 }
 
 .closeBtn:active {
@@ -181,8 +183,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnPrimary:hover {
+@media (hover: hover) {
+  .btnPrimary:hover {
   background: var(--color-blue-700);
+  }
 }
 
 .btnPrimary:active {
@@ -212,8 +216,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnApprove:hover {
+@media (hover: hover) {
+  .btnApprove:hover {
   background: var(--color-green-500);
+  }
 }
 
 .btnApprove:active {
@@ -232,8 +238,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnReject:hover {
+@media (hover: hover) {
+  .btnReject:hover {
   background: var(--color-red-50);
+  }
 }
 
 .btnReject:active {
@@ -252,8 +260,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnRetry:hover {
+@media (hover: hover) {
+  .btnRetry:hover {
   background: var(--color-blue-700);
+  }
 }
 
 .btnRetry:active {
@@ -272,8 +282,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnCancel:hover {
+@media (hover: hover) {
+  .btnCancel:hover {
   background: var(--color-red-50);
+  }
 }
 
 .btnCancel:active {
@@ -292,8 +304,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnBeginReview:hover {
+@media (hover: hover) {
+  .btnBeginReview:hover {
   background: var(--color-amber-100);
+  }
 }
 
 .btnBeginReview:active {
@@ -312,8 +326,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.btnRefresh:hover {
+@media (hover: hover) {
+  .btnRefresh:hover {
   background: var(--app-surface-2, #f3f4f6);
+  }
 }
 
 .btnRefresh:active {

@@ -136,8 +136,10 @@
   min-width: 0;
 }
 
-.memberCardName:hover {
+@media (hover: hover) {
+  .memberCardName:hover {
   text-decoration: underline !important;
+  }
 }
 
 .memberCardMeta {

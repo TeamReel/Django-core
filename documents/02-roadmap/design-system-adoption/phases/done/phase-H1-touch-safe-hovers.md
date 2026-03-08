@@ -1,8 +1,8 @@
 # H1 — Touch-safe Hovers
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 1 uur
-**Scope:** ~150 `:hover` rules wrappen in `@media (hover: hover)`
+**Scope:** 123 `:hover` rules gewrapt in `@media (hover: hover)` (58 bestanden) + z-index tokens
 
 ---
 

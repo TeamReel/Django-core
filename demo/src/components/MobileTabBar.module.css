@@ -158,8 +158,10 @@
   background-color: var(--app-surface-secondary);
 }
 
-.dropdownItem:not([data-active="true"]):hover {
+@media (hover: hover) {
+  .dropdownItem:not([data-active="true"]):hover {
   background-color: var(--app-surface-hover);
+  }
 }
 
 .dropdownItemLabel {

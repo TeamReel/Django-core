@@ -265,8 +265,10 @@
   opacity: 0;
 }
 
-.videoPlayBtn:hover {
+@media (hover: hover) {
+  .videoPlayBtn:hover {
   opacity: 1 !important;
+  }
 }
 
 .videoPlayBtn:active {

@@ -22,9 +22,11 @@
   padding: 0;
 }
 
-.avatarButton:hover {
+@media (hover: hover) {
+  .avatarButton:hover {
   background-color: var(--app-surface-hover);
   border-color: var(--app-primary);
+  }
 }
 
 /* Avatar image inside the button */
@@ -84,8 +86,10 @@
   gap: var(--space-3);
 }
 
-.menuItem:hover {
+@media (hover: hover) {
+  .menuItem:hover {
   background-color: var(--app-surface-secondary);
+  }
 }
 
 /* Divider between sections */
@@ -111,8 +115,10 @@
   font-weight: var(--font-medium);
 }
 
-.signOutItem:hover {
+@media (hover: hover) {
+  .signOutItem:hover {
   background-color: rgba(220, 53, 69, 0.1);
+  }
 }
 
 .signOutItem[data-loading="true"] {
@@ -120,6 +126,8 @@
   cursor: not-allowed;
 }
 
-.signOutItem[data-loading="true"]:hover {
+@media (hover: hover) {
+  .signOutItem[data-loading="true"]:hover {
   background-color: transparent;
+  }
 }

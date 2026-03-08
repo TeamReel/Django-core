@@ -81,8 +81,10 @@
 
 /* ─── Clickable Row Hover ────────────────────────────────────── */
 
-.clickableRowHover:hover {
+@media (hover: hover) {
+  .clickableRowHover:hover {
   background-color: var(--app-surface-2, #2a2a3e);
+  }
 }
 
 /* ─── Background Selector Button ─────────────────────────────── */

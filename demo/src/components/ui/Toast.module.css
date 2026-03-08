@@ -62,6 +62,8 @@
   transition: background var(--duration-fast) var(--ease-default);
 }
 
-.actionBtn:hover {
+@media (hover: hover) {
+  .actionBtn:hover {
   background: rgba(255, 255, 255, 0.35);
+  }
 }

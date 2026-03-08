@@ -70,8 +70,10 @@
   cursor: wait;
 }
 
-.actionButton:not([data-executing]):hover {
+@media (hover: hover) {
+  .actionButton:not([data-executing]):hover {
   background-color: var(--action-hover-bg);
+  }
 }
 
 .commentDialog {
@@ -120,8 +122,10 @@
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
-.confirmButton:hover {
+@media (hover: hover) {
+  .confirmButton:hover {
   background-color: var(--color-red-600);
+  }
 }
 
 .confirmButton:active {
@@ -140,8 +144,10 @@
   transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
-.cancelButton:hover {
+@media (hover: hover) {
+  .cancelButton:hover {
   background-color: var(--app-surface-2, #f3f4f6);
+  }
 }
 
 .cancelButton:active {

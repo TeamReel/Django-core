@@ -82,8 +82,10 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.matchCard:hover {
+@media (hover: hover) {
+  .matchCard:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .matchCard:active {
@@ -162,8 +164,10 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.contentCard:hover {
+@media (hover: hover) {
+  .contentCard:hover {
   box-shadow: var(--shadow-sm);
+  }
 }
 
 .contentCard:active {
@@ -269,8 +273,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.primaryBtn:hover {
+@media (hover: hover) {
+  .primaryBtn:hover {
   filter: brightness(1.08);
+  }
 }
 
 .primaryBtn:active:not([data-saving='true']) {

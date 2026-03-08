@@ -10,9 +10,11 @@
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
-.card:hover {
+@media (hover: hover) {
+  .card:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
 }
 .card:active {
   transform: scale(0.98);
@@ -211,8 +213,10 @@
   transition: opacity var(--duration-fast);
 }
 
-.actionBtn:hover {
+@media (hover: hover) {
+  .actionBtn:hover {
   opacity: 0.9;
+  }
 }
 
 .actionBtn:active {

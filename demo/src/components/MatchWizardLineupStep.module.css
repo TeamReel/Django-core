@@ -179,9 +179,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.addGuestBtn:hover {
+@media (hover: hover) {
+  .addGuestBtn:hover {
   background-color: color-mix(in srgb, var(--app-primary) 5%, transparent);
   border-color: var(--app-primary);
+  }
 }
 
 .addGuestBtn:active {
@@ -290,9 +292,11 @@
   transition: color var(--duration-fast), background var(--duration-fast);
 }
 
-.guestTagRemove:hover {
+@media (hover: hover) {
+  .guestTagRemove:hover {
   color: var(--color-error, #ef4444);
   background: color-mix(in srgb, var(--color-error, #ef4444) 10%, transparent);
+  }
 }
 
 .guestBadge {

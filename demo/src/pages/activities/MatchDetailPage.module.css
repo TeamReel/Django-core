@@ -148,8 +148,10 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.iconBtn:hover {
+@media (hover: hover) {
+  .iconBtn:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .iconBtn:active {
@@ -173,8 +175,10 @@
   transition: background var(--duration-fast);
 }
 
-.labelBtn:hover {
+@media (hover: hover) {
+  .labelBtn:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .labelBtn:active {
@@ -299,8 +303,10 @@
   transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
-.backBtn:hover {
+@media (hover: hover) {
+  .backBtn:hover {
   background: var(--app-hover-bg, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .backBtn:active {

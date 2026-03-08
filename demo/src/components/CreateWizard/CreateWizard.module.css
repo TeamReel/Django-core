@@ -42,11 +42,13 @@
   min-height: 44px;
 }
 
-.flowCard:hover {
+@media (hover: hover) {
+  .flowCard:hover {
   background: var(--app-surface-2, #f9fafb);
   border-color: var(--app-primary, #3B8EA5);
   box-shadow: var(--shadow-sm);
   transform: scale(1.02);
+  }
 }
 
 .flowCard:active {
@@ -180,9 +182,11 @@
   width: 100%;
 }
 
-.smartMatchCard:hover {
+@media (hover: hover) {
+  .smartMatchCard:hover {
   background: var(--app-surface-2, #f9fafb);
   border-color: var(--app-primary, #3B8EA5);
+  }
 }
 
 .smartMatchCard:active {
@@ -196,9 +200,11 @@
   box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12);
 }
 
-.smartMatchCardHighlighted:hover {
+@media (hover: hover) {
+  .smartMatchCardHighlighted:hover {
   border-color: var(--app-warning, #f59e0b);
   background: rgba(245, 158, 11, 0.08);
+  }
 }
 
 .smartMatchCard[data-auto='true'] {
@@ -662,9 +668,11 @@
   transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 
-.memberResultRow:hover {
+@media (hover: hover) {
+  .memberResultRow:hover {
   background: var(--app-surface-2, #f9fafb);
   border-color: var(--app-primary, #3B8EA5);
+  }
 }
 
 .memberResultAvatar {
@@ -741,10 +749,12 @@
   min-height: 48px;
 }
 
-.memberNewBtn:hover {
+@media (hover: hover) {
+  .memberNewBtn:hover {
   background: var(--app-surface-2, #f9fafb);
   border-color: var(--app-primary, #3B8EA5);
   color: var(--app-primary, #3B8EA5);
+  }
 }
 
 /* ── Form fields ─────────────────────────────────────── */
@@ -1397,8 +1407,10 @@
   white-space: nowrap;
 }
 
-.periodSuggestionBtn:hover {
+@media (hover: hover) {
+  .periodSuggestionBtn:hover {
   background: rgba(59, 142, 165, 0.12);
+  }
 }
 
 /* ── Next / Submit button ────────────────────────────── */

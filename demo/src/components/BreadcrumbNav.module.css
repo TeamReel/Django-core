@@ -24,8 +24,10 @@
   user-select: none;
 }
 
-.backLink:hover {
+@media (hover: hover) {
+  .backLink:hover {
   background-color: var(--app-surface-2, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .backLink:active {

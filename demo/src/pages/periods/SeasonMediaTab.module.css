@@ -182,8 +182,10 @@
   transition: background var(--duration-fast);
 }
 
-.smartBatchChip:hover {
+@media (hover: hover) {
+  .smartBatchChip:hover {
   background: rgba(34, 197, 94, 0.20);
+  }
 }
 
 .mobileLegendItem {
@@ -309,8 +311,10 @@
   text-align: left;
 }
 
-.mediaCardName:hover {
+@media (hover: hover) {
+  .mediaCardName:hover {
   text-decoration: underline !important;
+  }
 }
 
 /* ── Score (plain text, replaces Badge) ── */

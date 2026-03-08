@@ -274,9 +274,11 @@
   flex-shrink: 0;
 }
 
-.inlineEditBtn:hover {
+@media (hover: hover) {
+  .inlineEditBtn:hover {
   background: rgba(245, 158, 11, 0.2);
   border-color: rgba(245, 158, 11, 0.5);
+  }
 }
 
 .inlineEditBtn:active {

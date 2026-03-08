@@ -241,9 +241,11 @@
   transition: border-color var(--duration-fast), color var(--duration-fast);
 }
 
-.addGuestBtn:hover {
+@media (hover: hover) {
+  .addGuestBtn:hover {
   border-color: var(--color-green-400, #4ade80);
   color: var(--color-green-400, #4ade80);
+  }
 }
 
 .guestForm {
@@ -335,6 +337,8 @@
   opacity: 0.7;
 }
 
-.guestTagRemove:hover {
+@media (hover: hover) {
+  .guestTagRemove:hover {
   opacity: 1;
+  }
 }
