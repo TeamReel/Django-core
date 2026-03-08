@@ -85,13 +85,13 @@
 
 .modalTitle {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text, #fff);
 }
 
 .modalTitle15 {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
@@ -175,7 +175,7 @@
   border: none;
   background: var(--color-blue-600);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -195,7 +195,7 @@
   border: 1px solid var(--app-border, #334155);
   background: transparent;
   color: var(--app-text-secondary, #9ca3af);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-size: 13px;
   cursor: pointer;
 }
@@ -206,7 +206,7 @@
   border: none;
   background: var(--color-green-500);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -226,7 +226,7 @@
   border: 1px solid var(--color-red-200);
   background: var(--color-red-50);
   color: var(--color-red-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -246,7 +246,7 @@
   border: 1px solid var(--color-blue-600);
   background: var(--color-blue-600);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -266,7 +266,7 @@
   border: 1px solid var(--color-red-500);
   background: transparent;
   color: var(--color-red-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -286,7 +286,7 @@
   border: 1px solid var(--color-amber-500);
   background: var(--color-amber-50);
   color: var(--color-amber-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -306,7 +306,7 @@
   background: transparent;
   border: 1px solid var(--app-border);
   color: var(--app-text);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-size: 12px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -333,7 +333,7 @@
   border: 1px solid var(--color-green-100);
   background: var(--color-green-50);
   color: var(--color-green-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 11px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -349,7 +349,7 @@
   border: 1px solid var(--color-red-200);
   background: var(--color-red-50);
   color: var(--color-red-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 11px;
   cursor: pointer;
   transition: background var(--duration-fast), transform var(--duration-fast);
@@ -472,7 +472,7 @@
 
 .emptyTitle {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   margin-bottom: 4px;
 }
 
@@ -543,7 +543,7 @@
   background: rgba(0, 0, 0, 0.5);
   color: white;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-full);
 }
@@ -565,7 +565,7 @@
 
 .pillBadge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   border-radius: var(--radius-full);
   padding: 4px 8px;
   letter-spacing: 0.04em;
@@ -580,7 +580,7 @@
 
 .jobLabel {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   margin-bottom: 4px;
 }
 
@@ -657,14 +657,14 @@
   flex: 1;
   font-size: 12px;
   color: var(--color-green-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .reviewRejected {
   flex: 1;
   font-size: 12px;
   color: var(--color-red-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ─── Workflow Info ────────────────────────────────────────────────────────── */
@@ -721,7 +721,7 @@
 
 .entityTypeBadge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   color: var(--app-text-secondary);
   letter-spacing: 0.04em;
@@ -729,7 +729,7 @@
 
 .entityTitle {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .workflowMeta {
@@ -741,7 +741,7 @@
 
 .chipCountBadge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   border-radius: var(--radius-full);
   padding: 1px 8px;
   margin-left: 4px;
@@ -763,7 +763,7 @@
 .titleBlock h1 {
   margin: 0;
   font-size: 20px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.3;
 }
@@ -812,7 +812,7 @@
   padding: 8px 16px;
   border-radius: var(--radius-lg);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   border: 1.5px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, #fff);
   color: var(--app-text-secondary, #6b7280);
@@ -839,7 +839,7 @@
 
 .chipBadge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   border-radius: var(--radius-full);
   padding: 1px 8px;
   min-width: 20px;

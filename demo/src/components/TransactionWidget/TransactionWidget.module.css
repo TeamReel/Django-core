@@ -12,7 +12,7 @@
 
 .itemLabel {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-text);
   margin-bottom: 4px;
 }
@@ -24,7 +24,7 @@
 
 .itemAmount {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   min-width: 80px;
   text-align: right;
   color: var(--color-red-500);

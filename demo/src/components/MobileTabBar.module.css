@@ -41,7 +41,7 @@
   background: transparent;
   color: var(--app-muted-text, #888);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--duration-fast) var(--ease-default);
@@ -52,7 +52,7 @@
   border-color: var(--app-primary, #3B8EA5);
   background: var(--app-primary, #3B8EA5);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ── Dropdown variant ─────────────────────────────────────── */
@@ -88,7 +88,7 @@
 
 .sectionLabel {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -96,7 +96,7 @@
 
 .currentTabLabel {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
 }
 
@@ -109,7 +109,7 @@
 
 .optionsCount {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .chevronIcon {
@@ -164,12 +164,12 @@
 
 .dropdownItemLabel {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-text);
 }
 
 .dropdownItemLabel[data-active="true"] {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-primary);
 }
 

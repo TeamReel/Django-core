@@ -24,7 +24,7 @@
 }
 
 .matchTitle {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .matchOpponent {
@@ -34,7 +34,7 @@
 
 .scoreCell {
   text-align: center;
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 .statusCell {

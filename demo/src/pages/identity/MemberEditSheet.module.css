@@ -76,13 +76,13 @@
   justify-content: center;
   flex-shrink: 0;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-muted-text);
 }
 
 .headerName {
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -127,7 +127,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -170,7 +170,7 @@
 
 .accessRoleLabel {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
@@ -225,7 +225,7 @@
 
 .roleToggleLabel {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   flex: 1;
   text-align: left;
@@ -240,7 +240,7 @@
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: var(--color-red-300);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 /* ── Footer ── */
@@ -258,7 +258,7 @@
   background: var(--app-surface-2, #1e293b);
   color: var(--app-text);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background var(--duration-fast) var(--ease-default);
@@ -276,7 +276,7 @@
   background: var(--color-indigo-400);
   color: white;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   display: flex;

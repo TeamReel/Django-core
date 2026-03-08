@@ -44,7 +44,7 @@
 .bgLabel {
   padding: 4px 0;
   text-align: center;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 9px;
   color: var(--app-text, #111);
   background: var(--app-surface-2, #f3f4f6);
@@ -71,5 +71,5 @@
   justify-content: center;
   font-size: 8px;
   color: white;
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }

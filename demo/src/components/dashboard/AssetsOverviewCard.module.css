@@ -31,13 +31,13 @@
 .title {
   flex: 1;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
 .totalBadge {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--color-violet-500) 10%, transparent);
@@ -54,7 +54,7 @@
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--app-muted-text);
@@ -77,7 +77,7 @@
   background: var(--app-surface-alt, var(--app-bg));
   border: 1px solid transparent;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   transition: border-color var(--duration-fast);
 }
@@ -127,12 +127,12 @@
 }
 
 .summaryText {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
 }
 
 .summaryPercent {
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-primary);
 }
 
@@ -203,7 +203,7 @@
 
 .avatarInitial {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-muted-text);
 }
 
@@ -214,7 +214,7 @@
 
 .memberName {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   display: block;
   white-space: nowrap;
@@ -238,7 +238,7 @@
 
 .memberMeta {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   white-space: nowrap;
   min-width: 32px;
@@ -280,7 +280,7 @@
   background: color-mix(in srgb, var(--color-amber-400) 8%, var(--app-surface));
   border: 1px solid rgba(245, 158, 11, 0.2);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   margin-top: 12px;
   cursor: pointer;

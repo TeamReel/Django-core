@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** 🔄 In uitvoering (4/11 fases)
+**Status:** 🔄 In uitvoering (5/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -32,7 +32,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **A1** | Radius Token Adoption | `border-radius: Npx` → `var(--radius-*)` | 707 | 30 min | ✅ Done |
 | **A2** | Shadow Token Adoption | `box-shadow: ...` → `var(--shadow-*)` | 28 | 30 min | ✅ Done |
 | **A3** | Motion Token Adoption | `transition` / `animation` → `var(--duration-*)` + `var(--ease-*)` | 234 | 45 min | ✅ Done |
-| **A4** | Font-weight Token Adoption | `font-weight: N` → `var(--font-*)` | 608 | 30 min | 🔲 Todo |
+| **A4** | Font-weight Token Adoption | `font-weight: N` → `var(--font-*)` | 586 | 30 min | ✅ Done |
 | **A5** | Font-size Token Adoption | `font-size: Nrem` → `var(--text-*)` | 1.070 | 45 min | 🔲 Todo |
 | **A6** | Spacing Token Adoption | `padding/margin/gap: Npx` → `var(--space-*)` | 2.552 | 2 uur | 🔲 Todo |
 | **A7** | Line-height + Font-family Cleanup | `line-height` / `font-family` → tokens | 130 | 20 min | 🔲 Todo |

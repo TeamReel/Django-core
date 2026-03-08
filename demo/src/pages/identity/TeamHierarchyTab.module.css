@@ -58,7 +58,7 @@
 
 .seasonName {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -91,7 +91,7 @@
   background: var(--app-surface, #0f172a);
   font-size: 11px;
   color: var(--app-muted-text);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   white-space: nowrap;
 }
 
@@ -147,7 +147,7 @@
 
 .compName {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -208,7 +208,7 @@
 
 .matchDay {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
 
@@ -220,7 +220,7 @@
 
 .matchTitle {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -258,7 +258,7 @@
   margin-top: 4px;
   font-size: 12px;
   color: var(--color-indigo-400);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
   background: none;
   border: none;

@@ -42,11 +42,11 @@
 }
 
 .notificationTitle {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .notificationTitle[data-unread="true"] {
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
 }
 
 .unreadDot {

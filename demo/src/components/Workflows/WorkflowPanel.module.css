@@ -32,13 +32,13 @@
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: transparent;
   color: var(--app-text, #111);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .instanceButton[data-active='true'] {
   border-color: var(--app-primary, #2563eb);
   background-color: var(--app-primary-light, #dbeafe);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .card {

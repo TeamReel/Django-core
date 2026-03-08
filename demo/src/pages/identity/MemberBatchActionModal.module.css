@@ -43,7 +43,7 @@
     background: var(--batch-chip-bg);
     color: var(--app-text, #e0e0e0);
     font-size: 12px;
-    font-weight: 500;
+    font-weight: var(--font-medium);
 }
 
 .memberChip[data-overflow] {

@@ -42,7 +42,7 @@
   padding: 0 12px;
   margin-bottom: 8px;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
@@ -187,7 +187,7 @@
   background: transparent;
   color: var(--sidebar-b-text);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   text-decoration: none;
   width: 100%;
 }
@@ -196,7 +196,7 @@
   border-color: var(--sidebar-b-border);
   background: var(--sidebar-b-active-bg);
   color: var(--sidebar-b-active-text);
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 /* ── Panel B tab icon ── */
@@ -209,7 +209,7 @@
 .queueCount {
   margin-left: auto;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   opacity: 0.4;
   color: var(--sidebar-b-muted-text);
 }
@@ -236,13 +236,13 @@
   font-size: 14px;
   color: var(--sidebar-b-text);
   background-color: transparent;
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .panelBItem[data-active='true'] {
   color: var(--sidebar-b-active-text);
   background-color: var(--sidebar-b-active-bg);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ── Panel B item icon ── */

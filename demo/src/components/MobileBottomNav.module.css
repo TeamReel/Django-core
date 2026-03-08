@@ -63,13 +63,13 @@
 /* ── Tab label ───────────────────────────────────────────────────────── */
 .tabLabel {
   font-size: 10px;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   line-height: 1;
   color: var(--app-muted-text);
 }
 
 .active .tabLabel {
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-primary);
 }
 

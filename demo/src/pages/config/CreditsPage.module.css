@@ -26,7 +26,7 @@
   background: transparent;
   color: var(--app-text, inherit);
   border-bottom: 2px solid transparent;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   white-space: nowrap;
   transition: background var(--duration-fast), color var(--duration-fast);
 }
@@ -40,7 +40,7 @@
   background: var(--primary-bg, #1976d2);
   color: white;
   border-bottom-color: var(--primary-bg, #1976d2);
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 /* ── Toast ─────────────────────────────────────────────────────────── */

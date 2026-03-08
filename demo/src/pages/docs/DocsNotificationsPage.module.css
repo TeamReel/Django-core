@@ -25,7 +25,7 @@
   color: var(--filter-btn-color, #6c757d);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .filterBtn[data-active="true"] {
@@ -82,7 +82,7 @@
   color: var(--color-neutral-400);
   cursor: pointer;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   white-space: nowrap;
 }
 

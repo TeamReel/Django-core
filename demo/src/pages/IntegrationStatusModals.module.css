@@ -25,7 +25,7 @@
   border: 1px solid var(--status-color);
   border-radius: var(--radius-lg);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--status-color);
 }
 

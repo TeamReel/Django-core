@@ -14,7 +14,7 @@
   gap: 8px;
   color: var(--app-text);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   margin-bottom: 12px;
 }
 
@@ -22,7 +22,7 @@
 
 .teamBadge {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-lg);
   background: rgba(99, 102, 241, 0.1);
@@ -99,7 +99,7 @@
 
 .avatarInitial {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-muted-text);
 }
 
@@ -111,7 +111,7 @@
 .memberName {
   display: block;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -141,7 +141,7 @@
 .memberPercent {
   flex-shrink: 0;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-muted-text);
   min-width: 36px;
   text-align: right;

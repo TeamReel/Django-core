@@ -43,7 +43,7 @@
 .headerTitle {
   margin: 0;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   line-height: 1.2;
   color: var(--app-text);
 }
@@ -67,7 +67,7 @@
   gap: 4px;
   padding: 4px 8px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text-secondary, #999);
   background: rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-lg);
@@ -96,7 +96,7 @@
   border: none;
   border-radius: var(--radius-md);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text-secondary, #888);
   background: transparent;
   cursor: pointer;
@@ -131,7 +131,7 @@
 
 .activeJobsTitle {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-primary, #6366f1);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -207,7 +207,7 @@
 
 .jobType {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -258,7 +258,7 @@
 
 .phaseLabel {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--phase-accent, var(--app-text-secondary));
@@ -304,7 +304,7 @@
 .sectionTitle {
   margin: 0;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -320,7 +320,7 @@
   background: none;
   color: var(--app-primary, #6366f1);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
@@ -414,7 +414,7 @@
 
 .contentCardLabel {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-text-secondary, #aaa);
   white-space: nowrap;
   overflow: hidden;
@@ -469,7 +469,7 @@
   gap: 8px;
   margin: 0 0 12px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
@@ -516,7 +516,7 @@
   background: transparent;
   color: var(--app-primary, #6366f1);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
 }
 
@@ -540,7 +540,7 @@
 .emptyTitle {
   margin: 0 0 8px;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
@@ -633,7 +633,7 @@
 .previewTitle {
   margin: 0 0 4px;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
@@ -667,7 +667,7 @@
   background: rgba(255, 255, 255, 0.04);
   color: var(--app-text);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
 }
 

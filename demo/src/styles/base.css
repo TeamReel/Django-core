@@ -349,7 +349,7 @@ h1, h2, h3, h4, h5, h6 {
 /* Improve text contrast in dark mode */
 [data-theme="dark"] strong {
   color: var(--app-text);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 [data-theme="dark"] p {

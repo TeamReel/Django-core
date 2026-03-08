@@ -37,7 +37,7 @@
 }
 
 .roleLabel {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .roleSelect {

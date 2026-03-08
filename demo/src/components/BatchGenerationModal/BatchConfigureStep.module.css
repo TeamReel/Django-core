@@ -130,12 +130,12 @@
 .overrideParamLabel {
   margin-bottom: 4px;
   color: var(--app-muted-text);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .overrideParamLabel[data-has-override='true'] {
   color: var(--color-blue-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .overrideSelect {

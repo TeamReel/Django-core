@@ -117,7 +117,7 @@
   border: 1.5px solid var(--rm-green-200);
   background: var(--rm-green-50);
   color: var(--rm-green-700);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   cursor: pointer;
   transition: all var(--duration-fast), transform var(--duration-fast);
@@ -140,7 +140,7 @@
   border: 1.5px solid var(--rm-red-300);
   background: var(--rm-red-50);
   color: var(--rm-red-600);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   cursor: pointer;
   transition: all var(--duration-fast), transform var(--duration-fast);

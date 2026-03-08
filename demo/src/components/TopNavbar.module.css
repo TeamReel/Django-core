@@ -86,7 +86,7 @@
   cursor: pointer;
   color: var(--app-primary, #1976d2);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   padding: 8px 12px 8px 4px;
   border-radius: var(--radius-md);
   white-space: nowrap;
@@ -135,7 +135,7 @@
   gap: 8px;
   color: var(--app-text);
   background-color: transparent;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .groupTrigger[data-active="true"],
@@ -145,7 +145,7 @@
 
 .groupTrigger[data-active="true"] {
   color: var(--color-blue-600);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ─── Mega Menu ───────────────────────────────────────────────────────────── */
@@ -209,11 +209,11 @@
 .megaItemLabel {
   font-size: 14px;
   line-height: 1.3;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .megaItem[data-active="true"] .megaItemLabel {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .megaItemDescription {
@@ -258,7 +258,7 @@
   justify-content: center;
   padding: 1px 4px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-family: inherit;
   line-height: 1.4;
   color: var(--app-muted-text);
@@ -377,13 +377,13 @@
   cursor: pointer;
   background-color: transparent;
   color: var(--app-text);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .langItem[data-selected="true"] {
   background-color: rgba(59, 130, 246, 0.1);
   color: var(--app-link);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .langItem:not(:last-child) {
@@ -424,7 +424,7 @@
   border-radius: var(--radius-lg);
   padding: 4px 8px;
   font-size: 10px;
-  font-weight: bold;
+  font-weight: var(--font-bold);
 }
 
 .badgeError {
@@ -478,18 +478,18 @@
   border-radius: var(--radius-md);
   text-decoration: none;
   color: var(--app-text);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .mobileDashLink[data-active="true"] {
   color: var(--color-blue-600);
   background-color: rgba(59, 130, 246, 0.1);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .mobileGroupLabel {
   padding: 8px 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   font-size: 14px;
   opacity: 0.7;
@@ -505,13 +505,13 @@
   text-decoration: none;
   font-size: 14px;
   color: var(--app-text);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .mobileGroupItem[data-active="true"] {
   color: var(--color-blue-600);
   background-color: rgba(59, 130, 246, 0.1);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ─── Modal System ────────────────────────────────────────────────────────── */
@@ -609,13 +609,13 @@
 
 .modalTitle {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
 .modalTitle15 {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
@@ -681,7 +681,7 @@
   border: none;
   background: var(--color-blue-600);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
 }
@@ -692,7 +692,7 @@
   border: 1px solid var(--app-border);
   background: transparent;
   color: var(--app-text-secondary);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-size: 12px;
   cursor: pointer;
 }
@@ -712,7 +712,7 @@
   border-radius: var(--radius-md);
   border: none;
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   cursor: pointer;
 }
@@ -723,7 +723,7 @@
   border: none;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .rejectBtn {
@@ -732,7 +732,7 @@
   border: 1px solid var(--color-red-500);
   background: transparent;
   color: var(--color-red-500);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
 }
 
@@ -742,7 +742,7 @@
   border: none;
   background: var(--color-green-500);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
 }
 
@@ -819,7 +819,7 @@
   justify-content: center;
   color: white;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 .previewMedia {
@@ -852,7 +852,7 @@
 
 .creditsBalance {
   font-size: 48px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-primary, #3b82f6);
 }
 
@@ -869,7 +869,7 @@
   border: 1px solid var(--app-border, #475569);
   background-color: transparent;
   color: var(--app-text);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   width: 100%;
@@ -893,7 +893,7 @@
 
 .followUpTitle {
   font-size: 17px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text, #fff);
 }
 
@@ -938,7 +938,7 @@
   border: 1px solid var(--app-border, #334155);
   background: transparent;
   color: var(--app-text-secondary, #9ca3af);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-size: 13px;
 }
 
@@ -948,7 +948,7 @@
   border: none;
   background: var(--color-blue-600);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
 }
 

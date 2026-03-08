@@ -147,7 +147,7 @@
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
   color: var(--app-primary);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   flex-shrink: 0;
@@ -171,7 +171,7 @@
   border: 1px dashed var(--app-border);
   background-color: transparent;
   color: var(--app-primary);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   width: 100%;
@@ -222,7 +222,7 @@
   border: none;
   background-color: var(--app-primary);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   min-height: 40px;
   cursor: pointer;
@@ -240,7 +240,7 @@
   border: 1px solid var(--app-border);
   background-color: transparent;
   color: var(--app-text-muted);
-  font-weight: 500;
+  font-weight: var(--font-medium);
   font-size: 13px;
   min-height: 40px;
   cursor: pointer;
@@ -267,7 +267,7 @@
   background-color: color-mix(in srgb, var(--app-primary) 8%, transparent);
   color: var(--app-primary);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .guestTagJersey {
@@ -297,7 +297,7 @@
 
 .guestBadge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-full);
   background-color: color-mix(in srgb, var(--app-primary) 10%, transparent);
@@ -309,7 +309,7 @@
 .guestBadgeInline {
   display: inline-block;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   padding: 1px 8px;
   border-radius: var(--radius-full);
   background-color: color-mix(in srgb, var(--app-primary) 10%, transparent);

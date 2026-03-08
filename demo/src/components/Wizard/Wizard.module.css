@@ -166,7 +166,7 @@
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   cursor: pointer;
   transition: background-color var(--duration-fast);
 }

@@ -14,7 +14,7 @@
   gap: 8px;
   color: var(--app-text);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   margin-bottom: 16px;
 }
 
@@ -22,7 +22,7 @@
 
 .totalBadge {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   padding: 4px 8px;
   border-radius: var(--radius-lg);
   background: var(--app-bg);
@@ -68,12 +68,12 @@
 
 .barText {
   flex: 1;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
 }
 
 .barCount {
-  font-weight: 700;
+  font-weight: var(--font-bold);
   font-size: 14px;
   color: var(--app-text);
   min-width: 24px;

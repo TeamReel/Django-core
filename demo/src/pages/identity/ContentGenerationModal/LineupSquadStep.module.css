@@ -73,7 +73,7 @@
 
 .positionLabel {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--field-label-color, rgba(255, 255, 255, 0.7));
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -85,7 +85,7 @@
   width: 120px;
   padding: 4px 8px;
   font-size: 11px;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   background-color: var(--select-bg, rgba(0, 0, 0, 0.6));
   color: var(--select-text, #fff);
   border: 1px solid var(--select-border, rgba(255, 255, 255, 0.3));
@@ -102,7 +102,7 @@
 }
 
 .positionSelect[data-selected="true"] {
-  font-weight: 700;
+  font-weight: var(--font-bold);
   background-color: var(--app-primary-light, rgba(59, 142, 165, 0.08));
   border: 2px solid var(--app-primary, #3B8EA5);
 }
@@ -133,7 +133,7 @@
 
 .selectedName {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--select-text, #fff);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   max-width: 112px;

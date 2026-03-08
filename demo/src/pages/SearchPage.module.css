@@ -66,12 +66,12 @@
 }
 
 .filterSheetLabel {
-  font-weight: 400;
+  font-weight: var(--font-normal);
   color: var(--color-text-primary);
 }
 
 .filterSheetLabelActive {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--color-text-primary);
 }
 

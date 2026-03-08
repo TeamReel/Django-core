@@ -647,7 +647,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   border: 1px solid var(--app-border);
   color: var(--app-muted-text);
 }
@@ -683,7 +683,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   min-width: 120px;
   border: 1px solid var(--app-border);
   color: var(--app-muted-text);

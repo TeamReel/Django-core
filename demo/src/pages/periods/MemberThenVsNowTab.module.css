@@ -12,7 +12,7 @@
 
 .prerequisiteHeading {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   margin-bottom: 8px;
 }
 

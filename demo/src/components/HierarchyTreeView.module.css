@@ -16,7 +16,7 @@
 
 .headerTitle {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
@@ -88,7 +88,7 @@
 
 .typeBadge {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -133,13 +133,13 @@
 .nodeTitle {
   color: var(--color-text-primary);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   flex: 1;
 }
 
 .nodeTitle[data-anchor="true"],
 .nodeTitle[data-in-path="true"] {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .nodeTitle[data-anchor="true"] {

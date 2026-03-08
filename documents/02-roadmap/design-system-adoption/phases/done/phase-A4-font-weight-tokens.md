@@ -1,8 +1,8 @@
 # A4 — Font-weight Token Adoption
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 30 min
-**Scope:** 608 hardcoded `font-weight` → `var(--font-*)`
+**Scope:** 586 hardcoded `font-weight` → `var(--font-*)` (124 bestanden)
 
 ---
 

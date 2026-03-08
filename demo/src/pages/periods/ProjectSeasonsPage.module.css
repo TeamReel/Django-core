@@ -18,7 +18,7 @@
 }
 
 .seasonName {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .legendsBadge {
@@ -26,7 +26,7 @@
   --legends-badge-color: #d97706;
   margin-left: 8px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   background: var(--legends-badge-bg);

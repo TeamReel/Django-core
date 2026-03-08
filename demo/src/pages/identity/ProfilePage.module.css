@@ -9,7 +9,7 @@
   color: var(--app-text-primary, #333);
   cursor: pointer;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .editActions {

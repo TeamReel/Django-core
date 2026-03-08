@@ -38,7 +38,7 @@
 
 .sectionTitle {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   margin-bottom: 16px;
   color: var(--app-text);
 }
@@ -57,7 +57,7 @@
 }
 
 .fieldValue {
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-text);
 }
 

@@ -133,7 +133,7 @@
   padding: 12px 8px;
   background-color: transparent;
   color: var(--app-text-muted);
-  font-weight: 400;
+  font-weight: var(--font-normal);
   transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast);
 }
 
@@ -144,7 +144,7 @@
 .phaseTab[data-active='true'] {
   background-color: var(--app-primary);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 /* ── Content type card (reuses matchCard base) ──────── */
@@ -212,7 +212,7 @@
   bottom: 4px;
   right: 4px;
   font-size: 8px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   letter-spacing: 0.06em;
   padding: 1px 4px;
   border-radius: var(--radius-sm);
@@ -338,7 +338,7 @@
   top: 12px;
   right: 12px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   letter-spacing: 0.06em;
   padding: 4px 12px;
   border-radius: var(--radius-md);
@@ -481,7 +481,7 @@
   border: 1px solid var(--app-border);
   background-color: var(--app-surface);
   color: var(--app-primary);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   cursor: pointer;
   flex-shrink: 0;

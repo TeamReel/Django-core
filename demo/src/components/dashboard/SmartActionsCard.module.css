@@ -16,7 +16,7 @@
 
 .title {
   font-size: 0.82rem;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -84,7 +84,7 @@
 
 .actionLabel {
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--text-primary, #111827);
   white-space: nowrap;
   overflow: hidden;

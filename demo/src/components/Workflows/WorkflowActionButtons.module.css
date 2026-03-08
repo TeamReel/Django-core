@@ -36,7 +36,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--action-color);
   background-color: var(--action-bg);
   border: none;
@@ -86,7 +86,7 @@
 
 .commentLabel {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text-secondary, #6b7280);
 }
 
@@ -110,7 +110,7 @@
   --confirm-bg: #dc2626;
   --confirm-color: #fff;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--confirm-color);
   background-color: var(--confirm-bg);
   border: none;
@@ -130,7 +130,7 @@
 
 .cancelButton {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text, #111);
   background-color: transparent;
   border: 1px solid var(--app-border, #e5e7eb);

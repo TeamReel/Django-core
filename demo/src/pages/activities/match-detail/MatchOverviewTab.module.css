@@ -29,7 +29,7 @@
 
 .heroTeamName {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
   text-align: center;
   line-height: 1.25;
@@ -53,7 +53,7 @@
 
 .heroScoreValue {
   font-size: 36px;
-  font-weight: 900;
+  font-weight: var(--font-extrabold);
   line-height: 1;
   color: var(--app-text);
   letter-spacing: -1px;
@@ -107,7 +107,7 @@
 
 .categoryLabel {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--app-muted-text);
@@ -115,7 +115,7 @@
 
 .categoryCount {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
 

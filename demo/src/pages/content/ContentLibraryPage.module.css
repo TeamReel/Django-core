@@ -48,7 +48,7 @@
 .galleryTitle {
   margin: 0;
   font-size: 22px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.2;
 }

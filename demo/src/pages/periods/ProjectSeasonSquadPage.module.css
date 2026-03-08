@@ -14,7 +14,7 @@
   color: var(--app-text);
   cursor: pointer;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .actionBtn[data-variant="edit"] {
@@ -48,7 +48,7 @@
   color: var(--app-text);
   cursor: pointer;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   opacity: 0.9;
 }
 
@@ -56,7 +56,7 @@
   border-bottom-color: var(--app-surface);
   background-color: var(--app-surface);
   cursor: default;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   opacity: 1;
 }
 

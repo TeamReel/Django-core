@@ -12,7 +12,7 @@
 .cardTitle {
   margin: 0;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .cardSubtitle {
@@ -125,7 +125,7 @@
 }
 
 .memberCardName {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 13px;
   color: var(--app-text) !important;
   text-decoration: none !important;

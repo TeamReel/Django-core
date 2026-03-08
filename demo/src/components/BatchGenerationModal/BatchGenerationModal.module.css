@@ -46,7 +46,7 @@
 .footerBtnPrimary {
   padding: 8px 16px !important;
   font-size: 13px !important;
-  font-weight: 600 !important;
+  font-weight: var(--font-semibold)!important;
 }
 
 .footerBtnSecondary {

@@ -13,7 +13,7 @@
   background-color: var(--app-surface-secondary);
   color: var(--app-text);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -59,7 +59,7 @@
 
 .userName {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   margin-bottom: 4px;
 }
@@ -108,7 +108,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .signOutItem:hover {

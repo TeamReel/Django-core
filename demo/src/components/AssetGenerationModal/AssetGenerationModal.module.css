@@ -79,14 +79,14 @@
   background: transparent;
   color: var(--vscode-foreground, #ccc);
   border: 1px solid var(--vscode-widget-border, #333);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .footerCloseButton[data-queued='true'] {
   background: var(--vscode-button-background, #0078d4);
   color: var(--vscode-button-foreground, #fff);
   border: none;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .footerGenerateButton {

@@ -28,7 +28,7 @@
   background: transparent;
   color: var(--app-text, #333);
   cursor: pointer;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   font-size: 14px;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   transition: all var(--duration-fast) var(--ease-default);
@@ -37,7 +37,7 @@
 .tab[data-active="true"] {
   background: var(--app-primary, #0b5ed7);
   color: white;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .roleSelectWrapper {

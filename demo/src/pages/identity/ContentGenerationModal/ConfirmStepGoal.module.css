@@ -18,7 +18,7 @@
 
 .headerTitle {
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   margin: 0;
   color: var(--app-text, #111);
 }
@@ -32,7 +32,7 @@
 
 .scoreSeparator {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text-muted, #6b7280);
   margin-top: 20px;
 }
@@ -50,12 +50,12 @@
 
 .option {
   color: inherit;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .option[data-available='false'] {
   color: var(--color-text-disabled, #999);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .errorHint {
@@ -78,7 +78,7 @@
 
 .teamName {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   margin-bottom: 8px;
   color: var(--app-text-muted, #6b7280);
   white-space: nowrap;
@@ -101,7 +101,7 @@
   background: var(--app-surface, white);
   color: var(--app-text-muted, #6b7280);
   font-size: 18px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -122,7 +122,7 @@
   width: 48px;
   height: 56px;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   display: flex;
   align-items: center;
   justify-content: center;

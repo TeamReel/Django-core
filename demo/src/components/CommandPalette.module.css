@@ -37,7 +37,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 .favButton[data-saved='true'] {
@@ -74,7 +74,7 @@
 }
 
 .resultLabel {
-  font-weight: 650;
+  font-weight: var(--font-semibold);
 }
 
 .resultKind {

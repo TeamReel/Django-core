@@ -92,7 +92,7 @@
   background: var(--app-surface-secondary, #252526);
   color: var(--app-text, #fff);
   font-size: 16px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   letter-spacing: 1px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -123,7 +123,7 @@
   width: 100%;
   padding: 12px 16px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   border: none;
   background: none;
   color: var(--app-text);

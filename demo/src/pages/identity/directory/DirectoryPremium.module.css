@@ -15,7 +15,7 @@
   padding: 8px 12px;
   border-radius: var(--radius-md);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   border: 1px solid var(--app-border, #334155);
   background: var(--app-surface-2, #1e293b);
   color: var(--app-text);
@@ -47,7 +47,7 @@
   gap: 8px;
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #334155);
   background: var(--app-surface-2, #1e293b);
@@ -99,7 +99,7 @@
 
 .batchLabel {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
 }
 
@@ -109,7 +109,7 @@
   gap: 8px;
   padding: 8px 16px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   border-radius: var(--radius-md);
   border: none;
   background: var(--color-indigo-400);

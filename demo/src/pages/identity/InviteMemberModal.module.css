@@ -26,7 +26,7 @@
   margin-top: 0;
   margin-bottom: 16px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .errorBox {
@@ -50,7 +50,7 @@
   display: block;
   margin-bottom: 4px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .selectInput {

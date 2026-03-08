@@ -83,14 +83,14 @@
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: transparent;
   color: var(--app-text-secondary, #6b7280);
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 .filterButtonActive {
   border-color: var(--color-blue-600);
   background-color: var(--vq-color-blue-100, #dbeafe);
   color: var(--color-blue-600);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .loadingState {

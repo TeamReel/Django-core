@@ -7,13 +7,13 @@
 
 .tabButton[data-active="true"] {
   border-bottom-color: var(--app-primary);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-primary);
 }
 
 .tabButton[data-active="false"] {
   border-bottom-color: transparent;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   color: var(--app-text-muted);
 }
 

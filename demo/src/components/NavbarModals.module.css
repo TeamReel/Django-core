@@ -199,10 +199,10 @@
 /* === Notification message === */
 
 .notifMessageText {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 .notifMessageText[data-read="true"] {
-  font-weight: 400;
+  font-weight: var(--font-normal);
 }
 
 /* === Credits Panel === */

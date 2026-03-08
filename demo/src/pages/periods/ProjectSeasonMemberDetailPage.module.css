@@ -15,14 +15,14 @@
 .sectionDivider { border-top: 1px solid var(--app-border); padding-top: 20px; }
 
 /* ── Typography ── */
-.tabTitle { font-size: 13px; font-weight: 700; }
+.tabTitle { font-size: 13px; font-weight: var(--font-bold); }
 .tabDescription { margin-top: 8px; opacity: 0.75; font-size: 13px; }
 .tabIcon { font-size: 24px; }
-.sectionTitle { font-size: 14px; font-weight: 700; }
-.sectionTitleLarge { font-size: 16px; font-weight: 800; margin-bottom: 12px; }
-.variantLabel { font-size: 11px; font-weight: 600; margin-bottom: 8px; }
-.formLabel { font-size: 12px; font-weight: 600; opacity: 0.7; margin-bottom: 4px; }
-.fieldValue { font-size: 14px; font-weight: 500; }
+.sectionTitle { font-size: 14px; font-weight: var(--font-bold); }
+.sectionTitleLarge { font-size: 16px; font-weight: var(--font-extrabold); margin-bottom: 12px; }
+.variantLabel { font-size: 11px; font-weight: var(--font-semibold); margin-bottom: 8px; }
+.formLabel { font-size: 12px; font-weight: var(--font-semibold); opacity: 0.7; margin-bottom: 4px; }
+.fieldValue { font-size: 14px; font-weight: var(--font-medium); }
 .monoId { font-size: 12px; font-family: monospace; opacity: 0.8; }
 .notGeneratedText { color: var(--app-text-muted); font-size: 12px; text-align: center; padding: 8px; }
 
@@ -54,7 +54,7 @@
 .processingOverlay {
   position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4);
   display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 13px; font-weight: 600;
+  color: white; font-size: 13px; font-weight: var(--font-semibold);
 }
 
 /* ── Buttons ── */
@@ -130,13 +130,13 @@
   border: 1px solid var(--app-border);
   background: var(--app-surface);
   color: var(--app-text);
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 .activeContextButton[data-active="true"] {
   border-color: var(--color-green-400);
   background: var(--color-green-50);
   color: var(--color-green-700);
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 .activeContextButton[data-disabled="true"] {
   opacity: 0.8;

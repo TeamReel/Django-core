@@ -6,7 +6,7 @@
 
 .th {
   padding: 12px 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.04em;

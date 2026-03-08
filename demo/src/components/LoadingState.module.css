@@ -100,5 +100,5 @@
   margin-top: 24px;
   color: var(--overlay-text, #333);
   font-size: 18px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }

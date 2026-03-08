@@ -19,7 +19,7 @@
 
 .heroTitle {
   font-size: 22px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   margin-bottom: 4px;
 }
@@ -46,14 +46,14 @@
 
 .heroStatValue {
   font-size: 24px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1;
 }
 
 .heroStatLabel {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -78,13 +78,13 @@
 .sectionTitle {
   margin: 0;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
 .sectionLink {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--color-indigo-400);
   background: none;
   border: none;
@@ -125,7 +125,7 @@
 
 .itemName {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   min-width: 0;
   overflow: hidden;
@@ -135,7 +135,7 @@
 
 .itemMeta {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-muted-text);
   flex-shrink: 0;
   margin-left: 12px;
@@ -180,7 +180,7 @@
 
 .infoLabel {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -190,7 +190,7 @@
 
 .infoValue {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-text);
 }
 

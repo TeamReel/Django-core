@@ -27,13 +27,13 @@
 .summaryTitle {
   margin: 0;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
 .summaryBadge {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--color-green-400);
   background: rgba(34, 197, 94, 0.1);
   padding: 4px 8px;
@@ -75,7 +75,7 @@
 
 .slotLabel {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
 }
 
@@ -83,7 +83,7 @@
   grid-column: 2;
   grid-row: 1;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
 
@@ -152,7 +152,7 @@
 
 .playerInitials {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-muted-text);
 }
 
@@ -163,7 +163,7 @@
 
 .playerName {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
   white-space: nowrap;
   overflow: hidden;
@@ -172,7 +172,7 @@
 
 .playerScore {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
 
@@ -211,7 +211,7 @@
 
 .playerSlotStatus {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
 }
 
 .playerSlotStatus[data-state='processed'] {

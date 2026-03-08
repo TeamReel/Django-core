@@ -270,7 +270,7 @@
   gap: 8px;
   padding: 0 20px;
   height: 100%;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   font-size: 13px;
   letter-spacing: 0.02em;
   white-space: nowrap;

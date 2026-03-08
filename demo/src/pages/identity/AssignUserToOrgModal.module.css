@@ -46,7 +46,7 @@
 .fieldLabel {
   display: block;
   margin-bottom: 8px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
   color: var(--app-text);
   font-size: 14px;
 }
@@ -76,7 +76,7 @@
   color: var(--app-text);
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .cancelBtn[data-loading="true"] {
@@ -92,7 +92,7 @@
   color: white;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: var(--font-medium);
 }
 
 .submitBtn[data-disabled="true"] {

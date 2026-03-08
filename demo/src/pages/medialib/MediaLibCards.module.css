@@ -93,14 +93,14 @@
 .filterChip {
   align-items: center;
   padding: 4px 12px;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   border: 1px solid var(--app-border);
   background-color: transparent;
   color: var(--app-text-secondary);
 }
 
 .filterChipActive {
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   border-color: var(--color-primary, #2563eb);
   background-color: var(--color-primary-light, #dbeafe);
   color: var(--color-primary, #2563eb);

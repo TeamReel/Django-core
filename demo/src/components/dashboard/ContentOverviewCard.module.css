@@ -31,13 +31,13 @@
 .title {
   flex: 1;
   font-size: 15px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
 }
 
 .totalBadge {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   padding: 4px 8px;
   border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--app-primary) 10%, transparent);
@@ -73,7 +73,7 @@
 .sectionTitle {
   flex: 1;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: var(--font-bold);
   color: var(--app-text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -81,7 +81,7 @@
 
 .sectionCount {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
 }
 
@@ -111,14 +111,14 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-text);
   margin-bottom: 8px;
 }
 
 .matchDate {
   font-size: 11px;
-  font-weight: 400;
+  font-weight: var(--font-normal);
   color: var(--app-muted-text);
 }
 
@@ -134,7 +134,7 @@
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   padding: 4px 8px;
   border-radius: var(--radius-md);
   line-height: 1.4;
@@ -174,14 +174,14 @@
 
 .statValue {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: var(--font-extrabold);
   color: var(--app-text);
   line-height: 1.2;
 }
 
 .statLabel {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: var(--font-semibold);
   color: var(--app-muted-text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
