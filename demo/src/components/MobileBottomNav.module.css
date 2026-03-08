@@ -96,7 +96,7 @@
   cursor: pointer;
   background-color: var(--app-primary, #3B8EA5);
   border: 3px solid var(--app-surface, #fff);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.15s ease;
 }
 

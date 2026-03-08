@@ -1,8 +1,8 @@
 # A2 — Shadow Token Adoption
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 30 min
-**Scope:** 110 hardcoded `box-shadow` → `var(--shadow-*)`
+**Scope:** 28 hardcoded `box-shadow` → `var(--shadow-*)` (16 bestanden)
 
 ---
 

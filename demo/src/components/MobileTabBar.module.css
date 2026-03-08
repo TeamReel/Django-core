@@ -77,7 +77,7 @@
 }
 
 .dropdownTrigger[data-open="true"] {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .triggerLeft {
@@ -131,7 +131,7 @@
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   z-index: 100;
   max-height: 320px;
   overflow-y: auto;

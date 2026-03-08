@@ -19,12 +19,12 @@
 
 .variantCard[data-selected] {
   border-color: var(--color-primary, #3b82f6);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .variantCard[data-saved] {
   border-color: var(--color-success, #22c55e);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .variantMedia {
@@ -150,7 +150,7 @@
   border: 2px solid var(--color-border, #e5e7eb);
   background: var(--color-surface-light, #f9fafb);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .singleImageCard[data-save-success] {

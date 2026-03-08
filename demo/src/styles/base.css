@@ -157,7 +157,7 @@ button[style*="backgroundColor: '#dc3545'"]:not(nav *) {
 /* Button hover states (excluding nav) */
 button:not([disabled]):not(nav *):not(.app-action-button):not(.app-unstyled-button):hover {
   opacity: 0.9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-xs);
 }
 
 /* Button focus states */
