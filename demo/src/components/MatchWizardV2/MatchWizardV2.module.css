@@ -1,0 +1,450 @@
+/* MatchWizardV2 – CSS Module
+ * Styles for the refactored Match Wizard v2.
+ * Re-uses patterns from Wizard base + match-specific styles.
+ */
+
+/* ── Match card ─────────────────────────────────────── */
+.matchCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.matchCard:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.matchCard:active {
+  transform: scale(0.97);
+}
+
+.matchCard[data-selected='true'] {
+  border: 2px solid var(--app-primary);
+  background-color: var(--app-primary-light, rgba(59, 142, 165, 0.08));
+}
+
+/* ── Date badge ─────────────────────────────────────── */
+.dateBadge {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  color: white;
+  background-color: var(--app-primary);
+}
+
+.dateBadge[data-urgency='urgent'] {
+  background-color: var(--color-error);
+}
+
+.dateBadge[data-urgency='soon'] {
+  background-color: var(--color-warning);
+}
+
+/* ── Phase tab bar ──────────────────────────────────── */
+.phaseTabBar {
+  padding: 3px;
+}
+
+.phaseTab {
+  padding: 10px 8px;
+  background-color: transparent;
+  color: var(--app-text-muted);
+  font-weight: 400;
+  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+}
+
+.phaseTab:active {
+  transform: scale(0.95);
+}
+
+.phaseTab[data-active='true'] {
+  background-color: var(--app-primary);
+  color: white;
+  font-weight: 600;
+}
+
+/* ── Content type card ──────────────────────────────── */
+.contentCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.contentCard:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.contentCard:active {
+  transform: scale(0.97);
+}
+
+/* ── Thumbnail area ─────────────────────────────────── */
+.thumbArea {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumbArea[data-output='video'] {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+}
+
+.thumbArea[data-output='image'] {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #5eead4 100%);
+}
+
+.thumbArea[data-output='text'] {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #fbbf24 100%);
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbIcon {
+  color: rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+/* ── Output type badge ──────────────────────────────── */
+.outputBadge {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.outputBadge[data-output='video'] { background: rgba(99, 102, 241, 0.85); color: #fff; }
+.outputBadge[data-output='image'] { background: rgba(13, 148, 136, 0.85); color: #fff; }
+.outputBadge[data-output='text'] { background: rgba(217, 119, 6, 0.85); color: #fff; }
+
+/* ── Primary action button ──────────────────────────── */
+.primaryBtn {
+  padding: 14px;
+  min-height: 48px;
+  background-color: var(--app-primary);
+  transition: background 0.15s, transform 0.1s;
+}
+
+.primaryBtn:hover { filter: brightness(1.08); }
+.primaryBtn:active:not(:disabled) { transform: scale(0.97); }
+.primaryBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Step action bar (at bottom of step) ────────────── */
+.stepActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--app-border);
+}
+
+/* ── Review step ────────────────────────────────────── */
+.reviewPreview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+@media (max-width: 639px) {
+  .reviewPreview { aspect-ratio: unset; height: 120px; }
+}
+
+@media (max-height: 600px) {
+  .reviewPreview { aspect-ratio: unset; height: 100px; }
+}
+
+.reviewPreview[data-output='video'] { background: linear-gradient(135deg, #6366f1 0%, #7c3aed 40%, #a78bfa 100%); }
+.reviewPreview[data-output='image'] { background: linear-gradient(135deg, #0d9488 0%, #0f766e 40%, #5eead4 100%); }
+.reviewPreview[data-output='text'] { background: linear-gradient(135deg, #d97706 0%, #b45309 40%, #fbbf24 100%); }
+
+.reviewPreviewImg { width: 100%; height: 100%; object-fit: cover; }
+.reviewPreviewIcon { color: rgba(255, 255, 255, 0.85); filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2)); }
+
+.reviewOutputBadge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 8px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.reviewOutputBadge[data-output='video'] { background: rgba(99, 102, 241, 0.7); color: #fff; }
+.reviewOutputBadge[data-output='image'] { background: rgba(13, 148, 136, 0.7); color: #fff; }
+.reviewOutputBadge[data-output='text'] { background: rgba(217, 119, 6, 0.7); color: #fff; }
+
+.reviewCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+}
+
+.reviewRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reviewRowIcon {
+  color: var(--app-primary);
+  flex-shrink: 0;
+}
+
+/* ── Lineup step ────────────────────────────────────── */
+.progressBarTrack {
+  width: 100px;
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--app-border, #e5e7eb);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  background-color: var(--app-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressBarFill[data-complete='true'] {
+  background-color: var(--color-success, #22c55e);
+}
+
+.positionSlot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-size: 14px;
+  transition: transform 0.1s, background-color 0.15s;
+}
+
+.positionSlot:active { transform: scale(0.98); }
+.positionSlot[data-filled='true'] { background-color: var(--app-surface-2, #f3f4f6); }
+
+.positionLabel {
+  width: 36px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--app-primary);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.playerJersey {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--app-text-muted);
+  margin-right: 6px;
+}
+
+.playerOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font-size: 14px;
+  transition: background-color 0.15s;
+}
+
+.playerOption:hover { background-color: var(--app-surface-2); }
+.playerOption[data-selected='true'] { background-color: var(--app-primary-light, rgba(59, 142, 165, 0.08)); font-weight: 600; }
+.playerOption[data-disabled='true'] { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Guest player management ────────────────────────── */
+.guestSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: var(--app-surface-2, #f3f4f6);
+}
+
+.guestTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: var(--app-surface);
+  font-size: 13px;
+  border: 1px solid var(--app-border);
+}
+
+.guestTagJersey { font-weight: 600; color: var(--app-text-muted); font-size: 11px; }
+.guestTagRemove { padding: 2px; cursor: pointer; border: none; background: none; color: var(--app-text-muted); }
+.guestBadge { font-size: 10px; color: var(--app-text-muted); padding: 1px 6px; border-radius: 4px; background: var(--app-surface-2); }
+
+.guestForm {
+  padding: 12px;
+  border-radius: 10px;
+  background-color: var(--app-surface-2);
+}
+
+.guestInput {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  font-size: 14px;
+}
+
+.guestAddBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--app-primary);
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.guestAddBtn:disabled { opacity: 0.5; }
+
+.guestCancelBtn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.addGuestBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px dashed var(--app-border);
+  background: none;
+  font-size: 13px;
+  color: var(--app-text-muted);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.addGuestBtn:hover { background-color: var(--app-surface-2); }
+
+/* ── Error banners ──────────────────────────────────── */
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-error, #ef4444);
+  background-color: color-mix(in srgb, var(--color-error, #ef4444) 6%, var(--app-surface));
+}
+
+.errorBannerCompact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  background-color: color-mix(in srgb, var(--color-error, #ef4444) 8%, var(--app-surface));
+  color: var(--color-error, #ef4444);
+}
+
+.errorIcon {
+  color: var(--color-error, #ef4444);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.retryBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface);
+  color: var(--app-primary);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.retryBtn:active {
+  transform: scale(0.95);
+  background-color: var(--app-surface-2);
+}
+
+/* ── Mobile overrides ───────────────────────────────── */
+@media (max-width: 639px) {
+  .matchCard,
+  .contentCard { min-height: 48px; }
+  .phaseTab { min-height: 44px; }
+  .reviewCard { padding: 14px; }
+  .reviewRow { min-height: 32px; }
+
+  .stepActions {
+    margin-bottom: calc(var(--tr-bottom-navbar-offset, 96px) + 8px);
+  }
+}

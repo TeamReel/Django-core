@@ -6,7 +6,7 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Plus } from 'lucide-react';
-import MatchWizard from './MatchWizard';
+import MatchWizardV2 from './MatchWizardV2';
 
 interface QuickCreateFABProps {
   /** Organisation ID for filtering activities */
@@ -56,7 +56,7 @@ export default function QuickCreateFAB({ initialMatchId }: QuickCreateFABProps) 
       </button>
 
       {/* Match Wizard */}
-      <MatchWizard
+      <MatchWizardV2
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         initialMatchId={initialMatchId}
