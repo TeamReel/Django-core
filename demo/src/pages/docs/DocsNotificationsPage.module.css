@@ -19,7 +19,7 @@
 
 .filterBtn {
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--filter-btn-border, #6c757d);
   background-color: var(--app-surface);
   color: var(--filter-btn-color, #6c757d);
@@ -76,7 +76,7 @@
 
 .toggleBtn {
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--color-neutral-400);
   background-color: var(--app-surface);
   color: var(--color-neutral-400);

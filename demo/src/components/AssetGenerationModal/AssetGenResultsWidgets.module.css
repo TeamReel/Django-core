@@ -23,7 +23,7 @@
   padding: 8px 16px;
   background: var(--vscode-editorWidget-background, #252526);
   border: 1px solid var(--vscode-widget-border, #333);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 12px;
   color: var(--vscode-descriptionForeground, #888);
 }
@@ -65,6 +65,6 @@
   background: var(--vscode-input-background, #3c3c3c);
   color: var(--vscode-input-foreground, #ccc);
   border: 1px solid var(--vscode-input-border, #3c3c3c);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   outline: none;
 }

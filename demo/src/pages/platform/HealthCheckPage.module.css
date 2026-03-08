@@ -5,7 +5,7 @@
   background-color: var(--app-error);
   opacity: 0.9;
   border: 1px solid var(--app-error);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--color-white, #fff);
 }
 
@@ -20,7 +20,7 @@
 
 .statusBadge {
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background-color: var(--status-bg);
   color: var(--status-color);
   font-size: 12px;
@@ -32,7 +32,7 @@
 
 .integrityCount {
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background-color: var(--status-bg);
   color: var(--status-color);
   font-weight: bold;

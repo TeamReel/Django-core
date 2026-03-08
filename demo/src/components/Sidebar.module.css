@@ -78,7 +78,7 @@
   text-decoration: none;
   display: flex;
   align-items: center;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--sidebar-a-text);
   transition: color 0.15s, background-color 0.15s;
@@ -112,7 +112,7 @@
 /* ── Queue badge (expanded sidebar) ── */
 .queueBadge {
   color: var(--sidebar-badge-text, #fff);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1px 8px;
   font-size: 10px;
   min-width: 20px;
@@ -132,7 +132,7 @@
   top: 4px;
   right: 4px;
   color: var(--sidebar-badge-text, #fff);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 1px 4px;
   font-size: 9px;
   min-width: 16px;
@@ -182,7 +182,7 @@
   display: inline-flex;
   align-items: center;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   background: transparent;
   color: var(--sidebar-b-text);
@@ -231,7 +231,7 @@
   display: flex;
   align-items: center;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   font-size: 14px;
   color: var(--sidebar-b-text);

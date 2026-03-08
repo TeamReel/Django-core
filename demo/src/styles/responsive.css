@@ -42,7 +42,7 @@
   background: transparent;
   color: var(--app-text);
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .mobile-menu-button svg {

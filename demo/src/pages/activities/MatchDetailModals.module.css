@@ -26,7 +26,7 @@
 /* ------------------------------------------------------------------ */
 
 .modalFooter {
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .primaryActionLink {
@@ -59,7 +59,7 @@
 
 .savedAssetFooter {
   justify-content: flex-end;
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .savedDownloadLink {

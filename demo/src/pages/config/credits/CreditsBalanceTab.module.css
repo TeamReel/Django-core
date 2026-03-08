@@ -3,7 +3,7 @@
 .spinner {
   border: 4px solid var(--spinner-track, #f3f3f3);
   border-top: 4px solid var(--spinner-color, #3498db);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   width: 32px;
   height: 32px;
   animation: spin 1s linear infinite;
@@ -56,7 +56,7 @@
 
 .timelineBar {
   height: 24px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   opacity: 0.8;
   transition: all 0.3s ease;
   display: flex;

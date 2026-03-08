@@ -4,7 +4,7 @@
 .matrixCard {
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -35,7 +35,7 @@
   display: inline-flex;
   align-items: center;
   padding: 4px 12px;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 600;
 }
@@ -100,7 +100,7 @@
   font-size: 10px;
   font-weight: 600;
   color: white;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Table body cells ── */
@@ -140,7 +140,7 @@
 .thumbnail {
   width: 32px;
   height: 32px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   object-fit: contain;
   background: var(--app-surface-secondary);
   border: 1px solid var(--app-border);
@@ -156,7 +156,7 @@
 .progressWrapper {
   margin-top: 16px;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--app-muted);
 }
 
@@ -168,14 +168,14 @@
 
 .progressTrack {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--app-border, #334155);
   overflow: hidden;
 }
 
 .progressBar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   transition: width 0.3s ease;
 }
 
@@ -207,7 +207,7 @@
   display: inline-block;
   width: 12px;
   height: 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--phase-color);
 }
 

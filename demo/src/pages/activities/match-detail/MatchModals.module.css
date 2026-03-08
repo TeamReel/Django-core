@@ -61,7 +61,7 @@
 .modalFooter {
   padding: 16px 20px;
   background-color: var(--app-bg);
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .assetFooter {
@@ -70,7 +70,7 @@
   align-items: center;
   padding: 16px 20px;
   background-color: var(--app-bg);
-  border-radius: 0 0 12px 12px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 /* ─── Action Link ─── */

@@ -15,7 +15,7 @@
   height: 16px;
   border: 2px solid var(--spinner-track, #f3f3f3);
   border-top-color: var(--spinner-accent, #007bff);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
   vertical-align: middle;
 }
@@ -28,7 +28,7 @@
 .skeletonLine {
   height: 20px;
   background-color: var(--skeleton-bg, #e0e0e0);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-bottom: 12px;
   animation: pulse 1.5s ease-in-out infinite;
   width: 100%;
@@ -58,7 +58,7 @@
   height: 48px;
   border: 4px solid var(--spinner-track, #f3f3f3);
   border-top-color: var(--spinner-accent, #007bff);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 }
 
@@ -91,7 +91,7 @@
   height: 64px;
   border: 6px solid var(--spinner-track, #f3f3f3);
   border-top-color: var(--spinner-accent, #007bff);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
   margin: 0 auto;
 }

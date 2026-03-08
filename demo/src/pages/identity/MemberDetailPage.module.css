@@ -2,7 +2,7 @@
 
 .breadcrumbSelect {
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border, #ddd);
   background: var(--app-surface, #fff);
   color: var(--app-text-primary, #333);
@@ -28,7 +28,7 @@
   width: 100%;
   max-width: 200px;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #d1d5db);
   min-height: 44px;
   box-sizing: border-box;

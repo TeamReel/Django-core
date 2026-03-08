@@ -14,7 +14,7 @@
 .modal {
   background-color: var(--app-surface);
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 520px;
   max-width: 95%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -40,7 +40,7 @@
 
 .selectInput {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -51,7 +51,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px 12px;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
 }
@@ -76,7 +76,7 @@
 
 .cancelButton {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -89,7 +89,7 @@
 
 .saveButton {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-primary, #1976d2);
   color: white;

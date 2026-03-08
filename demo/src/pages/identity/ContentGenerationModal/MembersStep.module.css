@@ -67,7 +67,7 @@
   min-width: 80px;
   align-items: center;
   padding: 12px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, white);
 }
@@ -81,7 +81,7 @@
 .introButton {
   align-items: center;
   padding: 12px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
   background: var(--app-surface, white);
 }

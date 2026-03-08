@@ -81,7 +81,7 @@
   min-width: 0;
   padding: 12px 12px;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: var(--app-surface);
   color: var(--app-text);

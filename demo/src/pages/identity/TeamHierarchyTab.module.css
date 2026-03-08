@@ -23,7 +23,7 @@
 .seasonCard {
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -118,7 +118,7 @@
 /* ── Competition row ── */
 .compRow {
   border: 1px solid var(--app-border, #334155);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--app-surface, #0f172a);
 }
@@ -264,7 +264,7 @@
   border: none;
   padding: 4px 8px;
   margin-left: -8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   min-height: 32px;
   -webkit-tap-highlight-color: transparent;
 }

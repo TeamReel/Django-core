@@ -5,7 +5,7 @@
 /* ── AssetCard ── */
 .assetCard {
   border: 1px solid var(--vscode-widget-border, #333);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--vscode-editor-background, #1e1e1e);
 }
@@ -22,7 +22,7 @@
   color: white;
   font-size: 10px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
 
@@ -32,7 +32,7 @@
   background: rgba(0, 0, 0, 0.6);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 12px;
   padding: 8px 12px;
   min-height: 32px;
@@ -47,7 +47,7 @@
   color: var(--app-text);
   font-size: 10px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
 
@@ -68,7 +68,7 @@
   height: 24px;
   border: 3px solid var(--color-violet-500);
   border-top-color: transparent;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 }
 
@@ -111,7 +111,7 @@
   background: var(--vscode-button-background, #0078d4);
   color: var(--vscode-button-foreground, #fff);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .btnDelete {
@@ -123,7 +123,7 @@
   background: transparent;
   color: var(--color-red-400);
   border: 1px solid var(--color-red-400);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-top: 4px;
 }
 
@@ -158,7 +158,7 @@
   background: linear-gradient(135deg, var(--color-indigo-500), var(--color-violet-500));
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: opacity 0.15s;
 }
@@ -172,7 +172,7 @@
   background: transparent;
   color: var(--vscode-foreground, #ccc);
   border: 1px solid var(--vscode-widget-border, #444);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
 
@@ -190,7 +190,7 @@
 .historyPanel {
   background: var(--app-surface-2, #1e1e1e);
   border: 1px solid var(--app-border, #333);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 20px;
   width: min(480px, calc(100vw - 32px));
   max-height: 80vh;
@@ -223,7 +223,7 @@
   gap: 12px;
   padding: 12px;
   background: var(--color-neutral-900);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   align-items: center;
 }
 
@@ -231,7 +231,7 @@
   width: 60px;
   height: 80px;
   background-size: cover;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -246,7 +246,7 @@
   background: var(--color-blue-800);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 12px;
   cursor: pointer;
 }
@@ -275,14 +275,14 @@
 .sectionBox {
   background: var(--color-neutral-900);
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-neutral-800);
 }
 
 .sectionBoxSmall {
   background: var(--color-neutral-900);
   padding: 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-neutral-800);
 }
 
@@ -325,7 +325,7 @@
   font-weight: 600;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 /* ── States ── */
@@ -335,7 +335,7 @@
   color: var(--app-muted-text);
   font-size: 13px;
   background: var(--color-neutral-900);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px dashed var(--color-neutral-700);
 }
 
@@ -343,7 +343,7 @@
   padding: 16px;
   background: var(--vscode-inputValidation-warningBackground, #5a4000);
   border: 1px solid var(--vscode-inputValidation-warningBorder, #856d00);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   margin-top: 16px;
   font-size: 12px;
 }
@@ -354,7 +354,7 @@
   background: var(--color-blue-700);
   color: white;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .overrideBadge {
@@ -362,7 +362,7 @@
   background: var(--color-amber-400);
   color: var(--app-text);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 .resetLink {
@@ -381,7 +381,7 @@
   background: linear-gradient(135deg, var(--color-indigo-500), var(--color-violet-500));
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   text-align: center;
   font-weight: 500;

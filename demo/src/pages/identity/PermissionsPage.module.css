@@ -8,7 +8,7 @@
 
 .tabButton {
   padding: 12px 16px;
-  border-radius: 8px 8px 0 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   border: 1px solid var(--app-border);
   border-bottom: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
@@ -30,7 +30,7 @@
 
 .tableWrapper {
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   max-height: calc(100vh - 320px);
   background-color: var(--app-surface);
 }
@@ -132,7 +132,7 @@
 
   .tableWrapper {
     max-height: calc(100dvh - 280px);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     /* Hint that content scrolls horizontally */
     -webkit-overflow-scrolling: touch;
   }

@@ -113,7 +113,7 @@
     white-space: nowrap !important;
     min-height: 40px !important;
     padding: 8px 16px !important;
-    border-radius: 20px !important;
+    border-radius: var(--radius-lg) !important;
     font-size: 0.8125rem !important;
     flex-shrink: 0;
   }

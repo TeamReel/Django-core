@@ -30,7 +30,7 @@
 /* ─── Navigation Buttons ─────────────────────────────────────── */
 .navBtn {
   padding: 4px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--rm-gray-200);
   background: transparent;
   cursor: pointer;
@@ -113,7 +113,7 @@
 .variantApproveBtn {
   flex: 1;
   padding: 8px 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1.5px solid var(--rm-green-200);
   background: var(--rm-green-50);
   color: var(--rm-green-700);
@@ -136,7 +136,7 @@
 .variantRejectBtn {
   flex: 1;
   padding: 8px 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1.5px solid var(--rm-red-300);
   background: var(--rm-red-50);
   color: var(--rm-red-600);

@@ -2,7 +2,7 @@
 
 .card {
   background: var(--app-surface);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   padding: 16px;
   margin-bottom: 12px;
@@ -22,7 +22,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--app-primary) 12%, transparent);
   color: var(--app-primary);
   flex-shrink: 0;
@@ -39,7 +39,7 @@
   font-size: 11px;
   font-weight: 700;
   padding: 4px 8px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--app-primary) 10%, transparent);
   color: var(--app-primary);
 }
@@ -136,7 +136,7 @@
   font-size: 11px;
   font-weight: 600;
   padding: 4px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   line-height: 1.4;
 }
 
@@ -169,7 +169,7 @@
   text-align: center;
   padding: 8px 4px;
   background: var(--app-surface-alt, var(--app-bg));
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .statValue {
@@ -200,7 +200,7 @@
 
 .shimmer {
   height: 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease infinite;

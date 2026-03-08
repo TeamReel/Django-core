@@ -7,7 +7,7 @@
 .templateSelect {
   width: 100%;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #555);
   background: var(--app-surface-2, #252540);
   color: var(--app-text, #e0e0e0);
@@ -44,7 +44,7 @@
 
 .select {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #555);
   background: var(--app-surface-2, #252540);
   color: var(--app-text, #e0e0e0);
@@ -73,7 +73,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #333);
   margin-bottom: 8px;
   cursor: pointer;
@@ -90,7 +90,7 @@
 .avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   object-fit: cover;
   background: var(--app-muted, #333);
   flex-shrink: 0;

@@ -13,7 +13,7 @@
 
 .filterSelect {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--app-border, #334155);
@@ -48,7 +48,7 @@
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #334155);
   background: var(--app-surface-2, #1e293b);
   color: var(--app-text);
@@ -77,7 +77,7 @@
 .tableCard {
   background: var(--app-surface-2, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -110,7 +110,7 @@
   padding: 8px 16px;
   font-size: 12px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: none;
   background: var(--color-indigo-400);
   color: white;

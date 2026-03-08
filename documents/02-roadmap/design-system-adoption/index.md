@@ -1,6 +1,6 @@
 # Design System Adoption — Phase Overview
 
-**Status:** � In uitvoering (1/11 fases)
+**Status:** 🔄 In uitvoering (2/11 fases)
 **Aangemaakt:** 2026-03-08
 **Laatste update:** 2026-03-08
 
@@ -18,7 +18,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | **Spacing tokens** | 3.0% adoptie (80 / 2.632) |
 | **Font-size tokens** | 2.3% adoptie (25 / 1.095) |
 | **Font-weight tokens** | 3.0% adoptie (19 / 629) |
-| **Border-radius tokens** | 1.2% adoptie (9 / 726) |
+| **Border-radius tokens** | ~99% adoptie (707 gefixt) |
 | **Motion tokens** | 2.1% adoptie (7 / 328) |
 | **Shadow tokens** | 9.8% adoptie (12 / 123) |
 | **Line-height tokens** | 0.0% adoptie (0 / 106) |
@@ -29,7 +29,7 @@ De design tokens die in `tokens.css` gedefinieerd zijn daadwerkelijk **overal to
 | Fase | Naam | Scope | Waarden | Effort | Status |
 |------|------|-------|---------|--------|--------|
 | **Q1** | Quick Wins (base.css) | `::selection`, `scroll-padding`, `overscroll-behavior`, `text-rendering`, `prefers-color-scheme`, `content-visibility`, `--border-default` token | — | 30 min | ✅ Done |
-| **A1** | Radius Token Adoption | `border-radius: Npx` → `var(--radius-*)` | 717 | 30 min | 🔲 Todo |
+| **A1** | Radius Token Adoption | `border-radius: Npx` → `var(--radius-*)` | 707 | 30 min | ✅ Done |
 | **A2** | Shadow Token Adoption | `box-shadow: ...` → `var(--shadow-*)` | 110 | 30 min | 🔲 Todo |
 | **A3** | Motion Token Adoption | `transition` / `animation` → `var(--duration-*)` + `var(--ease-*)` | 321 | 45 min | 🔲 Todo |
 | **A4** | Font-weight Token Adoption | `font-weight: N` → `var(--font-*)` | 608 | 30 min | 🔲 Todo |

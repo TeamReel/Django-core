@@ -2,7 +2,7 @@
 
 .filterButton {
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   border: 1px solid;
   cursor: pointer;
   font-size: 13px;

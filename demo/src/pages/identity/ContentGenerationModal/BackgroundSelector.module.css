@@ -15,7 +15,7 @@
 .bgButton {
   position: relative;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
   padding: 0;
@@ -64,7 +64,7 @@
   right: 4px;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background: var(--color-green-400);
   display: flex;
   align-items: center;

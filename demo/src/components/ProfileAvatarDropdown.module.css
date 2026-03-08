@@ -8,7 +8,7 @@
 .avatarButton {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   border: 2px solid var(--app-border);
   background-color: var(--app-surface-secondary);
   color: var(--app-text);
@@ -33,7 +33,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 }
 
 /* Dropdown panel */
@@ -44,7 +44,7 @@
   min-width: 240px;
   background-color: var(--app-surface);
   border: 1px solid var(--app-border);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   padding: 8px 0;
   z-index: 1000;

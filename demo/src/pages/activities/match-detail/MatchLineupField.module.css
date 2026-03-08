@@ -44,7 +44,7 @@
   height: 48px;
   transform: translate(-50%, -50%);
   border: 1px solid var(--marking-color);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 }
 
 /* Penalty box — bottom (defending) */
@@ -105,7 +105,7 @@
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   outline: none;
   cursor: pointer;
   text-align: center;
@@ -199,7 +199,7 @@
   padding: 4px 12px;
   font-size: 11px;
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border, #444);
   background: transparent;
   color: var(--app-text-secondary, #999);
@@ -236,7 +236,7 @@
   color: var(--app-text-secondary, #999);
   background: transparent;
   border: 1.5px dashed var(--app-border, #444);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -258,7 +258,7 @@
   padding: 0 12px;
   font-size: 13px;
   line-height: 36px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #444);
   background: var(--app-surface-secondary, #2a2a2a);
   color: var(--app-text-primary, #fff);
@@ -284,7 +284,7 @@
   font-size: 13px;
   font-weight: 600;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: var(--field-green, #16a34a);
   color: white;
   cursor: pointer;
@@ -296,7 +296,7 @@
   font-size: 13px;
   font-weight: 500;
   border: 1px solid var(--app-border, #444);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   color: var(--app-text-secondary, #999);
   cursor: pointer;

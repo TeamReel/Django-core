@@ -87,7 +87,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: none;
   background: var(--app-surface-secondary, #252526);
   color: var(--app-text, #fff);
@@ -110,7 +110,7 @@
   min-width: 200px;
   background: var(--app-surface, #1e1e1e);
   border: 1px solid var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }

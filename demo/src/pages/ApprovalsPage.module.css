@@ -52,7 +52,7 @@
 .modalPanel {
   width: 100%;
   background-color: var(--app-surface, #1e293b);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
   display: flex;
@@ -110,7 +110,7 @@
 .closeBtn {
   background: none;
   border: 1px solid var(--color-neutral-200);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: var(--color-neutral-400);
   cursor: pointer;
   font-size: 18px;
@@ -152,7 +152,7 @@
 .previewImg {
   max-height: 200px;
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   object-fit: contain;
 }
 
@@ -171,7 +171,7 @@
 
 .btnPrimary {
   padding: 8px 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: none;
   background: var(--color-blue-600);
   color: white;
@@ -191,7 +191,7 @@
 
 .btnGhost {
   padding: 8px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #334155);
   background: transparent;
   color: var(--app-text-secondary, #9ca3af);
@@ -202,7 +202,7 @@
 
 .btnApprove {
   padding: 8px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: none;
   background: var(--color-green-500);
   color: white;
@@ -222,7 +222,7 @@
 
 .btnReject {
   padding: 8px 20px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-red-200);
   background: var(--color-red-50);
   color: var(--color-red-500);
@@ -242,7 +242,7 @@
 
 .btnRetry {
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-blue-600);
   background: var(--color-blue-600);
   color: white;
@@ -262,7 +262,7 @@
 
 .btnCancel {
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-red-500);
   background: transparent;
   color: var(--color-red-500);
@@ -282,7 +282,7 @@
 
 .btnBeginReview {
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-amber-500);
   background: var(--color-amber-50);
   color: var(--color-amber-500);
@@ -302,7 +302,7 @@
 
 .btnRefresh {
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: transparent;
   border: 1px solid var(--app-border);
   color: var(--app-text);
@@ -329,7 +329,7 @@
 
 .btnSelectAll {
   padding: 4px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-green-100);
   background: var(--color-green-50);
   color: var(--color-green-500);
@@ -345,7 +345,7 @@
 
 .btnRejectAll {
   padding: 4px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--color-red-200);
   background: var(--color-red-50);
   color: var(--color-red-500);
@@ -397,7 +397,7 @@
   font-size: 12px;
   color: var(--color-red-500);
   background-color: var(--color-red-50);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 8px 12px;
 }
 
@@ -405,7 +405,7 @@
   padding: 12px 16px;
   background: var(--color-red-50);
   color: var(--color-red-500);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   margin-bottom: 16px;
 }
@@ -414,7 +414,7 @@
   font-size: 11px;
   color: var(--color-red-500);
   background: var(--color-red-50);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding: 4px 8px;
   margin-top: 8px;
 }
@@ -425,7 +425,7 @@
   border-left: 3px solid var(--color-red-500);
   padding: 8px 12px;
   font-size: 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-top: 8px;
 }
 
@@ -462,7 +462,7 @@
   text-align: center;
   color: var(--app-text-secondary);
   border: 1px dashed var(--app-border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .emptyIcon {
@@ -545,7 +545,7 @@
   font-size: 10px;
   font-weight: 700;
   padding: 4px 8px;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
 }
 
 .emptyHint {
@@ -566,7 +566,7 @@
 .pillBadge {
   font-size: 10px;
   font-weight: 700;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   padding: 4px 8px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -612,14 +612,14 @@
 .progressTrack {
   height: 4px;
   background: var(--color-neutral-200);
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
 .progressTrackThick {
   flex: 1;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--color-neutral-200);
   overflow: hidden;
 }
@@ -697,7 +697,7 @@
 
 .workflowCard {
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   background: var(--app-surface);
   transition: box-shadow 0.15s, transform 0.1s;
@@ -742,7 +742,7 @@
 .chipCountBadge {
   font-size: 10px;
   font-weight: 700;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   padding: 1px 8px;
   margin-left: 4px;
 }
@@ -793,7 +793,7 @@
   height: 72px;
   width: 100%;
   background: var(--app-surface-2);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   margin-bottom: 12px;
   animation: shimmer 1.4s infinite;
 }
@@ -810,7 +810,7 @@
   align-items: center;
   gap: 4px;
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: 12px;
   font-weight: 600;
   border: 1.5px solid var(--app-border, #e5e7eb);
@@ -840,7 +840,7 @@
 .chipBadge {
   font-size: 10px;
   font-weight: 700;
-  border-radius: 100px;
+  border-radius: var(--radius-full);
   padding: 1px 8px;
   min-width: 20px;
   text-align: center;
@@ -859,7 +859,7 @@
   }
 
   .modalPanel {
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
   }
 
   .modalHeader {

@@ -1,6 +1,6 @@
 .card {
   background: var(--app-surface, #fff);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
@@ -36,7 +36,7 @@
   width: 100%;
   padding: 12px 12px;
   border: 1px solid var(--app-border, rgba(0, 0, 0, 0.06));
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--app-surface-alt, #f9fafb);
   cursor: pointer;
   transition: background 0.15s, transform 0.1s;
@@ -68,7 +68,7 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   flex-shrink: 0;
   color: var(--_accent, var(--app-primary, #6366f1));
   background: color-mix(in srgb, var(--_accent, var(--app-primary, #6366f1)) 12%, transparent);
@@ -108,7 +108,7 @@
 
 .shimmer {
   height: 52px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: linear-gradient(
     90deg,
     var(--app-surface-alt, #f3f4f6) 25%,

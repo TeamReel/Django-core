@@ -15,7 +15,7 @@
 /* Toast item base */
 .toast {
   padding: var(--space-3) 20px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   font-size: var(--text-md);
   font-weight: var(--font-medium);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
@@ -53,7 +53,7 @@
 .actionBtn {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   color: white;
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);

@@ -16,12 +16,12 @@
 
 .progressTrack {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background-color: var(--app-border, #e5e7eb);
 }
 
 .progressFill {
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background-color: var(--progress-color, var(--color-blue-600));
   transition: width 0.5s ease-out;
   width: var(--progress);
@@ -30,7 +30,7 @@
 /* ── Job Card ─────────────────────────────────────────────────────────────── */
 
 .jobCard {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .jobId {
@@ -79,7 +79,7 @@
 
 .filterButton {
   padding: 4px 12px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: transparent;
   color: var(--app-text-secondary, #6b7280);

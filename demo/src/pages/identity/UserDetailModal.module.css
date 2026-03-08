@@ -14,7 +14,7 @@
 .modal {
   background-color: var(--app-surface);
   padding: 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 600px;
   max-width: 90%;
   max-height: 80vh;
@@ -69,7 +69,7 @@
 
 .closeButton {
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);

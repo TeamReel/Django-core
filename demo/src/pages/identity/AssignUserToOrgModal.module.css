@@ -14,7 +14,7 @@
 .modal {
   background-color: var(--app-surface);
   padding: 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 480px;
   max-width: 90%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -39,7 +39,7 @@
   background-color: rgba(220, 53, 69, 0.1);
   color: var(--app-error);
   border: 1px solid rgba(220, 53, 69, 0.2);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
 }
 
@@ -54,7 +54,7 @@
 .selectInput {
   width: 100%;
   padding: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-input-bg);
   color: var(--app-text);
@@ -70,7 +70,7 @@
 
 .cancelBtn {
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -86,7 +86,7 @@
 .submitBtn {
   --submit-bg: #0066cc;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: none;
   background-color: var(--submit-bg);
   color: white;

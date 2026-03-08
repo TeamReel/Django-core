@@ -62,7 +62,7 @@
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   color: var(--app-text);
@@ -90,7 +90,7 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background: var(--app-surface-2);
   color: var(--app-text);
@@ -112,7 +112,7 @@
   min-width: 168px;
   background: var(--app-surface, #1e293b);
   border: 1px solid var(--app-border, #334155);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   z-index: 200;
   overflow: hidden;
@@ -146,13 +146,13 @@
   height: 16px;
   width: 60%;
   background: var(--app-surface-2);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   animation: shimmer 1.4s infinite;
 }
 
 .skeletonBarShort { composes: skeletonBar; width: 35%; margin-top: 8px; }
 .skeletonBarFull { composes: skeletonBar; width: 100%; height: 44px; margin-top: 20px; }
-.skeletonCard { height: 140px; width: 100%; background: var(--app-surface-2); border-radius: 12px; margin-top: 16px; animation: shimmer 1.4s infinite; }
+.skeletonCard { height: 140px; width: 100%; background: var(--app-surface-2); border-radius: var(--radius-lg); margin-top: 16px; animation: shimmer 1.4s infinite; }
 
 @keyframes shimmer { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
@@ -162,7 +162,7 @@
 .backBtn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 12px 20px; font-size: 16px; font-weight: 600;
-  border-radius: 8px; border: 1px solid var(--app-border);
+  border-radius: var(--radius-md); border: 1px solid var(--app-border);
   background: var(--app-surface); color: var(--app-text); cursor: pointer;
 }
 
@@ -195,7 +195,7 @@
 
 /* ── Content Tiles ── */
 .contentTile {
-  min-width: 0; padding: 12px 8px; border-radius: 8px; text-align: center; transition: all 0.15s;
+  min-width: 0; padding: 12px 8px; border-radius: var(--radius-md); text-align: center; transition: all 0.15s;
 }
 .contentTileGrid {
   display: grid;
@@ -209,14 +209,14 @@
 .noTemplate { font-size: 9px; color: var(--app-muted-text); margin-top: 4px; }
 
 /* ── Video Cards ── */
-.videoCard { border-radius: 12px; overflow: hidden; }
+.videoCard { border-radius: var(--radius-lg); overflow: hidden; }
 .videoThumbnail { position: relative; width: 100%; height: 180px; background-color: var(--color-neutral-900); }
 .videoFill { width: 100%; height: 100%; object-fit: cover; display: block; }
 .videoCardMeta { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
 .videoCardHeader { display: flex; align-items: center; justify-content: space-between; }
 .videoCardTitle { font-size: 13px; font-weight: 600; color: var(--app-text); }
 .statusPillComplete {
-  font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: 100px;
+  font-size: 10px; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-full);
   color: var(--color-green-500); background-color: var(--color-green-50); text-transform: uppercase; letter-spacing: 0.04em;
 }
 .videoCardInfo { font-size: 11px; color: var(--app-muted-text); display: flex; gap: 8px; flex-wrap: wrap; }
@@ -227,7 +227,7 @@
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
 .previewModalContainer {
-  background-color: var(--app-card-bg, #1e293b); border-radius: 12px; max-width: 900px;
+  background-color: var(--app-card-bg, #1e293b); border-radius: var(--radius-lg); max-width: 900px;
   width: 100%; max-height: 90vh; overflow: hidden; border: 1px solid var(--app-border, #334155);
 }
 .previewModalHeader {
@@ -244,7 +244,7 @@
   display: inline-flex; align-items: center; gap: 8px; padding: 4px 8px;
   border-radius: 1000px; font-size: 12px; font-weight: 600;
 }
-.competitionCard { border: 1px solid var(--app-border, #334155); border-radius: 12px; background: var(--app-surface); overflow: hidden; }
+.competitionCard { border: 1px solid var(--app-border, #334155); border-radius: var(--radius-lg); background: var(--app-surface); overflow: hidden; }
 .competitionCardHeader {
   display: flex; justify-content: space-between; align-items: center;
   padding: 12px 12px; border-bottom: 1px solid var(--app-border, #334155);
@@ -255,7 +255,7 @@
 .matchRow {
   display: flex; justify-content: space-between; align-items: center;
   padding: 8px 12px; border-bottom: 1px solid var(--app-border, #1e293b);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 .matchDate { font-size: 12px; color: var(--app-muted-text); }
 
@@ -275,7 +275,7 @@
 .guestIndicator { font-size: 14px; cursor: pointer; }
 .indicatorIcon { font-size: 14px; }
 .indicatorDisabled { font-size: 14px; opacity: 0.3; }
-.legendBox { margin-top: 16px; padding: 12px; background: var(--app-muted); border-radius: 8px; }
+.legendBox { margin-top: 16px; padding: 12px; background: var(--app-muted); border-radius: var(--radius-md); }
 .legendTitle { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 .legendRow { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; }
 .legendRowDivided { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; margin-bottom: 12px; border-top: 1px solid var(--app-border, #334155); padding-top: 8px; }
@@ -290,7 +290,7 @@
   justify-content: center; z-index: 9999;
 }
 .editMemberModal {
-  background-color: var(--color-neutral-800); padding: 32px; border-radius: 8px;
+  background-color: var(--color-neutral-800); padding: 32px; border-radius: var(--radius-md);
   max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; color: var(--color-neutral-50);
 }
 .editMemberTitle { margin-top: 0; margin-bottom: 24px; font-size: 24px; font-weight: 600; color: var(--color-neutral-50); }
@@ -300,22 +300,22 @@
 .radioGroup { display: flex; flex-direction: column; gap: 12px; }
 .radioCard {
   display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  padding: 12px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;
 }
 .radioInput { cursor: pointer; accent-color: var(--color-blue-500); }
 .radioCardTitle { font-weight: 600; color: var(--color-neutral-50); font-size: 14px; }
 .radioCardDesc { font-size: 12px; color: var(--color-neutral-300); margin-top: 4px; }
 .checkboxCard {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
+  padding: 8px 12px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s;
 }
 .roleLabel { text-transform: capitalize; color: var(--color-neutral-50); }
 .btnCancel {
-  padding: 12px 20px; border-radius: 8px; border: 1px solid var(--color-neutral-500);
+  padding: 12px 20px; border-radius: var(--radius-md); border: 1px solid var(--color-neutral-500);
   background-color: var(--color-neutral-600); color: var(--color-neutral-50); cursor: pointer;
 }
 .btnSave {
-  padding: 12px 20px; border-radius: 8px; border: none;
+  padding: 12px 20px; border-radius: var(--radius-md); border: none;
   background-color: var(--color-blue-500); color: white; cursor: pointer; font-weight: 500;
 }
 
@@ -325,7 +325,7 @@
   justify-content: center; background-color: rgba(0, 0, 0, 0.75); padding: 20px;
 }
 .thenNowModal {
-  background-color: var(--app-surface, #1a1a2e); border-radius: 12px;
+  background-color: var(--app-surface, #1a1a2e); border-radius: var(--radius-lg);
   max-width: 640px; width: 100%; max-height: 90vh; overflow: hidden;
   border: 1px solid var(--app-border);
 }
@@ -344,14 +344,14 @@
 .orderedList { max-height: 260px; overflow-y: auto; }
 .orderedMemberRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; }
 .orderNumber {
-  width: 24px; height: 24px; border-radius: 50%; background: var(--app-surface-2);
+  width: 24px; height: 24px; border-radius: var(--radius-full); background: var(--app-surface-2);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
 }
 .memberName { font-size: 13px; font-weight: 600; }
 .memberMeta { font-size: 11px; color: var(--app-muted-text); }
 .variantRow { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-.variantPill { padding: 4px 8px; border-radius: 100px; font-size: 10px; cursor: pointer; transition: all 0.15s; }
+.variantPill { padding: 4px 8px; border-radius: var(--radius-full); font-size: 10px; cursor: pointer; transition: all 0.15s; }
 .arrowBtn { background: none; border: none; font-size: 16px; padding: 4px; }
 .removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, #ef4444); opacity: 0.5; }
 .addIcon { font-size: 18px; color: var(--app-muted-text); }
@@ -360,13 +360,13 @@
 .emptyState { padding: 16px 20px; font-size: 12px; color: var(--app-muted-text); text-align: center; }
 .clickableRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; cursor: pointer; transition: background 0.15s; }
 .bgPreviewDefault {
-  width: 100%; aspect-ratio: 9 / 16; border-radius: 4px;
+  width: 100%; aspect-ratio: 9 / 16; border-radius: var(--radius-sm);
   background: linear-gradient(135deg, var(--color-neutral-900), var(--color-violet-500));
 }
 .bgOptionLabel { font-size: 9px; margin-top: 4px; text-align: center; }
 .checkBadge {
   position: absolute; top: 4px; right: 4px; width: 20px; height: 20px;
-  border-radius: 50%; background: var(--color-green-400); color: white; font-size: 12px;
+  border-radius: var(--radius-full); background: var(--color-green-400); color: white; font-size: 12px;
   display: flex; align-items: center; justify-content: center;
 }
 .statusStep { padding: 40px 20px; text-align: center; }
@@ -375,16 +375,16 @@
 .statusTitleError { font-weight: 700; font-size: 16px; margin-bottom: 8px; color: var(--app-danger, #ef4444); }
 .statusDesc { font-size: 13px; color: var(--app-muted-text); }
 .modalSearchInput {
-  width: 100%; padding: 8px 12px; border-radius: 8px;
+  width: 100%; padding: 8px 12px; border-radius: var(--radius-md);
   border: 1px solid var(--app-border); background: var(--app-surface-2);
   color: var(--app-text); font-size: 12px;
 }
 .modalBtnSecondary {
-  padding: 8px 20px; border-radius: 8px; border: 1px solid var(--app-border);
+  padding: 8px 20px; border-radius: var(--radius-md); border: 1px solid var(--app-border);
   background: transparent; color: var(--app-text); cursor: pointer; font-size: 13px;
 }
 .modalBtnPrimary {
-  padding: 8px 20px; border-radius: 8px; border: none;
+  padding: 8px 20px; border-radius: var(--radius-md); border: none;
   background: var(--color-indigo-500); color: white; cursor: pointer; font-weight: 600; font-size: 13px;
 }
 
@@ -394,7 +394,7 @@
   display: flex; flex-direction: column; gap: 8px; max-width: 420px;
 }
 .toast {
-  border-radius: 8px; padding: 12px 16px; color: white;
+  border-radius: var(--radius-md); padding: 12px 16px; color: white;
   display: flex; align-items: flex-start; gap: 12px; font-size: 13px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); animation: slideInRight 0.3s ease-out;
 }
@@ -427,7 +427,7 @@
     min-height: 44px;
   }
 
-  .competitionCard { border-radius: 16px; }
+  .competitionCard { border-radius: var(--radius-lg); }
 
   .competitionCardHeader {
     flex-direction: column;
@@ -463,12 +463,12 @@
 
   .previewModalContainer {
     max-width: 100%;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 
   .thenNowModal {
     max-width: 100%;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 
   .toastContainer {

@@ -12,7 +12,7 @@
 }
 
 .clubCard {
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--app-surface);
 }
 

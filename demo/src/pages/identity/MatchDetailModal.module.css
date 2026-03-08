@@ -14,7 +14,7 @@
 .modal {
   background-color: var(--app-surface);
   padding: 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 560px;
   max-width: 90%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -36,7 +36,7 @@
 
 .closeBtn {
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);

@@ -2,7 +2,7 @@
 
 .card {
   background: var(--app-surface);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   padding: 16px;
   margin-bottom: 12px;
@@ -46,7 +46,7 @@
 
 .thumbItem {
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   transition: transform 0.12s;
 }
@@ -63,7 +63,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--app-bg);
 }
@@ -95,7 +95,7 @@
   justify-content: center;
   background: rgba(0, 0, 0, 0.6);
   color: white;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* ── Meta ──────────────────────────────────────── */
@@ -125,7 +125,7 @@
 /* ── Loading shimmer ──────────────────────────────────── */
 .thumbShimmer {
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   background: linear-gradient(90deg, var(--app-bg) 25%, var(--app-surface) 50%, var(--app-bg) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease infinite;

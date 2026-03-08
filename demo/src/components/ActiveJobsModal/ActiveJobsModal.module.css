@@ -3,7 +3,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #333);
   margin-bottom: 8px;
   background: var(--app-surface-2, #252540);
@@ -11,7 +11,7 @@
 
 .progressBarContainer {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--app-border, #333);
   overflow: hidden;
   flex: 1;

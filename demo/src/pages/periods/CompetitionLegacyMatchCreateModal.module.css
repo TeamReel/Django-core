@@ -14,7 +14,7 @@
 .modal {
   background-color: var(--app-surface);
   padding: 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 640px;
   max-width: 95%;
   box-shadow: 0 4px 12px var(--modal-shadow, rgba(0, 0, 0, 0.15));
@@ -36,7 +36,7 @@
 
 .closeButton {
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -56,7 +56,7 @@
 
 .formControl {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
   color: var(--app-text);
@@ -81,7 +81,7 @@
 
 .submitButton {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--submit-btn-border, #1e5aa5);
   background-color: var(--color-blue-600);
   color: var(--color-white, #fff);

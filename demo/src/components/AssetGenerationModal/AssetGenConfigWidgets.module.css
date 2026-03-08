@@ -19,7 +19,7 @@
   border: 1px solid var(--vscode-widget-border, #333);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 13px;
   text-align: center;
@@ -46,7 +46,7 @@
   height: 80px;
   padding: 0;
   border: 2px solid var(--vscode-widget-border, #333);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   cursor: pointer;
   background: var(--color-neutral-900);
@@ -68,7 +68,7 @@
   right: 4px;
   background: var(--color-green-400);
   color: white;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   width: 20px;
   height: 20px;
   display: flex;
@@ -86,7 +86,7 @@
   border: 1px solid var(--vscode-widget-border, #333);
   background: transparent;
   color: var(--vscode-foreground, #ccc);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 11px;
   text-align: center;

@@ -1,6 +1,6 @@
 .filterSelect {
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
   background-color: var(--app-bg);
   color: var(--app-text);

@@ -96,7 +96,7 @@
   /* Notification cards — tighter for mobile */
   .notificationCard {
     border-left-width: 3px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
   }
 
   .notificationHeader {

@@ -14,7 +14,7 @@
   flex-direction: column;
   gap: 4px;
   padding: 12px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   border: 2px solid var(--app-border, #e5e7eb);
   background-color: var(--app-surface, #fff);

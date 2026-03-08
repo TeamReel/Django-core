@@ -1,8 +1,8 @@
 # A1 — Radius Token Adoption
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 30 min
-**Scope:** 717 hardcoded `border-radius` → `var(--radius-*)`
+**Scope:** 707 hardcoded `border-radius` → `var(--radius-*)` (136 bestanden)
 
 ---
 

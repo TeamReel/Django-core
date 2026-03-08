@@ -40,7 +40,7 @@
   color: var(--action-color);
   background-color: var(--action-bg);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   transition: background-color 0.15s, opacity 0.15s, transform 0.1s;
   white-space: nowrap;
   cursor: pointer;
@@ -80,7 +80,7 @@
   gap: 8px;
   padding: 12px;
   background-color: var(--app-surface-2, #f9fafb);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #e5e7eb);
 }
 
@@ -93,7 +93,7 @@
 .commentTextarea {
   font-size: 13px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--app-border, #e5e7eb);
   background-color: var(--app-surface, #fff);
   color: var(--app-text, #111);
@@ -114,7 +114,7 @@
   color: var(--confirm-color);
   background-color: var(--confirm-bg);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 8px 16px;
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;
@@ -134,7 +134,7 @@
   color: var(--app-text, #111);
   background-color: transparent;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 8px 16px;
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;

@@ -103,7 +103,7 @@
 .slotSelect {
   padding: 8px 8px;
   border: 1px solid var(--app-border, #e5e7eb);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 /* Slot member select (extra bottom spacing) */

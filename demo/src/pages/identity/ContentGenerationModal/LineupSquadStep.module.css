@@ -36,7 +36,7 @@
   height: 48px;
   transform: translate(-50%, -50%);
   border: 1px solid var(--field-marking-color, rgba(255, 255, 255, 0.2));
-  border-radius: 50%;
+  border-radius: var(--radius-full);
 }
 
 .penaltyBox {
@@ -89,7 +89,7 @@
   background-color: var(--select-bg, rgba(0, 0, 0, 0.6));
   color: var(--select-text, #fff);
   border: 1px solid var(--select-border, rgba(255, 255, 255, 0.3));
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   outline: none;
   cursor: pointer;
   text-align: center;

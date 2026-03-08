@@ -28,7 +28,7 @@
   padding: 24px;
   background-color: var(--color-white);
   border: 1px solid var(--color-gray-200);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .lightThemeCard[data-selected='true'] {
@@ -40,7 +40,7 @@
   background-color: var(--color-gray-800);
   color: var(--color-gray-100);
   border: 1px solid var(--color-gray-700);
-  border-radius: 8px;
+  border-radius: var(--radius-md);
 }
 
 .darkThemeCard[data-selected='true'] {
@@ -66,14 +66,14 @@
 .lightPreviewBox {
   padding: 12px;
   background-color: var(--color-gray-50);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-bottom: 12px;
 }
 
 .darkPreviewBox {
   padding: 12px;
   background-color: var(--color-gray-900);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-bottom: 12px;
 }
 
