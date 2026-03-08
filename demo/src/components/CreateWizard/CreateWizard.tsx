@@ -11,6 +11,7 @@
  *     → Match flow: MatchCreateFlow (M1 — opponent, date, venue → submit)
  *     → Member flow: MemberAddFlow (M2 — search/create user → role → submit)
  *     → Team flow: ProjectCreateFlow (M3 — type/context → details → submit)
+ *     → Season flow: PeriodCreateFlow (M4 — type → details → submit)
  *     → Other flows: WizardInnerShell (stub)
  */
 import React, { useCallback, useMemo } from 'react';
@@ -28,6 +29,7 @@ import { ContentFlow } from './flows/ContentFlow';
 import { MatchCreateFlow } from './flows/MatchCreateFlow';
 import { MemberAddFlow } from './flows/MemberAddFlow';
 import { ProjectCreateFlow } from './flows/ProjectCreateFlow';
+import { PeriodCreateFlow } from './flows/PeriodCreateFlow';
 
 // ─── Props ────────────────────────────────────────────────
 
@@ -92,6 +94,16 @@ function CreateWizardInner({
   if (selectedFlow === 'team') {
     return (
       <ProjectCreateFlow
+        isOpen={isOpen}
+        onClose={onClose}
+      />
+    );
+  }
+
+  // ── Period create flow (M4) ──
+  if (selectedFlow === 'season') {
+    return (
+      <PeriodCreateFlow
         isOpen={isOpen}
         onClose={onClose}
       />
