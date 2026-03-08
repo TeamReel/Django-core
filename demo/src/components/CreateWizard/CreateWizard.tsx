@@ -8,6 +8,7 @@
  * Architecture (dual-context pattern):
  *   CreateWizardProvider (domain: selectedFlow, prefill)
  *     → Content flow: ContentFlow (C3 — unified SmartMatch → MatchWizardV2)
+ *     → Match flow: MatchCreateFlow (M1 — opponent, date, venue → submit)
  *     → Other flows: WizardInnerShell (stub)
  */
 import React, { useCallback, useMemo } from 'react';
@@ -22,6 +23,7 @@ import {
 import { ChooseFlowStep } from './steps/ChooseFlowStep';
 import { FlowStubStep } from './steps/FlowStubStep';
 import { ContentFlow } from './flows/ContentFlow';
+import { MatchCreateFlow } from './flows/MatchCreateFlow';
 
 // ─── Props ────────────────────────────────────────────────
 
@@ -58,6 +60,16 @@ function CreateWizardInner({
         isOpen={isOpen}
         onClose={onClose}
         initialMatchId={initialMatchId}
+      />
+    );
+  }
+
+  // ── Match create flow (M1) ──
+  if (selectedFlow === 'match') {
+    return (
+      <MatchCreateFlow
+        isOpen={isOpen}
+        onClose={onClose}
       />
     );
   }

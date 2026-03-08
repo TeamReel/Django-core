@@ -1,0 +1,185 @@
+/**
+ * MatchCreateFlow — "Wedstrijd aanmaken" sub-flow inside CreateWizard (M1).
+ *
+ * Wraps the existing useMatchCreateData hook (reusing all cascading logic,
+ * form state, and API submission) in a 2‑step wizard:
+ *   Step 1 (matchDetails): opponent, date, time, venue, location
+ *   Step 2 (matchConfirm): summary + submit + post-create actions
+ *
+ * Pre‑fills org/club/team/season/competition from CreateWizardProvider.
+ */
+import React, { useCallback, useMemo } from 'react';
+
+import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
+import { useCreateWizard } from '../CreateWizardContext';
+import { ChooseFlowStep } from '../steps/ChooseFlowStep';
+import { MatchDetailsStep, type MatchDetailsData } from '../steps/MatchDetailsStep';
+import { MatchConfirmStep, type MatchConfirmData } from '../steps/MatchConfirmStep';
+
+import { useMatchCreateData } from '../../../pages/identity/useMatchCreateData';
+import type { MatchCreatePayload } from '../../../pages/identity/matchCreateTypes';
+import { getApiBaseUrl } from '../../../utils/apiBase';
+import { getCsrfToken } from '../../../utils/csrf';
+
+// ─── Step config ──────────────────────────────────────────
+
+const MATCH_CREATE_STEPS: WizardStepConfig[] = [
+  { id: 'choose', title: 'Wat wil je doen?', showBack: false },
+  { id: 'matchDetails', title: 'Wedstrijd details' },
+  { id: 'matchConfirm', title: 'Bevestigen' },
+];
+
+// ─── Props ────────────────────────────────────────────────
+
+export interface MatchCreateFlowProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+// ─── Component ────────────────────────────────────────────
+
+export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
+  const { resetAll, selectedFlow, prefill } = useCreateWizard();
+
+  const handleClose = useCallback(() => {
+    resetAll();
+    onClose();
+  }, [resetAll, onClose]);
+
+  // Build the onCreate handler that POSTs to the API
+  const handleCreateMatch = useCallback(async (payload: MatchCreatePayload) => {
+    const apiBaseUrl = getApiBaseUrl();
+    const csrfToken = getCsrfToken();
+    const teamId = String(payload.project_id || '').trim();
+    const competitionId = String(payload.period_id || '').trim();
+    if (!teamId) throw new Error('Selecteer eerst een team.');
+    if (!competitionId) throw new Error('Selecteer eerst een competitie.');
+
+    const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken || '',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        title: payload.title,
+        activity_type: 'match',
+        project_id: teamId ? Number(teamId) : undefined,
+        opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
+        period_id: competitionId,
+        start_time: payload.start_time,
+        end_time: payload.end_time,
+        location: payload.location,
+        description: payload.description,
+        metadata: {
+          venue: payload.venue || 'Home',
+          is_home: (payload.venue || 'Home') === 'Home',
+          ...(payload.metadata || {}),
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error(detail || 'Wedstrijd aanmaken mislukt');
+    }
+
+    // Trigger queue update event so lists refresh
+    window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
+  }, []);
+
+  // Initialise the existing useMatchCreateData hook with prefill values
+  const d = useMatchCreateData({
+    opened: isOpen,
+    onClose: handleClose,
+    onCreate: handleCreateMatch,
+    mode: 'team-context',
+    initialOrganisationId: prefill.organisationId || '',
+    initialClubId: prefill.clubProjectId ? String(prefill.clubProjectId) : '',
+    initialTeamId: prefill.teamProjectId ? String(prefill.teamProjectId) : '',
+    initialSeasonId: prefill.periodId || '',
+    initialCompetitionId: prefill.competitionId || '',
+  });
+
+  // Map hook data → step data interfaces
+  const detailsData: MatchDetailsData = useMemo(() => ({
+    selectedOpponentOrganisationId: d.selectedOpponentOrganisationId,
+    setSelectedOpponentOrganisationId: d.setSelectedOpponentOrganisationId,
+    selectedOpponentClubId: d.selectedOpponentClubId,
+    setSelectedOpponentClubId: d.setSelectedOpponentClubId,
+    selectedOpponentTeamId: d.selectedOpponentTeamId,
+    setSelectedOpponentTeamId: d.setSelectedOpponentTeamId,
+    loadingOpponentTeams: d.loadingOpponentTeams,
+    loadingOpponentClubs: d.loadingOpponentClubs,
+    sortedOrganisations: d.sortedOrganisations,
+    filteredOpponentClubs: d.filteredOpponentClubs as { id: string | number; name: string }[],
+    opponentTeamOptions: d.opponentTeamOptions as { id: string | number; name: string }[],
+    matchDate: d.matchDate,
+    setMatchDate: d.setMatchDate,
+    matchTime: d.matchTime,
+    setMatchTime: d.setMatchTime,
+    venue: d.venue,
+    setVenue: d.setVenue,
+    location: d.location,
+    setLocation: d.setLocation,
+    setLocationTouched: d.setLocationTouched,
+    contextSummary: buildContextSummary(prefill),
+  }), [d, prefill]);
+
+  // Find opponent name from options
+  const opponentName = useMemo(() => {
+    const id = d.selectedOpponentTeamId;
+    if (!id) return '';
+    const found = d.opponentTeamOptions.find((t: any) => String(t.id) === id);
+    return found ? String((found as any).name || '') : '';
+  }, [d.selectedOpponentTeamId, d.opponentTeamOptions]);
+
+  const confirmData: MatchConfirmData = useMemo(() => ({
+    effectiveTitle: d.effectiveTitle,
+    teamName: prefill.teamName || '',
+    opponentName,
+    seasonName: prefill.periodName || '',
+    competitionName: prefill.competitionName || '',
+    matchDate: d.matchDate,
+    matchTime: d.matchTime,
+    venue: d.venue,
+    location: d.location,
+    handleCreate: d.handleCreate,
+    isSaving: d.isSaving,
+    error: d.error,
+  }), [d, prefill, opponentName]);
+
+  return (
+    <WizardProvider
+      steps={MATCH_CREATE_STEPS}
+      initialStepId={selectedFlow ? 'matchDetails' : 'choose'}
+      onClose={handleClose}
+    >
+      <WizardShell isOpen={isOpen} showProgress>
+        <WizardStep stepId="choose">
+          <ChooseFlowStep />
+        </WizardStep>
+
+        <WizardStep stepId="matchDetails">
+          <MatchDetailsStep data={detailsData} />
+        </WizardStep>
+
+        <WizardStep stepId="matchConfirm">
+          <MatchConfirmStep data={confirmData} />
+        </WizardStep>
+      </WizardShell>
+    </WizardProvider>
+  );
+}
+
+// ── Helper ──
+function buildContextSummary(prefill: Record<string, any>): string {
+  const parts: string[] = [];
+  if (prefill.teamName) parts.push(prefill.teamName);
+  if (prefill.periodName) parts.push(prefill.periodName);
+  if (prefill.competitionName) parts.push(prefill.competitionName);
+  return parts.join(' › ');
+}
+
+export default MatchCreateFlow;
