@@ -1,6 +1,6 @@
 # Frontend Technical Debt — Cleanup Roadmap
 
-**Status:** 🔲 Nieuw (0/12 fases)
+**Status:** � In uitvoering (7/12 fases)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmap:** `design-system-adoption/` (11/11 ✅ voltooid)
 
@@ -44,13 +44,13 @@ De design-system-adoption roadmap heeft ~4.800 hardcoded CSS-waarden getokenized
 
 | Fase | Naam | Scope | Waarden | Effort | Status |
 |------|------|-------|---------|--------|--------|
-| **I1** | CSS Pill Radius Fix | `1000px/10000px` → `var(--radius-full)` in CSS modules | 9 | 15 min | 🔲 Todo |
-| **I2** | CSS Hardcoded Hex Cleanup | Resterende hex colors → tokens in CSS modules | ~122 | 45 min | 🔲 Todo |
-| **I3** | Inline Border-Radius → Tokens | `borderRadius: N` → `var(--radius-*)` in TSX | 134 | 1 uur | 🔲 Todo |
-| **I4** | Inline Typography → Tokens | `fontSize` + `fontWeight` → tokens | 343 | 1.5 uur | 🔲 Todo |
-| **I5** | Inline Spacing → Tokens | `padding/margin/gap` → tokens | 247 | 1.5 uur | 🔲 Todo |
-| **I6** | Inline Colors → Tokens | `color/backgroundColor: '#hex'` → tokens | 134 | 1 uur | 🔲 Todo |
-| **I7** | Inline Shadow + Z-index | `boxShadow/zIndex` → tokens | 26 | 30 min | 🔲 Todo |
+| **I1** | CSS Pill Radius Fix | `1000px/10000px` → `var(--radius-full)` in CSS modules | 9 | 15 min | ✅ Done |
+| **I2** | CSS Hardcoded Hex Cleanup | Resterende hex colors → tokens in CSS modules | 57 | 45 min | ✅ Done |
+| **I3** | Inline Border-Radius → Tokens | `borderRadius: N` → `var(--radius-*)` in TSX | 36 | 1 uur | ✅ Done |
+| **I4** | Inline Typography → Tokens | `fontSize` + `fontWeight` → tokens | 39 | 1.5 uur | ✅ Done |
+| **I5** | Inline Spacing → Tokens | `padding/margin/gap` → tokens | 159 | 1.5 uur | ✅ Done |
+| **I6** | Inline Colors → Tokens | `color/backgroundColor: '#hex'` → tokens | 47 | 1 uur | ✅ Done |
+| **I7** | Inline Shadow + Z-index | `boxShadow/zIndex` → tokens | 22 | 30 min | ✅ Done |
 
 ### Track C — Code Quality
 
