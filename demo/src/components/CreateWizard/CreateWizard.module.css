@@ -114,3 +114,194 @@
   margin: 0;
   max-width: 280px;
 }
+
+/* ── SmartMatchStep ─────────────────────────────────── */
+.smartMatchWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 4px 16px 16px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.smartMatchSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.smartMatchSectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--app-muted-text, #6b7280);
+  margin: 0;
+  padding: 0 2px;
+}
+
+.smartMatchAccentIcon {
+  color: var(--app-warning, #f59e0b);
+}
+
+.smartMatchList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Match card ──────────────────────────────────────── */
+.smartMatchCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--app-surface, #fff);
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 56px;
+  width: 100%;
+}
+
+.smartMatchCard:hover {
+  background: var(--app-surface-2, #f9fafb);
+  border-color: var(--app-primary, #3B8EA5);
+}
+
+.smartMatchCard:active {
+  transform: scale(0.98);
+}
+
+/* ── Highlighted card variant ────────────────────────── */
+.smartMatchCardHighlighted {
+  border-color: var(--app-warning, #f59e0b);
+  background: rgba(245, 158, 11, 0.04);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.12);
+}
+
+.smartMatchCardHighlighted:hover {
+  border-color: var(--app-warning, #f59e0b);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.smartMatchCard[data-auto='true'] {
+  border-color: var(--app-primary, #3B8EA5);
+  box-shadow: 0 0 0 2px rgba(59, 142, 165, 0.18);
+  background: rgba(59, 142, 165, 0.04);
+}
+
+/* ── Date badge ──────────────────────────────────────── */
+.smartMatchBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--app-surface-2, #f3f4f6);
+  color: var(--app-text-primary, #111827);
+}
+
+.smartMatchBadge[data-urgency='urgent'] {
+  background: var(--app-error-bg, rgba(239, 68, 68, 0.1));
+  color: var(--app-error, #ef4444);
+}
+
+.smartMatchBadge[data-urgency='soon'] {
+  background: var(--app-warning-bg, rgba(245, 158, 11, 0.1));
+  color: var(--app-warning-text, #b45309);
+}
+
+.smartMatchBadge[data-urgency='upcoming'] {
+  background: var(--app-primary-light, rgba(59, 142, 165, 0.1));
+  color: var(--app-primary, #3B8EA5);
+}
+
+/* ── Match info ──────────────────────────────────────── */
+.smartMatchInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.smartMatchTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--app-text-primary, #111827);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smartMatchMeta {
+  font-size: 13px;
+  color: var(--app-muted-text, #6b7280);
+  line-height: 1.35;
+}
+
+.smartMatchChevron {
+  color: var(--app-muted-text, #6b7280);
+  flex-shrink: 0;
+}
+
+/* ── Loading / Empty states ──────────────────────────── */
+.smartMatchLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 48px 24px;
+  color: var(--app-muted-text, #6b7280);
+  font-size: 14px;
+}
+
+.smartMatchLoadingIcon {
+  opacity: 0.5;
+  animation: smartPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes smartPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.smartMatchEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.smartMatchEmptyIcon {
+  color: var(--app-muted-text, #6b7280);
+  opacity: 0.4;
+}
+
+.smartMatchEmptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--app-text-primary, #111827);
+  margin: 0;
+}
+
+.smartMatchEmptyHint {
+  font-size: 14px;
+  color: var(--app-muted-text, #6b7280);
+  margin: 0;
+  max-width: 260px;
+}
