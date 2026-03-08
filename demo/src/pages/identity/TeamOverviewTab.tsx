@@ -212,8 +212,8 @@ export function TeamOverviewTab({
           <div className={ov.brandGrid}>
             {brandAssets.map((a) => (
               <div key={a.label} className={ov.brandItem} data-present={a.present ? 'true' : 'false'}>
-                <span className={ov.brandIcon}>
-                  {a.present ? <CheckCircle2 size={14} color="#22c55e" /> : <Circle size={14} color="#64748b" />}
+                <span className={`${ov.brandIcon} ${a.present ? 'status-success' : 'status-muted'}`}>
+                  {a.present ? <CheckCircle2 size={14} /> : <Circle size={14} />}
                 </span>
                 <span className={ov.brandLabel}>{a.label}</span>
               </div>
