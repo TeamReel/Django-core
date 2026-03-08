@@ -1,7 +1,7 @@
 /* Design System Interactive Styles */
 
 .interactive-button {
-  transition: all 0.2s ease-in-out;
+  transition: all var(--duration-normal) var(--ease-in-out);
   transform: scale(1);
 }
 
@@ -15,7 +15,7 @@
 }
 
 .interactive-card {
-  transition: all 0.3s ease;
+  transition: all var(--duration-slow) var(--ease-default);
   border-radius: var(--radius-md);
   border: 1px solid var(--app-border);
 }
@@ -46,7 +46,7 @@
 }
 
 .badge-hover {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--duration-normal) var(--ease-default), box-shadow var(--duration-normal) var(--ease-default);
   cursor: pointer;
 }
 

@@ -58,7 +58,7 @@
   height: 100%;
   border-radius: var(--radius-sm);
   background: var(--app-primary);
-  transition: width 0.5s ease;
+  transition: width var(--duration-slower) var(--ease-default);
 }
 
 .teamBarLabel {
@@ -130,7 +130,7 @@
   height: 100%;
   border-radius: var(--radius-sm);
   background: var(--app-primary);
-  transition: width 0.5s ease;
+  transition: width var(--duration-slower) var(--ease-default);
   min-width: 4px;
 }
 

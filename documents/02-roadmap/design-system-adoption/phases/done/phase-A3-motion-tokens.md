@@ -1,8 +1,8 @@
 # A3 — Motion Token Adoption
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Geschatte effort:** 45 min
-**Scope:** 321 hardcoded `transition` / `animation` → tokens
+**Scope:** 234 hardcoded `transition`/`animation` → tokens (79 bestanden)
 
 ---
 

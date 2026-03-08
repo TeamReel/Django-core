@@ -7,7 +7,7 @@
   padding: 16px;
   margin-bottom: 12px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .card:hover {
@@ -208,7 +208,7 @@
   cursor: pointer;
   background: var(--app-primary);
   color: white;
-  transition: opacity 0.15s;
+  transition: opacity var(--duration-fast);
 }
 
 .actionBtn:hover {

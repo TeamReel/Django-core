@@ -157,7 +157,7 @@
   height: 100%;
   border-radius: var(--radius-sm);
   background: var(--color-indigo-400);
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) var(--ease-default);
 }
 
 .progressFill[data-complete='true'] {
@@ -179,7 +179,7 @@
   text-decoration: none;
   color: var(--app-text);
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.12s;
+  transition: background var(--duration-fast);
 }
 
 .matchRow:last-child {

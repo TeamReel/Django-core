@@ -34,7 +34,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: box-shadow 0.15s, transform 0.1s;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
 }
 
 .aiCard[data-clickable="true"] {
@@ -66,7 +66,7 @@
   height: 100%;
   background-color: var(--color-blue-600);
   border-radius: var(--radius-full);
-  transition: width 0.4s ease;
+  transition: width var(--duration-slower) var(--ease-default);
 }
 
 .aiProgressBar[data-has-progress="false"] {
@@ -163,7 +163,7 @@
   border: 1px solid var(--app-border, #e5e7eb);
   gap: 12px;
   cursor: default;
-  transition: box-shadow 0.15s, transform 0.1s;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
 }
 
 .videoCard[data-clickable="true"] {
@@ -232,7 +232,7 @@
 .videoProgressBar {
   height: 100%;
   border-radius: var(--radius-sm);
-  transition: width 0.5s ease-out;
+  transition: width var(--duration-slower) var(--ease-out);
   background-color: var(--color-blue-600);
 }
 

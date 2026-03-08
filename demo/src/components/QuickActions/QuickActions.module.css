@@ -23,7 +23,7 @@
   font-weight: 600;
   text-align: center;
   line-height: 1.2;
-  transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  transition: background var(--duration-fast), transform var(--duration-fast), border-color var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
 }
 

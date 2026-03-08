@@ -47,7 +47,7 @@
 }
 
 .progressFill {
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) var(--ease-default);
   background: var(--color-blue-500);
 }
 

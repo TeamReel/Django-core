@@ -36,7 +36,7 @@
   text-transform: uppercase;
   margin-bottom: 4px;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s;
+  transition: color var(--duration-fast);
 }
 
 .titleBlock .parentLink:hover {
@@ -70,7 +70,7 @@
   color: var(--app-text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 
 .activeBtn:disabled {
@@ -97,7 +97,7 @@
   background: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
@@ -192,7 +192,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--duration-fast), color var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
 }
 

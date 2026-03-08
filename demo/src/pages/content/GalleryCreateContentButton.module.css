@@ -35,7 +35,7 @@
   padding: 16px 16px;
   border-radius: var(--radius-lg);
   background: var(--app-surface);
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .typeBtn:hover {

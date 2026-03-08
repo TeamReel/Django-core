@@ -28,7 +28,7 @@
   flex-shrink: 0;
   cursor: pointer;
   position: relative;
-  transition: opacity 0.15s;
+  transition: opacity var(--duration-fast);
 }
 
 .avatar:hover { opacity: 0.85; }
@@ -112,7 +112,7 @@
   font-size: 15px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.15s ease;
+  transition: background var(--duration-fast) var(--ease-default);
 }
 
 .row:not(:last-child) {
@@ -165,7 +165,7 @@ button.row:active {
   color: var(--app-muted-text);
   cursor: pointer;
   text-align: center;
-  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+  transition: color var(--duration-normal), background var(--duration-normal), box-shadow var(--duration-normal);
   position: relative;
   z-index: 1;
   -webkit-tap-highlight-color: transparent;
@@ -209,7 +209,7 @@ button.row:active {
   border: 2px solid transparent;
   cursor: pointer;
   background: var(--app-border, rgba(120, 120, 128, 0.32));
-  transition: background 0.25s ease;
+  transition: background var(--duration-normal) var(--ease-default);
   flex-shrink: 0;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
@@ -225,7 +225,7 @@ button.row:active {
   border-radius: var(--radius-full);
   background: white;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform var(--duration-normal) var(--ease-default);
   will-change: transform;
 }
 

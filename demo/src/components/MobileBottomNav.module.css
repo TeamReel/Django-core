@@ -31,7 +31,7 @@
   background-color: transparent;
   border: none;
   cursor: pointer;
-  transition: color 0.15s ease, transform 0.1s ease;
+  transition: color var(--duration-fast) var(--ease-default), transform var(--duration-fast) var(--ease-default);
   color: var(--app-muted-text);
   -webkit-tap-highlight-color: transparent;
 }
@@ -53,7 +53,7 @@
   height: 24px;
   border-radius: var(--radius-lg);
   background-color: transparent;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--duration-normal) var(--ease-default);
 }
 
 .active .iconPill {
@@ -97,7 +97,7 @@
   background-color: var(--app-primary, #3B8EA5);
   border: 3px solid var(--app-surface, #fff);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default);
 }
 
 .createButton:active {

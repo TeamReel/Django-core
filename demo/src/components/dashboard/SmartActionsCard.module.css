@@ -39,7 +39,7 @@
   border-radius: var(--radius-lg);
   background: var(--app-surface-alt, #f9fafb);
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
   text-align: left;
   color: inherit;
 }

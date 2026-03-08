@@ -23,7 +23,7 @@
 .progressFill {
   border-radius: var(--radius-sm);
   background-color: var(--progress-color, var(--color-blue-600));
-  transition: width 0.5s ease-out;
+  transition: width var(--duration-slower) var(--ease-out);
   width: var(--progress);
 }
 

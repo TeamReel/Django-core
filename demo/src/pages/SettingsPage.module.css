@@ -33,7 +33,7 @@
   min-height: 44px;
   background-color: var(--app-primary);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--duration-normal);
 }
 
 .saveButton[data-status='saving'] {

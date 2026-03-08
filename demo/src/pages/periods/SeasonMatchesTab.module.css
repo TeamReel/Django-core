@@ -41,7 +41,7 @@
   background: transparent;
   color: var(--app-muted-text);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
 }
 
 .sortChip[data-active='true'] {
@@ -91,7 +91,7 @@
   vertical-align: -1px;
   margin-left: 4px;
   color: var(--app-muted-text);
-  transition: transform 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default);
 }
 
 .contentChevronOpen {
@@ -163,7 +163,7 @@
   background: var(--app-surface, #1e1e30);
   margin-bottom: 8px;
   overflow: hidden;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--duration-fast) var(--ease-default);
 }
 
 .card[data-expanded='true'] {
@@ -285,7 +285,7 @@
 .chevron {
   flex-shrink: 0;
   color: var(--app-muted-text);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) var(--ease-default);
 }
 
 .chevron[data-expanded='true'] {
@@ -415,7 +415,7 @@
   height: 100%;
   border-radius: var(--radius-sm);
   background: var(--color-success, #22c55e);
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) var(--ease-default);
 }
 
 /* Loading skeleton */
@@ -468,7 +468,7 @@
   border: 1px solid var(--app-border, #444);
   background: var(--app-surface, #1e1e30);
   color: var(--app-text);
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   text-decoration: none;
 }
 
@@ -488,7 +488,7 @@
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   border: 1px solid var(--color-blue-500);
   background: var(--color-blue-500-alpha-15, rgba(59, 130, 246, 0.15));
   color: var(--color-blue-500, #3b82f6);

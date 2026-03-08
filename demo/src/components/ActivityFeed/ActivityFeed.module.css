@@ -1,7 +1,7 @@
 /* ActivityFeed — extracted from inline styles */
 
 .activityItem {
-  transition: background-color 0.15s ease;
+  transition: background-color var(--duration-fast) var(--ease-default);
   margin: 0 -8px;
 }
 
@@ -52,7 +52,7 @@
 
 .filterBtn {
   padding: 8px 12px;
-  transition: all 0.2s;
+  transition: all var(--duration-normal);
 }
 
 .filterBtn[data-variant="all"][data-active="true"] {

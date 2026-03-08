@@ -24,7 +24,7 @@
   cursor: pointer;
   padding: 0;
   background: var(--vscode-editor-background, #1e1e1e);
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
 }
 
 .formationButton[data-selected="true"] {

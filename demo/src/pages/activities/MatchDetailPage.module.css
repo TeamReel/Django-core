@@ -39,7 +39,7 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .stickyBackBtn:active {
@@ -111,7 +111,7 @@
   color: var(--app-text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), border-color var(--duration-fast), transform var(--duration-fast);
   min-height: 36px;
   -webkit-tap-highlight-color: transparent;
 }
@@ -144,7 +144,7 @@
   background: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -170,7 +170,7 @@
   color: var(--app-text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .labelBtn:hover {
@@ -296,7 +296,7 @@
   background: var(--app-surface);
   color: var(--app-text);
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .backBtn:hover {

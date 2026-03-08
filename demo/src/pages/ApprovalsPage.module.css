@@ -115,7 +115,7 @@
   cursor: pointer;
   font-size: 18px;
   padding: 4px 12px;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .closeBtn:hover {
@@ -178,7 +178,7 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnPrimary:hover {
@@ -209,7 +209,7 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnApprove:hover {
@@ -229,7 +229,7 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnReject:hover {
@@ -249,7 +249,7 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnRetry:hover {
@@ -269,7 +269,7 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnCancel:hover {
@@ -289,7 +289,7 @@
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnBeginReview:hover {
@@ -309,7 +309,7 @@
   font-weight: 500;
   font-size: 12px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnRefresh:hover {
@@ -336,7 +336,7 @@
   font-weight: 600;
   font-size: 11px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnSelectAll:active {
@@ -352,7 +352,7 @@
   font-weight: 600;
   font-size: 11px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .btnRejectAll:active {
@@ -700,7 +700,7 @@
   border-radius: var(--radius-lg);
   border: 1px solid var(--app-border);
   background: var(--app-surface);
-  transition: box-shadow 0.15s, transform 0.1s;
+  transition: box-shadow var(--duration-fast), transform var(--duration-fast);
 }
 
 .workflowCard:active {
@@ -818,7 +818,7 @@
   color: var(--app-text-secondary, #6b7280);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s, transform 0.1s;
+  transition: all var(--duration-fast), transform var(--duration-fast);
   flex-shrink: 0;
 }
 

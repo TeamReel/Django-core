@@ -131,7 +131,7 @@
   height: 100%;
   background: var(--color-green-400, #4ade80);
   border-radius: var(--radius-sm);
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) var(--ease-default);
 }
 
 /* ── Content checklist rows ──────────────────────────────────── */

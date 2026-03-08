@@ -112,7 +112,7 @@
   border-bottom: 1px solid var(--app-border, #1e293b);
   -webkit-tap-highlight-color: transparent;
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background var(--duration-fast);
 }
 
 .itemRow:last-child {

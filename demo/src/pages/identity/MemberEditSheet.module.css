@@ -109,7 +109,7 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s ease;
+  transition: background var(--duration-fast) var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -152,7 +152,7 @@
   background: var(--app-surface-2, #1e293b);
   cursor: pointer;
   position: relative;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   -webkit-tap-highlight-color: transparent;
   text-align: center;
   font: inherit;
@@ -203,7 +203,7 @@
   border: 1px solid var(--app-border, #334155);
   background: var(--app-surface-2, #1e293b);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   -webkit-tap-highlight-color: transparent;
   font: inherit;
   color: inherit;
@@ -261,7 +261,7 @@
   font-weight: 600;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.15s ease;
+  transition: background var(--duration-fast) var(--ease-default);
 }
 
 .cancelBtn:active {
@@ -283,7 +283,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
 }
 
 .saveBtn:active {

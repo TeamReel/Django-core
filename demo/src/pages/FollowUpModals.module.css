@@ -18,7 +18,7 @@
   cursor: pointer;
   border: 2px solid var(--app-border, #e5e7eb);
   background-color: var(--app-surface, #fff);
-  transition: all 0.15s;
+  transition: all var(--duration-fast);
 }
 
 .chip[data-selected="true"] {

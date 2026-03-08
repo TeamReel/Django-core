@@ -61,7 +61,7 @@
     border: 1px solid var(--app-border, #333);
     background: transparent;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all var(--duration-fast) var(--ease-default);
 }
 
 .radioOption[data-selected="true"] {
@@ -126,7 +126,7 @@
     height: 100%;
     border-radius: var(--radius-sm);
     background: var(--color-blue-500);
-    transition: width 0.3s ease;
+    transition: width var(--duration-slow) var(--ease-default);
 }
 
 /* ── Done step ── */

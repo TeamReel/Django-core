@@ -15,7 +15,7 @@
   background: var(--vscode-editor-background, #1e1e1e);
   color: var(--vscode-foreground, #ccc);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   min-width: 100px;
 }
 
@@ -141,5 +141,5 @@
   height: 100%;
   background: var(--vscode-progressBar-background, #0078d4);
   border-radius: var(--radius-sm);
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) var(--ease-default);
 }

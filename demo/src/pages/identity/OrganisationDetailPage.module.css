@@ -51,7 +51,7 @@
   color: var(--app-text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 
 .activeBtn:disabled {
@@ -78,7 +78,7 @@
   background: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }

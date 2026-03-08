@@ -26,7 +26,7 @@
 }
 
 .scopeBtn {
-  transition: all 0.2s;
+  transition: all var(--duration-normal);
   background-color: transparent;
   color: var(--app-text);
 }

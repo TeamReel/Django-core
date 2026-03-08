@@ -120,7 +120,7 @@
 }
 
 .ringProgress {
-  transition: stroke-dashoffset 0.6s ease;
+  transition: stroke-dashoffset 0.6s var(--ease-default);
 }
 
 .ringLabel {
@@ -215,7 +215,7 @@
   cursor: pointer;
   background: var(--app-primary);
   color: white;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity var(--duration-fast), transform var(--duration-fast);
 }
 
 .ctaPrimary:hover {
@@ -239,7 +239,7 @@
   cursor: pointer;
   background: var(--app-surface);
   color: var(--app-text);
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
   white-space: nowrap;
 }
 

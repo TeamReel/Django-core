@@ -89,7 +89,7 @@
   display: flex;
   align-items: center;
   color: var(--app-muted-text);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) var(--ease-default);
 }
 
 .sectionChevron[data-open='true'] {

@@ -53,7 +53,7 @@
   background: var(--app-surface-2, #1e293b);
   color: var(--app-text);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
@@ -115,7 +115,7 @@
   background: var(--color-indigo-400);
   color: white;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .batchBtn:hover {

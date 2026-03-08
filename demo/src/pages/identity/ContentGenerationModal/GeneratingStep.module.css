@@ -48,7 +48,7 @@
   background: var(--app-primary, #3B8EA5);
   height: 100%;
   border-radius: 10000px;
-  transition: all 150ms ease;
+  transition: all var(--duration-fast) var(--ease-default);
 }
 
 .progressLabel {

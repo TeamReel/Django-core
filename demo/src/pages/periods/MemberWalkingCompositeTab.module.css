@@ -22,7 +22,7 @@
 /* ── Pipeline grid ── */
 .variantGrid {
   opacity: 1;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--duration-fast) var(--ease-default);
 }
 
 .variantGrid[data-active='false'] {

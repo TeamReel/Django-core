@@ -44,7 +44,7 @@
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -72,7 +72,7 @@
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   box-shadow: none;
 }
 
@@ -114,7 +114,7 @@
 
 .chevronIcon {
   transform: rotate(0deg);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) var(--ease-default);
 }
 
 .chevronIcon[data-open="true"] {
@@ -147,7 +147,7 @@
   border: none;
   border-bottom: 1px solid var(--app-border);
   cursor: pointer;
-  transition: background-color 0.1s ease;
+  transition: background-color var(--duration-fast) var(--ease-default);
 }
 
 .dropdownItem:last-child {

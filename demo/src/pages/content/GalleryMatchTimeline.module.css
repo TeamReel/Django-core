@@ -71,7 +71,7 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   min-height: 32px;
 }
 
@@ -97,7 +97,7 @@
   background: var(--app-surface, #1a1a2e);
   border: 1px solid var(--app-border, rgba(255, 255, 255, 0.08));
   overflow: hidden;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .matchGroup:hover {
@@ -115,7 +115,7 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   min-height: 56px;
-  transition: background 0.12s ease;
+  transition: background var(--duration-fast) var(--ease-default);
 }
 
 .matchHeader:hover {
@@ -230,7 +230,7 @@
 .chevron {
   flex-shrink: 0;
   color: var(--app-text-secondary, #999);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) var(--ease-default);
 }
 
 .chevron[data-open='true'] {
@@ -280,7 +280,7 @@
   overflow: hidden;
   cursor: pointer;
   scroll-snap-align: start;
-  transition: transform 0.12s ease, border-color 0.12s ease;
+  transition: transform var(--duration-fast) var(--ease-default), border-color var(--duration-fast) var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -373,7 +373,7 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   min-height: 36px;
   -webkit-tap-highlight-color: transparent;
 }
@@ -466,7 +466,7 @@
   cursor: pointer;
   margin-top: 8px;
   min-height: 44px;
-  transition: opacity 0.12s ease;
+  transition: opacity var(--duration-fast) var(--ease-default);
 }
 
 .emptyBtn:hover {

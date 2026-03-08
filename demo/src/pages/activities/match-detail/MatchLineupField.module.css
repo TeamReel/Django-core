@@ -238,7 +238,7 @@
   border: 1.5px dashed var(--app-border, #444);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color var(--duration-fast), color var(--duration-fast);
 }
 
 .addGuestBtn:hover {

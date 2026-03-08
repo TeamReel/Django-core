@@ -13,7 +13,7 @@
   z-index: 20;
   background-color: var(--sidebar-a-bg);
   color: var(--sidebar-a-text);
-  transition: width 0.2s ease-in-out;
+  transition: width var(--duration-normal) var(--ease-in-out);
   flex-shrink: 0;
   border-right: 1px solid var(--sidebar-a-border);
   padding-top: 56px;
@@ -61,7 +61,7 @@
   height: 28px;
   background-color: rgba(255, 255, 255, 0.1);
   color: var(--sidebar-a-text);
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   flex-shrink: 0;
   margin-right: 12px;
   margin-bottom: 8px;
@@ -81,7 +81,7 @@
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--sidebar-a-text);
-  transition: color 0.15s, background-color 0.15s;
+  transition: color var(--duration-fast), background-color var(--duration-fast);
 }
 
 .navItemOpen {
@@ -154,7 +154,7 @@
   width: 32px;
   height: 32px;
   color: var(--sidebar-a-text);
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   z-index: 25;
 }
 

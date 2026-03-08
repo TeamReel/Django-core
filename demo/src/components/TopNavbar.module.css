@@ -92,7 +92,7 @@
   white-space: nowrap;
   max-width: 180px;
   min-height: 44px;
-  transition: background 0.15s, opacity 0.15s;
+  transition: background var(--duration-fast), opacity var(--duration-fast);
   flex-shrink: 0;
 }
 
@@ -179,7 +179,7 @@
   padding: 12px 12px;
   text-decoration: none;
   border-radius: var(--radius-lg);
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-fast);
   pointer-events: auto;
   cursor: pointer;
   color: var(--app-text);
@@ -801,7 +801,7 @@
   overflow: hidden;
   background-color: var(--color-neutral-900);
   width: 100%;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
   position: relative;
 }
 

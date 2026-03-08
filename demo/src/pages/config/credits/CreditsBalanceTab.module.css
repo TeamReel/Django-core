@@ -58,7 +58,7 @@
   height: 24px;
   border-radius: var(--radius-sm);
   opacity: 0.8;
-  transition: all 0.3s ease;
+  transition: all var(--duration-slow) var(--ease-default);
   display: flex;
   align-items: center;
   padding-left: 8px;

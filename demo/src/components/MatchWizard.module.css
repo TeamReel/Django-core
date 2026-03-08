@@ -56,7 +56,7 @@
   min-width: 44px;
   min-height: 44px;
   line-height: 1;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .headerBtn:active {
@@ -79,7 +79,7 @@
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .matchCard:hover {
@@ -134,7 +134,7 @@
   background-color: transparent;
   color: var(--app-text-muted);
   font-weight: 400;
-  transition: background-color 0.15s, color 0.15s, transform 0.1s;
+  transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast);
 }
 
 .phaseTab:active {
@@ -159,7 +159,7 @@
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .contentCard:hover {
@@ -266,7 +266,7 @@
   padding: 16px;
   min-height: 48px;
   background-color: var(--app-primary);
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .primaryBtn:hover {
@@ -485,7 +485,7 @@
   font-size: 13px;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
 }
 

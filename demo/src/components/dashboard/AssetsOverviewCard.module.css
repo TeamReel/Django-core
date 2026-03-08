@@ -79,7 +79,7 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--app-text);
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast);
 }
 
 .assetItem[data-present='true'] {
@@ -147,7 +147,7 @@
   height: 100%;
   border-radius: var(--radius-sm);
   background: var(--app-primary);
-  transition: width 0.4s ease;
+  transition: width var(--duration-slower) var(--ease-default);
 }
 
 .progressFillGood {
@@ -233,7 +233,7 @@
 .memberFill {
   height: 100%;
   border-radius: var(--radius-sm);
-  transition: width 0.4s ease;
+  transition: width var(--duration-slower) var(--ease-default);
 }
 
 .memberMeta {
@@ -284,7 +284,7 @@
   color: var(--app-text);
   margin-top: 12px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .missingCallout:hover {

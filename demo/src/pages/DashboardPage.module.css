@@ -62,7 +62,7 @@
   background: var(--color-amber-400, #fbbf24);
   color: var(--app-text);
   white-space: nowrap;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .lowBannerBtn:hover {

@@ -9,7 +9,7 @@
   border: 1px solid var(--app-border);
   border-radius: var(--radius-lg);
   margin-bottom: 12px;
-  transition: border-color 0.2s;
+  transition: border-color var(--duration-normal);
 }
 
 /* Level-based accent */
@@ -92,7 +92,7 @@
   height: 8px;
   border-radius: var(--radius-full);
   background: var(--app-border);
-  transition: background 0.2s, transform 0.2s;
+  transition: background var(--duration-normal), transform var(--duration-normal);
 }
 
 .dot[data-active="true"] {

@@ -98,7 +98,7 @@
 .chevron {
   display: flex;
   align-items: center;
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-normal) var(--ease-default);
   color: var(--app-muted-text);
 }
 

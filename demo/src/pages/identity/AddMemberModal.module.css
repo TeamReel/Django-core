@@ -31,7 +31,7 @@
   font-weight: 400;
   font-size: 14px;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
-  transition: all 0.15s ease;
+  transition: all var(--duration-fast) var(--ease-default);
 }
 
 .tab[data-active="true"] {
@@ -50,7 +50,7 @@
 
 .userRow {
   padding: 12px 12px;
-  transition: background 0.1s;
+  transition: background var(--duration-fast);
 }
 
 .userRow:hover {

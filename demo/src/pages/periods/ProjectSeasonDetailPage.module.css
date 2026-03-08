@@ -41,7 +41,7 @@
   text-transform: uppercase;
   margin-bottom: 4px;
   -webkit-tap-highlight-color: transparent;
-  transition: color 0.15s;
+  transition: color var(--duration-fast);
 }
 
 .parentLink:hover {
@@ -68,7 +68,7 @@
   color: var(--app-text);
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
 }
 
 .activeBtn:disabled {
@@ -95,7 +95,7 @@
   background: var(--app-surface-2);
   color: var(--app-text);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--duration-fast);
 }
 
 .iconBtn:hover { background: var(--app-hover-bg, rgba(0, 0, 0, 0.04)); }
@@ -195,7 +195,7 @@
 
 /* ── Content Tiles ── */
 .contentTile {
-  min-width: 0; padding: 12px 8px; border-radius: var(--radius-md); text-align: center; transition: all 0.15s;
+  min-width: 0; padding: 12px 8px; border-radius: var(--radius-md); text-align: center; transition: all var(--duration-fast);
 }
 .contentTileGrid {
   display: grid;
@@ -300,14 +300,14 @@
 .radioGroup { display: flex; flex-direction: column; gap: 12px; }
 .radioCard {
   display: flex; align-items: flex-start; gap: 12px;
-  padding: 12px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.2s;
+  padding: 12px; border-radius: var(--radius-md); cursor: pointer; transition: all var(--duration-normal);
 }
 .radioInput { cursor: pointer; accent-color: var(--color-blue-500); }
 .radioCardTitle { font-weight: 600; color: var(--color-neutral-50); font-size: 14px; }
 .radioCardDesc { font-size: 12px; color: var(--color-neutral-300); margin-top: 4px; }
 .checkboxCard {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s;
+  padding: 8px 12px; border-radius: var(--radius-md); cursor: pointer; transition: all var(--duration-fast);
 }
 .roleLabel { text-transform: capitalize; color: var(--color-neutral-50); }
 .btnCancel {
@@ -351,14 +351,14 @@
 .memberName { font-size: 13px; font-weight: 600; }
 .memberMeta { font-size: 11px; color: var(--app-muted-text); }
 .variantRow { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
-.variantPill { padding: 4px 8px; border-radius: var(--radius-full); font-size: 10px; cursor: pointer; transition: all 0.15s; }
+.variantPill { padding: 4px 8px; border-radius: var(--radius-full); font-size: 10px; cursor: pointer; transition: all var(--duration-fast); }
 .arrowBtn { background: none; border: none; font-size: 16px; padding: 4px; }
 .removeBtn { background: none; border: none; cursor: pointer; color: var(--app-danger, #ef4444); opacity: 0.5; }
 .addIcon { font-size: 18px; color: var(--app-muted-text); }
 .unselectedHeader { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--app-muted-text); padding: 12px 20px 8px; }
 .unselectedList { max-height: 160px; overflow-y: auto; }
 .emptyState { padding: 16px 20px; font-size: 12px; color: var(--app-muted-text); text-align: center; }
-.clickableRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; cursor: pointer; transition: background 0.15s; }
+.clickableRow { display: flex; align-items: center; gap: 12px; padding: 8px 20px; cursor: pointer; transition: background var(--duration-fast); }
 .bgPreviewDefault {
   width: 100%; aspect-ratio: 9 / 16; border-radius: var(--radius-sm);
   background: linear-gradient(135deg, var(--color-neutral-900), var(--color-violet-500));

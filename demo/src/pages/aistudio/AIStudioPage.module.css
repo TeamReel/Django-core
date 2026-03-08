@@ -101,7 +101,7 @@
   background: transparent;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
 .viewToggleBtn:active {
@@ -235,7 +235,7 @@
   height: 100%;
   background: var(--app-primary, #6366f1);
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  transition: width 0.5s ease;
+  transition: width var(--duration-slower) var(--ease-default);
 }
 
 /* ── Phase Headers ── */
@@ -361,7 +361,7 @@
   padding: 0;
   text-align: left;
   scroll-snap-align: start;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }
 

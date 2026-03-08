@@ -52,7 +52,7 @@
   min-width: 44px;
   min-height: 44px;
   line-height: 1;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .headerBtn:active {
@@ -73,14 +73,14 @@
 .progressBar {
   height: 100%;
   background-color: var(--app-primary, #3B8EA5);
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width var(--duration-slow) var(--ease-default);
 }
 
 /* ── Primary action button ──────────────────────────── */
 .primaryBtn {
   height: 52px;
   background-color: var(--app-primary, #3B8EA5);
-  transition: background-color 0.15s, transform 0.1s;
+  transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
 .primaryBtn:hover:not(:disabled) {
@@ -101,7 +101,7 @@
   height: 48px;
   background-color: var(--app-surface-2, #f3f4f6);
   color: var(--app-text-primary, #1f2937);
-  transition: background-color 0.15s, transform 0.1s;
+  transition: background-color var(--duration-fast), transform var(--duration-fast);
 }
 
 .secondaryBtn:hover:not(:disabled) {
@@ -124,7 +124,7 @@
   cursor: pointer;
   text-align: left;
   width: 100%;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .card:hover {
@@ -168,7 +168,7 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--duration-fast);
 }
 
 .retryBtn:hover {

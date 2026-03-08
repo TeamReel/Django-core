@@ -3,7 +3,7 @@
 }
 
 .matchCard {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .matchCard:hover {

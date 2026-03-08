@@ -65,7 +65,7 @@
   background-color: transparent;
   color: var(--app-text-secondary);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--duration-fast);
 }
 
 .filterChipActive {
@@ -193,7 +193,7 @@
   color: var(--app-text-primary);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
 }
 
 .detailCloseBtn:active {
@@ -258,7 +258,7 @@
   color: white;
   cursor: pointer;
   backdrop-filter: blur(4px);
-  transition: opacity 0.2s, transform 0.1s;
+  transition: opacity var(--duration-normal), transform var(--duration-fast);
 }
 
 .videoPlayBtn[data-playing='true'] {
@@ -354,7 +354,7 @@
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+  transition: background var(--duration-fast), transform var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
 }
 

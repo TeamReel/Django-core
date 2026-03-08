@@ -47,7 +47,7 @@
   min-height: 44px;
   border-bottom: none;
   cursor: default;
-  transition: background 0.1s ease;
+  transition: background var(--duration-fast) var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 

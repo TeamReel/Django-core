@@ -28,7 +28,7 @@
   border-bottom: 2px solid transparent;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.15s, color 0.15s;
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
 .tabButton:hover {

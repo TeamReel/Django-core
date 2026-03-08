@@ -200,7 +200,7 @@
   height: 100%;
   background: var(--color-indigo-400);
   border-radius: var(--radius-sm);
-  transition: width 0.3s ease;
+  transition: width var(--duration-slow) var(--ease-default);
 }
 
 .progressFill[data-complete='true'] {

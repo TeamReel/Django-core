@@ -48,7 +48,7 @@
   cursor: pointer;
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: transform 0.12s;
+  transition: transform var(--duration-fast);
 }
 
 .thumbItem:hover {
