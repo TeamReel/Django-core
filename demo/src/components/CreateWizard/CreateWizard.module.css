@@ -1545,3 +1545,75 @@
   background: var(--app-surface-2, #f3f4f6);
   color: var(--app-text-primary, #111827);
 }
+
+/* ══════════════════════════════════════════════════════
+   Wizard Empty / Error States (P2)
+   ══════════════════════════════════════════════════════ */
+
+.wizardEmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 36px 24px 28px;
+  text-align: center;
+}
+
+.wizardEmptyIcon {
+  color: var(--app-muted-text, #9ca3af);
+  margin-bottom: 4px;
+}
+
+.wizardEmptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-text-primary, #111827);
+  margin: 0;
+}
+
+.wizardEmptyDescription {
+  font-size: 14px;
+  color: var(--app-muted-text, #6b7280);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.45;
+}
+
+.wizardEmptyActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 260px;
+  margin-top: 8px;
+}
+
+.wizardEmptyActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s, transform 0.1s;
+  min-height: 44px;
+}
+
+.wizardEmptyActionBtn:active {
+  transform: scale(0.97);
+}
+
+.wizardEmptyActionBtn[data-variant='primary'] {
+  background: var(--app-primary, #3B8EA5);
+  color: white;
+}
+
+.wizardEmptyActionBtn[data-variant='secondary'] {
+  background: var(--app-surface-2, #f3f4f6);
+  color: var(--app-text-primary, #111827);
+}

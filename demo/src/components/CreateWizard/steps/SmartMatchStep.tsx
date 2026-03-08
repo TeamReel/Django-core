@@ -14,6 +14,7 @@ import { useWizard } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
 import { useSmartMatch } from '../../../hooks/useSmartMatch';
 import { formatRelativeTime, getDateUrgency } from '../../../utils/relativeTime';
+import { WizardEmptyState, WizardErrorState } from '../shared/WizardEmptyState';
 import type { Activity } from '../../../hooks/useActivities';
 import styles from '../CreateWizard.module.css';
 
@@ -24,7 +25,7 @@ export interface SmartMatchStepProps {
 
 export function SmartMatchStep({ onMatchSelect }: SmartMatchStepProps = {}) {
   const { next } = useWizard();
-  const { prefill, setPrefill } = useCreateWizard();
+  const { prefill, setPrefill, selectFlow } = useCreateWizard();
   const { highlighted, upcoming, loading, error } = useSmartMatch(prefill.teamIdForApi);
 
   // If there's exactly 1 highlighted match, pre-select it
@@ -52,9 +53,10 @@ export function SmartMatchStep({ onMatchSelect }: SmartMatchStepProps = {}) {
   if (error) {
     return (
       <div className={styles.smartMatchWrap}>
-        <div className={styles.smartMatchEmpty}>
-          <p>{error}</p>
-        </div>
+        <WizardErrorState
+          message={error}
+          onRetry={() => window.location.reload()}
+        />
       </div>
     );
   }
@@ -64,15 +66,28 @@ export function SmartMatchStep({ onMatchSelect }: SmartMatchStepProps = {}) {
   if (!hasAny) {
     return (
       <div className={styles.smartMatchWrap}>
-        <div className={styles.smartMatchEmpty}>
-          <Calendar size={32} className={styles.smartMatchEmptyIcon} />
-          <p className={styles.smartMatchEmptyTitle}>Geen wedstrijden gevonden</p>
-          <p className={styles.smartMatchEmptyHint}>
-            {prefill.teamIdForApi
-              ? 'Plan eerst een wedstrijd voor dit team.'
-              : 'Selecteer een team om wedstrijden te zien.'}
-          </p>
-        </div>
+        {prefill.teamIdForApi ? (
+          <WizardEmptyState
+            icon={Calendar}
+            title="Geen wedstrijden gevonden"
+            description="Plan eerst een wedstrijd voor dit team."
+            actions={[{
+              label: 'Wedstrijd plannen',
+              onClick: () => selectFlow('match'),
+            }]}
+          />
+        ) : (
+          <WizardEmptyState
+            icon={Calendar}
+            title="Geen team geselecteerd"
+            description="Selecteer een team om wedstrijden te zien."
+            actions={[{
+              label: 'Team aanmaken',
+              onClick: () => selectFlow('team'),
+              variant: 'secondary',
+            }]}
+          />
+        )}
       </div>
     );
   }

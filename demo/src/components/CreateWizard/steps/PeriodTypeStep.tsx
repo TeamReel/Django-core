@@ -8,6 +8,8 @@
 import React from 'react';
 import { Calendar, Trophy, ChevronRight, Loader } from 'lucide-react';
 import { useWizard } from '../../Wizard';
+import { useCreateWizard } from '../CreateWizardContext';
+import { WizardEmptyState } from '../shared/WizardEmptyState';
 import styles from '../CreateWizard.module.css';
 
 // ─── Types ────────────────────────────────────────────────
@@ -33,6 +35,7 @@ export interface PeriodTypeData {
 
 export function PeriodTypeStep({ data }: { data: PeriodTypeData }) {
   const { next } = useWizard();
+  const { selectFlow } = useCreateWizard();
 
   const canProceed =
     data.periodType === 'season' ||
@@ -91,6 +94,19 @@ export function PeriodTypeStep({ data }: { data: PeriodTypeData }) {
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
+          {!data.seasonsLoading && data.seasonOptions.length === 0 && (
+            <WizardEmptyState
+              icon={Calendar}
+              title="Nog geen seizoenen"
+              description="Maak eerst een seizoen aan voordat je een competitie kunt starten."
+              actions={[{
+                label: 'Seizoen aanmaken',
+                onClick: () => {
+                  data.setPeriodType('season');
+                },
+              }]}
+            />
+          )}
         </div>
       )}
 

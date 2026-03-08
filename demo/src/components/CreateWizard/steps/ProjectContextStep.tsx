@@ -8,8 +8,9 @@
  * Pre-fills from CreateWizardProvider.prefill.
  */
 import React from 'react';
-import { Building2, Users, ChevronRight } from 'lucide-react';
+import { Building2, Users, ChevronRight, AlertCircle } from 'lucide-react';
 import { useWizard } from '../../Wizard';
+import { WizardEmptyState } from '../shared/WizardEmptyState';
 import styles from '../CreateWizard.module.css';
 
 // ─── Types ────────────────────────────────────────────────
@@ -43,6 +44,19 @@ export interface ProjectContextData {
 
 export function ProjectContextStep({ data }: { data: ProjectContextData }) {
   const { next } = useWizard();
+
+  // Empty state: no organisations loaded
+  if (data.organisations.length === 0) {
+    return (
+      <div className={styles.projectStepWrap}>
+        <WizardEmptyState
+          icon={AlertCircle}
+          title="Geen organisaties beschikbaar"
+          description="Je bent nog niet gekoppeld aan een organisatie. Neem contact op met een beheerder."
+        />
+      </div>
+    );
+  }
 
   const canProceed =
     data.selectedOrganisationId &&
@@ -120,6 +134,17 @@ export function ProjectContextStep({ data }: { data: ProjectContextData }) {
               <option key={String(c.id)} value={String(c.id)}>{c.name}</option>
             ))}
           </select>
+          {data.selectedOrganisationId && data.filteredClubs.length === 0 && (
+            <WizardEmptyState
+              icon={Building2}
+              title="Geen clubs gevonden"
+              description="Maak eerst een club aan voor deze federatie."
+              actions={[{
+                label: 'Club aanmaken',
+                onClick: () => data.setProjectType('club'),
+              }]}
+            />
+          )}
         </div>
       )}
 
