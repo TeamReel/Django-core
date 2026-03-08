@@ -9,6 +9,7 @@
  *   CreateWizardProvider (domain: selectedFlow, prefill)
  *     → Content flow: ContentFlow (C3 — unified SmartMatch → MatchWizardV2)
  *     → Match flow: MatchCreateFlow (M1 — opponent, date, venue → submit)
+ *     → Member flow: MemberAddFlow (M2 — search/create user → role → submit)
  *     → Other flows: WizardInnerShell (stub)
  */
 import React, { useCallback, useMemo } from 'react';
@@ -24,6 +25,7 @@ import { ChooseFlowStep } from './steps/ChooseFlowStep';
 import { FlowStubStep } from './steps/FlowStubStep';
 import { ContentFlow } from './flows/ContentFlow';
 import { MatchCreateFlow } from './flows/MatchCreateFlow';
+import { MemberAddFlow } from './flows/MemberAddFlow';
 
 // ─── Props ────────────────────────────────────────────────
 
@@ -68,6 +70,16 @@ function CreateWizardInner({
   if (selectedFlow === 'match') {
     return (
       <MatchCreateFlow
+        isOpen={isOpen}
+        onClose={onClose}
+      />
+    );
+  }
+
+  // ── Member add flow (M2) ──
+  if (selectedFlow === 'member') {
+    return (
+      <MemberAddFlow
         isOpen={isOpen}
         onClose={onClose}
       />
