@@ -249,3 +249,31 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   Accessibility (P3)
+   ══════════════════════════════════════════════════════ */
+
+/* Screen-reader-only (visually hidden but announced) */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus-visible ring for keyboard navigation */
+.headerBtn:focus-visible {
+  outline: 2px solid var(--app-primary, #3B8EA5);
+  outline-offset: 2px;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--app-primary, #3B8EA5);
+  outline-offset: 2px;
+}

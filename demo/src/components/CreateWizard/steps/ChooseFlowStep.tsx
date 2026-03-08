@@ -78,15 +78,16 @@ export function ChooseFlowStep() {
         <p className={styles.contextHint}>{contextHint}</p>
       )}
 
-      <div className={styles.flowGrid}>
+      <div className={styles.flowGrid} role="list" aria-label="Keuze opties">
         {FLOW_OPTIONS.map((option) => (
           <button
             key={option.id}
             onClick={() => handleSelect(option.id)}
             className={styles.flowCard}
-            aria-label={option.label}
+            role="listitem"
+            aria-label={`${option.label} — ${option.description}`}
           >
-            <span className={styles.flowIcon}>
+            <span className={styles.flowIcon} aria-hidden="true">
               <option.icon size={22} strokeWidth={1.8} />
             </span>
             <span className={styles.flowContent}>

@@ -55,6 +55,12 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+.flowCard:focus-visible {
+  outline: 2px solid var(--app-primary, #3B8EA5);
+  outline-offset: 2px;
+  border-color: var(--app-primary, #3B8EA5);
+}
+
 /* Icon circle */
 .flowIcon {
   display: flex;
