@@ -73,10 +73,10 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
         });
         if (!res.ok) return;
         const raw = await res.json().catch(() => null);
-        const list = extractList(raw)
-          .map((o: any) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
-          .filter((o: any) => o.id);
-        const unique = [...new Map(list.map((o: any) => [String(o.id), o])).values()];
+        const list = (extractList(raw) as OrgOption[])
+          .map((o) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
+          .filter((o) => o.id);
+        const unique = [...new Map(list.map((o) => [String(o.id), o])).values()];
         if (!cancelled) setRemoteOrganisations(unique);
       } catch {
         // ignore
@@ -121,7 +121,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
           { credentials: 'include', signal: abortController.signal },
           { ttlMs: 10_000, cacheKey: `projects:clubs:${orgId || 'all'}`, maxItems: 3000 }
         );
-        const unique = [...new Map((list || []).map((p: any) => [String(p.id), p])).values()];
+        const unique = [...new Map((list || []).map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteClubs(unique);
       } catch {
         // ignore
@@ -156,7 +156,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
 
         const rawList = await fetchAllPagesLocal(baseUrl, { credentials: 'include', signal: abortController.signal }, 3000);
         const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
-        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique);
       } catch {
         // ignore
@@ -192,7 +192,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
           { credentials: 'include', signal: abortController.signal },
           { ttlMs: 10_000, cacheKey: `projects:clubs:opponent:${orgId}`, maxItems: 3000 }
         );
-        const unique = [...new Map((list || []).map((p: any) => [String(p.id), p])).values()];
+        const unique = [...new Map((list || []).map((p) => [String(p.id), p])).values()];
         if (!cancelled) setOpponentClubs(unique);
       } catch {
         if (!cancelled) setOpponentClubs([]);
@@ -257,11 +257,11 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
         if (!res.ok) { setSeasonOptions([]); return; }
         const data = await res.json();
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
-        const roots = (Array.isArray(results) ? results : []).filter(
-          (p: any) => p?.parent_period_id == null && !p?.parent_period
+        const roots = (Array.isArray(results) ? results : [] as PeriodOption[]).filter(
+          (p: PeriodOption) => p?.parent_period_id == null && !p?.parent_period
         );
-        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
-        const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        const unique = [...new Map(roots.map((p) => [String(p.id), p])).values()];
+        const sorted = unique.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
         setSeasonOptions(sorted);
       } catch { setSeasonOptions([]); } finally { setLoadingSeasons(false); }
     };
@@ -300,8 +300,8 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
         const data = await res.json();
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
         const list = Array.isArray(results) ? results : [];
-        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
-        const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        const unique = [...new Map(list.map((p: PeriodOption) => [String(p.id), p])).values()];
+        const sorted = unique.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
         setCompetitionOptions(sorted);
       } catch { setCompetitionOptions([]); } finally { setLoadingCompetitions(false); }
     };

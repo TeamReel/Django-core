@@ -80,7 +80,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         }
     };
 
-    const handleSaveUser = async (updatedUser: any) => {
+    const handleSaveUser = async (updatedUser: Record<string, unknown>) => {
         try {
             const res = await fetch(
                 `${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`,
@@ -161,7 +161,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
         const email = String(user.email || '').trim().toLowerCase();
         const uid = String(user.id);
-        const found = (members || []).find((m: any) => {
+        const found = (members || []).find((m) => {
             const memberId = String(m?.id ?? '').trim();
             if (!memberId) return false;
             const mu = m?.user || m;
@@ -258,7 +258,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
         const email = String(user.email || '').trim().toLowerCase();
         const uid = String(user.id);
-        const found = (members || []).find((m: any) => {
+        const found = (members || []).find((m) => {
             const memberId = String(m?.id ?? '').trim();
             if (!memberId) return false;
             const mu = m?.user || m;
@@ -339,7 +339,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
     const [relationsReloadToken, setRelationsReloadToken] = useState(0);
 
-    const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+    const saveMatchEdits = async (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => {
         const matchIdValue = String(matchToEdit?.id || '').trim();
         if (!matchIdValue) throw new Error('Missing match id');
 
@@ -364,7 +364,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         setRelationsReloadToken((t) => t + 1);
     };
 
-    const deleteMatch = async (matchToDelete: any) => {
+    const deleteMatch = async (matchToDelete: Record<string, unknown>) => {
         const matchIdValue = String(matchToDelete?.id || '').trim();
         if (!matchIdValue) throw new Error('Missing match id');
 

@@ -136,7 +136,7 @@ export const getSeasonName = (
   if (typeof season === 'object' && season?.name) return season.name;
   const seasonId = item?.parent_period_id || season?.id;
   const fromList = seasonId
-    ? seasons.find((s: any) => String(s.id) === String(seasonId))
+    ? seasons.find((s) => String(s.id) === String(seasonId))
     : undefined;
   return fromList?.name || '';
 };
@@ -176,7 +176,7 @@ export interface SeasonOption {
 }
 
 /** Build de-duped season dropdown options from a list of season periods. */
-export const buildSeasonOptions = (seasons: any[]): SeasonOption[] => {
+export const buildSeasonOptions = (seasons: Record<string, unknown>[]): SeasonOption[] => {
   const byName = new Map<string, SeasonOption>();
   for (const s of seasons) {
     const name = String(s?.name || '').trim();
@@ -231,6 +231,7 @@ export type Period = {
   start_date?: string;
   end_date?: string;
   description?: string;
+  type?: string;
   project?: { id: string; name: string } | null;
   project_id?: string | null;
   organisation?: { id: string; name: string } | null;
@@ -246,6 +247,7 @@ export type Period = {
   data?: Record<string, any>;
   sport?: { id: string | number; name: string; slug?: string; sport_icon?: string; category_name?: string } | null;
   period_type?: string;
+  [key: string]: unknown;
 };
 
 /** A match activity as returned by the API. */

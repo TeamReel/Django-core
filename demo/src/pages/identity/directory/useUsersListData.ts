@@ -7,8 +7,8 @@
  *
  * Extracted during Phase 24 of the frontend refactoring plan.
  */
-import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState, useMemo, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useSearchParams, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../../utils/apiBase';
@@ -30,7 +30,88 @@ import {
 // Re-export so table component can import from one place
 export { isUuid } from './usersListHelpers';
 
-export function useUsersListData(props: UsersListProps) {
+export interface UserRow extends User {
+  user?: User;
+  project_memberships?: Array<Record<string, unknown>>;
+  is_superuser?: boolean;
+  membership?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface UseUsersListDataReturn {
+  // Auth / context
+  isSuperAdmin: boolean;
+  // Locks
+  orgLocked: boolean;
+  clubLocked: boolean;
+  teamLocked: boolean;
+  scopedLocked: boolean;
+  // Data
+  sortedUsers: User[];
+  isLoading: boolean;
+  error: string | null;
+  hasUsers: boolean;
+  organisations: any[];
+  clubs: ProjectOption[];
+  teams: ProjectOption[];
+  availableRoles: string[];
+  // Filter state
+  selectedOrgId: string;
+  selectedClubId: string;
+  selectedTeamId: string;
+  statusFilter: string;
+  roleFilter: string;
+  // Filter handlers
+  onOrgChange: (orgId: string) => void;
+  onClubChange: (clubId: string) => void;
+  onTeamChange: (teamId: string) => void;
+  onStatusChange: Dispatch<SetStateAction<string>>;
+  onRoleChange: Dispatch<SetStateAction<string>>;
+  onClearFilters: () => void;
+  onAddMember: () => void;
+  // Batch
+  selectedIds: Set<string>;
+  setSelectedIds: Dispatch<SetStateAction<Set<string>>>;
+  allSelected: boolean;
+  someSelected: boolean;
+  handleSelectAll: () => void;
+  handleSelectOne: (id: string) => void;
+  getSelectedUsers: () => User[];
+  // Modals
+  detailUser: User | null;
+  isDetailModalOpen: boolean;
+  setDetailUser: Dispatch<SetStateAction<User | null>>;
+  setIsDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  editUser: User | null;
+  isEditModalOpen: boolean;
+  setIsEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  isAddMemberOpen: boolean;
+  setIsAddMemberOpen: Dispatch<SetStateAction<boolean>>;
+  isBatchModalOpen: boolean;
+  setIsBatchModalOpen: Dispatch<SetStateAction<boolean>>;
+  // Handlers
+  handleEditClick: (u: UserRow) => void;
+  handleSaveUser: (updatedData: Partial<User>) => Promise<void>;
+  refreshData: () => void;
+  handleDeleteOrgMember: (membershipId: string, usernameLabel: string, orgName: string) => Promise<void>;
+  handleDeleteTeamMember: (projectMembershipId: string, usernameLabel: string, teamName: string) => Promise<void>;
+  // Navigation
+  navigate: NavigateFunction;
+  // Row helpers (bound to current context)
+  getSelectedOrgSlug: () => string;
+  getUserSeasonCompetitionMatchCounts: (u: UserRow) => ReturnType<typeof _getUserSCMC>;
+  buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: UserRow) => ReturnType<typeof _buildHref>;
+  getFederationNameForRow: (u: UserRow) => ReturnType<typeof _getFedName>;
+  getOrganisationLinkForRow: (u: UserRow) => ReturnType<typeof _getOrgLink>;
+  getUserDetailHrefForRow: typeof getUserDetailHrefForRow;
+  getClubAndTeamLinksForRow: (u: UserRow) => ReturnType<typeof _getCTLinks>;
+  getClubAndTeamForRow: (u: UserRow) => ReturnType<typeof _getCTForRow>;
+  // Props passthrough (for modals)
+  preselectedClubId: string | undefined;
+  preselectedTeamId: string | undefined;
+}
+
+export function useUsersListData(props: UsersListProps): UseUsersListDataReturn {
     const { preselectedOrgId, preselectedClubId, preselectedTeamId } = props;
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -145,7 +226,7 @@ export function useUsersListData(props: UsersListProps) {
         setIsAddMemberOpen(true);
     }, [selectedOrgId]);
 
-    const handleEditClick = (u: any) => {
+    const handleEditClick = (u: UserRow) => {
         const userData = u.user || u;
         if (!userData.project_memberships && u.project_memberships) {
             userData.project_memberships = u.project_memberships;
@@ -204,12 +285,12 @@ export function useUsersListData(props: UsersListProps) {
             const s = String(value ?? '').trim();
             return s ? s.toLocaleLowerCase() : '\uffff';
         };
-        const getUserLabel = (u: any) => {
+        const getUserLabel = (u: UserRow) => {
             const label = `${u.first_name || ''} ${u.last_name || ''}`.trim();
             return label || u.email || '';
         };
         const list = [...users];
-        list.sort((a: any, b: any) => {
+        list.sort((a: UserRow, b: UserRow) => {
             const byLabel = sortKey(getUserLabel(a)).localeCompare(sortKey(getUserLabel(b)));
             if (byLabel !== 0) return byLabel;
             return sortKey(a?.email).localeCompare(sortKey(b?.email));
@@ -222,7 +303,7 @@ export function useUsersListData(props: UsersListProps) {
         if (selectedIds.size === sortedUsers.length && sortedUsers.length > 0) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(sortedUsers.map((u: any) => String(u.id))));
+            setSelectedIds(new Set(sortedUsers.map((u: UserRow) => String(u.id))));
         }
     }, [selectedIds, sortedUsers]);
 
@@ -236,7 +317,7 @@ export function useUsersListData(props: UsersListProps) {
     }, []);
 
     const allSelected =
-        sortedUsers.length > 0 && sortedUsers.every((u: any) => selectedIds.has(String(u.id)));
+        sortedUsers.length > 0 && sortedUsers.every((u: UserRow) => selectedIds.has(String(u.id)));
     const someSelected = selectedIds.size > 0;
 
     useEffect(() => {
@@ -244,7 +325,7 @@ export function useUsersListData(props: UsersListProps) {
     }, [users]);
 
     const getSelectedUsers = () =>
-        sortedUsers.filter((u: any) => selectedIds.has(String(u.id)));
+        sortedUsers.filter((u: UserRow) => selectedIds.has(String(u.id)));
 
     // ── Lookup maps ──────────────────────────────────────────
     const clubsById = useMemo(() => {
@@ -323,7 +404,7 @@ export function useUsersListData(props: UsersListProps) {
         }
 
         setUsers((prev) =>
-            prev.filter((row: any) => {
+            prev.filter((row: UserRow) => {
                 const rowMembershipId =
                     row?.membership?.id ?? row?.membership_id ?? row?.member_id;
                 return String(rowMembershipId) !== String(membershipId);
@@ -361,7 +442,7 @@ export function useUsersListData(props: UsersListProps) {
 
         setUsers((prev) =>
             prev.filter(
-                (row: any) => String(row?.project_membership_id) !== String(projectMembershipId),
+                (row: UserRow) => String(row?.project_membership_id) !== String(projectMembershipId),
             ),
         );
     };
@@ -428,17 +509,17 @@ export function useUsersListData(props: UsersListProps) {
         navigate,
         // Row helpers (bound to current context)
         getSelectedOrgSlug,
-        getUserSeasonCompetitionMatchCounts: (u: any) => _getUserSCMC(u, rowCtx),
-        buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: any) => _buildHref(section, u, rowCtx),
-        getFederationNameForRow: (u: any) => _getFedName(u, rowCtx),
-        getOrganisationLinkForRow: (u: any) => _getOrgLink(u, rowCtx),
+        getUserSeasonCompetitionMatchCounts: (u: UserRow) => _getUserSCMC(u, rowCtx),
+        buildOrgScopedDirectoryHref: (section: 'seasons' | 'competitions' | 'matches', u: UserRow) => _buildHref(section, u, rowCtx),
+        getFederationNameForRow: (u: UserRow) => _getFedName(u, rowCtx),
+        getOrganisationLinkForRow: (u: UserRow) => _getOrgLink(u, rowCtx),
         getUserDetailHrefForRow,
-        getClubAndTeamLinksForRow: (u: any) => _getCTLinks(u, rowCtx),
-        getClubAndTeamForRow: (u: any) => _getCTForRow(u, rowCtx),
+        getClubAndTeamLinksForRow: (u: UserRow) => _getCTLinks(u, rowCtx),
+        getClubAndTeamForRow: (u: UserRow) => _getCTForRow(u, rowCtx),
         // Props passthrough (for modals)
         preselectedClubId,
         preselectedTeamId,
     };
 }
 
-export type UsersListData = ReturnType<typeof useUsersListData>;
+export type UsersListData = UseUsersListDataReturn;

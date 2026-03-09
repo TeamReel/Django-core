@@ -101,7 +101,7 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
                 </tr>
               </thead>
               <tbody>
-                {d.filteredClubs.map((club: any) => (
+                {d.filteredClubs.map((club) => (
                   <ClubRow
                     key={club.id}
                     club={club}
@@ -118,13 +118,13 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       <ProjectDetailModal
         opened={d.isDetailModalOpen}
         onClose={() => d.setIsDetailModalOpen(false)}
-        project={d.detailProject}
+        project={d.detailProject as any}
       />
 
       <ProjectEditModal
         opened={d.isEditModalOpen}
         onClose={() => d.setIsEditModalOpen(false)}
-        project={d.editProject}
+        project={d.editProject as any}
         onSave={d.handleSaveProject}
       />
 
@@ -164,12 +164,12 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
   const clubSlugOrId = club.slug || club.id;
   const orgSport = (club.organisation as any)?.sport || orgFromList?.sport;
 
-  const teamsForClub = d.teams.filter((t: any) => {
+  const teamsForClub = d.teams.filter((t) => {
     const parent =
       t.parent_id ??
       t.parent_project_id ??
-      (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
-    const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+      (typeof t.parent_project === 'object' ? (t.parent_project as any)?.id : t.parent_project);
+    const parentId = parent == null ? '' : String(parent);
     return parentId && parentId === String(club.id);
   });
 

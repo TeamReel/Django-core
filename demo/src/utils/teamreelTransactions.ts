@@ -142,7 +142,7 @@ export async function createTeamreelDemoTransaction(args: {
                 : 'TeamReel demo: Personal assistant action (AI)',
   };
 
-  const createTxn = async (payload: any) => {
+  const createTxn = async (payload: Record<string, unknown>) => {
     return await postJson<any>(`${apiBaseUrl}/api/v1/transactions/transactions/`, payload);
   };
 

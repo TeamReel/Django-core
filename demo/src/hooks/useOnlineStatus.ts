@@ -10,7 +10,12 @@ import { useState, useEffect, useCallback } from 'react';
  *
  * Uses `navigator.onLine` + the `online`/`offline` window events.
  */
-export function useOnlineStatus() {
+export interface UseOnlineStatusReturn {
+  isOnline: boolean;
+  wasOffline: boolean;
+}
+
+export function useOnlineStatus(): UseOnlineStatusReturn {
   const [isOnline, setIsOnline] = useState(() =>
     typeof navigator !== 'undefined' ? navigator.onLine : true,
   );

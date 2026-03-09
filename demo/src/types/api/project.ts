@@ -13,6 +13,7 @@ import type { UserRef, OrgRef } from './common';
 export interface Project {
   id: number;
   organisation: OrgRef;
+  organisation_id?: number | string;
   name: string;
   slug: string;
   description: string;
@@ -29,6 +30,11 @@ export interface Project {
   sport_variants_count: number;
   parent_id: number | null;
   parent_name: string | null;
+  // Alternate parent reference fields that may appear in API responses
+  parent?: any;
+  parent_project?: any;
+  parent_project_id?: number | string | null;
+  parent_project_name?: string | null;
 }
 
 /** Project detail shape (ProjectDetailSerializer). */

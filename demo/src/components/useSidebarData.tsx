@@ -5,27 +5,45 @@
  * (panel B config) to provide everything the Sidebar component needs.
  */
 import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, type Location } from 'react-router-dom';
 import {
     Globe, Shield, Shirt, CalendarDays, Trophy, Timer,
     Users,
 } from 'lucide-react';
-import { useAuth } from '@django-core/auth-ui';
+import { useAuth, type User } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from './PermissionGuards';
 import { useAppSelection } from '../hooks/useAppSelection';
 import { looksLikeUuid } from '../utils/periodPath';
-import { useQueueCounts } from '../hooks/useQueueCounts';
+import { useQueueCounts, type QueueCounts } from '../hooks/useQueueCounts';
 import { NAV_CONFIG, type NavItem, type NavSection } from './sidebarData';
 import { useResolvedAppContext } from './useResolvedAppContext';
 import { useSidebarRecents } from './useSidebarRecents';
 import { buildPanelBConfig } from './sidebarPanelBConfig';
+import type { PanelBResult } from './sidebarPanelBWork';
+
+/* ------------------------------------------------------------------ */
+/*  Return type                                                        */
+/* ------------------------------------------------------------------ */
+
+export interface UseSidebarDataReturn {
+    isSystemAdmin: boolean;
+    isOrgAdmin: boolean;
+    isLandAdmin: boolean;
+    isPlayer: boolean;
+    isStaff: boolean;
+    user: User | null;
+    location: Location;
+    panelASections: NavSection[];
+    panelBConfig: PanelBResult | null;
+    queueCounts: QueueCounts;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Hook                                                               */
 /* ------------------------------------------------------------------ */
 
-export function useSidebarData() {
+export function useSidebarData(): UseSidebarDataReturn {
     const { isSystemAdmin, isOrgAdmin, isLandAdmin, isPlayer } = useUserRole();
     const { user } = useAuth();
     const { context, organisations } = useContextSwitcher();

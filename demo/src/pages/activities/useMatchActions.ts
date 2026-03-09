@@ -117,7 +117,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
   };
 
   // ── Match edits ──
-  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+  const saveMatchEdits = async (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => {
     const matchIdValue = String(matchToEdit?.id || '').trim();
     if (!matchIdValue) throw new Error('Missing match id');
     const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`, {

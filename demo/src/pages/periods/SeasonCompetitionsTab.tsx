@@ -11,12 +11,12 @@ export interface SeasonCompetitionsTabProps {
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
   apiBaseUrl: string;
-  getMatchCountForCompetition: (competition: any) => number;
-  getCompetitionParticipantsCount: (competition: any) => number;
+  getMatchCountForCompetition: (competition: Period) => number;
+  getCompetitionParticipantsCount: (competition: Period) => number;
   setIsCreateCompetitionModalOpen: (v: boolean) => void;
-  setSelectedDetailPeriod: (p: any) => void;
+  setSelectedDetailPeriod: (p: Period | null) => void;
   setIsPeriodDetailModalOpen: (v: boolean) => void;
-  setSelectedEditPeriod: (p: any) => void;
+  setSelectedEditPeriod: (p: Period | null) => void;
   setIsPeriodEditModalOpen: (v: boolean) => void;
   setCompetitions: React.Dispatch<React.SetStateAction<Period[]>>;
 }

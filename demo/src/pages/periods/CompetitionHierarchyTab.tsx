@@ -128,7 +128,7 @@ export function CompetitionHierarchyTab({
 
                   <div className={styles.dateGroupBody}>
                     <div className={styles.matchesList}>
-                      {group.rows.map((m: any) => (
+                      {group.rows.map((m) => (
                         <div
                           key={String(m.id)}
                           className={styles.matchRow}
@@ -166,7 +166,7 @@ export function CompetitionHierarchyTab({
                                     credentials: 'include',
                                   });
                                   if (res.ok) {
-                                    setMatches((prev) => prev.filter((x: any) => String(x.id) !== String(m.id)));
+                                    setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
                                   } else {
                                     alert('Error deleting match');
                                   }

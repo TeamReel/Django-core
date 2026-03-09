@@ -57,7 +57,15 @@ export interface PaginatedSearchResults {
   results: SearchResult[];
 }
 
-export function useSearch() {
+export interface UseSearchReturn {
+  searchGlobal: (query: string) => Promise<GroupedSearchResults | null>;
+  searchFiltered: (query: string, types: string[], page?: number) => Promise<PaginatedSearchResults | null>;
+  searchHierarchical: (query: string) => Promise<GroupedSearchResults | null>;
+  isSearching: boolean;
+  error: string | null;
+}
+
+export function useSearch(): UseSearchReturn {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);

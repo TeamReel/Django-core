@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction, type ChangeEvent } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -32,7 +32,28 @@ export const getEventOutcome = (event: AuditEvent): string => {
   return '';
 };
 
-export function useAuditLogData() {
+export interface UseAuditLogDataReturn {
+  events: AuditEvent[];
+  loading: boolean;
+  error: string | null;
+  total: number;
+  selectedEvent: AuditEvent | null;
+  eventType: string;
+  user: string;
+  outcome: string;
+  dateFrom: string;
+  dateTo: string;
+  totalPages: number;
+  currentPage: number;
+  searchParams: URLSearchParams;
+  setSearchParams: ReturnType<typeof useSearchParams>[1];
+  setSelectedEvent: Dispatch<SetStateAction<AuditEvent | null>>;
+  handleEventTypeFilter: (type: string) => void;
+  handleUserFilter: (e: ChangeEvent<HTMLInputElement>) => void;
+  handlePageChange: (newPage: number) => void;
+}
+
+export function useAuditLogData(): UseAuditLogDataReturn {
   const { user: authUser } = useAuth();
   const { context } = useContextSwitcher();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -52,7 +73,7 @@ export function useAuditLogData() {
   const dateTo = searchParams.get('date_to') || '';
   const page = searchParams.get('page') || '1';
 
-  const contextOrgId = String((context as any)?.organisation?.id || '').trim();
+  const contextOrgId = String((context as { organisation?: { id: string } })?.organisation?.id || '').trim();
 
   // Default to org-scoped audit
   useEffect(() => {

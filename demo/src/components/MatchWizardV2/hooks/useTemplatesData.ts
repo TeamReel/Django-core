@@ -6,7 +6,19 @@ import { getApiBaseUrl } from '../../../utils/apiBase';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { ContentTemplate } from '../../../pages/identity/ContentGenerationModal/types';
 
-export function useTemplatesData() {
+// ============================================================================
+// Return type
+// ============================================================================
+
+export interface UseTemplatesDataReturn {
+  availableTemplates: Record<string, ContentTemplate[]>;
+  templatesLoading: boolean;
+  fetchTemplates: () => Promise<void>;
+  resolveTemplate: (subtype: string) => ContentTemplate | null;
+  selectTemplateForSubtype: (subtype: string) => ContentTemplate | null;
+}
+
+export function useTemplatesData(): UseTemplatesDataReturn {
   const apiBaseUrl = getApiBaseUrl();
   const { setSelectedTemplate, setTemplatesError, lineupFormation } = useMatchWizard();
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});

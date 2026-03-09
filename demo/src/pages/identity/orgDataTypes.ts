@@ -38,13 +38,13 @@ export interface OrgModalState {
   isEditMemberRoleModalOpen: boolean;
   setIsEditMemberRoleModalOpen: (v: boolean) => void;
   editingMember: any;
-  setEditingMember: (v: any) => void;
+  setEditingMember: (v: Record<string, unknown>) => void;
   isOrgDetailModalOpen: boolean;
   setIsOrgDetailModalOpen: (v: boolean) => void;
   isOrgEditModalOpen: boolean;
   setIsOrgEditModalOpen: (v: boolean) => void;
   detailUser: any;
-  setDetailUser: (v: any) => void;
+  setDetailUser: (v: Record<string, unknown>) => void;
   isUserDetailModalOpen: boolean;
   setIsUserDetailModalOpen: (v: boolean) => void;
 }
@@ -230,7 +230,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   orgIdForDirectoryLists: string;
 
   /* --- misc functions ------------------------------------------- */
-  getBestMatchDetailPath: (m: any) => string;
+  getBestMatchDetailPath: (m: Record<string, unknown>) => string;
   getApiV1BaseUrl: () => string;
   getCsrfToken: () => string;
   fetchClubsPage: (page: number) => Promise<void>;
@@ -245,7 +245,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   setFederationMatches: React.Dispatch<React.SetStateAction<any[]>>;
   setMatchesCount: React.Dispatch<React.SetStateAction<number | null>>;
   setTeamsCount: React.Dispatch<React.SetStateAction<number | null>>;
-  recomputePeriodCounts: (allPeriods: any[]) => void;
+  recomputePeriodCounts: (allPeriods: Record<string, unknown>[]) => void;
   fetchFederationCounts: (organisationId: string) => Promise<void>;
-  getRecursiveMatchesCount: (p: any) => number;
+  getRecursiveMatchesCount: (p: Record<string, unknown>) => number;
 }

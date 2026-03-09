@@ -5,13 +5,39 @@ import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+/** Period record with org-level fields */
+interface OrgPeriodRecord {
+  id?: string;
+  name?: string;
+  type?: string;
+  parent_period_id?: string | null;
+  parent_period?: { id?: string } | null;
+  activities_count?: number;
+  project_id?: string | null;
+  project?: { id?: string } | null;
+  metadata?: Record<string, unknown>;
+  data?: Record<string, unknown>;
+}
+
+/** Org member record for membership checks */
+interface OrgMemberRecord {
+  user?: {
+    project_membership_details?: unknown[];
+    project_memberships_details?: unknown[];
+    [key: string]: unknown;
+  };
+  project_membership_details?: unknown[];
+  project_memberships_details?: unknown[];
+  [key: string]: unknown;
+}
+
 interface UseOrgDataFetchingParams {
   currentOrgSlug: string | undefined;
   currentOrgId: string | undefined;
-  org: any;
+  org: { id?: string | number } | null;
   teams: Project[];
   teamsLoading: boolean;
-  orgPeriods: any[];
+  orgPeriods: OrgPeriodRecord[];
   orgPeriodsLoading: boolean;
   members: any[];
   membersLoading: boolean;
@@ -32,7 +58,7 @@ interface UseOrgDataFetchingParams {
   setTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setTeamsLoading: (v: boolean) => void;
   setAllClubsForTeams: React.Dispatch<React.SetStateAction<Project[]>>;
-  setOrgPeriods: (v: any[]) => void;
+  setOrgPeriods: (v: OrgPeriodRecord[]) => void;
   setOrgPeriodsLoading: (v: boolean) => void;
   setSeasonsCount: (v: number | null) => void;
   setCompetitionsCount: (v: number | null) => void;
@@ -47,7 +73,19 @@ interface UseOrgDataFetchingParams {
 
 // ─── Hook: all data-fetching functions ───────────────────────────────────────
 
-export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
+export interface UseOrgDataFetchingReturn {
+  fetchFederationMatches: (organisationId: string) => Promise<void>;
+  fetchScheduledMatches: (organisationId: string) => Promise<void>;
+  fetchRecentPlayedMatches: (organisationId: string) => Promise<void>;
+  fetchClubsPage: (page: number) => Promise<void>;
+  fetchTeamsForOrg: (opts?: { force?: boolean }) => Promise<void>;
+  recomputePeriodCounts: (allPeriods: OrgPeriodRecord[]) => void;
+  ensureOrgPeriodsLoaded: () => Promise<void>;
+  fetchFederationCounts: (organisationId: string) => Promise<void>;
+  fetchMembers: (force?: boolean) => Promise<void>;
+}
+
+export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgDataFetchingReturn {
   const {
     currentOrgSlug, currentOrgId, org, teams, teamsLoading, orgPeriods, orgPeriodsLoading,
     members, membersLoading,
@@ -206,11 +244,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
     }
   };
 
-  const recomputePeriodCounts = (allPeriods: any[]) => {
+  const recomputePeriodCounts = (allPeriods: OrgPeriodRecord[]) => {
     const seasonsByProjectId: Record<string, number> = {};
     const competitionsByProjectId: Record<string, number> = {};
     const matchesByProjectId: Record<string, number> = {};
-    const childrenMap = new Map<string, any[]>();
+    const childrenMap = new Map<string, OrgPeriodRecord[]>();
     for (const p of allPeriods || []) {
       const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
       if (!parentId) continue;
@@ -219,13 +257,13 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       arr.push(p);
       childrenMap.set(key, arr);
     }
-    const getRecursiveActivitiesCount = (p: any): number => {
+    const getRecursiveActivitiesCount = (p: OrgPeriodRecord): number => {
       let count = p?.activities_count ?? 0;
       const children = childrenMap.get(String(p?.id));
       if (children) { for (const child of children) count += getRecursiveActivitiesCount(child); }
       return count;
     };
-    allPeriods.filter((p: any) => {
+    allPeriods.filter((p) => {
       const isSeason = isSeasonPeriod(p);
       if (isSeason) {
         const projectId = p.project_id ?? p.project?.id ?? null;
@@ -233,7 +271,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       }
       return isSeason;
     });
-    const competitions = allPeriods.filter((p: any) => {
+    const competitions = allPeriods.filter((p) => {
       const isCompetition = isCompetitionPeriod(p);
       if (isCompetition) {
         const projectId = p.project_id ?? p.project?.id ?? null;
@@ -245,7 +283,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       }
       return isCompetition;
     });
-    const seasons = allPeriods.filter((p: any) => isSeasonPeriod(p));
+    const seasons = allPeriods.filter((p) => isSeasonPeriod(p));
     setSeasonsCount(seasons.length);
     setCompetitionsCount(competitions.length);
     setTeamSeasonsCountById(seasonsByProjectId);
@@ -270,7 +308,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
       const teamChunks = [];
       for (let i = 0; i < teams.length; i += chunkSize) teamChunks.push(teams.slice(i, i + chunkSize));
       for (const chunk of teamChunks) {
-        await Promise.all(chunk.map(async (t: any) => {
+        await Promise.all(chunk.map(async (t) => {
           const teamId = t?.id;
           if (!teamId) return;
           const p = new URLSearchParams();
@@ -326,7 +364,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams) {
 
   const fetchMembers = async (force = false) => {
     if (membersLoading) return;
-    const haveMembershipDetails = members.some((item: any) => {
+    const haveMembershipDetails = members.some((item) => {
       const u = item?.user || item;
       const details = item?.project_membership_details || u?.project_membership_details ||
         item?.project_memberships_details || u?.project_memberships_details;

@@ -31,9 +31,9 @@ export function TasksPage() {
         const taskData = data.data || data;
 
         const allTasks = [
-          ...(taskData.active || []).map((t: any) => ({ ...t, status: 'running' })),
-          ...(taskData.scheduled || []).map((t: any) => ({ ...t, status: 'scheduled' })),
-          ...(taskData.reserved || []).map((t: any) => ({ ...t, status: 'pending' })),
+          ...(taskData.active || []).map((t: Record<string, unknown>) => ({ ...t, status: 'running' })),
+          ...(taskData.scheduled || []).map((t: Record<string, unknown>) => ({ ...t, status: 'scheduled' })),
+          ...(taskData.reserved || []).map((t: Record<string, unknown>) => ({ ...t, status: 'pending' })),
         ];
         setTasks(allTasks);
         setBeatSchedule(taskData.beat_schedule || []);

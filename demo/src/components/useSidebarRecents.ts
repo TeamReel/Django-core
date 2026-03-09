@@ -9,7 +9,7 @@ import { useLocation } from 'react-router-dom';
 import { addRecent } from '../utils/navStorage';
 import type { ResolvedAppContext } from './useResolvedAppContext';
 
-export function useSidebarRecents(resolvedAppContext: ResolvedAppContext | null) {
+export function useSidebarRecents(resolvedAppContext: ResolvedAppContext | null): void {
     const location = useLocation();
 
     useEffect(() => {

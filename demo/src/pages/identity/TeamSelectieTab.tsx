@@ -6,11 +6,21 @@ import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import { MemberEditSheet } from './MemberEditSheet';
 import st from './TeamSelectieTab.module.css';
 
+/** Member/membership record from the API. */
+interface MemberRecord {
+  id?: string;
+  user?: { id?: string; first_name?: string; last_name?: string; name?: string; email?: string; avatar_url?: string };
+  role?: string;
+  functional_roles?: string[];
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface TeamSelectieTabProps {
-  members: any[];
+  members: MemberRecord[];
   membersLoading: boolean;
   /** If provided, long-press or desktop click navigates here (admin feature) */
-  memberDetailHref?: (membership: any) => string;
+  memberDetailHref?: (membership: MemberRecord) => string;
   /** Show admin link at bottom */
   showAdminLink?: boolean;
   onAdminLinkClick?: () => void;
@@ -31,7 +41,7 @@ interface TeamSelectieTabProps {
 }
 
 /* ── Name helpers ── */
-function getMemberName(m: any): string {
+function getMemberName(m: MemberRecord): string {
   const u = m?.user || m;
   return (
     String(u?.name || '').trim() ||
@@ -41,7 +51,7 @@ function getMemberName(m: any): string {
   );
 }
 
-function getInitials(m: any): string {
+function getInitials(m: MemberRecord): string {
   const u = m?.user || m;
   const f = String(u?.first_name || '').trim();
   const l = String(u?.last_name || '').trim();
@@ -80,7 +90,7 @@ const ROLE_COLORS: Record<string, string> = {
   supporter: 'var(--color-neutral-300)',
 };
 
-function getFunctionalRoles(m: any): string[] {
+function getFunctionalRoles(m: MemberRecord): string[] {
   const roles: string[] = Array.isArray(m?.functional_roles) ? [...m.functional_roles] : [];
   // Fallback: derive from access role
   if (roles.length === 0) {
@@ -99,12 +109,12 @@ function getRoleColor(role: string): string {
   return ROLE_COLORS[role.toLowerCase()] || 'var(--color-blue-300)';
 }
 
-function getAccessRoleLabel(m: any): string {
+function getAccessRoleLabel(m: MemberRecord): string {
   const role = String(m?.role || '').trim().toLowerCase();
   return ACCESS_ROLE_LABELS[role] || 'Team Member';
 }
 
-function getAccessRoleColor(m: any): string {
+function getAccessRoleColor(m: MemberRecord): string {
   const role = String(m?.role || '').trim().toLowerCase();
   return ACCESS_ROLE_COLORS[role] || 'var(--color-neutral-400)';
 }
@@ -122,13 +132,13 @@ function toFullUrl(path: string | null | undefined): string | null {
  * Resolve the best URL for a media slot, checking both flat and per-variant structures.
  * Per-variant: metadata.teamreel_assets.images.[category].[variant].processed|raw
  */
-function resolveMediaUrl(m: any, slotId: string): string | null {
+function resolveMediaUrl(m: MemberRecord, slotId: string): string | null {
   // 1) Flat media URL
-  const flat = m?.metadata?.teamreel_assets?.media?.[slotId]?.url;
+  const flat = (m?.metadata?.teamreel_assets as any)?.media?.[slotId]?.url;
   if (flat) return toFullUrl(flat);
 
   // 2) Per-variant structure
-  const tr = m?.metadata?.teamreel_assets || {};
+  const tr: any = m?.metadata?.teamreel_assets || {};
   const VARIANT_MAP: Record<string, { branch: string; category: string }> = {
     closeup: { branch: 'images', category: 'closeup' },
     kit: { branch: 'images', category: 'fullbody' },
@@ -151,7 +161,7 @@ function resolveMediaUrl(m: any, slotId: string): string | null {
 }
 
 /** Get best available photo */
-function getMemberPhoto(m: any): string | null {
+function getMemberPhoto(m: MemberRecord): string | null {
   const closeup = resolveMediaUrl(m, 'closeup');
   if (closeup) return closeup;
   const kit = resolveMediaUrl(m, 'kit');
@@ -179,7 +189,7 @@ export function TeamSelectieTab({
   const [search, setSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeRoleFilter, setActiveRoleFilter] = useState<string | null>(null);
-  const [editMember, setEditMember] = useState<any | null>(null);
+  const [editMember, setEditMember] = useState<MemberRecord | null>(null);
   const expandRef = useRef<HTMLDivElement | null>(null);
 
   const q = search.trim().toLowerCase();
@@ -223,7 +233,7 @@ export function TeamSelectieTab({
 
   /* ── Group by first letter ── */
   const letterGroups = useMemo(() => {
-    const groups: { letter: string; members: any[] }[] = [];
+    const groups: { letter: string; members: MemberRecord[] }[] = [];
     const map = new Map<string, any[]>();
     for (const m of filtered) {
       const name = getMemberName(m);
@@ -333,7 +343,7 @@ export function TeamSelectieTab({
             <div className={st.letterLine} />
           </div>
 
-          {groupMembers.map((m: any) => {
+          {groupMembers.map((m) => {
             const mid = String(m?.id || m?.user?.id || '').trim();
             const name = getMemberName(m);
             const roles = getFunctionalRoles(m);

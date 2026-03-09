@@ -1,11 +1,11 @@
 /**
  * useUsersData — all state, fetch effects, filters, role mapping, pagination for UsersPage.
  */
-import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState, useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useSearchParams, useNavigate, useParams, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
+import { useBreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import type { Organisation as SharedOrganisation } from '../../types';
 
@@ -19,6 +19,8 @@ export interface User {
   role: string;
   is_active: boolean;
   organisations?: { id: string; name: string; slug: string; role: string }[];
+  projects?: any[];
+  [key: string]: unknown;
 }
 
 type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
@@ -61,13 +63,17 @@ export const mapMembershipRoleToDisplayRole = (membershipRole: string, hasParent
   return 'User';
 };
 
-async function fetchAllFilterOptions(initialUrl: string): Promise<any[]> {
-  const allResults: any[] = [];
+type UserProjectRef = { id: string | number; slug?: string; role?: string; parent?: string | number | null; parent_name?: string | null; name?: string };
+
+type UserListEntry = Record<string, unknown> & { user?: User; projects?: UserProjectRef[]; role?: string };
+
+async function fetchAllFilterOptions<T = Record<string, unknown>>(initialUrl: string): Promise<T[]> {
+  const allResults: T[] = [];
   let url: string | null = initialUrl;
   while (url) {
     const res: Response = await fetch(url, { credentials: 'include' });
     if (!res.ok) break;
-    const data: any = await res.json();
+    const data = await res.json() as { data?: { results?: T[]; next?: string | null }; results?: T[]; next?: string | null };
     const results = data.data?.results || data.results || [];
     const next: string | null = data.data?.next || data.next || null;
     allResults.push(...results);
@@ -83,7 +89,78 @@ const FALLBACK_ROLES = [
 
 // ── Hook ─────────────────────────────────────────────────────────────
 
-export function useUsersData() {
+export interface UseUsersDataReturn {
+  // Context + navigation
+  navigate: NavigateFunction;
+  context: any;
+  myOrganisations: Array<{ id: string; name: string; slug: string }>;
+  orgIdParam: string | null;
+  organisationOptions: BreadcrumbSwitcherOption[];
+  handleOrganisationSwitch: (option: BreadcrumbSwitcherOption) => void;
+  // Auth
+  user: ReturnType<typeof useAuth>['user'];
+  isSuperAdmin: boolean;
+  canManageUsers: boolean;
+  waitingForOrgContext: boolean;
+  // Data
+  filteredUsers: UserListEntry[];
+  isLoading: boolean;
+  error: string | null;
+  total: number;
+  // Pagination
+  currentPage: number;
+  totalPages: number;
+  limit: number;
+  handlePageChange: (page: number) => void;
+  // Filters
+  organisations: OrganisationOption[];
+  clubs: ProjectOption[];
+  teams: ProjectOption[];
+  availableRoles: string[];
+  selectedOrgId: string;
+  setSelectedOrgId: Dispatch<SetStateAction<string>>;
+  selectedClubId: string;
+  setSelectedClubId: Dispatch<SetStateAction<string>>;
+  selectedClubKey: string;
+  setSelectedClubKey: Dispatch<SetStateAction<string>>;
+  selectedTeamId: string;
+  setSelectedTeamId: Dispatch<SetStateAction<string>>;
+  selectedTeamKey: string;
+  setSelectedTeamKey: Dispatch<SetStateAction<string>>;
+  statusFilter: string;
+  setStatusFilter: Dispatch<SetStateAction<string>>;
+  roleFilter: string;
+  setRoleFilter: Dispatch<SetStateAction<string>>;
+  resetPageToFirst: () => void;
+  // Breadcrumbs
+  breadcrumbs: Array<{ label: string; onClick?: () => void; current?: boolean }>;
+  // User actions
+  handleEditClick: (u: User | UserListEntry) => void;
+  handleSaveUser: (updatedData: Partial<User>) => Promise<void>;
+  fetchUsers: () => void;
+  // Modal state
+  editingUser: User | null;
+  isModalOpen: boolean;
+  setIsModalOpen: Dispatch<SetStateAction<boolean>>;
+  detailUser: User | null;
+  setDetailUser: Dispatch<SetStateAction<User | null>>;
+  isDetailModalOpen: boolean;
+  setIsDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  isInviteModalOpen: boolean;
+  setIsInviteModalOpen: Dispatch<SetStateAction<boolean>>;
+  isAddMemberOpen: boolean;
+  setIsAddMemberOpen: Dispatch<SetStateAction<boolean>>;
+  assignUser: User | null;
+  setAssignUser: Dispatch<SetStateAction<User | null>>;
+  isAssignModalOpen: boolean;
+  setIsAssignModalOpen: Dispatch<SetStateAction<boolean>>;
+  linkUser: User | null;
+  setLinkUser: Dispatch<SetStateAction<User | null>>;
+  isLinkModalOpen: boolean;
+  setIsLinkModalOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+export function useUsersData(): UseUsersDataReturn {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { orgId } = useParams<{ orgId: string }>();
@@ -132,7 +209,7 @@ export function useUsersData() {
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   const currentOrgSlug = (orgIdParam || context.organisation?.slug)?.toLowerCase();
   const currentOrg = myOrganisations.find(o => o.slug?.toLowerCase() === currentOrgSlug);
-  const isOrgAdmin = (currentOrg as any)?.user_role === 'admin';
+  const isOrgAdmin = (currentOrg as { user_role?: string } | undefined)?.user_role === 'admin';
   const canManageUsers = isSuperAdmin || isOrgAdmin;
 
   const waitingForOrgContext = Boolean(orgIdParam) && context.isLoading;
@@ -186,7 +263,7 @@ export function useUsersData() {
     const fetchClubs = async () => {
       const apiBaseUrl = getApiBaseUrl();
       try {
-        const results = await fetchAllFilterOptions(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`);
+        const results = await fetchAllFilterOptions<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`);
         setClubs(results);
       } catch (e) {
         console.error(e);
@@ -201,7 +278,7 @@ export function useUsersData() {
     const fetchTeams = async () => {
       const apiBaseUrl = getApiBaseUrl();
       try {
-        const results = await fetchAllFilterOptions(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`);
+        const results = await fetchAllFilterOptions<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`);
         setTeams(results);
       } catch (e) {
         console.error(e);
@@ -223,7 +300,7 @@ export function useUsersData() {
         }
         const data = await response.json();
         const results = data.data?.results || data.results || data;
-        const roleNames = results.map((role: any) => role.name);
+        const roleNames = results.map((role: { name: string }) => role.name);
         setAvailableRoles(['Superadmin', ...roleNames].sort());
       } catch (e) {
         console.error(e);
@@ -236,16 +313,16 @@ export function useUsersData() {
 
   // ── Role helpers ───────────────────────────────────────────────────
   const getScopedRoleForProjectFilter = useCallback(
-    (userProjects: any[]) => {
+    (userProjects: UserProjectRef[]) => {
       if (selectedTeamKey) {
-        const match = userProjects.find((p: any) => String(p.slug || p.id) === String(selectedTeamKey));
+        const match = userProjects.find((p) => String(p.slug || p.id) === String(selectedTeamKey));
         if (match?.role) return mapMembershipRoleToDisplayRole(String(match.role), Boolean(match.parent));
         return null;
       }
 
       if (selectedClubKey) {
         const club = clubs.find(c => String(c.slug || c.id) === String(selectedClubKey));
-        const relevant = userProjects.filter((p: any) => {
+        const relevant = userProjects.filter((p) => {
           if (club && String(p.id) === String(club.id)) return true;
           if (club && p.parent && String(p.parent) === String(club.id)) return true;
           if (club && p.parent_name && club.name && String(p.parent_name) === String(club.name)) return true;
@@ -350,9 +427,9 @@ export function useUsersData() {
   };
 
   // ── User actions ───────────────────────────────────────────────────
-  const handleEditClick = (item: any) => {
+  const handleEditClick = (item: UserListEntry) => {
     const userData = item.user || item;
-    setEditingUser(userData);
+    setEditingUser(userData as User);
     setIsModalOpen(true);
   };
 
@@ -376,7 +453,7 @@ export function useUsersData() {
   };
 
   // ── Breadcrumbs ────────────────────────────────────────────────────
-  const breadcrumbs: any[] = [{ label: 'Dashboard', href: '/dashboard' }];
+  const breadcrumbs: Array<{ label: string; href?: string; onClick?: () => void; current?: boolean }> = [{ label: 'Dashboard', href: '/dashboard' }];
   if (orgIdParam) {
     breadcrumbs.push({ label: 'Federations', onClick: () => navigate('/federations') });
     breadcrumbs.push({
@@ -389,7 +466,7 @@ export function useUsersData() {
   }
 
   // ── Client-side filtering (role only) ──────────────────────────────
-  const filteredUsers = users.filter((item: any) => {
+  const filteredUsers = users.filter((item: UserListEntry) => {
     const u = item.user || item;
     const userProjects = u.projects || [];
     const scopedRole = getScopedRoleForProjectFilter(userProjects);

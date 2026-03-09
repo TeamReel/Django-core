@@ -9,7 +9,7 @@ import styles from './ProjectCompetitionSquadPage.module.css';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
-type Period = { id: string; name: string };
+type Period = { id: string; name: string; parent_period?: any };
 
 type Participation = {
   id: string;
@@ -145,11 +145,11 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
           ? periodsData
           : periodsData?.results || periodsData?.data?.results || periodsData?.data || [];
 
-        const seasonOptions = allPeriods.filter((p: any) => !p.parent_period);
+        const seasonOptions = allPeriods.filter((p) => !p.parent_period);
         const isUuidParam = looksLikeUuid(effectiveSeasonId);
         const resolvedSeason = isUuidParam
-          ? seasonOptions.find((p: any) => String(p.id) === String(effectiveSeasonId))
-          : seasonOptions.find((p: any) => periodPathKey(p) === String(effectiveSeasonId));
+          ? seasonOptions.find((p) => String(p.id) === String(effectiveSeasonId))
+          : seasonOptions.find((p) => periodPathKey(p) === String(effectiveSeasonId));
         const seasonUuid = String(resolvedSeason?.id || (isUuidParam ? effectiveSeasonId : '')).trim();
         if (!seasonUuid) throw new Error('Season not found');
 

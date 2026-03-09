@@ -27,7 +27,7 @@ export interface OrgModalsProps {
   fetchTeamsForOrg: (opts?: { force?: boolean }) => Promise<void>;
   fetchMembers: (force?: boolean) => Promise<void>;
   fetchFederationCounts: (organisationId: string) => Promise<void>;
-  recomputePeriodCounts: (allPeriods: any[]) => void;
+  recomputePeriodCounts: (allPeriods: Record<string, unknown>[]) => void;
   saveProjectEdits: (project: Project, patch: Partial<Project>) => Promise<void>;
 
   /* list state setters (for optimistic updates) */
@@ -92,7 +92,7 @@ export interface OrgModalsProps {
   isEditMemberRoleModalOpen: boolean;
   setIsEditMemberRoleModalOpen: (v: boolean) => void;
   editingMember: any;
-  setEditingMember: (v: any) => void;
+  setEditingMember: (v: Record<string, unknown> | null) => void;
 
   /* modal state: org detail / edit */
   isOrgDetailModalOpen: boolean;
@@ -192,7 +192,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         project={selectedEditProject}
         onSave={(patch) => {
           if (!selectedEditProject) return Promise.resolve();
-          return saveProjectEdits(selectedEditProject, patch);
+          return saveProjectEdits(selectedEditProject, patch as any);
         }}
       />
 
@@ -283,8 +283,8 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         editingMember={editingMember}
         currentOrgSlug={currentOrgSlug}
         onSaved={(updated, role) => {
-          setMembers((prev: any[]) =>
-            prev.map((m: any) => {
+          setMembers((prev) =>
+            prev.map((m) => {
               if (String(m?.id) !== String(editingMember?.id)) return m;
               return updated && updated.id ? updated : { ...m, role };
             }),

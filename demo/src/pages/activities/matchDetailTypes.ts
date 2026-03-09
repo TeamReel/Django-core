@@ -43,6 +43,7 @@ export type ActivityEvent = {
 export type OrgMember = {
   id: string;
   role?: string;
+  organisation_membership_id?: string;
   user?: {
     id: string | number;
     email?: string;
@@ -120,12 +121,14 @@ export const looksLikeIdentifier = (value: string): boolean => {
   return false;
 };
 
-export const getEnvelopeData = <T,>(raw: any): T => {
-  return (raw?.data ?? raw) as T;
+export const getEnvelopeData = <T,>(raw: unknown): T => {
+  const r = raw as Record<string, any>;
+  return (r?.data ?? raw) as T;
 };
 
-export const getEnvelopeListResults = <T,>(raw: any): T[] => {
-  const envelope = raw?.data ?? raw;
+export const getEnvelopeListResults = <T,>(raw: unknown): T[] => {
+  const r = raw as Record<string, any>;
+  const envelope = r?.data ?? r;
   const results = envelope?.results ?? envelope?.data?.results ?? envelope?.data ?? envelope;
   return Array.isArray(results) ? (results as T[]) : [];
 };
@@ -205,7 +208,7 @@ export interface MatchDetailDataReturn {
   activatingContext: boolean;
   setActivatingContext: (v: boolean) => void;
   activeContext: any | null;
-  setActiveContextState: (v: any | null) => void;
+  setActiveContextState: (v: Record<string, unknown> | null) => void;
 
   /* modals */
   isCreateTxnModalOpen: boolean;
@@ -324,7 +327,7 @@ export interface MatchDetailDataReturn {
   matchEvents: ActivityEvent[];
 
   /* CRUD */
-  saveMatchEdits: (matchToEdit: any, patch: any) => Promise<void>;
+  saveMatchEdits: (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => Promise<void>;
   handleDeleteMatch: () => Promise<void>;
   createParticipation: (memberId: string, side: 'home' | 'away') => Promise<void>;
   updateParticipation: (p: Participation, patch: any) => Promise<void>;

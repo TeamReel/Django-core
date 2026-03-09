@@ -1,10 +1,15 @@
-import { useContextSwitcher as useContextSwitcherBase } from '@django-core/context-switcher';
+import { useContextSwitcher as useContextSwitcherBase, type ContextSwitcherContextValue } from '@django-core/context-switcher';
 import { useLocalStorage } from './useLocalStorage';
 
 /**
  * Enhanced context switcher that persists selected context to localStorage
  */
-export function usePersistedContext() {
+export interface UsePersistedContextReturn extends ContextSwitcherContextValue {
+  setSelectedOrgId: (orgId: string | null) => void;
+  selectedOrgId: string | null;
+}
+
+export function usePersistedContext(): UsePersistedContextReturn {
   const baseContext = useContextSwitcherBase();
   const [persistedOrgId, setPersistedOrgId] = useLocalStorage<string | null>('demo_selected_org_id', null);
 

@@ -3,7 +3,27 @@ import { UserPlus, X } from 'lucide-react';
 import { FORMATION_LAYOUTS } from '../../identity/content-generation';
 import styles from './MatchLineupField.module.css';
 
-const getSquadMemberName = (p: any): string => {
+/** Squad member / participation record */
+interface SquadMemberUser {
+  id?: string;
+  name?: string;
+  user_name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
+
+interface SquadMember {
+  id: string;
+  isGuest?: boolean;
+  user?: SquadMemberUser;
+  member?: SquadMemberUser;
+  metadata?: { shirt_number?: string; [key: string]: unknown };
+  data?: { jersey_number?: string; functional_role?: string; [key: string]: unknown };
+  functional_roles?: string[];
+}
+
+const getSquadMemberName = (p: SquadMember): string => {
   const user = p.user || p.member;
   if (!user) return 'Unknown';
   if (user.name) return user.name;
@@ -14,7 +34,7 @@ const getSquadMemberName = (p: any): string => {
   return 'Unknown';
 };
 
-const getUserKey = (p: any): string => {
+const getUserKey = (p: SquadMember): string => {
   const user = p.user || p.member;
   if (user?.id) return String(user.id);
   return String(p.id);
@@ -24,7 +44,7 @@ export interface FieldVisualizationProps {
   lineupFormation: string;
   lineupSlots: Record<string, string[]>;
   setLineupSlots: (slots: Record<string, string[]>) => void;
-  lineupSquad: Record<string, any[]>;
+  lineupSquad: Record<string, SquadMember[]>;
   lineupBenchStatus: Record<string, string>;
   setLineupBenchStatus: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   lineupSaving: boolean;
@@ -47,7 +67,7 @@ export function FieldVisualization({
     FORMATION_LAYOUTS[lineupFormation] || FORMATION_LAYOUTS['4-3-3'];
 
   // ── Guest players ──
-  const [guestPlayers, setGuestPlayers] = useState<any[]>([]);
+  const [guestPlayers, setGuestPlayers] = useState<SquadMember[]>([]);
   const [showGuestForm, setShowGuestForm] = useState(false);
   const [guestName, setGuestName] = useState('');
   const [guestJersey, setGuestJersey] = useState('');
@@ -76,13 +96,13 @@ export function FieldVisualization({
   };
 
   // ── Sort helper ──
-  const sortByName = (a: any, b: any) =>
+  const sortByName = (a: SquadMember, b: SquadMember) =>
     getSquadMemberName(a).localeCompare(getSquadMemberName(b), 'nl');
 
   const gkPool = (lineupSquad.goalkeeper || [])
     .filter(
-      (p: any, idx: number, arr: any[]) =>
-        arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx
+      (p, idx, arr) =>
+        arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
     )
     .concat(guestPlayers)
     .sort(sortByName);
@@ -92,13 +112,13 @@ export function FieldVisualization({
     ...(lineupSquad.player || []),
   ];
   const gkUserKeys = new Set(
-    (lineupSquad.goalkeeper || []).map((p: any) => getUserKey(p))
+    (lineupSquad.goalkeeper || []).map((p) => getUserKey(p))
   );
   const playerPool = playersOnly
-    .filter((p: any) => !gkUserKeys.has(getUserKey(p)))
+    .filter((p) => !gkUserKeys.has(getUserKey(p)))
     .filter(
-      (p: any, idx: number, arr: any[]) =>
-        arr.findIndex((x: any) => getUserKey(x) === getUserKey(p)) === idx
+      (p, idx, arr) =>
+        arr.findIndex((x) => getUserKey(x) === getUserKey(p)) === idx
     )
     .concat(guestPlayers)
     .sort(sortByName);
@@ -127,7 +147,7 @@ export function FieldVisualization({
           const currentId = selected[idx] || '';
           const pool = isGk ? gkPool : playerPool;
           const currentMember = currentId
-            ? pool.find((p: any) => p.id === currentId)
+            ? pool.find((p) => p.id === currentId)
             : null;
           const jerseyNumber =
             currentMember?.metadata?.shirt_number ||
@@ -158,7 +178,7 @@ export function FieldVisualization({
                 <option value="" className={styles.selectOption}>
                   —
                 </option>
-                {pool.map((p: any) => {
+                {pool.map((p) => {
                   const name = getSquadMemberName(p);
                   const jersey =
                     p.metadata?.shirt_number || p.data?.jersey_number;
@@ -292,7 +312,7 @@ export function FieldVisualization({
           [...gkSelected, ...playerSelected].filter(Boolean)
         );
         const benchMembers = allPool.filter(
-          (p: any) => !usedIds.has(p.id)
+          (p) => !usedIds.has(p.id)
         );
 
         if (benchMembers.length === 0) return null;
@@ -305,7 +325,7 @@ export function FieldVisualization({
               Overige selectie ({benchMembers.length})
             </div>
             <div className={`flex-col gap-4 rounded-8 py-8 ${styles.benchPool}`}>
-              {benchMembers.map((p: any) => {
+              {benchMembers.map((p) => {
                 const name = getSquadMemberName(p);
                 const jersey =
                   p.metadata?.shirt_number || p.data?.jersey_number;

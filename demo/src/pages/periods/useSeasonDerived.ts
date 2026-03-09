@@ -5,18 +5,62 @@ import {
   getFunctionalRolesFromMembership,
   getMatchParticipantsCount,
 } from './seasonDetailUtils';
+import type { Period, SeasonProject, SeasonOrganisation } from '../../types/season';
+
+// ─── Local structural types ──────────────────────────────────────────────────
+
+/** Membership / roster entry in season context. */
+interface SeasonMember {
+  id?: string | number;
+  user?: { id?: string | number; first_name?: string; last_name?: string; email?: string; name?: string };
+  user_id?: string | number;
+  role?: string;
+  period_id?: string;
+  period?: string | { id?: string } | null;
+  functional_roles?: string[];
+  functionalRoles?: string[];
+  shirt_number?: string | number;
+  position?: string;
+  /** Deeply nested dynamic metadata — `any` kept for TeamReel asset traversal. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any>;
+}
+
+/** Match activity in season context. */
+interface SeasonMatch {
+  id?: string | number;
+  title?: string;
+  name?: string;
+  period_id?: string;
+  period?: string | { id?: string } | null;
+  opponent_project?: { name?: string } | null;
+  /** Dynamic metadata — `any` kept for deeply nested access. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any>;
+}
+
+/** Competition / period reference used in count helpers. */
+interface CompetitionRef {
+  id?: string | number;
+  matches_count?: number;
+  children_matches_count?: number;
+  participants_count?: number;
+  participations_count?: number;
+  participantsCount?: number;
+  participationsCount?: number;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface UseSeasonDerivedParams {
-  org: any;
-  project: any;
-  club: any;
-  season: any;
+  org: SeasonOrganisation | null;
+  project: SeasonProject | null;
+  club: SeasonProject | null;
+  season: Period | null;
   isPlayer: boolean;
-  members: any[];
-  matches: any[];
-  teamRoster: any[];
+  members: SeasonMember[];
+  matches: SeasonMatch[];
+  teamRoster: SeasonMember[];
   opponentClubNames: Record<string, string>;
   currentUserId: string;
 }
@@ -56,7 +100,7 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
 
   const mySeasonMembershipId = useMemo(() => {
     if (!currentUserId) return '';
-    const mine = (members || []).find((m: any) => {
+    const mine = (members || []).find((m: SeasonMember) => {
       const u = m?.user || m;
       const id = u?.id ?? m?.user_id;
       return String(id || '').trim() === currentUserId;
@@ -66,7 +110,7 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
 
   // ── Match / competition count helpers ──
 
-  const getMatchCountForCompetition = useCallback((competition: any): number => {
+  const getMatchCountForCompetition = useCallback((competition: CompetitionRef): number => {
     const annotated = Number(
       competition?.matches_count ?? competition?.children_matches_count
     );
@@ -74,13 +118,13 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
 
     const competitionId = String(competition?.id || '').trim();
     if (!competitionId) return 0;
-    return matches.filter((m: any) => {
-      const periodId = String(m.period_id || m.period?.id || m?.period || '');
+    return matches.filter((m: SeasonMatch) => {
+      const periodId = String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '');
       return periodId === competitionId;
     }).length;
   }, [matches]);
 
-  const getCompetitionParticipantsCount = useCallback((competition: any): number => {
+  const getCompetitionParticipantsCount = useCallback((competition: CompetitionRef): number => {
     const direct = Number(
       competition?.participants_count ??
         competition?.participations_count ??
@@ -93,9 +137,9 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
     if (!competitionId) return 0;
 
     // Best-effort aggregation from loaded matches.
-    const related = matches.filter((m: any) => String(m.period_id || m.period?.id || '') === competitionId);
+    const related = matches.filter((m: SeasonMatch) => String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '') === competitionId);
     if (related.length === 0) return 0;
-    return related.reduce((sum: number, m: any) => sum + getMatchParticipantsCount(m), 0);
+    return related.reduce((sum: number, m: SeasonMatch) => sum + getMatchParticipantsCount(m), 0);
   }, [matches]);
 
   const seasonMatchesCount = useMemo(() => {
@@ -108,14 +152,14 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
   // ── Role helpers ──
 
   const getBestRoleForUser = useCallback((userId: string): 'viewer' | 'editor' | 'admin' => {
-    const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
-    const base = relevant.find((m: any) => !String(m?.period_id ?? m?.period ?? '').trim());
+    const relevant = teamRoster.filter((m: SeasonMember) => getUserId(m) === String(userId));
+    const base = relevant.find((m: SeasonMember) => !String(m?.period_id ?? m?.period ?? '').trim());
     const anyOne = relevant[0];
     return normalizeAccessRole(base?.role ?? anyOne?.role ?? 'viewer');
   }, [teamRoster]);
 
   const getFunctionalRolesForUser = useCallback((userId: string): string[] => {
-    const relevant = teamRoster.filter((m: any) => getUserId(m) === String(userId));
+    const relevant = teamRoster.filter((m: SeasonMember) => getUserId(m) === String(userId));
     const set = new Set<string>();
     for (const m of relevant) {
       for (const r of getFunctionalRolesFromMembership(m)) set.add(r);
@@ -126,7 +170,7 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
   // ── Members eligible for then_vs_now (for modal member picker) ──
 
   const thenVsNowEligibleMembers = useMemo(() => {
-    return (members || []).map((m: any) => {
+    return (members || []).map((m: SeasonMember) => {
       const videos = m?.metadata?.teamreel_assets?.videos || {};
       const thenVsNow = videos?.then_vs_now || {};
 
@@ -198,12 +242,12 @@ export function useSeasonDerived(params: UseSeasonDerivedParams) {
         hasWalkingComposite,
         transformationKeys,
       };
-    }).filter((m: any) => m.id);
+    }).filter((m) => m.id);
   }, [members]);
 
   // ── Match display title (showing club names instead of team names) ──
 
-  const matchDisplayTitle = useCallback((m: any) => {
+  const matchDisplayTitle = useCallback((m: SeasonMatch) => {
     // Prefer a clean title built from metadata club names
     const ctx = m.metadata?.teamreel?.match_context;
     const homeClubName = ctx?.home_club_name || '';

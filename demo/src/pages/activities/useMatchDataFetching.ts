@@ -5,6 +5,16 @@ import type { Period, SeasonProject as Project } from '../../types/season';
 import type { MatchDetail, OrgMember, SeasonSquadParticipation, ProjectMember } from './matchDetailTypes';
 import { getEnvelopeData } from './matchDetailTypes';
 
+// ─── Local types ─────────────────────────────────────────────────────────────
+
+/** Squad member record from the project members API */
+interface SquadMemberRecord {
+  functional_roles?: string[];
+  metadata?: { functional_roles?: string[]; team_role?: string; [key: string]: unknown };
+  data?: { functional_role?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface UseMatchDataFetchingParams {
@@ -18,7 +28,7 @@ interface UseMatchDataFetchingParams {
   orgSlugOrId: string;
   club: any;
   match: MatchDetail | null;
-  navigate: (to: any, opts?: any) => void;
+  navigate: (to: string, opts?: { replace?: boolean }) => void;
   location: any;
   // Setters from formState
   setLoading: (v: boolean) => void;
@@ -40,9 +50,15 @@ interface UseMatchDataFetchingParams {
   setLineupBenchStatus: (v: Record<string, string>) => void;
 }
 
+// ─── Return type ─────────────────────────────────────────────────────────────
+
+export interface UseMatchDataFetchingReturn {
+  refreshMatch: () => Promise<void>;
+}
+
 // ─── Hook: data loading effects ──────────────────────────────────────────────
 
-export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
+export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMatchDataFetchingReturn {
   const {
     apiBaseUrl, resolvedSeasonId, providerCompetitions,
     effectiveCompetitionIdVal, effectiveMatchIdVal, seasonsBasePath, seasonKeyOrId,
@@ -68,7 +84,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
           competitionUuid = effectiveCompetitionIdVal;
         } else {
           // Try local provider cache first
-          const found = providerCompetitions.find((p: any) => periodPathKey(p) === effectiveCompetitionIdVal);
+          const found = providerCompetitions.find((p) => periodPathKey(p) === effectiveCompetitionIdVal);
           competitionUuid = String(found?.id || '').trim();
 
           // Fallback: search by slug via API when provider hasn't loaded yet
@@ -213,17 +229,17 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
         setTeamProjectMembers(projectMembers as ProjectMember[]);
 
         const projectUserIds = new Set(
-          asArray(projectMembers).map((m: any) => String(m?.user?.id ?? m?.user_id ?? '')).filter(Boolean)
+          asArray(projectMembers).map((m) => String(m?.user?.id ?? m?.user_id ?? '')).filter(Boolean)
         );
 
         const eligibleFromProjectMembers: OrgMember[] = asArray(projectMembers)
-          .map((m: any) => {
+          .map((m: OrgMember) => {
             const memberId = String(m?.organisation_membership_id || '').trim();
             if (!memberId) return null;
             return { id: memberId, user: m?.user } as OrgMember;
           })
           .filter(Boolean) as OrgMember[];
-        eligibleFromProjectMembers.sort((a: any, b: any) => {
+        eligibleFromProjectMembers.sort((a, b) => {
           const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
           const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
           return an.localeCompare(bn);
@@ -279,7 +295,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
           if (squadMembers.length > 0) {
             const seen = new Set<string>();
             const deduped = squadMembers.filter((m) => { const k = String(m.id); if (!k || seen.has(k)) return false; seen.add(k); return true; });
-            deduped.sort((a: any, b: any) => {
+            deduped.sort((a, b) => {
               const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
               const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
               return an.localeCompare(bn);
@@ -290,8 +306,8 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
 
         if (!preferredEligibleMembers || preferredEligibleMembers.length === 0) {
           preferredEligibleMembers = asArray(orgMembers)
-            .filter((m: any) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
-            .sort((a: any, b: any) => {
+            .filter((m: OrgMember) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
+            .sort((a: OrgMember, b: OrgMember) => {
               const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();
               const bn = String(b?.user?.full_name || `${b?.user?.first_name || ''} ${b?.user?.last_name || ''}`.trim() || b?.user?.email || '').toLowerCase();
               return an.localeCompare(bn);
@@ -351,7 +367,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams) {
         }
 
         const groups: Record<string, any[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
-        members.forEach((p: any) => {
+        members.forEach((p: SquadMemberRecord) => {
           let roles: string[] = [];
           if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) roles = p.functional_roles;
           else if (p.metadata?.functional_roles && Array.isArray(p.metadata.functional_roles) && p.metadata.functional_roles.length > 0) roles = p.metadata.functional_roles;

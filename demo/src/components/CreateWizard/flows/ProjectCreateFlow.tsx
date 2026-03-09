@@ -68,7 +68,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
         const data = json.data?.results || json.data || json.results || [];
         setOrganisations(
           (Array.isArray(data) ? data : [])
-            .map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug }))
+            .map((o: Record<string, unknown>) => ({ id: String(o.id), name: String(o.name || ''), slug: String(o.slug || '') }))
             .sort((a: OrgOption, b: OrgOption) => a.name.localeCompare(b.name)),
         );
       })
@@ -88,11 +88,11 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
   const filteredClubs: ClubOption[] = useMemo(() => {
     if (!selectedOrganisationId) return [];
     return allClubs
-      .filter((c: any) => {
-        const orgId = typeof c.organisation === 'object' ? c.organisation?.id : c.organisation;
+      .filter((c: Record<string, unknown>) => {
+        const orgId = typeof c.organisation === 'object' ? (c.organisation as any)?.id : c.organisation;
         return String(orgId) === selectedOrganisationId;
       })
-      .map((c: any) => ({ id: String(c.id), name: c.name }))
+      .map((c: Record<string, unknown>) => ({ id: String(c.id), name: String(c.name || '') }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [allClubs, selectedOrganisationId]);
 

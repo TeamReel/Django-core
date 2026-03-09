@@ -17,7 +17,7 @@ const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
 export function readFunctionalRolesFromMembership(m: any): string[] {
   const direct = m?.functional_roles ?? m?.functionalRoles;
   if (Array.isArray(direct)) {
-    return direct.map((r: any) => String(r || '').trim()).filter(Boolean);
+    return direct.map((r) => String(r || '').trim()).filter(Boolean);
   }
   const meta = m?.metadata || {};
   const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();

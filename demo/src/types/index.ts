@@ -66,6 +66,7 @@ export interface Project {
   slug?: string;
   description?: string;
   organisation_id: string;
+  organisation?: { id?: string; name?: string; slug?: string; user_role?: string };
   member_count?: number;
   is_active: boolean;
   is_private?: boolean;
@@ -77,6 +78,13 @@ export interface Project {
     source: string;
     permissions: string[];
   };
+  // Parent project references (may vary by API endpoint)
+  parent_id?: string | number | null;
+  parent?: any;
+  parent_project?: any;
+  parent_project_id?: string | number | null;
+  parent_name?: string | null;
+  parent_project_name?: string | null;
 }
 
 /**

@@ -2,7 +2,7 @@
  * useCreditsData — all state, fetch effects and actions for CreditsPage.
  * Uses parseTransactionEnvelope to eliminate 5× duplicated envelope parsing.
  */
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   useBreadcrumbContextSwitcher,
@@ -18,7 +18,48 @@ import { parseTransactionEnvelope } from './creditsTypes';
 const debugLog = (...args: unknown[]) => {
 };
 
-export function useCreditsData() {
+export interface UseCreditsDataReturn {
+  // Context
+  currentOrgId: string | null;
+  currentOrgName: string;
+  isSuperAdmin: boolean;
+  canSeeTestControls: boolean;
+  organisationOptions: BreadcrumbSwitcherOption[];
+  handleOrganisationSwitch: (option: BreadcrumbSwitcherOption) => Promise<void>;
+  // Scope
+  scope: 'personal' | 'org';
+  setScope: Dispatch<SetStateAction<'personal' | 'org'>>;
+  setWalletParam: (wallet: 'personal' | 'org') => void;
+  // Tabs
+  activeTab: TabType;
+  setActiveTab: Dispatch<SetStateAction<TabType>>;
+  // Org balance
+  credits: CreditsBalance | null;
+  loading: boolean;
+  error: string | null;
+  // Org transactions
+  transactions: Transaction[];
+  transactionsLoading: boolean;
+  allTransactions: Transaction[];
+  recentTransactions: Transaction[];
+  // Personal
+  personalCredits: UserCreditsBalance | null;
+  personalLoading: boolean;
+  personalError: string | null;
+  personalRecentTransactions: Transaction[];
+  // Filters
+  searchParams: URLSearchParams;
+  setSearchParams: ReturnType<typeof useSearchParams>[1];
+  sourceTypeFilter: string;
+  userFilter: string;
+  dateFromFilter: string;
+  dateToFilter: string;
+  // Actions
+  handleTestAction: (action: string) => Promise<void>;
+  toastMessage: string | null;
+}
+
+export function useCreditsData(): UseCreditsDataReturn {
   const { context, organisations, switchContext } = useContextSwitcher();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,8 +91,8 @@ export function useCreditsData() {
   const currentOrgName = context.organisation?.name || '';
 
   const isSuperAdmin = Boolean(user?.is_superuser) || user?.role === 'superadmin';
-  const isOrgAdmin = (user as any)?.memberships?.some(
-    (m: any) => m.organisation?.id === currentOrgId && m.role === 'admin'
+  const isOrgAdmin = user?.organisations?.some(
+    (o) => o.id === currentOrgId && o.role === 'admin'
   ) || false;
   const canSeeTestControls = !!user;
 
@@ -134,7 +175,7 @@ export function useCreditsData() {
         } else if (response.data) {
           const all = parseTransactionEnvelope(response.data);
           debugLog('[CreditsPage] Raw transactions count:', all.length);
-          const creditTransactions = all.filter((txn: any) => !txn.project_name);
+          const creditTransactions = all.filter((txn: Transaction) => !txn.project_name);
           debugLog('[CreditsPage] Found', creditTransactions.length, 'credit transactions');
           setTransactions(creditTransactions);
         }
@@ -165,7 +206,7 @@ export function useCreditsData() {
 
       if (!response.error && response.data) {
         const all = parseTransactionEnvelope(response.data);
-        const creditTransactions = all.filter((txn: any) => !txn.project && !txn.project_name);
+        const creditTransactions = all.filter((txn: Transaction) => !txn.project && !txn.project_name);
         setAllTransactions(creditTransactions);
         setRecentTransactions(creditTransactions.slice(0, 5));
       } else if (response.error && response.error.code === 401) {
@@ -232,7 +273,7 @@ export function useCreditsData() {
           setCredits(null);
         } else if (response.data) {
           debugLog('[CreditsPage] Credits loaded:', response.data);
-          const creditsData = (response.data as any).data || response.data;
+          const creditsData = (response.data as CreditsBalance & { data?: CreditsBalance }).data || response.data;
           setCredits(creditsData);
         }
       } catch (err: unknown) {
@@ -284,7 +325,7 @@ export function useCreditsData() {
         }
 
         if (response.data) {
-          const creditsData = (response.data as any).data || response.data;
+          const creditsData = (response.data as UserCreditsBalance & { data?: UserCreditsBalance }).data || response.data;
           setPersonalCredits(creditsData);
         }
       } catch (err: unknown) {

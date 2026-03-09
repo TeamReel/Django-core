@@ -15,8 +15,17 @@ import EligibleMembersCard from './EligibleMembersCard';
 import s from './ProjectSeasonDetailPage.module.css';
 import st from './SeasonSquadTab.module.css';
 
+/** Shape for a squad membership record. */
+interface SquadMember {
+  id?: string;
+  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string };
+  role?: string;
+  metadata?: { position?: string; shirt_number?: string | number; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
 export interface SeasonSquadTabProps {
-  members: any[];
+  members: SquadMember[];
   membersLoading: boolean;
   membersError: string | null;
   userCanEditProject: boolean;
@@ -29,7 +38,7 @@ export interface SeasonSquadTabProps {
   setIsAddSquadMemberModalOpen: (v: boolean) => void;
   onMemberUpdated: (membershipId: string, role: string, functionalRoles: string[]) => void;
   // Team roster (for merged "Niet in selectie" section)
-  teamRoster?: any[];
+  teamRoster?: SquadMember[];
   teamRosterLoading?: boolean;
   teamRosterError?: string | null;
   assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
@@ -61,7 +70,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   const [squadSearch, setSquadSearch] = useState('');
   const [selectedSquadMembershipIds, setSelectedSquadMembershipIds] = useState<Set<string>>(new Set());
   const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
-  const [selectedEditMember, setSelectedEditMember] = useState<any | null>(null);
+  const [selectedEditMember, setSelectedEditMember] = useState<SquadMember | null>(null);
   const [editAccessRole, setEditAccessRole] = useState<'admin' | 'viewer'>('viewer');
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const isMobile = useIsMobile();
@@ -71,7 +80,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   const visibleSquadMembers = useMemo(() => {
     const q = String(squadSearch || '').trim().toLowerCase();
     if (!q) return members;
-    return (members || []).filter((m: any) => {
+    return (members || []).filter((m) => {
       const memberUser = m.user || m;
       const name = String(
         memberUser.name ||
@@ -138,7 +147,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                     size="sm"
                     onClick={() => {
                       const allIds = (members || [])
-                        .map((m: any) => String(m?.id || '').trim())
+                        .map((m) => String(m?.id || '').trim())
                         .filter(Boolean);
                       const allSelected =
                         allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
@@ -148,7 +157,7 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                   >
                     {(() => {
                       const allIds = (members || [])
-                        .map((m: any) => String(m?.id || '').trim())
+                        .map((m) => String(m?.id || '').trim())
                         .filter(Boolean);
                       const allSelected =
                         allIds.length > 0 && allIds.every((id: string) => selectedSquadMembershipIds.has(id));
@@ -209,8 +218,8 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {visibleSquadMembers.map((m: any) => {
-                          const memberUser = m.user || m;
+                        {visibleSquadMembers.map((m) => {
+                          const memberUser: any = m.user || m;
                           const name =
                             memberUser.name ||
                             `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
@@ -312,8 +321,8 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
 
                   {/* ── Mobile card list ── */}
                   {isMobile && <div className={st.mobileList}>
-                    {visibleSquadMembers.map((m: any) => {
-                      const memberUser = m.user || m;
+                    {visibleSquadMembers.map((m) => {
+                      const memberUser: any = m.user || m;
                       const name =
                         memberUser.name ||
                         `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
@@ -419,8 +428,8 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                         </tr>
                       </thead>
                       <tbody>
-                        {members.map((m: any) => {
-                          const memberUser = m.user || m;
+                        {members.map((m) => {
+                          const memberUser: any = m.user || m;
                           const name =
                             memberUser.name ||
                             `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
@@ -478,8 +487,8 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
 
                   {/* Mobile card list (read-only) */}
                   {isMobile && <div className={st.mobileList}>
-                    {members.map((m: any) => {
-                      const memberUser = m.user || m;
+                    {members.map((m) => {
+                      const memberUser: any = m.user || m;
                       const name =
                         memberUser.name ||
                         `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||

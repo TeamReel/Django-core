@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getMediaProcessingState } from '../../utils/mediaHelpers';
@@ -12,6 +12,38 @@ import {
   isSeasonPeriod,
   getParentPeriodId,
 } from './teamDetailTypes';
+
+/** Membership record used for media-progress tracking. */
+interface TeamMemberRecord {
+  [key: string]: unknown;
+  id?: string | number;
+  user?: { id?: string | number; avatar_url?: string | null; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
+  /** Dynamic metadata — `any` kept for deep TeamReel asset traversal. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any>;
+  functional_roles?: string[];
+  role?: string;
+}
+
+/** Match / activity reference. */
+interface TeamMatchRecord {
+  id?: string | number;
+  title?: string;
+  name?: string;
+  slug?: string;
+  period_id?: string;
+  period?: string | { id?: string } | null;
+  start_time?: string;
+  [key: string]: unknown;
+}
+
+/** Org member item from the organisation members endpoint. */
+interface OrgMemberItem {
+  id?: string | number;
+  user?: { id?: string | number; first_name?: string; last_name?: string; email?: string; project_memberships?: { project_id?: string | number; project?: { id?: string | number } }[] };
+  project_memberships?: { project_id?: string | number; project?: { id?: string | number } }[];
+  [key: string]: unknown;
+}
 
 /** Kit roles used for brand asset checklist */
 const KIT_ROLES = [
@@ -36,6 +68,38 @@ interface UseTeamTabDataParams {
   clubId: string;
 }
 
+export interface UseTeamTabDataReturn {
+  hierarchySeasons: Period[];
+  hierarchyCompetitionsBySeasonId: Record<string, Period[]>;
+  hierarchyMatchesCountBySeasonId: Record<string, number>;
+  hierarchyMatchesCountByCompetitionId: Record<string, number>;
+  hierarchyLoading: boolean;
+  hierarchyError: string | null;
+  hierarchySearch: string;
+  setHierarchySearch: Dispatch<SetStateAction<string>>;
+  overviewMembers: OverviewMember[];
+  overviewMembersCount: number | null;
+  overviewMembersLoading: boolean;
+  overviewMembersError: string | null;
+  // Brand
+  brandAssets: { label: string; present: boolean }[];
+  brandLogoUrl: string | null;
+  brandSponsorUrl: string | null;
+  batchBrandKits: Record<string, string | null>;
+  // Media progress
+  fullMembers: TeamMemberRecord[];
+  fullMembersLoading: boolean;
+  refreshFullMembers: () => void;
+  assetStats: { id: string; label: string; done: number; total: number; pct: number }[];
+  // Content
+  contentCount: number | null;
+  contentCountLoading: boolean;
+  // Team matches
+  teamMatches: TeamMatchRecord[];
+  teamMatchesLoading: boolean;
+  teamMatchesByPeriodId: Record<string, TeamMatchRecord[]>;
+}
+
 export function useTeamTabData({
   activeTabFromUrl,
   apiBaseUrl,
@@ -44,7 +108,7 @@ export function useTeamTabData({
   orgSlugForDirectoryLists,
   orgId,
   clubId,
-}: UseTeamTabDataParams) {
+}: UseTeamTabDataParams): UseTeamTabDataReturn {
   // ── Hierarchy state ──
   const [hierarchySeasons, setHierarchySeasons] = useState<Period[]>([]);
   const [hierarchyCompetitionsBySeasonId, setHierarchyCompetitionsBySeasonId] = useState<Record<string, Period[]>>({});
@@ -61,7 +125,7 @@ export function useTeamTabData({
   const [overviewMembersError, setOverviewMembersError] = useState<string | null>(null);
 
   // ── Full members with media (for progress bars) ──
-  const [fullMembers, setFullMembers] = useState<any[]>([]);
+  const [fullMembers, setFullMembers] = useState<TeamMemberRecord[]>([]);
   const [fullMembersLoading, setFullMembersLoading] = useState(false);
   const [fullMembersRefreshKey, setFullMembersRefreshKey] = useState(0);
   const refreshFullMembers = () => setFullMembersRefreshKey((k) => k + 1);
@@ -71,7 +135,7 @@ export function useTeamTabData({
   const [contentCountLoading, setContentCountLoading] = useState(false);
 
   // ── Team matches (for hierarchy expansion + overview recent matches) ──
-  const [teamMatches, setTeamMatches] = useState<any[]>([]);
+  const [teamMatches, setTeamMatches] = useState<TeamMatchRecord[]>([]);
   const [teamMatchesLoading, setTeamMatchesLoading] = useState(false);
 
   // ── Brand profiles ──
@@ -189,13 +253,13 @@ export function useTeamTabData({
           { bypass: true, maxItems: 5000 },
         );
         const parentSeasonsFromCompetitions = (competitionsList || [])
-          .map((c: any) => c?.parent_period)
-          .filter((p: any) => p && (p?.id || p?.slug));
+          .map((c: Period) => c?.parent_period)
+          .filter((p): p is NonNullable<Period['parent_period']> => !!(p && (p?.id || (p as Record<string, unknown>)?.slug)));
 
         const seasons = mergeUniqueById(
           [...(typedList || []), ...(untypedList || []), ...parentSeasonsFromCompetitions]
             .filter(isSeasonPeriod)
-            .filter((p: any) => !getParentPeriodId(p)),
+            .filter((p: Period) => !getParentPeriodId(p)),
         );
         seasons.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
 
@@ -211,7 +275,7 @@ export function useTeamTabData({
         const periodsList: any[] = await fetchAllPages<any>(periodsUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         const seasonIds = new Set(seasons.map((s) => String(s.id)));
-        const competitions = (periodsList || []).filter((p: any) => {
+        const competitions = (periodsList || []).filter((p: Period) => {
           const parentId = getParentPeriodId(p);
           if (!parentId) return false;
           return seasonIds.has(parentId);
@@ -239,7 +303,7 @@ export function useTeamTabData({
           childrenMap.set(key, arr);
         }
 
-        const getRecursiveActivitiesCount = (p: any): number => {
+        const getRecursiveActivitiesCount = (p: Period): number => {
           let count = (p?.activities_count ?? 0);
           const children = childrenMap.get(String(p?.id));
           if (children) {
@@ -295,7 +359,8 @@ export function useTeamTabData({
   useEffect(() => {
     let cancelled = false;
 
-    const extractMembersCount = (raw: any, list: any[]): number => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deeply nested API envelope
+    const extractMembersCount = (raw: Record<string, any>, list: OverviewMember[]): number => {
       const metaTotal = raw?.meta?.pagination?.total;
       if (typeof metaTotal === 'number') return metaTotal;
       const dataCount = raw?.data?.count ?? raw?.count;
@@ -326,24 +391,24 @@ export function useTeamTabData({
         const rawList = json?.data?.data || json?.data?.results || json?.results || json?.data || [];
         const list: any[] = Array.isArray(rawList) ? rawList : [];
 
-        const isMemberInTeam = (item: any): boolean => {
+        const isMemberInTeam = (item: OrgMemberItem): boolean => {
           const nestedUser = item?.user;
           const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
           const memberships = item?.project_memberships || u?.project_memberships || [];
           if (!Array.isArray(memberships) || memberships.length === 0) return false;
-          return memberships.some((m: any) => String(m?.project_id ?? m?.project?.id ?? '') === String(teamId));
+          return memberships.some((m) => String(m?.project_id ?? m?.project?.id ?? '') === String(teamId));
         };
 
         const normalized: OverviewMember[] = list
           .filter(isMemberInTeam)
-          .map((item: any) => {
+          .map((item: OrgMemberItem) => {
             const nestedUser = item?.user;
             const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
             return {
               id: String(u?.id ?? item?.id ?? '').trim(),
-              email: u?.email,
-              first_name: u?.first_name,
-              last_name: u?.last_name,
+              email: u?.email as string | undefined,
+              first_name: u?.first_name as string | undefined,
+              last_name: u?.last_name as string | undefined,
             };
           })
           .filter((u) => Boolean(u.id));
@@ -414,7 +479,7 @@ export function useTeamTabData({
         const deduped = Array.from(byUserId.values());
 
         // ── Sort alphabetically by name ──
-        deduped.sort((a: any, b: any) => {
+        deduped.sort((a, b) => {
           const au = a?.user || a;
           const bu = b?.user || b;
           const aName = `${au?.last_name || ''} ${au?.first_name || ''} ${au?.email || ''}`.trim().toLowerCase();
@@ -492,7 +557,7 @@ export function useTeamTabData({
   const teamMatchesByPeriodId = useMemo(() => {
     const map: Record<string, any[]> = {};
     for (const m of teamMatches) {
-      const pid = String(m?.period_id || m?.period?.id || m?.period || '').trim();
+      const pid = String(m?.period_id || (typeof m?.period === 'object' ? m?.period?.id : m?.period) || '').trim();
       if (!pid) continue;
       (map[pid] ||= []).push(m);
     }

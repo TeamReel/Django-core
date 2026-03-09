@@ -9,6 +9,39 @@
 import type { OrgModalsProps } from './OrgModals';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 
+/** Payload for project creation (club or team). */
+interface CreateProjectPayload {
+  name: string;
+  description?: string;
+  parent_project_id?: string;
+  organisation_id?: string;
+}
+
+/** Payload for period creation (season or competition). */
+interface CreatePeriodPayload {
+  organisation_id?: string;
+  project_id?: string;
+  parent_period_id?: string;
+  name: string;
+  description?: string;
+  start_date?: string;
+  end_date?: string;
+}
+
+/** Payload for match creation. */
+interface CreateMatchPayload {
+  title: string;
+  project_id?: string;
+  opponent_project_id?: string;
+  period_id?: string;
+  start_time?: string;
+  end_time?: string;
+  location?: string;
+  description?: string;
+  venue?: string;
+  metadata?: Record<string, unknown>;
+}
+
 type HandlerDeps = Pick<
   OrgModalsProps,
   | 'org'
@@ -44,7 +77,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
 
   // ─── Create Club ───────────────────────────────────────────────
 
-  const handleCreateClub = async (projectData: any) => {
+  const handleCreateClub = async (projectData: CreateProjectPayload) => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
       method: 'POST',
@@ -73,12 +106,12 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdKey) {
         setClubsPage(1);
         setClubs((prev) => {
-          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
         setClubsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
         setAllClubsForTeams((prev) => {
-          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
       }
@@ -91,7 +124,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
 
   // ─── Create Team ───────────────────────────────────────────────
 
-  const handleCreateTeam = async (projectData: any) => {
+  const handleCreateTeam = async (projectData: CreateProjectPayload) => {
     const clubId = String(projectData.parent_project_id || '').trim();
     if (!clubId) throw new Error('Select a club first.');
 
@@ -124,7 +157,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdKey) {
         setTeams((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+          if (list.some((p) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
           return [created, ...list];
         });
         setTeamsCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));
@@ -137,7 +170,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
 
   // ─── Create Season ─────────────────────────────────────────────
 
-  const handleCreateSeason = async (payload: any) => {
+  const handleCreateSeason = async (payload: CreatePeriodPayload) => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
     const teamId = String(payload.project_id || '').trim();
@@ -175,7 +208,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdId) {
         setOrgPeriods((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+          if (list.some((p: Record<string, unknown>) => String(p?.id || '').trim() === createdId)) return list;
           const next = [created, ...list];
           recomputePeriodCounts(next);
           return next;
@@ -189,7 +222,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
 
   // ─── Create Competition ────────────────────────────────────────
 
-  const handleCreateCompetition = async (payload: any) => {
+  const handleCreateCompetition = async (payload: CreatePeriodPayload) => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
     const teamId = String(payload.project_id || '').trim();
@@ -229,7 +262,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdId) {
         setOrgPeriods((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+          if (list.some((p: Record<string, unknown>) => String(p?.id || '').trim() === createdId)) return list;
           const next = [created, ...list];
           recomputePeriodCounts(next);
           return next;
@@ -243,7 +276,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
 
   // ─── Create Match ──────────────────────────────────────────────
 
-  const handleCreateMatch = async (payload: any) => {
+  const handleCreateMatch = async (payload: CreateMatchPayload) => {
     const apiV1BaseUrl = getApiV1BaseUrl();
     const csrfToken = getCsrfToken();
     const orgIdToRefresh = String(currentOrgId || org?.id || '').trim();
@@ -272,7 +305,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
         metadata: {
           venue: payload.venue || 'Home',
           is_home: (payload.venue || 'Home') === 'Home',
-          ...(payload as any)?.metadata,
+          ...payload?.metadata,
         },
       }),
     });
@@ -289,7 +322,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdId) {
         setFederationMatches((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+          if (list.some((m: Record<string, unknown>) => String(m?.id || '').trim() === createdId)) return list;
           return [created, ...list];
         });
         setMatchesCount((prev) => (typeof prev === 'number' ? prev + 1 : prev));

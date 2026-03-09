@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import type {
   OrgOption,
   ProjectOption,
@@ -9,6 +9,16 @@ import type {
 type HookProps = Omit<SeasonSquadAddMemberModalProps, 'onClose'>;
 
 /* ── API helpers ── */
+
+/** Minimal shape for user data from the API */
+interface RawUserRecord {
+  id?: string | number;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  email?: string;
+  name?: string;
+}
 
 const extractList = (raw: any): any[] => {
   const list = raw?.data?.data || raw?.data?.results || raw?.results || raw?.data || raw;
@@ -35,7 +45,7 @@ const fetchAllPages = async (url: string, opts: RequestInit, maxItems = 1000): P
   return all.slice(0, maxItems);
 };
 
-const normalizeUser = (u: any): UserOption | null => {
+const normalizeUser = (u: RawUserRecord): UserOption | null => {
   if (!u) return null;
   const id = u.id;
   if (id == null) return null;
@@ -47,11 +57,46 @@ const normalizeUser = (u: any): UserOption | null => {
 
 /* ── Hook ── */
 
+export interface UseSeasonSquadAddMemberDataReturn {
+  // Dropdowns
+  sortedOrganisations: OrgOption[];
+  filteredClubs: ProjectOption[];
+  filteredTeams: ProjectOption[];
+  filteredUserOptions: UserOption[];
+  // State
+  selectedOrganisationId: string;
+  selectedClubId: string;
+  selectedTeamId: string;
+  userSearch: string;
+  selectedUserId: string;
+  position: string;
+  shirtNumber: string;
+  loadingOrganisations: boolean;
+  loadingClubs: boolean;
+  loadingTeams: boolean;
+  loadingUsers: boolean;
+  saving: boolean;
+  error: string | null;
+  missingTeam: boolean;
+  missingUser: boolean;
+  canSubmit: boolean;
+  // Setters
+  setUserSearch: Dispatch<SetStateAction<string>>;
+  setSelectedUserId: Dispatch<SetStateAction<string>>;
+  setPosition: Dispatch<SetStateAction<string>>;
+  setShirtNumber: Dispatch<SetStateAction<string>>;
+  // Actions
+  applyOrganisationSelection: (orgId: string) => void;
+  applyClubSelection: (clubId: string) => void;
+  applyTeamSelection: (teamId: string) => void;
+  handleSubmit: (e: React.FormEvent) => Promise<void>;
+}
+
 export function useSeasonSquadAddMemberData({
   opened, onAdd, apiBaseUrl, seasonId,
   organisations = [], clubs = [], teams = [],
   initialOrganisationId = '', initialClubId = '', initialTeamId = '',
-}: HookProps) {
+}: HookProps): UseSeasonSquadAddMemberDataReturn {
   const [selectedOrganisationId, setSelectedOrganisationId] = useState('');
   const [selectedClubId, setSelectedClubId] = useState('');
   const [selectedTeamId, setSelectedTeamId] = useState('');
@@ -175,9 +220,9 @@ export function useSeasonSquadAddMemberData({
         if (!res.ok) return;
         const raw = await res.json().catch(() => null);
         const list = extractList(raw)
-          .map((o: any) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
-          .filter((o: any) => o.id);
-        const unique = [...new Map(list.map((o: any) => [String(o.id), o])).values()];
+          .map((o: { id?: string; name?: string; slug?: string }) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
+          .filter((o) => o.id);
+        const unique = [...new Map(list.map((o) => [String(o.id), o])).values()];
         if (!cancelled) setRemoteOrganisations(unique);
       } catch { /* ignore */ } finally { if (!cancelled) setLoadingOrganisations(false); }
     };
@@ -200,8 +245,8 @@ export function useSeasonSquadAddMemberData({
           ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=true`
           : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`;
         const rawList = await fetchAllPages(baseUrl, { credentials: 'include', signal: abortController.signal }, 1000);
-        const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
-        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        const list = rawList.map((p: ProjectOption) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteClubs(unique);
       } catch { /* ignore */ } finally { if (!cancelled) setLoadingClubs(false); }
     };
@@ -227,8 +272,8 @@ export function useSeasonSquadAddMemberData({
             ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=false`
             : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
         const rawList = await fetchAllPages(baseUrl, { credentials: 'include', signal: abortController.signal }, 1000);
-        const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
-        const unique = [...new Map(list.map((p: any) => [String(p.id), p])).values()];
+        const list = rawList.map((p: ProjectOption) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
+        const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique);
       } catch { /* ignore */ } finally { if (!cancelled) setLoadingTeams(false); }
     };
@@ -274,14 +319,14 @@ export function useSeasonSquadAddMemberData({
             { credentials: 'include', signal: abortController.signal },
           );
           if (!res.ok) throw new Error('Failed to load club members');
-          usersRaw = extractList(await res.json().catch(() => null)).map((m: any) => m?.user).filter(Boolean);
+          usersRaw = extractList(await res.json().catch(() => null)).map((m: { user?: unknown }) => m?.user).filter(Boolean);
         } else {
           const res = await fetch(
             `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?page_size=500&include_project_memberships=true`,
             { credentials: 'include', signal: abortController.signal },
           );
           if (!res.ok) throw new Error('Failed to load federation members');
-          usersRaw = extractList(await res.json().catch(() => null)).map((m: any) => m?.user).filter(Boolean);
+          usersRaw = extractList(await res.json().catch(() => null)).map((m: { user?: unknown }) => m?.user).filter(Boolean);
         }
 
         const normalized = usersRaw.map(normalizeUser).filter(Boolean) as UserOption[];
@@ -310,7 +355,7 @@ export function useSeasonSquadAddMemberData({
   const filteredUserOptions = useMemo(() => {
     const q = String(userSearch || '').trim().toLowerCase();
     if (!q) return userOptions;
-    return userOptions.filter((u: any) => {
+    return userOptions.filter((u) => {
       const name = String(u.full_name || u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || '').toLowerCase();
       const email = String(u.email || '').toLowerCase();
       return name.includes(q) || email.includes(q);

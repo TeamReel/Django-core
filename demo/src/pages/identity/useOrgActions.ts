@@ -10,11 +10,11 @@ interface UseOrgActionsParams {
   org: Organisation | null;
   currentOrgSlug: string | undefined;
   currentOrgId: string | undefined;
-  navigate: (to: any, opts?: any) => void;
+  navigate: (to: string, opts?: { replace?: boolean }) => void;
   // State setters
   setOrg: (v: Organisation | null) => void;
   setActivatingContext: (v: boolean) => void;
-  setActiveContextState: (v: any | null) => void;
+  setActiveContextState: (v: Record<string, unknown> | null) => void;
   setDeleteLoading: (v: boolean) => void;
   setInviteLoading: (v: boolean) => void;
   setInviteEmail: (v: string) => void;
@@ -209,9 +209,9 @@ export function useOrgActions(params: UseOrgActionsParams) {
     }
     const json = await res.json();
     const updated = json?.data || json;
-    setClubs((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
-    setTeams((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
-    setAllClubsForTeams((prev) => prev.map((p: any) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
+    setClubs((prev) => prev.map((p) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
+    setTeams((prev) => prev.map((p) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
+    setAllClubsForTeams((prev) => prev.map((p) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
   };
 
   return {

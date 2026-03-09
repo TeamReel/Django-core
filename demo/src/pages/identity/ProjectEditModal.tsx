@@ -3,7 +3,7 @@ import { Alert } from '@django-core/design-system';
 import styles from './ProjectEditModal.module.css';
 
 interface Project {
-  id: string;
+  id: string | number;
   slug?: string;
   name: string;
   description?: string;

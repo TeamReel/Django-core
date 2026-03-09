@@ -170,11 +170,11 @@ export default function PeriodCreateModal({
         const data = await res.json();
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
         const roots = (Array.isArray(results) ? results : []).filter(
-          (p: any) => p?.parent_period_id == null && !p?.parent_period
+          (p: Record<string, unknown>) => p?.parent_period_id == null && !p?.parent_period
         );
-        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
-        const sorted = unique.sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')));
-        setSeasonOptions(sorted);
+        const unique = [...new Map(roots.map((p: Record<string, unknown>) => [String(p.id), p])).values()];
+        const sorted = unique.sort((a: Record<string, unknown>, b: Record<string, unknown>) => String(a?.name || '').localeCompare(String(b?.name || '')));
+        setSeasonOptions(sorted as PeriodOption[]);
       } catch {
         setSeasonOptions([]);
       } finally {

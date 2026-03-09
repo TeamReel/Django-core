@@ -232,7 +232,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
           let membershipId = editingMembership.membershipId;
 
           if (!membershipId) {
-            const project = userProjects.find((p: any) => String(p?.id) === String(projectId));
+            const project = userProjects.find((p) => String(p?.id) === String(projectId));
             membershipId = project?.membership_id;
           }
 

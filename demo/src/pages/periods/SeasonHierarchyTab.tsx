@@ -8,10 +8,22 @@ import { getMatchParticipantsCount } from './seasonDetailUtils';
 import s from './ProjectSeasonDetailPage.module.css';
 import h from './SeasonHierarchyTab.module.css';
 
+/** Match/activity record used in the hierarchy view */
+interface MatchRecord {
+  id: string;
+  slug?: string;
+  title?: string;
+  name?: string;
+  start_time?: string;
+  period_id?: string;
+  period?: { id?: string } | string;
+  [key: string]: unknown;
+}
+
 export interface SeasonHierarchyTabProps {
   competitions: Period[];
   competitionsLoading: boolean;
-  matches: any[];
+  matches: MatchRecord[];
   matchesLoading: boolean;
   isTeamRoute: boolean;
   seasonsBasePath: string;
@@ -19,21 +31,21 @@ export interface SeasonHierarchyTabProps {
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
   apiBaseUrl: string;
-  matchDisplayTitle: (m: any) => string;
-  getMatchCountForCompetition: (competition: any) => number;
-  getCompetitionParticipantsCount: (competition: any) => number;
+  matchDisplayTitle: (m: MatchRecord) => string;
+  getMatchCountForCompetition: (competition: Period) => number;
+  getCompetitionParticipantsCount: (competition: Period) => number;
   setIsCreateCompetitionModalOpen: (v: boolean) => void;
   setIsCreateMatchModalOpen: (v: boolean) => void;
-  setSelectedDetailPeriod: (p: any) => void;
+  setSelectedDetailPeriod: (p: Period) => void;
   setIsPeriodDetailModalOpen: (v: boolean) => void;
-  setSelectedEditPeriod: (p: any) => void;
+  setSelectedEditPeriod: (p: Period) => void;
   setIsPeriodEditModalOpen: (v: boolean) => void;
-  setSelectedDetailMatch: (m: any) => void;
+  setSelectedDetailMatch: (m: MatchRecord) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
+  setSelectedEditMatch: (m: MatchRecord) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
   setCompetitions: React.Dispatch<React.SetStateAction<Period[]>>;
-  setMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setMatches: React.Dispatch<React.SetStateAction<MatchRecord[]>>;
 }
 
 const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
@@ -67,11 +79,11 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
   // ── Tab-local state ──
   const [hierarchySearch, setHierarchySearch] = useState('');
 
-  const getMatchesForCompetition = (competition: any) => {
+  const getMatchesForCompetition = (competition: Period) => {
     const competitionId = String(competition?.id || '').trim();
-    if (!competitionId) return [];
-    return matches.filter((m: any) => {
-      const periodId = String(m.period_id || m.period?.id || m?.period || '');
+    if (!competitionId) return [] as MatchRecord[];
+    return matches.filter((m) => {
+      const periodId = String(m.period_id || (typeof m.period === 'object' ? m.period?.id : m.period) || '');
       return periodId === competitionId;
     });
   };
@@ -130,7 +142,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                 const compName = String(c?.name || '').toLowerCase();
                 if (compName.includes(normalized)) return true;
                 const compMatches = getMatchesForCompetition(c);
-                return compMatches.some((m: any) => {
+                return compMatches.some((m) => {
                   const title = String(m?.title || m?.name || '').toLowerCase();
                   const startTime = String(m?.start_time || '').toLowerCase();
                   return title.includes(normalized) || startTime.includes(normalized);
@@ -145,7 +157,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                 const compMatches = getMatchesForCompetition(competition);
                 const visibleMatches = !normalized
                   ? compMatches
-                  : compMatches.filter((m: any) => {
+                  : compMatches.filter((m) => {
                       const title = String(m?.title || m?.name || '').toLowerCase();
                       const startTime = String(m?.start_time || '').toLowerCase();
                       return title.includes(normalized) || startTime.includes(normalized);
@@ -225,7 +237,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                         <div className="text-sm text-gray-500 py-2">No matches.</div>
                       ) : (
                         <div className={s.verticalListTight}>
-                          {visibleMatches.map((match: any) => {
+                          {visibleMatches.map((match) => {
                             const matchKey = match.slug || match.id;
                             const matchPath = isTeamRoute
                               ? `${seasonsBasePath}/${seasonPathKey}/${competitionKey}/${String(matchKey)}`
@@ -271,7 +283,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                             credentials: 'include',
                                           });
                                           if (res.ok) {
-                                            setMatches((prev) => prev.filter((m: any) => String(m.id) !== String(match.id)));
+                                            setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
                                           } else {
                                             alert('Error deleting match');
                                           }

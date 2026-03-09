@@ -73,7 +73,16 @@ export interface UseGenerationJobsOptions {
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
+export interface UseGenerationJobsReturn {
+  jobs: GenerationJob[];
+  activeJobs: GenerationJob[];
+  activeCount: number;
+  loading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+}
+
+export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGenerationJobsReturn {
   const { status, project_id, membership_id, pollInterval = 15000, onStatusChange } = options;
 
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
@@ -169,8 +178,13 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}) {
   };
 }
 
+export interface UseGenerationJobsBadgeReturn {
+  activeCount: number;
+  refresh: () => Promise<void>;
+}
+
 /** Lightweight hook for just the active job count (badge in header/sidebar). */
-export function useGenerationJobsBadge() {
+export function useGenerationJobsBadge(): UseGenerationJobsBadgeReturn {
   const { activeCount, refresh } = useGenerationJobs({ pollInterval: 10000 });
   return { activeCount, refresh };
 }

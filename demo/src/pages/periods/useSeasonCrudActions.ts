@@ -38,7 +38,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
 
   // ── Save period edits ──
 
-  const savePeriodEdits = async (periodToEdit: any, patch: any) => {
+  const savePeriodEdits = async (periodToEdit: Record<string, unknown>, patch: Record<string, unknown>) => {
     const periodId = String(periodToEdit?.id || '').trim();
     if (!periodId) throw new Error('Missing period id');
 
@@ -64,12 +64,12 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     if (String(updated?.id) === String(season?.id)) {
       setSeason((prev) => prev ? { ...prev, ...updated } : updated);
     }
-    setCompetitions((prev) => prev.map((p: any) => (String(p.id) === String(updated?.id) ? { ...p, ...updated } : p)));
+    setCompetitions((prev) => prev.map((p) => (String(p.id) === String(updated?.id) ? { ...p, ...updated } : p)));
   };
 
   // ── Save match edits ──
 
-  const saveMatchEdits = async (matchToEdit: any, patch: any) => {
+  const saveMatchEdits = async (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => {
     const matchId = String(matchToEdit?.id || '').trim();
     if (!matchId) throw new Error('Missing match id');
 
@@ -91,7 +91,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
 
     const raw = await res.json().catch(() => null);
     const updated = raw?.data || raw || { ...matchToEdit, ...patch };
-    setMatches((prev) => prev.map((m: any) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } : m)));
+    setMatches((prev) => prev.map((m) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } : m)));
   };
 
   // ── Delete season handler ──
@@ -142,7 +142,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
 
   // ── Add squad member handler ──
 
-  const handleAddSquadMember = useCallback(async (payload: any) => {
+  const handleAddSquadMember = useCallback(async (payload: Record<string, unknown>) => {
     const teamIdValue = String(payload.project_id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
     const userIdValue = String(payload.user_id || '').trim();
@@ -183,7 +183,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
         if (createdId) {
           setMembers((prev) => {
             const list = Array.isArray(prev) ? prev : [];
-            if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+            if (list.some((m) => String(m?.id || '').trim() === createdId)) return list;
             return [createdMembership, ...list];
           });
         }

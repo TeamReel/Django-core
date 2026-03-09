@@ -62,13 +62,13 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
     const q = String(eligibleSearch || '').trim().toLowerCase();
     const list = Array.from(byUserId.values());
     const filtered = q
-      ? list.filter((m: any) => {
+      ? list.filter((m) => {
           const { name, email } = getUserLabel(m);
           return `${name} ${email}`.toLowerCase().includes(q);
         })
       : list;
 
-    return filtered.sort((a: any, b: any) => {
+    return filtered.sort((a, b) => {
       const la = getUserLabel(a).name.toLowerCase();
       const lb = getUserLabel(b).name.toLowerCase();
       return la.localeCompare(lb);
@@ -114,14 +114,14 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                   variant="secondary"
                   size="sm"
                   onClick={() => {
-                    const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
+                    const allIds = eligibleTeamMembers.map((m) => getUserId(m)).filter(Boolean);
                     const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
                     setSelectedEligibleUserIds(allSelected ? new Set() : new Set(allIds));
                   }}
                   disabled={bulkSubmitting || eligibleTeamMembers.length === 0}
                 >
                   {(() => {
-                    const allIds = eligibleTeamMembers.map((m: any) => getUserId(m)).filter(Boolean);
+                    const allIds = eligibleTeamMembers.map((m) => getUserId(m)).filter(Boolean);
                     const allSelected = allIds.length > 0 && allIds.every((id: string) => selectedEligibleUserIds.has(id));
                     return allSelected ? 'Unselect all' : 'Select all';
                   })()}
@@ -171,7 +171,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {eligibleTeamMembers.map((m: any) => {
+                    {eligibleTeamMembers.map((m) => {
                       const userId = getUserId(m);
                       const { name, email } = getUserLabel(m);
                       const checked = Boolean(userId && selectedEligibleUserIds.has(userId));
@@ -242,7 +242,7 @@ const SeasonTeamTab: React.FC<SeasonTeamTabProps> = ({
 
               {/* ── Mobile card list ── */}
               {isMobile && <div className={st.mobileList}>
-                {eligibleTeamMembers.map((m: any) => {
+                {eligibleTeamMembers.map((m) => {
                   const userId = getUserId(m);
                   const { name, email } = getUserLabel(m);
                   const checked = Boolean(userId && selectedEligibleUserIds.has(userId));

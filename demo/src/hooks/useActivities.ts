@@ -52,7 +52,13 @@ interface UseActivitiesOptions {
   organisation_id?: string;
 }
 
-export function useActivities({ limit = 10, project_id, organisation_id }: UseActivitiesOptions = {}) {
+export interface UseActivitiesReturn {
+  activities: Activity[];
+  loading: boolean;
+  error: string | null;
+}
+
+export function useActivities({ limit = 10, project_id, organisation_id }: UseActivitiesOptions = {}): UseActivitiesReturn {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

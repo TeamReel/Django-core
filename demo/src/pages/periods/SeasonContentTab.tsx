@@ -128,7 +128,7 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
 
   // ── Then vs Now eligible members ──
   const thenVsNowEligibleMembers = useMemo(() => {
-    return (members || []).map((m: any) => {
+    return (members || []).map((m) => {
       const videos = m?.metadata?.teamreel_assets?.videos || {};
       const thenVsNow = videos?.then_vs_now || {};
 
@@ -180,7 +180,7 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
         hasWalkingComposite,
         transformationKeys,
       };
-    }).filter((m: any) => m.id);
+    }).filter((m) => m.id);
   }, [members]);
 
   const thenVsNowCounts = useMemo(() => {

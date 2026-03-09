@@ -179,8 +179,8 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
     const titleDefault = homeDisplayName && awayDisplayName ? `${homeDisplayName} vs ${awayDisplayName}` : '';
     const locationDefault = (homeClub.defaultLocation || home.defaultLocation || '').trim();
 
-    const season = (seasonOptions || []).find((s: any) => String(s?.id) === String(selectedSeasonId));
-    const competition = (competitionOptions || []).find((c: any) => String(c?.id) === String(selectedCompetitionId));
+    const season = (seasonOptions || []).find((s) => String(s?.id) === String(selectedSeasonId));
+    const competition = (competitionOptions || []).find((c) => String(c?.id) === String(selectedCompetitionId));
 
     const metadataBase = {
       identity: {

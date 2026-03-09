@@ -1,10 +1,10 @@
 
-export const PageHeader = (props: any) => null;
-export const PageContent = (props: any) => null;
-export const Dashboard = (props: any) => null;
-export const ListDetail = (props: any) => null;
-export const Wizard = (props: any) => null;
-export const Settings = (props: any) => null;
+export const PageHeader = (props: Record<string, unknown>) => null;
+export const PageContent = (props: Record<string, unknown>) => null;
+export const Dashboard = (props: Record<string, unknown>) => null;
+export const ListDetail = (props: Record<string, unknown>) => null;
+export const Wizard = (props: Record<string, unknown>) => null;
+export const Settings = (props: Record<string, unknown>) => null;
 export const useWizard = () => ({});
 export const useListDetail = () => ({});
 export const useDashboard = () => ({});

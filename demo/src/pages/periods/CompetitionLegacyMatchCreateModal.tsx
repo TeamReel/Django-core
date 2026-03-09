@@ -79,8 +79,8 @@ export function CompetitionLegacyMatchCreateModal({
         );
 
         const filtered = (Array.isArray(all) ? all : [])
-          .filter((t: any) => String(t?.id || '') && String(t?.id) !== String(teamId))
-          .map((t: any) => ({ id: t.id, name: String(t.name || '') }));
+          .filter((t) => String(t?.id || '') && String(t?.id) !== String(teamId))
+          .map((t) => ({ id: t.id, name: String(t.name || '') }));
 
         const unique = [...new Map(filtered.map((t) => [String(t.id), t])).values()];
         unique.sort((a, b) => String(a.name).localeCompare(String(b.name)));

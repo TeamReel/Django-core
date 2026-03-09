@@ -34,7 +34,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return <ProjectSeasonMemberDetailPage />;
   }
 
-  const isActiveCtx = !!d.competition && String(d.activeContext?.competition?.id ?? '') === String(d.competition?.id ?? '');
+  const isActiveCtx = !!d.competition && String((d.activeContext as any)?.competition?.id ?? '') === String(d.competition?.id ?? '');
 
   return (
     <div>
@@ -173,7 +173,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <PeriodEditModal
               opened={d.isPeriodEditModalOpen}
               onClose={() => d.setIsPeriodEditModalOpen(false)}
-              period={d.selectedEditPeriod}
+              period={d.selectedEditPeriod as any}
               showDates={false}
               organisationSportId={d.org?.sport?.id ? String(d.org.sport.id) : null}
               onSave={async (patch) => { if (d.selectedEditPeriod) await d.savePeriodEdits(d.selectedEditPeriod, patch); }}
@@ -182,14 +182,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <MatchEditModal
               opened={d.isMatchEditModalOpen}
               onClose={() => d.setIsMatchEditModalOpen(false)}
-              match={d.selectedEditMatch}
+              match={d.selectedEditMatch as any}
               mode={d.isTeamRoute ? 'team-context' : 'default'}
               onSave={async (patch) => { if (d.selectedEditMatch) await d.saveMatchEdits(d.selectedEditMatch, patch); }}
             />
             <MatchDetailModal
               opened={d.isMatchDetailModalOpen}
               onClose={() => { d.setIsMatchDetailModalOpen(false); d.setSelectedDetailMatch(null); }}
-              match={d.selectedDetailMatch}
+              match={d.selectedDetailMatch as any}
             />
             <MatchCreateModal
               opened={d.isMatchCreateModalOpen}
@@ -217,7 +217,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 await d.saveMembershipRole(d.selectedMembershipEdit, role);
                 await d.updateFunctionalRoles(d.selectedMembershipEdit, functional_roles);
                 const mid = String(d.selectedMembershipEdit?.id || '').trim();
-                d.setMembers((prev) => prev.map((m: any) => String(m.id) === mid ? { ...m, functional_roles } : m));
+                d.setMembers((prev) => prev.map((m) => String(m.id) === mid ? { ...m, functional_roles } : m));
               }}
             />
             <AddMemberModal

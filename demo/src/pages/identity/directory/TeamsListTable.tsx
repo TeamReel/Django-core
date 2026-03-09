@@ -46,7 +46,7 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {filteredTeams.map((team: any) => {
+          {filteredTeams.map((team) => {
             const resolved = resolveTeamRow(team, organisations, clubs, lockedOrgSlug, selectedOrgId, orgLocked);
             return (
               <tr key={team.id}>
@@ -163,7 +163,7 @@ function resolveTeamRow(
   const parent = team.parent_project || team.parent_id || team.parent_project_id;
   const parentId = typeof parent === 'object' ? parent.id : parent;
   const parentName = typeof parent === 'object' ? (parent.name || parent.slug) : parent;
-  const clubObj = clubs.find((c: any) => String(c.id) === String(parentId));
+  const clubObj = clubs.find((c) => String(c.id) === String(parentId));
   const clubName = clubObj ? clubObj.name : (parentName || '-');
   const clubSlugOrId = clubObj ? (clubObj.slug || clubObj.id) : parentId;
   const teamSlugOrId = team.slug || team.id;

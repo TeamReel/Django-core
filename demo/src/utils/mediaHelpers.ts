@@ -6,11 +6,29 @@
 
 import { MEDIA_SLOTS, MediaSlotId, MemberMediaForm } from '../constants/mediaSlots';
 
+/** Membership-like object carrying TeamReel media metadata. */
+interface MembershipWithMedia {
+  user?: { avatar_url?: string | null; [key: string]: unknown };
+  metadata?: {
+    teamreel_assets?: TeamReelAssets;
+    teamreelAssets?: TeamReelAssets;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface TeamReelAssets {
+  media?: Record<string, { url?: string; caption?: string }>;
+  images?: Record<string, Record<string, unknown>>;
+  videos?: Record<string, Record<string, unknown>>;
+  [key: string]: unknown;
+}
+
 /**
  * Check if a membership has media for a specific slot
  * For the 'profile' slot, also considers user.avatar_url as a valid photo source.
  */
-export function memberHasMedia(membership: any, slotId: MediaSlotId): boolean {
+export function memberHasMedia(membership: MembershipWithMedia, slotId: MediaSlotId): boolean {
   // Profile slot: also count user.avatar_url as a valid profile photo
   if (slotId === 'profile') {
     const avatarUrl = membership?.user?.avatar_url;
@@ -22,7 +40,7 @@ export function memberHasMedia(membership: any, slotId: MediaSlotId): boolean {
   if (media?.[slotId]?.url || media?.[slotId]?.caption) return true;
   // Legacy slot: also check images.fullbody.legacy
   if (slotId === 'legacy') {
-    const legacyVariant = tr?.images?.fullbody?.legacy;
+    const legacyVariant = (tr as any)?.images?.fullbody?.legacy;
     if (legacyVariant?.raw || legacyVariant?.processed) return true;
   }
   return false;
@@ -31,21 +49,21 @@ export function memberHasMedia(membership: any, slotId: MediaSlotId): boolean {
 /**
  * Count how many media slots are filled for a membership
  */
-export function countFilledMediaSlots(membership: any): number {
+export function countFilledMediaSlots(membership: MembershipWithMedia): number {
   return MEDIA_SLOTS.filter((slot) => memberHasMedia(membership, slot.id)).length;
 }
 
 /**
  * Check if a membership has all media slots filled
  */
-export function hasAllMediaSlots(membership: any): boolean {
+export function hasAllMediaSlots(membership: MembershipWithMedia): boolean {
   return countFilledMediaSlots(membership) === MEDIA_SLOTS.length;
 }
 
 /**
  * Get completion percentage for media slots
  */
-export function getMediaCompletionPercent(membership: any): number {
+export function getMediaCompletionPercent(membership: MembershipWithMedia): number {
   return (countFilledMediaSlots(membership) / MEDIA_SLOTS.length) * 100;
 }
 
@@ -62,7 +80,7 @@ export function createEmptyMediaForm(): MemberMediaForm {
 /**
  * Read TeamReel assets from membership metadata into form structure
  */
-export function readAssetsFromMembership(membership: any): MemberMediaForm {
+export function readAssetsFromMembership(membership: MembershipWithMedia): MemberMediaForm {
   const meta = membership?.metadata || {};
   const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const media = tr.media || {};
@@ -84,7 +102,7 @@ export function readAssetsFromMembership(membership: any): MemberMediaForm {
 /**
  * Merge form data back into membership metadata structure
  */
-export function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm): any {
+export function mergeAssetsIntoMetadata(existingMetadata: Record<string, unknown> | null | undefined, form: MemberMediaForm): Record<string, unknown> {
   const meta = existingMetadata ? JSON.parse(JSON.stringify(existingMetadata)) : {};
   const prev =
     meta.teamreel_assets && typeof meta.teamreel_assets === 'object'
@@ -111,7 +129,7 @@ export function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMedia
  * Count how many media slots are processed (lineup-ready) for a membership.
  * Uses getMediaProcessingState which checks per-variant data, not just flat URLs.
  */
-export function countProcessedMediaSlots(membership: any): number {
+export function countProcessedMediaSlots(membership: MembershipWithMedia): number {
   return MEDIA_SLOTS.filter(
     (slot) => getMediaProcessingState(membership, slot.id) === 'processed',
   ).length;
@@ -121,7 +139,7 @@ export function countProcessedMediaSlots(membership: any): number {
  * Count how many media slots have any content (not empty) for a membership.
  * Uses getMediaProcessingState which checks per-variant data.
  */
-export function countNonEmptyMediaSlots(membership: any): number {
+export function countNonEmptyMediaSlots(membership: MembershipWithMedia): number {
   return MEDIA_SLOTS.filter(
     (slot) => getMediaProcessingState(membership, slot.id) !== 'empty',
   ).length;
@@ -130,14 +148,14 @@ export function countNonEmptyMediaSlots(membership: any): number {
 /**
  * Get media URL for a specific slot from membership
  */
-export function getMediaUrl(membership: any, slotId: MediaSlotId): string | undefined {
+export function getMediaUrl(membership: MembershipWithMedia, slotId: MediaSlotId): string | undefined {
   return membership?.metadata?.teamreel_assets?.media?.[slotId]?.url;
 }
 
 /**
  * Get media caption for a specific slot from membership
  */
-export function getMediaCaption(membership: any, slotId: MediaSlotId): string | undefined {
+export function getMediaCaption(membership: MembershipWithMedia, slotId: MediaSlotId): string | undefined {
   return membership?.metadata?.teamreel_assets?.media?.[slotId]?.caption;
 }
 
@@ -177,7 +195,7 @@ const SLOT_TO_VARIANT_CATEGORY: Record<string, {
  * (images.fullbody.*, videos.intro.*, etc.).
  */
 export function getMediaProcessingState(
-  membership: any,
+  membership: MembershipWithMedia,
   slotId: MediaSlotId,
 ): 'empty' | 'raw' | 'processing' | 'processed' {
   const tr = membership?.metadata?.teamreel_assets || {};
@@ -219,7 +237,7 @@ export function getMediaProcessingState(
       continue;
     }
     if (typeof val === 'object') {
-      const v = val as Record<string, any>;
+      const v = val as Record<string, unknown>;
       const state = v.processing_state;
       if (state === 'processed' && v.processed) {
         // If processed URL equals raw URL, no actual processing happened

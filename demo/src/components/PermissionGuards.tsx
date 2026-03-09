@@ -28,17 +28,17 @@ export function useUserRole() {
   const isSystemAdmin = Boolean(user?.is_superuser) || role === 'superadmin';
 
   const orgs = user?.organisations || [];
-  const isLandAdmin = orgs.some((org: any) => {
+  const isLandAdmin = orgs.some((org: Record<string, unknown>) => {
     const role = String(org?.role || '').toLowerCase().replace(/[_-]/g, ' ').trim();
     return role.includes('land admin');
   });
-  const isOrgAdmin = orgs.some((org: any) =>
-    org.role?.toLowerCase().includes('admin')
+  const isOrgAdmin = orgs.some((org: Record<string, unknown>) =>
+    String(org?.role || '').toLowerCase().includes('admin')
   );
   const isClubAdmin = isOrgAdmin; // Club-level admin in any org
 
-  const isCoach = orgs.some((org: any) =>
-    org.role?.toLowerCase().includes('coach')
+  const isCoach = orgs.some((org: Record<string, unknown>) =>
+    String(org?.role || '').toLowerCase().includes('coach')
   );
 
   const isPlayer = role === 'player';

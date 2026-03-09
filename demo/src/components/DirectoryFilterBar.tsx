@@ -176,10 +176,10 @@ export const DirectoryFilterBar: React.FC<DirectoryFilterBarProps> = ({
         >
           <option value="">Competition: All</option>
           {competitions
-            .sort((a: any, b: any) =>
+            .sort((a, b) =>
               String(a?.name || '').localeCompare(String(b?.name || '')),
             )
-            .map((c: any) => (
+            .map((c) => (
               <option key={c.id} value={String(c.id)}>
                 {c.name}
               </option>

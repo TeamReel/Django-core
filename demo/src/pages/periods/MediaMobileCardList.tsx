@@ -63,8 +63,8 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
 
       {/* ── Smart batch suggestions ── */}
       {(() => {
-        const hasKit = (m: any) => getMediaProcessingState(m, 'kit') === 'processed';
-        const missingSlot = (m: any, slotId: string) => getMediaProcessingState(m, slotId as any) === 'empty';
+        const hasKit = (m: Record<string, unknown>) => getMediaProcessingState(m, 'kit') === 'processed';
+        const missingSlot = (m: Record<string, unknown>, slotId: string) => getMediaProcessingState(m, slotId as any) === 'empty';
         const suggestions = [
           { slotId: 'intro', label: "Intro's", templateId: 'member_intro', count: members.filter(m => hasKit(m) && missingSlot(m, 'intro')).length },
           { slotId: 'celebration', label: 'Celebrations', templateId: 'member_goal_celebration', count: members.filter(m => hasKit(m) && missingSlot(m, 'celebration')).length },
@@ -110,7 +110,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
           ref={(el) => { if (el) el.indeterminate = batchSelectedMemberIds.size > 0 && batchSelectedMemberIds.size < members.length; }}
           onChange={(e) => {
             if (e.target.checked) {
-              setBatchSelectedMemberIds(new Set(members.map((m: any) => String(m.id))));
+              setBatchSelectedMemberIds(new Set(members.map((m) => String(m.id))));
             } else {
               setBatchSelectedMemberIds(new Set());
             }
@@ -178,7 +178,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
       })()}
 
       {/* Squad member cards */}
-      {members.map((m: any) => {
+      {members.map((m) => {
         const memberUser = m.user || m;
         const name =
           memberUser.name ||
@@ -193,7 +193,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
 
         // Extract closeup-in-tenue photo
         const tr = m.metadata?.teamreel_assets || {};
-        const extractFirst = (obj: any): string | null => {
+        const extractFirst = (obj: unknown): string | null => {
           if (!obj || typeof obj !== 'object') return null;
           for (const v of Object.values(obj)) {
             if (!v) continue;

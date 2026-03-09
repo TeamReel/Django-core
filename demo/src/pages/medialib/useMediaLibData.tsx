@@ -6,24 +6,63 @@
  *
  * Extracted during Phase 26 refactoring.
  */
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getContentType } from '../../hooks/useBrandAssets';
-import { useFileAssets, getFileTypeFilter, type FileTypeFilter } from '../../hooks/useFileAssets';
+import { getContentType, type BrandAsset } from '../../hooks/useBrandAssets';
+import { useFileAssets, getFileTypeFilter, type FileTypeFilter, type FileAsset } from '../../hooks/useFileAssets';
 import type {
     HierarchyTab,
     OrganisationOption,
     ProjectOption,
     PreviewItem,
 } from './medialibHelpers';
-import { friendlyAssetLabel, getMemberContentType } from './medialibHelpers';
+import { friendlyAssetLabel, getMemberContentType, type MemberMediaItem } from './medialibHelpers';
 import { useMediaLibFetchers } from './useMediaLibFetchers';
 
-export function useMediaLibData() {
+export interface UseMediaLibDataReturn {
+    orgId: string | undefined;
+    orgSlug: string | undefined;
+    isSuperAdmin: boolean;
+    activeLevel: HierarchyTab;
+    brandAssets: BrandAsset[];
+    memberMedia: MemberMediaItem[];
+    files: FileAsset[];
+    filteredBrandAssets: BrandAsset[];
+    filteredFiles: FileAsset[];
+    filteredMemberMedia: MemberMediaItem[];
+    filteredTeams: ProjectOption[];
+    subTabCounts: Record<string, number>;
+    fileTypeCounts: { all: number; image: number; video: number; document: number; font: number };
+    organisations: OrganisationOption[];
+    clubs: ProjectOption[];
+    teams: ProjectOption[];
+    selectedOrgId: string;
+    setSelectedOrgId: Dispatch<SetStateAction<string>>;
+    selectedClubId: string;
+    setSelectedClubId: Dispatch<SetStateAction<string>>;
+    selectedTeamId: string;
+    setSelectedTeamId: Dispatch<SetStateAction<string>>;
+    subFilter: string;
+    setSubFilter: Dispatch<SetStateAction<string>>;
+    kitFilter: string;
+    setKitFilter: Dispatch<SetStateAction<string>>;
+    fileTypeFilter: FileTypeFilter;
+    setFileTypeFilter: Dispatch<SetStateAction<FileTypeFilter>>;
+    searchQuery: string;
+    setSearchQuery: Dispatch<SetStateAction<string>>;
+    previewItem: PreviewItem | null;
+    setPreviewItem: Dispatch<SetStateAction<PreviewItem | null>>;
+    loading: boolean;
+    error: string | null;
+    handleDownload: (fileId: string) => Promise<void>;
+    clearFilters: () => void;
+}
+
+export function useMediaLibData(): UseMediaLibDataReturn {
     const location = useLocation();
     const { context, organisations: myOrganisations } = useContextSwitcher();
     const { user } = useAuth();
@@ -91,10 +130,10 @@ export function useMediaLibData() {
                     { ttlMs: 120_000 },
                 );
                 setOrganisations(
-                    (orgs || []).map((o: any) => ({
+                    (orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({
                         id: String(o.id),
                         name: o.name,
-                        slug: o.slug,
+                        slug: o.slug || '',
                     })),
                 );
             } catch {

@@ -5,8 +5,8 @@
  * CRUD operations (delete, save, create), derived filteredClubs.
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useSports } from '../../../hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -16,7 +16,55 @@ import { getCsrfToken } from '../../../utils/csrf';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
-export function useClubsData(preselectedOrgId?: string) {
+/** ProjectOption extended with fields present in API responses but not in the base type. */
+type ClubProject = ProjectOption & {
+  is_active?: boolean;
+  organisation?: string | { id: string; name?: string; slug?: string; sport?: Record<string, unknown> };
+};
+
+export interface UseClubsDataReturn {
+  // Loading / error
+  isLoading: boolean;
+  error: string | null;
+  // Data
+  organisations: OrganisationOption[];
+  filteredClubs: ProjectOption[];
+  teams: ProjectOption[];
+  // Auth / permissions
+  isSuperAdmin: boolean;
+  orgLocked: boolean;
+  userCanEditProject: boolean;
+  userCanDeleteProject: boolean;
+  // Filters
+  selectedOrgId: string;
+  setSelectedOrgId: Dispatch<SetStateAction<string>>;
+  statusFilter: string;
+  setStatusFilter: Dispatch<SetStateAction<string>>;
+  sportFilter: string;
+  setSportFilter: Dispatch<SetStateAction<string>>;
+  selectedClubId: string;
+  setSelectedClubId: Dispatch<SetStateAction<string>>;
+  categories: ReturnType<typeof useSports>['categories'];
+  // Modals
+  detailProject: ProjectOption | null;
+  setDetailProject: Dispatch<SetStateAction<ProjectOption | null>>;
+  isDetailModalOpen: boolean;
+  setIsDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  editProject: ProjectOption | null;
+  setEditProject: Dispatch<SetStateAction<ProjectOption | null>>;
+  isEditModalOpen: boolean;
+  setIsEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  isCreateModalOpen: boolean;
+  setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+  // Handlers
+  handleDeleteProject: (orgSlugOrId: string, projectSlugOrId: string, projectName: string) => Promise<void>;
+  handleSaveProject: (projectData: Record<string, unknown>) => Promise<void>;
+  handleCreateProject: (projectData: Record<string, unknown>) => Promise<void>;
+  handleClearFilters: () => void;
+  navigate: NavigateFunction;
+}
+
+export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -29,13 +77,13 @@ export function useClubsData(preselectedOrgId?: string) {
   const [error, setError] = useState<string | null>(null);
 
   const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
-  const [clubs, setClubs] = useState<ProjectOption[]>([]);
+  const [clubs, setClubs] = useState<ClubProject[]>([]);
   const [teams, setTeams] = useState<ProjectOption[]>([]);
 
-  const [detailProject, setDetailProject] = useState<any | null>(null);
+  const [detailProject, setDetailProject] = useState<ProjectOption | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const [editProject, setEditProject] = useState<any | null>(null);
+  const [editProject, setEditProject] = useState<ProjectOption | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -97,7 +145,7 @@ export function useClubsData(preselectedOrgId?: string) {
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+        setOrganisations((orgs || []).map((o: OrganisationOption) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch {
         // ignore
       }
@@ -180,7 +228,7 @@ export function useClubsData(preselectedOrgId?: string) {
       return s ? s.toLocaleLowerCase() : '\uffff';
     };
 
-    const getFederationName = (club: any) => {
+    const getFederationName = (club: ClubProject) => {
       const org = club?.organisation;
       if (typeof org === 'object' && org?.name) return org.name;
       const orgId = typeof org === 'string' ? org : org?.id;
@@ -201,9 +249,9 @@ export function useClubsData(preselectedOrgId?: string) {
     }
 
     if (statusFilter === 'active') {
-      list = list.filter((c: any) => c.is_active !== false);
+      list = list.filter((c) => c.is_active !== false);
     } else if (statusFilter === 'inactive') {
-      list = list.filter((c: any) => c.is_active === false);
+      list = list.filter((c) => c.is_active === false);
     }
 
     if (sportFilter !== 'all') {
@@ -224,7 +272,7 @@ export function useClubsData(preselectedOrgId?: string) {
       list = list.filter((c) => String(c.id) === String(selectedClubId));
     }
 
-    list.sort((a: any, b: any) => {
+    list.sort((a, b) => {
       const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
       if (byFederation !== 0) return byFederation;
       return sortKey(a?.name).localeCompare(sortKey(b?.name));
@@ -253,7 +301,7 @@ export function useClubsData(preselectedOrgId?: string) {
         return;
       }
 
-      setClubs((prev) => prev.filter((p: any) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
+      setClubs((prev) => prev.filter((p) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
       if (String(selectedClubId) === String(projectSlugOrId)) setSelectedClubId('');
     } catch (e) {
       console.error(e);
@@ -262,7 +310,7 @@ export function useClubsData(preselectedOrgId?: string) {
     }
   };
 
-  const handleSaveProject = async (projectData: any) => {
+  const handleSaveProject = async (projectData: Record<string, unknown>) => {
     if (!editProject) return;
     const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     const baseUrl = getApiBaseUrl();
@@ -293,16 +341,16 @@ export function useClubsData(preselectedOrgId?: string) {
     const updated = payload?.data?.data || payload?.data || payload;
 
     setClubs((prev) =>
-      prev.map((p: any) => {
+      prev.map((p) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
         return match ? { ...p, ...(updated || projectData) } : p;
       })
     );
-    setEditProject((prev: any) => (prev ? { ...prev, ...(updated || projectData) } : prev));
+    setEditProject((prev: ProjectOption | null) => (prev ? { ...prev, ...(updated || projectData) } : prev));
     invalidateFetchAllPagesCache();
   };
 
-  const handleCreateProject = async (projectData: any) => {
+  const handleCreateProject = async (projectData: Record<string, unknown>) => {
     const orgId = String(projectData.organisation_id || selectedOrgId || '');
     if (!orgId) throw new Error('Select a federation first');
 
@@ -334,7 +382,7 @@ export function useClubsData(preselectedOrgId?: string) {
       const createdKey = String(created?.slug || created?.id || '');
       if (createdKey) {
         setClubs((prev) => {
-          if (prev.some((p: any) => String(p?.slug || p?.id || '') === createdKey)) return prev;
+          if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
           return [created, ...prev];
         });
       }

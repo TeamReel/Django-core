@@ -35,7 +35,7 @@ export interface MemberAiModalProps {
   setVideoVariants: React.Dispatch<React.SetStateAction<AssetVariantsMap>>;
   resolveDisplayUrl: (path: string | null | undefined) => string | null;
   setPresignedCache: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  handleMetadataUpdate: (meta: any, targetId?: string) => Promise<void>;
+  handleMetadataUpdate: (meta: Record<string, unknown>, targetId?: string) => Promise<void>;
   setMembership: React.Dispatch<React.SetStateAction<any | null>>;
 }
 

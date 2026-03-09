@@ -42,7 +42,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
   const isActive =
     d.activeContext &&
-    String(d.activeContext.season?.id || '').trim() === String(d.resolvedSeasonId || d.effectiveSeasonId || '').trim();
+    String((d.activeContext as any).season?.id || '').trim() === String(d.resolvedSeasonId || d.effectiveSeasonId || '').trim();
 
   return (
     <>
@@ -224,7 +224,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
 
               {d.activeTab === 'selectie' && (
                 <SeasonSquadTab
-                  members={d.members}
+                  members={d.members as any}
                   membersLoading={d.membersLoading}
                   membersError={d.membersError}
                   userCanEditProject={d.userCanEditProject}
@@ -239,7 +239,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   unassignMembershipsFromSeasonSquad={d.unassignMembershipsFromSeasonSquad}
                   setIsAddSquadMemberModalOpen={d.setIsAddSquadMemberModalOpen}
                   onMemberUpdated={() => d.setMembersReloadToken(t => t + 1)}
-                  teamRoster={d.teamRoster}
+                  teamRoster={d.teamRoster as any}
                   teamRosterLoading={d.teamRosterLoading}
                   teamRosterError={d.teamRosterError}
                   assignUsersToSeasonSquad={d.assignUsersToSeasonSquad}

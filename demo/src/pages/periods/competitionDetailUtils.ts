@@ -36,7 +36,7 @@ export const getUserDisplayName = (member: any): string => {
 };
 
 /** Human-readable role label. */
-export const roleLabel = (raw: any): string => {
+export const roleLabel = (raw: unknown): string => {
   const r = String(raw || '').toLowerCase();
   if (r === 'team_admin' || r === 'team admin') return 'Team Admin';
   if (r === 'club_admin' || r === 'club admin') return 'Club Admin';

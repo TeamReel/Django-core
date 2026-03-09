@@ -85,12 +85,12 @@ export function useLinkUserModal({
 
   const existingOrgIds = useMemo(() => {
     const orgs = Array.isArray(user?.organisations) ? user?.organisations : [];
-    return new Set(orgs.map((o: any) => String(o?.id ?? '')));
+    return new Set(orgs.map((o) => String(o?.id ?? '')));
   }, [user]);
 
   const existingProjectIds = useMemo(() => {
     const projects = Array.isArray(user?.projects) ? user.projects : [];
-    return new Set(projects.map((p: any) => String(p?.id ?? p?.slug ?? '')).filter(Boolean));
+    return new Set(projects.map((p) => String(p?.id ?? p?.slug ?? '')).filter(Boolean));
   }, [user]);
 
   const projectMembershipIdByProjectId = useMemo(() => {
@@ -152,7 +152,7 @@ export function useLinkUserModal({
           { ttlMs: 15_000, cacheKey: `periods:seasons:link-user:${tid}`, maxPages: 10, maxItems: 2000 },
         );
         if (cancelled) return;
-        const seasons = (results || []).filter((p: any) => !p?.parent_period);
+        const seasons = (results || []).filter((p) => !p?.parent_period);
         setSeasonOptions(seasons);
       } catch {
         if (cancelled) return;
@@ -240,7 +240,7 @@ export function useLinkUserModal({
     if (!orgIdValue) throw new Error('Select a federation first');
 
     const orgs = Array.isArray(user?.organisations) ? user.organisations : [];
-    const direct = orgs.find((o: any) => String(o?.id ?? '') === orgIdValue);
+    const direct = orgs.find((o) => String(o?.id ?? '') === orgIdValue);
     const directMembershipId = String(direct?.membership_id ?? '').trim();
     if (directMembershipId) return directMembershipId;
 
@@ -255,7 +255,7 @@ export function useLinkUserModal({
 
     const email = String(user.email || '').trim().toLowerCase();
     const uid = String(user.id);
-    const found = (members || []).find((m: any) => {
+    const found = (members || []).find((m) => {
       const memberId = String(m?.id ?? '').trim();
       if (!memberId) return false;
       const mu = m?.user || m;
@@ -301,7 +301,7 @@ export function useLinkUserModal({
 
     const email = String(user.email || '').trim().toLowerCase();
     const uid = String(user.id);
-    const found = (members || []).find((m: any) => {
+    const found = (members || []).find((m) => {
       const memberId = String(m?.id ?? '').trim();
       if (!memberId) return false;
       const mu = m?.user || m;

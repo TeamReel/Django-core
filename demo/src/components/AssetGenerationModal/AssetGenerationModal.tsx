@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import type { AssetGenerationModalProps } from './assetGenHelpers';
+import type { AssetGenerationModalProps, ModalStep } from './assetGenHelpers';
 import {
   VIDEO_MODELS,
   IMAGE_MODELS,
@@ -248,7 +248,7 @@ export default function AssetGenerationModal(props: AssetGenerationModalProps) {
         {/* Footer */}
         <ModalFooter
           modalStep={modalStep}
-          setModalStep={setModalStep}
+          setModalStep={setModalStep as unknown as (s: string) => void}
           generation={generation}
           selectedTemplate={selectedTemplate}
           selectedVariantIdx={selectedVariantIdx}
@@ -282,7 +282,7 @@ function ModalFooter({
   handleAccept,
 }: {
   modalStep: string;
-  setModalStep: (s: any) => void;
+  setModalStep: (s: string) => void;
   generation: any;
   selectedTemplate: any;
   selectedVariantIdx: number | null;

@@ -132,7 +132,7 @@ export function useUserDetailData(): UserDetailDataReturn {
         return (
             <a
                 href={href}
-                onClick={(e: any) => { e.preventDefault(); navigate(href); }}
+                onClick={(e: React.MouseEvent) => { e.preventDefault(); navigate(href); }}
                 className="fw-600"
                 style={{ color: 'var(--app-primary)', textDecoration: 'none' }}
             >
@@ -154,11 +154,11 @@ export function useUserDetailData(): UserDetailDataReturn {
 
     const primaryOrgSlug = useMemo(() => {
         if (orgId) return String(orgId);
-        const first = userOrgs.find((o: any) => o?.slug) || userOrgs[0];
+        const first = userOrgs.find((o) => o?.slug) || userOrgs[0];
         return String(first?.slug || first?.id || '').trim();
     }, [orgId, userOrgs]);
 
-    const clubMemberships = useMemo(() => userProjects.filter((p: any) => !p?.parent), [userProjects]);
+    const clubMemberships = useMemo(() => userProjects.filter((p) => !p?.parent), [userProjects]);
 
     const directClubMembershipById = useMemo(() => {
         const m = new Map<string, any>();
@@ -169,7 +169,7 @@ export function useUserDetailData(): UserDetailDataReturn {
         return m;
     }, [clubMemberships]);
 
-    const teamMemberships = useMemo(() => userProjects.filter((p: any) => Boolean(p?.parent)), [userProjects]);
+    const teamMemberships = useMemo(() => userProjects.filter((p) => Boolean(p?.parent)), [userProjects]);
 
     const clubsForTab = useMemo(() => {
         const merged = new Map<string, any>();
@@ -362,8 +362,8 @@ export function useUserDetailData(): UserDetailDataReturn {
                     matchesAll.push(...(matches || []));
                 }
                 if (!cancelled) {
-                    setLinkedCompetitions([...new Map(competitionsAll.map((c: any) => [String(c?.id || ''), c])).values()].filter(Boolean));
-                    setLinkedMatches([...new Map(matchesAll.map((m: any) => [String(m?.id || ''), m])).values()].filter(Boolean));
+                    setLinkedCompetitions([...new Map(competitionsAll.map((c) => [String(c?.id || ''), c])).values()].filter(Boolean));
+                    setLinkedMatches([...new Map(matchesAll.map((m) => [String(m?.id || ''), m])).values()].filter(Boolean));
                 }
             } catch {
                 if (!cancelled) { setLinkedCompetitions([]); setLinkedMatches([]); }

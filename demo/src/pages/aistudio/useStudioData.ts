@@ -139,7 +139,7 @@ function getTypeInfo(subtype: string): { label: string; icon: string } {
     ...CONTENT_TYPES.member.items,
     ...(CONTENT_TYPES as any).custom?.items || [],
   ];
-  const found = allItems.find((item: any) => item.subtype === subtype);
+  const found = allItems.find((item) => item.subtype === subtype);
   return { label: found?.label || subtype, icon: found?.icon || '📄' };
 }
 
@@ -198,7 +198,7 @@ export function useStudioData(): StudioData {
       if (!response.ok) return;
       const data = await response.json();
       const raw = data?.results || data?.data?.results || data?.data || [];
-      const jobs: VideoJobSummary[] = (Array.isArray(raw) ? raw : []).map((j: any) => ({
+      const jobs: VideoJobSummary[] = (Array.isArray(raw) ? raw : []).map((j) => ({
         id: j.id,
         job_type: j.job_type,
         status: j.status,

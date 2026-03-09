@@ -1,5 +1,6 @@
 import React from 'react';
 import PeriodEditModal from '../identity/PeriodEditModal';
+import { type PeriodLike } from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodCreateModal from '../identity/PeriodCreateModal';
@@ -7,6 +8,24 @@ import MatchCreateModal from '../identity/MatchCreateModal';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
+
+/** Minimal match shape for modal props. */
+interface MatchLike {
+  id: string;
+  title: string;
+  start_time?: string;
+  end_time?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+/** For org/club/team select options passed to create modals. */
+interface ModalSelectOption {
+  id: string;
+  name: string;
+  slug?: string;
+  [key: string]: unknown;
+}
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
@@ -24,34 +43,34 @@ export interface SeasonDetailModalsProps {
   // Period edit modal
   isPeriodEditModalOpen: boolean;
   onClosePeriodEdit: () => void;
-  selectedEditPeriod: any;
-  isSeasonPeriod: (p: any) => boolean;
+  selectedEditPeriod: PeriodLike | null;
+  isSeasonPeriod: (p: PeriodLike | null) => boolean;
   organisationSportId: string | null;
-  onSavePeriodEdits: (period: any, payload: any) => Promise<void>;
+  onSavePeriodEdits: (period: any, payload: Record<string, unknown>) => Promise<void>;
 
   // Period detail modal
   isPeriodDetailModalOpen: boolean;
   onClosePeriodDetail: () => void;
-  selectedDetailPeriod: any;
+  selectedDetailPeriod: PeriodLike | null;
 
   // Match detail modal
   isMatchDetailModalOpen: boolean;
   onCloseMatchDetail: () => void;
-  selectedDetailMatch: any;
+  selectedDetailMatch: MatchLike | null;
 
   // Match edit modal
   isMatchEditModalOpen: boolean;
   onCloseMatchEdit: () => void;
-  selectedEditMatch: any;
-  onSaveMatchEdits: (match: any, payload: any) => Promise<void>;
+  selectedEditMatch: MatchLike | null;
+  onSaveMatchEdits: (match: MatchLike, payload: Record<string, unknown>) => Promise<void>;
 
   // Competition create modal
   isCreateCompetitionModalOpen: boolean;
   onCloseCreateCompetition: () => void;
   onCreateCompetition: (payload: any) => Promise<void>;
-  createModalOrganisations: any[];
-  createModalClubs: any[];
-  createModalTeams: any[];
+  createModalOrganisations: ModalSelectOption[];
+  createModalClubs: ModalSelectOption[];
+  createModalTeams: ModalSelectOption[];
   initialOrganisationId: string;
   initialClubId: string;
   initialTeamId: string;
@@ -146,7 +165,7 @@ const SeasonDetailModals: React.FC<SeasonDetailModalsProps> = ({
       period={selectedEditPeriod}
       showSportVariant={!isSeasonPeriodFn(selectedEditPeriod)}
       organisationSportId={organisationSportId}
-      onSave={async (payload: any) => {
+      onSave={async (payload) => {
         if (!selectedEditPeriod) return;
         await onSavePeriodEdits(selectedEditPeriod, payload);
       }}
@@ -168,7 +187,7 @@ const SeasonDetailModals: React.FC<SeasonDetailModalsProps> = ({
       opened={isMatchEditModalOpen}
       onClose={onCloseMatchEdit}
       match={selectedEditMatch}
-      onSave={async (payload: any) => {
+      onSave={async (payload) => {
         if (!selectedEditMatch) return;
         await onSaveMatchEdits(selectedEditMatch, payload);
       }}

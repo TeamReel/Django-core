@@ -184,7 +184,19 @@ interface UseVideoJobsOptions {
   refreshInterval?: number;
 }
 
-export function useVideoJobs(options: UseVideoJobsOptions) {
+export interface UseVideoJobsReturn {
+  jobs: VideoJob[];
+  loading: boolean;
+  error: string | null;
+  refresh: () => void;
+  cancelJob: (jobId: string) => Promise<void>;
+  retryJob: (jobId: string) => Promise<void>;
+  createJob: (params: CreateVideoJobParams) => Promise<VideoJob>;
+  approveJob: (jobId: string) => Promise<VideoJob>;
+  rejectJob: (jobId: string) => Promise<VideoJob>;
+}
+
+export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
   const { projectId, status, jobType, autoRefresh = true, refreshInterval = 10_000 } = options;
 
   const [jobs, setJobs] = useState<VideoJob[]>([]);
@@ -327,7 +339,12 @@ export function useVideoJobs(options: UseVideoJobsOptions) {
 // Hook: useVideoPresets
 // ============================================================================
 
-export function useVideoPresets(projectId: string | number) {
+export interface UseVideoPresetsReturn {
+  presets: VideoPreset[];
+  loading: boolean;
+}
+
+export function useVideoPresets(projectId: string | number): UseVideoPresetsReturn {
   const [presets, setPresets] = useState<VideoPreset[]>([]);
   const [loading, setLoading] = useState(true);
 

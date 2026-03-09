@@ -196,7 +196,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
             ).flat();
 
             const roots = (Array.isArray(results) ? results : []).filter(
-              (p: any) => p?.parent_period_id == null && !p?.parent_period,
+              (p) => p?.parent_period_id == null && !p?.parent_period,
             );
             setSeasons(roots);
             return;
@@ -223,9 +223,9 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
             ).flat();
 
             const roots = (Array.isArray(results) ? results : []).filter(
-              (p: any) => p?.parent_period_id == null && !p?.parent_period,
+              (p) => p?.parent_period_id == null && !p?.parent_period,
             );
-            setSeasons([...new Map(roots.map((p: any) => [String(p.id), p])).values()]);
+            setSeasons([...new Map(roots.map((p) => [String(p.id), p])).values()]);
             return;
           }
 
@@ -239,7 +239,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
         );
 
         const roots = (Array.isArray(results) ? results : []).filter(
-          (p: any) => p?.parent_period_id == null && !p?.parent_period,
+          (p) => p?.parent_period_id == null && !p?.parent_period,
         );
         setSeasons(roots);
       } catch {
@@ -285,7 +285,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
               }),
             )
           ).flat();
-          return [...new Map(results.map((c: any) => [String(c.id), c])).values()];
+          return [...new Map(results.map((c) => [String(c.id), c])).values()];
         };
 
         const requests = seasonIds.map(async (seasonId) => {
@@ -315,7 +315,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
         });
 
         const all = (await Promise.all(requests)).flat();
-        const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
+        const unique = [...new Map(all.map((c) => [String(c.id), c])).values()];
         setCompetitions(unique);
       } catch {
         setCompetitions([]);

@@ -193,7 +193,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
   const selectedSeasonIds = useMemo(() => {
     if (!selectedSeasonName) return [] as string[];
     // If selectedSeasonName is an ID (from URL), match by id first.
-    const byId = seasons.find((s: any) => String(s.id) === String(selectedSeasonName));
+    const byId = seasons.find((s) => String(s.id) === String(selectedSeasonName));
     if (byId?.name) {
       const match = seasonOptions.find((o: SeasonOption) => o.name === String(byId.name));
       return match?.ids || [String(byId.id)];
@@ -282,7 +282,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
           : Array.isArray(data)
             ? data
             : [];
-        const match = list.find((o: any) => String(o?.id || '') === String(rawLockedId));
+        const match = list.find((o) => String(o?.id || '') === String(rawLockedId));
         const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
       } catch {
@@ -312,10 +312,10 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
 
         const filteredOrgs = isSuperAdmin
           ? orgs
-          : (orgs || []).filter((o: any) => myOrgIds.includes(String(o.id)));
+          : (orgs || []).filter((o) => myOrgIds.includes(String(o.id)));
 
         setOrganisations(
-          (filteredOrgs || []).map((o: any) => ({
+          (filteredOrgs || []).map((o) => ({
             id: String(o.id),
             name: o.name,
             slug: o.slug,

@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction, FormEvent } from 'react';
 import type { MatchCreateModalProps } from './matchCreateTypes';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { controlStyle } from './matchCreateHelpers';
@@ -40,6 +41,74 @@ type UseMatchCreateDataProps = Pick<
 
 // ─── Orchestrator Hook ───────────────────────────────────────────────────────
 
+export interface UseMatchCreateDataReturn {
+  // Mode flags
+  isSeasonDetailMode: boolean;
+  isTeamContextMode: boolean;
+  requireOpponent: boolean;
+  // Form state
+  effectiveTitle: string;
+  setTitle: (v: string) => void;
+  setTitleTouched: (v: boolean) => void;
+  matchDate: string;
+  setMatchDate: (v: string) => void;
+  matchTime: string;
+  setMatchTime: (v: string) => void;
+  venue: 'Home' | 'Away';
+  setVenue: Dispatch<SetStateAction<'Home' | 'Away'>>;
+  location: string;
+  setLocation: (v: string) => void;
+  setLocationTouched: (v: boolean) => void;
+  description: string;
+  setDescription: (v: string) => void;
+  setDescriptionTouched: (v: boolean) => void;
+  isSaving: boolean;
+  error: string | null;
+  // Selection state
+  selectedOrganisationId: string;
+  setSelectedOrganisationId: (v: string) => void;
+  selectedClubId: string;
+  selectedTeamId: string;
+  selectedOpponentTeamId: string;
+  setSelectedOpponentTeamId: (v: string) => void;
+  selectedSeasonId: string;
+  setSelectedSeasonId: (v: string) => void;
+  selectedCompetitionId: string;
+  setSelectedCompetitionId: (v: string) => void;
+  selectedOpponentOrganisationId: string;
+  setSelectedOpponentOrganisationId: (v: string) => void;
+  selectedOpponentClubId: string;
+  setSelectedOpponentClubId: (v: string) => void;
+  // Loading states
+  loadingSeasons: boolean;
+  loadingCompetitions: boolean;
+  loadingOpponentTeams: boolean;
+  loadingOpponentClubs: boolean;
+  // Option lists
+  sortedOrganisations: any[];
+  filteredClubs: any[];
+  filteredTeams: any[];
+  seasonOptions: any[];
+  competitionOptions: any[];
+  opponentTeamOptions: any[];
+  filteredOpponentClubs: any[];
+  // Derived
+  derived: ReturnType<typeof useMatchDerived>['derived'];
+  resolvedClubId: string;
+  initialSeasonId: string;
+  initialCompetitionId: string;
+  // Handlers
+  handleOrganisationChange: (orgId: string) => void;
+  applyClubSelection: (clubId: string) => void;
+  applyTeamSelection: (teamId: string) => void;
+  handleCreate: (e: FormEvent) => Promise<void>;
+  controlStyle: typeof controlStyle;
+  // Name lookups
+  projectNameById: (id: string) => string | null;
+  orgNameById: (id: string) => string | null;
+  periodNameById: (id: string) => string | null;
+}
+
 export function useMatchCreateData({
   opened,
   onClose,
@@ -64,7 +133,7 @@ export function useMatchCreateData({
   initialLocation = '',
   initialDescription = '',
   submitText,
-}: UseMatchCreateDataProps) {
+}: UseMatchCreateDataProps): UseMatchCreateDataReturn {
   const apiBaseUrl = apiBaseUrlProp || getApiBaseUrl();
   const isSeasonDetailMode = mode === 'season-detail';
   const isTeamContextMode = mode === 'team-context';

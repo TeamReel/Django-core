@@ -83,7 +83,21 @@ interface UseNotificationsOptions {
   pageSize?: number;
 }
 
-export function useNotifications(options: UseNotificationsOptions = {}) {
+export interface UseNotificationsReturn {
+  notifications: UserNotification[];
+  unreadCount: number;
+  unreadNotifications: UserNotification[];
+  readNotifications: UserNotification[];
+  loading: boolean;
+  error: string | null;
+  markRead: (notificationId: string) => Promise<void>;
+  markUnread: (notificationId: string) => Promise<void>;
+  markAllRead: () => Promise<void>;
+  markAllUnread: () => Promise<void>;
+  refresh: () => Promise<void>;
+}
+
+export function useNotifications(options: UseNotificationsOptions = {}): UseNotificationsReturn {
   const { pollInterval = 30_000, pageSize = 50 } = options;
 
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
@@ -249,7 +263,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
 // Hook: useUnreadCount (lightweight, for TopNavbar bell)
 // ============================================================================
 
-export function useUnreadCount() {
+export function useUnreadCount(): number {
   const [count, setCount] = useState(0);
   const apiBaseRef = useRef(getApiBaseUrl());
 

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useLocation, useNavigate, useParams, type NavigateFunction } from 'react-router-dom';
 import { type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -16,7 +16,48 @@ import {
   mergeUniqueById,
 } from './teamDetailTypes';
 
-export function useTeamDetailData() {
+export interface UseTeamDetailDataReturn {
+  // Core entities
+  org: Organisation | null;
+  club: Project | null;
+  team: Project | null;
+  setTeam: Dispatch<SetStateAction<Project | null>>;
+  loading: boolean;
+  error: string | null;
+  // Identifiers
+  orgIdForDirectoryLists: string;
+  clubIdForDirectoryLists: string;
+  teamIdForDirectoryLists: string;
+  orgSlugForDirectoryLists: string;
+  orgKeyForRoutes: string;
+  clubKeyForRoutes: string;
+  teamKeyForRoutes: string;
+  // Active context
+  activatingContext: boolean;
+  setActivatingContext: Dispatch<SetStateAction<boolean>>;
+  activeContextState: Record<string, unknown> | null;
+  setActiveContextState: Dispatch<SetStateAction<Record<string, unknown> | null>>;
+  // Modal state
+  isProjectEditModalOpen: boolean;
+  setIsProjectEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  isProjectDetailModalOpen: boolean;
+  setIsProjectDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  // Brand
+  brandProfileId: string | null;
+  // Switcher
+  clubTeamsForSwitcher: Project[];
+  clubTeamsForSwitcherLoading: boolean;
+  teamBreadcrumbOptions: BreadcrumbSwitcherOption[];
+  handleTeamSwitch: (option: BreadcrumbSwitcherOption) => void;
+  // Navigation
+  backToClubHref: string;
+  federationClubsHref: string;
+  // Meta
+  apiBaseUrl: string;
+  isPlayer: boolean;
+}
+
+export function useTeamDetailData(): UseTeamDetailDataReturn {
   const { orgId, clubId, projectId } = useParams<{ orgId: string; clubId: string; projectId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,7 +86,7 @@ export function useTeamDetailData() {
   const [error, setError] = useState<string | null>(null);
 
   const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContextState, setActiveContextState] = useState<any | null>(null);
+  const [activeContextState, setActiveContextState] = useState<Record<string, unknown> | null>(null);
   const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
   const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
   const [brandProfileId, setBrandProfileId] = useState<string | null>(null);
@@ -87,8 +128,8 @@ export function useTeamDetailData() {
           if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
           const json = await res.json().catch(() => null);
           const raw = unwrapEnvelope<any>(json);
-          const list: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
-          const match = list.find((o: any) => String(o?.id || '') === String(orgSlugOrId));
+          const list: Array<{ id?: string; slug?: string }> = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+          const match = list.find((o) => String(o?.id || '') === String(orgSlugOrId));
           const slug = String(match?.slug || '').trim();
           if (!slug) throw new Error('Organisation not found');
           if (cancelled) return;
@@ -212,13 +253,13 @@ export function useTeamDetailData() {
       try {
         const orgKey = String(org?.slug || resolvedOrgSlug || '').trim();
 
-        const clubIdForFilter = String(getParentProjectId(team) || clubIdForDirectoryLists || '').trim();
+        const clubIdForFilter = String(getParentProjectId(team as any) || clubIdForDirectoryLists || '').trim();
         if (!clubIdForFilter) {
           if (!cancelled) setClubTeamsForSwitcher([]);
           return;
         }
 
-        const isTeamUnderThisClub = (t: any): boolean => {
+        const isTeamUnderThisClub = (t: Project): boolean => {
           const parentId = String(getParentProjectId(t) || '').trim();
           if (!parentId) return false;
           return parentId === clubIdForFilter;
@@ -236,7 +277,7 @@ export function useTeamDetailData() {
 
         const merged = mergeUniqueById([...(directResults || []), ...(orgTeamsResults || [])]);
         const list = mergeUniqueById(
-          (merged || []).filter((t: any) => {
+          (merged || []).filter((t: Project) => {
             if (!t?.id) return false;
             if (String(t.id) === String(clubIdForDirectoryLists)) return false;
             return isTeamUnderThisClub(t);
@@ -293,7 +334,7 @@ export function useTeamDetailData() {
   }, [location.search, orgKeyForRoutes]);
 
   const teamBreadcrumbOptions: BreadcrumbSwitcherOption[] = useMemo(() => {
-    const base = (clubTeamsForSwitcher || []).map((t: any) => ({
+    const base = (clubTeamsForSwitcher || []).map((t: Project) => ({
       id: String(t.id),
       label: String(t.name || t.slug || t.id),
       slug: String(t.slug || t.id),

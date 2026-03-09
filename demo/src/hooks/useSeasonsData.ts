@@ -23,7 +23,18 @@ import type { useDirectoryFilters } from './useDirectoryFilters';
 // ────────────────────────────────────────────
 // Types
 // ────────────────────────────────────────────
-
+/** Broad period shape covering API responses + parent_period sub-objects */
+interface PeriodLike {
+  id: string;
+  name?: string;
+  slug?: string;
+  parent_period_id?: string | null;
+  parent_period?: { id?: string; name?: string; slug?: string } | null;
+  type?: string;
+  metadata?: Record<string, unknown>;
+  data?: Record<string, unknown>;
+  [key: string]: unknown;
+}
 type Filters = ReturnType<typeof useDirectoryFilters>;
 
 export interface UseSeasonsDataReturn {
@@ -31,7 +42,7 @@ export interface UseSeasonsDataReturn {
   seasonsLoading: boolean;
   filteredSeasons: Period[];
   sortedSeasons: Period[];
-  savePeriodEdits: (periodId: string, payload: any) => Promise<void>;
+  savePeriodEdits: (periodId: string, payload: Record<string, unknown>) => Promise<void>;
   createSeason: (payload: {
     name: string;
     description?: string;
@@ -47,7 +58,7 @@ export interface UseSeasonsDataReturn {
 // Helpers (SeasonsList-specific)
 // ────────────────────────────────────────────
 
-const isLikelySeasonRoot = (p: any): boolean => {
+const isLikelySeasonRoot = (p: PeriodLike): boolean => {
   if (!p) return false;
   const hasParent = Boolean(p?.parent_period_id ?? p?.parent_period?.id ?? p?.parent_period);
   if (hasParent) return false;
@@ -77,7 +88,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   } = filters;
 
   // ── State ─────────────────────────────────────────────────────────
-  const [seasons, setSeasons] = useState<Period[]>([]);
+  const [seasons, setSeasons] = useState<any[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
 
   // ── Fetch Seasons ─────────────────────────────────────────────────
@@ -90,7 +101,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
       try {
         const fetchPeriods = async (params: URLSearchParams) => {
           const url = `${apiBaseUrl}/api/v1/periods/?${params.toString()}`;
-          const results = await fetchAllPages<any>(
+          const results = await fetchAllPages<PeriodLike>(
             url,
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
@@ -120,11 +131,11 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
           competitionsParams.set('type', 'competition');
           const competitions = await fetchPeriods(competitionsParams);
           const parentSeasons = (competitions || [])
-            .map((c: any) => c?.parent_period)
-            .filter((p: any) => p && (p?.id || p?.slug));
+            .map((c) => c?.parent_period)
+            .filter((p): p is PeriodLike => Boolean(p && (p?.id || p?.slug)));
 
-          const merged = [...typed, ...untyped, ...parentSeasons].filter((p: any) => isLikelySeasonRoot(p));
-          const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
+          const merged = [...typed, ...untyped, ...parentSeasons].filter((p) => isLikelySeasonRoot(p));
+          const unique = [...new Map(merged.map((p) => [String(p.id), p])).values()];
           setSeasons(unique);
           return;
         } else if (selectedClubId) {
@@ -160,8 +171,8 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
               }),
             );
 
-            const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p: any) => isLikelySeasonRoot(p));
-            const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
+            const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p) => isLikelySeasonRoot(p));
+            const unique = [...new Map(merged.map((p) => [String(p.id), p])).values()];
             setSeasons(unique);
             return;
           }
@@ -187,8 +198,8 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
               }),
             );
 
-            const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p: any) => isLikelySeasonRoot(p));
-            const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
+            const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p) => isLikelySeasonRoot(p));
+            const unique = [...new Map(merged.map((p) => [String(p.id), p])).values()];
             setSeasons(unique);
             return;
           }
@@ -215,20 +226,20 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
           fallbackParams.delete('type');
 
           const fallbackUrl = `${apiBaseUrl}/api/v1/periods/?${fallbackParams.toString()}`;
-          const fallback = await fetchAllPages<any>(
+          const fallback = await fetchAllPages<PeriodLike>(
             fallbackUrl,
             { credentials: 'include' },
             { ttlMs: 120_000, bypass: refreshKey > 0 },
           );
 
-          const inferred = (Array.isArray(fallback) ? fallback : []).filter((p: any) => isLikelySeasonRoot(p));
-          const unique = [...new Map(inferred.map((p: any) => [String(p.id), p])).values()];
+          const inferred = (Array.isArray(fallback) ? fallback : []).filter((p) => isLikelySeasonRoot(p));
+          const unique = [...new Map(inferred.map((p) => [String(p.id), p])).values()];
           setSeasons(unique);
           return;
         }
 
-        const filteredSeasons = results.filter((p: any) => isLikelySeasonRoot(p));
-        const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p: any) => [String(p.id), p])).values()];
+        const filteredSeasons = results.filter((p) => isLikelySeasonRoot(p));
+        const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p) => [String(p.id), p])).values()];
         setSeasons(unique);
       } catch (e) {
         console.error(e);
@@ -243,7 +254,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
   // ── CRUD ──────────────────────────────────────────────────────────
 
-  const savePeriodEdits = useCallback(async (periodId: string, payload: any) => {
+  const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
     const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
       method: 'PATCH',
@@ -358,7 +369,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
   const sortedSeasons = useMemo(() => {
     const list = [...filteredSeasons];
-    list.sort((a: any, b: any) => {
+    list.sort((a, b) => {
       const byFederation = sortKey(getFederationName(a, organisations)).localeCompare(sortKey(getFederationName(b, organisations)));
       if (byFederation !== 0) return byFederation;
       const byClub = sortKey(getClubName(a, clubs, teams)).localeCompare(sortKey(getClubName(b, clubs, teams)));

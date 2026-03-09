@@ -82,7 +82,7 @@ export default function UserEditModal({
                     <button type="button" onClick={() => d.avatarInputRef.current?.click()} disabled={d.avatarUploading} className="p-6 px-12 rounded-6 border bg-surface-2 text-primary fs-13 fw-600 cursor-pointer">
                       {d.avatarUploading ? 'Uploading...' : 'Change photo'}
                     </button>
-                    <input ref={d.avatarInputRef} type="file" accept="image/*" className="hidden" onChange={d.handleAvatarSelect} />
+                    <input ref={d.avatarInputRef as React.LegacyRef<HTMLInputElement>} type="file" accept="image/*" className="hidden" onChange={d.handleAvatarSelect} />
                     <span className="fs-11 text-muted">JPG, PNG — max 5 MB</span>
                   </div>
                 </div>

@@ -19,10 +19,11 @@ import styles from './AssetsOverviewCard.module.css';
 
 /* ── Helpers ────────────────────────────────────────────── */
 
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json?.data && Array.isArray(json.data)) return json.data;
-  if (json?.results && Array.isArray(json.results)) return json.results;
+function extractItems<T = unknown>(json: unknown): T[] {
+  const r = json as Record<string, any>;
+  if (Array.isArray(r)) return r;
+  if (r?.data && Array.isArray(r.data)) return r.data;
+  if (r?.results && Array.isArray(r.results)) return r.results;
   return [];
 }
 
@@ -102,8 +103,8 @@ export const AssetsOverviewCard: React.FC = () => {
         // Determine which are present (only active assets)
         const activeTypes = new Set(
           brandItems
-            .filter((a: any) => a.is_active !== false)
-            .map((a: any) => a.asset_type),
+            .filter((a) => a.is_active !== false)
+            .map((a) => a.asset_type),
         );
 
         const assetStatuses: TeamAssetStatus[] = EXPECTED_TEAM_ASSETS.map(ea => ({
@@ -150,7 +151,7 @@ export const AssetsOverviewCard: React.FC = () => {
 
             const progress: MemberAssetProgress[] = memberList
               .slice(0, 20)
-              .map((m: any) => {
+              .map((m) => {
                 const userId = String(m.user?.id || m.id);
                 const memberId = String(m.id);
                 const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set<string>();

@@ -82,7 +82,28 @@ export interface TeamCreditsTabProps {
   walletLabel?: string;
 }
 
-export function useTeamCreditsData(props: TeamCreditsTabProps) {
+export interface UseTeamCreditsDataReturn {
+  balance: ProjectCreditsBalance | null;
+  balanceLoading: boolean;
+  balanceError: string | null;
+  userBalance: UserWalletBalance | null;
+  userBalanceLoading: boolean;
+  userBalanceError: string | null;
+  transactions: Transaction[];
+  transactionsLoading: boolean;
+  transactionsError: string | null;
+  numericBalance: number | null;
+  numericUserBalance: number | null;
+  totals: { added: number; used: number; net: number; count: number };
+  recentTransactions: Transaction[];
+  fetchBalance: () => Promise<void>;
+  fetchUserBalance: () => Promise<void>;
+  fetchTransactionsList: () => Promise<void>;
+  projectName: string | undefined;
+  walletLabel: string | undefined;
+}
+
+export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDataReturn {
   const { view, projectId, projectName, organisationId, reloadToken, walletLabel } = props;
 
   const [balance, setBalance] = useState<ProjectCreditsBalance | null>(null);

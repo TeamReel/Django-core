@@ -2,9 +2,36 @@
  * useEntityEditData — state, fetch, save, logo upload, change detection for EntityEditModal.
  */
 import { useState, useEffect, useCallback } from 'react';
+import type React from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import type { EntityType, EntityData, BrandProfile, DesignToken } from './entityEditTypes';
+
+// ============================================================================
+// Return type
+// ============================================================================
+
+export interface UseEntityEditDataReturn {
+  activeTab: 'general' | 'brand' | 'settings';
+  setActiveTab: React.Dispatch<React.SetStateAction<'general' | 'brand' | 'settings'>>;
+  entityData: Partial<EntityData>;
+  setEntityData: React.Dispatch<React.SetStateAction<Partial<EntityData>>>;
+  brandProfile: BrandProfile | null;
+  tokens: DesignToken[];
+  setTokens: React.Dispatch<React.SetStateAction<DesignToken[]>>;
+  newTokens: Omit<DesignToken, 'id'>[];
+  setNewTokens: React.Dispatch<React.SetStateAction<Omit<DesignToken, 'id'>[]>>;
+  deletedTokenIds: string[];
+  setDeletedTokenIds: React.Dispatch<React.SetStateAction<string[]>>;
+  loading: boolean;
+  saving: boolean;
+  uploading: boolean;
+  error: string | null;
+  success: string | null;
+  hasChanges: boolean;
+  handleSave: (canEditGeneral: boolean, canEditBrand: boolean, onSaved?: () => void, onClose?: () => void) => Promise<void>;
+  handleLogoUpload: (file: File) => Promise<string | null>;
+}
 
 export function useEntityEditData(
   isOpen: boolean,
@@ -14,7 +41,7 @@ export function useEntityEditData(
   projectId?: string,
   initialEntityData?: EntityData,
   initialBrandProfile?: BrandProfile | null,
-) {
+): UseEntityEditDataReturn {
   const apiBaseUrl = getApiBaseUrl();
 
   // Tab

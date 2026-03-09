@@ -15,7 +15,22 @@ import { useCallback } from 'react';
  * haptic.vibrate([20,40,20]); // custom pattern
  * ```
  */
-export function useHapticFeedback() {
+export interface UseHapticFeedbackReturn {
+  /** Subtle 10 ms tap — button press, selection change */
+  light: () => void;
+  /** Medium 25 ms tap — toggle, drag threshold crossed */
+  medium: () => void;
+  /** Strong 50 ms buzz — destructive action, long-press */
+  heavy: () => void;
+  /** Double-tap pattern — action confirmed */
+  success: () => void;
+  /** Triple-buzz pattern — error or rejected action */
+  error: () => void;
+  /** Raw vibrate with custom pattern */
+  vibrate: (pattern?: number | number[]) => void;
+}
+
+export function useHapticFeedback(): UseHapticFeedbackReturn {
   const vibrate = useCallback((pattern: number | number[] = 10) => {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {

@@ -44,7 +44,7 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
     return { date: String(datePart || '').trim(), time: String(time || '').trim() };
   };
 
-  const toNumberIfNumeric = (value: any) => {
+  const toNumberIfNumeric = (value: unknown) => {
     const raw = String(value ?? '').trim();
     if (!raw) return undefined;
     return /^[0-9]+$/.test(raw) ? Number(raw) : raw;

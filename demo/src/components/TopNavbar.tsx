@@ -188,7 +188,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
 
               {/* + Create CTA */}
               {!isMobile && (
-                <div ref={d.createMenuRef} className={s.createWrap}>
+                <div ref={d.createMenuRef as React.LegacyRef<HTMLDivElement>} className={s.createWrap}>
                   <button
                     type="button"
                     onClick={() => d.navigate('/content')}
@@ -387,7 +387,7 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
             className={s.mobileDashLink}
             data-active={d.isItemActive(d.dashboardItem.path)}
           >
-            <AppIcon icon={d.dashboardItem.icon} size={16} />
+            <AppIcon icon={d.dashboardItem.icon!} size={16} />
             <span>{d.dashboardItem.label}</span>
           </Link>
           {d.filteredNavGroups.map(group => (

@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔲 Nieuw (0/18 fases)
+**Status:** � In Progress (8/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -57,9 +57,9 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 | Fase | Naam | Scope | Geschat | Effort |
 |------|------|-------|---------|--------|
 | **T1** | API Response Types | Shared interfaces voor alle API endpoints (Activity, Project, Period, Member, Organisation, etc.) | ~25 interfaces | 3 uur |
-| **T2** | `as any` → Typed Casts | Top 20 files: replace `as any` met correcte types (na T1) | ~600 casts | 4 uur |
-| **T3** | Typed Hook Returns | Alle `use*Data` hooks: return types + param types | ~40 hooks | 3 uur |
-| **T4** | Function Param Types | `: any` parameters → typed (callback props, event handlers) | ~160 params | 2 uur |
+| **T2** | ✅ `as any` → Typed Casts | 1,006 → 193 casts (81% reduction) | `89c168de` | 4 uur |
+| **T3** | ✅ Typed Hook Returns | ~50 hooks: return type interfaces + param types | `78bc0f43` | 3 uur |
+| **T4** | ✅ Function Param Types | 724 → ~196 `: any` params (72% reduction) | `78bc0f43` | 4 uur |
 | **T5** | `any[]` → Typed Arrays | Array params/state met correcte item types | ~290 arrays | 2 uur |
 
 ### Track A — API Architecture
@@ -136,9 +136,9 @@ Parallel track:
 
 | Prio | Fases | Waarom |
 |------|-------|--------|
-| **P0 — Nu** | T1, A1, Q1 | Foundation: types + API client + test setup |
-| **P1 — Week 1** | T2, A2, S1 | Biggest impact: 600 `as any` weg + API modules + dead code |
-| **P2 — Week 2** | T3, T4, A3, CSS1 | Complete type safety + hook migration + CSS cleanup |
+| **P0 — Done** | T1, A1, Q1 | ✅ Foundation: types + API client + test setup |
+| **P1 — Done** | T2, A2, S1 | ✅ `as any` 81% weg + API modules + archive clean |
+| **P2 — Partial** | ~~T3, T4~~, A3, CSS1 | T3+T4 ✅, A3 + CSS1 remaining |
 | **P3 — Week 3** | T5, S2, S3, Q2 | Arrays + splitting + first tests |
 | **P4 — Week 4** | S4, CSS2, Q3 | Polish: modals + inline styles + API tests |
 

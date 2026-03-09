@@ -8,6 +8,22 @@
 import { useSearchParams } from 'react-router-dom';
 import { useCallback } from 'react';
 
+type SetURLSearchParamsFn = ReturnType<typeof useSearchParams>[1];
+
+export interface UseQueryParamsReturn {
+  get: (key: string, defaultValue?: string) => string | null;
+  getAll: () => Record<string, string>;
+  set: (key: string, value: string | null | undefined) => void;
+  setMultiple: (updates: Record<string, string | null | undefined>) => void;
+  delete: (key: string) => void;
+  clear: () => void;
+  has: (key: string) => boolean;
+  getNumber: (key: string, defaultValue?: number) => number | null;
+  getBoolean: (key: string, defaultValue?: boolean) => boolean | null;
+  searchParams: URLSearchParams;
+  setSearchParams: SetURLSearchParamsFn;
+}
+
 /**
  * Custom hook for managing URL query parameters
  *
@@ -26,7 +42,7 @@ import { useCallback } from 'react';
  * // Get all parameters
  * const all = queryParams.getAll();
  */
-export function useQueryParams() {
+export function useQueryParams(): UseQueryParamsReturn {
   const [searchParams, setSearchParams] = useSearchParams();
 
   /**

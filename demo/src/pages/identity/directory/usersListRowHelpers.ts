@@ -7,6 +7,21 @@
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import { summarizeNames } from './usersListHelpers';
 
+/** Minimal shape for a user record passed to row helpers. */
+export interface UserRecord {
+    id?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    membership?: { organisation?: { id?: string; slug?: string; name?: string } };
+    organisation?: { id?: string; slug?: string; name?: string };
+    organisations?: Array<{ id?: string; name?: string; slug?: string }>;
+    project_memberships?: Array<{
+        project_id?: string;
+        project?: { id?: string; parent_id?: string | number | null; parent_project_id?: string | number | null; parent_slug?: string };
+    }>;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Context (passed by the orchestrator hook)                          */
 /* ------------------------------------------------------------------ */
@@ -26,7 +41,7 @@ export interface UsersRowContext {
 /*  Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-export function getUserSeasonCompetitionMatchCounts(u: any, ctx: UsersRowContext) {
+export function getUserSeasonCompetitionMatchCounts(u: UserRecord, ctx: UsersRowContext) {
     const { selectedTeamId, selectedClubId, clubsById, teamsById, teamIdsByClubId } = ctx;
     const allowedTeamIds = new Set<string>();
 
@@ -67,7 +82,7 @@ export function getUserSeasonCompetitionMatchCounts(u: any, ctx: UsersRowContext
     return { seasonsCount, competitionsCount, matchesCount };
 }
 
-export function getPreferredScopeIdsForRow(u: any, ctx: UsersRowContext): { clubId: string; teamId: string } {
+export function getPreferredScopeIdsForRow(u: UserRecord, ctx: UsersRowContext): { clubId: string; teamId: string } {
     const { selectedTeamId, selectedClubId, teamsById, clubsById } = ctx;
 
     if (selectedTeamId) {
@@ -111,7 +126,7 @@ export function getPreferredScopeIdsForRow(u: any, ctx: UsersRowContext): { club
 
 export function buildOrgScopedDirectoryHref(
     section: 'seasons' | 'competitions' | 'matches',
-    u: any,
+    u: UserRecord,
     ctx: UsersRowContext,
 ): string | null {
     const orgSlug = String(ctx.getSelectedOrgSlug() || '').trim();
@@ -124,7 +139,7 @@ export function buildOrgScopedDirectoryHref(
     return qsStr ? `/${orgSlug}/${section}?${qsStr}` : `/${orgSlug}/${section}`;
 }
 
-export function getFederationNameForRow(u: any, ctx: UsersRowContext): string {
+export function getFederationNameForRow(u: UserRecord, ctx: UsersRowContext): string {
     if (u?.membership?.organisation?.name) return String(u.membership.organisation.name);
     if (u?.organisation?.name) return String(u.organisation.name);
     const org0 = Array.isArray(u?.organisations) ? u.organisations[0] : null;
@@ -137,7 +152,7 @@ export function getFederationNameForRow(u: any, ctx: UsersRowContext): string {
     return selectedOrg?.name || '-';
 }
 
-export function getOrganisationLinkForRow(u: any, ctx: UsersRowContext): string | null {
+export function getOrganisationLinkForRow(u: UserRecord, ctx: UsersRowContext): string | null {
     const fromMembership = u?.membership?.organisation;
     const fromRow = u?.organisation;
     const slugOrId =
@@ -150,13 +165,13 @@ export function getOrganisationLinkForRow(u: any, ctx: UsersRowContext): string 
     return `/organisations/${slugOrId}`;
 }
 
-export function getUserDetailHrefForRow(u: any): string | null {
+export function getUserDetailHrefForRow(u: UserRecord): string | null {
     const userId = u?.id ? String(u.id).trim() : '';
     if (!userId) return null;
     return `/users/${userId}`;
 }
 
-export function getClubAndTeamLinksForRow(u: any, ctx: UsersRowContext) {
+export function getClubAndTeamLinksForRow(u: UserRecord, ctx: UsersRowContext) {
     const orgSlug = ctx.getSelectedOrgSlug();
     if (!orgSlug)
         return { clubHref: null as string | null, teamHref: null as string | null };
@@ -209,7 +224,7 @@ export function getClubAndTeamLinksForRow(u: any, ctx: UsersRowContext) {
     return { clubHref, teamHref };
 }
 
-export function getClubAndTeamForRow(u: any, ctx: UsersRowContext) {
+export function getClubAndTeamForRow(u: UserRecord, ctx: UsersRowContext) {
     const { selectedTeamId, selectedClubId, teamsById, clubsById } = ctx;
 
     if (selectedTeamId) {
@@ -228,7 +243,7 @@ export function getClubAndTeamForRow(u: any, ctx: UsersRowContext) {
         const club = clubsById.get(String(selectedClubId));
         const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
         const teamIds = memberships
-            .map((m: any) => String(m?.project_id ?? m?.project?.id ?? ''))
+            .map((m) => String(m?.project_id ?? m?.project?.id ?? ''))
             .filter(Boolean);
         const teamUnderClub = teamIds
             .map((id: string) => teamsById.get(id))
@@ -246,7 +261,7 @@ export function getClubAndTeamForRow(u: any, ctx: UsersRowContext) {
 
     const memberships = Array.isArray(u?.project_memberships) ? u.project_memberships : [];
     const projectIds = memberships
-        .map((m: any) => String(m?.project_id ?? m?.project?.id ?? ''))
+        .map((m) => String(m?.project_id ?? m?.project?.id ?? ''))
         .filter(Boolean);
 
     const teamNames: string[] = [];

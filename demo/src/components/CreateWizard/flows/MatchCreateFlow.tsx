@@ -131,7 +131,7 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
   const opponentName = useMemo(() => {
     const id = d.selectedOpponentTeamId;
     if (!id) return '';
-    const found = d.opponentTeamOptions.find((t: any) => String(t.id) === id);
+    const found = d.opponentTeamOptions.find((t) => String(t.id) === id);
     return found ? String((found as any).name || '') : '';
   }, [d.selectedOpponentTeamId, d.opponentTeamOptions]);
 

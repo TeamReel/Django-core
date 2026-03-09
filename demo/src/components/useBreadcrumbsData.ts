@@ -10,6 +10,45 @@ import { periodPathKey } from '../utils/periodPath';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { isSeasonPeriod, UUID_RE } from './breadcrumbHelpers';
 
+// ─── Local structural types for API responses ────────────────────────────────
+
+interface ApiProject {
+  id?: string | number;
+  name?: string;
+  slug?: string;
+  parent_id?: unknown;
+  parent_project_id?: unknown;
+  parent_project?: { id?: string | number } | string | number | null;
+  parent?: { id?: string | number } | string | number | null;
+}
+
+interface ApiPeriod {
+  id?: string | number;
+  name?: string;
+  slug?: string;
+  [key: string]: any;
+}
+
+interface ApiUser {
+  id?: string | number;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  name?: string;
+}
+
+interface ApiMember {
+  id?: string | number;
+  user?: ApiUser;
+}
+
+interface ApiMatch {
+  id?: string | number;
+  title?: string;
+  name?: string;
+  slug?: string;
+}
+
 interface BreadcrumbsDataParams {
   orgSlug: string | null;
   clubSlugOrId: string | null;
@@ -103,7 +142,7 @@ export function useBreadcrumbsData({
           { ttlMs: 60_000, cacheKey: 'breadcrumbs:users', maxItems: 200 }
         );
         if (cancelled) return;
-        const nextOptions = (Array.isArray(users) ? users : []).map((u: any) => {
+        const nextOptions = (Array.isArray(users) ? users : []).map((u: ApiUser) => {
           const id = String(u?.id || '').trim();
           const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
           const email = String(u?.email || '').trim();
@@ -141,7 +180,7 @@ export function useBreadcrumbsData({
         const data = raw?.data || raw;
         const results = data?.results || data?.data?.results || [];
         setClubOptions(
-          (results || []).map((p: any) => ({
+          (results || []).map((p: ApiProject) => ({
             id: String(p.id),
             label: String(p.name || p.slug || p.id),
             slug: String(p.slug || p.id),
@@ -176,17 +215,17 @@ export function useBreadcrumbsData({
         const raw = await res.json();
         const data = raw?.data || raw;
         const results = data?.results || data?.data?.results || [];
-        const onlyThisClub = (Array.isArray(results) ? results : []).filter((p: any) => {
+        const onlyThisClub = (Array.isArray(results) ? results : []).filter((p: ApiProject) => {
           const parent =
             p?.parent_id ??
             p?.parent_project_id ??
             (typeof p?.parent_project === 'object' ? p?.parent_project?.id : p?.parent_project) ??
             (typeof p?.parent === 'object' ? p?.parent?.id : p?.parent);
-          const parentId = parent == null ? '' : String(typeof parent === 'object' ? parent.id : parent);
+          const parentId = parent == null ? '' : String(typeof parent === 'object' ? (parent as any).id : parent);
           return parentId && parentId === clubIdForQuery;
         });
         setTeamOptions(
-          (onlyThisClub || []).map((p: any) => ({
+          (onlyThisClub || []).map((p: ApiProject) => ({
             id: String(p.id),
             label: String(p.name || p.slug || p.id),
             slug: String(p.slug || p.id),
@@ -230,9 +269,9 @@ export function useBreadcrumbsData({
     );
   };
 
-  const findSeasonId = (rootPeriods: any[], seasonKey: string): string => {
-    const found = (rootPeriods || []).find((p: any) => {
-      const key = periodPathKey(p) || String(p?.id || '');
+  const findSeasonId = (rootPeriods: ApiPeriod[], seasonKey: string): string => {
+    const found = (rootPeriods || []).find((p: ApiPeriod) => {
+      const key = periodPathKey(p as any) || String(p?.id || '');
       return String(p?.id || '') === seasonKey || key === seasonKey;
     });
     return String(found?.id || '').trim();
@@ -253,10 +292,10 @@ export function useBreadcrumbsData({
         if (!projectId || cancelled) return;
         const rootPeriods = await fetchRootPeriods(projectId);
         const seasons = (rootPeriods || []).filter(isSeasonPeriod);
-        const opts: BreadcrumbSwitcherOption[] = seasons.map((p: any) => ({
+        const opts: BreadcrumbSwitcherOption[] = seasons.map((p: ApiPeriod) => ({
           id: String(p.id),
           label: String(p.name || p.slug || p.id),
-          slug: periodPathKey(p) || String(p.id),
+          slug: periodPathKey(p as any) || String(p.id),
         }));
         if (!cancelled) setSeasonOptions(opts);
       } catch { /* ignore */ } finally {
@@ -285,10 +324,10 @@ export function useBreadcrumbsData({
         const seasonId = findSeasonId(rootPeriods, effectiveSeason);
         if (!seasonId || cancelled) return;
         const competitionPeriods = await fetchChildPeriods(seasonId);
-        const opts: BreadcrumbSwitcherOption[] = (competitionPeriods || []).map((p: any) => ({
+        const opts: BreadcrumbSwitcherOption[] = (competitionPeriods || []).map((p: ApiPeriod) => ({
           id: String(p.id),
           label: String(p.name || p.slug || p.id),
-          slug: periodPathKey(p) || String(p.id),
+          slug: periodPathKey(p as any) || String(p.id),
         }));
         if (!cancelled) setCompetitionOptions(opts);
       } catch { /* ignore */ } finally {
@@ -327,7 +366,7 @@ export function useBreadcrumbsData({
         const membersRaw = await membersRes.json();
         const membersList = membersRaw?.data?.data || membersRaw?.data?.results || membersRaw?.results || membersRaw?.data || [];
 
-        const opts: BreadcrumbSwitcherOption[] = (Array.isArray(membersList) ? membersList : []).map((m: any) => {
+        const opts: BreadcrumbSwitcherOption[] = (Array.isArray(membersList) ? membersList : []).map((m: ApiMember) => {
           const id = String(m?.id || '').trim();
           const user = m?.user || {};
           const name =
@@ -370,8 +409,8 @@ export function useBreadcrumbsData({
         const seasonId = findSeasonId(rootPeriods, effectiveSeason);
         if (!seasonId || cancelled) return;
         const competitionPeriods = await fetchChildPeriods(seasonId);
-        const competitionFromList = (competitionPeriods || []).find((p: any) => {
-          const key = periodPathKey(p) || String(p?.id || '');
+        const competitionFromList = (competitionPeriods || []).find((p: ApiPeriod) => {
+          const key = periodPathKey(p as any) || String(p?.id || '');
           return String(p?.id || '') === effectiveComp || key === effectiveComp;
         });
         const competitionId = String(competitionFromList?.id || '').trim();
@@ -386,7 +425,7 @@ export function useBreadcrumbsData({
           { credentials: 'include' },
           { ttlMs: 30_000, cacheKey: `matches:competition:breadcrumb:${projectId}:${competitionId}`, maxItems: 250 }
         );
-        const opts: BreadcrumbSwitcherOption[] = (matchRows || []).map((m: any) => ({
+        const opts: BreadcrumbSwitcherOption[] = (matchRows || []).map((m: ApiMatch) => ({
           id: String(m.id),
           label: String(m.title || m.name || m.slug || m.id),
           slug: String(m.slug || m.id),

@@ -96,7 +96,7 @@ export const SecurityPage: React.FC = () => {
   const isSystemAdmin = Boolean(user?.is_superuser) || (user as any)?.role === 'Superadmin';
 
   // Check for admin OR coach role
-  const isOrgAdmin = user?.organisations?.some((org: any) =>
+  const isOrgAdmin = user?.organisations?.some((org) =>
     org.role?.toLowerCase().includes('admin') ||
     org.role?.toLowerCase().includes('coach')
   );
@@ -113,7 +113,7 @@ export const SecurityPage: React.FC = () => {
         targetSlug = currentOrg.slug || '';
       } else if (!currentOrg && organisations.length > 0 && !currentOrgSlug) {
          // Fallback to first org if no context
-         const firstAdminOrg = user?.organisations?.find((o: any) =>
+         const firstAdminOrg = user?.organisations?.find((o) =>
             o.role?.toLowerCase().includes('admin') ||
             o.role?.toLowerCase().includes('coach')
          );

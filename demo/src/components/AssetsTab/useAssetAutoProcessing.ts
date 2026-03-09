@@ -30,6 +30,13 @@ interface AutoProcessingParams {
   organisationId: string;
 }
 
+export interface UseAssetAutoProcessingReturn {
+  postProcessingAsset: string | null;
+  uploadProcessingAsset: string | null;
+  handlePostProcess: (assetType: string) => void;
+  startUploadAutoProcess: (outputType: string, submitParams: SubmitParams) => void;
+}
+
 // ============================================================================
 // Hook
 // ============================================================================
@@ -41,7 +48,7 @@ export function useAssetAutoProcessing({
   parentProjectId,
   projectId,
   organisationId,
-}: AutoProcessingParams) {
+}: AutoProcessingParams): UseAssetAutoProcessingReturn {
   // ── Postprocess generation ──
   const postProcessGen = useAssetGeneration();
   const [postProcessingAsset, setPostProcessingAsset] = useState<string | null>(null);

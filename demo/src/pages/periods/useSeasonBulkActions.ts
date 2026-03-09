@@ -191,7 +191,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
 
   // ── Create competition handler ──
 
-  const handleCreateCompetition = useCallback(async (payload: any) => {
+  const handleCreateCompetition = useCallback(async (payload: Record<string, unknown>) => {
     const orgIdValue = String(payload.organisation_id || org?.id || '').trim();
     const teamIdValue = String(payload.project_id || project?.id || '').trim();
     const seasonIdValue = String(payload.parent_period_id || resolvedSeasonId || season?.id || '').trim();
@@ -232,7 +232,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       if (createdId) {
         setCompetitions((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String(p?.id || '').trim() === createdId)) return list;
+          if (list.some((p) => String(p?.id || '').trim() === createdId)) return list;
           return [created, ...list];
         });
       }
@@ -259,7 +259,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
 
   // ── Create match handler ──
 
-  const handleCreateMatch = useCallback(async (payload: any) => {
+  const handleCreateMatch = useCallback(async (payload: Record<string, any>) => {
     const teamIdValue = String(payload.project_id || project?.id || '').trim();
     const competitionIdValue = String(payload.period_id || '').trim();
     if (!teamIdValue) throw new Error('Select a team first');
@@ -303,7 +303,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       if (createdId) {
         setMatches((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+          if (list.some((m) => String(m?.id || '').trim() === createdId)) return list;
           return [created, ...list];
         });
       }

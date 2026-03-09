@@ -56,12 +56,12 @@ const MatchRow: React.FC<MatchRowProps> = ({
 
   const seasonId = season?.id;
   const seasonFromList = seasonId
-    ? seasons.find((s: any) => String(s.id) === String(seasonId))
+    ? seasons.find((s) => String(s.id) === String(seasonId))
     : undefined;
   const seasonTarget = periodPathKey(seasonFromList || season) || seasonId;
   const compId = competition?.id;
   const compFromList = compId
-    ? competitions.find((c: any) => String(c.id) === String(compId))
+    ? competitions.find((c) => String(c.id) === String(compId))
     : undefined;
   const compTarget = periodPathKey(compFromList || competition) || compId;
 
@@ -289,7 +289,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
     triggerRefresh();
   };
 
-  const handleCreateMatch = async (payload: any) => {
+  const handleCreateMatch = async (payload: Record<string, any>) => {
     const apiBaseUrl = getApiBaseUrl();
     const csrfToken = getCsrfToken();
     const teamId = String(payload.project_id || '');
@@ -331,7 +331,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
       if (createdId) {
         setMatches((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((m: any) => String(m?.id || '').trim() === createdId)) return list;
+          if (list.some((m) => String(m?.id || '').trim() === createdId)) return list;
           return [created, ...list];
         });
       }

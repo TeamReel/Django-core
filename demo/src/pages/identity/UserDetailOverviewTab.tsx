@@ -29,7 +29,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm text-gray-500">No federations.</div>
           ) : (
             <div className="space-y-2">
-              {userOrgs.slice(0, 6).map((o: any) => {
+              {userOrgs.slice(0, 6).map((o) => {
                 const orgSlugOrId = String(o?.slug || o?.id || '').trim();
                 const orgPath = orgSlugOrId ? `/organisations/${encodeURIComponent(orgSlugOrId)}` : '';
                 return orgPath ? (
@@ -56,7 +56,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm text-gray-500">No clubs.</div>
           ) : (
             <div className="space-y-2">
-              {clubsForTab.slice(0, 6).map((c: any) => {
+              {clubsForTab.slice(0, 6).map((c) => {
                 const orgKey = String(primaryOrgSlug || '').trim();
                 const clubKeyOrId = String(c?.slug || c?.id || '').trim();
                 const clubPath = orgKey && clubKeyOrId ? `/${encodeURIComponent(orgKey)}/${encodeURIComponent(clubKeyOrId)}` : '';
@@ -84,7 +84,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm text-gray-500">No teams.</div>
           ) : (
             <div className="space-y-2">
-              {teamMemberships.slice(0, 6).map((t: any) => {
+              {teamMemberships.slice(0, 6).map((t) => {
                 const orgKey = String(primaryOrgSlug || '').trim();
                 const clubIdValue = String(t?.parent || '').trim();
                 const clubKeyOrId = String(clubSlugById.get(clubIdValue) || clubIdValue || '').trim();
@@ -114,7 +114,7 @@ export function UserDetailOverviewTab({ data }: Props) {
             <div className="text-sm text-gray-500">No matches.</div>
           ) : (
             <div className="space-y-2">
-              {linkedMatches.slice(0, 6).map((m: any) => {
+              {linkedMatches.slice(0, 6).map((m) => {
                 const matchKeyOrId = String(m?.slug || m?.id || '').trim();
                 const matchPath = matchKeyOrId ? `/matches/${encodeURIComponent(matchKeyOrId)}` : '';
                 return matchPath ? (

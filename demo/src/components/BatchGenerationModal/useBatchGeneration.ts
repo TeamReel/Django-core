@@ -4,6 +4,7 @@
  * Delegates the heavy async execution to batchExecution.ts.
  */
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import type React from 'react';
 import {
   getTemplatesForContext,
   type AssetTemplate,
@@ -15,9 +16,39 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 import type { BatchMember, MemberParams, MemberJobStatus, BatchGenerationModalProps } from './batchTypes';
 import { executeBatch } from './batchExecution';
 
+// ============================================================================
+// Return type
+// ============================================================================
+
+export interface UseBatchGenerationReturn {
+  step: 'configure' | 'running' | 'done';
+  selectedTemplateId: string;
+  setSelectedTemplateId: React.Dispatch<React.SetStateAction<string>>;
+  defaultParams: MemberParams;
+  setDefaultParams: React.Dispatch<React.SetStateAction<MemberParams>>;
+  memberOverrides: Record<string, MemberParams>;
+  expandedMembers: Set<string>;
+  jobStatuses: Record<string, MemberJobStatus>;
+  currentIndex: number;
+  memberTemplates: AssetTemplate[];
+  selectedTemplate: AssetTemplate | undefined;
+  getEffectiveParams: (memberId: string) => MemberParams;
+  toggleMemberExpanded: (memberId: string) => void;
+  setMemberParam: (memberId: string, key: string, value: string) => void;
+  resetMemberOverrides: (memberId: string) => void;
+  isParamVisible: (param: TemplateParameter, currentParams: MemberParams) => boolean;
+  getInputAssetsForMember: (member: BatchMember, params: MemberParams) => Record<string, string | null>;
+  startBatch: () => Promise<void>;
+  cancelBatch: () => void;
+  completedCount: number;
+  successCount: number;
+  errorCount: number;
+  skippedCount: number;
+}
+
 export function useBatchGeneration(
   props: Pick<BatchGenerationModalProps, 'isOpen' | 'members' | 'projectId' | 'organisationId' | 'brandAssets'>,
-) {
+): UseBatchGenerationReturn {
   const { isOpen, members, projectId, organisationId, brandAssets } = props;
   const apiBase = getApiBaseUrl();
 

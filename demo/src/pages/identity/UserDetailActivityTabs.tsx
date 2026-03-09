@@ -131,9 +131,9 @@ export function UserDetailActivityTabs({ data }: Props) {
               </tr>
             </thead>
             <tbody>
-              {linkedCompetitions.map((c: any) => {
+              {linkedCompetitions.map((c) => {
                 const teamIdValue = String(c?.project_id ?? c?.project?.id ?? '').trim();
-                const team = teamMemberships.find((t: any) => String(t?.id) === teamIdValue);
+                const team = teamMemberships.find((t) => String(t?.id) === teamIdValue);
                 const clubIdValue = String(team?.parent || '').trim();
                 const clubSlug = clubSlugById.get(clubIdValue) || '';
                 const teamSlugOrId = String(team?.slug || team?.id || '').trim();
@@ -182,9 +182,9 @@ export function UserDetailActivityTabs({ data }: Props) {
               </tr>
             </thead>
             <tbody>
-              {linkedMatches.slice(0, 200).map((m: any) => {
+              {linkedMatches.slice(0, 200).map((m) => {
                 const teamIdValue = String(m?.project?.id || m?.project_id || '').trim();
-                const team = teamMemberships.find((t: any) => String(t?.id) === teamIdValue);
+                const team = teamMemberships.find((t) => String(t?.id) === teamIdValue);
                 const clubIdValue = String(team?.parent || '').trim();
                 const clubKeyOrId = String(clubSlugById.get(clubIdValue) || clubIdValue || '').trim();
                 const teamSlugOrId = String(team?.slug || team?.id || '').trim();

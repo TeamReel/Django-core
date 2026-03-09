@@ -18,13 +18,14 @@ export type ProjectOption = {
   id: string | number;
   name: string;
   slug?: string;
-  organisation?: string | { id: string };
+  organisation?: string | { id: string; name?: string; slug?: string };
   organisation_id?: string | number;
   parent_id?: string | number | null;
   parent?: string | number | null;
   parent_name?: string | null;
   parent_project_id?: string | number | null;
-  parent_project?: string | number | { id: string } | null;
+  parent_project?: string | number | { id: string; name?: string; slug?: string } | null;
+  is_active?: boolean;
 };
 
 type Props = {

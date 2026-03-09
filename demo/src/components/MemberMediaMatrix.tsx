@@ -102,7 +102,7 @@ export function MemberMediaMatrix({
                 </tr>
               </thead>
               <tbody>
-                {members.map((m: any) => {
+                {members.map((m) => {
                   const name = getMemberName(m);
                   const mid = String(m.id || '').trim();
                   const href = memberDetailHref ? memberDetailHref(mid) : '';

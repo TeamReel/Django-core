@@ -1,26 +1,112 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth, useSignOut } from '@django-core/auth-ui';
+import type React from 'react';
+import { useLocation, useNavigate, type Location, type NavigateFunction } from 'react-router-dom';
+import { useAuth, useSignOut, type User } from '@django-core/auth-ui';
 import { useTheme } from '@django-core/theme-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Home } from 'lucide-react';
 import { useUserRole } from './PermissionGuards';
 import { getApiBaseUrl } from '../utils/apiBase';
-import { useQueueCounts } from '../hooks/useQueueCounts';
-import { useGenerationJobs, reviewJob } from '../hooks/useGenerationJobs';
+import { useQueueCounts, type QueueCounts } from '../hooks/useQueueCounts';
+import { useGenerationJobs, reviewJob, type GenerationJob } from '../hooks/useGenerationJobs';
 import {
     navGroups,
     checkIsNonAppRoute,
     isItemActive as checkItemActive,
     isGroupActive as checkGroupActive,
     type NavGroup,
+    type NavItem,
     type NotificationResponse,
     type PhotoCompositeFollowUpInfo,
 } from './topNavbarHelpers';
 
+/* ─── Return type ───────────────────────────────────────────── */
+
+export interface UseTopNavbarDataReturn {
+    // Auth / roles
+    user: User | null;
+    signOut: () => Promise<void>;
+    signOutLoading: boolean;
+    isSystemAdmin: boolean;
+    isLandAdmin: boolean;
+    isOrgAdmin: boolean;
+    hasOrgRole: boolean;
+    isAdmin: boolean;
+    // Navigation
+    location: Location;
+    navigate: NavigateFunction;
+    showBreadcrumbs: boolean;
+    // Theme
+    currentThemeMode: string;
+    toggleTheme: () => void;
+    // Dropdown / mega-menu
+    openDropdown: string | null;
+    setOpenDropdown: React.Dispatch<React.SetStateAction<string | null>>;
+    filteredNavGroups: NavGroup[];
+    dashboardItem: NavItem;
+    isItemActive: (path: string) => boolean;
+    isGroupActive: (group: NavGroup) => boolean;
+    handleMouseEnterTrigger: (groupId: string) => void;
+    handleMouseLeaveTrigger: (groupId: string) => void;
+    handleMouseEnterDropdown: (groupId: string) => void;
+    handleMouseLeaveDropdown: (groupId: string) => void;
+    handleClickTrigger: (groupId: string, e: React.MouseEvent) => void;
+    handleKeyDown: (groupId: string, e: React.KeyboardEvent) => void;
+    // Mobile
+    mobileMenuOpen: boolean;
+    setMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    // Language
+    language: 'EN' | 'NL' | 'DE' | 'IT' | 'FR';
+    languageMenuOpen: boolean;
+    setLanguageMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    handleLanguageChange: (lang: 'EN' | 'NL' | 'DE' | 'IT' | 'FR') => void;
+    // Search
+    navSearchHasQuery: boolean;
+    setNavSearchHasQuery: React.Dispatch<React.SetStateAction<boolean>>;
+    commandOpen: boolean;
+    setCommandOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    // Create menu
+    createMenuOpen: boolean;
+    setCreateMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    createMenuRef: React.RefObject<HTMLDivElement | null>;
+    // Queue / quick-review
+    queueCounts: QueueCounts;
+    queueBadgeCount: number;
+    queueBadgeColor: string;
+    quickReviewOpen: boolean;
+    setQuickReviewOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    openQuickReview: () => void;
+    queueModalTab: 'review' | 'in-progress';
+    setQueueModalTab: React.Dispatch<React.SetStateAction<'review' | 'in-progress'>>;
+    quickReviewIdx: number;
+    setQuickReviewIdx: React.Dispatch<React.SetStateAction<number>>;
+    quickReviewBusy: boolean;
+    selectedVariantIdxs: Set<number>;
+    setSelectedVariantIdxs: React.Dispatch<React.SetStateAction<Set<number>>>;
+    pendingReviewJobs: GenerationJob[];
+    inProgressJobs: GenerationJob[];
+    refreshAiJobs: () => Promise<void>;
+    handleQuickReview: (action: 'approve' | 'reject') => Promise<void>;
+    // Photo composite follow-up
+    photoCompositeFollowUp: PhotoCompositeFollowUpInfo | null;
+    setPhotoCompositeFollowUp: React.Dispatch<React.SetStateAction<PhotoCompositeFollowUpInfo | null>>;
+    // Notifications
+    unreadCount: number;
+    notificationsModalOpen: boolean;
+    setNotificationsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    notificationsList: Array<{ id: string; title?: string; message: string; is_read: boolean; read?: boolean; action_url?: string | null; created_at: string }>;
+    // Credits
+    myCreditsBalance: string | null;
+    formattedCredits: string | null;
+    creditsBadgeColor: string;
+    creditsTooltip: string;
+    creditsModalOpen: boolean;
+    setCreditsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 /* ─── Hook ──────────────────────────────────────────────────── */
 
-export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
+export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): UseTopNavbarDataReturn {
     const location = useLocation();
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -188,7 +274,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
                     debugLog('[TopNavbar] Unread count:', unread);
                     setUnreadCount(unread);
                     if (Array.isArray(notifications)) {
-                        setNotificationsList(notifications.slice(0, 10).map((n: any) => ({
+                        setNotificationsList(notifications.slice(0, 10).map((n) => ({
                             id: n.id,
                             title: n.title || '',
                             message: n.message || n.content || 'Notification',
@@ -349,7 +435,7 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void) {
             }
             // After approving photo_composite_gemini, offer to generate video
             if (action === 'approve' && job.template_id === 'photo_composite_gemini' && job.membership_id) {
-                const approvedVariants = result?.output_variants?.filter((v: any) => v.approved === true) || [];
+                const approvedVariants = result?.output_variants?.filter((v) => v.approved === true) || [];
                 const imageUrl = approvedVariants[0]?.presigned_url || job.output_url;
                 if (imageUrl) {
                     setQuickReviewOpen(false);

@@ -205,7 +205,7 @@ export function FeedbackRefinement({
               type="text"
               value={feedbackFields[field.id]}
               onChange={(e) =>
-                setFeedbackFields((prev: any) => ({ ...prev, [field.id]: e.target.value }))
+                setFeedbackFields((prev: Record<string, unknown>) => ({ ...prev, [field.id]: e.target.value }))
               }
               className={styles.feedbackInput}
             />
@@ -222,7 +222,7 @@ export function FeedbackRefinement({
           type="text"
           value={feedbackFields.other}
           onChange={(e) =>
-            setFeedbackFields((prev: any) => ({ ...prev, other: e.target.value }))
+            setFeedbackFields((prev: Record<string, unknown>) => ({ ...prev, other: e.target.value }))
           }
           placeholder="Bijv. 'Sokken wit', 'Meer contrast in foto'..."
           className={styles.feedbackInput}

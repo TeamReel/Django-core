@@ -38,7 +38,7 @@ interface TeamMediaTabProps {
 }
 
 /** Best photo for player avatar */
-function getMemberPhoto(m: any): string | null {
+function getMemberPhoto(m: Record<string, any>): string | null {
   for (const sid of ['closeup', 'kit', 'profile'] as MediaSlotId[]) {
     const url = getMediaUrl(m, sid);
     if (url) return url;
@@ -46,7 +46,7 @@ function getMemberPhoto(m: any): string | null {
   return m?.user?.avatar_url || null;
 }
 
-function getMemberName(m: any): string {
+function getMemberName(m: Record<string, any>): string {
   const u = m?.user || m;
   return (
     String(u?.name || '').trim() ||
@@ -56,7 +56,7 @@ function getMemberName(m: any): string {
   );
 }
 
-function getInitials(m: any): string {
+function getInitials(m: Record<string, any>): string {
   const u = m?.user || m;
   const f = String(u?.first_name || '').trim();
   const l = String(u?.last_name || '').trim();
@@ -147,7 +147,7 @@ export function TeamMediaTab({ members, membersLoading }: TeamMediaTabProps) {
         />
       </div>
 
-      {filtered.map((m: any) => {
+      {filtered.map((m) => {
         const mid = String(m?.id || m?.user?.id || '');
         const name = getMemberName(m);
         const photo = getMemberPhoto(m);

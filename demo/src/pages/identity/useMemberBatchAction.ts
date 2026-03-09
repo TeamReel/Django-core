@@ -168,7 +168,7 @@ export function useMemberBatchAction({
                         if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     } else {
                         const memberships = Array.isArray(m.project_memberships) ? m.project_memberships : [];
-                        const relevantPm = memberships.find((pm: any) => {
+                        const relevantPm = memberships.find((pm) => {
                             const projectId = String(pm?.project_id ?? pm?.project?.id ?? '');
                             if (clubProjectId) return projectId === String(clubProjectId);
                             const parentId = pm?.project?.parent_id ?? pm?.project?.parent_project_id;

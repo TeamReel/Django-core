@@ -4,7 +4,7 @@
  * Hooks into: form state, avatar upload, org/club/team role management,
  * project loading, membership fetching, and all role update functions.
  */
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction, type RefObject, type ChangeEvent } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import {
@@ -22,7 +22,56 @@ export interface UseUserEditDataParams {
   onSaved?: () => Promise<void> | void;
 }
 
-export function useUserEditData({ opened, user, organisationSlug, scopeProjectKey, onSaved }: UseUserEditDataParams) {
+export interface UseUserEditDataReturn {
+  activeTab: 'personal' | 'access' | 'link';
+  setActiveTab: Dispatch<SetStateAction<'personal' | 'access' | 'link'>>;
+  formData: Partial<User>;
+  setFormData: Dispatch<SetStateAction<Partial<User>>>;
+  saving: boolean;
+  setSaving: Dispatch<SetStateAction<boolean>>;
+  extraError: string | null;
+  setExtraError: Dispatch<SetStateAction<string | null>>;
+  avatarUploading: boolean;
+  avatarPreview: string | null;
+  avatarInputRef: RefObject<HTMLInputElement | null>;
+  handleAvatarSelect: (e: ChangeEvent<HTMLInputElement>) => void;
+  orgRole: 'member' | 'admin';
+  setOrgRole: Dispatch<SetStateAction<'member' | 'admin'>>;
+  orgMembershipId: string | null;
+  selectedClubKey: string;
+  setSelectedClubKey: Dispatch<SetStateAction<string>>;
+  clubMembershipId: string | null;
+  clubAccessRole: 'viewer' | 'editor' | 'admin';
+  setClubAccessRole: Dispatch<SetStateAction<'viewer' | 'editor' | 'admin'>>;
+  selectedTeamKey: string;
+  setSelectedTeamKey: Dispatch<SetStateAction<string>>;
+  teamMembershipId: string | null;
+  teamAccessRole: 'viewer' | 'editor' | 'admin';
+  setTeamAccessRole: Dispatch<SetStateAction<'viewer' | 'editor' | 'admin'>>;
+  functionalRoles: string[];
+  setFunctionalRoles: Dispatch<SetStateAction<string[]>>;
+  linkClubKey: string;
+  setLinkClubKey: Dispatch<SetStateAction<string>>;
+  linkTeamKey: string;
+  setLinkTeamKey: Dispatch<SetStateAction<string>>;
+  linkAccessRole: 'viewer' | 'editor' | 'admin';
+  setLinkAccessRole: Dispatch<SetStateAction<'viewer' | 'editor' | 'admin'>>;
+  orgProjects: OrgProjectChoice[];
+  orgProjectsLoading: boolean;
+  orgProjectsError: string | null;
+  inviteOrgRole: 'member' | 'admin';
+  setInviteOrgRole: Dispatch<SetStateAction<'member' | 'admin'>>;
+  addingToOrg: boolean;
+  addingToProject: boolean;
+  availableProjects: ProjectChoice[];
+  updateClubRole: () => Promise<void>;
+  updateTeamRole: () => Promise<void>;
+  updateOrgRoleIfNeeded: () => Promise<void>;
+  linkToOrganisation: () => Promise<void>;
+  performLinkToProject: (key: string, role: string, type: 'club' | 'team') => Promise<void>;
+}
+
+export function useUserEditData({ opened, user, organisationSlug, scopeProjectKey, onSaved }: UseUserEditDataParams): UseUserEditDataReturn {
   const [activeTab, setActiveTab] = useState<'personal' | 'access' | 'link'>('access');
   const [formData, setFormData] = useState<Partial<User>>({});
   const [saving, setSaving] = useState(false);
@@ -66,7 +115,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     if (list.length === 0) {
       const pms = Array.isArray(user?.project_memberships) ? user!.project_memberships : [];
       const seen = new Set<string>();
-      list = pms.map((pm: any) => {
+      list = pms.map((pm: { project?: Record<string, unknown>; project_id?: string }) => {
         const proj = pm?.project || {};
         const key = String(proj?.slug || proj?.id || pm?.project_id || '').trim();
         if (!key || seen.has(key)) return null;
@@ -79,7 +128,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     }
     const orgProjectMap = new Map<string, OrgProjectChoice>();
     if (Array.isArray(orgProjects)) for (const op of orgProjects) if (op.key) orgProjectMap.set(op.key, op);
-    return list.map((p: any) => {
+    return list.map((p: Record<string, unknown>) => {
       const key = String(p?.slug || p?.id || '').trim();
       const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
       let isTeam = false;
@@ -90,7 +139,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!isTeam && (name.toLowerCase().includes('team') || name.includes('-') || /\s\d+$/.test(name) || /\sO\d+/i.test(name) || /\sU\d+/i.test(name))) isTeam = true;
       if (!parentKey && (p?.parent_id || p?.parent_slug)) parentKey = String(p.parent_slug || p.parent_id).trim();
       return { key, name, isTeam, parentKey };
-    }).filter((p: any) => Boolean(p.key));
+    }).filter((p: { key: string }) => Boolean(p.key));
   }, [user, orgProjects]);
 
   // ── User init effect ──
@@ -117,7 +166,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       setFormData({ first_name: user.first_name, last_name: user.last_name, email: user.email, is_active: user.is_active, role: user.role });
       const orgSlug = String(organisationSlug || '').trim().toLowerCase();
       const orgs = Array.isArray(user?.organisations) ? user!.organisations : [];
-      const orgEntry = orgSlug ? orgs.find((o: any) => String(o?.slug || '').toLowerCase() === orgSlug) : null;
+      const orgEntry = orgSlug ? orgs.find((o: { slug?: string }) => String(o?.slug || '').toLowerCase() === orgSlug) : null;
       setOrgMembershipId(String(orgEntry?.membership_id || '').trim() || null);
       const roleRaw = String(orgEntry?.role || '').trim().toLowerCase();
       setOrgRole(roleRaw === 'admin' || roleRaw === 'member' ? roleRaw : 'member');
@@ -142,7 +191,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
         const rawItems = Array.isArray(list) ? list : [];
         const idToSlug = new Map<string, string>();
         for (const p of rawItems) { const pid = String(p?.id || '').trim(); const pslug = String(p?.slug || '').trim(); if (pid && pslug) idToSlug.set(pid, pslug); }
-        const choices: OrgProjectChoice[] = rawItems.map((p: any) => {
+        const choices: OrgProjectChoice[] = rawItems.map((p: Record<string, unknown>) => {
           const key = String(p?.slug || p?.id || '').trim();
           const name = String(p?.name || p?.title || p?.slug || p?.id || '').trim();
           const parentName = String(p?.parent_name || p?.parentName || '').trim() || null;
@@ -169,7 +218,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       let found = null;
       const normalizedKey = projectKey.trim().toLowerCase();
       const userProjects = Array.isArray(user?.projects) ? user!.projects : [];
-      const local = userProjects.find((p: any) => String(p?.slug || p?.id || '').trim().toLowerCase() === normalizedKey);
+      const local = userProjects.find((p: Record<string, unknown>) => String(p?.slug || p?.id || '').trim().toLowerCase() === normalizedKey);
       const knownId = local?.membership_id ? String(local.membership_id).trim() : null;
       if (knownId) {
         try {
@@ -187,11 +236,11 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
           const raw = await r.json();
           const members = raw?.data?.results || raw?.results || raw?.data || [];
           const uid = String(user?.id || '').trim();
-          const matches = members.filter((m: any) => {
+          const matches = members.filter((m: { user?: Record<string, unknown>; user_id?: string }) => {
             const mUid = m?.user?.id ?? m?.user_id ?? m?.user;
             return String(mUid || '').trim() === uid;
           });
-          found = matches.find((m: any) => !String(m?.period_id ?? m?.period ?? '')) || matches[0] || null;
+          found = matches.find((m: { period_id?: string; period?: unknown }) => !String(m?.period_id ?? m?.period ?? '')) || matches[0] || null;
         }
       }
       return found;
@@ -229,7 +278,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
   }, [selectedTeamKey, user, opened, fetchMemberInfo]);
 
   // ── Avatar upload ──
-  const handleAvatarSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarPreview(URL.createObjectURL(file));
@@ -294,7 +343,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     const orgSlug = String(organisationSlug || '').trim();
     if (!orgSlug || !orgMembershipId) return;
     const orgs = Array.isArray(user?.organisations) ? user!.organisations : [];
-    const currentEntry = orgs.find((o: any) => String(o?.membership_id || '').trim() === String(orgMembershipId));
+    const currentEntry = orgs.find((o: { membership_id?: string }) => String(o?.membership_id || '').trim() === String(orgMembershipId));
     const currentRole = String(currentEntry?.role || '').trim().toLowerCase();
     if (currentRole === String(orgRole)) return;
     const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/${encodeURIComponent(orgMembershipId)}/`, {

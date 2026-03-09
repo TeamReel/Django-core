@@ -58,8 +58,8 @@ export function OrgHierarchyTab({
 }: OrgHierarchyTabProps) {
   const hierarchyGroups = useMemo((): ClubRow[] => {
     const q = String(hierarchySearch || '').trim().toLowerCase();
-    const toSlugOrId = (p: any) => String(p?.slug || p?.id || '').trim();
-    const toName = (p: any) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
+    const toSlugOrId = (p: Record<string, unknown>) => String(p?.slug || p?.id || '').trim();
+    const toName = (p: Record<string, unknown>) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
 
     const clubUsersCountById = membershipUserCounts?.clubUsersCountById || {};
     const teamUsersCountById = membershipUserCounts?.teamUsersCountById || {};
@@ -83,9 +83,9 @@ export function OrgHierarchyTab({
       const clubSlugOrId = toSlugOrId(c);
 
       const clubTeams = (teamsByClubId.get(clubId) || []).slice();
-      clubTeams.sort((a: any, b: any) => toName(a).localeCompare(toName(b), undefined, { sensitivity: 'base' }));
+      clubTeams.sort((a, b) => toName(a).localeCompare(toName(b), undefined, { sensitivity: 'base' }));
 
-      const mappedTeams: TeamRow[] = clubTeams.map((t: any) => {
+      const mappedTeams: TeamRow[] = clubTeams.map((t) => {
         const teamId = String(t?.id || '').trim();
         return {
           teamId,

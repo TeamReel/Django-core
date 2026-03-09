@@ -106,7 +106,7 @@ export const OrganisationAuditPage: React.FC = () => {
                 { key: 'user', label: 'User' },
                 { key: 'project', label: 'Project' },
               ]}
-              rows={events.map((row: any) => {
+              rows={events.map((row) => {
                 let when: string = '—';
                 try {
                   when = new Date(String(row.timestamp)).toLocaleString('nl-NL');

@@ -1,18 +1,59 @@
 import React, { useMemo, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { periodPathKey } from '../../utils/periodPath';
 
-import { useSeasonContext, isSeasonPeriod } from '../../providers/SeasonProvider';
+import { useSeasonContext, isSeasonPeriod, type SeasonContextValue } from '../../providers/SeasonProvider';
 import { useSeasonFormState } from './useSeasonFormState';
-import { useSeasonDataFetching } from './useSeasonDataFetching';
+import { useSeasonDataFetching, type UseSeasonDataFetchingReturn } from './useSeasonDataFetching';
 import { useSeasonDerived } from './useSeasonDerived';
 import { useSeasonCrudActions } from './useSeasonCrudActions';
 import { useSeasonBulkActions } from './useSeasonBulkActions';
 
+// ─── Return type ─────────────────────────────────────────────────────────────
+
+export type UseSeasonDetailPageDataReturn =
+  ReturnType<typeof useSeasonFormState> &
+  UseSeasonDataFetchingReturn &
+  ReturnType<typeof useSeasonDerived> &
+  ReturnType<typeof useSeasonCrudActions> &
+  ReturnType<typeof useSeasonBulkActions> & {
+    // Navigation
+    navigate: NavigateFunction;
+    user: ReturnType<typeof useAuth>['user'];
+    // Provider data
+    org: SeasonContextValue['org'];
+    project: SeasonContextValue['project'];
+    club: SeasonContextValue['club'];
+    resolvedSeasonId: string;
+    effectiveSeasonId: string;
+    seasonsBasePath: string;
+    projectDetailPath: string;
+    seasonPathKey: string;
+    isTeamRoute: boolean;
+    orgSlugOrId: string;
+    memberDetailHref: (memberId: string) => string;
+    clubBrand: SeasonContextValue['clubBrand'];
+    teamBrand: SeasonContextValue['teamBrand'];
+    batchBrandKits: Record<string, string | null>;
+    brandLogoUrl: string | null;
+    brandSponsorUrl: string | null;
+    apiBaseUrl: string;
+    userCanEditProject: boolean;
+    userCanDeleteProject: boolean;
+    isPlayer: boolean;
+    isSupporter: boolean;
+    // Navigation helpers
+    activeTab: string;
+    navigateToTab: (tabId: string) => void;
+    // Helpers for modals
+    isSeasonPeriod: typeof isSeasonPeriod;
+    organisationSportId: string | null;
+  };
+
 // ─── Orchestrator ────────────────────────────────────────────────────────────
 
-export function useSeasonDetailPageData() {
+export function useSeasonDetailPageData(): UseSeasonDetailPageDataReturn {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();

@@ -3,21 +3,80 @@ import { Link } from 'react-router-dom';
 import { Badge, Card } from '@django-core/design-system';
 import { Table } from '../../../shims/design-system';
 
+/** Project membership record from the API */
+interface ProjectMembershipRecord {
+  project_id?: string;
+  project?: {
+    id?: string;
+    name?: string;
+    slug?: string;
+    title?: string;
+    parent_id?: string;
+    parent_project_id?: string;
+    parent?: { id?: string };
+  };
+  project_name?: string;
+  project_slug?: string;
+  club_id?: string;
+  club?: { id?: string };
+  role?: string;
+  functional_roles?: string[];
+  functionalRoles?: string[];
+  metadata?: Record<string, unknown>;
+}
+
+/** User nested within an org membership row */
+interface MembershipItemUser {
+  id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  is_superuser?: boolean;
+  role?: string;
+  project_memberships?: ProjectMembershipRecord[];
+  project_membership_details?: ProjectMembershipRecord[];
+}
+
+/** A single row in the users table (org membership + nested user) */
+interface MembershipItem {
+  id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  user?: MembershipItemUser;
+  organisation_membership_id?: string;
+  organisationMembershipId?: string;
+  role?: string;
+  is_superuser?: boolean;
+  project_memberships?: ProjectMembershipRecord[];
+  project_membership_details?: ProjectMembershipRecord[];
+}
+
+/** Team record from the teamById lookup map */
+interface TeamRecord {
+  id: string;
+  slug?: string;
+  name?: string;
+  parent_id?: string;
+  parent_project_id?: string;
+  parent?: { id?: string };
+}
+
 type Props = {
   isTeamRoute: boolean;
-  pageItems: any[];
+  pageItems: MembershipItem[];
   currentOrgSlug: string;
   currentClubSlugOrId: string;
   currentClubId: string;
   currentProjectId: string;
-  teamById: Map<string, any>;
+  teamById: Map<string, TeamRecord>;
   userCanManageMembers: boolean;
   seasonId?: string;
-  onOpenAssignSeason?: (item: any) => void;
-  onOpenUnassignSeason?: (item: any) => void;
-  onViewUser?: (user: any) => void;
+  onOpenAssignSeason?: (item: MembershipItem) => void;
+  onOpenUnassignSeason?: (item: MembershipItem) => void;
+  onViewUser?: (user: MembershipItemUser) => void;
   onViewMembership: (membershipId: string) => void;
-  onEditMembership: (args: { item: any; teamId?: string }) => void;
+  onEditMembership: (args: { item: MembershipItem; teamId?: string }) => void;
   onRemoveMembership: (membershipId: string, email: string) => Promise<void>;
 };
 
@@ -69,7 +128,7 @@ export default function UsersTable({
     return isAdminLike ? 'Club Admin' : 'Supporter';
   };
 
-  const getMemberProjectMemberships = (item: any): any[] => {
+  const getMemberProjectMemberships = (item: MembershipItem): ProjectMembershipRecord[] => {
     const u = item?.user || item;
     const list =
       item?.project_memberships ||
@@ -80,8 +139,8 @@ export default function UsersTable({
     return Array.isArray(list) ? list : [];
   };
 
-  const getPmTeamId = (pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '');
-  const getPmClubId = (pm: any) =>
+  const getPmTeamId = (pm: ProjectMembershipRecord) => String(pm?.project_id ?? pm?.project?.id ?? '');
+  const getPmClubId = (pm: ProjectMembershipRecord) =>
     String(
       pm?.club_id ??
         pm?.club?.id ??
@@ -94,7 +153,7 @@ export default function UsersTable({
   // seasonId is optional context (e.g. current filter) but the actual Assign/Unassign
   // selection happens in the modal, not inline.
 
-  const getRoleDisplay = (item: any): { label: string; title: string } => {
+  const getRoleDisplay = (item: MembershipItem): { label: string; title: string } => {
     const userObj = item?.user || item;
     if (!userObj) return { label: '-', title: '' };
 
@@ -108,7 +167,7 @@ export default function UsersTable({
     if (orgMembershipRole === 'admin') roles.push('Land Admin');
 
     const pms = getMemberProjectMemberships(item);
-    const scopedPms = pms.filter((pm: any) => {
+    const scopedPms = pms.filter((pm) => {
       if (isTeamRoute && currentProjectId) {
         return getPmTeamId(pm) === String(currentProjectId);
       }
@@ -148,7 +207,7 @@ export default function UsersTable({
     return { label, title };
   };
 
-  const getFunctionalRolesForProjectMembership = (pm: any): string[] => {
+  const getFunctionalRolesForProjectMembership = (pm: ProjectMembershipRecord): string[] => {
     const roles = pm?.functional_roles ?? pm?.functionalRoles;
     if (Array.isArray(roles)) return roles.map((r) => String(r || '').trim()).filter(Boolean);
 
@@ -188,7 +247,7 @@ export default function UsersTable({
           </tr>
         </thead>
         <tbody>
-          {pageItems.map((item: any) => {
+          {pageItems.map((item) => {
             const userObj = item.user || item;
             const membershipId = String(item?.organisation_membership_id || item?.organisationMembershipId || item.id);
             const hasOrgMembership = looksLikeUuid(membershipId);
@@ -207,11 +266,11 @@ export default function UsersTable({
             })();
 
             const rawProjectIds = Array.from(
-              new Set(pms.map((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean))
+              new Set(pms.map((pm) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean))
             );
 
             const scopedTeamPm = isTeamRoute
-              ? pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(currentProjectId))
+              ? pms.find((pm) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(currentProjectId))
               : null;
             const functionalRoles = scopedTeamPm ? getFunctionalRolesForProjectMembership(scopedTeamPm) : [];
 
@@ -226,7 +285,7 @@ export default function UsersTable({
               if (teamById.has(String(id))) return true;
 
               // Fallback: if the membership payload includes project info with a parent, treat it as a team.
-              const pm = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(id));
+              const pm = pms.find((p) => String(p?.project_id ?? p?.project?.id ?? '') === String(id));
               const parentId = String(pm?.project?.parent_id ?? pm?.project?.parent_project_id ?? pm?.project?.parent?.id ?? '').trim();
               if (parentId && currentClubId && parentId === String(currentClubId)) return true;
               return false;
@@ -240,7 +299,7 @@ export default function UsersTable({
               String(pm?.project?.slug ?? pm?.project_slug ?? '').trim();
 
             const team = teamId ? teamById.get(String(teamId)) : null;
-            const pmForTeam = teamId ? pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId)) : null;
+            const pmForTeam = teamId ? pms.find((pm) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId)) : null;
             const teamSlugOrId =
               (team ? String(team.slug || team.id || '') : '') ||
               (pmForTeam ? getTeamSlugFromPm(pmForTeam) : '') ||
@@ -253,7 +312,7 @@ export default function UsersTable({
             const teamEntries = teamIds
               .map((id) => {
                 const t = teamById.get(String(id));
-                const pm = pms.find((pm: any) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(id));
+                const pm = pms.find((p) => String(p?.project_id ?? p?.project?.id ?? '') === String(id));
                 const name =
                   String(t?.name || '').trim() ||
                   String(pm?.project?.name ?? pm?.project_name ?? '').trim() ||

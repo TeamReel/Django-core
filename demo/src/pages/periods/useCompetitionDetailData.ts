@@ -2,16 +2,121 @@
  * useCompetitionDetailData — all state, effects, mutations, and computed values
  * for ProjectCompetitionDetailPage.
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useLocation, useNavigate, type NavigateFunction, type Location } from 'react-router-dom';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { getActiveContext } from '../../utils/activeContext';
 import { useSeasonContext } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
-import { useCompetitionMutations } from './useCompetitionMutations';
+import { useCompetitionMutations, type PeriodEditRef, type MatchRef, type MemberRef, type CreateMatchPayload } from './useCompetitionMutations';
+import type { Activity } from '../../types/api/activity';
 
-export function useCompetitionDetailData(effectiveCompetitionId: string) {
+/** Teamreel-specific match metadata nested under activity.metadata. */
+interface MatchContext {
+  opponent_club_id?: string;
+  home_club_name?: string;
+  away_club_name?: string;
+  away_team_name?: string;
+}
+interface MatchMetadata { teamreel?: { match_context?: MatchContext } }
+
+export interface UseCompetitionDetailDataReturn {
+  // Navigation
+  navigate: NavigateFunction;
+  location: Location;
+  // Season context pass-through
+  isTeamRoute: boolean;
+  isOrgRoute: boolean;
+  orgSlugOrId: string;
+  clubSlugOrId: string;
+  projectSlugOrId: string;
+  seasonsBasePath: string;
+  isSuperAdmin: boolean;
+  userCanEditProject: boolean;
+  apiBaseUrl: string;
+  // Resolved entities
+  org: Organisation | null;
+  project: Project | null;
+  club: Project | null;
+  season: Period | null;
+  competition: Period | null;
+  resolvedSeasonId: string;
+  resolvedCompetitionId: string;
+  // Loading
+  loading: boolean;
+  error: string | null;
+  // Computed
+  activeTab: string;
+  seasonKeyOrId: string;
+  competitionKeyOrId: string;
+  competitionBasePath: string;
+  navigateToTab: (tabId: string) => void;
+  competitionMatchesCount: number;
+  // Matches
+  matches: Activity[];
+  matchesLoading: boolean;
+  filteredMatches: Activity[];
+  matchDisplayTitle: (match: Activity, fallback?: string) => string;
+  matchDetailPath: (matchId: string) => string;
+  matchMediaMap: Record<string, Record<string, unknown>[]>;
+  matchMediaLoading: boolean;
+  // Members
+  members: MemberRef[];
+  membersLoading: boolean;
+  // Hierarchy search
+  hierarchySearch: string;
+  setHierarchySearch: Dispatch<SetStateAction<string>>;
+  // Active context
+  activeContext: Record<string, unknown> | null;
+  activatingContext: boolean;
+  // Modal state
+  isPeriodEditModalOpen: boolean;
+  setIsPeriodEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedEditPeriod: PeriodEditRef | null;
+  setSelectedEditPeriod: Dispatch<SetStateAction<PeriodEditRef | null>>;
+  isPeriodDetailModalOpen: boolean;
+  setIsPeriodDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedDetailPeriod: Period | null;
+  setSelectedDetailPeriod: Dispatch<SetStateAction<Period | null>>;
+  isMatchEditModalOpen: boolean;
+  setIsMatchEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedEditMatch: MatchRef | null;
+  setSelectedEditMatch: Dispatch<SetStateAction<MatchRef | null>>;
+  isMatchDetailModalOpen: boolean;
+  setIsMatchDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedDetailMatch: Activity | null;
+  setSelectedDetailMatch: Dispatch<SetStateAction<Activity | null>>;
+  isMatchCreateModalOpen: boolean;
+  setIsMatchCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+  isMembershipDetailModalOpen: boolean;
+  setIsMembershipDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedMembershipDetail: MemberRef | null;
+  setSelectedMembershipDetail: Dispatch<SetStateAction<MemberRef | null>>;
+  isMembershipEditModalOpen: boolean;
+  setIsMembershipEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedMembershipEdit: MemberRef | null;
+  setSelectedMembershipEdit: Dispatch<SetStateAction<MemberRef | null>>;
+  isAddMemberOpen: boolean;
+  setIsAddMemberOpen: Dispatch<SetStateAction<boolean>>;
+  // Mutations (from useCompetitionMutations)
+  savePeriodEdits: (periodToEdit: PeriodEditRef, patch: Record<string, unknown>) => Promise<void>;
+  saveMatchEdits: (matchToEdit: MatchRef, patch: Record<string, unknown>) => Promise<void>;
+  deleteMembership: (membership: MemberRef) => Promise<void>;
+  saveMembershipRole: (membership: MemberRef, role: string) => Promise<void>;
+  updateFunctionalRoles: (membership: MemberRef, nextRoles: string[]) => Promise<void>;
+  deleteCompetition: () => Promise<void>;
+  createMatchInCompetition: (payload: CreateMatchPayload) => Promise<void>;
+  activateCompetitionContext: () => Promise<void>;
+  refreshMembers: () => void;
+  getCsrfToken: () => string;
+  activateContext: () => Promise<void>;
+  setCompetition: Dispatch<SetStateAction<Period | null>>;
+  setMatches: Dispatch<SetStateAction<Activity[]>>;
+  setMembers: Dispatch<SetStateAction<MemberRef[]>>;
+}
+
+export function useCompetitionDetailData(effectiveCompetitionId: string): UseCompetitionDetailDataReturn {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -58,14 +163,14 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
   // ── Domain state ───────────────────────────────────────────────────
   const [competition, setCompetition] = useState<Period | null>(null);
   const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<any | null>(null);
+  const [activeContext, setActiveContextState] = useState<Record<string, unknown> | null>(null);
   const [resolvedCompetitionId, setResolvedCompetitionId] = useState<string>('');
   const [competitionsForSwitcher, setCompetitionsForSwitcher] = useState<Period[]>(providerCompetitions);
-  const [matches, setMatches] = useState<any[]>([]);
-  const [members, setMembers] = useState<any[]>([]);
+  const [matches, setMatches] = useState<Activity[]>([]);
+  const [members, setMembers] = useState<MemberRef[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [membersLoading, setMembersLoading] = useState(false);
-  const [matchMediaMap, setMatchMediaMap] = useState<Record<string, any[]>>({});
+  const [matchMediaMap, setMatchMediaMap] = useState<Record<string, Record<string, unknown>[]>>({});
   const [matchMediaLoading, setMatchMediaLoading] = useState(false);
   const [opponentClubNames, setOpponentClubNames] = useState<Record<string, string>>({});
   const [hierarchySearch, setHierarchySearch] = useState('');
@@ -74,18 +179,18 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
 
   // ── Modal state ────────────────────────────────────────────────────
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
-  const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
+  const [selectedEditPeriod, setSelectedEditPeriod] = useState<PeriodEditRef | null>(null);
   const [isPeriodDetailModalOpen, setIsPeriodDetailModalOpen] = useState(false);
-  const [selectedDetailPeriod, setSelectedDetailPeriod] = useState<any | null>(null);
+  const [selectedDetailPeriod, setSelectedDetailPeriod] = useState<Period | null>(null);
   const [isMatchEditModalOpen, setIsMatchEditModalOpen] = useState(false);
-  const [selectedEditMatch, setSelectedEditMatch] = useState<any | null>(null);
+  const [selectedEditMatch, setSelectedEditMatch] = useState<MatchRef | null>(null);
   const [isMatchDetailModalOpen, setIsMatchDetailModalOpen] = useState(false);
-  const [selectedDetailMatch, setSelectedDetailMatch] = useState<any | null>(null);
+  const [selectedDetailMatch, setSelectedDetailMatch] = useState<Activity | null>(null);
   const [isMatchCreateModalOpen, setIsMatchCreateModalOpen] = useState(false);
   const [isMembershipDetailModalOpen, setIsMembershipDetailModalOpen] = useState(false);
-  const [selectedMembershipDetail, setSelectedMembershipDetail] = useState<any | null>(null);
+  const [selectedMembershipDetail, setSelectedMembershipDetail] = useState<MemberRef | null>(null);
   const [isMembershipEditModalOpen, setIsMembershipEditModalOpen] = useState(false);
-  const [selectedMembershipEdit, setSelectedMembershipEdit] = useState<any | null>(null);
+  const [selectedMembershipEdit, setSelectedMembershipEdit] = useState<MemberRef | null>(null);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
 
   // ── Active context ─────────────────────────────────────────────────
@@ -154,8 +259,8 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
 
         const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(uuid)}/`, { credentials: 'include' });
         if (!res.ok) throw new Error('Failed to load competition');
-        const raw: any = await res.json();
-        const json: Period = raw?.data || raw;
+        const raw = await res.json() as { data?: Period } & Record<string, unknown>;
+        const json: Period = (raw?.data ?? raw) as Period;
         setCompetition(json);
 
         const desired = periodPathKey(json);
@@ -191,7 +296,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
       setMatchesLoading(true);
       try {
         const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(pid)}&period_id=${encodeURIComponent(cid)}&activity_type=match&ordering=-start_time&page_size=250`;
-        const results = await fetchAllPages<any>(url, { credentials: 'include' }, {
+        const results = await fetchAllPages<Activity>(url, { credentials: 'include' }, {
           ttlMs: 30_000, cacheKey: `matches:competition:${pid}:${cid}`, maxItems: 250,
         });
         if (!cancelled) setMatches(results);
@@ -208,7 +313,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
     (async () => {
       setMatchMediaLoading(true);
       try {
-        const map: Record<string, any[]> = {};
+        const map: Record<string, Record<string, unknown>[]> = {};
         await Promise.all(matches.map(async (m) => {
           try {
             const res = await fetch(`${apiBaseUrl}/api/v1/media/items/?activity=${m.id}`, { credentials: 'include' });
@@ -238,7 +343,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
         const res = await fetch(`${apiBaseUrl}/api/v1/projects/${pid}/members/?${params}`, { credentials: 'include' });
         if (!res.ok) return;
         const raw = await res.json();
-        let list: any[] = [];
+        let list: MemberRef[] = [];
         if (Array.isArray(raw)) list = raw;
         else if (Array.isArray(raw?.data)) list = raw.data;
         else if (Array.isArray(raw?.data?.data)) list = raw.data.data;
@@ -255,7 +360,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
   useEffect(() => {
     if (!matches.length || !apiBaseUrl) return;
     const ids = [...new Set(
-      matches.map((m: any) => String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim()).filter((id) => id && !opponentClubNames[id]),
+      matches.map((m: Activity) => { const mc = (m.metadata as MatchMetadata)?.teamreel?.match_context; return String(mc?.opponent_club_id || '').trim(); }).filter((id) => id && !opponentClubNames[id]),
     )];
     if (!ids.length) return;
     let cancelled = false;
@@ -264,7 +369,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
       await Promise.all(ids.map(async (cid) => {
         try {
           const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(cid)}/`, { credentials: 'include' });
-          if (res.ok) { const d: any = await res.json(); const data = d?.data ?? d; if (data?.name) results[cid] = data.name; }
+          if (res.ok) { const d = await res.json() as { data?: { name?: string }; name?: string }; const data = d?.data ?? d; if (data?.name) results[cid] = data.name; }
         } catch { /* ignore */ }
       }));
       if (!cancelled) setOpponentClubNames((prev) => ({ ...prev, ...results }));
@@ -274,13 +379,13 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
 
   const filteredMatches = useMemo(() => {
     const q = hierarchySearch.trim().toLowerCase();
-    return q ? matches.filter((m: any) => String(m.title || '').toLowerCase().includes(q)) : matches;
+    return q ? matches.filter((m: Activity) => String(m.title || '').toLowerCase().includes(q)) : matches;
   }, [hierarchySearch, matches]);
 
   // ── Match display title helper ─────────────────────────────────────
   const matchDisplayTitle = useCallback(
-    (m: any, fallback?: string) => {
-      const mc = m.metadata?.teamreel?.match_context;
+    (m: Activity, fallback?: string) => {
+      const mc = (m.metadata as MatchMetadata)?.teamreel?.match_context;
       const home = mc?.home_club_name || '';
       const away = mc?.away_club_name || '';
       const oppId = String(mc?.opponent_club_id || '').trim();
@@ -289,7 +394,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
       const awayName = resolvedAway || away || m.opponent_project?.name || '';
       if (homeName && awayName) return `${homeName} vs ${awayName}`;
 
-      let raw = m.title || m.name || fallback || `Match ${m.id}`;
+      let raw = m.title || fallback || `Match ${m.id}`;
       if (project?.name && club?.name && project.name !== club.name) raw = raw.replace(project.name, club.name);
       const oppTeam = m.opponent_project?.name || mc?.away_team_name || '';
       const oppClub = oppId ? opponentClubNames[oppId] : '';
@@ -301,7 +406,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string) {
 
   const matchDetailPath = useCallback(
     (matchId: string) => {
-      const slug = String(matches.find((m: any) => String(m?.id) === matchId)?.slug || matchId).trim();
+      const slug = String(matches.find((m: Activity) => String(m?.id) === matchId)?.slug || matchId).trim();
       return isTeamRoute && competitionBasePath ? `${competitionBasePath}/${slug}` : `/matches/${slug || matchId}`;
     },
     [competitionBasePath, isTeamRoute, matches],

@@ -149,7 +149,7 @@ export function AuditTab({ d }: { d: Data }) {
             { key: 'organisation_id', label: 'Org' },
             { key: 'project_id', label: 'Project' },
           ]}
-          rows={myAuditEvents.map((row: any) => {
+          rows={myAuditEvents.map((row) => {
             let when = '—';
             try { when = new Date(String(row.timestamp)).toLocaleString('nl-NL'); } catch { when = String(row.timestamp || '—'); }
             const orgKey = String(row.organisation_id || '').trim();

@@ -8,18 +8,40 @@ import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCookie, type User } from './useUsersData';
 import styles from './UsersTable.module.css';
 
+/** Minimal shape for a user project membership from the API. */
+interface UserProject {
+  id?: string | number;
+  name?: string;
+  slug?: string;
+  parent?: string | number | null;
+  parent_name?: string;
+}
+
+/** Shape for context obj passed into table. */
+interface TableContext {
+  organisation?: { id?: string; slug?: string; name?: string };
+}
+
+/** A user row item — either a raw User or a membership wrapper with `.user`. */
+interface UserRowItem {
+  id?: string;
+  user?: User;
+  is_active?: boolean;
+  [key: string]: unknown;
+}
+
 interface UsersTableProps {
-  filteredUsers: any[];
+  filteredUsers: UserRowItem[];
   canManageUsers: boolean;
   isSuperAdmin: boolean;
   navigate: (to: string) => void;
   orgIdParam: string | null | undefined;
-  context: any;
+  context: TableContext;
   organisations: { id: string | number; name: string; slug?: string }[];
   selectedOrgId: string;
   selectedClubKey: string;
   selectedTeamKey: string;
-  handleEditClick: (item: any) => void;
+  handleEditClick: (item: UserRowItem) => void;
   setDetailUser: (u: User | null) => void;
   setIsDetailModalOpen: (v: boolean) => void;
   setAssignUser: (u: User | null) => void;
@@ -72,7 +94,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
             <td colSpan={8} className="p-24 text-center text-muted">No users found.</td>
           </tr>
         ) : (
-          filteredUsers.map((item: any) => (
+          filteredUsers.map((item: UserRowItem) => (
             <UserRow
               key={item.id || item.user?.id}
               item={item}
@@ -103,7 +125,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({
 
 // ── Single row ────────────────────────────────────────────────────────
 
-const UserRow: React.FC<UserRowProps & { item: any }> = ({
+const UserRow: React.FC<UserRowProps & { item: UserRowItem }> = ({
   item,
   canManageUsers,
   isSuperAdmin,
@@ -122,23 +144,23 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
   fetchUsers,
 }) => {
   const isMembership = !!item.user;
-  const user = isMembership ? item.user : item;
+  const user: any = isMembership ? item.user : item;
   const userOrgs = user.organisations || [];
   const userProjects = user.projects || [];
   const displayRole = user.role || 'User';
   const isActive = isMembership ? item.is_active : user.is_active;
 
   // Parent projects (clubs) = projects without parent
-  const directParentProjects = userProjects.filter((p: any) => !p.parent);
+  const directParentProjects = userProjects.filter((p: UserProject) => !p.parent);
 
   // Child projects (teams) = projects with parent
-  const childProjects = userProjects.filter((p: any) => !!p.parent);
+  const childProjects = userProjects.filter((p: UserProject) => !!p.parent);
 
   // Unique parent clubs derived from team parent_name
-  const parentClubsFromTeams = new Map<string, any>();
-  childProjects.forEach((p: any) => {
+  const parentClubsFromTeams = new Map<string, { id?: string | number; name: string }>();
+  childProjects.forEach((p: UserProject) => {
     if (p.parent_name && !parentClubsFromTeams.has(p.parent_name)) {
-      parentClubsFromTeams.set(p.parent_name, { id: p.parent, name: p.parent_name });
+      parentClubsFromTeams.set(p.parent_name, { id: p.parent ?? undefined, name: p.parent_name });
     }
   });
 
@@ -162,7 +184,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
       <td>
         <div className="flex-row gap-4 flex-wrap">
           {userOrgs.length > 0
-            ? userOrgs.map((org: any) => (
+            ? userOrgs.map((org: { id?: string; name?: string }) => (
                 <span key={org.id} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{org.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}
@@ -171,7 +193,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
       <td>
         <div className="flex-row gap-4 flex-wrap">
           {allParentClubs.length > 0
-            ? allParentClubs.map((club: any, idx: number) => (
+            ? allParentClubs.map((club: { id?: string | number; name: string }, idx: number) => (
                 <span key={club.id || idx} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{club.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}
@@ -180,7 +202,7 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
       <td>
         <div className="flex-row gap-4 flex-wrap">
           {childProjects.length > 0
-            ? childProjects.map((project: any) => (
+            ? childProjects.map((project: UserProject) => (
                 <span key={project.id} className={`border rounded-4 fs-11 bg-surface-2 text-primary ${styles.tagBadge}`}>{project.name}</span>
               ))
             : <span className="text-muted fs-12">-</span>}
@@ -216,18 +238,18 @@ const UserRow: React.FC<UserRowProps & { item: any }> = ({
 // ── Action buttons per row ────────────────────────────────────────────
 
 interface UserActionsProps {
-  item: any;
+  item: UserRowItem;
   user: any;
-  userOrgs: any[];
+  userOrgs: Array<{ id?: string; slug?: string; name?: string; membership_id?: string }>;
   isMembership: boolean;
   canManageUsers: boolean;
   isSuperAdmin: boolean;
   navigate: (to: string) => void;
   orgIdParam: string | null | undefined;
-  context: any;
+  context: TableContext;
   organisations: { id: string | number; name: string; slug?: string }[];
   selectedOrgId: string;
-  handleEditClick: (item: any) => void;
+  handleEditClick: (item: UserRowItem) => void;
   setDetailUser: (u: User | null) => void;
   setIsDetailModalOpen: (v: boolean) => void;
   setAssignUser: (u: User | null) => void;
@@ -267,7 +289,7 @@ const UserActions: React.FC<UserActionsProps> = ({
   const effectiveOrgSlug = String(orgIdParam || selectedOrg?.slug || context.organisation?.slug || '').toLowerCase();
   const effectiveOrgId = String(selectedOrg?.id || orgIdParam || context.organisation?.id || '');
 
-  const orgEntry = userOrgs.find((o: any) => {
+  const orgEntry = userOrgs.find((o) => {
     const slugMatches = o?.slug && effectiveOrgSlug && String(o.slug).toLowerCase() === effectiveOrgSlug;
     const idMatches = o?.id && effectiveOrgId && String(o.id) === String(effectiveOrgId);
     return Boolean(slugMatches || idMatches);

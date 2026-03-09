@@ -24,7 +24,7 @@ export const getUserLabel = (m: any): { name: string; email: string } => {
 
 // ─── Access-role helpers ─────────────────────────────────────────────
 
-export const normalizeAccessRole = (raw: any): 'viewer' | 'editor' | 'admin' => {
+export const normalizeAccessRole = (raw: unknown): 'viewer' | 'editor' | 'admin' => {
   const role = String(raw || '').trim().toLowerCase();
   if (role === 'admin') return 'admin';
   if (role === 'editor') return 'editor';

@@ -1,8 +1,9 @@
 # T3 — Typed Hook Returns
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
+**Commit:** `78bc0f43`
 **Effort:** 3 uur
-**Scope:** ~40 hooks in `hooks/` + page-level `use*Data` hooks
+**Scope:** ~50 hooks (15 core + 24 page-level + 11 component-level)
 **Vereist:** T1
 
 ---
@@ -46,6 +47,9 @@ export function useCompetitionsData(
 
 ## Verificatie
 
-- [ ] Alle hooks in `hooks/` hebben expliciete return types
-- [ ] Top 20 page-level hooks (`use*Data.ts`) getypt
-- [ ] `npx vite build` slaagt
+- [x] Alle hooks in `hooks/` hebben expliciete return types (15 hooks, 22 functions)
+- [x] Top 24 page-level hooks (`use*Data.ts`) getypt
+- [x] 11 component-level hooks getypt
+- [x] ~22 nieuwe Use*Return interfaces geëxporteerd
+- [x] `npx vite build` slaagt
+- [x] 30/30 tests passing

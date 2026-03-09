@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useLocation, useNavigate, useParams, type NavigateFunction } from 'react-router-dom';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
@@ -11,13 +11,82 @@ import {
 } from './clubOrgDetailHelpers';
 import { useClubOrgHierarchy } from './useClubOrgHierarchy';
 
+/** Raw member item from the organisation members API (overview tab). */
+type RawMemberApiItem = {
+    id?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    user?: RawMemberApiItem;
+    project_memberships?: Array<{
+        project_id?: string;
+        project?: { id?: string; parent_id?: string; parent_project_id?: string };
+    }>;
+};
+
 /* ═══════════════════════════════════════════════════════════════
    useClubOrgDetailData
    All state, data-loading effects & computed values for
    ClubOrganisationDetailPage.
    ═══════════════════════════════════════════════════════════════ */
 
-export function useClubOrgDetailData() {
+export interface UseClubOrgDetailDataReturn {
+    // Core
+    org: Organisation | null;
+    club: Project | null;
+    loading: boolean;
+    error: string | null;
+    navigate: NavigateFunction;
+    apiBaseUrl: string;
+    activeContext: Record<string, unknown> | null;
+    setActiveContextState: Dispatch<SetStateAction<Record<string, unknown> | null>>;
+    activatingContext: boolean;
+    setActivatingContext: Dispatch<SetStateAction<boolean>>;
+    // Modals
+    isProjectEditModalOpen: boolean;
+    setIsProjectEditModalOpen: Dispatch<SetStateAction<boolean>>;
+    isProjectDetailModalOpen: boolean;
+    setIsProjectDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+    // Tabs
+    activeTabFromUrl: string;
+    makeTabHref: (tabId: string) => string;
+    // IDs / keys
+    orgIdForDirectoryLists: string;
+    orgSlugForDirectoryLists: string;
+    clubIdForDirectoryLists: string;
+    orgKeyForRoutes: string;
+    clubKeyForRoutes: string;
+    backToOrgHref: string;
+    // Club switcher
+    clubBreadcrumbOptions: BreadcrumbSwitcherOption[];
+    orgClubsForSwitcherLoading: boolean;
+    handleClubSwitch: (option: BreadcrumbSwitcherOption) => void;
+    // Overview
+    overviewLoading: boolean;
+    overviewError: string | null;
+    overviewTeams: Project[];
+    overviewSeasons: Period[];
+    overviewMembers: OverviewMember[];
+    overviewCounts: { teams: number; seasons: number; members: number } | null;
+    // Hierarchy (spread from useClubOrgHierarchy)
+    hierarchySearch: string;
+    setHierarchySearch: Dispatch<SetStateAction<string>>;
+    hierarchyTeams: Project[];
+    hierarchySeasonsByTeamId: Record<string, Period[]>;
+    hierarchyCompetitionsCountByTeamId: Record<string, number>;
+    hierarchyMatchesCountByTeamId: Record<string, number>;
+    hierarchyCompetitionsCountBySeasonId: Record<string, number>;
+    hierarchyMatchesCountBySeasonId: Record<string, number>;
+    hierarchyMembersCountByTeamId: Record<string, number>;
+    hierarchyMembersCountForClub: number | null;
+    hierarchyLoading: boolean;
+    hierarchyError: string | null;
+    // Brand
+    brandLogoUrl: string | null;
+    brandProfileId: string | null;
+}
+
+export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
     const { orgId, projectId } = useParams<{ orgId: string; projectId: string }>();
     const navigate = useNavigate();
     const location = useLocation();
@@ -38,7 +107,7 @@ export function useClubOrgDetailData() {
     // ── Core entities ──
     const [org, setOrg] = useState<Organisation | null>(null);
     const [club, setClub] = useState<Project | null>(null);
-    const [activeContext, setActiveContextState] = useState<any | null>(null);
+    const [activeContext, setActiveContextState] = useState<Record<string, unknown> | null>(null);
     const [activatingContext, setActivatingContext] = useState(false);
     const [isProjectEditModalOpen, setIsProjectEditModalOpen] = useState(false);
     const [isProjectDetailModalOpen, setIsProjectDetailModalOpen] = useState(false);
@@ -108,7 +177,7 @@ export function useClubOrgDetailData() {
     }, [location.search, org?.slug, orgSlugOrId]);
 
     const clubBreadcrumbOptions: BreadcrumbSwitcherOption[] = useMemo(() => {
-        const base = (orgClubsForSwitcher || []).map((c: any) => ({
+        const base = (orgClubsForSwitcher || []).map((c: Project) => ({
             id: String(c.id),
             label: String(c.name || c.slug || c.id),
             slug: String(c.slug || c.id),
@@ -153,8 +222,8 @@ export function useClubOrgDetailData() {
                     if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
                     const json = await res.json().catch(() => null);
                     const raw = unwrapEnvelope<any>(json);
-                    const list: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
-                    const match = list.find((o: any) => String(o?.id || '') === String(orgSlugOrId));
+                    const list: Array<{ id?: string; slug?: string }> = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+                    const match = list.find((o) => String(o?.id || '') === String(orgSlugOrId));
                     const slug = String(match?.slug || '').trim();
                     if (!slug) throw new Error('Organisation not found');
                     if (cancelled) return;
@@ -201,14 +270,14 @@ export function useClubOrgDetailData() {
                 if (!teamsRes.ok) throw new Error(`Failed to load teams (${teamsRes.status})`);
                 const teamsJson = await teamsRes.json().catch(() => null);
                 const teamsRaw = unwrapEnvelope<any>(teamsJson);
-                const teamsList: any[] = Array.isArray(teamsRaw?.results) ? teamsRaw.results : Array.isArray(teamsRaw) ? teamsRaw : [];
+                const teamsList: Project[] = Array.isArray(teamsRaw?.results) ? teamsRaw.results : Array.isArray(teamsRaw) ? teamsRaw : [];
                 const clubTeams: Project[] = (teamsList || [])
-                    .filter((t: any) => String(getTeamParentId(t) || '') === String(clubId))
-                    .map((t: any) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
+                    .filter((t) => String(getTeamParentId(t) || '') === String(clubId))
+                    .map((t) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
                     .filter((t) => Boolean(t.id));
 
                 const teamIds = clubTeams.map((t) => String(t.id)).filter(Boolean);
-                let mergedSeasons: any[] = [];
+                let mergedSeasons: Period[] = [];
                 if (teamIds.length > 0) {
                     const chunkSize = 50;
                     const chunks: string[][] = [];
@@ -223,7 +292,7 @@ export function useClubOrgDetailData() {
                             const typedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${typed.toString()}`, { credentials: 'include' });
                             if (!typedRes.ok) throw new Error(`Failed to load seasons (${typedRes.status})`);
                             const typedJson = await typedRes.json().catch(() => null);
-                            const typedList: any[] = extractList(unwrapEnvelope<any>(typedJson));
+                            const typedList: Period[] = extractList(unwrapEnvelope<any>(typedJson));
                             if (typedList.length > 0) return typedList;
                             const untypedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
                             if (!untypedRes.ok) throw new Error(`Failed to load seasons (${untypedRes.status})`);
@@ -242,19 +311,19 @@ export function useClubOrgDetailData() {
                 if (!membersRes.ok) throw new Error(`Failed to load members (${membersRes.status})`);
                 const membersJson = await membersRes.json().catch(() => null);
                 const membersRawList = membersJson?.data?.data || membersJson?.data?.results || membersJson?.results || membersJson?.data || [];
-                const membersList: any[] = Array.isArray(membersRawList) ? membersRawList : [];
-                const isMemberInClub = (item: any): boolean => {
+                const membersList: RawMemberApiItem[] = Array.isArray(membersRawList) ? membersRawList : [];
+                const isMemberInClub = (item: RawMemberApiItem): boolean => {
                     const nestedUser = item?.user;
                     const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
                     const memberships = item?.project_memberships || u?.project_memberships || [];
                     if (!Array.isArray(memberships) || memberships.length === 0) return false;
-                    return memberships.some((m: any) => {
+                    return memberships.some((m) => {
                         const pid = String(m?.project_id ?? m?.project?.id ?? '');
                         const parentId = String(m?.project?.parent_id ?? m?.project?.parent_project_id ?? '');
                         return pid === String(clubId) || parentId === String(clubId);
                     });
                 };
-                const normalizedMembers: OverviewMember[] = membersList.filter(isMemberInClub).map((item: any) => {
+                const normalizedMembers: OverviewMember[] = membersList.filter(isMemberInClub).map((item) => {
                     const nestedUser = item?.user;
                     const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
                     return { id: String(u?.id ?? item?.id ?? '').trim(), email: u?.email, first_name: u?.first_name, last_name: u?.last_name };
@@ -308,7 +377,7 @@ export function useClubOrgDetailData() {
                 const profileDetailJson = await profileDetailRes.json().catch(() => null);
                 const profile = profileDetailJson?.data || profileDetailJson;
                 const assetList = profile?.assets || [];
-                const logoAsset = assetList.find((a: any) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
+                const logoAsset = assetList.find((a: { asset_type?: string; url?: string }) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
                 if (logoAsset?.url && !cancelled) {
                     const url = logoAsset.url;
                     if (url.startsWith('http')) setBrandLogoUrl(url);
@@ -336,9 +405,9 @@ export function useClubOrgDetailData() {
                 if (!res.ok) throw new Error(`Failed to load clubs (${res.status})`);
                 const json = await res.json().catch(() => null);
                 const raw = unwrapEnvelope<any>(json);
-                const list: any[] = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+                const list: Array<{ id?: string; name?: string; slug?: string }> = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
                 const normalized = mergeUniqueById(
-                    (list || []).map((p: any) => ({ id: String(p?.id || '').trim(), name: String(p?.name || 'Club'), slug: p?.slug ? String(p.slug) : undefined })).filter((p: any) => Boolean(p.id)),
+                    (list || []).map((p) => ({ id: String(p?.id || '').trim(), name: String(p?.name || 'Club'), slug: p?.slug ? String(p.slug) : undefined })).filter((p) => Boolean(p.id)),
                 );
                 if (cancelled) return;
                 setOrgClubsForSwitcher(normalized);

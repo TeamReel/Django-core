@@ -182,7 +182,7 @@ export default function ApprovalsPage() {
       if (action === 'approve') {
         const approvedJob = mergedJobs.find(j => j.task_id === taskId);
         if (approvedJob && approvedJob.template_id === 'fullbody_in_tenue' && approvedJob.membership_id) {
-          const approvedVariants = result?.output_variants?.filter((v: any) => v.approved === true) || [];
+          const approvedVariants = result?.output_variants?.filter((v) => v.approved === true) || [];
           const imageUrl = approvedVariants[0]?.presigned_url || approvedJob.output_url;
           if (imageUrl) {
             const kitMatch = approvedJob.label?.match(/\((home|away|third|goalkeeper)\)/i);
@@ -199,7 +199,7 @@ export default function ApprovalsPage() {
         }
 
         if (approvedJob && approvedJob.template_id === 'photo_composite_gemini' && approvedJob.membership_id) {
-          const approvedVariants = result?.output_variants?.filter((v: any) => v.approved === true) || [];
+          const approvedVariants = result?.output_variants?.filter((v) => v.approved === true) || [];
           const imageUrl = approvedVariants[0]?.presigned_url || approvedJob.output_url;
           if (imageUrl) {
             setPhotoCompositeFollowUp({

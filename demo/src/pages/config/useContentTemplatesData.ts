@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
@@ -40,7 +40,62 @@ const INITIAL_EDIT_FORM: EditFormState = {
   input_requirements: {},
 };
 
-export function useContentTemplatesData() {
+export interface UseContentTemplatesDataReturn {
+  // Data
+  templates: ContentTemplate[];
+  filteredTemplates: ContentTemplate[];
+  groupedBySubtype: Record<string, ContentTemplate[]>;
+  sports: Sport[];
+  formations: Formation[];
+  formationsForSelectedSport: Formation[];
+  sportCategories: { categories: Sport[]; variants: Sport[] };
+  loading: boolean;
+  error: string | null;
+  // Filter state
+  selectedCategory: string;
+  searchQuery: string;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
+  showInactive: boolean;
+  setShowInactive: Dispatch<SetStateAction<boolean>>;
+  selectedFormation: string;
+  setSelectedFormation: Dispatch<SetStateAction<string>>;
+  selectedStyle: string;
+  setSelectedStyle: Dispatch<SetStateAction<string>>;
+  selectedSport: string;
+  setSelectedSport: Dispatch<SetStateAction<string>>;
+  selectedSubtype: string;
+  setSelectedSubtype: Dispatch<SetStateAction<string>>;
+  selectedType: string;
+  setSelectedType: Dispatch<SetStateAction<string>>;
+  // Filter options
+  availableFormations: { code: string; name: string }[];
+  availableStyles: string[];
+  availableSports: { id: number; name: string }[];
+  availableTypes: string[];
+  availableSubtypes: string[];
+  // Modal state
+  isCreateModalOpen: boolean;
+  setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+  editingTemplate: ContentTemplate | null;
+  setEditingTemplate: Dispatch<SetStateAction<ContentTemplate | null>>;
+  saving: boolean;
+  modalTab: 'basic' | 'requirements';
+  setModalTab: Dispatch<SetStateAction<'basic' | 'requirements'>>;
+  editForm: EditFormState;
+  setEditForm: Dispatch<SetStateAction<EditFormState>>;
+  // Helpers
+  getVariantsForCategory: (categoryId: number | null) => Sport[];
+  getSubtypesForType: (templateType: string) => { value: string; label: string }[];
+  // Handlers
+  handleToggleActive: (template: ContentTemplate) => Promise<void>;
+  handleDelete: (template: ContentTemplate) => Promise<void>;
+  handleSaveTemplate: () => Promise<void>;
+  // Computed
+  pageTitle: string;
+  navigate: ReturnType<typeof useNavigate>;
+}
+
+export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   const apiBaseUrl = getApiBaseUrl();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

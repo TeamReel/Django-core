@@ -248,7 +248,7 @@ export const OrganisationDetailPage: React.FC = () => {
           isEditMemberRoleModalOpen={d.isEditMemberRoleModalOpen}
           setIsEditMemberRoleModalOpen={d.setIsEditMemberRoleModalOpen}
           editingMember={d.editingMember}
-          setEditingMember={d.setEditingMember}
+          setEditingMember={d.setEditingMember as (v: Record<string, unknown> | null) => void}
           isOrgDetailModalOpen={d.isOrgDetailModalOpen}
           setIsOrgDetailModalOpen={d.setIsOrgDetailModalOpen}
           isOrgEditModalOpen={d.isOrgEditModalOpen}

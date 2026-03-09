@@ -16,10 +16,22 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import MatchCard from './MatchCard';
 import styles from './SeasonMatchesTab.module.css';
 
-// ── Types ────────────────────────────────────────────────────────────────────
+/** Minimal shape for a match/activity record from the API. */
+export interface MatchRecord {
+  id: string;
+  slug?: string;
+  title?: string;
+  start_time?: string;
+  end_time?: string;
+  period_id?: string;
+  period?: { id?: string; name?: string } | null;
+  metadata?: Record<string, any>; // deeply nested match metadata
+}
+
+// ── Types ────────────────────────────────────────────────────────────────────────
 
 export interface SeasonMatchesTabProps {
-  matches: any[];
+  matches: MatchRecord[];
   matchesLoading: boolean;
   isTeamRoute: boolean;
   seasonsBasePath: string;
@@ -27,13 +39,13 @@ export interface SeasonMatchesTabProps {
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
   apiBaseUrl: string;
-  matchDisplayTitle: (m: any) => string;
+  matchDisplayTitle: (m: MatchRecord) => string;
   setIsCreateMatchModalOpen: (v: boolean) => void;
-  setSelectedDetailMatch: (m: any) => void;
+  setSelectedDetailMatch: (m: MatchRecord) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
+  setSelectedEditMatch: (m: MatchRecord) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
-  setMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setMatches: React.Dispatch<React.SetStateAction<MatchRecord[]>>;
 }
 
 // Total content items defined in matchWizardTypes CONTENT_TYPES
@@ -44,7 +56,7 @@ const CONTENT_TOTAL = ALL_CONTENT_ITEMS.length;
 
 /** Build the link path for a match. */
 function getMatchPath(
-  match: any, isTeamRoute: boolean, seasonsBasePath: string, seasonPathKey: string,
+  match: MatchRecord, isTeamRoute: boolean, seasonsBasePath: string, seasonPathKey: string,
 ): string {
   const compId = String(match.period_id || match.period?.id || match.period || '').trim();
   const compKey = periodPathKey(match.period || null) || compId;
@@ -55,7 +67,7 @@ function getMatchPath(
 }
 
 /** Extract lineup data from match metadata (available on list API). */
-function getLineupInfo(match: any) {
+function getLineupInfo(match: MatchRecord) {
   const lineup = match.metadata?.lineup;
   if (!lineup) return { filled: false, count: 0, formation: '' };
   const gk = lineup.goalkeeper?.filter(Boolean) || [];
@@ -66,7 +78,7 @@ function getLineupInfo(match: any) {
 }
 
 /** Get score display from metadata. */
-function getScoreDisplay(match: any): string | null {
+function getScoreDisplay(match: MatchRecord): string | null {
   const meta = match.metadata;
   if (!meta) return null;
   const home = meta.score_home ?? meta.teamreel?.match_context?.score_home;
@@ -76,7 +88,7 @@ function getScoreDisplay(match: any): string | null {
 }
 
 /** Get match status label. */
-function getMatchStatus(match: any): 'upcoming' | 'live' | 'finished' {
+function getMatchStatus(match: MatchRecord): 'upcoming' | 'live' | 'finished' {
   const status = String(match.metadata?.status || 'scheduled').toLowerCase();
   if (status === 'finished' || status === 'completed') return 'finished';
   if (status === 'live' || status === 'in_progress') return 'live';
@@ -84,7 +96,7 @@ function getMatchStatus(match: any): 'upcoming' | 'live' | 'finished' {
 }
 
 /** Sort all matches newest-first by date. */
-function sortMatchesByDate(matches: any[]): any[] {
+function sortMatchesByDate(matches: MatchRecord[]): MatchRecord[] {
   return [...matches].sort((a, b) => {
     const da = a.start_time ? new Date(a.start_time).getTime() : 0;
     const db = b.start_time ? new Date(b.start_time).getTime() : 0;
@@ -302,7 +314,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                   }}
                   contentDetail={contentCache[String(activeMatch.id)]}
                   contentLoading={loadingContent.has(String(activeMatch.id))}
-                  matchDisplayTitle={matchDisplayTitle}
+                  matchDisplayTitle={matchDisplayTitle as any}
                   matchPath={getMatchPath(activeMatch, isTeamRoute, seasonsBasePath, seasonPathKey)}
                   isActive={true}
                   onSetActive={() => handleSetActive(String(activeMatch.id))}
@@ -327,7 +339,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                     }}
                     contentDetail={contentCache[String(match.id)]}
                     contentLoading={loadingContent.has(String(match.id))}
-                    matchDisplayTitle={matchDisplayTitle}
+                    matchDisplayTitle={matchDisplayTitle as any}
                     matchPath={getMatchPath(match, isTeamRoute, seasonsBasePath, seasonPathKey)}
                     isActive={false}
                     onSetActive={() => handleSetActive(String(match.id))}

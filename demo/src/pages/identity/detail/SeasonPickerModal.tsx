@@ -22,15 +22,15 @@ type Props = {
   onConfirm: (seasonId: string) => Promise<void>;
 };
 
-function getMemberProjectMemberships(member: any): any[] {
+function getMemberProjectMemberships(member: Record<string, unknown>): Record<string, unknown>[] {
   return (member?.project_memberships || member?.projectMemberships || []) as any[];
 }
 
-function getPmTeamId(pm: any): string {
+function getPmTeamId(pm: Record<string, unknown>): string {
   return String(pm?.project_id ?? pm?.project ?? '').trim();
 }
 
-function getPmPeriodId(pm: any): string {
+function getPmPeriodId(pm: Record<string, unknown>): string {
   return String(pm?.period_id ?? pm?.period ?? '').trim();
 }
 

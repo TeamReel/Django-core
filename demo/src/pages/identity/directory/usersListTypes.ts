@@ -18,6 +18,16 @@ export interface User {
   role: string;
   is_active: boolean;
   organisations?: { id: string; name: string; slug: string; role: string }[];
+  // Extended properties that may appear on enriched user records
+  username?: string;
+  project_membership_id?: string;
+  membership_id?: string;
+  member_id?: string;
+  membership?: { id?: string; role?: string; source?: string; joined_at?: string };
+  source?: string;
+  projects?: any[];
+  project_memberships?: any[];
+  [key: string]: unknown;
 }
 
 export type OrganisationOption = Pick<SharedOrganisation, 'id' | 'name' | 'slug'>;
@@ -26,10 +36,12 @@ export type ProjectOption = {
   id: string | number;
   slug?: string;
   name: string;
-  organisation?: string | { id: string };
+  organisation?: string | { id: string; name?: string; slug?: string };
+  organisation_id?: string;
   parent_id?: string | number | null;
   parent_project?: any;
   parent_project_id?: string | number | null;
+  is_active?: boolean;
   seasons_count?: number;
   competitions_count?: number;
   matches_count?: number;

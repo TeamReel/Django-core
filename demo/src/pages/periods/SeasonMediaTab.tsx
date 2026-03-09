@@ -64,7 +64,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
 
   // ── Inline member detail panel ──
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const memberIds = useMemo(() => members.map((m: any) => String(m.id || '')).filter(Boolean), [members]);
+  const memberIds = useMemo(() => members.map((m) => String(m.id || '')).filter(Boolean), [members]);
 
   // Guest player state
   const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: any } | null>(null);
@@ -152,7 +152,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
   const batchMembers = useMemo((): BatchMember[] => {
     return Array.from(batchSelectedMemberIds)
       .map((mid) => {
-        const m = members.find((mem: any) => String(mem.id) === mid);
+        const m = members.find((mem) => String(mem.id) === mid);
         if (!m) return null;
         const memberUser = m.user || m;
         const name =
@@ -165,10 +165,10 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
         const closeupUrls: Record<string, string> = {};
         const imgFb = tr?.images?.fullbody || {};
         const imgCu = tr?.images?.closeup || {};
-        const extractUrl = (val: any): string | null => {
+        const extractUrl = (val: unknown): string | null => {
           if (!val) return null;
           if (typeof val === 'string') return val;
-          if (typeof val === 'object') return val.processed || val.raw || null;
+          if (typeof val === 'object') return (val as any).processed || (val as any).raw || null;
           return null;
         };
         for (const [k, v] of Object.entries(imgFb)) {
@@ -266,7 +266,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                         ref={(el) => { if (el) el.indeterminate = batchSelectedMemberIds.size > 0 && batchSelectedMemberIds.size < members.length; }}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setBatchSelectedMemberIds(new Set(members.map((m: any) => String(m.id))));
+                            setBatchSelectedMemberIds(new Set(members.map((m) => String(m.id))));
                           } else {
                             setBatchSelectedMemberIds(new Set());
                           }
@@ -342,7 +342,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
                       })()}
                     </td>
                   </tr>
-                  {members.map((m: any) => {
+                  {members.map((m) => {
                     const memberUser = m.user || m;
                     const name =
                       memberUser.name ||
@@ -491,7 +491,7 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
               ref={(el) => { if (el) el.indeterminate = batchSelectedMemberIds.size > 0 && batchSelectedMemberIds.size < members.length; }}
               onChange={(e) => {
                 if (e.target.checked) {
-                  setBatchSelectedMemberIds(new Set(members.map((m: any) => String(m.id))));
+                  setBatchSelectedMemberIds(new Set(members.map((m) => String(m.id))));
                 } else {
                   setBatchSelectedMemberIds(new Set());
                 }

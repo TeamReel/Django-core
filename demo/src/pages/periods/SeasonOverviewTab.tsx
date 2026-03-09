@@ -18,7 +18,7 @@ export interface SeasonOverviewTabProps {
   isTeamRoute: boolean;
   seasonsBasePath: string;
   seasonPathKey: string;
-  matchDisplayTitle: (m: any) => string;
+  matchDisplayTitle: (m: Record<string, unknown>) => string;
   teamRosterCount?: number;
   brandLogoUrl?: string | null;
   brandSponsorUrl?: string | null;
@@ -102,7 +102,7 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   }, [matches]);
 
   /** Build a match URL */
-  const matchUrl = (m: any) => {
+  const matchUrl = (m: Record<string, any>) => {
     const compId = String(m.period_id || m.period?.id || m.period || '').trim();
     const compKey = periodPathKey(m.period || null) || compId;
     const matchKey = m.slug || m.id;
@@ -112,14 +112,14 @@ const SeasonOverviewTab: React.FC<SeasonOverviewTabProps> = ({
   };
 
   /** Format a match date nicely */
-  const fmtDate = (m: any) => {
+  const fmtDate = (m: Record<string, any>) => {
     const raw = m.start_time || m.date || m.metadata?.date;
     if (!raw) return '—';
     const d = new Date(raw);
     return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
-  const fmtTime = (m: any) => {
+  const fmtTime = (m: Record<string, any>) => {
     const raw = m.start_time || m.date || m.metadata?.date;
     if (!raw) return '';
     const d = new Date(raw);

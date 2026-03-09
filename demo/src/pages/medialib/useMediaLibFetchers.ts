@@ -11,6 +11,35 @@ import { getCsrfToken } from '../../utils/csrf';
 import type { BrandAsset } from '../../hooks/useBrandAssets';
 import type { MemberMediaItem } from './medialibHelpers';
 
+/** Brand profile shape from the API. */
+interface BrandProfileRef {
+  id: string | number;
+  name?: string;
+  project: string | number | null;
+  project_type: string | null;
+  project_name?: string | null;
+  organisation_name?: string | null;
+  parent_project_id?: string | number | null;
+}
+
+/** Project reference from the API. */
+interface ProjectRef {
+  id: string | number;
+  name?: string;
+  parent_id?: string | number | null;
+}
+
+/** Membership reference from the API. */
+interface MembershipRef {
+  id: string | number;
+  user?: { name?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
+  /** Dynamic metadata — `any` kept for deeply nested TeamReel asset traversal. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  metadata?: Record<string, any>;
+  joined_at?: string;
+  created_at?: string;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Params                                                             */
 /* ------------------------------------------------------------------ */
@@ -73,13 +102,13 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 return all;
             };
 
-            const allProfiles = await fetchPaginated<any>(
+            const allProfiles = await fetchPaginated<BrandProfileRef>(
                 `${apiBaseUrl}/api/v1/branding/profiles/?organisation_scope=${orgId}&page_size=500`,
             );
 
-            const orgProfiles = allProfiles.filter((p: any) => !p.project);
-            const clubProfiles = allProfiles.filter((p: any) => p.project_type === 'club');
-            const teamProfiles = allProfiles.filter((p: any) => p.project_type === 'team');
+            const orgProfiles = allProfiles.filter((p) => !p.project);
+            const clubProfiles = allProfiles.filter((p) => p.project_type === 'club');
+            const teamProfiles = allProfiles.filter((p) => p.project_type === 'team');
 
             let allAssets: BrandAsset[] = [];
             try {
@@ -112,7 +141,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 for (let i = 0; i < allProfiles.length; i += BATCH_SIZE) {
                     const batch = allProfiles.slice(i, i + BATCH_SIZE);
                     const batchResults = await Promise.all(
-                        batch.map(async (profile: any) => {
+                        batch.map(async (profile: BrandProfileRef) => {
                             try {
                                 const res = await fetch(
                                     `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
@@ -135,12 +164,12 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                                     project_id: profile.project
                                         ? String(profile.project)
                                         : undefined,
-                                    project_name: profile.project_name ?? null,
+                                    project_name: profile.project_name ?? undefined,
                                     project_type: profile.project_type ?? null,
                                     parent_project_id: profile.parent_project_id
                                         ? String(profile.parent_project_id)
                                         : null,
-                                    organisation_name: profile.organisation_name ?? null,
+                                    organisation_name: profile.organisation_name ?? undefined,
                                 }));
                             } catch {
                                 return [];
@@ -152,10 +181,10 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
             }
 
             const orgAssets = allAssets.filter(
-                (a: any) => a.project_type === null || a.project_type === undefined,
+                (a) => a.project_type === null || a.project_type === undefined,
             );
-            const clubAssets = allAssets.filter((a: any) => a.project_type === 'club');
-            const teamAssets = allAssets.filter((a: any) => a.project_type === 'team');
+            const clubAssets = allAssets.filter((a) => a.project_type === 'club');
+            const teamAssets = allAssets.filter((a) => a.project_type === 'team');
 
             setBrandAssets(allAssets);
         } catch (err: unknown) {
@@ -201,21 +230,21 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 return all;
             };
 
-            const allProjects = await fetchPaginated<any>(
+            const allProjects = await fetchPaginated<ProjectRef>(
                 `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
             );
-            const teamProjects = allProjects.filter((p: any) => !!p.parent_id);
+            const teamProjects = allProjects.filter((p) => !!p.parent_id);
 
             const memberAssets: MemberMediaItem[] = [];
 
             const BATCH_SIZE = 5;
             let failedTeamCount = 0;
-            const allMembershipData: { membership: any; team: any }[] = [];
+            const allMembershipData: { membership: MembershipRef; team: ProjectRef }[] = [];
 
             for (let i = 0; i < teamProjects.length; i += BATCH_SIZE) {
                 const batch = teamProjects.slice(i, i + BATCH_SIZE);
                 const batchResults = await Promise.all(
-                    batch.map(async (team: any) => {
+                    batch.map(async (team: ProjectRef) => {
                         try {
                             const res = await fetch(
                                 `${apiBaseUrl}/api/v1/projects/${team.id}/members/?page_size=200`,
@@ -226,7 +255,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                                 return [];
                             }
                             const json = await res.json();
-                            const memberships: any[] = Array.isArray(json.data?.results)
+                            const memberships: MembershipRef[] = Array.isArray(json.data?.results)
                                 ? json.data.results
                                 : Array.isArray(json.data)
                                   ? json.data
@@ -235,7 +264,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                                     : Array.isArray(json)
                                       ? json
                                       : [];
-                            return memberships.map((m: any) => ({ membership: m, team }));
+                            return memberships.map((m) => ({ membership: m, team }));
                         } catch {
                             failedTeamCount++;
                             return [];
@@ -265,10 +294,10 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                         name: `${memberName} - ${assetType}${kitType ? ` (${kitType})` : ''}`,
                         url,
                         asset_type: `member_${assetType}`,
-                        member_id: membership.id,
+                        member_id: String(membership.id),
                         member_name: memberName,
                         project_id: String(team.id),
-                        project_name: team.name,
+                        project_name: team.name || '',
                         parent_project_id: team.parent_id ? String(team.parent_id) : null,
                         kit_type: kitType,
                         created_at: membership.joined_at || membership.created_at,

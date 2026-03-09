@@ -8,6 +8,7 @@ export type ProjectOption = {
   slug?: string;
   organisation?: any;
   parent_id?: any;
+  parent?: any;
   parent_project_id?: any;
   parent_project?: any;
 };

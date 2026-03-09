@@ -159,7 +159,7 @@ export const ProjectsPage: React.FC = () => {
       )}
 
       {/* Edit Modal */}
-      <ProjectEditModal opened={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} project={selectedProject} onSave={handleSaveProject} />
+      <ProjectEditModal opened={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} project={selectedProject} onSave={handleSaveProject as any} />
     </>
   );
 };

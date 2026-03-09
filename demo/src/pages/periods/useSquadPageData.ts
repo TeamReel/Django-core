@@ -2,8 +2,8 @@
  * useSquadPageData — state, data fetching, permissions, breadcrumbs, mutations
  * for ProjectSeasonSquadPage.
  */
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useNavigate, useParams, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 
@@ -28,35 +28,86 @@ export type Organisation = {
   name: string;
 };
 
+export interface UseSquadPageDataReturn {
+  // Route info
+  navigate: NavigateFunction;
+  orgSlugOrId: string;
+  clubSlugOrId: string;
+  isTeamRoute: boolean;
+  seasonsBasePath: string;
+  effectiveSeasonId: string;
+  // Data
+  loading: boolean;
+  error: string | null;
+  organisation: Organisation | null;
+  clubProject: Project | null;
+  project: Project | null;
+  season: Period | null;
+  resolvedSeasonId: string;
+  seasonsForSwitcher: Period[];
+  members: Membership[];
+  seasonKeyOrId: string;
+  // Permissions
+  userCanEditProject: boolean;
+  userCanDeleteProject: boolean;
+  // Modal state
+  isPeriodEditModalOpen: boolean;
+  setIsPeriodEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedEditPeriod: Period | null;
+  setSelectedEditPeriod: Dispatch<SetStateAction<Period | null>>;
+  isMembershipEditModalOpen: boolean;
+  setIsMembershipEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedMembership: Membership | null;
+  setSelectedMembership: Dispatch<SetStateAction<Membership | null>>;
+  // Actions
+  handleSeasonSwitch: (option: { id: string; slug?: string } | null) => void;
+  deleteSeason: () => Promise<void>;
+  deleteMembership: (membership: Membership) => Promise<void>;
+  savePeriodEdit: (payload: Record<string, unknown>) => Promise<void>;
+  saveMembershipEdit: (params: { role: string; functional_roles: string[] }) => Promise<void>;
+}
+
 export type Period = {
   id: string;
   name: string;
   slug?: string;
+  type?: string;
+  period_type?: string;
   start_date?: string;
   end_date?: string;
   project?: { id: string; name: string } | null;
   project_id?: string | null;
   parent_period?: { id: string; name: string } | null;
   parent_period_id?: string | null;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 };
+
+export interface Membership {
+  id?: string;
+  user?: { id?: string | number; name?: string; first_name?: string; last_name?: string; email?: string };
+  role?: string;
+  functional_roles?: string[];
+  functionalRoles?: string[];
+  metadata?: Record<string, unknown>;
+  period_id?: string;
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
-function isSeasonPeriod(p: any): boolean {
+function isSeasonPeriod(p: Period | null | undefined): boolean {
   if (!p) return false;
   const explicit = String(p.type || p.period_type || '').toLowerCase();
   if (explicit === 'season') return true;
   return !Boolean(p.parent_period || p.parent_period_id);
 }
 
-function unwrap<T = any>(payload: any): T {
-  return (payload?.data as T) ?? (payload as T);
+function unwrap<T = unknown>(payload: unknown): T {
+  return ((payload as Record<string, unknown>)?.data as T) ?? (payload as T);
 }
 
 // ── Hook ─────────────────────────────────────────────────────────────
 
-export function useSquadPageData() {
+export function useSquadPageData(): UseSquadPageDataReturn {
   const navigate = useNavigate();
   const params = useParams();
   const { user } = useAuth();
@@ -89,12 +140,12 @@ export function useSquadPageData() {
   const [resolvedSeasonId, setResolvedSeasonId] = useState<string>('');
 
   const [seasonsForSwitcher, setSeasonsForSwitcher] = useState<Period[]>([]);
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<Membership[]>([]);
 
   const [isPeriodEditModalOpen, setIsPeriodEditModalOpen] = useState(false);
-  const [selectedEditPeriod, setSelectedEditPeriod] = useState<any | null>(null);
+  const [selectedEditPeriod, setSelectedEditPeriod] = useState<Period | null>(null);
   const [isMembershipEditModalOpen, setIsMembershipEditModalOpen] = useState(false);
-  const [selectedMembership, setSelectedMembership] = useState<any | null>(null);
+  const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
 
   // ── Permissions ────────────────────────────────────────────────────
 
@@ -108,7 +159,7 @@ export function useSquadPageData() {
   const orgForPermissions = useMemo(() => {
     const contextOrg = context?.organisation;
     const route = String(orgSlugOrId || '').trim();
-    const orgIdMatches = (candidate: any) => {
+    const orgIdMatches = (candidate: { id?: string; slug?: string } | null | undefined) => {
       if (!candidate) return false;
       const cid = String(candidate.id || '').trim();
       const cslug = String(candidate.slug || '').trim();
@@ -121,7 +172,7 @@ export function useSquadPageData() {
         (cslug && route && cslug === route)
       );
     };
-    const fromList = (myOrganisations as any[])?.find((o: any) => orgIdMatches(o));
+    const fromList = (myOrganisations as Array<{ id?: string; slug?: string; user_role?: string }>)?.find((o) => orgIdMatches(o));
     if (fromList?.user_role) return fromList;
     if (orgIdMatches(contextOrg) && (contextOrg as any)?.user_role) return contextOrg;
     const projectOrg = (project as any)?.organisation;
@@ -261,7 +312,7 @@ export function useSquadPageData() {
     } catch (e) { console.error(e); alert('Error deleting season'); }
   };
 
-  const deleteMembership = async (membership: any) => {
+  const deleteMembership = async (membership: Membership) => {
     const membershipId = String(membership?.id || '').trim();
     const projectId = String(project?.id || '').trim();
     if (!membershipId || !projectId) return;
@@ -274,11 +325,11 @@ export function useSquadPageData() {
         { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, credentials: 'include' },
       );
       if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to remove member'); }
-      setMembers((prev) => prev.filter((m: any) => String(m.id) !== membershipId));
+      setMembers((prev) => prev.filter((m) => String(m.id) !== membershipId));
     } catch (e) { console.error(e); alert(e instanceof Error ? e.message : 'Error removing member'); }
   };
 
-  const savePeriodEdit = async (payload: any) => {
+  const savePeriodEdit = async (payload: Record<string, unknown>) => {
     if (!selectedEditPeriod) return;
     const periodId = String(selectedEditPeriod?.id || '').trim();
     if (!periodId) return;
@@ -314,8 +365,8 @@ export function useSquadPageData() {
     if (!membershipUserId) throw new Error('Missing user id');
 
     const prevDirect = selectedMembership?.functional_roles ?? selectedMembership?.functionalRoles;
-    const prevRoles = Array.isArray(prevDirect) ? prevDirect.map((r: any) => String(r || '').trim()).filter(Boolean) : [];
-    const nextRoles = (Array.isArray(functional_roles) ? functional_roles : []).map((r: any) => String(r || '').trim()).filter(Boolean);
+    const prevRoles = Array.isArray(prevDirect) ? prevDirect.map((r: unknown) => String(r || '').trim()).filter(Boolean) : [];
+    const nextRoles = (Array.isArray(functional_roles) ? functional_roles : []).map((r: unknown) => String(r || '').trim()).filter(Boolean);
 
     const prevSet = new Set(prevRoles);
     const nextSet = new Set(nextRoles);
@@ -349,7 +400,7 @@ export function useSquadPageData() {
     }
 
     setMembers((prev) =>
-      prev.map((m: any) => (String(m.id) === membershipId ? { ...m, role, functional_roles } : m)),
+      prev.map((m) => (String(m.id) === membershipId ? { ...m, role, functional_roles } : m)),
     );
   };
 

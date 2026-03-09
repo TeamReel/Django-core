@@ -77,7 +77,13 @@ async function fetchContentTypes(apiBase: string): Promise<void> {
  *   const { resolveContentType, ready } = useContentTypes();
  *   const activityCt = resolveContentType('activity'); // number | null
  */
-export function useContentTypes() {
+export interface UseContentTypesReturn {
+  resolveContentType: (modelName: ContentTypeName) => number | null;
+  ready: boolean;
+  cache: Record<string, number>;
+}
+
+export function useContentTypes(): UseContentTypesReturn {
   const [ready, setReady] = useState(Object.keys(contentTypeCache).length > 0);
   const apiBase = useRef(getApiBaseUrl());
 

@@ -112,7 +112,13 @@ function unwrapResults<T>(payload: any): T[] {
 
 // ─── useWorkflowTemplates ───────────────────────────────────────────────────
 
-export function useWorkflowTemplates() {
+export interface UseWorkflowTemplatesReturn {
+  templates: WorkflowTemplate[];
+  loading: boolean;
+  error: string | null;
+}
+
+export function useWorkflowTemplates(): UseWorkflowTemplatesReturn {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +154,14 @@ interface UseWorkflowInstancesOptions {
   page_size?: number;
 }
 
-export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}) {
+export interface UseWorkflowInstancesReturn {
+  instances: WorkflowInstance[];
+  loading: boolean;
+  error: string | null;
+  refresh: () => void;
+}
+
+export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}): UseWorkflowInstancesReturn {
   const [instances, setInstances] = useState<WorkflowInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -201,7 +214,14 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}) 
 
 // ─── useWorkflowInstance (single) ───────────────────────────────────────────
 
-export function useWorkflowInstance(instanceId: number | string | null) {
+export interface UseWorkflowInstanceReturn {
+  instance: WorkflowInstance | null;
+  loading: boolean;
+  error: string | null;
+  refresh: () => void;
+}
+
+export function useWorkflowInstance(instanceId: number | string | null): UseWorkflowInstanceReturn {
   const [instance, setInstance] = useState<WorkflowInstance | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -234,7 +254,13 @@ export function useWorkflowInstance(instanceId: number | string | null) {
 
 // ─── useTransitionHistory ───────────────────────────────────────────────────
 
-export function useTransitionHistory(instanceId: number | string | null) {
+export interface UseTransitionHistoryReturn {
+  history: TransitionHistoryEntry[];
+  loading: boolean;
+  error: string | null;
+}
+
+export function useTransitionHistory(instanceId: number | string | null): UseTransitionHistoryReturn {
   const [history, setHistory] = useState<TransitionHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

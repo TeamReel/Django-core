@@ -45,17 +45,17 @@ export const looksLikeIdentifier = (value: string): boolean => {
   return false;
 };
 
-export const getPeriodType = (p: any): string => {
+export const getPeriodType = (p: Record<string, any>): string => {
   const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
   return String(t || '').toLowerCase();
 };
 
-export const getParentPeriodId = (p: any): string => {
+export const getParentPeriodId = (p: Record<string, any>): string => {
   const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
   return parentId != null ? String(parentId) : '';
 };
 
-export const getParentProjectId = (p: any): string => {
+export const getParentProjectId = (p: Record<string, any>): string => {
   const parent =
     p?.parent_id ??
     p?.parent_project_id ??
@@ -65,7 +65,7 @@ export const getParentProjectId = (p: any): string => {
   return parent != null ? String(typeof parent === 'object' ? parent.id : parent) : '';
 };
 
-export const isSeasonPeriod = (p: any): boolean => {
+export const isSeasonPeriod = (p: Record<string, any>): boolean => {
   // TeamReel hierarchy: Season is a root Period (no parent_period).
   // Do NOT infer by name; rely on parent/type.
   const parentId = getParentPeriodId(p);

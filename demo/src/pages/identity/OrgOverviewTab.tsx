@@ -18,7 +18,7 @@ export interface OrgOverviewTabProps {
   scheduledMatchesLoading: boolean;
   navigate: (path: string) => void;
   makeTabHref: (tabId: string) => string;
-  getBestMatchDetailPath: (m: any) => string;
+  getBestMatchDetailPath: (m: Record<string, unknown>) => string;
   currentOrgSlug: string | undefined;
   id: string | undefined;
   permissionContext: any;
@@ -97,7 +97,7 @@ export function OrgOverviewTab({
         ) : clubs.length === 0 ? (
           <div className={ov.emptyText}>Geen clubs gevonden.</div>
         ) : (
-          clubs.slice(0, 6).map((c: any) => {
+          clubs.slice(0, 6).map((c) => {
             const clubPath = `/${encodeURIComponent(orgSlug)}/${encodeURIComponent(String(c?.slug || c?.id || ''))}`;
             return (
               <div
@@ -126,7 +126,7 @@ export function OrgOverviewTab({
         ) : teams.length === 0 ? (
           <div className={ov.emptyText}>Geen teams gevonden.</div>
         ) : (
-          teams.slice(0, 6).map((t: any) => (
+          teams.slice(0, 6).map((t) => (
             <div key={String(t?.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
               <span className={ov.itemName}>{String(t?.name || 'Team')}</span>
             </div>
@@ -147,7 +147,7 @@ export function OrgOverviewTab({
         ) : members.length === 0 ? (
           <div className={ov.emptyText}>Geen leden gevonden.</div>
         ) : (
-          members.slice(0, 6).map((m: any) => {
+          members.slice(0, 6).map((m) => {
             const u = m?.user || m;
             const label =
               `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||
@@ -171,7 +171,7 @@ export function OrgOverviewTab({
           {scheduledMatchesLoading ? (
             <div className={ov.loadingText}>Laden…</div>
           ) : (
-            scheduledMatches.slice(0, 6).map((m: any) => {
+            scheduledMatches.slice(0, 6).map((m) => {
               const matchPath = getBestMatchDetailPath(m);
               return (
                 <div

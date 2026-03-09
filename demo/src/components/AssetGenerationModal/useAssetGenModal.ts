@@ -3,8 +3,9 @@
 // =============================================================================
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import type React from 'react';
 import { getTemplatesForContext, type AssetTemplate } from '../../constants/assetTemplates';
-import { useAssetGeneration } from '../../hooks/useAssetGeneration';
+import { useAssetGeneration, type UseAssetGenerationReturn } from '../../hooks/useAssetGeneration';
 import type { ModalStep, FeedbackFields, SavedAssetInfo, AssetGenerationModalProps } from './assetGenHelpers';
 import {
   getPrimaryInputKey,
@@ -14,10 +15,53 @@ import {
 } from './assetGenHelpers';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Return type
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface UseAssetGenModalReturn {
+  // State
+  modalStep: ModalStep;
+  setModalStep: React.Dispatch<React.SetStateAction<ModalStep>>;
+  selectedTemplateId: string | null;
+  params: Record<string, string>;
+  setParams: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  variantCount: number;
+  setVariantCount: React.Dispatch<React.SetStateAction<number>>;
+  extraInstructions: string;
+  setExtraInstructions: React.Dispatch<React.SetStateAction<string>>;
+  feedbackFields: FeedbackFields;
+  setFeedbackFields: React.Dispatch<React.SetStateAction<FeedbackFields>>;
+  selectedVariantIdx: number | null;
+  setSelectedVariantIdx: React.Dispatch<React.SetStateAction<number | null>>;
+  saving: boolean;
+  referenceSource: 'upload' | 'previous';
+  setReferenceSource: React.Dispatch<React.SetStateAction<'upload' | 'previous'>>;
+  shoeColor: string;
+  setShoeColor: React.Dispatch<React.SetStateAction<string>>;
+  videoProvider: string;
+  setVideoProvider: React.Dispatch<React.SetStateAction<string>>;
+  selectedModel: string;
+  setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
+  selectedBackgroundIdx: number;
+  setSelectedBackgroundIdx: React.Dispatch<React.SetStateAction<number>>;
+  // Derived
+  templates: AssetTemplate[];
+  selectedTemplate: AssetTemplate | null;
+  generation: UseAssetGenerationReturn;
+  stepTitle: string;
+  // Handlers
+  handleSelectTemplate: (id: string) => void;
+  handleGenerate: () => void;
+  handleAccept: () => Promise<void>;
+  handleRegenerate: () => void;
+  handleClose: () => void;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Hook
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function useAssetGenModal(props: AssetGenerationModalProps) {
+export function useAssetGenModal(props: AssetGenerationModalProps): UseAssetGenModalReturn {
   const {
     isOpen,
     onClose,

@@ -5,7 +5,7 @@
  * and derived filter memos. Extracted from ContentLibraryPage.tsx.
  */
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getAssetTypeLabel } from './contentLibraryTypes';
@@ -27,7 +27,7 @@ import {
 
 interface Params {
   isSuperAdmin: boolean;
-  myOrganisations: any[];
+  myOrganisations: Array<{ id: string | number; name: string; slug?: string }>;
   orgSlug: string | undefined;
   activeLevel: HierarchyTab;
   urlCategory: ContentCategory | null;
@@ -35,7 +35,49 @@ interface Params {
   autoTeamId?: string | null;
 }
 
-export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory, autoTeamId }: Params) {
+type SortOption = 'newest' | 'oldest' | 'title' | 'type';
+
+export interface UseContentLibraryDataReturn {
+  // Data
+  contentItems: ContentItem[];
+  setContentItems: Dispatch<SetStateAction<ContentItem[]>>;
+  filteredContent: ContentItem[];
+  loading: boolean;
+  error: string | null;
+  fetchContent: () => Promise<void>;
+  // Directory filters
+  organisations: OrganisationOption[];
+  clubs: ProjectOption[];
+  filteredTeams: ProjectOption[];
+  seasons: SeasonOption[];
+  matches: MatchOption[];
+  selectedOrgId: string;
+  setSelectedOrgId: Dispatch<SetStateAction<string>>;
+  selectedClubId: string;
+  setSelectedClubId: Dispatch<SetStateAction<string>>;
+  selectedTeamId: string;
+  setSelectedTeamId: Dispatch<SetStateAction<string>>;
+  selectedSeasonId: string;
+  setSelectedSeasonId: Dispatch<SetStateAction<string>>;
+  selectedMatchId: string;
+  setSelectedMatchId: Dispatch<SetStateAction<string>>;
+  // Content filters
+  categoryFilter: ContentCategory;
+  setCategoryFilter: Dispatch<SetStateAction<ContentCategory>>;
+  subtypeFilter: string;
+  setSubtypeFilter: Dispatch<SetStateAction<string>>;
+  searchQuery: string;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
+  sortBy: SortOption;
+  setSortBy: Dispatch<SetStateAction<SortOption>>;
+  // Counts
+  categoryCounts: Record<string, number>;
+  subtypeCounts: Record<string, number>;
+  // Actions
+  clearFilters: () => void;
+}
+
+export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, activeLevel, urlCategory, autoTeamId }: Params): UseContentLibraryDataReturn {
   // ── Data state ──
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -66,7 +108,6 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   const [categoryFilter, setCategoryFilter] = useState<ContentCategory>(urlCategory || 'all');
   const [subtypeFilter, setSubtypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  type SortOption = 'newest' | 'oldest' | 'title' | 'type';
   const [sortBy, setSortBy] = useState<SortOption>('newest');
 
   // ── Sync category from URL ──
@@ -80,7 +121,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   // ── Load organisations ──
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: o.slug || '' })));
       return;
     }
     const load = async () => {
@@ -91,7 +132,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
           { credentials: 'include' },
           { ttlMs: 120_000 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+        setOrganisations((orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({ id: String(o.id), name: o.name, slug: o.slug || '' })));
       } catch { /* ignore */ }
     };
     load();
@@ -144,7 +185,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
         if (response.ok) {
           const data = await response.json();
           const items = data?.results || data?.data?.results || [];
-          setSeasons(items.map((s: any) => ({ id: String(s.id), name: s.name, key: s.key || s.slug })));
+          setSeasons(items.map((s: { id: string | number; name: string; key?: string; slug?: string }) => ({ id: String(s.id), name: s.name, key: s.key || s.slug })));
         }
       } catch { /* ignore */ }
     };
@@ -164,7 +205,7 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
         if (response.ok) {
           const data = await response.json();
           const items = data?.results || data?.data?.results || [];
-          setMatches(items.map((m: any) => ({ id: String(m.id), title: m.title || m.name, slug: m.slug, activity_date: m.activity_date })));
+          setMatches(items.map((m: { id: string | number; title?: string; name?: string; slug?: string; activity_date?: string }) => ({ id: String(m.id), title: m.title || m.name, slug: m.slug, activity_date: m.activity_date })));
         }
       } catch { /* ignore */ }
     };

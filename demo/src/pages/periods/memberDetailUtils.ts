@@ -11,6 +11,13 @@ import {
 import { MEDIA_SLOTS, type MemberMediaForm } from '../../constants/mediaSlots';
 import { getCsrfToken } from '../../utils/csrf';
 
+/** Minimal membership record shape for member-detail utilities. */
+export interface MembershipRecord {
+  id?: string;
+  user?: { name?: string; first_name?: string; last_name?: string; email?: string; avatar_url?: string };
+  metadata?: Record<string, any>; // Deeply nested, truly polymorphic structure
+}
+
 // ─── Constants ───────────────────────────────────────────────────────
 
 export const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -44,7 +51,7 @@ export interface EffectiveKit {
 
 /** Common props shared by all member tab components. */
 export interface MemberTabCommonProps {
-  membership: any;
+  membership: MembershipRecord;
   form: MemberMediaForm;
   videoVariants: AssetVariantsMap;
   setVideoVariants: Dispatch<SetStateAction<AssetVariantsMap>>;
@@ -52,19 +59,19 @@ export interface MemberTabCommonProps {
   userCanEditProject: boolean;
   apiBaseUrl: string;
   membershipId: string | undefined;
-  project: any;
+  project: { id?: string; name?: string; slug?: string } | null;
   resolveDisplayUrl: (url: string | null | undefined) => string | null;
   openAiModal: (templateId: string, kitType?: string, playerInTenueUrl?: string | null, styleVariant?: string | null, referenceOverride?: string | null) => void;
-  handleMetadataUpdate: (newMetadata: any, targetMembershipId?: string) => Promise<void>;
+  handleMetadataUpdate: (newMetadata: Record<string, unknown>, targetMembershipId?: string) => Promise<void>;
   startProcessingPoll: (assetType: string, kitType: string, variantId?: string | null) => void;
   setVideoPreviewUrl: (url: string | null) => void;
-  setMembership: (m: any) => void;
+  setMembership: (m: MembershipRecord) => void;
   effectiveKits: EffectiveKit[];
 }
 
 // ─── Pure helpers ────────────────────────────────────────────────────
 
-export function getUserDisplayName(membership: any): string {
+export function getUserDisplayName(membership: MembershipRecord): string {
   const u = membership?.user || {};
   const name =
     String(u?.name || '').trim() ||
@@ -85,7 +92,7 @@ export function createEmptyVideoVariants(): AssetVariantsMap {
   return { fullbody: {}, halfbody: {}, closeup: {}, intro: {}, celebration: {}, then_vs_now: {}, photo_composite: {}, walking_composite: {}, action_photo: {} };
 }
 
-export function readAssetsFromMembership(membership: any): MemberMediaForm {
+export function readAssetsFromMembership(membership: MembershipRecord): MemberMediaForm {
   const meta = membership?.metadata || {};
   const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const media = tr?.media || {};
@@ -127,13 +134,13 @@ export function readAssetsFromMembership(membership: any): MemberMediaForm {
   return form;
 }
 
-export function readVideoVariantsFromMembership(membership: any): AssetVariantsMap {
+export function readVideoVariantsFromMembership(membership: MembershipRecord): AssetVariantsMap {
   const meta = membership?.metadata || {};
   const tr = meta?.teamreel_assets || meta?.teamreelAssets || {};
   const videos = tr?.videos || {};
   const images = tr?.images || {};
 
-  const safeObj = (obj: any): Record<string, AssetVariantRaw> =>
+  const safeObj = (obj: unknown): Record<string, AssetVariantRaw> =>
     (obj && typeof obj === 'object' ? { ...obj } : {});
 
   const migrateVideoKeys = (raw: Record<string, AssetVariantRaw>): Record<string, AssetVariantRaw> => {
@@ -181,7 +188,7 @@ export function readVideoVariantsFromMembership(membership: any): AssetVariantsM
   return result;
 }
 
-export function mergeAssetsIntoMetadata(existingMetadata: any, form: MemberMediaForm, videoVariants?: VideoVariantsMap): any {
+export function mergeAssetsIntoMetadata(existingMetadata: Record<string, any> | null | undefined, form: MemberMediaForm, videoVariants?: VideoVariantsMap): Record<string, any> {
   const meta = existingMetadata && typeof existingMetadata === 'object' ? { ...existingMetadata } : {};
   const existingTeamReel =
     meta.teamreel_assets && typeof meta.teamreel_assets === 'object'
@@ -325,7 +332,7 @@ export async function pollProcessingResult(
   assetType: string,
   kitType: string,
   variantId: string | null | undefined,
-  setMembershipFn: (m: any) => void,
+  setMembershipFn: (m: MembershipRecord) => void,
   abortSignal?: AbortSignal,
 ): Promise<void> {
   const POLL_INTERVAL = 3000;
@@ -348,7 +355,7 @@ export async function pollProcessingResult(
       const mData = json?.data || json;
       const tr = mData?.metadata?.teamreel_assets || mData?.metadata?.teamreelAssets || {};
 
-      let checkVal: any = null;
+      let checkVal: unknown = null;
       if (isImage) {
         checkVal = ((tr.images || {})[assetType] || {})[kitType];
       } else {
@@ -356,7 +363,7 @@ export async function pollProcessingResult(
       }
 
       if (checkVal && typeof checkVal === 'object') {
-        const state = checkVal.processing_state;
+        const state = (checkVal as any).processing_state;
         if (state === 'processed' || state === 'failed' || state === 'cancelled') {
           setMembershipFn(mData);
           return;

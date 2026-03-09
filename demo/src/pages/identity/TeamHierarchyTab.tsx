@@ -23,14 +23,14 @@ interface TeamHierarchyTabProps {
 }
 
 /** Format a match date */
-const fmtDate = (m: any) => {
+const fmtDate = (m: Record<string, any>) => {
   const raw = m?.start_time || m?.date || m?.metadata?.date;
   if (!raw) return '—';
   const d = new Date(raw);
   return d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
 };
 
-const fmtTime = (m: any) => {
+const fmtTime = (m: Record<string, any>) => {
   const raw = m?.start_time || m?.date || m?.metadata?.date;
   if (!raw) return '';
   const d = new Date(raw);
@@ -38,7 +38,7 @@ const fmtTime = (m: any) => {
 };
 
 /** Build a display title for a match */
-const matchDisplayTitle = (m: any): string => {
+const matchDisplayTitle = (m: Record<string, any>): string => {
   const name = String(m?.name || '').trim();
   if (name) return name;
   const home = m?.metadata?.home_team || m?.metadata?.team_home || '';
@@ -212,7 +212,7 @@ export function TeamHierarchyTab({
                               ) : compMatches.length === 0 ? (
                                 <div className={h.empty}>Geen wedstrijden.</div>
                               ) : (
-                                compMatches.map((m: any) => {
+                                compMatches.map((m) => {
                                   const mid = String(m?.id || m?.slug || '').trim();
                                   const matchPath = compPath && mid
                                     ? `${compPath}/${encodeURIComponent(m.slug || mid)}`

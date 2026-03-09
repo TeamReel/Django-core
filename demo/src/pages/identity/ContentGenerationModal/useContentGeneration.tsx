@@ -331,7 +331,7 @@ export function useContentGeneration({
     } catch (err) {
       console.error(err);
       clearInterval(progressInterval);
-      if ((err as any)?.name === 'AbortError') return;
+      if (err instanceof Error && err.name === 'AbortError') return;
       console.error('[!] Generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Generation failed');
       setStep('error');

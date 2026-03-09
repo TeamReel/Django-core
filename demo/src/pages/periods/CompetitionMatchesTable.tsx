@@ -53,7 +53,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
           </tr>
         </thead>
         <tbody>
-          {rows.map((m: any) => (
+          {rows.map((m) => (
             <tr key={String(m.id)}>
               <td className="detail-td-text">
                 <Link
@@ -100,7 +100,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                           headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
                           credentials: 'include',
                         });
-                        if (res.ok) setMatches((prev) => prev.filter((x: any) => String(x.id) !== String(m.id)));
+                        if (res.ok) setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
                         else alert('Error deleting match');
                       } catch (e) { console.error(e); alert('Error deleting match'); }
                     }}

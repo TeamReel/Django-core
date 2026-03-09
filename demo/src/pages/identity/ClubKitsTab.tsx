@@ -28,7 +28,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       const json = await res.json();
       const assets = json?.data?.results || json?.data || json?.results || [];
       const assetList = Array.isArray(assets) ? assets : [];
-      const kitAssets = assetList.filter((a: any) => String(a.asset_type || '').startsWith('kit_'));
+      const kitAssets = assetList.filter((a) => String(a.asset_type || '').startsWith('kit_'));
       setKits(kitAssets);
       setLoading(false);
     } catch (e) {

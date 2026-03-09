@@ -6,7 +6,8 @@
  * Eliminates the need for a separate ContentGenerationModal.
  */
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import type React from 'react';
+import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import { useActivities, Activity } from '../hooks/useActivities';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { useToast } from '../components/ui/Toast';
@@ -22,6 +23,7 @@ import {
   generateMatchSummary,
   generateGenericAI,
   saveGeneratedVariant,
+  type GenerateGenericAIParams,
 } from '../pages/identity/ContentGenerationModal/contentGenerationApi';
 import {
   generateLineupVideo,
@@ -33,7 +35,103 @@ import {
   LINEUP_REQUIRED_SUBTYPES, HAS_OPTIONS_SUBTYPES, POSITIONS, getSquadMemberName,
 } from './matchWizardTypes';
 
-export function useMatchWizardData(isOpen: boolean, onClose: () => void, initialMatchId?: string) {
+// ============================================================================
+// Return type
+// ============================================================================
+
+export interface UseMatchWizardDataReturn {
+  navigate: NavigateFunction;
+  // Step
+  currentStep: WizardStep;
+  setCurrentStep: React.Dispatch<React.SetStateAction<WizardStep>>;
+  selectedMatch: Activity | null;
+  setSelectedMatch: React.Dispatch<React.SetStateAction<Activity | null>>;
+  // Lineup
+  lineupSlots: { goalkeeper: string[]; player: string[] };
+  lineupFormation: string;
+  setLineupFormation: React.Dispatch<React.SetStateAction<string>>;
+  squadGroups: Record<string, SquadMember[]>;
+  squadLoading: boolean;
+  editingPosition: number | null;
+  setEditingPosition: React.Dispatch<React.SetStateAction<number | null>>;
+  lineupSaving: boolean;
+  filledPositions: number;
+  totalPositions: number;
+  allPlayers: SquadMember[];
+  // Content
+  selectedContentPhase: ContentPhase;
+  setSelectedContentPhase: React.Dispatch<React.SetStateAction<ContentPhase>>;
+  pendingContent: { key: string; label: string; subtype: string; templateType: string } | null;
+  selectedTemplate: ContentTemplate | null;
+  selectedContentTypeLabel: string;
+  selectedType: { type: string; subtype: string; label: string } | null;
+  isLineupFlow: boolean;
+  // Options (from useContentOptions sub-hook)
+  options: ReturnType<typeof useContentOptions>;
+  // Generation state
+  progress: number;
+  generationError: string | null;
+  generatedOutput: GeneratedOutput | null;
+  generatedVariants: GeneratedVariant[];
+  selectedVariantIndex: number;
+  setSelectedVariantIndex: React.Dispatch<React.SetStateAction<number>>;
+  savingAsset: boolean;
+  saveSuccess: boolean;
+  savedVariantIndices: Set<number>;
+  // Season squad (for MembersStep and generation APIs)
+  seasonSquad: ReturnType<typeof useSeasonSquadData>;
+  // Video job polling
+  videoPoll: ReturnType<typeof useVideoJobPolling>;
+  // Team names
+  homeTeamName: string;
+  awayTeamName: string;
+  // Match data for API
+  matchDataForApi: {
+    id: string;
+    title: string;
+    project: Activity['project'];
+    opponent_project: Activity['opponent_project'] | undefined;
+    participations: Activity['participations'];
+    start_time: string;
+    location: string;
+    metadata: Record<string, unknown>;
+  } | null;
+  organisationId: string | null;
+  // Errors
+  matchesError: string | null;
+  templatesError: string | null;
+  squadError: string | null;
+  saveError: string | null;
+  // Matches
+  matchesLoading: boolean;
+  upcomingMatches: Activity[];
+  // Handlers
+  handleSelectPlayer: (positionIdx: number, isGoalkeeper: boolean, memberId: string | null) => void;
+  handleContentSelect: (contentKey: string, contentLabel: string, subtype: string, templateType: string) => void;
+  handleLineupConfirm: () => void;
+  handleOptionsConfirm: () => void;
+  handleReviewConfirm: () => void;
+  handleGenerate: () => Promise<void>;
+  handleSaveAsAsset: () => Promise<void>;
+  handleSaveAllAsAssets: () => Promise<void>;
+  handleSaveVariantByIndex: (variantIdx: number, opts?: { skipAutoClose?: boolean }) => Promise<void>;
+  handleBack: () => void;
+  handleClose: () => void;
+  // Guest players
+  guestPlayers: SquadMember[];
+  addGuestPlayer: (name: string, jerseyNumber?: string) => void;
+  removeGuestPlayer: (guestId: string) => void;
+  // Helpers
+  getStepTitle: () => string;
+  getMemberName: (memberId: string) => string;
+  getMemberJersey: (memberId: string) => string | null;
+  getMemberById: (memberId: string) => SquadMember | undefined;
+  // Retry
+  retrySquad: () => Promise<void>;
+  retryTemplates: () => Promise<void>;
+}
+
+export function useMatchWizardData(isOpen: boolean, onClose: () => void, initialMatchId?: string): UseMatchWizardDataReturn {
   const navigate = useNavigate();
   const apiBaseUrl = getApiBaseUrl();
   const { pushToast } = useToast();
@@ -229,8 +327,8 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     if (saved) {
       if (saved.formation) setLineupFormation(saved.formation);
       if (saved.goalkeeper || saved.player) setLineupSlots({ goalkeeper: saved.goalkeeper || [], player: saved.player || [] });
-    } else if ((metadata as any)?.formation) {
-      setLineupFormation((metadata as any).formation);
+    } else if (metadata?.formation) {
+      setLineupFormation(String(metadata.formation));
     }
   }, [selectedMatch]);
 
@@ -378,9 +476,9 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     const syntheticAllowed = ['match_intro', 'goal', 'poster'];
     if (!matchedTemplate && syntheticAllowed.includes(subtype)) {
       const synthetic: Record<string, ContentTemplate> = {
-        match_intro: { id: 0, name: 'Match Intro', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'match_intro', is_active: true, input_requirements: {} } as any,
-        goal: { id: 0, name: 'Goal Celebration', description: '', style_variant: '', template_type: 'during_match', template_subtype: 'goal', is_active: true, input_requirements: {} } as any,
-        poster: { id: 0, name: 'Elftalfoto', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'poster', is_active: true, input_requirements: { members: { goalkeeper: { count: 1, asset_types: ['in_tenue'] }, player: { count: 10, asset_types: ['in_tenue'] } } } } as any,
+        match_intro: { id: 0, name: 'Match Intro', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'match_intro', is_active: true, input_requirements: {} } satisfies ContentTemplate,
+        goal: { id: 0, name: 'Goal Celebration', description: '', style_variant: '', template_type: 'during_match', template_subtype: 'goal', is_active: true, input_requirements: {} } satisfies ContentTemplate,
+        poster: { id: 0, name: 'Elftalfoto', description: '', style_variant: '', template_type: 'pre_match', template_subtype: 'poster', is_active: true, input_requirements: { members: { goalkeeper: { count: 1, asset_types: ['in_tenue'] }, player: { count: 10, asset_types: ['in_tenue'] } } } } satisfies ContentTemplate,
       };
       matchedTemplate = synthetic[subtype];
     }
@@ -569,7 +667,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
 
       // ── Generic AI generation (catch-all) ──
       const result = await generateGenericAI({
-        selectedType, selectedTemplate, matchData: matchData as any, organisationId, assetType: null,
+        selectedType, selectedTemplate, matchData: matchData as GenerateGenericAIParams['matchData'], organisationId, assetType: null,
       });
       clearInterval(progressInterval);
       setGeneratedVariants(result.variants);
@@ -579,7 +677,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     } catch (err) {
       console.error(err);
       clearInterval(progressInterval);
-      if ((err as any)?.name === 'AbortError') return;
+      if (err instanceof Error && err.name === 'AbortError') return;
       console.error('[!] Generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Generation failed');
       setCurrentStep('error');

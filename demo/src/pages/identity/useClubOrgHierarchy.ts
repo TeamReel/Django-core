@@ -67,17 +67,17 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                 const teamsRaw = unwrapEnvelope<any>(teamsJson);
                 const teamsList: any[] = Array.isArray(teamsRaw?.results) ? teamsRaw.results : Array.isArray(teamsRaw) ? teamsRaw : [];
                 const filteredTeams = teamsList
-                    .filter((t: any) => {
+                    .filter((t) => {
                         const parent = t?.parent_id ?? t?.parent_project_id ?? (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ?? (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
                         if (parent == null) return false;
                         return String(typeof parent === 'object' ? parent.id : parent) === String(clubIdForDirectoryLists);
                     })
-                    .map((t: any) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
-                    .filter((t: any) => Boolean(t.id));
+                    .map((t) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
+                    .filter((t) => Boolean(t.id));
                 if (cancelled) return;
                 setHierarchyTeams(filteredTeams);
 
-                const teamIds = filteredTeams.map((t: any) => String(t.id)).filter(Boolean);
+                const teamIds = filteredTeams.map((t) => String(t.id)).filter(Boolean);
                 if (!teamIds.length) { setHierarchySeasonsByTeamId({}); return; }
 
                 const chunkSize = 50;
@@ -135,7 +135,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                         childrenMap.set(key, arr);
                     }
                     const getRecursiveActivitiesCount = (p: any): number => {
-                        let count = (p?.activities_count ?? 0);
+                        let count: number = Number(p?.activities_count ?? 0);
                         const children = childrenMap.get(String(p?.id));
                         if (children) for (const child of children) count += getRecursiveActivitiesCount(child);
                         return count;

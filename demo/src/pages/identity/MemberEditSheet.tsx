@@ -31,7 +31,7 @@ const ROLE_COLORS: Record<string, string> = {
 function readFunctionalRoles(m: any): string[] {
   const direct = m?.functional_roles ?? m?.functionalRoles;
   if (Array.isArray(direct)) {
-    return direct.map((r: any) => String(r || '').trim()).filter(Boolean);
+    return direct.map((r) => String(r || '').trim()).filter(Boolean);
   }
   return [];
 }

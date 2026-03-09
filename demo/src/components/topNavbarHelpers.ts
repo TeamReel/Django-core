@@ -20,6 +20,11 @@ export interface NotificationResponse {
   results: Array<{
     id: string;
     is_read: boolean;
+    title?: string;
+    message?: string;
+    content?: string;
+    action_url?: string | null;
+    created_at?: string;
   }>;
 }
 

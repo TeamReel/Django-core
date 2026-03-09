@@ -91,7 +91,7 @@ export function KitsTab({
       const assets = json?.data?.results || json?.data || json?.results || [];
       const assetList = Array.isArray(assets) ? assets : [];
 
-      setKits(assetList.filter((a: any) => String(a.asset_type || '').startsWith('kit_')));
+      setKits(assetList.filter((a) => String(a.asset_type || '').startsWith('kit_')));
       setLoading(false);
     } catch (e) {
       console.error(e);

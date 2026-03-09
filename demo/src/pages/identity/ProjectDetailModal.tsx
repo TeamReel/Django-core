@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@django-core/design-system';
 
 interface Project {
-  id: string;
+  id: string | number;
   name: string;
   description?: string;
   is_active?: boolean;

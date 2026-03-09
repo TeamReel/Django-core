@@ -11,12 +11,12 @@ export type { Period, SeasonProject, SeasonOrganisation } from '../types/season'
 
 // ── Helpers (previously copy-pasted per page) ──────────────────────────
 
-export const getPeriodType = (p: any): string => {
+export const getPeriodType = (p: Record<string, any> | null): string => {
   const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
   return String(t || '').toLowerCase();
 };
 
-export const getPeriodParentId = (p: any): string => {
+export const getPeriodParentId = (p: Record<string, any> | null): string => {
   const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
   return parentId ? String(parentId) : '';
 };
@@ -25,7 +25,7 @@ export const getPeriodParentId = (p: any): string => {
  * A root Period with no parent is a Season.
  * Guard against mis-configured root competitions.
  */
-export const isSeasonPeriod = (p: any): boolean => {
+export const isSeasonPeriod = (p: Record<string, any> | null): boolean => {
   const parentId = getPeriodParentId(p);
   if (parentId) return false;
 
@@ -39,10 +39,11 @@ export const isSeasonPeriod = (p: any): boolean => {
 };
 
 /** Unwrap a generic API envelope `{ status, data }`. */
-export const unwrap = <T,>(raw: any): T => {
-  const candidate = raw?.data?.data;
+export const unwrap = <T,>(raw: unknown): T => {
+  const r = raw as Record<string, any>;
+  const candidate = r?.data?.data;
   if (candidate && typeof candidate === 'object' && candidate.id) return candidate as T;
-  return (raw?.data ?? raw) as T;
+  return (r?.data ?? raw) as T;
 };
 
 // ── Public context type ────────────────────────────────────────────────

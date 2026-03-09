@@ -57,7 +57,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
               memberTemplates={batch.memberTemplates}
               selectedTemplateId={batch.selectedTemplateId}
               setSelectedTemplateId={batch.setSelectedTemplateId}
-              selectedTemplate={batch.selectedTemplate}
+              selectedTemplate={batch.selectedTemplate!}
               defaultParams={batch.defaultParams}
               setDefaultParams={batch.setDefaultParams}
               memberOverrides={batch.memberOverrides}
@@ -75,7 +75,7 @@ export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props)
             <BatchProgressStep
               step={batch.step}
               members={members}
-              selectedTemplate={batch.selectedTemplate}
+              selectedTemplate={batch.selectedTemplate!}
               jobStatuses={batch.jobStatuses}
               completedCount={batch.completedCount}
               successCount={batch.successCount}

@@ -165,7 +165,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {members.map((item: any) => {
+                {members.map((item) => {
                   const user = item.user || item;
                   const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
                   const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);

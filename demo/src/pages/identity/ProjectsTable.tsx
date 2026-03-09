@@ -21,7 +21,7 @@ export function filterProjects(d: Data): Project[] {
 
   // Organisation (global view only)
   if (!currentOrgSlug && selectedOrgId) {
-    list = list.filter((p: any) => {
+    list = list.filter((p) => {
       const pid = p.organisation?.id || p.organisation_id;
       return String(pid) === String(selectedOrgId);
     });
@@ -29,10 +29,10 @@ export function filterProjects(d: Data): Project[] {
 
   // Club/team
   if (selectedTeamId) {
-    list = list.filter((p: any) => String(p.id) === String(selectedTeamId));
+    list = list.filter((p) => String(p.id) === String(selectedTeamId));
   } else if (selectedClubId) {
     const selectedClubName = clubs.find(c => String(c.id) === String(selectedClubId))?.name;
-    list = list.filter((p: any) => {
+    list = list.filter((p) => {
       if (String(p.id) === String(selectedClubId)) return true;
       const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
       const parentName = p.parent_name ?? p.parent_project_name ?? null;

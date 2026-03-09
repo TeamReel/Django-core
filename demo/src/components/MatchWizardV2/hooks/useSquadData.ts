@@ -6,7 +6,17 @@ import { getApiBaseUrl } from '../../../utils/apiBase';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { SquadMember } from '../types';
 
-export function useSquadData() {
+// ============================================================================
+// Return type
+// ============================================================================
+
+export interface UseSquadDataReturn {
+  fetchSquad: () => Promise<void>;
+  loadSavedLineup: () => void;
+  saveLineup: () => Promise<boolean>;
+}
+
+export function useSquadData(): UseSquadDataReturn {
   const apiBaseUrl = getApiBaseUrl();
   const {
     selectedMatch,

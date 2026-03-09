@@ -1,8 +1,8 @@
 /**
  * useProjectsPageData — State, fetch, mutations, and permission logic for ProjectsPage.
  */
-import { useEffect, useState } from 'react';
-import { useSearchParams, useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState, type Dispatch, type SetStateAction, type ChangeEvent } from 'react';
+import { useSearchParams, useParams, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -17,7 +17,64 @@ function getCsrfToken() {
   return row ? decodeURIComponent(row.split('=')[1]) : '';
 }
 
-export function useProjectsPageData() {
+export interface UseProjectsPageDataReturn {
+  // Context
+  orgId: string | undefined;
+  navigate: NavigateFunction;
+  organisations: Array<{ id: string; name: string; slug: string; description?: string }>;
+  resolvedOrg: { id: string; name: string; slug: string } | undefined;
+  currentOrgSlug: string | undefined;
+  currentOrgId: string | number | undefined;
+  displayOrgName: string;
+  context: { organisation?: { id: string | number; name: string; slug?: string }; isLoading?: boolean };
+  // Data
+  projects: Project[];
+  loading: boolean;
+  error: string | null;
+  successMessage: string | null;
+  // Sort / search
+  sort: string;
+  order: string;
+  search: string;
+  // Filters
+  statusFilter: string;
+  setStatusFilter: Dispatch<SetStateAction<string>>;
+  selectedOrgId: string;
+  setSelectedOrgId: Dispatch<SetStateAction<string>>;
+  selectedClubId: string;
+  setSelectedClubId: Dispatch<SetStateAction<string>>;
+  selectedTeamId: string;
+  setSelectedTeamId: Dispatch<SetStateAction<string>>;
+  filterOrganisationOptions: OrganisationOption[];
+  clubs: ProjectOption[];
+  teams: ProjectOption[];
+  orgNavigationIndex: Array<{ id: string; slug?: string }>;
+  // Permissions
+  isSuperAdmin: boolean;
+  userCanCreateProject: boolean;
+  userCanEditProject: boolean;
+  userCanDeleteProject: boolean;
+  // Modal state
+  isEditModalOpen: boolean;
+  setIsEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  selectedProject: Project | null;
+  setSelectedProject: Dispatch<SetStateAction<Project | null>>;
+  isDetailModalOpen: boolean;
+  setIsDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  detailProject: Project | null;
+  setDetailProject: Dispatch<SetStateAction<Project | null>>;
+  isOrgSelectionModalOpen: boolean;
+  setIsOrgSelectionModalOpen: Dispatch<SetStateAction<boolean>>;
+  // Handlers
+  handleSaveProject: (projectData: Partial<Project>) => Promise<void>;
+  handleDelete: (projectId: string) => Promise<void>;
+  handleSearch: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleSort: (field: string) => void;
+  // Breadcrumbs
+  breadcrumbItems: Array<{ label: string; onClick?: () => void; current?: boolean }>;
+}
+
+export function useProjectsPageData(): UseProjectsPageDataReturn {
   const { orgId } = useParams<{ orgId: string }>();
   const navigate = useNavigate();
   const { context, organisations, switchContext } = useContextSwitcher();
@@ -56,7 +113,7 @@ export function useProjectsPageData() {
 
   // Breadcrumb context
   const { organisationOptions, handleOrganisationSwitch } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug, description: (o as any).description })),
     projects: [],
     users: [],
     context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },
@@ -67,7 +124,7 @@ export function useProjectsPageData() {
   const apiOrgSlug = orgId ? currentOrgSlug : undefined;
 
   // Permissions
-  const userRole = String((user as any)?.role || '').toLowerCase();
+  const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
   const permissionContext = { currentOrganisation: resolvedOrg, isSuperAdmin };
   const userCanCreateProject = canCreateProject(permissionContext);
@@ -85,9 +142,9 @@ export function useProjectsPageData() {
   // Org options for filter
   useEffect(() => {
     if (!isSuperAdmin) {
-      const opts = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
+      const opts = organisations.map((o) => ({ id: String(o.id), name: o.name }));
       setFilterOrganisationOptions(opts);
-      setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+      setOrgNavigationIndex(organisations.map((o) => ({ id: String(o.id), slug: o.slug })));
       return;
     }
     const load = async () => {
@@ -97,12 +154,12 @@ export function useProjectsPageData() {
         if (!res.ok) throw new Error('fallback');
         const data = await res.json();
         const orgs = data.data?.results || data.results || [];
-        setFilterOrganisationOptions(orgs.map((o: any) => ({ id: String(o.id), name: o.name })));
-        setOrgNavigationIndex(orgs.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+        setFilterOrganisationOptions(orgs.map((o: { id: string; name: string }) => ({ id: String(o.id), name: o.name })));
+        setOrgNavigationIndex(orgs.map((o: { id: string; slug?: string }) => ({ id: String(o.id), slug: o.slug })));
       } catch {
-        const fallback = organisations.map((o: any) => ({ id: String(o.id), name: o.name }));
+        const fallback = organisations.map((o) => ({ id: String(o.id), name: o.name }));
         setFilterOrganisationOptions(fallback);
-        setOrgNavigationIndex(organisations.map((o: any) => ({ id: String(o.id), slug: o.slug })));
+        setOrgNavigationIndex(organisations.map((o) => ({ id: String(o.id), slug: o.slug })));
       }
     };
     load();
@@ -164,7 +221,7 @@ export function useProjectsPageData() {
       });
 
       if (!response.ok) throw new Error(`API error: ${response.status}`);
-      const data: any = await response.json();
+      const data = await response.json() as { data?: { results?: Project[] }; results?: Project[] };
       const results = data.data?.results || data.results || [];
       setProjects(Array.isArray(results) ? results : []);
     } catch (err) {
@@ -188,9 +245,9 @@ export function useProjectsPageData() {
       const project = projects.find(p => p.id === selectedProject.id);
       let projectOrgSlug: string | undefined;
 
-      if ((project as any)?.organisation?.slug) projectOrgSlug = (project as any).organisation.slug;
+      if ((project as Project & { organisation?: { slug: string } })?.organisation?.slug) projectOrgSlug = (project as Project & { organisation?: { slug: string } }).organisation!.slug;
       else if (project?.organisation_id) projectOrgSlug = organisations.find(o => o.id === project.organisation_id)?.slug;
-      else if ((selectedProject as any)?.organisation?.slug) projectOrgSlug = (selectedProject as any).organisation.slug;
+      else if ((selectedProject as Project & { organisation?: { slug: string } })?.organisation?.slug) projectOrgSlug = (selectedProject as Project & { organisation?: { slug: string } }).organisation!.slug;
       else if (currentOrgSlug) projectOrgSlug = currentOrgSlug;
 
       if (!projectOrgSlug) throw new Error('Could not determine project organisation');
@@ -234,7 +291,7 @@ export function useProjectsPageData() {
       const projectSlug = projectToDelete?.slug || projectId;
 
       let orgSlug: string | undefined;
-      if ((projectToDelete as any)?.organisation?.slug) orgSlug = (projectToDelete as any).organisation.slug;
+      if ((projectToDelete as Project & { organisation?: { slug: string } })?.organisation?.slug) orgSlug = (projectToDelete as Project & { organisation?: { slug: string } }).organisation!.slug;
       else if (resolvedOrg) orgSlug = resolvedOrg.slug;
 
       if (!orgSlug) { alert('Failed to delete project: missing organisation context'); return; }
@@ -279,7 +336,7 @@ export function useProjectsPageData() {
   return {
     // Context
     orgId, navigate, organisations, resolvedOrg, currentOrgSlug, currentOrgId,
-    displayOrgName, context,
+    displayOrgName, context: context as any,
     // Data
     projects, loading, error, successMessage,
     // Sort / search

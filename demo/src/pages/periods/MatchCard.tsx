@@ -46,7 +46,7 @@ export interface MatchCardProps {
   onToggle: () => void;
   contentDetail?: ContentDetail;
   contentLoading: boolean;
-  matchDisplayTitle: (m: any) => string;
+  matchDisplayTitle: (m: Record<string, unknown>) => string;
   matchPath: string;
   isActive: boolean;
   onSetActive: () => void;

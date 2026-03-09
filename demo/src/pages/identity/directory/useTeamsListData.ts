@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useSports } from '../../../hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -22,7 +22,52 @@ interface TeamsListHookProps {
   preselectedClubId?: string;
 }
 
-export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsListHookProps) {
+export interface UseTeamsListDataReturn {
+  // State
+  isLoading: boolean;
+  error: string | null;
+  organisations: OrganisationOption[];
+  clubs: ProjectOption[];
+  teams: ProjectOption[];
+  filteredTeams: ProjectOption[];
+  detailProject: ProjectOption | null;
+  isDetailModalOpen: boolean;
+  editProject: ProjectOption | null;
+  isEditModalOpen: boolean;
+  isCreateModalOpen: boolean;
+  selectedOrgId: string;
+  selectedClubId: string;
+  selectedTeamId: string;
+  statusFilter: string;
+  sportFilter: string;
+  lockedOrgSlug: string;
+  // Derived
+  orgLocked: boolean;
+  clubLocked: boolean;
+  isSuperAdmin: boolean;
+  userCanEditProject: boolean;
+  userCanDeleteProject: boolean;
+  categories: ReturnType<typeof useSports>['categories'];
+  navigate: NavigateFunction;
+  // Setters
+  setSelectedOrgId: Dispatch<SetStateAction<string>>;
+  setSelectedClubId: Dispatch<SetStateAction<string>>;
+  setSelectedTeamId: Dispatch<SetStateAction<string>>;
+  setStatusFilter: Dispatch<SetStateAction<string>>;
+  setSportFilter: Dispatch<SetStateAction<string>>;
+  setDetailProject: Dispatch<SetStateAction<ProjectOption | null>>;
+  setIsDetailModalOpen: Dispatch<SetStateAction<boolean>>;
+  setEditProject: Dispatch<SetStateAction<ProjectOption | null>>;
+  setIsEditModalOpen: Dispatch<SetStateAction<boolean>>;
+  setIsCreateModalOpen: Dispatch<SetStateAction<boolean>>;
+  // Actions
+  handleDeleteProject: (orgSlugOrId: string, teamId: string, teamName: string) => Promise<void>;
+  handleEditSave: (projectData: Record<string, unknown>) => Promise<void>;
+  handleCreateTeam: (projectData: Record<string, unknown>) => Promise<void>;
+  clearFilters: () => void;
+}
+
+export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsListHookProps): UseTeamsListDataReturn {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -38,10 +83,10 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
   const [clubs, setClubs] = useState<ProjectOption[]>([]);
   const [teams, setTeams] = useState<ProjectOption[]>([]);
 
-  const [detailProject, setDetailProject] = useState<any | null>(null);
+  const [detailProject, setDetailProject] = useState<ProjectOption | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-  const [editProject, setEditProject] = useState<any | null>(null);
+  const [editProject, setEditProject] = useState<ProjectOption | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -92,7 +137,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
         const raw: any = await res.json().catch(() => null);
         const data: any = raw?.data ?? raw;
         const list: any[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
-        const match = list.find((o: any) => String(o?.id || '') === String(rawLockedId));
+        const match = list.find((o: { id?: string; slug?: string }) => String(o?.id || '') === String(rawLockedId));
         const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
       } catch { /* ignore */ }
@@ -145,7 +190,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
           { credentials: 'include' },
           { ttlMs: 120_000, bypass: refreshKey > 0 },
         );
-        setOrganisations((orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })));
+        setOrganisations((orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch { /* ignore */ }
     };
     load();
@@ -228,13 +273,13 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       const s = String(value ?? '').trim();
       return s ? s.toLocaleLowerCase() : '\uffff';
     };
-    const getFederationName = (team: any) => {
+    const getFederationName = (team: ProjectOption) => {
       const org = team?.organisation;
       if (typeof org === 'object' && org?.name) return org.name;
       const orgId = typeof org === 'string' ? org : org?.id;
       return orgId ? (organisations.find((o) => String(o.id) === String(orgId))?.name || '') : '';
     };
-    const getClubName = (team: any) => {
+    const getClubName = (team: ProjectOption) => {
       const parent = team?.parent_project || team?.parent_id || team?.parent_project_id;
       const parentId = typeof parent === 'object' ? parent?.id : parent;
       const parentName = typeof parent === 'object' ? (parent?.name || parent?.slug) : '';
@@ -247,23 +292,23 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     const selectedOrgIdResolved = selectedOrg?.id ? String(selectedOrg.id) : selectedOrgId;
 
     if (selectedOrgId) {
-      list = list.filter((team: any) => {
+      list = list.filter((team) => {
         const teamOrg = typeof team.organisation === 'string' ? team.organisation : team.organisation?.id;
         return String(teamOrg) === String(selectedOrgIdResolved);
       });
     }
     if (selectedClubId) {
-      list = list.filter((team: any) => {
+      list = list.filter((team) => {
         const parent = team.parent_project || team.parent_id || team.parent_project_id;
-        const parentId = typeof parent === 'object' ? parent.id : parent;
+        const parentId = typeof parent === 'object' ? parent?.id : parent;
         return String(parentId) === String(selectedClubId);
       });
     }
     if (selectedTeamId) {
-      list = list.filter((t: any) => String(t.id) === String(selectedTeamId));
+      list = list.filter((t) => String(t.id) === String(selectedTeamId));
     }
-    if (statusFilter === 'active') list = list.filter((c: any) => c.is_active !== false);
-    else if (statusFilter === 'inactive') list = list.filter((c: any) => c.is_active === false);
+    if (statusFilter === 'active') list = list.filter((c) => c.is_active !== false);
+    else if (statusFilter === 'inactive') list = list.filter((c) => c.is_active === false);
 
     if (sportFilter !== 'all') {
       list = list.filter((team) => {
@@ -278,7 +323,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       });
     }
 
-    list.sort((a: any, b: any) => {
+    list.sort((a, b) => {
       const byFederation = sortKey(getFederationName(a)).localeCompare(sortKey(getFederationName(b)));
       if (byFederation !== 0) return byFederation;
       const byClub = sortKey(getClubName(a)).localeCompare(sortKey(getClubName(b)));
@@ -301,7 +346,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
         credentials: 'include',
       });
       if (!res.ok) { alert('Failed to delete team'); return; }
-      setTeams((prev) => prev.filter((p: any) => String(p.id) !== String(teamId)));
+      setTeams((prev) => prev.filter((p) => String(p.id) !== String(teamId)));
       if (String(selectedTeamId) === String(teamId)) setSelectedTeamId('');
     } catch (e) {
       console.error(e);
@@ -310,7 +355,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     }
   };
 
-  const handleEditSave = async (projectData: any) => {
+  const handleEditSave = async (projectData: Record<string, unknown>) => {
     if (!editProject) return;
     const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
     const baseUrl = getApiBaseUrl();
@@ -335,16 +380,16 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     const payload: any = await response.json().catch(() => null);
     const updated = payload?.data?.data || payload?.data || payload;
     setTeams((prev) =>
-      prev.map((p: any) => {
+      prev.map((p) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
         return match ? { ...p, ...(updated || projectData) } : p;
       }),
     );
-    setEditProject((prev: any) => (prev ? { ...prev, ...(updated || projectData) } : prev));
+    setEditProject((prev) => (prev ? { ...prev, ...(updated || projectData) } : prev));
     invalidateFetchAllPagesCache();
   };
 
-  const handleCreateTeam = async (projectData: any) => {
+  const handleCreateTeam = async (projectData: Record<string, unknown>) => {
     const orgId = String(projectData.organisation_id || selectedOrgId || '');
     const clubId = String(projectData.parent_project_id || selectedClubId || '');
     if (!orgId) throw new Error('Select a federation first');
@@ -377,7 +422,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       if (createdKey) {
         setTeams((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: any) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
+          if (list.some((p) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
           return [created, ...list];
         });
       }

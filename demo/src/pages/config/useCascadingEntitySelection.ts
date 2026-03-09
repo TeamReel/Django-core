@@ -248,7 +248,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
           if (cancelled) return;
           if (!nextUrl) break;
         }
-        const rootProjects = collected.filter((p: any) => {
+        const rootProjects = collected.filter((p) => {
           const parentId = p?.parent_id;
           return parentId === null || parentId === undefined || String(parentId).trim() === '';
         });
@@ -287,7 +287,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
           if (cancelled) return;
           if (!nextUrl) break;
         }
-        const filteredTeams = collected.filter((t: any) => String(t?.parent_id || '') === String(selectedClubId));
+        const filteredTeams = collected.filter((t) => String(t?.parent_id || '') === String(selectedClubId));
         if (!cancelled) setTeams(filteredTeams);
       } catch {
         if (!cancelled) setTeams([]);
@@ -321,7 +321,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const parsePeriods = (json: any) => {
           const results = json?.data?.results || json?.results || json?.data || json;
           const all = Array.isArray(results) ? results : [];
-          return all.filter((p: any) => {
+          return all.filter((p) => {
             const parent = p?.parent_period_id ?? p?.parent_period?.id ?? null;
             return !parent;
           });

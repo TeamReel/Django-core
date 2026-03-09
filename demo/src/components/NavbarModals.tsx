@@ -405,7 +405,7 @@ export function NavbarQuickReviewModal({
    ═══════════════════════════════════════════════════════════════ */
 
 export interface NotificationsModalProps {
-  notificationsList: Array<{ id: string; message: string; is_read: boolean; created_at: string; title?: string; read?: boolean }>;
+  notificationsList: Array<{ id: string; message: string; is_read: boolean; created_at: string; title?: string; read?: boolean; action_url?: string | null }>;
   onClose: () => void;
   onNavigate: (path: string) => void;
 }
@@ -432,12 +432,12 @@ export function NavbarNotificationsModal({ notificationsList, onClose, onNavigat
             </div>
           ) : (
             <div className="flex-col gap-8">
-              {notificationsList.slice(0, 10).map((notif: any) => (
+              {notificationsList.slice(0, 10).map((notif) => (
                 <div
                   key={notif.id}
                   className={`p-12 rounded-8 ${styles.notifItem}`}
                   data-read={notif.read}
-                  onClick={notif.action_url ? () => { onClose(); onNavigate(notif.action_url); } : undefined}
+                  onClick={notif.action_url ? () => { onClose(); onNavigate(notif.action_url!); } : undefined}
                   style={notif.action_url ? { cursor: 'pointer' } : undefined}
                   role={notif.action_url ? 'link' : undefined}
                 >

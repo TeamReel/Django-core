@@ -50,10 +50,10 @@ function AppWithProviders() {
   const contextConfig: ContextSwitcherConfig = React.useMemo(() => ({
     routerAdapter,
     apiBaseUrl: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
-    onContextError: (error: any) => {
+    onContextError: (error: unknown) => {
       console.warn('Context switch error:', error);
       // Handle 401 Unauthorized by redirecting to login
-      if (error?.code === 401 || error?.status === 401) {
+      if ((error as any)?.code === 401 || (error as any)?.status === 401) {
         window.location.href = '/login';
         return;
       }

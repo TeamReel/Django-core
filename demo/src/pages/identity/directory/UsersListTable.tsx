@@ -225,7 +225,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                       <button
                         className={styles.linkButton}
                         onClick={() => {
-                          const href = getUserDetailHrefForRow(u);
+                          const href = getUserDetailHrefForRow(u as any);
                           if (href) navigate(href);
                         }}
                         title="Open user"
@@ -369,7 +369,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                         <button
                           onClick={() =>
                             handleDeleteTeamMember(
-                              u?.project_membership_id,
+                              u?.project_membership_id!,
                               usernameLabel,
                               scoped.team.label,
                             )

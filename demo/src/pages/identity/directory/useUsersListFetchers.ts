@@ -10,6 +10,72 @@ import { getApiBaseUrl } from '../../../utils/apiBase';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import { normalizeRoleName, getUserTeamreelRoleNames } from './usersListHelpers';
 
+/** Normalized user record stored in state */
+interface UserRecord {
+  id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  is_active?: boolean;
+  role?: string;
+  is_superuser?: boolean;
+  organisations?: unknown[];
+  role_label?: string;
+  role_assignments?: unknown[];
+  functional_roles?: string[];
+  project_membership_id?: string;
+  membership?: Record<string, unknown>;
+  organisation?: unknown;
+  source?: string;
+  joined_at?: string;
+  invited_by?: unknown;
+  project_memberships?: Array<{
+    project_id?: string;
+    project?: { id?: string; parent_id?: string; project_id?: string };
+    [key: string]: unknown;
+  }>;
+  _period?: unknown;
+  _metadata?: Record<string, unknown>;
+  _created_at?: string;
+  [key: string]: unknown;
+}
+
+/** Raw member item from the API before normalization */
+interface RawMemberItem {
+  id?: string;
+  user?: {
+    id?: string;
+    email?: string;
+    first_name?: string;
+    last_name?: string;
+    avatar_url?: string | null;
+    is_active?: boolean;
+    is_superuser?: boolean;
+    role?: string;
+    role_label?: string;
+    role_assignments?: unknown[];
+    rbac_role_assignments?: unknown[];
+    organisations?: unknown[];
+    project_memberships?: unknown[];
+    [key: string]: unknown;
+  };
+  role?: string;
+  role_label?: string;
+  role_assignments?: unknown[];
+  rbac_role_assignments?: unknown[];
+  source?: string;
+  joined_at?: string;
+  invited_by?: unknown;
+  organisation?: unknown;
+  functional_roles?: string[];
+  period?: unknown;
+  metadata?: Record<string, unknown>;
+  created_at?: string;
+  is_active?: boolean;
+  project_memberships?: unknown[];
+  [key: string]: unknown;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Params                                                             */
 /* ------------------------------------------------------------------ */
@@ -21,7 +87,7 @@ export interface UsersListFetcherParams {
     statusFilter: string;
     roleFilter: string;
     isSuperAdmin: boolean;
-    myOrganisations: any[];
+    myOrganisations: Array<{ id: string | number; name: string; slug?: string }>;
     contextOrgSlug: string | undefined;
     teamLocked: boolean;
     preselectedTeamId: string | undefined;
@@ -66,7 +132,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     { ttlMs: 120_000, bypass: refreshKey > 0 },
                 );
                 setOrganisations(
-                    (orgs || []).map((o: any) => ({ id: String(o.id), name: o.name, slug: o.slug })),
+                    (orgs || []).map((o) => ({ id: String(o.id), name: o.name, slug: o.slug })),
                 );
             } catch (e) {
               console.error(e);
@@ -147,14 +213,14 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                         data?.results ||
                         (Array.isArray(data?.data) ? data.data : []);
 
-                    const allEntries = (Array.isArray(rawList) ? rawList : []).map((item: any) => {
+                    const allEntries = (Array.isArray(rawList) ? rawList : []).map((item: RawMemberItem) => {
                         const nestedUser = item?.user;
                         const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
                         return {
                             id: String(u?.id ?? ''),
-                            email: u?.email,
-                            first_name: u?.first_name,
-                            last_name: u?.last_name,
+                            email: u?.email as string | undefined,
+                            first_name: u?.first_name as string | undefined,
+                            last_name: u?.last_name as string | undefined,
                             avatar_url: u?.avatar_url ?? null,
                             is_active: u?.is_active ?? item?.is_active ?? true,
                             role: item?.role ?? 'viewer',
@@ -195,11 +261,11 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                             byUserId.set(key, entry);
                             continue;
                         }
-                        const score = (e: any) => {
+                        const score = (e: UserRecord) => {
                             let s = 0;
                             if (e._period) s += 100;
                             if (e._metadata && Object.keys(e._metadata).length > 0) s += 10;
-                            if (e.functional_roles?.length > 0) s += 5;
+                            if ((e.functional_roles?.length ?? 0) > 0) s += 5;
                             return s;
                         };
                         if (score(entry) > score(existing)) byUserId.set(key, entry);
@@ -207,9 +273,9 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
                     let results = Array.from(byUserId.values());
                     if (statusFilter === 'active') {
-                        results = results.filter((u: any) => u.is_active !== false);
+                        results = results.filter((u: UserRecord) => u.is_active !== false);
                     } else if (statusFilter === 'inactive') {
-                        results = results.filter((u: any) => u.is_active === false);
+                        results = results.filter((u: UserRecord) => u.is_active === false);
                     }
                     setUsers(results);
                     return;
@@ -318,31 +384,31 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
                 // Client-side project membership filtering
                 if (selectedTeamId) {
-                    results = results.filter((u: any) =>
+                    results = results.filter((u: UserRecord) =>
                         u.project_memberships?.some(
-                            (m: any) =>
+                            (m) =>
                                 String(m.project_id ?? m.project?.id ?? m.project?.project_id ?? '') ===
                                 String(selectedTeamId),
                         ),
                     );
                 } else if (selectedClubId) {
-                    results = results.filter((u: any) =>
+                    results = results.filter((u: UserRecord) =>
                         u.project_memberships?.some(
-                            (m: any) =>
+                            (m) =>
                                 String(m.project_id ?? m.project?.id ?? '') === String(selectedClubId),
                         ),
                     );
                 }
 
                 if (statusFilter === 'active') {
-                    results = results.filter((u: any) => u.is_active !== false);
+                    results = results.filter((u: UserRecord) => u.is_active !== false);
                 } else if (statusFilter === 'inactive') {
-                    results = results.filter((u: any) => u.is_active === false);
+                    results = results.filter((u: UserRecord) => u.is_active === false);
                 }
 
                 if (roleFilter) {
                     const wanted = normalizeRoleName(roleFilter);
-                    results = results.filter((u: any) => {
+                    results = results.filter((u: UserRecord) => {
                         const roleNames = getUserTeamreelRoleNames(u, selectedTeamId, selectedClubId);
                         return roleNames.some((r) => normalizeRoleName(r) === wanted);
                     });

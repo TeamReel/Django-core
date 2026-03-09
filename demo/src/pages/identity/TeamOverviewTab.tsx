@@ -10,7 +10,7 @@ import ov from './TeamOverviewTab.module.css';
 interface AssetStat {
   id: string;
   label: string;
-  icon: string;
+  icon?: string;
   done: number;
   total: number;
   pct: number;
@@ -238,7 +238,7 @@ export function TeamOverviewTab({
               {assetStats.map((slot) => (
                 <div key={slot.id} className={ov.assetRow}>
                   <div className={ov.assetInfo}>
-                    <span className={ov.assetIcon}><SlotIcon name={slot.icon} size={14} /></span>
+                    <span className={ov.assetIcon}><SlotIcon name={slot.icon || ''} size={14} /></span>
                     <span className={ov.assetLabel}>{slot.label}</span>
                   </div>
                   <div className={ov.assetRight}>
@@ -318,7 +318,7 @@ export function TeamOverviewTab({
             <div className={ov.loadingText}>Laden…</div>
           ) : (
             <div className={ov.matchList}>
-              {upcomingMatches.map((m: any) => (
+              {upcomingMatches.map((m) => (
                 <div key={m.id} className={ov.matchRow}>
                   <div className={ov.matchDate}>
                     <span className={ov.matchDay}>{fmtDate(m)}</span>
@@ -340,7 +340,7 @@ export function TeamOverviewTab({
             <h3 className={ov.sectionTitle}>Recente wedstrijden</h3>
           </div>
           <div className={ov.matchList}>
-            {recentMatches.map((m: any) => (
+            {recentMatches.map((m) => (
               <div key={m.id} className={ov.matchRow}>
                 <div className={ov.matchDate}>
                   <span className={ov.matchDay}>{fmtDate(m)}</span>

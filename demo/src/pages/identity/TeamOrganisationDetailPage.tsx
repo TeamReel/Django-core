@@ -98,7 +98,7 @@ export default function TeamOrganisationDetailPage() {
 
     if (!currentUserId || !tabData.fullMembers?.length) return 'none';
     const myMembership = tabData.fullMembers.find(
-      (m: any) => String(m?.user?.id || '').trim() === currentUserId,
+      (m) => String(m?.user?.id || '').trim() === currentUserId,
     );
     if (!myMembership) return 'none';
     const role = String(myMembership?.role || '').toLowerCase();
@@ -152,7 +152,7 @@ export default function TeamOrganisationDetailPage() {
     );
   }
 
-  const isActive = !!team && String(activeContextState?.team?.id ?? '') === String(team.id ?? '');
+  const isActive = !!team && String((activeContextState as any)?.team?.id ?? '') === String(team.id ?? '');
 
   return (
     <>
@@ -228,7 +228,7 @@ export default function TeamOrganisationDetailPage() {
                             },
                           );
                           if (!res.ok) throw new Error('Failed');
-                          setTeam((prev: any) => prev ? { ...prev, team_type: newType } : prev);
+                          setTeam((prev) => prev ? { ...prev, team_type: newType } : prev);
                         } catch {
                           alert('Kon team type niet opslaan');
                         }
@@ -330,9 +330,9 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'members' && teamIdForDirectoryLists && (
             <TeamSelectieTab
-              members={tabData.fullMembers}
+              members={tabData.fullMembers as any}
               membersLoading={tabData.fullMembersLoading}
-              memberDetailHref={!isPlayer ? (m: any) => {
+              memberDetailHref={!isPlayer ? (m) => {
                 const memberId = String(m?.id || m?.user?.id || '');
                 return `/${orgKeyForRoutes}/${clubKeyForRoutes}/${teamKeyForRoutes}/members/${memberId}`;
               } : undefined}

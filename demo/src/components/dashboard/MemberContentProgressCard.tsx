@@ -108,7 +108,7 @@ export const MemberContentProgressCard: React.FC = () => {
         // Build progress list
         const progressList: MemberProgress[] = memberList
           .slice(0, 20) // limit for performance
-          .map((m: any) => {
+          .map((m) => {
             const userId = String(m.user?.id || m.id);
             const memberId = String(m.id);
             const completedSet = memberContentMap.get(userId) || memberContentMap.get(memberId) || new Set();

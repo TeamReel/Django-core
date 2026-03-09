@@ -166,12 +166,12 @@ export default function ProjectSeasonSquadPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {d.members.map((m: any) => {
-                          const user = m.user || m;
+                        {d.members.map((m) => {
+                          const user: any = m.user || m;
                           const name = user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '—';
                           const email = user.email || '—';
 
-                          const normalizeAccessRole = (raw: any): 'viewer' | 'editor' | 'admin' => {
+                          const normalizeAccessRole = (raw: unknown): 'viewer' | 'editor' | 'admin' => {
                             const r = String(raw || '').trim().toLowerCase();
                             if (r === 'admin') return 'admin';
                             if (r === 'editor') return 'editor';
@@ -183,8 +183,8 @@ export default function ProjectSeasonSquadPage() {
 
                           const functionalRoles = readFunctionalRolesFromMembership(m);
                           const role = normalizeAccessRole(m.role || 'viewer');
-                          const position = m.metadata?.position || '—';
-                          const shirtNumber = m.metadata?.shirt_number ?? '';
+                          const position = String(m.metadata?.position || '—');
+                          const shirtNumber = String(m.metadata?.shirt_number ?? '');
                           const membershipId = m.id;
                           const userId = user?.id;
 

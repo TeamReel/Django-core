@@ -66,7 +66,7 @@ export interface MemberMediaActions {
   startProcessingPoll: (assetType: string, kitType: string, variantId?: string | null) => void;
 
   // Metadata update
-  handleMetadataUpdate: (newMetadata: any, targetMembershipId?: string) => Promise<void>;
+  handleMetadataUpdate: (newMetadata: Record<string, unknown>, targetMembershipId?: string) => Promise<void>;
 }
 
 export function useMemberMediaActions({
@@ -299,7 +299,7 @@ export function useMemberMediaActions({
   const [saving, setSaving] = useState(false);
   const [, setSaveError] = useState<string | null>(null);
 
-  const handleMetadataUpdate = useCallback(async (newMetadata: any, targetMembershipId?: string) => {
+  const handleMetadataUpdate = useCallback(async (newMetadata: Record<string, unknown>, targetMembershipId?: string) => {
     if (!project) return;
     const idToUse = targetMembershipId || membershipId || membership?.id;
     if (!idToUse) {

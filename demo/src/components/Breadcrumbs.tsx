@@ -85,7 +85,7 @@ export default function Breadcrumbs() {
   const orgFromList = useMemo(() => {
     const key = orgParam.toLowerCase();
     if (!key) return undefined;
-    return (organisations || []).find((o: any) => {
+    return (organisations || []).find((o) => {
       const slug = String(o?.slug || '').toLowerCase();
       const id = String(o?.id || '').toLowerCase();
       return slug === key || id === key;
@@ -140,13 +140,13 @@ export default function Breadcrumbs() {
   // Org subpage (e.g. /bernt/clubs)
   // ═══════════════════════════════════════════
   if (orgSubpage) {
-    const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
+    const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o) => ({
       id: String(o.id), label: String(o.name || o.slug || o.id), slug: String(o.slug || o.id),
     }));
     const resolvedCurrent =
-      (organisations || []).find((o: any) => String(o?.slug || '').toLowerCase() === orgSubpage.orgId.toLowerCase()) ||
-      (organisations || []).find((o: any) => String(o?.id || '').toLowerCase() === orgSubpage.orgId.toLowerCase()) ||
-      (organisations || []).find((o: any) => String(o?.id || '') === String(context?.organisation?.id || ''));
+      (organisations || []).find((o) => String(o?.slug || '').toLowerCase() === orgSubpage.orgId.toLowerCase()) ||
+      (organisations || []).find((o) => String(o?.id || '').toLowerCase() === orgSubpage.orgId.toLowerCase()) ||
+      (organisations || []).find((o) => String(o?.id || '') === String(context?.organisation?.id || ''));
     const currentId = String(resolvedCurrent?.id || context?.organisation?.id || orgSubpage.orgId || '').trim();
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
       navigate(`/${String(option.slug || option.id)}${location.search || ''}`);
@@ -163,10 +163,10 @@ export default function Breadcrumbs() {
   // Org detail (e.g. /bernt)
   // ═══════════════════════════════════════════
   if (isOrgDetail) {
-    const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o: any) => ({
+    const options: BreadcrumbSwitcherOption[] = (organisations || []).map((o) => ({
       id: String(o.id), label: String(o.name || o.slug || o.id), slug: String(o.slug || o.id),
     }));
-    const resolvedCurrent = orgFromList || (organisations || []).find((o: any) => String(o?.id || '') === String(context?.organisation?.id || ''));
+    const resolvedCurrent = orgFromList || (organisations || []).find((o) => String(o?.id || '') === String(context?.organisation?.id || ''));
     const currentId = String(resolvedCurrent?.id || context?.organisation?.id || orgParam || orgSlug || '').trim();
     const handleOrgSwitch = (option: BreadcrumbSwitcherOption) => {
       navigate(`/${String(option.slug || option.id)}${location.search || ''}`);

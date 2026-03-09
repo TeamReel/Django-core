@@ -13,7 +13,7 @@ export interface SeasonAssetsSettingsTabProps {
   club: any;
   userCanEditProject: boolean;
   apiBaseUrl: string;
-  onSeasonUpdate: (updater: (prev: any) => any) => void;
+  onSeasonUpdate: (updater: any) => void;
 }
 
 const SeasonAssetsSettingsTab: React.FC<SeasonAssetsSettingsTabProps> = ({

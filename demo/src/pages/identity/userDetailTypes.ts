@@ -18,7 +18,7 @@ export interface UserDetailDataReturn {
 
     /* core data */
     user: any | null;
-    setUser: (u: any | null) => void;
+    setUser: (u: Record<string, unknown> | null) => void;
     loading: boolean;
     error: string | null;
     apiBaseUrl: string;
@@ -57,8 +57,8 @@ export interface UserDetailDataReturn {
     loadingRelations: boolean;
 
     /* match edit/delete */
-    saveMatchEdits: (matchToEdit: any, patch: any) => Promise<void>;
-    deleteMatch: (matchToDelete: any) => Promise<void>;
+    saveMatchEdits: (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => Promise<void>;
+    deleteMatch: (matchToDelete: Record<string, unknown>) => Promise<void>;
 
     /* identity tab */
     identityEditing: boolean;
@@ -83,7 +83,7 @@ export interface UserDetailDataReturn {
 
     /* handlers */
     fetchUser: () => Promise<void>;
-    handleSaveUser: (updatedUser: any) => Promise<void>;
+    handleSaveUser: (updatedUser: Record<string, unknown>) => Promise<void>;
     handleDeleteUser: () => Promise<void>;
     getCsrfToken: () => string;
     getPreferredOrganisationId: () => string;
@@ -113,7 +113,7 @@ export interface UserDetailDataReturn {
     isMatchEditModalOpen: boolean;
     setIsMatchEditModalOpen: (v: boolean) => void;
     selectedEditMatch: any | null;
-    setSelectedEditMatch: (v: any | null) => void;
+    setSelectedEditMatch: (v: Record<string, unknown> | null) => void;
     isEditMembershipModalOpen: boolean;
     setIsEditMembershipModalOpen: (v: boolean) => void;
     editingMembership: {

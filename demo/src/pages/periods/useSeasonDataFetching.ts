@@ -1,33 +1,79 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getActiveContext } from '../../utils/activeContext';
+
+/** Minimal project shape for the hook params. */
+interface ProjectParam { id?: string; name?: string; slug?: string }
+/** Minimal organisation shape for the hook params. */
+interface OrgParam { id?: string; slug?: string; name?: string }
+/** Minimal match record shape. */
+interface MatchRecord {
+  id: string;
+  slug?: string;
+  title?: string;
+  start_time?: string;
+  metadata?: Record<string, any>;
+}
+/** Minimal membership record shape. */
+interface MemberRecord {
+  id?: string;
+  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string };
+  user_id?: string;
+  role?: string;
+  metadata?: Record<string, unknown>;
+}
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface UseSeasonDataFetchingParams {
   apiBaseUrl: string;
-  project: any;
+  project: ProjectParam | null;
   resolvedSeasonId: string | null;
-  org: any;
+  org: OrgParam | null;
   orgSlugOrId: string;
   activeTab: string;
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
-export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
+export interface UseSeasonDataFetchingReturn {
+  // State
+  activatingContext: boolean;
+  setActivatingContext: Dispatch<SetStateAction<boolean>>;
+  activeContext: Record<string, unknown> | null;
+  setActiveContextState: Dispatch<SetStateAction<Record<string, unknown> | null>>;
+  matches: MatchRecord[];
+  setMatches: Dispatch<SetStateAction<MatchRecord[]>>;
+  matchesLoading: boolean;
+  setMatchesLoading: Dispatch<SetStateAction<boolean>>;
+  members: MemberRecord[];
+  setMembers: Dispatch<SetStateAction<MemberRecord[]>>;
+  membersLoading: boolean;
+  membersError: string | null;
+  setMembersReloadToken: Dispatch<SetStateAction<number>>;
+  teamRoster: MemberRecord[];
+  teamRosterLoading: boolean;
+  teamRosterError: string | null;
+  setTeamRosterReloadToken: Dispatch<SetStateAction<number>>;
+  bulkSubmitting: boolean;
+  setBulkSubmitting: Dispatch<SetStateAction<boolean>>;
+  opponentClubNames: Record<string, string>;
+  brandProfileId: string | null;
+}
+
+export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseSeasonDataFetchingReturn {
   const { apiBaseUrl, project, resolvedSeasonId, org, orgSlugOrId, activeTab } = params;
 
   // ── Data state ──
   const [activatingContext, setActivatingContext] = useState(false);
-  const [activeContext, setActiveContextState] = useState<any | null>(null);
-  const [matches, setMatches] = useState<any[]>([]);
+  const [activeContext, setActiveContextState] = useState<Record<string, unknown> | null>(null);
+  const [matches, setMatches] = useState<MatchRecord[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
-  const [members, setMembers] = useState<any[]>([]);
+  const [members, setMembers] = useState<MemberRecord[]>([]);
   const [membersLoading, setMembersLoading] = useState(false);
   const [membersError, setMembersError] = useState<string | null>(null);
   const [membersReloadToken, setMembersReloadToken] = useState(0);
-  const [teamRoster, setTeamRoster] = useState<any[]>([]);
+  const [teamRoster, setTeamRoster] = useState<MemberRecord[]>([]);
   const [teamRosterLoading, setTeamRosterLoading] = useState(false);
   const [teamRosterError, setTeamRosterError] = useState<string | null>(null);
   const [teamRosterReloadToken, setTeamRosterReloadToken] = useState(0);
@@ -229,7 +275,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams) {
     if (!matches.length || !apiBaseUrl) return;
     const clubIds = [...new Set(
       matches
-        .map((m: any) => String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim())
+        .map((m) => String(m.metadata?.teamreel?.match_context?.opponent_club_id || '').trim())
         .filter((id: string) => id && !opponentClubNames[id])
     )];
     if (!clubIds.length) return;

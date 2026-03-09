@@ -95,11 +95,11 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
         const json = await res.json();
         const results = json.data?.data || json.data?.results || json.results || json.data || [];
         const roots = (Array.isArray(results) ? results : [])
-          .filter((p: any) => p?.parent_period_id == null && !p?.parent_period);
-        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+          .filter((p) => p?.parent_period_id == null && !p?.parent_period);
+        const unique = [...new Map(roots.map((p) => [String(p.id), p])).values()];
         const sorted = unique
-          .sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')))
-          .map((p: any) => ({ id: String(p.id), name: String(p.name) }));
+          .sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')))
+          .map((p) => ({ id: String(p.id), name: String(p.name) }));
 
         setSeasonOptions(sorted);
       } catch {

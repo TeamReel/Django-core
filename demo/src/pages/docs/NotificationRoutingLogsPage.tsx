@@ -125,7 +125,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           }
 
           // Map API response to RoutingLog interface
-          const mappedResults: RoutingLog[] = rawResults.map((item: any) => ({
+          const mappedResults: RoutingLog[] = rawResults.map((item) => ({
             id: item.id.toString(),
             timestamp: item.created_at,
             notification_type: item.metadata?.notification_type || item.event_type,

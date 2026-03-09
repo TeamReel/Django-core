@@ -5,7 +5,7 @@
  * filter derivations, selection helpers.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
@@ -33,9 +33,39 @@ const isThemeFlagKey = (key: string): boolean => {
   return normalized.includes('dark_mode') || normalized.includes('dark_theme');
 };
 
+// ── Return type ──
+
+export interface UseFeatureFlagsDataReturn {
+  loading: boolean;
+  seedMessage: string | null;
+  apiError: string | null;
+  useApi: boolean;
+  displayFlags: (FeatureFlag | ApiFeatureFlag)[];
+  uniqueTypes: string[];
+  uniqueSubtypes: string[];
+  uniqueStyles: string[];
+  filterType: string;
+  setFilterType: Dispatch<SetStateAction<string>>;
+  filterSubtype: string;
+  setFilterSubtype: Dispatch<SetStateAction<string>>;
+  filterStyle: string;
+  setFilterStyle: Dispatch<SetStateAction<string>>;
+  selectedIds: Set<string>;
+  allSelected: boolean;
+  someSelected: boolean;
+  bulkUpdating: boolean;
+  syncing: boolean;
+  handleSelectAll: () => void;
+  handleSelectOne: (id: string) => void;
+  handleBulkUpdate: (enabled: boolean) => Promise<void>;
+  handleSyncFlags: () => Promise<void>;
+  handleToggleFlag: (flag: FeatureFlag | ApiFeatureFlag) => Promise<void>;
+  handleClearFilters: () => void;
+}
+
 // ── Hook ──
 
-export function useFeatureFlagsData() {
+export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
   const navigate = useNavigate();
   const { context, organisations } = useContextSwitcher();
   const { user } = useAuth();
@@ -97,7 +127,7 @@ export function useFeatureFlagsData() {
           setLoading(true);
           debugLog('[FeatureFlagsPage] Fetching GLOBAL flags from API');
           let apiFlags = await fetchFlagsForScope('GLOBAL');
-          const normalized = apiFlags.map((flag: any) => ({
+          const normalized = apiFlags.map((flag: ApiFeatureFlag) => ({
             ...flag,
             global_id: flag.global_id || flag.id,
           }));
@@ -117,7 +147,7 @@ export function useFeatureFlagsData() {
               setSeedMessage(`Seeded ${result.created} of ${result.total} content flags.`);
             }
             apiFlags = await fetchFlagsForScope('GLOBAL');
-            const normalizedAfterSeed = apiFlags.map((flag: any) => ({
+            const normalizedAfterSeed = apiFlags.map((flag: ApiFeatureFlag) => ({
               ...flag,
               global_id: flag.global_id || flag.id,
             }));
@@ -187,13 +217,13 @@ export function useFeatureFlagsData() {
       setUpdating(true);
       const apiFlag = flag as ApiFeatureFlag;
       try {
-        const globalId = apiFlag.global_id || (apiFlag as any).id;
+        const globalId = apiFlag.global_id || apiFlag.id;
         debugLog('[FeatureFlagsPage] API: Updating global flag:', globalId, newState);
         await updateGlobalFlag(String(globalId), newState);
 
         debugLog('[FeatureFlagsPage] Reloading GLOBAL flags after update');
         const apiFlags = await fetchFlagsForScope('GLOBAL');
-        const normalized = apiFlags.map((f: any) => ({
+        const normalized = apiFlags.map((f: ApiFeatureFlag) => ({
           ...f,
           global_id: f.global_id || f.id,
         }));
@@ -296,7 +326,7 @@ export function useFeatureFlagsData() {
         await updateGlobalFlag(flag.id, enabled);
       }
       const apiFlags = await fetchFlagsForScope('GLOBAL');
-      const normalized = apiFlags.map((f: any) => ({
+      const normalized = apiFlags.map((f: ApiFeatureFlag) => ({
         ...f,
         global_id: f.global_id || f.id,
       }));
@@ -322,7 +352,7 @@ export function useFeatureFlagsData() {
         setSeedMessage(`Synced: ${result.created} created, ${result.updated} updated (${result.total} total).`);
       }
       const apiFlags = await fetchFlagsForScope('GLOBAL');
-      const normalized = apiFlags.map((f: any) => ({
+      const normalized = apiFlags.map((f: ApiFeatureFlag) => ({
         ...f,
         global_id: f.global_id || f.id,
       }));

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getFavorites, getRecents, type NavStoredItem } from '../utils/navStorage';
 
-function useNavStorage(eventName: string, getter: () => NavStoredItem[]) {
+function useNavStorage(eventName: string, getter: () => NavStoredItem[]): NavStoredItem[] {
   const [items, setItems] = useState<NavStoredItem[]>(() => getter());
 
   useEffect(() => {
@@ -19,10 +19,10 @@ function useNavStorage(eventName: string, getter: () => NavStoredItem[]) {
   return items;
 }
 
-export function useNavRecents() {
+export function useNavRecents(): NavStoredItem[] {
   return useNavStorage('nav:recents', getRecents);
 }
 
-export function useNavFavorites() {
+export function useNavFavorites(): NavStoredItem[] {
   return useNavStorage('nav:favorites', getFavorites);
 }

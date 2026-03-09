@@ -3,13 +3,13 @@ import type { OrgOption, ProjectOption, PeriodOption } from './matchCreateTypes'
 import { extractList } from '../../utils/apiEnvelope';
 export { extractList };
 
-export const getNextUrl = (raw: any): string => {
+export const getNextUrl = (raw: { data?: { next?: string | null }; next?: string | null } | null): string => {
   const next = raw?.data?.next ?? raw?.next;
   return typeof next === 'string' ? next : '';
 };
 
-export const fetchAllPagesLocal = async (url: string, opts: RequestInit, maxItems = 2000): Promise<any[]> => {
-  const all: any[] = [];
+export const fetchAllPagesLocal = async <T = Record<string, unknown>>(url: string, opts: RequestInit, maxItems = 2000): Promise<T[]> => {
+  const all: T[] = [];
   let nextUrl = url;
   const seen = new Set<string>();
 
@@ -27,7 +27,7 @@ export const fetchAllPagesLocal = async (url: string, opts: RequestInit, maxItem
 
 // ─── Project helpers ─────────────────────────────────────────────────────────
 
-export const getParentProjectId = (p: any): string | null => {
+export const getParentProjectId = (p: ProjectOption): string | null => {
   const parent =
     p?.parent_id ??
     p?.parent ??
@@ -37,7 +37,7 @@ export const getParentProjectId = (p: any): string | null => {
   return String(typeof parent === 'object' ? parent.id : parent);
 };
 
-export const getProjectIdentity = (p: any) => {
+export const getProjectIdentity = (p: ProjectOption & { metadata?: { identity?: Record<string, string> } }) => {
   const identity = p?.metadata?.identity || {};
   return {
     name: String(p?.name || '').trim(),

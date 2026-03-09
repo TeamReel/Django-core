@@ -23,6 +23,9 @@ import { getCsrfToken } from '../utils/csrf';
 import type { Period } from '../utils/directoryHelpers';
 import type { Filters, UseCompetitionsDataReturn } from './competitionsDataTypes';
 
+/** Period extended with optional metadata (API may return either `data` or `metadata`). */
+type PeriodWithMeta = Period & { metadata?: Record<string, unknown> };
+
 // Re-export types for backward compatibility
 export type { Filters, UseCompetitionsDataReturn } from './competitionsDataTypes';
 
@@ -122,10 +125,10 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
             )
           )
             .flat()
-            .filter((p: any) => !p?.parent_period_id && !p?.parent_period);
+            .filter((p: Period) => !p?.parent_period_id && !p?.parent_period);
 
           const merged = [...typedResults, ...untypedResults];
-          const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
+          const unique = [...new Map(merged.map((p: Period) => [String(p.id), p])).values()];
           setSeasons(unique);
           return;
         } else if (selectedOrgId) {
@@ -154,10 +157,10 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
               )
             )
               .flat()
-              .filter((p: any) => !p?.parent_period_id && !p?.parent_period);
+              .filter((p: Period) => !p?.parent_period_id && !p?.parent_period);
 
             const merged = [...results, ...untypedResults];
-            const unique = [...new Map(merged.map((p: any) => [String(p.id), p])).values()];
+            const unique = [...new Map(merged.map((p: Period) => [String(p.id), p])).values()];
             setSeasons(unique);
             return;
           }
@@ -170,10 +173,10 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
         const untypedBaseParams = new URLSearchParams(baseParams);
         untypedBaseParams.delete('type');
         const untypedAll = (await fetchSeasonsWithParams(untypedBaseParams)).filter(
-          (p: any) => !p?.parent_period_id && !p?.parent_period,
+          (p: Period) => !p?.parent_period_id && !p?.parent_period,
         );
 
-        const unique = [...new Map([...typedAll, ...untypedAll].map((p: any) => [String(p.id), p])).values()];
+        const unique = [...new Map([...typedAll, ...untypedAll].map((p: Period) => [String(p.id), p])).values()];
         setSeasons(unique);
       } catch (e) {
         console.error(e);
@@ -288,12 +291,12 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
               }),
             )
           ).flat();
-          return [...new Map(results.map((c: any) => [String(c.id), c])).values()];
+          return [...new Map(results.map((c: Period) => [String(c.id), c])).values()];
         };
 
-        const inferCompetitions = (items: any[]) =>
+        const inferCompetitions = (items: PeriodWithMeta[]) =>
           (Array.isArray(items) ? items : []).filter(
-            (p: any) => (p?.parent_period_id != null || p?.parent_period) && p?.metadata?.type !== 'season',
+            (p: PeriodWithMeta) => (p?.parent_period_id != null || p?.parent_period) && p?.metadata?.type !== 'season',
           );
 
         const maybeFallbackUntyped = async (baseParams: URLSearchParams, tIds: string[]) => {
@@ -319,7 +322,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
           });
 
           const all = (await Promise.all(requests)).flat();
-          const unique = [...new Map(all.map((c: any) => [String(c.id), c])).values()];
+          const unique = [...new Map(all.map((c: Period) => [String(c.id), c])).values()];
 
           setCompetitions(unique);
           return;
@@ -331,7 +334,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
           const typed = await fetchWithTeamChunks(params, scopedTeamIds);
           const fallback = await maybeFallbackUntyped(params, scopedTeamIds);
           const merged = [...typed, ...fallback];
-          const unique = [...new Map(merged.map((c: any) => [String(c.id), c])).values()];
+          const unique = [...new Map(merged.map((c: Period) => [String(c.id), c])).values()];
           setCompetitions(unique);
           return;
         }
@@ -355,7 +358,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
 
   // ── CRUD ──────────────────────────────────────────────────────────
 
-  const savePeriodEdits = useCallback(async (periodId: string, payload: any) => {
+  const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
     const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
       method: 'PATCH',
@@ -465,7 +468,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
 
   const sortedCompetitions = useMemo(() => {
     const list = [...filteredCompetitions];
-    list.sort((a: any, b: any) => {
+    list.sort((a: Period, b: Period) => {
       const byFederation = sortKey(getFederationName(a, organisations)).localeCompare(sortKey(getFederationName(b, organisations)));
       if (byFederation !== 0) return byFederation;
       const byClub = sortKey(getClubName(a, clubs, teams)).localeCompare(sortKey(getClubName(b, clubs, teams)));

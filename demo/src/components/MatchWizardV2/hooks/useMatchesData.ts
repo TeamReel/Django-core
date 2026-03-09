@@ -6,7 +6,7 @@ import { useActivities, type Activity } from '../../../hooks/useActivities';
 import { useMatchWizard } from '../MatchWizardContext';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 
-export function useMatchesData(isOpen: boolean, initialMatchId?: string) {
+export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
   const apiBaseUrl = getApiBaseUrl();
   const { activities, loading, error } = useActivities({ limit: 10 });
   const {

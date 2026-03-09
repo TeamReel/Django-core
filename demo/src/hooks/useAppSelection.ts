@@ -13,7 +13,7 @@ import {
   parseAppPath,
 } from './appSelectionParser';
 
-export function useAppSelection() {
+export function useAppSelection(): AppSelection {
   const location = useLocation();
   const { context } = useContextSwitcher();
   const { user } = useAuth(); // assuming useAuth provides authenticated user
@@ -196,7 +196,7 @@ export function useAppSelection() {
               { credentials: 'include' },
               { ttlMs: 120_000 },
             );
-            const match = (orgs || []).find((o: any) => String(o?.id || '') === String(orgSlug));
+            const match = (orgs || []).find((o) => String(o?.id || '') === String(orgSlug));
             const resolved = String(match?.slug || '').trim();
             if (!resolved) return;
             orgSlug = resolved;

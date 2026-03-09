@@ -44,7 +44,7 @@ export function CompetitionContentTab({
 
   const getMediaForMatch = (matchId: string, subtype: string) => {
     const items = matchMediaMap[matchId] || [];
-    return items.find((m: any) => String(m.subtype || m.media_subtype || '').toLowerCase() === subtype.toLowerCase());
+    return items.find((m) => String(m.subtype || m.media_subtype || '').toLowerCase() === subtype.toLowerCase());
   };
 
   return (

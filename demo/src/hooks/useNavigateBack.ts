@@ -32,7 +32,7 @@ function getParentPath(pathname: string): string | null {
   return parent;
 }
 
-export function useNavigateBack(fallback = '/dashboard') {
+export function useNavigateBack(fallback = '/dashboard'): () => void {
   const navigate = useNavigate();
   const location = useLocation();
   const historyDepth = useRef(0);
