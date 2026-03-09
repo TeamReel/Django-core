@@ -6,25 +6,10 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api/client';
 import type { UsageEvent } from './usageEvents.types';
 
 const LIMIT = 50;
-
-function getCookie(name: string) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
 
 export function formatTimestamp(timestamp: string) {
   return new Date(timestamp).toLocaleString();
@@ -94,60 +79,25 @@ export function useUsageEvents() {
       setLoading(true);
       setError(null);
 
-      const baseUrl = getApiBaseUrl();
-      let url = `${baseUrl}/api/v1/usage-events/`;
-      const params = new URLSearchParams();
+      const queryParams: Record<string, string | number | boolean | undefined> = {
+        page: parseInt(page),
+        ...(editMode === 'org' && currentOrganisation ? { organization_id: currentOrganisation.id } : {}),
+        ...(eventType ? { event_type: eventType } : {}),
+        ...(userFilter ? { user__email__icontains: userFilter } : {}),
+        ...(dateFrom ? { timestamp__gte: `${dateFrom}T00:00:00` } : {}),
+        ...(dateTo ? { timestamp__lte: `${dateTo}T23:59:59` } : {}),
+      };
 
-      if (editMode === 'org' && currentOrganisation) {
-        params.append('organization_id', currentOrganisation.id);
-      }
-
-      params.append('page_size', LIMIT.toString());
-      params.append('page', page);
-
-      if (eventType) params.append('event_type', eventType);
-      if (userFilter) params.append('user__email__icontains', userFilter);
-      if (dateFrom) params.append('timestamp__gte', `${dateFrom}T00:00:00`);
-      if (dateTo) params.append('timestamp__lte', `${dateTo}T23:59:59`);
-
-      if (params.toString()) url += `?${params.toString()}`;
-
-      const response = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-
-        // Extract from B13 envelope — handle multiple DRF pagination shapes
-        let eventList: UsageEvent[] = [];
-        let totalCount = 0;
-
-        if (result.data?.data?.results) {
-          eventList = result.data.data.results;
-          totalCount = result.data.data.count || eventList.length;
-        } else if (result.data?.data && Array.isArray(result.data.data)) {
-          eventList = result.data.data;
-          totalCount = result.data?.count || result.meta?.pagination?.count || eventList.length;
-        } else if (result.data?.results) {
-          eventList = result.data.results;
-          totalCount = result.data?.count || eventList.length;
-        } else if (result.data && Array.isArray(result.data)) {
-          eventList = result.data;
-          totalCount = result.meta?.pagination?.count || eventList.length;
-        } else if (Array.isArray(result)) {
-          eventList = result;
-          totalCount = eventList.length;
-        }
-
+      try {
+        const { results: eventList, count: totalCount } = await api.list<UsageEvent>('/usage-events/', {
+          pageSize: LIMIT,
+          params: queryParams,
+        });
         setEvents(eventList);
         setTotal(totalCount);
         setDemoMode(false);
-      } else if (response.status === 404) {
+      } catch (fetchErr: any) {
+        if (fetchErr?.status === 404) {
         // Demo mode fallback
         const demoEvents: UsageEvent[] = [
           {
@@ -182,8 +132,9 @@ export function useUsageEvents() {
         ];
         setEvents(demoEvents);
         setDemoMode(true);
-      } else {
-        throw new Error(`API error: ${response.status}`);
+        } else {
+          throw fetchErr;
+        }
       }
     } catch (err) {
       console.error(err);
@@ -252,28 +203,15 @@ export function useUsageEvents() {
       setTimeout(() => setSuccess(false), 3000);
 
       if (!demoMode) {
-        const csrfToken = getCookie('csrftoken');
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/usage-events/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRFToken': csrfToken || '',
-          },
-          credentials: 'include',
-          body: JSON.stringify(testEvent),
-        });
-
-        if (response.ok) {
+        try {
+          await api.post('/usage-events/', testEvent);
           await fetchEvents();
-        } else {
-          const errorData = await response.json().catch(() => null);
-          console.error('Backend error:', response.status, errorData);
-          if (response.status === 404) {
+        } catch (postErr: any) {
+          console.error('Backend error:', postErr?.status, postErr?.body);
+          if (postErr?.status === 404) {
             setDemoMode(true);
           } else {
-            setError(`Backend error: ${response.status} - ${JSON.stringify(errorData)}`);
+            setError(`Backend error: ${postErr?.status || 'unknown'} - ${JSON.stringify(postErr?.body)}`);
           }
         }
       }

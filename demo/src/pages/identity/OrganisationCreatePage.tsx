@@ -10,7 +10,7 @@ import {
   PageHeader,
   PageContent,
 } from '../../shims/page-templates';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi } from '../../api';
 
 /**
  * Organisation Create Page
@@ -30,43 +30,10 @@ export const OrganisationCreatePage: React.FC = () => {
     setError(null);
 
     try {
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name,
-          description,
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to create organisation';
-        try {
-          const data = await response.json();
-          errorMessage = data.detail || JSON.stringify(data);
-        } catch (e) {
-          console.error(e);
-          // If JSON parsing fails, use status text
-          errorMessage = `Error ${response.status}: ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const newOrg = await response.json();
+      const newOrg = await organisationsApi.create({ name, description } as any);
       // Navigate to the new organisation's dashboard
-      if (newOrg?.slug || newOrg?.id) {
-        navigate(`/organisations/${newOrg.slug || newOrg.id}`);
+      if ((newOrg as any)?.slug || (newOrg as any)?.id) {
+        navigate(`/organisations/${(newOrg as any).slug || (newOrg as any).id}`);
       } else {
         // Fallback if ID is missing
         navigate('/federations');

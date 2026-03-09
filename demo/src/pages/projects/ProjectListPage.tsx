@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 // import { useContextSwitcher } from '@django-core/context-switcher';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi } from '../../api';
 import styles from './ProjectListPage.module.css';
 
 interface Project {
@@ -31,31 +31,16 @@ export default function ProjectListPage() {
   useEffect(() => {
     if (!orgId) return;
 
-    const apiBaseUrl = getApiBaseUrl();
-    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/`, {
-      credentials: 'include',
-    })
-      .then(res => res.json())
-      .then(data => setOrgName(data.name))
+    organisationsApi.get(orgId)
+      .then((data: any) => setOrgName(data.name))
       .catch(() => setOrgName('Organisation'));
   }, [orgId]);
 
   useEffect(() => {
     if (!orgId) return;
 
-    const apiBaseUrl = getApiBaseUrl();
-
-    fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/projects/`, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch projects');
-        return res.json();
-      })
-      .then(data => {
+    organisationsApi.listProjects(orgId)
+      .then((data: any) => {
         // Handle both paginated (DRF) and non-paginated responses
         let projectsList = data;
         if (data.results && Array.isArray(data.results)) {
@@ -64,8 +49,8 @@ export default function ProjectListPage() {
         setProjects(projectsList);
         setIsLoading(false);
       })
-      .catch(err => {
-        setError(err.message);
+      .catch((err: any) => {
+        setError(err.message || err.detail || 'Failed to fetch projects');
         setIsLoading(false);
       });
   }, [orgId]);

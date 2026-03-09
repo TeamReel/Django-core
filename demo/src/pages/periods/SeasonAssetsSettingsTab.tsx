@@ -2,7 +2,7 @@ import React from 'react';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import SeasonAssetsCard from '../../components/SeasonAssetsCard';
 import { AssetsTab } from '../../components/AssetsTab';
-import { getCsrfToken } from '../../utils/csrf';
+import { periodsApi } from '../../api';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 
 export interface SeasonAssetsSettingsTabProps {
@@ -48,14 +48,7 @@ const SeasonAssetsSettingsTab: React.FC<SeasonAssetsSettingsTabProps> = ({
       onSave={async (next) => {
         if (!season?.id) throw new Error('Season not loaded');
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(season.id))}/`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
+        const updated = await periodsApi.update(String(season.id), {
             metadata: {
               ...((season as any)?.metadata || {}),
               identity: {
@@ -64,16 +57,8 @@ const SeasonAssetsSettingsTab: React.FC<SeasonAssetsSettingsTabProps> = ({
                 default_location: String(next.defaultLocation || '').trim() || null,
               },
             },
-          }),
-        });
+        } as any) as any;
 
-        if (!res.ok) {
-          const detail = await res.text().catch(() => '');
-          throw new Error(detail || `Failed to save season settings (${res.status})`);
-        }
-
-        const raw = await res.json().catch(() => null);
-        const updated: any = raw?.data?.data || raw?.data || raw;
         onSeasonUpdate((prev: any) => ({ ...prev, ...updated }));
       }}
     />

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import { useSports } from '../../hooks/useSports';
 import type {
   OrgOption,
@@ -144,7 +144,6 @@ export default function PeriodCreateModal({
     const load = async () => {
       setSeasonsLoading(true);
       try {
-        const apiBaseUrl = getApiBaseUrl();
         const params = new URLSearchParams();
         params.set('page_size', '250');
         params.set('parent_id', 'null');
@@ -162,12 +161,7 @@ export default function PeriodCreateModal({
           params.set('organisation_id', String(selectedOrganisationId));
         }
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-        if (!res.ok) {
-          setSeasonOptions([]);
-          return;
-        }
-        const data = await res.json();
+        const data = await api.get<any>(`/periods/?${params.toString()}`);
         const results = data.data?.data || data.data?.results || data.results || data.data || [];
         const roots = (Array.isArray(results) ? results : []).filter(
           (p: Record<string, unknown>) => p?.parent_period_id == null && !p?.parent_period

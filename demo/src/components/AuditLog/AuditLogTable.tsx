@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import SmartEmptyState from '../SmartEmptyState';
 import styles from './AuditLogTable.module.css';
@@ -38,30 +38,14 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
     async function fetchAuditData() {
       try {
         setLoading(true);
-        const apiBaseUrl = getApiBaseUrl();
 
-        const params = new URLSearchParams();
-        if (limit) params.append('limit', String(limit));
-        if (organisationId) params.append('organisation', organisationId);
-        // Note: Backend might use 'project_id' or 'project' depending on viewset implementation
-        // Adjusting based on DRF standard filtering usually being the field name
-        if (projectId) params.append('project', projectId);
+        const params: Record<string, string> = {};
+        if (limit) params.limit = String(limit);
+        if (organisationId) params.organisation = organisationId;
+        if (projectId) params.project = projectId;
+        params.ordering = '-timestamp';
 
-        // Ensure ordering by newest first
-        params.append('ordering', '-timestamp');
-
-        const response = await fetch(`${apiBaseUrl}/api/v1/activity/?${params.toString()}`, {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch audit log: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await api.get<any>('/activity/', { params });
         const results = Array.isArray(data) ? data : (data.results || []);
         setEvents(results);
         setError(null);

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import styles from './ProjectCompetitionMatchesPage.module.css';
 
@@ -37,8 +37,6 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
     competitionId: string;
     clubId?: string;
   }>();
-
-  const apiBaseUrl = getApiBaseUrl();
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -118,43 +116,24 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, competitionRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/periods/${effectiveCompetitionId}/`, { credentials: 'include' }),
+        const [orgJson, projectJson, competitionJson, clubJson] = await Promise.all([
+          api.get<Organisation>(`/organisations/${orgSlugOrId}/`),
+          api.get<Project>(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`),
+          api.get<Period>(`/periods/${effectiveCompetitionId}/`),
           isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
-                credentials: 'include',
-              })
-            : Promise.resolve(null) as Promise<Response | null>,
+            ? api.get<Project>(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`).catch(() => null)
+            : Promise.resolve(null),
         ]);
 
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-        if (!competitionRes.ok) throw new Error('Failed to load competition');
-
-        const rawOrg: any = await orgRes.json();
-        const rawProject: any = await projectRes.json();
-        const rawCompetition: any = await competitionRes.json();
-
-        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
-        const competitionJson: Period = rawCompetition?.data || rawCompetition;
         setOrg(orgJson);
         setProject(projectJson);
         setCompetition(competitionJson);
 
         // Resolve season UUID from URL param (UUID or slugified name)
-        const periodsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
-          { credentials: 'include' }
-        );
-        if (!periodsRes.ok) throw new Error('Failed to load seasons');
-        const rawPeriods: any = await periodsRes.json();
-        const periodsData = rawPeriods?.data || rawPeriods;
-        const allPeriods: Period[] = Array.isArray(periodsData)
-          ? periodsData
-          : periodsData?.results || periodsData?.data?.results || periodsData?.data || [];
+        const { results: allPeriods } = await api.list<Period>('/periods/', {
+          params: { project_id: String(projectJson.id) },
+          pageSize: 250,
+        });
 
         const seasonOptions = allPeriods.filter((p) => !p.parent_period);
         const isUuidParam = looksLikeUuid(effectiveSeasonId);
@@ -164,31 +143,21 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
         const seasonUuid = String(resolvedSeason?.id || (isUuidParam ? effectiveSeasonId : '')).trim();
         if (!seasonUuid) throw new Error('Season not found');
 
-        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' });
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const rawSeason: any = await seasonRes.json();
-        const seasonJson: Period = rawSeason?.data || rawSeason;
+        const seasonJson = await api.get<Period>(`/periods/${encodeURIComponent(seasonUuid)}/`);
         setSeason(seasonJson);
 
-        if (isTeamRoute && clubRes && clubRes.ok) {
-          try {
-            setClub(await clubRes.json());
-          } catch {
-            // ignore
-          }
+        if (isTeamRoute && clubJson) {
+          setClub(clubJson);
         }
 
-        const matchesRes = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(String(projectJson.id))}&period_id=${encodeURIComponent(effectiveCompetitionId)}&activity_type=match&page_size=250`,
-          { credentials: 'include' }
-        );
-        if (!matchesRes.ok) throw new Error('Failed to load matches');
-
-        const rawMatches: any = await matchesRes.json();
-        const matchesData = rawMatches?.data || rawMatches;
-        const matchResults = Array.isArray(matchesData)
-          ? matchesData
-          : matchesData?.results || matchesData?.data?.results || [];
+        const { results: matchResults } = await api.list<Match>('/activities/', {
+          params: {
+            project_id: String(projectJson.id),
+            period_id: effectiveCompetitionId,
+            activity_type: 'match',
+          },
+          pageSize: 250,
+        });
         setMatches(matchResults);
       } catch (e) {
         console.error(e);
@@ -199,7 +168,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]);
+  }, [orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]);
 
   return (
     <>

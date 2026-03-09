@@ -15,7 +15,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Organisation } from '../../types';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi } from '../../api';
 import styles from './OrganisationEditPage.module.css';
 
 /**
@@ -56,23 +56,7 @@ export const OrganisationEditPage: React.FC = () => {
 
       try {
         setLoading(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-Organisation-ID': String(currentOrgId || ''),
-          },
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch organisation (${response.status})`);
-        }
-
-        const rawData = await response.json();
-        // Handle B13 envelope pattern: {status: 'success', data: {...}}
-        const data: Organisation = rawData.data || rawData;
+        const data = await organisationsApi.get(currentOrgSlug) as any;
         setName(data.name);
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);
@@ -95,42 +79,11 @@ export const OrganisationEditPage: React.FC = () => {
     setError(null);
 
     try {
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': String(currentOrgId || ''),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name,
-          description,
-          is_active: isActive,
-        }),
-      });
-
-      if (!response.ok) {
-        let errorMessage = 'Failed to update organisation';
-        try {
-          const data = await response.json();
-          errorMessage = data.detail || JSON.stringify(data);
-        } catch (e) {
-          console.error(e);
-          errorMessage = `Error ${response.status}: ${response.statusText}`;
-        }
-        throw new Error(errorMessage);
-      }
-
-      const updated = await response.json().catch(() => null);
+      const updated = await organisationsApi.update(currentOrgSlug!, {
+        name,
+        description,
+        is_active: isActive,
+      } as any) as any;
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
       navigate(`/organisations/${slugOrId}`);
     } catch (err: unknown) {

@@ -5,7 +5,7 @@
  * independently and be tested without React.
  */
 import type { AssetTemplate } from '../../constants/assetTemplates';
-import { getCsrfToken } from '../../utils/csrf';
+import { api, ApiError } from '@/api';
 import type { BatchMember, MemberParams, MemberJobStatus } from './batchTypes';
 
 type SetJobStatuses = React.Dispatch<React.SetStateAction<Record<string, MemberJobStatus>>>;
@@ -115,15 +115,9 @@ async function tryProcessExistingVariant(
   }));
 
   try {
-    const procRes = await fetch(`${apiBase}/api/v1/video/jobs/process-all-variants/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      body: JSON.stringify({ membership_id: member.id, asset_type: selectedTemplate.category }),
+    const procJson = await api.post<any>('/video/jobs/process-all-variants/', {
+      membership_id: member.id, asset_type: selectedTemplate.category,
     });
-
-    const procJson = await procRes.json().catch(() => ({}));
-    if (!procRes.ok) throw new Error(procJson?.error || `Process failed (${procRes.status})`);
 
     if (procJson.status === 'nothing_to_process') {
       setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'success', error: 'Al verwerkt' } }));
@@ -167,14 +161,11 @@ async function pollVariantProcessing(
     await new Promise((r) => setTimeout(r, POLL_INTERVAL));
     if (abortRef.current) break;
 
-    const mRes = await fetch(
-      `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
-      { credentials: 'include' },
-    );
-    if (!mRes.ok) continue;
+    const mData = await api.get<any>(
+      `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+    ).catch(() => null);
+    if (!mData) continue;
 
-    const mJson = await mRes.json().catch(() => null);
-    const mData = mJson?.data || mJson;
     const mMeta = mData?.metadata || {};
     const trPoll = (mMeta && (mMeta.teamreel_assets || mMeta.teamreelAssets)) || {};
     const videoCategoryPoll = (trPoll.videos || {})[selectedTemplate.category] || {};
@@ -245,33 +236,25 @@ async function generateForMember(
     else inputImageUrls[key] = safeVal;
   }
 
-  const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-    body: JSON.stringify({
-      template_id: selectedTemplate.id,
-      params,
-      variant_count: 1,
-      input_images: {},
-      input_image_urls: inputImageUrls,
-      organisation_id: organisationId,
-      project_id: projectId,
-      membership_id: member.id,
-      asset_type: selectedTemplate.outputAssetType,
-      ...(selectedTemplate.outputType !== 'video' ? { save_to_brand: false, save_to_media_library: false } : {}),
-    }),
+  const responseData = await api.post<any>('/generative/assets/generate/', {
+    template_id: selectedTemplate.id,
+    params,
+    variant_count: 1,
+    input_images: {},
+    input_image_urls: inputImageUrls,
+    organisation_id: organisationId,
+    project_id: projectId,
+    membership_id: member.id,
+    asset_type: selectedTemplate.outputAssetType,
+    ...(selectedTemplate.outputType !== 'video' ? { save_to_brand: false, save_to_media_library: false } : {}),
   });
 
-  let responseData: Record<string, unknown>;
   const isImageTemplate = selectedTemplate.outputType !== 'video';
   const routedToApproval = isImageTemplate;
 
-  if (res.status === 202) {
-    const asyncJson = await res.json();
-    const asyncData = asyncJson.data || asyncJson;
-    const taskId = asyncData.task_id;
-    if (!taskId) throw new Error('Backend returned 202 but no task_id');
+  // Async generation (was HTTP 202) — check for task_id
+  if (responseData.task_id) {
+    const taskId = responseData.task_id;
 
     if (routedToApproval) {
       setJobStatuses((prev) => ({ ...prev, [member.id]: { status: 'success', error: '→ Approvals wachtrij' } }));
@@ -290,34 +273,42 @@ async function generateForMember(
       await new Promise((r) => setTimeout(r, POLL_INTERVAL));
       if (abortRef.current) break;
 
-      const statusRes = await fetch(`${apiBase}/api/v1/generative/assets/generate/${taskId}/status/`, { credentials: 'include' });
-      if (!statusRes.ok) {
-        if (statusRes.status === 404) throw new Error('Taak verlopen');
-        throw new Error(`Status check failed: HTTP ${statusRes.status}`);
+      try {
+        const statusData = await api.get<any>(`/generative/assets/generate/${taskId}/status/`);
+        if (statusData.status === 'completed') { pollResult = statusData.data || {}; break; }
+        if (statusData.status === 'failed') throw new Error(statusData.error || 'Video generatie mislukt');
+      } catch (e) {
+        if (e instanceof ApiError) {
+          if (e.status === 404) throw new Error('Taak verlopen');
+          throw new Error(`Status check failed: HTTP ${e.status}`);
+        }
+        throw e;
       }
-
-      const statusJson = await statusRes.json();
-      const statusData = statusJson.data || statusJson;
-      if (statusData.status === 'completed') { pollResult = statusData.data || {}; break; }
-      if (statusData.status === 'failed') throw new Error(statusData.error || 'Video generatie mislukt');
-      // retrying: keep polling — backend will re-dispatch the task automatically
+      // retrying: keep polling
     }
 
     if (!pollResult) throw new Error('Video generatie timeout');
-    responseData = pollResult;
-  } else if (res.ok) {
-    const json = await res.json();
-    responseData = json.data || json;
-  } else {
-    const errJson = await res.json().catch(() => ({}));
-    const errField = (errJson as Record<string, unknown>)?.error;
-    const errMessage =
-      typeof errField === 'string' ? errField :
-      typeof errField === 'object' && errField ? (errField as Record<string, string>)?.message || JSON.stringify(errField) :
-      (errJson as Record<string, string>)?.detail || `HTTP ${res.status}`;
-    throw new Error(errMessage);
+    handleGenerationResult(pollResult, member, params, selectedTemplate, organisationId, projectId, apiBase, abortRef, setJobStatuses);
+    return;
   }
 
+  // Synchronous generation (was HTTP 200)
+  handleGenerationResult(responseData, member, params, selectedTemplate, organisationId, projectId, apiBase, abortRef, setJobStatuses);
+}
+
+// ── Handle result from generation (sync or async) ────────────────────────────
+
+async function handleGenerationResult(
+  responseData: Record<string, unknown>,
+  member: BatchMember,
+  params: MemberParams,
+  selectedTemplate: AssetTemplate,
+  organisationId: string,
+  projectId: string,
+  apiBase: string,
+  abortRef: React.MutableRefObject<boolean>,
+  setJobStatuses: SetJobStatuses,
+): Promise<void> {
   const variants = (responseData.variants || []) as Record<string, unknown>[];
   const variant = variants[0] as any;
   if (!variant || variant.error) throw new Error(variant?.error || 'No variant returned');
@@ -330,26 +321,19 @@ async function generateForMember(
     const isVideo = selectedTemplate.outputType === 'video' ||
       variant.mime_type?.startsWith('video/') || !!variant.video_url;
 
-    const saveRes = await fetch(`${apiBase}/api/v1/generative/assets/save/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      body: JSON.stringify({
-        storage_path: storagePath,
-        presigned_url: variant.presigned_url,
-        video_url: variant.video_url,
-        image_base64: variant.image_base64,
-        filename: variant.filename,
-        mime_type: variant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
-        file_size_bytes: variant.storage_info?.file_size_bytes || 0,
-        organisation_id: organisationId,
-        project_id: projectId,
-        asset_type: selectedTemplate.outputAssetType,
-      }),
-    });
+    const saveData = await api.post<any>('/generative/assets/save/', {
+      storage_path: storagePath,
+      presigned_url: variant.presigned_url,
+      video_url: variant.video_url,
+      image_base64: variant.image_base64,
+      filename: variant.filename,
+      mime_type: variant.mime_type || (isVideo ? 'video/mp4' : 'image/png'),
+      file_size_bytes: variant.storage_info?.file_size_bytes || 0,
+      organisation_id: organisationId,
+      project_id: projectId,
+      asset_type: selectedTemplate.outputAssetType,
+    }).catch(() => null);
 
-    const saveJson = saveRes.ok ? await saveRes.json() : null;
-    const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
     const savedPath = saveData?.storage_path || storagePath;
 
     await updateMembershipMetadata(
@@ -421,19 +405,10 @@ export async function updateMembershipMetadata(
 
     const updatedMeta = { ...existingMeta, teamreel_assets: updatedTr };
 
-    const res = await fetch(
-      `${apiBase}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
-      {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        body: JSON.stringify({ metadata: updatedMeta }),
-      },
+    const res = await api.patch<any>(
+      `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(member.id)}/`,
+      { metadata: updatedMeta },
     );
-
-    if (!res.ok) {
-      console.error(`Failed to update metadata for ${member.name}:`, await res.text());
-    }
   } catch (err) {
     console.error(err);
     console.error(`Error updating metadata for ${member.name}:`, err);

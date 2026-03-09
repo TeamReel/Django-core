@@ -10,15 +10,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { BarChart3, ChevronRight, User, Trophy, Calendar } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './ContentBreakdownCard.module.css';
-
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json?.data && Array.isArray(json.data)) return json.data;
-  if (json?.results && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 interface CategoryCount {
   label: string;
@@ -32,7 +25,6 @@ export const ContentBreakdownCard: React.FC = () => {
   const [categories, setCategories] = useState<CategoryCount[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const project = context.project as any;
 
   useEffect(() => {
@@ -40,18 +32,16 @@ export const ContentBreakdownCard: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
-        const projectParam = project ? `&project=${project.id}` : '';
+        const params: Record<string, string> = {
+          status: 'completed',
+          ordering: '-created_at',
+        };
+        if (project) params.project = project.id;
 
-        // Fetch generation requests grouped by template type
-        // We'll use the existing API and count by template type
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/generative/requests/?status=completed${projectParam}&page_size=200&ordering=-created_at`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          const items = extractItems<any>(data);
+        const { results: items } = await api.list<any>('/generative/requests/', {
+          params,
+          pageSize: 200,
+        });
 
           // Count per template type
           const counts: Record<string, number> = {};
@@ -80,7 +70,6 @@ export const ContentBreakdownCard: React.FC = () => {
             }
             setCategories(cats);
           }
-        }
       } catch {
         // silent
       } finally {
@@ -88,7 +77,7 @@ export const ContentBreakdownCard: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiBaseUrl, project?.id]);
+  }, [project?.id]);
 
   const maxCount = Math.max(1, ...categories.map(c => c.count));
   const totalCount = categories.reduce((sum, c) => sum + c.count, 0);

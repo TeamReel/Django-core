@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { X, Shield, Users, Check, Loader2 } from 'lucide-react';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 import st from './MemberEditSheet.module.css';
 
 /* ── Functional role definitions (must match backend valid choices) ── */
@@ -102,28 +102,13 @@ export function MemberEditSheet({
       return;
     }
 
-    const csrfToken = getCsrfToken();
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (csrfToken) headers['X-CSRFToken'] = csrfToken;
-
     try {
       // 1) PATCH access role (only if user has permission)
       if (canChangeAccessRole) {
-        const patchRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/${encodeURIComponent(membershipId)}/`,
-          {
-            method: 'PATCH',
-            headers,
-            credentials: 'include',
-            body: JSON.stringify({ role: accessRole }),
-          },
+        await api.patch(
+          `/projects/${encodeURIComponent(teamId)}/members/${encodeURIComponent(membershipId)}/`,
+          { role: accessRole },
         );
-        if (!patchRes.ok) {
-          const body = await patchRes.json().catch(() => null);
-          throw new Error(body?.detail || `Opslaan mislukt (${patchRes.status})`);
-        }
       }
 
       // 2) Sync functional roles via assign/unassign
@@ -138,35 +123,17 @@ export function MemberEditSheet({
         const toUnassign = [...oldRoles].filter((r) => !newRoles.has(r) && VALID_API_ROLES.has(r));
 
         if (toAssign.length > 0) {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/functional-roles/assign/`,
-            {
-              method: 'POST',
-              headers,
-              credentials: 'include',
-              body: JSON.stringify({ user_id: userId, roles: toAssign }),
-            },
+          await api.post(
+            `/projects/${encodeURIComponent(teamId)}/functional-roles/assign/`,
+            { user_id: userId, roles: toAssign },
           );
-          if (!res.ok) {
-            const body = await res.json().catch(() => null);
-            throw new Error(body?.detail || 'Rollen toewijzen mislukt');
-          }
         }
 
         if (toUnassign.length > 0) {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/functional-roles/unassign/`,
-            {
-              method: 'POST',
-              headers,
-              credentials: 'include',
-              body: JSON.stringify({ user_id: userId, roles: toUnassign }),
-            },
+          await api.post(
+            `/projects/${encodeURIComponent(teamId)}/functional-roles/unassign/`,
+            { user_id: userId, roles: toUnassign },
           );
-          if (!res.ok) {
-            const body = await res.json().catch(() => null);
-            throw new Error(body?.detail || 'Rollen verwijderen mislukt');
-          }
         }
       }
 

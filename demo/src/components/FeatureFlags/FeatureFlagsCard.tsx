@@ -4,7 +4,7 @@
  * Used in OrganisationDetailPage and ProjectDetailPage (club settings)
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import {
@@ -46,30 +46,23 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       setLoading(true);
       setError(null);
 
-      const baseUrl = getApiBaseUrl();
-
       // Fetch global flags to show what's available
-      const globalRes = await fetch(`${baseUrl}/api/v1/settings/feature-flags/?scope_type=GLOBAL`, {
-        credentials: 'include',
+      const globalData = await api.get<any>('/settings/feature-flags/', {
+        params: { scope_type: 'GLOBAL' },
       });
-      if (globalRes.ok) {
-        const globalData = await globalRes.json();
-        // Handle B13 response envelope: data.results or data.data.results or results or data
-        const globalArray = globalData?.data?.results || globalData?.results || globalData?.data || globalData;
-        setGlobalFlags(Array.isArray(globalArray) ? globalArray : []);
-      }
+      const globalArray = Array.isArray(globalData) ? globalData : (globalData?.results || []);
+      setGlobalFlags(globalArray);
 
       // Fetch scope-specific flags
-      const scopeRes = await fetch(
-        `${baseUrl}/api/v1/settings/feature-flags/?scope_type=${scopeType}&${scopeType === 'ORGANISATION' ? 'organisation' : 'project'}=${scopeId}`,
-        { credentials: 'include' }
-      );
-      if (scopeRes.ok) {
-        const scopeData = await scopeRes.json();
-        // Handle B13 response envelope
-        const scopeArray = scopeData?.data?.results || scopeData?.results || scopeData?.data || scopeData;
-        setFlags(Array.isArray(scopeArray) ? scopeArray : []);
-      }
+      const scopeParams: Record<string, string> = {
+        scope_type: scopeType,
+        [scopeType === 'ORGANISATION' ? 'organisation' : 'project']: scopeId,
+      };
+      const scopeData = await api.get<any>('/settings/feature-flags/', {
+        params: scopeParams,
+      });
+      const scopeArray = Array.isArray(scopeData) ? scopeData : (scopeData?.results || []);
+      setFlags(scopeArray);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load flags');

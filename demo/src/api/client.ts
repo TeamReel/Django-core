@@ -60,6 +60,14 @@ export interface ListAllOptions {
   signal?: AbortSignal;
 }
 
+/** Options for `api.get()`. */
+export interface GetOptions {
+  /** Extra query params to append. */
+  params?: Record<string, string | number | boolean | undefined>;
+  /** AbortSignal for cancellation. */
+  signal?: AbortSignal;
+}
+
 /** Options for mutating requests. */
 export interface MutateOptions {
   /** AbortSignal for cancellation. */
@@ -241,8 +249,16 @@ export const api = {
    * const project = await api.get<Project>('/projects/42/');
    * ```
    */
-  async get<T>(path: string, signal?: AbortSignal): Promise<T> {
-    const url = buildUrl(path);
+  async get<T>(path: string, optsOrSignal?: AbortSignal | GetOptions): Promise<T> {
+    let signal: AbortSignal | undefined;
+    let params: Record<string, string | number | boolean | undefined> | undefined;
+    if (optsOrSignal instanceof AbortSignal) {
+      signal = optsOrSignal;
+    } else if (optsOrSignal) {
+      signal = optsOrSignal.signal;
+      params = optsOrSignal.params;
+    }
+    const url = buildUrl(path, params);
     const raw = await request('GET', url, undefined, signal);
     return unwrapSingle<T>(raw);
   },

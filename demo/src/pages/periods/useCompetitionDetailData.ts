@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useLocation, useNavigate, type NavigateFunction, type Location } from 'react-router-dom';
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { api } from '../../api/client';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { getActiveContext } from '../../utils/activeContext';
 import { useSeasonContext } from '../../providers/SeasonProvider';
@@ -257,10 +257,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string): UseCom
         if (!uuid) throw new Error('Competition not found');
         setResolvedCompetitionId(uuid);
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(uuid)}/`, { credentials: 'include' });
-        if (!res.ok) throw new Error('Failed to load competition');
-        const raw = await res.json() as { data?: Period } & Record<string, unknown>;
-        const json: Period = (raw?.data ?? raw) as Period;
+        const json = await api.get<Period>(`/periods/${encodeURIComponent(uuid)}/`);
         setCompetition(json);
 
         const desired = periodPathKey(json);
@@ -295,9 +292,9 @@ export function useCompetitionDetailData(effectiveCompetitionId: string): UseCom
     (async () => {
       setMatchesLoading(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(pid)}&period_id=${encodeURIComponent(cid)}&activity_type=match&ordering=-start_time&page_size=250`;
-        const results = await fetchAllPages<Activity>(url, { credentials: 'include' }, {
-          ttlMs: 30_000, cacheKey: `matches:competition:${pid}:${cid}`, maxItems: 250,
+        const results = await api.listAll<Activity>('/activities/', {
+          params: { project_id: pid, period_id: cid, activity_type: 'match', ordering: '-start_time' },
+          pageSize: 250, maxItems: 250,
         });
         if (!cancelled) setMatches(results);
       } catch (e) { console.error('Failed to fetch matches:', e); }
@@ -316,10 +313,8 @@ export function useCompetitionDetailData(effectiveCompetitionId: string): UseCom
         const map: Record<string, Record<string, unknown>[]> = {};
         await Promise.all(matches.map(async (m) => {
           try {
-            const res = await fetch(`${apiBaseUrl}/api/v1/media/items/?activity=${m.id}`, { credentials: 'include' });
-            if (!res.ok) return;
-            const raw = await res.json();
-            map[String(m.id)] = Array.isArray(raw) ? raw : (raw?.results || raw?.data?.results || raw?.data || []);
+            const { results } = await api.list<Record<string, unknown>>('/media/items/', { params: { activity: String(m.id) } });
+            map[String(m.id)] = results;
           } catch { map[String(m.id)] = []; }
         }));
         if (!cancelled) setMatchMediaMap(map);
@@ -339,16 +334,7 @@ export function useCompetitionDetailData(effectiveCompetitionId: string): UseCom
     (async () => {
       setMembersLoading(true);
       try {
-        const params = new URLSearchParams(); params.set('period', cid);
-        const res = await fetch(`${apiBaseUrl}/api/v1/projects/${pid}/members/?${params}`, { credentials: 'include' });
-        if (!res.ok) return;
-        const raw = await res.json();
-        let list: MemberRef[] = [];
-        if (Array.isArray(raw)) list = raw;
-        else if (Array.isArray(raw?.data)) list = raw.data;
-        else if (Array.isArray(raw?.data?.data)) list = raw.data.data;
-        else if (Array.isArray(raw?.data?.results)) list = raw.data.results;
-        else if (Array.isArray(raw?.results)) list = raw.results;
+        const { results: list } = await api.list<MemberRef>(`/projects/${pid}/members/`, { params: { period: cid } });
         if (!cancelled) setMembers(list);
       } catch (e) { console.error('Failed to fetch members:', e); }
       finally { if (!cancelled) setMembersLoading(false); }
@@ -368,8 +354,8 @@ export function useCompetitionDetailData(effectiveCompetitionId: string): UseCom
       const results: Record<string, string> = {};
       await Promise.all(ids.map(async (cid) => {
         try {
-          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(cid)}/`, { credentials: 'include' });
-          if (res.ok) { const d = await res.json() as { data?: { name?: string }; name?: string }; const data = d?.data ?? d; if (data?.name) results[cid] = data.name; }
+          const data = await api.get<{ name?: string }>(`/projects/${encodeURIComponent(cid)}/`);
+          if (data?.name) results[cid] = data.name;
         } catch { /* ignore */ }
       }));
       if (!cancelled) setOpponentClubNames((prev) => ({ ...prev, ...results }));

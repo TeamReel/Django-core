@@ -1,8 +1,7 @@
 import { FeatureFlag } from './featureFlagStorage';
-import { getApiBaseUrl } from './apiBase';
-import { getCsrfToken as _getCsrfTokenShared } from './csrf';
+import { api } from '@/api';
 
-const API_BASE = '/api/v1/settings/feature-flags';
+const API_BASE = '/settings/feature-flags';
 
 const debugLog = (...args: unknown[]) => {
 };
@@ -29,89 +28,34 @@ interface ContentTemplateRecord {
 }
 
 export async function fetchFlags(orgId: string | null, projectId?: string | null): Promise<ApiFeatureFlag[]> {
-  const baseUrl = getApiBaseUrl();
-  const url = new URL(`${baseUrl}${API_BASE}/resolve-all/`, window.location.origin);
-  if (orgId) {
-    url.searchParams.append('organisation_id', orgId);
-  }
-  if (projectId) {
-    url.searchParams.append('project_id', projectId);
-  }
+  const params: Record<string, string> = {};
+  if (orgId) params.organisation_id = orgId;
+  if (projectId) params.project_id = projectId;
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    },
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  // Handle B13 response envelope
-  return data.data?.results || data.results || data.data || data || [];
+  const data = await api.get<any>(`${API_BASE}/resolve-all/`, { params });
+  // Handle various response shapes
+  return data?.results || (Array.isArray(data) ? data : []);
 }
 
 export async function fetchFlagsForScope(scopeType: ScopeType, scopeId?: string): Promise<ApiFeatureFlag[]> {
-  const baseUrl = getApiBaseUrl();
-  const allFlags: ApiFeatureFlag[] = [];
-
-  // Use pagination to fetch ALL flags
-  let nextUrl: string | null = `${baseUrl}${API_BASE}/?scope_type=${scopeType}&page_size=200`;
+  const params: Record<string, string> = {
+    scope_type: scopeType,
+  };
 
   if (scopeType === 'ORGANISATION' && scopeId) {
-    nextUrl += `&organisation=${scopeId}`;
+    params.organisation = scopeId;
   } else if (scopeType === 'PROJECT' && scopeId) {
-    nextUrl += `&project=${scopeId}`;
+    params.project = scopeId;
   }
 
-  while (nextUrl) {
-    const response: Response = await fetch(nextUrl, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      },
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch flags: ${response.status} ${response.statusText}`);
-    }
-
-    const data: Record<string, any> = await response.json();
-    const results = data.data?.results || data.results || data.data || data || [];
-    allFlags.push(...(Array.isArray(results) ? results : []));
-
-    // Check for next page
-    nextUrl = data.data?.next || data.next || null;
-    if (nextUrl && !nextUrl.startsWith('http')) {
-      nextUrl = `${baseUrl}${nextUrl}`;
-    }
-  }
+  const allFlags = await api.listAll<ApiFeatureFlag>(`${API_BASE}/`, { params, pageSize: 200 });
 
   debugLog('[fetchFlagsForScope] Fetched', allFlags.length, 'flags for scope', scopeType);
   return allFlags;
 }
 
 export async function updateGlobalFlag(flagId: string, enabled: boolean): Promise<void> {
-  const baseUrl = getApiBaseUrl();
-  const response = await fetch(`${baseUrl}${API_BASE}/${flagId}/`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    credentials: 'include',
-    body: JSON.stringify({ enabled }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to update global flag: ${response.statusText}`);
-  }
+  await api.patch(`${API_BASE}/${flagId}/`, { enabled });
 }
 
 export async function createOrgOverride(orgId: string, key: string, enabled: boolean): Promise<void> {
@@ -123,7 +67,6 @@ export async function createProjectOverride(projectId: string, key: string, enab
 }
 
 export async function createScopeOverride(scopeType: ScopeType, scopeId: string, key: string, enabled: boolean): Promise<void> {
-  const baseUrl = getApiBaseUrl();
   const body: Record<string, unknown> = {
     scope_type: scopeType,
     key: key,
@@ -136,93 +79,29 @@ export async function createScopeOverride(scopeType: ScopeType, scopeId: string,
     body.project = scopeId;
   }
 
-  const response = await fetch(`${baseUrl}${API_BASE}/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to create ${scopeType.toLowerCase()} override: ${response.statusText} - ${errorText}`);
-  }
+  await api.post(`${API_BASE}/`, body);
 }
 
 export async function updateOrgOverride(overrideId: string, enabled: boolean): Promise<void> {
   debugLog('[featureFlagsApi] updateOrgOverride called:', { overrideId, enabled });
 
-  const baseUrl = getApiBaseUrl();
-  const url = `${baseUrl}${API_BASE}/${overrideId}/`;
+  const url = `${API_BASE}/${overrideId}/`;
   debugLog('[featureFlagsApi] Making PATCH request to:', url);
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    console.error('[featureFlagsApi] Request timeout after 10 seconds');
-    controller.abort();
-  }, 10000);
-
   try {
-    const response = await fetch(url, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({ enabled }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    debugLog('[featureFlagsApi] updateOrgOverride response:', {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[featureFlagsApi] updateOrgOverride error response:', errorText);
-      throw new Error(`Failed to update org override: ${response.statusText} - ${errorText}`);
-    }
-
+    await api.patch(url, { enabled });
     debugLog('[featureFlagsApi] updateOrgOverride completed successfully');
   } catch (error) {
     console.error(error);
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Request timeout - server not responding');
-    }
     throw error;
   }
 }
 
 export async function deleteOrgOverride(overrideId: string): Promise<void> {
-  const baseUrl = getApiBaseUrl();
-  const response = await fetch(`${baseUrl}${API_BASE}/${overrideId}/`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to delete org override: ${response.statusText}`);
-  }
+  await api.delete(`${API_BASE}/${overrideId}/`);
 }
 
 export async function seedDefaultFlags(): Promise<{ total: number; created: number; failed: number }> {
-  const baseUrl = getApiBaseUrl();
 
   const normalizeKey = (value: string): string =>
     String(value || '')
@@ -275,28 +154,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
 
   const fetchTemplates = async (): Promise<ContentTemplateRecord[]> => {
     try {
-      const allTemplates: ContentTemplateRecord[] = [];
-      // Fetch ALL templates (not just active) to ensure we get everything
-      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200`;
-
-      while (nextUrl) {
-        const res: Response = await fetch(nextUrl, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!res.ok) break;
-        const data: any = await res.json();
-        const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-        const list = Array.isArray(rawResults) ? rawResults : [];
-        allTemplates.push(...list);
-
-        // Check for next page
-        nextUrl = data?.data?.next || data?.next || null;
-        if (nextUrl && !nextUrl.startsWith('http')) {
-          nextUrl = `${baseUrl}${nextUrl}`;
-        }
-      }
-
+      const allTemplates = await api.listAll<ContentTemplateRecord>('/content-generation/templates/', { pageSize: 200 });
       debugLog('[seedDefaultFlags] Fetched templates:', allTemplates.length);
       return allTemplates;
     } catch (err) {
@@ -327,26 +185,13 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
   let failed = 0;
   for (const flag of defaults) {
     try {
-      const res = await fetch(`${baseUrl}${API_BASE}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          scope_type: 'GLOBAL',
-          key: flag.key,
-          description: flag.description,
-          enabled: true,
-        }),
+      await api.post(`${API_BASE}/`, {
+        scope_type: 'GLOBAL',
+        key: flag.key,
+        description: flag.description,
+        enabled: true,
       });
-      if (res.ok) {
-        created += 1;
-      } else {
-        failed += 1;
-      }
+      created += 1;
     } catch (e) {
       console.error(e);
       failed += 1;
@@ -362,7 +207,6 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
  * This ensures flags stay in sync when new templates are added
  */
 export async function syncFlags(): Promise<{ total: number; created: number; updated: number; failed: number }> {
-  const baseUrl = getApiBaseUrl();
 
   const normalizeKey = (value: string): string =>
     String(value || '')
@@ -399,18 +243,10 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
   // Fetch only active + latest templates (matches backend canonical set)
   const fetchTemplates = async (): Promise<ContentTemplateRecord[]> => {
     try {
-      const allTemplates: ContentTemplateRecord[] = [];
-      let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200&is_active=true&is_latest=true`;
-      while (nextUrl) {
-        const res: Response = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-        if (!res.ok) break;
-        const data: any = await res.json();
-        const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-        allTemplates.push(...(Array.isArray(rawResults) ? rawResults : []));
-        nextUrl = data?.data?.next || data?.next || null;
-        if (nextUrl && !nextUrl.startsWith('http')) nextUrl = `${baseUrl}${nextUrl}`;
-      }
-      return allTemplates;
+      return await api.listAll<ContentTemplateRecord>('/content-generation/templates/', {
+        params: { is_active: 'true', is_latest: 'true' },
+        pageSize: 200,
+      });
     } catch (err) {
       console.error(err);
       console.warn('Failed to fetch templates', err);
@@ -447,36 +283,18 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
       // Update description if different
       if (existing.description !== info.description) {
         try {
-          const res = await fetch(`${baseUrl}${API_BASE}/${existing.id}/`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-            credentials: 'include',
-            body: JSON.stringify({ description: info.description }),
-          });
-          if (res.ok) updated++;
-          else failed++;
+          await api.patch(`${API_BASE}/${existing.id}/`, { description: info.description });
+          updated++;
         } catch { failed++; }
       }
     } else {
       // Create new flag
       try {
-        const res = await fetch(`${baseUrl}${API_BASE}/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-          credentials: 'include',
-          body: JSON.stringify({ scope_type: 'GLOBAL', key: info.key, description: info.description, enabled: true }),
-        });
-        if (res.ok) created++;
-        else failed++;
+        await api.post(`${API_BASE}/`, { scope_type: 'GLOBAL', key: info.key, description: info.description, enabled: true });
+        created++;
       } catch { failed++; }
     }
   }
 
   return { total: desiredFlagMap.size, created, updated, failed };
-}
-
-function getCsrfToken(): string {
-  const value = _getCsrfTokenShared();
-  debugLog('[featureFlagsApi] CSRF token:', value ? `${value.substring(0, 10)}...` : 'NOT FOUND');
-  return value;
 }

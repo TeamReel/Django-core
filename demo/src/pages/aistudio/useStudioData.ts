@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { mediaApi, videoApi } from '../../api';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAppSelection } from '../../hooks/useAppSelection';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
@@ -163,20 +163,14 @@ export function useStudioData(): StudioData {
 
   // ── Fetch content items ──
   const fetchContent = useCallback(async () => {
-    const apiBaseUrl = getApiBaseUrl();
     setLoading(true);
     setError(null);
     try {
-      let url = `${apiBaseUrl}/api/v1/media/items/?page_size=500&ordering=-created_at`;
-      if (teamIdForApi) url += `&project=${teamIdForApi}`;
-      const response = await fetch(url, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error('Kon content niet laden');
-      const data = await response.json();
-      const items = data?.results || data?.data?.results || data?.data || [];
-      setContentItems(Array.isArray(items) ? items : []);
+      const { results } = await mediaApi.listItems(
+        { ordering: '-created_at', ...(teamIdForApi ? { project: teamIdForApi } : {}) },
+        { pageSize: 500 },
+      );
+      setContentItems(Array.isArray(results) ? results : []);
     } catch (err) {
       console.error(err);
       console.error('[Studio] Content fetch error:', err);
@@ -188,23 +182,18 @@ export function useStudioData(): StudioData {
 
   // ── Fetch video jobs ──
   const fetchVideoJobs = useCallback(async () => {
-    const apiBaseUrl = getApiBaseUrl();
     try {
-      let url = `${apiBaseUrl}/api/v1/video/jobs/?page_size=50&ordering=-created_at`;
-      const response = await fetch(url, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      const raw = data?.results || data?.data?.results || data?.data || [];
+      const { results: raw } = await videoApi.listJobs(
+        { ordering: '-created_at' },
+        { pageSize: 50 },
+      );
       const jobs: VideoJobSummary[] = (Array.isArray(raw) ? raw : []).map((j) => ({
         id: j.id,
         job_type: j.job_type,
         status: j.status,
         progress_percent: j.progress_percent || 0,
         error_message: j.error_message,
-        output_url: j.output_url || j.output_file?.url,
+        output_url: j.output_url || (j.output_file as any)?.url,
         thumbnail_url: j.thumbnail_url,
         created_at: j.created_at,
         completed_at: j.completed_at,

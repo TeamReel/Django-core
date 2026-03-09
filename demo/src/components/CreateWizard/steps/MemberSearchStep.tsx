@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, UserPlus, Loader, User as UserIcon } from 'lucide-react';
 import { useWizard } from '../../Wizard';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '@/api';
 import styles from '../CreateWizard.module.css';
 
 // ─── Types ────────────────────────────────────────────────
@@ -47,14 +47,11 @@ export function MemberSearchStep({ data }: { data: MemberSearchData }) {
     }
     try {
       setIsSearching(true);
-      const res = await fetch(
-        `${getApiBaseUrl()}/api/v1/admin/users/?search=${encodeURIComponent(q)}&page_size=20`,
-        { credentials: 'include' },
-      );
-      if (!res.ok) throw new Error('Search failed');
-      const json = await res.json();
-      const payload = json.data ?? json;
-      setResults(payload.results ?? payload ?? []);
+      const { results } = await api.list<UserResult>('/admin/users/', {
+        params: { search: q },
+        pageSize: 20,
+      });
+      setResults(results);
     } catch {
       setResults([]);
     } finally {

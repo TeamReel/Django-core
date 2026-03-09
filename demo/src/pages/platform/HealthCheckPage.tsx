@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { apiFetch } from '../../utils/apiFetch';
 import styles from './HealthCheckPage.module.css';
 // import AppShell from '../../components/AppShell';
 
@@ -30,9 +30,7 @@ export const HealthCheckPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const baseUrl = getApiBaseUrl();
-
-    fetch(`${baseUrl}/api/observability/demo-health/`)
+    apiFetch('/api/observability/demo-health/')
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();

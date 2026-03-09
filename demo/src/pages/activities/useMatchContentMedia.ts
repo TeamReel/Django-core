@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { fetchFlags } from '../../utils/featureFlagsApi';
+import { mediaApi, contentApi } from '../../api';
 import type { MatchMediaItem } from '../../components/MediaAssetCard';
 import type { ContentItem, MatchDetail } from './matchDetailTypes';
 import { normalizeFlagKey as normalizeFlagKeyHelper, slugify as slugifyHelper } from './matchDetailTypes';
@@ -43,22 +44,15 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
     if (!match?.id) return;
     setMatchMediaLoading(true);
     try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/media/items/?activity=${match.id}`,
-        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        const items = data?.results || data?.data?.results || [];
-        setMatchMedia(Array.isArray(items) ? items : []);
-      }
+      const { results } = await mediaApi.listItems({ activityId: match.id });
+      setMatchMedia(Array.isArray(results) ? results : []);
     } catch (err) {
       console.error(err);
       console.error('[Media] Error fetching match media:', err);
     } finally {
       setMatchMediaLoading(false);
     }
-  }, [match?.id, apiBaseUrl]);
+  }, [match?.id]);
 
   useEffect(() => { if (match?.id) fetchMatchMedia(); }, [match?.id, fetchMatchMedia]);
 
@@ -98,22 +92,15 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
     if (!match?.id) return;
     setContentItemsLoading(true);
     try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/content-generation/items/?activity=${match.id}`,
-        { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        const items = data?.data?.results || data?.results || data?.data || [];
-        setContentItems(Array.isArray(items) ? items : []);
-      }
+      const { results } = await contentApi.listItems({ activityId: match.id });
+      setContentItems((results as unknown as ContentItem[]).filter(Boolean));
     } catch (err) {
       console.error(err);
       console.error('[Content] Error fetching content items:', err);
     } finally {
       setContentItemsLoading(false);
     }
-  }, [match?.id, apiBaseUrl]);
+  }, [match?.id]);
 
   const getContentItemForSubtype = useCallback((subtype: string): ContentItem | null => {
     return contentItems.find(item => item.template?.template_subtype === subtype) || null;
@@ -170,16 +157,10 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
   const fetchAvailableTemplates = useCallback(async () => {
     setTemplatesLoading(true);
     try {
-      const urlParams = new URLSearchParams();
-      urlParams.append('is_active', 'true');
-      urlParams.append('page_size', '500');
-      const response = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${urlParams.toString()}`, {
-        credentials: 'include', headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) return;
-      const data = await response.json();
-      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-      const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
+      const { results: allTemplates } = await contentApi.listTemplates(
+        { isActive: true },
+        { pageSize: 500 },
+      ) as unknown as { results: ContentTemplate[]; count: number; next: string | null; previous: string | null };
 
       const competitionSport = competition?.sport;
       const orgSport = org?.sport;

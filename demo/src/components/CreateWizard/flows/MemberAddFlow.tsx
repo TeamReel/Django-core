@@ -23,8 +23,7 @@ import { MemberSearchStep, type UserResult, type MemberSearchData } from '../ste
 import { MemberDetailsStep, type NewMemberFormData } from '../steps/MemberDetailsStep';
 import { MemberRoleStep, type MemberRoleData, type MemberRole, type PositionOption } from '../steps/MemberRoleStep';
 import { MemberConfirmStep, type MemberConfirmData } from '../steps/MemberConfirmStep';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
+import { api, ApiError } from '@/api';
 
 // ─── Step config ──────────────────────────────────────────
 
@@ -120,14 +119,6 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
     setError(null);
     setIsSaving(true);
 
-    const apiBase = getApiBaseUrl();
-    const csrf = getCsrfToken();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrf || '',
-    };
-    const opts: RequestInit = { method: 'POST', headers, credentials: 'include' };
-
     const orgSlug = prefill.organisationSlug;
     const clubId = prefill.clubProjectId;
     const teamId = prefill.teamProjectId;
@@ -141,29 +132,26 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
         if (!email.trim()) throw new Error('Email is verplicht');
         if (!password.trim()) throw new Error('Wachtwoord is verplicht');
 
-        const createRes = await fetch(`${apiBase}/api/v1/admin/users/`, {
-          ...opts,
-          body: JSON.stringify({
+        try {
+          const createdUser = await api.post<any>('/admin/users/', {
             first_name: firstName.trim(),
             last_name: lastName.trim(),
             email: email.trim(),
             password: password,
             password_confirm: password,
-          }),
-        });
-
-        if (!createRes.ok) {
-          const d = await createRes.json().catch(() => ({}));
-          const err = d.error?.details || d;
-          throw new Error(
-            err.email?.[0] || err.password?.[0] || d.error?.message || d.detail || 'Gebruiker aanmaken mislukt',
-          );
+          });
+          userId = createdUser.id;
+          userEmail = email.trim();
+        } catch (e) {
+          if (e instanceof ApiError) {
+            const d = e.body as any;
+            const err = d?.error?.details || d;
+            throw new Error(
+              err?.email?.[0] || err?.password?.[0] || d?.error?.message || d?.detail || 'Gebruiker aanmaken mislukt',
+            );
+          }
+          throw e;
         }
-
-        const json = await createRes.json();
-        const createdUser = json.data ?? json;
-        userId = createdUser.id;
-        userEmail = email.trim();
       } else if (selectedUser) {
         userId = selectedUser.id;
         userEmail = selectedUser.email;
@@ -173,39 +161,35 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
 
       // Step B: Organisation membership (always, if org slug known)
       if (orgSlug) {
-        const orgRes = await fetch(`${apiBase}/api/v1/organisations/${orgSlug}/members/`, {
-          ...opts,
-          body: JSON.stringify({
+        try {
+          await api.post(`/organisations/${orgSlug}/members/`, {
             email: userEmail,
             role: role === 'admin' ? 'admin' : 'member',
-          }),
-        });
-        if (!orgRes.ok) {
-          const d = await orgRes.json().catch(() => ({}));
-          const details = d.error?.details || d;
-          const msg = details.email?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
-          if (!isAlreadyExistsError(msg)) {
-            throw new Error(msg || 'Toevoegen aan federatie mislukt');
-          }
+          });
+        } catch (e) {
+          if (e instanceof ApiError) {
+            const d = e.body as any;
+            const details = d?.error?.details || d;
+            const msg = details?.email?.[0] || d?.error?.message || d?.detail || details?.non_field_errors?.[0] || '';
+            if (!isAlreadyExistsError(msg)) throw new Error(msg || 'Toevoegen aan federatie mislukt');
+          } else throw e;
         }
       }
 
       // Step C: Club project membership (if club or team context)
       if (clubId && (contextLevel === 'club' || contextLevel === 'team')) {
-        const clubRes = await fetch(`${apiBase}/api/v1/projects/${clubId}/members/`, {
-          ...opts,
-          body: JSON.stringify({
+        try {
+          await api.post(`/projects/${clubId}/members/`, {
             user_id: Number(userId),
             role: role === 'admin' ? 'admin' : 'editor',
-          }),
-        });
-        if (!clubRes.ok) {
-          const d = await clubRes.json().catch(() => ({}));
-          const details = d.error?.details || d;
-          const msg = details.user_id?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
-          if (!isAlreadyExistsError(msg)) {
-            throw new Error(msg || 'Toevoegen aan club mislukt');
-          }
+          });
+        } catch (e) {
+          if (e instanceof ApiError) {
+            const d = e.body as any;
+            const details = d?.error?.details || d;
+            const msg = details?.user_id?.[0] || d?.error?.message || d?.detail || details?.non_field_errors?.[0] || '';
+            if (!isAlreadyExistsError(msg)) throw new Error(msg || 'Toevoegen aan club mislukt');
+          } else throw e;
         }
       }
 
@@ -229,17 +213,15 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
           };
         }
 
-        const teamRes = await fetch(`${apiBase}/api/v1/projects/${teamId}/members/`, {
-          ...opts,
-          body: JSON.stringify(body),
-        });
-        if (!teamRes.ok) {
-          const d = await teamRes.json().catch(() => ({}));
-          const details = d.error?.details || d;
-          const msg = details.user_id?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
-          if (!isAlreadyExistsError(msg)) {
-            throw new Error(msg || 'Toevoegen aan team mislukt');
-          }
+        try {
+          await api.post(`/projects/${teamId}/members/`, body);
+        } catch (e) {
+          if (e instanceof ApiError) {
+            const d = e.body as any;
+            const details = d?.error?.details || d;
+            const msg = details?.user_id?.[0] || d?.error?.message || d?.detail || details?.non_field_errors?.[0] || '';
+            if (!isAlreadyExistsError(msg)) throw new Error(msg || 'Toevoegen aan team mislukt');
+          } else throw e;
         }
       }
 

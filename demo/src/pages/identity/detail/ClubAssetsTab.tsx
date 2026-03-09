@@ -7,8 +7,8 @@ import {
   type ClubAssetSlot,
   canGenerateClubTenue,
 } from '../../../constants/clubAssets';
+import { projectsApi } from '../../../api';
 import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
 
 interface ClubAssetsTabProps {
   clubId: string;
@@ -79,28 +79,12 @@ export default function ClubAssetsTab({
       });
 
       // Update club metadata
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubId)}/`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            metadata: {
-              ...clubMetadata,
-              teamreel_assets: newAssets,
-            },
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(detail || `Failed to save assets (${res.status})`);
-      }
+      const updated = await projectsApi.update(clubId, {
+        metadata: {
+          ...clubMetadata,
+          teamreel_assets: newAssets,
+        },
+      } as any);
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);

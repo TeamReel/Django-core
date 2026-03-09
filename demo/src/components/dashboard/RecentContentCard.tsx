@@ -5,15 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Image, ChevronRight, Film, FileImage, Clock } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './RecentContentCard.module.css';
-
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json?.data && Array.isArray(json.data)) return json.data;
-  if (json?.results && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 interface MediaItem {
   id: string;
@@ -31,7 +24,6 @@ export const RecentContentCard: React.FC = () => {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const project = context.project as any;
 
   useEffect(() => {
@@ -39,15 +31,13 @@ export const RecentContentCard: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
-        const projectParam = project ? `&project=${project.id}` : '';
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/media/items/?ordering=-created_at${projectParam}&page_size=6`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          if (!cancelled) setItems(extractItems<MediaItem>(data));
-        }
+        const params: Record<string, string> = { ordering: '-created_at' };
+        if (project) params.project = project.id;
+        const { results } = await api.list<MediaItem>('/media/items/', {
+          params,
+          pageSize: 6,
+        });
+        if (!cancelled) setItems(results);
       } catch {
         // silent
       } finally {
@@ -55,7 +45,7 @@ export const RecentContentCard: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiBaseUrl, project?.id]);
+  }, [project?.id]);
 
   const getThumbUrl = (item: MediaItem): string | null => {
     // Try thumbnails array first (smallest first for performance)

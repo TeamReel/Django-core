@@ -4,9 +4,10 @@ import { type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { useUserRole } from '../../components/PermissionGuards';
+import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 
 import {
   type Organisation,
@@ -124,11 +125,8 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
         }
 
         if (!effectiveOrgSlug) {
-          const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
-          if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
-          const json = await res.json().catch(() => null);
-          const raw = unwrapEnvelope<any>(json);
-          const list: Array<{ id?: string; slug?: string }> = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+          const res = await api.list<{ id?: string; slug?: string }>('/organisations/', { pageSize: 250 });
+          const list = res.results || [];
           const match = list.find((o) => String(o?.id || '') === String(orgSlugOrId));
           const slug = String(match?.slug || '').trim();
           if (!slug) throw new Error('Organisation not found');
@@ -137,29 +135,15 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
           return;
         }
 
-        const [orgRes, clubRes, teamRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/`, { credentials: 'include' }),
-          fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-            { credentials: 'include' },
+        const [loadedOrg, loadedClub, loadedTeam] = await Promise.all([
+          api.get<Organisation>(`/organisations/${encodeURIComponent(effectiveOrgSlug)}/`),
+          api.get<Project>(
+            `/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
           ),
-          fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
-            { credentials: 'include' },
+          api.get<Project>(
+            `/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
           ),
         ]);
-
-        if (!orgRes.ok) throw new Error(`Failed to load organisation (${orgRes.status})`);
-        if (!clubRes.ok) throw new Error(`Failed to load club (${clubRes.status})`);
-        if (!teamRes.ok) throw new Error(`Failed to load team (${teamRes.status})`);
-
-        const orgJson = await orgRes.json().catch(() => null);
-        const clubJson = await clubRes.json().catch(() => null);
-        const teamJson = await teamRes.json().catch(() => null);
-
-        const loadedOrg = unwrapEnvelope<Organisation>(orgJson);
-        const loadedClub = unwrapEnvelope<Project>(clubJson);
-        const loadedTeam = unwrapEnvelope<Project>(teamJson);
 
         if (cancelled) return;
         setOrg(loadedOrg);
@@ -305,11 +289,8 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
 
     const loadBrandProfile = async () => {
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${team.id}`, { credentials: 'include' });
-        if (!res.ok) return;
-        const json = await res.json();
-        const data = json?.data || json;
-        const results = data?.results || (Array.isArray(data) ? data : []);
+        const res = await api.list<any>(`/branding/profiles/`, { params: { project: team.id } });
+        const results = res.results || [];
         if (results.length > 0 && !cancelled) {
           setBrandProfileId(results[0]?.id || null);
         }

@@ -9,7 +9,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { brandingApi } from '@/api';
 
 // ============================================================================
 // Types
@@ -181,32 +181,10 @@ export function useBrandAssets(): UseBrandAssetsReturn {
     setError(null);
 
     try {
-      const base = getApiBaseUrl();
-
-      /** Fetch all pages from a paginated envelope endpoint */
-      const fetchAllPages = async <T,>(url: string, signal: AbortSignal): Promise<T[]> => {
-        const all: T[] = [];
-        let nextUrl: string | null = url;
-        while (nextUrl) {
-          const res: Response = await fetch(nextUrl, { headers: getHeaders(), credentials: 'include', signal });
-          if (!res.ok) break;
-          const json: Record<string, any> = await res.json();
-          // Handle envelope formats
-          const items: T[] = Array.isArray(json.data?.results) ? json.data.results
-            : Array.isArray(json.data) ? json.data
-            : Array.isArray(json.results) ? json.results
-            : Array.isArray(json) ? json : [];
-          all.push(...items);
-          // Next page URL
-          nextUrl = json.data?.next || json.meta?.pagination?.next || json.next || null;
-        }
-        return all;
-      };
-
       // Step 1: Get ALL brand profiles for this organisation (paginated)
-      const profiles = await fetchAllPages<BrandProfile>(
-        `${base}/api/v1/branding/profiles/?organisation=${orgId}&page_size=100`,
-        controller.signal,
+      const profiles = await brandingApi.listAllProfiles(
+        { organisation: orgId },
+        { pageSize: 100, signal: controller.signal },
       );
 
       if (profiles.length === 0) {
@@ -215,13 +193,13 @@ export function useBrandAssets(): UseBrandAssetsReturn {
       }
 
       // Step 2: Get assets for each profile in parallel
-      const assetPromises = profiles.map(async (profile) => {
-        const items = await fetchAllPages<BrandAsset>(
-          `${base}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
-          controller.signal,
-        );
+      const assetPromises = profiles.map(async (profile: any) => {
+        const items = await brandingApi.listAllProfileAssets(profile.id, {
+          pageSize: 100,
+          signal: controller.signal,
+        });
         // Enrich with profile context
-        return items.map((a) => ({
+        return (items as any[]).map((a) => ({
           ...a,
           profile_name: profile.name,
           project_name: profile.project_name || undefined,

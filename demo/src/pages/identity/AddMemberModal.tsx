@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Input } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 import {
   LEVEL_LABEL,
 } from './addMemberModalStyles';
@@ -25,8 +24,6 @@ interface AddMemberModalProps {
 }
 
 /* ───────────────────────────────────────────────────────── helpers ── */
-
-const apiBase = () => getApiBaseUrl();
 
 /* ════════════════════════════════════════════════════════════════════
    COMPONENT
@@ -101,14 +98,11 @@ export default function AddMemberModal({
       }
       try {
         setIsSearching(true);
-        const res = await fetch(`${apiBase()}/api/v1/admin/users/?search=${encodeURIComponent(q)}&page_size=20`, {
-          credentials: 'include',
+        const { results } = await api.list<UserResult>('/admin/users/', {
+          params: { search: q },
+          pageSize: 20,
         });
-        if (!res.ok) throw new Error('Search failed');
-        const json = await res.json();
-        // API uses envelope: { status, data: { results: [...] }, meta }
-        const payload = json.data ?? json;
-        setSearchResults(payload.results ?? payload ?? []);
+        setSearchResults(results);
       } catch {
         setSearchResults([]);
       } finally {
@@ -138,24 +132,16 @@ export default function AddMemberModal({
     setError(null);
     setSuccessMsg(null);
     setLoading(true);
-    const csrf = getCsrfToken();
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrf,
-    };
-    const opts: RequestInit = { method: 'POST', headers, credentials: 'include' };
 
     try {
       // 1) Always add to organisation
-      const orgRes = await fetch(`${apiBase()}/api/v1/organisations/${orgSlug}/members/`, {
-        ...opts,
-        body: JSON.stringify({ email: user.email, role: selectedRole === 'admin' ? 'admin' : 'member' }),
-      });
-      if (!orgRes.ok) {
-        const d = await orgRes.json().catch(() => ({}));
-        const details = d.error?.details || d;
-        const msg = details.email?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
-        // "already exists" is fine — we still want to add to club/team
+      try {
+        await api.post(`/organisations/${orgSlug}/members/`, {
+          email: user.email,
+          role: selectedRole === 'admin' ? 'admin' : 'member',
+        });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : '';
         if (!msg.toLowerCase().includes('already') && !msg.toLowerCase().includes('exists')) {
           throw new Error(msg || 'Failed to add member to federation');
         }
@@ -163,14 +149,13 @@ export default function AddMemberModal({
 
       // 2) Add to club project if clubProjectId provided (club or team level)
       if (clubProjectId && (contextLevel === 'club' || contextLevel === 'team')) {
-        const clubRes = await fetch(`${apiBase()}/api/v1/projects/${clubProjectId}/members/`, {
-          ...opts,
-          body: JSON.stringify({ user_id: Number(user.id), role: selectedRole === 'admin' ? 'admin' : 'editor' }),
-        });
-        if (!clubRes.ok) {
-          const d = await clubRes.json().catch(() => ({}));
-          const details = d.error?.details || d;
-          const msg = details.user_id?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
+        try {
+          await api.post(`/projects/${clubProjectId}/members/`, {
+            user_id: Number(user.id),
+            role: selectedRole === 'admin' ? 'admin' : 'editor',
+          });
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : '';
           if (!msg.toLowerCase().includes('already') && !msg.toLowerCase().includes('exists')) {
             throw new Error(msg || 'Failed to add member to club');
           }
@@ -179,14 +164,13 @@ export default function AddMemberModal({
 
       // 3) Add to team project if teamProjectId provided (team level only)
       if (teamProjectId && contextLevel === 'team') {
-        const teamRes = await fetch(`${apiBase()}/api/v1/projects/${teamProjectId}/members/`, {
-          ...opts,
-          body: JSON.stringify({ user_id: Number(user.id), role: selectedRole === 'admin' ? 'admin' : 'editor' }),
-        });
-        if (!teamRes.ok) {
-          const d = await teamRes.json().catch(() => ({}));
-          const details = d.error?.details || d;
-          const msg = details.user_id?.[0] || d.error?.message || d.detail || details.non_field_errors?.[0] || '';
+        try {
+          await api.post(`/projects/${teamProjectId}/members/`, {
+            user_id: Number(user.id),
+            role: selectedRole === 'admin' ? 'admin' : 'editor',
+          });
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : '';
           if (!msg.toLowerCase().includes('already') && !msg.toLowerCase().includes('exists')) {
             throw new Error(msg || 'Failed to add member to team');
           }
@@ -219,31 +203,13 @@ export default function AddMemberModal({
     setError(null);
     setSuccessMsg(null);
     setLoading(true);
-    const csrf = getCsrfToken();
 
     try {
       // 1) Create the user account
-      const createRes = await fetch(`${apiBase()}/api/v1/admin/users/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-        credentials: 'include',
-        body: JSON.stringify({
-          ...newUser,
-          password_confirm: newUser.password,
-        }),
+      const createdUser = await api.post<UserResult>('/admin/users/', {
+        ...newUser,
+        password_confirm: newUser.password,
       });
-
-      if (!createRes.ok) {
-        const d = await createRes.json().catch(() => ({}));
-        const err = d.error?.details || d;
-        throw new Error(
-          err.email?.[0] || err.password?.[0] || d.error?.message || d.detail || 'Failed to create user',
-        );
-      }
-
-      const json = await createRes.json();
-      // API uses envelope: { status, data: { id, email, ... }, meta }
-      const createdUser: UserResult = json.data ?? json;
 
       // 2) Add to hierarchy using the same logic as existing user
       await addExistingUser(createdUser);

@@ -5,7 +5,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
 import type { AuditEvent } from '../../types';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api, ApiError } from '../../api';
 import { unwrapEnvelope as unwrap, extractList } from '../../utils/apiEnvelope';
 
 export const OrganisationAuditPage: React.FC = () => {
@@ -44,21 +44,13 @@ export const OrganisationAuditPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const baseUrl = getApiBaseUrl();
         const params = new URLSearchParams();
         params.set('limit', '200');
         params.set('offset', '0');
         // Backend expects this key (used by AuditLogPage as well)
         params.set('organization', organisationId);
 
-        const response = await fetch(`${baseUrl}/api/v1/activity/?${params.toString()}`, {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-
-        if (!response.ok) throw new Error(`Failed to load organisation audit (${response.status})`);
-
-        const raw = await response.json();
+        const raw = await api.get<any>(`/activity/?${params.toString()}`);
         const data = unwrap<any>(raw);
         const list = extractList(data);
         const next = (list as AuditEvent[]).sort((a, b) => String(b?.timestamp || '').localeCompare(String(a?.timestamp || '')));

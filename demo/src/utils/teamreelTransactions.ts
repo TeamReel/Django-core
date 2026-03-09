@@ -1,4 +1,4 @@
-import { getCsrfToken } from './csrf';
+import { api, ApiError } from '../api';
 
 type CreateTeamreelTransactionScope = 'club' | 'team' | 'season' | 'match' | 'user';
 
@@ -12,18 +12,16 @@ const safeUuid = (): string => {
   }
 };
 
-async function postJson<T>(url: string, body: any): Promise<{ ok: boolean; status: number; data: T | any }>{
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCsrfToken(),
-    },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => null);
-  return { ok: res.ok, status: res.status, data };
+async function postJson<T>(path: string, body: any): Promise<{ ok: boolean; status: number; data: T | any }> {
+  try {
+    const data = await api.post<T>(path, body);
+    return { ok: true, status: 200, data };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      return { ok: false, status: err.status, data: err.body };
+    }
+    throw err;
+  }
 }
 
 function unwrapObject<T>(raw: any): T {
@@ -104,7 +102,7 @@ export async function createTeamreelDemoTransaction(args: {
     metadata,
   };
 
-  const usageRes = await postJson<any>(`${apiBaseUrl}/api/v1/transactions/usage-events/`, usageEventPayload);
+  const usageRes = await postJson<any>('/transactions/usage-events/', usageEventPayload);
   if (!usageRes.ok && usageRes.status !== 409) {
     const msg = usageRes?.data?.message || usageRes?.data?.detail || `Failed to create usage event (HTTP ${usageRes.status})`;
     throw new Error(String(msg));
@@ -143,7 +141,7 @@ export async function createTeamreelDemoTransaction(args: {
   };
 
   const createTxn = async (payload: Record<string, unknown>) => {
-    return await postJson<any>(`${apiBaseUrl}/api/v1/transactions/transactions/`, payload);
+    return await postJson<any>('/transactions/transactions/', payload);
   };
 
   const firstTxnRes = await createTxn(txnPayloadBase);

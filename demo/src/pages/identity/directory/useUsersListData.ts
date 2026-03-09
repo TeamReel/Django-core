@@ -11,10 +11,9 @@ import { useEffect, useState, useMemo, useCallback, type Dispatch, type SetState
 import { useSearchParams, useNavigate, type NavigateFunction } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '../../../api/client';
 import type { User, ProjectOption, UsersListProps, OrganisationOption } from './usersListTypes';
 import { AVAILABLE_ROLES } from './usersListTypes';
-import { getCsrfToken } from './usersListHelpers';
 import { useUsersListFetchers } from './useUsersListFetchers';
 import {
     getUserSeasonCompetitionMatchCounts as _getUserSCMC,
@@ -237,22 +236,7 @@ export function useUsersListData(props: UsersListProps): UseUsersListDataReturn 
 
     const handleSaveUser = async (updatedData: Partial<User>) => {
         if (!editUser) return;
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${editUser.id}/`, {
-            method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify(updatedData),
-            credentials: 'include',
-        });
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || `Failed to update user (${res.status})`);
-        }
+        await api.patch(`/admin/users/${editUser.id}/`, updatedData);
     };
 
     // ── Filter setup effects ─────────────────────────────────
@@ -386,20 +370,10 @@ export function useUsersListData(props: UsersListProps): UseUsersListDataReturn 
         }
         if (!window.confirm(`Remove ${usernameLabel} from ${orgName}?`)) return;
 
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
-            {
-                method: 'DELETE',
-                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                credentials: 'include',
-            },
-        );
-
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            alert(text || `Failed to delete member (${res.status})`);
+        try {
+            await api.delete(`/organisations/${orgSlug}/members/${membershipId}/`);
+        } catch (err: any) {
+            alert(err?.message || `Failed to delete member`);
             return;
         }
 
@@ -419,24 +393,11 @@ export function useUsersListData(props: UsersListProps): UseUsersListDataReturn 
     ) => {
         if (!window.confirm(`Remove ${usernameLabel} from ${teamName}?`)) return;
 
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
-        const deleteUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/${projectMembershipId}/`;
-
-        const res = await fetch(deleteUrl, {
-            method: 'DELETE',
-            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'include',
-        });
-
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            console.error('\u274C Delete failed:', {
-                status: res.status,
-                statusText: res.statusText,
-                response: text,
-            });
-            alert(text || `Failed to remove member (${res.status})`);
+        try {
+            await api.delete(`/projects/${preselectedTeamId}/members/${projectMembershipId}/`);
+        } catch (err: any) {
+            console.error('\u274C Delete failed:', err);
+            alert(err?.message || `Failed to remove member`);
             return;
         }
 

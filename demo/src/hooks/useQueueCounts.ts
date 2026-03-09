@@ -12,7 +12,7 @@
  * - Optimistic increment via `teamreel:queue-update` event
  */
 import { useSyncExternalStore } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { generativeApi, videoApi } from '@/api';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -76,23 +76,13 @@ async function fetchCounts() {
   if (document.hidden || fetching) return;
   fetching = true;
 
-  const apiBase = getApiBaseUrl();
-
   try {
     // Use lightweight server-side counts endpoints instead of fetching all jobs.
     // This reduces ~500 KB of data transfer to ~200 bytes per poll.
-    const [aiCountsRes, videoCountsRes] = await Promise.all([
-      fetch(`${apiBase}/api/v1/generative/jobs/counts/`, { credentials: 'include' }).then((r) =>
-        r.ok ? r.json() : null,
-      ),
-      fetch(`${apiBase}/api/v1/video/jobs/counts/`, { credentials: 'include' }).then((r) =>
-        r.ok ? r.json() : null,
-      ),
+    const [ai, vid] = await Promise.all([
+      generativeApi.getJobCounts().catch(() => null) as Promise<Record<string, number> | null>,
+      videoApi.getJobCounts().catch(() => null) as Promise<Record<string, number> | null>,
     ]);
-
-    // Unwrap envelope if needed
-    const ai = aiCountsRes?.data ?? aiCountsRes;
-    const vid = videoCountsRes?.data ?? videoCountsRes;
 
     if (ai && vid) {
       setSnapshot({

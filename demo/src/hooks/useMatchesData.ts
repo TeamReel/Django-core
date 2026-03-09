@@ -16,7 +16,6 @@ import {
   getTeamName,
   getClubName,
 } from '../utils/directoryHelpers';
-import { getCsrfToken } from '../utils/csrf';
 import type { Activity } from '../utils/directoryHelpers';
 import type { useDirectoryFilters } from './useDirectoryFilters';
 

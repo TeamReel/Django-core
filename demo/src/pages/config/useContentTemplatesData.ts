@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import {
   TEMPLATE_CATEGORIES,
   SUBTYPE_LABELS,
@@ -8,7 +8,6 @@ import {
   type Sport,
   type Formation,
 } from './contentTemplatesData';
-import { getCsrfToken } from '../../utils/csrf';
 
 export interface EditFormState {
   name: string;
@@ -96,7 +95,6 @@ export interface UseContentTemplatesDataReturn {
 }
 
 export function useContentTemplatesData(): UseContentTemplatesDataReturn {
-  const apiBaseUrl = getApiBaseUrl();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -161,61 +159,15 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       setError(null);
 
       try {
-        const [templatesRes, sportsRes, formationsRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?page_size=500`, {
-            credentials: 'include',
-          }),
-          fetch(`${apiBaseUrl}/api/v1/sports/?page_size=100`, {
-            credentials: 'include',
-          }),
-          fetch(`${apiBaseUrl}/api/v1/formations/?page_size=100`, {
-            credentials: 'include',
-          }),
+        const [templatesListRes, sportsListRes, formationsListRes] = await Promise.all([
+          api.list<ContentTemplate>('/content-generation/templates/', { pageSize: 500 }),
+          api.list<Sport>('/sports/', { pageSize: 100 }),
+          api.list<Formation>('/formations/', { pageSize: 100 }),
         ]);
 
-        if (templatesRes.ok) {
-          const response = await templatesRes.json();
-          let templateList: ContentTemplate[] = [];
-          if (Array.isArray(response)) {
-            templateList = response;
-          } else if (response.data?.results && Array.isArray(response.data.results)) {
-            templateList = response.data.results;
-          } else if (response.data?.data && Array.isArray(response.data.data)) {
-            templateList = response.data.data;
-          } else if (response.results && Array.isArray(response.results)) {
-            templateList = response.results;
-          }
-          setTemplates(templateList);
-        } else {
-          console.error('Templates fetch failed:', templatesRes.status, await templatesRes.text());
-          setTemplates([]);
-        }
-
-        if (sportsRes.ok) {
-          const response = await sportsRes.json();
-          let sportList: Sport[] = [];
-          if (Array.isArray(response)) {
-            sportList = response;
-          } else if (response.data?.data && Array.isArray(response.data.data)) {
-            sportList = response.data.data;
-          } else if (response.results && Array.isArray(response.results)) {
-            sportList = response.results;
-          }
-          setSports(sportList);
-        }
-
-        if (formationsRes.ok) {
-          const response = await formationsRes.json();
-          let formationList: Formation[] = [];
-          if (Array.isArray(response)) {
-            formationList = response;
-          } else if (response.data?.data && Array.isArray(response.data.data)) {
-            formationList = response.data.data;
-          } else if (response.results && Array.isArray(response.results)) {
-            formationList = response.results;
-          }
-          setFormations(formationList);
-        }
+        setTemplates(templatesListRes.results || []);
+        setSports(sportsListRes.results || []);
+        setFormations(formationsListRes.results || []);
       } catch (e) {
         console.error(e);
         console.error('Failed to fetch data:', e);
@@ -226,7 +178,7 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
     };
 
     fetchData();
-  }, [apiBaseUrl]);
+  }, []);
 
   // ── Derived data ──────────────────────────────────────────────────────
 
@@ -347,15 +299,8 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
 
   const handleToggleActive = async (template: ContentTemplate) => {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/${template.id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-        body: JSON.stringify({ is_active: !template.is_active }),
-      });
-      if (res.ok) {
-        setTemplates(prev => prev.map(t => t.id === template.id ? { ...t, is_active: !t.is_active } : t));
-      }
+      await api.patch(`/content-generation/templates/${template.id}/`, { is_active: !template.is_active });
+      setTemplates(prev => prev.map(t => t.id === template.id ? { ...t, is_active: !t.is_active } : t));
     } catch (e) {
       console.error(e);
       console.error('Failed to toggle template:', e);
@@ -365,14 +310,8 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
   const handleDelete = async (template: ContentTemplate) => {
     if (!window.confirm(`Are you sure you want to delete "${template.name}"?`)) return;
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/${template.id}/`, {
-        method: 'DELETE',
-        headers: { 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-      });
-      if (res.ok) {
-        setTemplates(prev => prev.filter(t => t.id !== template.id));
-      }
+      await api.delete(`/content-generation/templates/${template.id}/`);
+      setTemplates(prev => prev.filter(t => t.id !== template.id));
     } catch (e) {
       console.error(e);
       console.error('Failed to delete template:', e);
@@ -383,10 +322,6 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
     setSaving(true);
     try {
       const isEditing = !!editingTemplate;
-      const url = isEditing
-        ? `${apiBaseUrl}/api/v1/content-generation/templates/${editingTemplate.id}/`
-        : `${apiBaseUrl}/api/v1/content-generation/templates/`;
-
       let formationId: number | null = null;
       if (editForm.formation_code) {
         const matchingFormation = formationsForSelectedSport.find(
@@ -395,40 +330,31 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
         formationId = matchingFormation?.id || null;
       }
 
-      const res = await fetch(url, {
-        method: isEditing ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: editForm.name,
-          description: editForm.description || null,
-          template_type: editForm.template_type,
-          template_subtype: editForm.template_subtype || null,
-          sport: editForm.sport,
-          formation: formationId,
-          style_variant: editForm.style_variant || null,
-          ai_workflow_id: editForm.ai_workflow_id || null,
-          is_active: editForm.is_active,
-          credits_required: editForm.credits_required,
-          input_requirements: editForm.input_requirements,
-        }),
-      });
+      const body = {
+        name: editForm.name,
+        description: editForm.description || null,
+        template_type: editForm.template_type,
+        template_subtype: editForm.template_subtype || null,
+        sport: editForm.sport,
+        formation: formationId,
+        style_variant: editForm.style_variant || null,
+        ai_workflow_id: editForm.ai_workflow_id || null,
+        is_active: editForm.is_active,
+        credits_required: editForm.credits_required,
+        input_requirements: editForm.input_requirements,
+      };
 
-      if (res.ok) {
-        const data = await res.json();
-        const saved = data?.data?.data || data?.data || data;
-        if (isEditing) {
-          setTemplates(prev => prev.map(t => t.id === saved.id ? saved : t));
-        } else {
-          setTemplates(prev => [...prev, saved]);
-        }
-        setIsCreateModalOpen(false);
-        setEditingTemplate(null);
+      const saved = isEditing
+        ? await api.patch<ContentTemplate>(`/content-generation/templates/${editingTemplate.id}/`, body)
+        : await api.post<ContentTemplate>('/content-generation/templates/', body);
+
+      if (isEditing) {
+        setTemplates(prev => prev.map(t => t.id === saved.id ? saved : t));
       } else {
-        const errorData = await res.json();
-        console.error('Failed to save template:', errorData);
-        alert(`Failed to save: ${JSON.stringify(errorData)}`);
+        setTemplates(prev => [...prev, saved]);
       }
+      setIsCreateModalOpen(false);
+      setEditingTemplate(null);
     } catch (e) {
       console.error(e);
       console.error('Failed to save template:', e);

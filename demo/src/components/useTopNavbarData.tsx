@@ -6,7 +6,7 @@ import { useTheme } from '@django-core/theme-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Home } from 'lucide-react';
 import { useUserRole } from './PermissionGuards';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import { useQueueCounts, type QueueCounts } from '../hooks/useQueueCounts';
 import { useGenerationJobs, reviewJob, type GenerationJob } from '../hooks/useGenerationJobs';
 import {
@@ -258,34 +258,27 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
         const fetchUnreadCount = async () => {
             if (document.hidden) return; // Don't poll while tab is hidden
             try {
-                const apiBaseUrl = getApiBaseUrl();
-                debugLog('[TopNavbar] Fetching notifications from:', `${apiBaseUrl}/api/v1/user-notifications/`);
-                const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, { credentials: 'include' });
-                if (response.ok) {
-                    const data: NotificationResponse = await response.json();
-                    debugLog('[TopNavbar] Notifications API response:', data);
-                    const notifications = data.results
-                        || (data as any).data?.results
-                        || (data as any).data?.data
-                        || (data as any).data
-                        || [];
-                    debugLog('[TopNavbar] Parsed notifications:', notifications);
-                    const unread = Array.isArray(notifications) ? notifications.filter(n => !n.is_read).length : 0;
-                    debugLog('[TopNavbar] Unread count:', unread);
-                    setUnreadCount(unread);
-                    if (Array.isArray(notifications)) {
-                        setNotificationsList(notifications.slice(0, 10).map((n) => ({
-                            id: n.id,
-                            title: n.title || '',
-                            message: n.message || n.content || 'Notification',
-                            is_read: n.is_read ?? false,
-                            read: n.is_read ?? false,
-                            action_url: n.action_url || null,
-                            created_at: n.created_at || new Date().toISOString(),
-                        })));
-                    }
-                } else {
-                    console.error('[TopNavbar] Notifications API error:', response.status, response.statusText);
+                const data = await api.get<NotificationResponse>('/user-notifications/');
+                debugLog('[TopNavbar] Notifications API response:', data);
+                const notifications = data.results
+                    || (data as any).data?.results
+                    || (data as any).data?.data
+                    || (data as any).data
+                    || [];
+                debugLog('[TopNavbar] Parsed notifications:', notifications);
+                const unread = Array.isArray(notifications) ? notifications.filter(n => !n.is_read).length : 0;
+                debugLog('[TopNavbar] Unread count:', unread);
+                setUnreadCount(unread);
+                if (Array.isArray(notifications)) {
+                    setNotificationsList(notifications.slice(0, 10).map((n) => ({
+                        id: n.id,
+                        title: n.title || '',
+                        message: n.message || n.content || 'Notification',
+                        is_read: n.is_read ?? false,
+                        read: n.is_read ?? false,
+                        action_url: n.action_url || null,
+                        created_at: n.created_at || new Date().toISOString(),
+                    })));
                 }
             } catch (err) {
               console.error(err);
@@ -317,14 +310,10 @@ export function useTopNavbarData(onOpenSearchRef?: (fn: () => void) => void): Us
         const fetchBalance = async () => {
             if (document.hidden) return; // Don't poll while tab is hidden
             try {
-                const apiBaseUrl = getApiBaseUrl();
-                const response = await fetch(
-                    `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(orgIdForMyBalance)}/balance/me/`,
-                    { credentials: 'include', signal: controller.signal }
+                const data = await api.get<any>(
+                    `/transactions/organizations/${encodeURIComponent(orgIdForMyBalance)}/balance/me/`,
+                    { signal: controller.signal },
                 );
-                if (!response.ok) return;
-                const raw = await response.json();
-                const data = raw?.data ?? raw;
                 const v = data?.current_balance;
                 if (!cancelled) setMyCreditsBalance(v != null ? String(v) : null);
             } catch { /* ignore */ }

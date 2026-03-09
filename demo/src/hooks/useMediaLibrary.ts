@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
+import type { ListResult } from '@/api';
 
 export interface MediaTag {
   id: string;
@@ -68,39 +69,27 @@ export const useMediaLibrary = () => {
         setLoading(true);
         setError(null);
         try {
-            const baseUrl = getApiBaseUrl();
-            const url = new URL(`${baseUrl}/api/v1/media/items/`);
+            const params: Record<string, string | number | boolean | undefined> = {};
 
             if (cursor) {
-                url.searchParams.set('cursor', cursor);
+                params.cursor = cursor;
             }
 
             if (filters) {
-                if (filters.q) url.searchParams.set('q', filters.q);
-                if (filters.project) url.searchParams.set('project', filters.project);
-                if (filters.state) url.searchParams.set('state', filters.state);
-                if (filters.file_type) url.searchParams.set('file_type', filters.file_type);
-                if (filters.ordering) url.searchParams.set('ordering', filters.ordering);
+                if (filters.q) params.q = filters.q;
+                if (filters.project) params.project = filters.project;
+                if (filters.state) params.state = filters.state;
+                if (filters.file_type) params.file_type = filters.file_type;
+                if (filters.ordering) params.ordering = filters.ordering;
                 if (filters.tags && filters.tags.length > 0) {
-                     // Array handling depends on backend (usually repeat keys or comma separated)
-                     // DjangoFilterBackend typically uses repeat keys ?tags=x&tags=y
-                     filters.tags.forEach(tag => url.searchParams.append('tags', tag));
+                     // Join tags as comma-separated for now
+                     params.tags = filters.tags.join(',');
                 }
             }
 
-            const response = await fetch(url.toString(), {
-                method: 'GET',
-                headers: getAuthHeaders(),
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error fetching media items: ${response.statusText}`);
-            }
-
-            const data: FetchResponse = await response.json();
-            setItems(data.results);
-            setPagination({ next: data.next || null, previous: data.previous || null });
+            const result = await api.list<MediaItem>('/media/items/', { params });
+            setItems(result.results);
+            setPagination({ next: result.next || null, previous: result.previous || null });
 
         } catch (err: unknown) {
           console.error(err);

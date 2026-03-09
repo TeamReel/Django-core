@@ -1,20 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Button } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import { SkeletonList } from './Skeleton';
 import SmartEmptyState from './SmartEmptyState';
 import { Zap, Calendar, MapPin, ChevronRight } from 'lucide-react';
 import styles from './UpcomingMatchesWidget.module.css';
-
-/** Safely extract array from any paginated API response format */
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json && Array.isArray(json.data)) return json.data;
-  if (json && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 interface Match {
   id: string;
@@ -38,22 +30,20 @@ export const UpcomingMatchesWidget: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const apiBaseUrl = getApiBaseUrl();
-
   useEffect(() => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
         const now = new Date().toISOString();
-        const response = await fetch(
-            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=5`,
-            { headers: { 'Content-Type': 'application/json' }, credentials: 'include' }
-        );
-
-        if (response.ok) {
-            const data = await response.json();
-            setMatches(extractItems<Match>(data));
-        }
+        const { results } = await api.list<Match>('/activities/', {
+          params: {
+            activity_type: 'match',
+            start_time__gte: now,
+            ordering: 'start_time',
+          },
+          pageSize: 5,
+        });
+        setMatches(results);
       } catch (err) {
         console.error(err);
         console.error("Failed to fetch upcoming matches", err);
@@ -63,7 +53,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
     };
 
     fetchMatches();
-  }, [apiBaseUrl]);
+  }, []);
 
   // Loading skeleton
   if (loading) {

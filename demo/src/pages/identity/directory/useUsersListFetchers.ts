@@ -5,8 +5,8 @@
  * Returns the fetched data + loading/error state + refresh trigger.
  */
 import { useEffect, useState } from 'react';
-import { fetchAllPages } from '../../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '../../../api/client';
+import { organisationsApi } from '../../../api';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import { normalizeRoleName, getUserTeamreelRoleNames } from './usersListHelpers';
 
@@ -124,13 +124,10 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
             return;
         }
         const load = async () => {
-            const apiBaseUrl = getApiBaseUrl();
             try {
-                const orgs = await fetchAllPages<any>(
-                    `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
-                    { credentials: 'include' },
-                    { ttlMs: 120_000, bypass: refreshKey > 0 },
-                );
+                const orgs = await api.listAll<any>('/organisations/', {
+                    pageSize: 100,
+                });
                 setOrganisations(
                     (orgs || []).map((o) => ({ id: String(o.id), name: o.name, slug: o.slug })),
                 );
@@ -146,7 +143,6 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
     useEffect(() => {
         const load = async () => {
-            const apiBaseUrl = getApiBaseUrl();
             const selectedOrg = selectedOrgId
                 ? organisations.find(
                     (o) => String(o.id) === String(selectedOrgId) || o.slug === selectedOrgId,
@@ -170,19 +166,11 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
             try {
                 const [allClubs, allTeams] = await Promise.all([
-                    fetchAllPages<ProjectOption>(
-                        `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=500&parent_project__isnull=true`,
-                        { credentials: 'include' },
-                        { ttlMs: 120_000, bypass: refreshKey > 0 },
-                    ),
-                    fetchAllPages<ProjectOption>(
-                        `${apiBaseUrl}/api/v1/organisations/${orgSlugForApi}/projects/?page_size=2000&parent_project__isnull=false`,
-                        { credentials: 'include' },
-                        { ttlMs: 120_000, bypass: refreshKey > 0 },
-                    ),
+                    organisationsApi.listAllProjects(orgSlugForApi, { parent_project__isnull: 'true' }, { pageSize: 500 }),
+                    organisationsApi.listAllProjects(orgSlugForApi, { parent_project__isnull: 'false' }, { pageSize: 2000 }),
                 ]);
-                setClubs(allClubs);
-                setTeams(allTeams);
+                setClubs(allClubs as unknown as ProjectOption[]);
+                setTeams(allTeams as unknown as ProjectOption[]);
             } catch (e) {
               console.error(e);
                 console.error(e);
@@ -197,21 +185,11 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
         const loadUsers = async () => {
             setIsLoading(true);
             setError(null);
-            const apiBaseUrl = getApiBaseUrl();
 
             try {
                 // Team-locked path: fetch from /projects/:id/members/
                 if (teamLocked && preselectedTeamId) {
-                    const teamMembersUrl = `${apiBaseUrl}/api/v1/projects/${preselectedTeamId}/members/?page_size=500`;
-                    const res = await fetch(teamMembersUrl, { credentials: 'include' });
-                    if (!res.ok) throw new Error('Failed to fetch team members');
-
-                    const data = await res.json();
-                    const rawList =
-                        data?.data?.data ||
-                        data?.data?.results ||
-                        data?.results ||
-                        (Array.isArray(data?.data) ? data.data : []);
+                    const { results: rawList } = await api.list<RawMemberItem>(`/projects/${preselectedTeamId}/members/`, { pageSize: 500 });
 
                     const allEntries = (Array.isArray(rawList) ? rawList : []).map((item: RawMemberItem) => {
                         const nestedUser = item?.user;
@@ -293,12 +271,6 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     return;
                 }
 
-                const urlParams = new URLSearchParams();
-                urlParams.set('page_size', '250');
-                urlParams.set('include_project_memberships', 'true');
-                urlParams.set('include_project_membership_details', 'true');
-                if (selectedClubId) urlParams.set('project_id', String(selectedClubId));
-
                 const orgSlug =
                     selectedOrg?.slug || (!selectedOrgId ? contextOrgSlug : '') || '';
 
@@ -313,13 +285,15 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     return;
                 }
 
-                const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?${urlParams.toString()}`;
-                const res = await fetch(url, { credentials: 'include' });
-                if (!res.ok) throw new Error('Failed to fetch users');
-
-                const data = await res.json();
-                const rawList =
-                    data?.data?.data || data?.data?.results || data?.results || data?.data || [];
+                const url = `/organisations/${orgSlug}/members/`;
+                const { results: rawList } = await api.list<any>(url, {
+                    params: {
+                        include_project_memberships: 'true',
+                        include_project_membership_details: 'true',
+                        ...(selectedClubId ? { project_id: String(selectedClubId) } : {}),
+                    },
+                    pageSize: 250,
+                });
 
                 const byKey = new Map<string, any>();
                 for (const item of Array.isArray(rawList) ? rawList : []) {

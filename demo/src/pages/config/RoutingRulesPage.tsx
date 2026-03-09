@@ -14,8 +14,8 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
-import { getApiBaseUrl } from '../../utils/apiBase';
 import { getErrorMessage } from '../../utils/errorHelpers';
+import { api } from '@/api';
 import styles from './RoutingRulesPage.module.css';
 
 interface RoutingRule {
@@ -71,8 +71,6 @@ export const RoutingRulesPage: React.FC = () => {
     window.location.reload();
   };
 
-  const apiBaseUrl = getApiBaseUrl();
-
   const [rules, setRules] = useState<RoutingRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,24 +96,14 @@ export const RoutingRulesPage: React.FC = () => {
       }
 
       const url = currentOrgId
-        ? `${apiBaseUrl}/api/v1/contextual-notifications/routing-rules/?org_id=${encodeURIComponent(currentOrgId)}`
-        : `${apiBaseUrl}/api/v1/contextual-notifications/routing-rules/`;
+        ? `/contextual-notifications/routing-rules/?org_id=${encodeURIComponent(currentOrgId)}`
+        : `/contextual-notifications/routing-rules/`;
 
-      const res = await fetch(url, {
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const { results } = await api.list<RoutingRule>(url.split('?')[0], {
+        params: currentOrgId ? { org_id: currentOrgId } : undefined,
       });
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        const msg = (payload && (payload.detail || payload.error)) || `Failed to load routing rules (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
-
-      const data = await res.json().catch(() => null);
-      const rawResults: RoutingRule[] = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : Array.isArray(data?.data?.results) ? data.data.results : [];
-
-      setRules(rawResults as RoutingRule[]);
+      setRules(results);
     } catch (e: unknown) {
       console.error(e);
       setError(getErrorMessage(e) || 'Failed to load');
@@ -140,27 +128,16 @@ export const RoutingRulesPage: React.FC = () => {
       setCreating(true);
       setError(null);
 
-      const res = await fetch(`${apiBaseUrl}/api/v1/contextual-notifications/routing-rules/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          event_type: createDraft.event_type,
-          scope: 'org',
-          organisation: currentOrgId,
-          project: null,
-          target_role: createDraft.target_role || null,
-          channel: createDraft.channel,
-          priority: Number(createDraft.priority),
-          enabled: Boolean(createDraft.enabled),
-        }),
+      await api.post('/contextual-notifications/routing-rules/', {
+        event_type: createDraft.event_type,
+        scope: 'org',
+        organisation: currentOrgId,
+        project: null,
+        target_role: createDraft.target_role || null,
+        channel: createDraft.channel,
+        priority: Number(createDraft.priority),
+        enabled: Boolean(createDraft.enabled),
       });
-
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        const msg = (payload && (payload.detail || payload.error)) || `Failed to create rule (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
 
       await fetchRules();
     } catch (e: unknown) {
@@ -173,19 +150,7 @@ export const RoutingRulesPage: React.FC = () => {
 
   async function toggleRule(rule: RoutingRule) {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/contextual-notifications/routing-rules/${rule.id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ enabled: !rule.enabled }),
-      });
-
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        const msg = (payload && (payload.detail || payload.error)) || `Failed to update rule (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
-
+      await api.patch(`/contextual-notifications/routing-rules/${rule.id}/`, { enabled: !rule.enabled });
       setRules(prev => prev.map(r => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
     } catch (e: unknown) {
       console.error(e);
@@ -195,18 +160,7 @@ export const RoutingRulesPage: React.FC = () => {
 
   async function deleteRule(rule: RoutingRule) {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/contextual-notifications/routing-rules/${rule.id}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-      });
-
-      if (!res.ok && res.status !== 204) {
-        const payload = await res.json().catch(() => null);
-        const msg = (payload && (payload.detail || payload.error)) || `Failed to delete rule (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
-
+      await api.delete(`/contextual-notifications/routing-rules/${rule.id}/`);
       setRules(prev => prev.filter(r => r.id !== rule.id));
     } catch (e: unknown) {
       console.error(e);

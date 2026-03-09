@@ -4,7 +4,7 @@ import {
   Input,
   Modal,
 } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi, ApiError } from '../../api';
 import styles from './InviteMemberModal.module.css';
 
 interface InviteMemberModalProps {
@@ -27,30 +27,11 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = getApiBaseUrl();
 
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: email,
-          role: role,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.email?.[0] || data.detail || 'Failed to invite member');
-      }
+      await organisationsApi.addMember(orgSlug, {
+        email: email,
+        role: role,
+      } as any);
 
       onInviteSuccess();
       onClose();
@@ -59,7 +40,12 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
     } catch (err) {
       console.error(err);
       console.error('Invite error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to invite member');
+      if (err instanceof ApiError) {
+        const body = err.body as any;
+        setError(body?.email?.[0] || body?.detail || 'Failed to invite member');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to invite member');
+      }
     } finally {
       setLoading(false);
     }

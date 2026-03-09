@@ -4,7 +4,7 @@
  * Extracted from useContentGeneration to keep the orchestrator under 500 lines.
  */
 import { useState, useEffect } from 'react';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '../../../api/client';
 
 interface ContentOptionsConfig {
   isOpen: boolean;
@@ -45,19 +45,13 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
     if (!isOpen) return;
     const fetchBackgrounds = async () => {
       try {
-        const res = await fetch(`${getApiBaseUrl()}/api/v1/branding/assets/app-backgrounds/`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
-          setAppBackgrounds(
-            items.filter((a: any) => a.url).map((a: any) => ({
-              id: a.id, url: a.url, label: a.label || '', profile_name: a.project_name || a.profile_name || '',
-            })),
-          );
-        }
+        const data = await api.get<any>('/branding/assets/app-backgrounds/');
+        const items = Array.isArray(data) ? data : (data?.results || []);
+        setAppBackgrounds(
+          items.filter((a: any) => a.url).map((a: any) => ({
+            id: a.id, url: a.url, label: a.label || '', profile_name: a.project_name || a.profile_name || '',
+          })),
+        );
       } catch (err) {
         console.error(err);
         console.warn('Failed to fetch app backgrounds:', err);

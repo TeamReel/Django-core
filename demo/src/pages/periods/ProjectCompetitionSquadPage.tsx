@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import styles from './ProjectCompetitionSquadPage.module.css';
 
@@ -33,8 +33,6 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
     competitionId: string;
     clubId?: string;
   }>();
-
-  const apiBaseUrl = getApiBaseUrl();
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -108,42 +106,26 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, competitionRes, participationRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/periods/${effectiveCompetitionId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/participations/?period_id=${encodeURIComponent(effectiveCompetitionId)}&page_size=250`, {
-            credentials: 'include',
+        const [orgJson, projectJson, competitionJson, participationRes, clubJson] = await Promise.all([
+          api.get<any>(`/organisations/${orgSlugOrId}/`),
+          api.get<any>(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`),
+          api.get<any>(`/periods/${effectiveCompetitionId}/`),
+          api.list<Participation>('/participations/', {
+            params: { period_id: effectiveCompetitionId },
+            pageSize: 250,
           }),
           isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
-                credentials: 'include',
-              })
+            ? api.get<Project>(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`).catch(() => null)
             : Promise.resolve(null),
         ]);
 
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-        if (!competitionRes.ok) throw new Error('Failed to load competition');
-        if (!participationRes.ok) throw new Error('Failed to load squad');
-
-        const rawOrg: any = await orgRes.json();
-        const rawProject: any = await projectRes.json();
-        const rawCompetition: any = await competitionRes.json();
-
-        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
+        const projectJsonData: Project = projectJson;
 
         // Resolve season UUID from URL param (UUID or slugified name)
-        const periodsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
-          { credentials: 'include' }
-        );
-        if (!periodsRes.ok) throw new Error('Failed to load seasons');
-        const rawPeriods: any = await periodsRes.json();
-        const periodsData = rawPeriods?.data || rawPeriods;
-        const allPeriods: Period[] = Array.isArray(periodsData)
-          ? periodsData
-          : periodsData?.results || periodsData?.data?.results || periodsData?.data || [];
+        const { results: allPeriods } = await api.list<Period>('/periods/', {
+          params: { project_id: String(projectJsonData.id) },
+          pageSize: 250,
+        });
 
         const seasonOptions = allPeriods.filter((p) => !p.parent_period);
         const isUuidParam = looksLikeUuid(effectiveSeasonId);
@@ -153,29 +135,18 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
         const seasonUuid = String(resolvedSeason?.id || (isUuidParam ? effectiveSeasonId : '')).trim();
         if (!seasonUuid) throw new Error('Season not found');
 
-        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' });
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const rawSeason: any = await seasonRes.json();
+        const seasonJson = await api.get<Period>(`/periods/${encodeURIComponent(seasonUuid)}/`);
 
-        setOrg(rawOrg?.data || rawOrg);
-        setProject(projectJson);
-        setSeason(rawSeason?.data || rawSeason);
-        setCompetition(rawCompetition?.data || rawCompetition);
+        setOrg(orgJson);
+        setProject(projectJsonData);
+        setSeason(seasonJson);
+        setCompetition(competitionJson);
 
-        if (isTeamRoute && clubRes && clubRes.ok) {
-          try {
-            setClub(await clubRes.json());
-          } catch {
-            // ignore
-          }
+        if (isTeamRoute && clubJson) {
+          setClub(clubJson);
         }
 
-        const rawParticipation: any = await participationRes.json();
-        const participationData = rawParticipation?.data || rawParticipation;
-        const participationResults = Array.isArray(participationData)
-          ? participationData
-          : participationData?.results || participationData?.data?.results || [];
-        setMembers(participationResults);
+        setMembers(participationRes.results);
       } catch (e) {
         console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load squad');
@@ -185,7 +156,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]);
+  }, [orgSlugOrId, projectSlugOrId, effectiveSeasonId, effectiveCompetitionId]);
 
   return (
     <>

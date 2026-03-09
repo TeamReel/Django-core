@@ -8,7 +8,8 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api, filesApi } from '@/api';
+import type { ListResult } from '@/api';
 
 // ============================================================================
 // Types
@@ -92,26 +93,13 @@ export function useFileAssets(): UseFileAssetsReturn {
     setError(null);
 
     try {
-      const base = getApiBaseUrl();
-
-      // Fetch all pages (files API uses BaseAPIPagination: { data: [...], meta: { pagination: { next } } })
-      const all: FileAsset[] = [];
-      let nextUrl: string | null = `${base}/api/v1/files/?page_size=100`;
-      while (nextUrl) {
-        const res: Response = await fetch(nextUrl, {
-          headers: getHeaders(orgId),
-          credentials: 'include',
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`Failed to load files: ${res.statusText}`);
-        const json: Record<string, any> = await res.json();
-        const arr = Array.isArray(json.data) ? json.data : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.results) ? json.results : [];
-        all.push(...arr);
-        nextUrl = json.meta?.pagination?.next || json.data?.next || json.next || null;
-      }
+      const all = await api.listAll<FileAsset>('/files/', {
+        pageSize: 100,
+        signal: controller.signal,
+        params: { 'X-Organization-ID': orgId },
+      });
       setFiles(all);
     } catch (err: unknown) {
-      console.error(err);
       if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load files');
       }
@@ -122,13 +110,7 @@ export function useFileAssets(): UseFileAssetsReturn {
 
   const getDownloadUrl = useCallback(async (fileId: string): Promise<string | null> => {
     try {
-      const base = getApiBaseUrl();
-      const res = await fetch(`${base}/api/v1/files/${fileId}/download/`, {
-        headers: getHeaders(),
-        credentials: 'include',
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
+      const data = await filesApi.getDownloadUrl(fileId);
       return data.url || null;
     } catch {
       return null;

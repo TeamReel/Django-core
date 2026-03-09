@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 import ProjectCompetitionDetailPage from '../periods/ProjectCompetitionDetailPage';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi, projectsApi } from '../../api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 
 type Project = {
@@ -20,8 +20,6 @@ export default function ProjectHierarchyCompetitionRedirectPage() {
   }>();
 
   const location = useLocation();
-  const apiBaseUrl = getApiBaseUrl();
-
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
   const seasonKeyOrId = String(seasonId || '').trim();
@@ -40,35 +38,28 @@ export default function ProjectHierarchyCompetitionRedirectPage() {
         if (!projectSlugOrId) return;
 
         if (orgSlugOrId) {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(projectSlugOrId)}/`,
-            { credentials: 'include' }
-          );
-          if (res.ok) {
-            const project = unwrapEnvelope<Project>(await res.json().catch(() => null));
+          try {
+            const project = await organisationsApi.getProject(orgSlugOrId, projectSlugOrId) as any;
             const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
             if (clubKey) {
               setClubSlugOrId(clubKey);
               return;
             }
-          }
+          } catch { /* fall through */ }
         }
 
-        const res2 = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectSlugOrId)}/`, {
-          credentials: 'include',
-        });
-        if (res2.ok) {
-          const project = unwrapEnvelope<Project>(await res2.json().catch(() => null));
+        try {
+          const project = await projectsApi.get(projectSlugOrId) as any;
           const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
           if (clubKey) setClubSlugOrId(clubKey);
-        }
+        } catch { /* ignore */ }
       } finally {
         setResolved(true);
       }
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId]);
+  }, [orgSlugOrId, projectSlugOrId]);
 
   if (!resolved) return null;
 

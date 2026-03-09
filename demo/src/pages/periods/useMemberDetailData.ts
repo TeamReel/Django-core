@@ -16,7 +16,7 @@ import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from
 import { useSeasonContext } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
 import { unwrapEnvelope as unwrap } from '../../types/season';
-import { getCsrfToken } from '../../utils/csrf';
+import { projectsApi } from '../../api';
 import { UUID_RE, getUserDisplayName, mergeAssetsIntoMetadata } from './memberDetailUtils';
 import type { AssetVariantsMap } from './memberDetailUtils';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
@@ -192,15 +192,7 @@ export function useMemberDetailData(): MemberDetailData {
       try {
         if (!project?.id || !membershipId) return;
         if (!UUID_RE.test(membershipId)) { setError('Member id must be a UUID'); return; }
-        const memberRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membershipId)}/`,
-          { credentials: 'include' }
-        );
-        if (!memberRes.ok) {
-          const detail = await memberRes.text().catch(() => '');
-          throw new Error(detail || 'Failed to load member');
-        }
-        const memberJson = unwrap<any>(await memberRes.json());
+        const memberJson = await projectsApi.getMember(project.id, membershipId);
         if (!cancelled) setMembership(memberJson);
       } catch (e) {
         console.error(e);
@@ -253,18 +245,7 @@ export function useMemberDetailData(): MemberDetailData {
     setSaveError(null);
     try {
       const nextMetadata = mergeAssetsIntoMetadata(membership?.metadata, form, videoVariants);
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membership.id)}/`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-          credentials: 'include',
-          body: JSON.stringify({ metadata: nextMetadata }),
-        }
-      );
-      if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to save'); }
-      const raw = await res.json().catch(() => null);
-      const updated = raw?.data || raw || null;
+      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: nextMetadata } as any);
       setMembership(updated ? { ...membership, ...updated } : membership);
     } catch (e) {
       console.error(e);

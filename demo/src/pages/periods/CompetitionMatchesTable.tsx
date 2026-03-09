@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { getCsrfToken } from '../../utils/csrf';
+import { activitiesApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 
 export interface CompetitionMatchesTableProps {
@@ -14,7 +14,7 @@ export interface CompetitionMatchesTableProps {
   matchesLoading: boolean;
   matchDisplayTitle: (m: any, fallback?: string) => string;
   matchDetailPath: (matchId: string) => string;
-  apiBaseUrl: string;
+  apiBaseUrl?: string;
   setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   setSelectedDetailMatch: (m: any) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
@@ -96,13 +96,8 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                     onClick={async () => {
                       if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
                       try {
-                        const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(m.id))}/`, {
-                          method: 'DELETE',
-                          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                          credentials: 'include',
-                        });
-                        if (res.ok) setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
-                        else alert('Error deleting match');
+                        await activitiesApi.delete(String(m.id));
+                        setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
                       } catch (e) { console.error(e); alert('Error deleting match'); }
                     }}
                   >

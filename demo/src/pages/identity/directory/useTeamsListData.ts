@@ -3,10 +3,10 @@ import { useNavigate, useSearchParams, type NavigateFunction } from 'react-route
 import { useAuth } from '@django-core/auth-ui';
 import { useSports } from '../../../hooks/useSports';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { fetchAllPages, invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
+import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
-import { getCsrfToken } from '../../../utils/csrf';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '../../../api/client';
+import { organisationsApi, projectsApi } from '../../../api';
 import type { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
 const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
@@ -130,13 +130,8 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
     let cancelled = false;
     const loadSlug = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
-        if (!res.ok) return;
-        const raw: any = await res.json().catch(() => null);
-        const data: any = raw?.data ?? raw;
-        const list: Record<string, unknown>[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        const { results: list } = await api.list<any>('/organisations/', { pageSize: 250 });
         const match = list.find((o: { id?: string; slug?: string }) => String(o?.id || '') === String(rawLockedId));
         const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);
@@ -183,13 +178,8 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       return;
     }
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const orgs = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
-          { credentials: 'include' },
-          { ttlMs: 120_000, bypass: refreshKey > 0 },
-        );
+        const orgs = await api.listAll<any>('/organisations/', { pageSize: 100 });
         setOrganisations((orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       } catch { /* ignore */ }
     };
@@ -202,7 +192,6 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     const load = async () => {
       setIsLoading(true);
       setError(null);
-      const apiBaseUrl = getApiBaseUrl();
 
       const getSelectedOrgSlugForApi = () => {
         const selectedOrg = selectedOrgId
@@ -225,31 +214,21 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
         if (orgSlugForApi) {
           const [clubsData, teamsData] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&include_archived=true&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
+            organisationsApi.listAllProjects(orgSlugForApi, {
+              parent_project__isnull: true,
+              include_archived: true,
+            }, { pageSize: 500 }),
+            organisationsApi.listAllProjects(orgSlugForApi, {
+              parent_project__isnull: false,
+              include_archived: true,
+            }, { pageSize: 500 }),
           ]);
           setClubs(clubsData || []);
           setTeams(teamsData || []);
         } else {
           const [clubsData, teamsData] = await Promise.all([
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=true`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
-            fetchAllPages<ProjectOption>(
-              `${apiBaseUrl}/api/v1/projects/?page_size=200&include_archived=true&parent_project__isnull=false`,
-              { credentials: 'include' },
-              { ttlMs: 120_000, bypass: refreshKey > 0 },
-            ),
+            projectsApi.listAll({ parentProjectIsNull: true, includeArchived: true }, { pageSize: 200 }),
+            projectsApi.listAll({ parentProjectIsNull: false, includeArchived: true }, { pageSize: 200 }),
           ]);
           setClubs(clubsData || []);
           setTeams(teamsData || []);
@@ -338,14 +317,8 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
   const handleDeleteProject = async (orgSlugOrId: string, teamId: string, teamName: string) => {
     if (!window.confirm(`Are you sure you want to delete ${teamName}?`)) return;
-    const apiBaseUrl = getApiBaseUrl();
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${teamId}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-      });
-      if (!res.ok) { alert('Failed to delete team'); return; }
+      await api.delete(`/organisations/${orgSlugOrId}/projects/${teamId}/`);
       setTeams((prev) => prev.filter((p) => String(p.id) !== String(teamId)));
       if (String(selectedTeamId) === String(teamId)) setSelectedTeamId('');
     } catch (e) {
@@ -357,28 +330,8 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
   const handleEditSave = async (projectData: Record<string, unknown>) => {
     if (!editProject) return;
-    const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-    const baseUrl = getApiBaseUrl();
     const projectSlugOrId = editProject.slug || editProject.id;
-    const response = await fetch(`${baseUrl}/api/v1/projects/${projectSlugOrId}/?include_archived=true`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-      credentials: 'include',
-      body: JSON.stringify(projectData),
-    });
-    if (!response.ok) {
-      let message = 'Failed to update project';
-      try {
-        const json: any = await response.json();
-        message = json?.error?.message || json?.detail || json?.message || message;
-      } catch {
-        const text = await response.text().catch(() => '');
-        if (text) message = text;
-      }
-      throw new Error(message);
-    }
-    const payload: any = await response.json().catch(() => null);
-    const updated = payload?.data?.data || payload?.data || payload;
+    const updated = await api.patch<any>(`/projects/${projectSlugOrId}/?include_archived=true`, projectData);
     setTeams((prev) =>
       prev.map((p) => {
         const match = String(p?.slug || p?.id) === String(projectSlugOrId);
@@ -396,29 +349,13 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     if (!clubId) throw new Error('Select a club first');
 
     const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
-    const apiBaseUrl = getApiBaseUrl();
-    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        name: projectData.name,
-        description: projectData.description || '',
-        parent_project_id: clubId,
-      }),
-    });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create team');
-    }
-    const payload: any = await res.json().catch(() => null);
-    const created: any = payload?.data?.data || payload?.data || payload;
+    const created = await organisationsApi.createProject(orgSlug, {
+      name: projectData.name,
+      description: projectData.description || '',
+      parent_project_id: clubId,
+    } as any);
     if (created && typeof created === 'object') {
-      const createdKey = String(created?.slug || created?.id || '').trim();
+      const createdKey = String((created as any)?.slug || (created as any)?.id || '').trim();
       if (createdKey) {
         setTeams((prev) => {
           const list = Array.isArray(prev) ? prev : [];

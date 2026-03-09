@@ -9,7 +9,7 @@ import {
   getBestUrl,
 } from '../../constants/assetProcessingSpecs';
 import { MEDIA_SLOTS, type MemberMediaForm } from '../../constants/mediaSlots';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 
 /** Minimal membership record shape for member-detail utilities. */
 export interface MembershipRecord {
@@ -263,25 +263,12 @@ export async function triggerAssetProcessing(
   variantId?: string | null,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    const csrfToken = getCsrfToken();
-    const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/process-asset/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({
-        membership_id: membershipId,
-        asset_type: assetType,
-        kit_type: kitType,
-        variant_id: variantId || null,
-      }),
+    await api.post('/video/jobs/process-asset/', {
+      membership_id: membershipId,
+      asset_type: assetType,
+      kit_type: kitType,
+      variant_id: variantId || null,
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      return { ok: false, error: err?.error || `HTTP ${res.status}` };
-    }
     return { ok: true };
   } catch (e) {
     console.error(e);
@@ -298,26 +285,13 @@ export async function cancelAssetProcessing(
   force?: boolean,
 ): Promise<{ ok: boolean; error?: string }> {
   try {
-    const csrfToken = getCsrfToken();
-    const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/cancel-asset-processing/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken,
-      },
-      body: JSON.stringify({
-        membership_id: membershipId,
-        asset_type: assetType,
-        kit_type: kitType,
-        variant_id: variantId || null,
-        force: force || false,
-      }),
+    await api.post('/video/jobs/cancel-asset-processing/', {
+      membership_id: membershipId,
+      asset_type: assetType,
+      kit_type: kitType,
+      variant_id: variantId || null,
+      force: force || false,
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => null);
-      return { ok: false, error: err?.error || `HTTP ${res.status}` };
-    }
     return { ok: true };
   } catch (e) {
     console.error(e);
@@ -346,13 +320,9 @@ export async function pollProcessingResult(
     if (abortSignal?.aborted) return;
 
     try {
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
-        { credentials: 'include' }
+      const mData = await api.get<any>(
+        `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
       );
-      if (!res.ok) continue;
-      const json = await res.json();
-      const mData = json?.data || json;
       const tr = mData?.metadata?.teamreel_assets || mData?.metadata?.teamreelAssets || {};
 
       let checkVal: unknown = null;
@@ -377,31 +347,20 @@ export async function pollProcessingResult(
   // Polling timed out — force-cancel
   if (!abortSignal?.aborted) {
     try {
-      const csrfToken = getCsrfToken();
-      const cancelRes = await fetch(`${apiBaseUrl}/api/v1/video/jobs/cancel-asset-processing/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({
-          membership_id: membershipId,
-          asset_type: assetType,
-          kit_type: kitType,
-          variant_id: variantId || null,
-          force: true,
-        }),
+      await api.post('/video/jobs/cancel-asset-processing/', {
+        membership_id: membershipId,
+        asset_type: assetType,
+        kit_type: kitType,
+        variant_id: variantId || null,
+        force: true,
       });
-      if (cancelRes.ok) {
-        const memberRes = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
-          { credentials: 'include' }
+      try {
+        const mData = await api.get<any>(
+          `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
         );
-        if (memberRes.ok) {
-          const json = await memberRes.json();
-          setMembershipFn(json?.data || json);
-        }
+        setMembershipFn(mData);
+      } catch {
+        // Best-effort
       }
     } catch {
       // Best-effort cleanup

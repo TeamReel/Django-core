@@ -15,7 +15,7 @@ import { canPerformAction } from '../../../utils/permissions';
 import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
 import OrganisationCreateModal from '../OrganisationCreateModal';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '@/api';
 import { useSports } from '../../../hooks/useSports';
 import type { Organisation } from '../../../types';
 import styles from './FederationsList.module.css';
@@ -64,24 +64,9 @@ export const FederationsList: React.FC = () => {
           params.append('search', search);
         }
 
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(
-          `${baseUrl}/api/v1/organisations/?${params.toString()}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'include',
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data: any = await response.json();
-        const results = data.data?.results || data.results || [];
+        const { results } = await api.list<Organisation>('/organisations/', {
+          params: Object.fromEntries(params),
+        });
         setOrganisations(results);
       } catch (err) {
         console.error(err);
@@ -104,24 +89,7 @@ export const FederationsList: React.FC = () => {
     if (!ok) return;
 
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const baseUrl = getApiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/v1/organisations/${id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete organisation');
-      }
+      await api.delete(`/organisations/${id}/`);
 
       setRefreshKey(k => k + 1);
     } catch (err) {
@@ -357,18 +325,7 @@ export const FederationsList: React.FC = () => {
         organisation={editOrganisation}
         onSave={async (orgData) => {
           if (!editOrganisation) return;
-          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-          const baseUrl = getApiBaseUrl();
-          const response = await fetch(`${baseUrl}/api/v1/organisations/${editOrganisation.slug}/`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken || '',
-            },
-            credentials: 'include',
-            body: JSON.stringify(orgData),
-          });
-          if (!response.ok) throw new Error('Failed to update organisation');
+          await api.patch(`/organisations/${editOrganisation.slug}/`, orgData);
           setRefreshKey(prev => prev + 1);
         }}
       />
@@ -377,22 +334,7 @@ export const FederationsList: React.FC = () => {
         opened={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={async (orgData) => {
-          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-          const baseUrl = getApiBaseUrl();
-          const response = await fetch(`${baseUrl}/api/v1/organisations/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': csrfToken || '',
-            },
-            credentials: 'include',
-            body: JSON.stringify(orgData),
-          });
-
-          if (!response.ok) {
-            const detail = await response.text().catch(() => '');
-            throw new Error(detail || 'Failed to create organisation');
-          }
+          await api.post('/organisations/', orgData);
 
           setRefreshKey((k) => k + 1);
         }}

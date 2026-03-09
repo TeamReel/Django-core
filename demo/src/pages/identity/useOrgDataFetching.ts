@@ -2,6 +2,7 @@ import type { Activity, Project } from '../../types';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
+import { api } from '../../api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -132,19 +133,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     if (!organisationId) return;
     setScheduledMatchesLoading(true);
     try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const p = new URLSearchParams();
-      p.set('page_size', '5');
-      p.set('activity_type', 'match');
-      p.set('organisation_id', organisationId);
-      p.set('ordering', 'start_time');
-      p.set('start_time__gte', new Date().toISOString());
-      const res = await fetch(`${apiV1BaseUrl}/activities/?${p.toString()}`, { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        const { results } = parseListEnvelope(json);
-        setScheduledMatches(results);
-      }
+      const data = await api.list<Activity>('/activities/', {
+        pageSize: 5,
+        params: { activity_type: 'match', organisation_id: organisationId, ordering: 'start_time', start_time__gte: new Date().toISOString() },
+      });
+      setScheduledMatches(data.results);
     } catch (e) { console.error(e); }
     finally { setScheduledMatchesLoading(false); }
   };
@@ -153,19 +146,11 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     if (!organisationId) return;
     setRecentPlayedMatchesLoading(true);
     try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const p = new URLSearchParams();
-      p.set('page_size', '5');
-      p.set('activity_type', 'match');
-      p.set('organisation_id', organisationId);
-      p.set('ordering', '-start_time');
-      p.set('start_time__lt', new Date().toISOString());
-      const res = await fetch(`${apiV1BaseUrl}/activities/?${p.toString()}`, { credentials: 'include' });
-      if (res.ok) {
-        const json = await res.json();
-        const { results } = parseListEnvelope(json);
-        setRecentPlayedMatches(results);
-      }
+      const data = await api.list<Activity>('/activities/', {
+        pageSize: 5,
+        params: { activity_type: 'match', organisation_id: organisationId, ordering: '-start_time', start_time__lt: new Date().toISOString() },
+      });
+      setRecentPlayedMatches(data.results);
     } catch (e) { console.error(e); }
     finally { setRecentPlayedMatchesLoading(false); }
   };
@@ -174,19 +159,8 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     if (!currentOrgSlug) return;
     setClubsLoading(true);
     try {
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const url = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`;
-      const res = await fetch(url, {
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-Organisation-ID': String(org?.id || currentOrgId || ''),
-        },
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error(`Failed to fetch clubs (${res.status})`);
-      const json = await res.json();
-      const { results, count } = parseListEnvelope(json);
+      const data = await api.get<any>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
+      const { results, count } = parseListEnvelope(data);
       const clubsOnly = results.filter((p: any) => {
         const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
         return !parentId;
@@ -337,8 +311,8 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     const apiV1BaseUrl = getApiV1BaseUrl();
     try {
       if (currentOrgSlug) {
-        const teamsRes = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/?page_size=1&parent_project__isnull=false`, { credentials: 'include' });
-        if (teamsRes.ok) { const json = await teamsRes.json(); const { count } = parseListEnvelope(json); setTeamsCount(count); }
+        const teamsData = await api.list<any>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
+        setTeamsCount(teamsData.count);
       }
       {
         const p = new URLSearchParams();
@@ -351,12 +325,8 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         else void fetchTeamsForOrg({ force: true });
       }
       {
-        const p = new URLSearchParams();
-        p.set('page_size', '1');
-        p.set('activity_type', 'match');
-        p.set('organisation_id', organisationId);
-        const res = await fetch(`${apiV1BaseUrl}/activities/?${p.toString()}`, { credentials: 'include' });
-        if (res.ok) { const json = await res.json(); const { count } = parseListEnvelope(json); setMatchesCount(count); }
+        const matchesData = await api.list<any>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
+        setMatchesCount(matchesData.count);
       }
     } catch (e) { console.warn('[OrganisationDetailPage] Failed to fetch counts', e); }
     if (!orgPeriodsLoading && orgPeriods.length === 0) void ensureOrgPeriodsLoaded();

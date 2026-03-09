@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi, ApiError } from '../../api';
 import type { Organisation as SharedOrganisation } from '../../types';
 import styles from './AssignUserToOrgModal.module.css';
 
@@ -40,42 +40,28 @@ export default function AssignUserToOrgModal({ opened, onClose, user, organisati
     if (!selectedOrgId || !user) return;
 
     const selectedOrg = organisations.find(o => o.id === selectedOrgId);
-    if (!selectedOrg) return;
+if (!selectedOrg?.slug) return;
 
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = getApiBaseUrl();
 
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${selectedOrg.slug}/members/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: user.email,
-          role: role,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.email?.[0] || data.detail || 'Failed to assign user to organisation');
-      }
+      await organisationsApi.addMember(selectedOrg.slug, {
+        email: user.email,
+        role: role,
+      } as any);
 
       onSuccess();
       onClose();
     } catch (err) {
       console.error(err);
       console.error('Assign user error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to assign user');
+      if (err instanceof ApiError) {
+        const body = err.body as any;
+        setError(body?.email?.[0] || body?.detail || 'Failed to assign user to organisation');
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to assign user');
+      }
     } finally {
       setLoading(false);
     }

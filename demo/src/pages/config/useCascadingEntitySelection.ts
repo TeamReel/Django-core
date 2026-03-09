@@ -4,7 +4,7 @@
  * Manages active context + cascading org → club → team → season → competition → match selectors.
  */
 import { useState, useEffect } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import {
   ACTIVE_CONTEXT_CHANGED_EVENT,
   getActiveContext as fetchActiveContext,
@@ -205,15 +205,8 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const loadOrgs = async () => {
       try {
         setLoadingOrgs(true);
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/organisations/?page_size=250`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          credentials: 'include',
-        });
-        if (!response.ok) throw new Error(`Failed to load organisations: ${response.status}`);
-        const json = await response.json();
-        const results = json.data?.results || json.results || json.data || json;
-        if (!cancelled) setOrganisations(Array.isArray(results) ? results : []);
+        const res = await api.list<Organisation>('/organisations/', { pageSize: 250 });
+        if (!cancelled) setOrganisations(res.results || []);
       } catch (e) {
         console.error(e);
         if (!cancelled) setActiveContextError(`Failed to load federations: ${e instanceof Error ? e.message : 'Unknown error'}`);
@@ -232,23 +225,13 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const loadClubs = async () => {
       try {
         setLoadingClubs(true);
-        const baseUrl = getApiBaseUrl();
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
-        const collected: Project[] = [];
-        let nextUrl: string = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?is_club=true&page_size=250`;
-        let safety = 0;
-        while (nextUrl && safety < 25) {
-          safety += 1;
-          const response = await fetch(nextUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
-          if (!response.ok) throw new Error('Failed to load clubs');
-          const json = await response.json();
-          const { results, next } = extractPaginated(json);
-          collected.push(...results);
-          nextUrl = next;
-          if (cancelled) return;
-          if (!nextUrl) break;
-        }
+        const collected = await api.listAll<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+          params: { is_club: true },
+          pageSize: 250,
+          maxItems: 5000,
+        });
         const rootProjects = collected.filter((p) => {
           const parentId = p?.parent_id;
           return parentId === null || parentId === undefined || String(parentId).trim() === '';
@@ -271,23 +254,13 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const loadTeams = async () => {
       try {
         setLoadingTeams(true);
-        const baseUrl = getApiBaseUrl();
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
-        const collected: Project[] = [];
-        let nextUrl: string = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?parent_project__isnull=false&page_size=250`;
-        let safety = 0;
-        while (nextUrl && safety < 25) {
-          safety += 1;
-          const response = await fetch(nextUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' });
-          if (!response.ok) throw new Error('Failed to load teams');
-          const json = await response.json();
-          const { results, next } = extractPaginated(json);
-          collected.push(...results);
-          nextUrl = next;
-          if (cancelled) return;
-          if (!nextUrl) break;
-        }
+        const collected = await api.listAll<Project>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+          params: { parent_project__isnull: false },
+          pageSize: 250,
+          maxItems: 5000,
+        });
         const filteredTeams = collected.filter((t) => String(t?.parent_id || '') === String(selectedClubId));
         if (!cancelled) setTeams(filteredTeams);
       } catch {
@@ -307,7 +280,6 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const loadSeasons = async () => {
       try {
         setLoadingSeasons(true);
-        const baseUrl = getApiBaseUrl();
         const resolveOrganisationIdForQuery = () => {
           const raw = String(selectedOrgId || '').trim();
           if (!raw) return '';
@@ -315,38 +287,25 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
           const found = organisations.find((o) => String(o?.slug || '').trim() === raw);
           return String(found?.id || '').trim();
         };
-        const params = new URLSearchParams();
-        params.set('project_id', String(selectedTeamId));
-        params.set('parent_id', 'null');
-        params.set('page_size', '500');
-        const parsePeriods = (json: any) => {
-          const results = json?.data?.results || json?.results || json?.data || json;
-          const all = Array.isArray(results) ? results : [];
-          return all.filter((p) => {
-            const parent = p?.parent_period_id ?? p?.parent_period?.id ?? null;
+        const filterRootPeriods = (periods: Period[]) => {
+          return periods.filter((p) => {
+            const parent = (p as any)?.parent_period_id ?? (p as any)?.parent_period?.id ?? null;
             return !parent;
           });
         };
-        const response = await fetch(`${baseUrl}/api/v1/periods/?${params.toString()}`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
+        const res = await api.list<Period>('/periods/', {
+          pageSize: 500,
+          params: { project_id: String(selectedTeamId), parent_id: 'null' },
         });
-        if (!response.ok) throw new Error('Failed to load seasons');
-        const json = await response.json();
-        let rootOnly = parsePeriods(json);
+        let rootOnly = filterRootPeriods(res.results || []);
         if (rootOnly.length === 0) {
           const orgId = resolveOrganisationIdForQuery();
           if (orgId) {
-            const orgParams = new URLSearchParams();
-            orgParams.set('organisation_id', orgId);
-            orgParams.set('parent_id', 'null');
-            orgParams.set('page_size', '500');
-            const orgRes = await fetch(`${baseUrl}/api/v1/periods/?${orgParams.toString()}`, {
-              headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
+            const orgRes = await api.list<Period>('/periods/', {
+              pageSize: 500,
+              params: { organisation_id: orgId, parent_id: 'null' },
             });
-            if (orgRes.ok) {
-              const orgJson = await orgRes.json();
-              rootOnly = parsePeriods(orgJson);
-            }
+            rootOnly = filterRootPeriods(orgRes.results || []);
           }
         }
         if (!cancelled) setSeasons(rootOnly);
@@ -367,19 +326,13 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const loadComps = async () => {
       try {
         setLoadingCompetitions(true);
-        const baseUrl = getApiBaseUrl();
         const season = seasons.find(s => String(s.id) === selectedSeasonId);
         if (!season) return;
-        const params = new URLSearchParams();
-        params.set('parent_id', String(season.id));
-        params.set('page_size', '500');
-        const response = await fetch(`${baseUrl}/api/v1/periods/?${params.toString()}`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
+        const res = await api.list<Period>('/periods/', {
+          pageSize: 500,
+          params: { parent_id: String(season.id) },
         });
-        if (!response.ok) throw new Error('Failed to load competitions');
-        const json = await response.json();
-        const results = json.data?.results || json.results || json.data || json;
-        if (!cancelled) setCompetitions(Array.isArray(results) ? results : []);
+        if (!cancelled) setCompetitions(res.results || []);
       } catch {
         if (!cancelled) setCompetitions([]);
       } finally {
@@ -399,18 +352,11 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     const loadMatches = async () => {
       try {
         setLoadingMatches(true);
-        const baseUrl = getApiBaseUrl();
-        const params = new URLSearchParams();
-        params.set('period_id', String(periodId));
-        params.set('activity_type', 'match');
-        params.set('page_size', '500');
-        const response = await fetch(`${baseUrl}/api/v1/activities/?${params.toString()}`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
+        const res = await api.list<Activity>('/activities/', {
+          pageSize: 500,
+          params: { period_id: String(periodId), activity_type: 'match' },
         });
-        if (!response.ok) throw new Error('Failed to load matches');
-        const json = await response.json();
-        const results = json.data?.results || json.results || json.data || json;
-        if (!cancelled) setMatches(Array.isArray(results) ? results : []);
+        if (!cancelled) setMatches(res.results || []);
       } catch {
         if (!cancelled) setMatches([]);
       } finally {

@@ -8,16 +8,8 @@
  */
 import React, { useEffect, useState, useMemo } from 'react';
 import { Flame, TrendingUp, Trophy } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './ContentStreakWidget.module.css';
-
-/** Safely extract array from any paginated API response format */
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json && Array.isArray(json.data)) return json.data;
-  if (json && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 /* ── Types ─────────────────────────────────────────────────────────── */
 
@@ -59,7 +51,6 @@ export const ContentStreakWidget: React.FC = () => {
   const [streak, setStreak] = useState<number>(0);
   const [totalMatches, setTotalMatches] = useState<number>(0);
   const [loading, setLoading] = useState(true);
-  const apiBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
     let cancelled = false;
@@ -70,13 +61,14 @@ export const ContentStreakWidget: React.FC = () => {
 
         // Fetch last 20 past matches
         const now = new Date().toISOString();
-        const matchRes = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__lte=${encodeURIComponent(now)}&ordering=-start_time&page_size=20`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-        if (!matchRes.ok) throw new Error('fetch failed');
-        const matchData = await matchRes.json();
-        const pastMatches: PastMatch[] = extractItems<PastMatch>(matchData);
+        const { results: pastMatches } = await api.list<PastMatch>('/activities/', {
+          params: {
+            activity_type: 'match',
+            start_time__lte: now,
+            ordering: '-start_time',
+          },
+          pageSize: 20,
+        });
 
         if (cancelled) return;
         setTotalMatches(pastMatches.length);
@@ -89,25 +81,26 @@ export const ContentStreakWidget: React.FC = () => {
         // For each match, check if base content exists
         let currentStreak = 0;
         for (const m of pastMatches) {
-          const mediaRes = await fetch(
-            `${apiBaseUrl}/api/v1/media/items/?activity=${m.id}&page_size=50`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          );
-          if (!mediaRes.ok) break;
-          const mediaData = await mediaRes.json();
-          const items: MediaItem[] = extractItems<MediaItem>(mediaData);
+          try {
+            const { results: items } = await api.list<MediaItem>('/media/items/', {
+              params: { activity: m.id },
+              pageSize: 50,
+            });
 
-          const types = new Set<string>();
-          for (const mi of items) {
-            const raw = mi.extraction_metadata?.asset_type;
-            if (raw) types.add(normalize(raw));
-          }
+            const types = new Set<string>();
+            for (const mi of items) {
+              const raw = mi.extraction_metadata?.asset_type;
+              if (raw) types.add(normalize(raw));
+            }
 
-          const hasBase = STREAK_REQUIRED_SUBTYPES.every((s) => types.has(s));
-          if (hasBase) {
-            currentStreak++;
-          } else {
-            break; // Streak broken
+            const hasBase = STREAK_REQUIRED_SUBTYPES.every((s) => types.has(s));
+            if (hasBase) {
+              currentStreak++;
+            } else {
+              break; // Streak broken
+            }
+          } catch {
+            break;
           }
         }
 
@@ -120,7 +113,7 @@ export const ContentStreakWidget: React.FC = () => {
     })();
 
     return () => { cancelled = true; };
-  }, [apiBaseUrl]);
+  }, []);
 
   // Don't render if loading or no past matches
   if (loading || totalMatches === 0) return null;

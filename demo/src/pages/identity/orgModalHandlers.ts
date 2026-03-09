@@ -8,6 +8,7 @@
 
 import type { OrgModalsProps } from './OrgModals';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
+import { api } from '@/api';
 
 /** Payload for project creation (club or team). */
 interface CreateProjectPayload {
@@ -67,7 +68,6 @@ type HandlerDeps = Pick<
 export function createOrgModalHandlers(deps: HandlerDeps) {
   const {
     org, currentOrgSlug, currentOrgId,
-    getApiV1BaseUrl, getCsrfToken,
     fetchClubsPage, fetchTeamsForOrg, fetchFederationCounts,
     recomputePeriodCounts,
     setClubs, setClubsPage, setClubsCount, setAllClubsForTeams,
@@ -78,28 +78,10 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
   // ─── Create Club ───────────────────────────────────────────────
 
   const handleCreateClub = async (projectData: CreateProjectPayload) => {
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        name: projectData.name,
-        description: projectData.description || '',
-      }),
+    const created = await api.post<any>(`/organisations/${currentOrgSlug}/projects/`, {
+      name: projectData.name,
+      description: projectData.description || '',
     });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create club');
-    }
-
-    const payload: any = await res.json().catch(() => null);
-    const created: any = payload?.data?.data || payload?.data || payload;
 
     if (created && typeof created === 'object') {
       const createdKey = String(created?.slug || created?.id || '');
@@ -128,29 +110,11 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     const clubId = String(projectData.parent_project_id || '').trim();
     if (!clubId) throw new Error('Select a club first.');
 
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        name: projectData.name,
-        description: projectData.description || '',
-        parent_project_id: clubId,
-      }),
+    const created = await api.post<any>(`/organisations/${currentOrgSlug}/projects/`, {
+      name: projectData.name,
+      description: projectData.description || '',
+      parent_project_id: clubId,
     });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create team');
-    }
-
-    const payload: any = await res.json().catch(() => null);
-    const created: any = payload?.data?.data || payload?.data || payload;
 
     if (created && typeof created === 'object') {
       const createdKey = String(created?.slug || created?.id || '').trim();
@@ -171,38 +135,21 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
   // ─── Create Season ─────────────────────────────────────────────
 
   const handleCreateSeason = async (payload: CreatePeriodPayload) => {
-    const apiV1BaseUrl = getApiV1BaseUrl();
     const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
     const teamId = String(payload.project_id || '').trim();
     if (!orgId) throw new Error('Select a federation first');
     if (!teamId) throw new Error('Select a team first');
 
-    const res = await fetch(`${apiV1BaseUrl}/periods/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        organisation_id: orgId,
-        project_id: teamId ? Number(teamId) : undefined,
-        parent_period_id: null,
-        name: payload.name,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        metadata: { type: 'season' },
-      }),
+    const created = await api.post<any>('/periods/', {
+      organisation_id: orgId,
+      project_id: teamId ? Number(teamId) : undefined,
+      parent_period_id: null,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      metadata: { type: 'season' },
     });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create season');
-    }
-
-    const raw: any = await res.json().catch(() => null);
-    const created: any = raw?.data?.data || raw?.data || raw;
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {
@@ -223,7 +170,6 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
   // ─── Create Competition ────────────────────────────────────────
 
   const handleCreateCompetition = async (payload: CreatePeriodPayload) => {
-    const apiV1BaseUrl = getApiV1BaseUrl();
     const orgId = String(payload.organisation_id || currentOrgId || org?.id || '').trim();
     const teamId = String(payload.project_id || '').trim();
     const seasonId = String(payload.parent_period_id || '').trim();
@@ -231,32 +177,16 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
     if (!teamId) throw new Error('Select a team first');
     if (!seasonId) throw new Error('Select a season first');
 
-    const res = await fetch(`${apiV1BaseUrl}/periods/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        organisation_id: orgId,
-        project_id: teamId ? Number(teamId) : undefined,
-        parent_period_id: seasonId || null,
-        name: payload.name,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        metadata: { type: 'competition' },
-      }),
+    const created = await api.post<any>('/periods/', {
+      organisation_id: orgId,
+      project_id: teamId ? Number(teamId) : undefined,
+      parent_period_id: seasonId || null,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      metadata: { type: 'competition' },
     });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create competition');
-    }
-
-    const raw: any = await res.json().catch(() => null);
-    const created: any = raw?.data?.data || raw?.data || raw;
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {
@@ -277,46 +207,28 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
   // ─── Create Match ──────────────────────────────────────────────
 
   const handleCreateMatch = async (payload: CreateMatchPayload) => {
-    const apiV1BaseUrl = getApiV1BaseUrl();
-    const csrfToken = getCsrfToken();
     const orgIdToRefresh = String(currentOrgId || org?.id || '').trim();
     const teamId = String(payload.project_id || '').trim();
     const competitionId = String(payload.period_id || '').trim();
     if (!teamId) throw new Error('Select a team first');
     if (!competitionId) throw new Error('Select a competition first');
 
-    const res = await fetch(`${apiV1BaseUrl}/activities/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken || '',
+    const created = await api.post<any>('/activities/', {
+      title: payload.title,
+      activity_type: 'match',
+      project_id: teamId ? Number(teamId) : undefined,
+      opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
+      period_id: competitionId,
+      start_time: payload.start_time,
+      end_time: payload.end_time,
+      location: payload.location,
+      description: payload.description,
+      metadata: {
+        venue: payload.venue || 'Home',
+        is_home: (payload.venue || 'Home') === 'Home',
+        ...payload?.metadata,
       },
-      credentials: 'include',
-      body: JSON.stringify({
-        title: payload.title,
-        activity_type: 'match',
-        project_id: teamId ? Number(teamId) : undefined,
-        opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
-        period_id: competitionId,
-        start_time: payload.start_time,
-        end_time: payload.end_time,
-        location: payload.location,
-        description: payload.description,
-        metadata: {
-          venue: payload.venue || 'Home',
-          is_home: (payload.venue || 'Home') === 'Home',
-          ...payload?.metadata,
-        },
-      }),
     });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create match');
-    }
-
-    const raw: any = await res.json().catch(() => null);
-    const created: any = raw?.data?.data || raw?.data || raw;
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {

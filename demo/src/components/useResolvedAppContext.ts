@@ -6,7 +6,7 @@
  * Panel A detail links and the recents recorder.
  */
 import { useState, useEffect, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
 
 /* ------------------------------------------------------------------ */
@@ -39,8 +39,6 @@ export function useResolvedAppContext(
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
-        const apiBaseUrl = getApiBaseUrl();
-
         if (!user) {
             setResolvedAppContext(null);
             return;
@@ -50,17 +48,7 @@ export function useResolvedAppContext(
 
         const load = async () => {
             try {
-                const response = await fetch(`${apiBaseUrl}/api/v1/auth/active-context/`, {
-                    credentials: 'include',
-                });
-
-                if (!response.ok) {
-                    if (!cancelled) setResolvedAppContext(null);
-                    return;
-                }
-
-                const envelope = await response.json();
-                const payload = envelope?.data;
+                const payload = await api.get<any>('/auth/active-context/');
 
                 if (!cancelled) {
                     setResolvedAppContext({

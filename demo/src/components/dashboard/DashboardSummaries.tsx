@@ -11,26 +11,16 @@ import {
   Users, Calendar, Image, Cpu, CreditCard, TrendingUp,
   ChevronRight, Flame, Zap, CheckCircle2, Clock, AlertCircle,
 } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
 import styles from './DashboardSummaries.module.css';
-
-/* ── Helpers ──────────────────────────────────────────────────────── */
-
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json && Array.isArray(json.data)) return json.data;
-  if (json && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 /* ── Squad Readiness ──────────────────────────────────────────────── */
 
 export const SquadReadinessCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const org = context.organisation as any;
   const project = context.project;
   const [memberCount, setMemberCount] = useState<number>(0);
@@ -40,14 +30,11 @@ export const SquadReadinessCard: React.FC = () => {
       // Fetch team member count from project members API
       (async () => {
         try {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${org.slug}/projects/${project.slug}/members/?page_size=1`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+          const data = await api.list<any>(
+            `/organisations/${org.slug}/projects/${project.slug}/members/`,
+            { pageSize: 1 },
           );
-          if (res.ok) {
-            const data = await res.json();
-            setMemberCount(data?.meta?.pagination?.count ?? data?.count ?? extractItems(data).length);
-          }
+          setMemberCount(data.count ?? data.results.length);
         } catch {
           setMemberCount(0);
         }
@@ -55,7 +42,7 @@ export const SquadReadinessCard: React.FC = () => {
     } else {
       setMemberCount(org?.member_count || 0);
     }
-  }, [apiBaseUrl, org?.slug, project?.slug]);
+  }, [org?.slug, project?.slug]);
 
   const handleClick = () => {
     if (project) {
@@ -92,7 +79,6 @@ export const ContentStatsCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const [count, setCount] = useState<number | null>(null);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const project = context.project;
 
   useEffect(() => {
@@ -100,23 +86,18 @@ export const ContentStatsCard: React.FC = () => {
       try {
         // Content created in the last 7 days, scoped to project if available
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        const projectParam = project ? `&project=${project.id}` : '';
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/media/items/?created_at__gte=${encodeURIComponent(weekAgo)}${projectParam}&page_size=1`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setCount(data?.meta?.pagination?.count ?? data?.count ?? extractItems(data).length);
-        } else {
-          // Gracefully handle backend errors (e.g. 500)
-          setCount(0);
-        }
+        const params: Record<string, string> = { created_at__gte: weekAgo };
+        if (project) params.project = project.id;
+        const data = await api.list<any>('/media/items/', {
+          params,
+          pageSize: 1,
+        });
+        setCount(data.count ?? data.results.length);
       } catch {
         setCount(0);
       }
     })();
-  }, [apiBaseUrl, project?.id]);
+  }, [project?.id]);
 
   return (
     <div
@@ -152,26 +133,28 @@ export const UpcomingMatchesCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const [matches, setMatches] = useState<CompactMatch[]>([]);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const project = context.project;
 
   useEffect(() => {
     (async () => {
       try {
         const now = new Date().toISOString();
-        const projectParam = project ? `&project=${project.id}` : '';
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=3${projectParam}`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-        if (res.ok) {
-          setMatches(extractItems<CompactMatch>(await res.json()));
-        }
+        const params: Record<string, string> = {
+          activity_type: 'match',
+          start_time__gte: now,
+          ordering: 'start_time',
+        };
+        if (project) params.project = project.id;
+        const { results } = await api.list<CompactMatch>('/activities/', {
+          params,
+          pageSize: 3,
+        });
+        setMatches(results);
       } catch {
         // silent
       }
     })();
-  }, [apiBaseUrl, project?.id]);
+  }, [project?.id]);
 
   return (
     <div className={`${styles.summaryCard} ${styles.tallCard}`}>

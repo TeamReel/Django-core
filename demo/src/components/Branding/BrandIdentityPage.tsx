@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Card, Text, Stack, Alert } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { unwrapEnvelope } from '../../utils/apiEnvelope';
+import { api } from '@/api';
 import { EntityEditModal } from '../EntityEditModal';
 import { Loader2, AlertCircle } from 'lucide-react';
 import type { BrandProfile, BrandIdentityPageProps, DesignToken } from './brandIdentity.types';
@@ -23,8 +22,6 @@ export default function BrandIdentityPage({
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [generatingTokens, setGeneratingTokens] = useState(false);
 
-  const apiBaseUrl = getApiBaseUrl();
-
   const entityType = seasonId ? 'season' : projectId ? 'project' : 'organisation';
   const entityName = seasonName || projectName || organisationName || 'this entity';
 
@@ -32,19 +29,7 @@ export default function BrandIdentityPage({
     if (!profile?.id) return;
     setGeneratingTokens(true);
     try {
-      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1] || '';
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/generate-tokens/`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        },
-      );
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData?.error || `Failed (${res.status})`);
-      }
+      await api.post(`/branding/profiles/${profile.id}/generate-tokens/`);
       await fetchProfile();
     } catch (err) {
       console.error(err);
@@ -58,24 +43,21 @@ export default function BrandIdentityPage({
     setLoading(true);
     setError(null);
     try {
-      let queryParam = '';
-      if (projectId) queryParam = `project=${encodeURIComponent(projectId)}`;
-      else if (organisationId) queryParam = `organisation=${encodeURIComponent(organisationId)}`;
+      const params: Record<string, string> = {};
+      if (projectId) params.project = projectId;
+      else if (organisationId) params.organisation = organisationId;
       else { setProfile(null); setLoading(false); return; }
 
-      const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?${queryParam}`, { credentials: 'include' });
-      if (!res.ok) {
-        if (res.status === 404) { setProfile(null); return; }
-        throw new Error(`Failed to fetch brand profile (${res.status})`);
-      }
-
-      const data = unwrapEnvelope<any>(await res.json());
-      const results = Array.isArray(data) ? data : (data?.results || []);
+      const { results } = await api.list<any>('/branding/profiles/', { params });
       if (results.length === 0) { setProfile(null); return; }
 
       const profileData = results[0];
-      const detailRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${profileData.id}/`, { credentials: 'include' });
-      setProfile(detailRes.ok ? unwrapEnvelope<BrandProfile>(await detailRes.json()) : profileData);
+      try {
+        const detail = await api.get<BrandProfile>(`/branding/profiles/${profileData.id}/`);
+        setProfile(detail);
+      } catch {
+        setProfile(profileData);
+      }
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load brand profile');
@@ -88,7 +70,7 @@ export default function BrandIdentityPage({
     if (projectId || organisationId) fetchProfile();
     else setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBaseUrl, projectId, organisationId]);
+  }, [projectId, organisationId]);
 
   const tokensByType = useMemo(() => {
     if (!profile?.tokens) return new Map<string, DesignToken[]>();

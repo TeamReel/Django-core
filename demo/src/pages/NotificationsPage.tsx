@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useSetBackNavigation } from '../providers/BackNavigationProvider';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import SwipeableCard from '../components/SwipeableCard';
 import styles from './NotificationsPage.module.css';
 
@@ -61,11 +61,6 @@ export default function NotificationsPage() {
     }
   }, [location.search, navigate]);
 
-  const apiBaseUrl = useMemo(
-    () => getApiBaseUrl(),
-    []
-  );
-
   const notificationsList = useMemo(
     () => (Array.isArray(notifications) ? notifications : []),
     [notifications]
@@ -77,26 +72,8 @@ export default function NotificationsPage() {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
-      }
-
-      const raw = await response.json();
-      const data = unwrapResponseData<any>(raw);
-      debugLog('Fetched notifications:', data);
-
-      const list: Notification[] = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.results)
-          ? data.results
-          : [];
-
-      debugLog('Array length:', list.length);
-      setNotifications(list as Notification[]);
+      const { results } = await api.list<Notification>('/user-notifications/');
+      setNotifications(results);
       setError(null);
     } catch (err) {
       console.error(err);
@@ -105,7 +82,7 @@ export default function NotificationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [apiBaseUrl]);
+  }, []);
 
   const markAsRead = async (notificationId: string) => {
     // Optimistic update: mark as read in local state immediately
@@ -118,22 +95,7 @@ export default function NotificationsPage() {
     try {
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/${notificationId}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ is_read: true }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
-      }
-
-      const raw = await response.json();
-      const updatedNotification = unwrapResponseData<Notification>(raw);
+      const updatedNotification = await api.patch<Notification>(`/user-notifications/${notificationId}/`, { is_read: true });
 
       // Reconcile with server response
       setNotifications(prev =>
@@ -157,18 +119,7 @@ export default function NotificationsPage() {
     try {
       const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/mark-all-read/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to mark all as read');
-      }
+      await api.post('/user-notifications/mark-all-read/');
 
       // Reconcile with server
       await fetchNotifications();
@@ -183,20 +134,7 @@ export default function NotificationsPage() {
 
   const markAllAsUnread = async () => {
     try {
-      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/mark-all-unread/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to mark all as unread');
-      }
+      await api.post('/user-notifications/mark-all-unread/');
 
       // Refetch notifications
       await fetchNotifications();

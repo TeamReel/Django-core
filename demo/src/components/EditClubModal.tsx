@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, Input, Alert } from '@django-core/design-system';
-import { getApiBaseUrl } from '../utils/apiBase';
-import { getCsrfToken } from '../utils/csrf';
+import { api } from '@/api';
 import styles from './EditClubModal.module.css';
 
 interface Club {
@@ -31,7 +30,6 @@ export default function EditClubModal({
   orgId,
   onSave,
 }: EditClubModalProps) {
-  const apiBaseUrl = getApiBaseUrl();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [logoUrl, setLogoUrl] = useState('');
@@ -65,24 +63,14 @@ export default function EditClubModal({
 
       // Use path_prefix to organize logos in S3: logos/{club_slug_or_id}/
       const pathPrefix = `logos/${club?.slug || club?.id || 'unknown'}`;
-      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'X-Organization-ID': orgId,
-          'X-CSRFToken': getCsrfToken(),
-        },
-        body: formData,
-      });
+      const fileData = await api.upload<any>(
+        `/files/?path_prefix=${encodeURIComponent(pathPrefix)}`,
+        file,
+        { is_public: 'true' },
+      );
 
-      if (!fileRes.ok) {
-        const errText = await fileRes.text();
-        throw new Error(`File upload failed: ${fileRes.status} - ${errText}`);
-      }
-
-      const fileData = await fileRes.json();
-      const fileId = fileData?.data?.id || fileData?.id;
-      const storagePath = fileData?.data?.storage_path || fileData?.storage_path;
+      const fileId = fileData?.id;
+      const storagePath = fileData?.storage_path;
 
       if (!fileId) {
         throw new Error('No file ID returned from upload');
@@ -116,33 +104,16 @@ export default function EditClubModal({
     setError(null);
 
     try {
-      const csrfToken = getCsrfToken();
-      const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          metadata: {
-            ...(club.metadata || {}),
-            identity: {
-              ...((club.metadata || {})?.identity || {}),
-              logo_url: logoUrl.trim() || null,
-              default_location: defaultLocation.trim() || null,
-            },
+      const updated = await api.patch<Club>(`/projects/${encodeURIComponent(String(club.id))}/`, {
+        metadata: {
+          ...(club.metadata || {}),
+          identity: {
+            ...((club.metadata || {})?.identity || {}),
+            logo_url: logoUrl.trim() || null,
+            default_location: defaultLocation.trim() || null,
           },
-        }),
+        },
       });
-
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(detail || `Failed to save club settings (${res.status})`);
-      }
-
-      const raw = await res.json().catch(() => null);
-      const updated = raw?.data || raw;
 
       onSave?.({ ...club, ...updated });
       onClose();

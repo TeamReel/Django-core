@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { transactionsApi } from '@/api';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -40,45 +40,12 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
     const fetchTransactions = async () => {
       try {
         setLoading(true);
-        const apiBaseUrl = getApiBaseUrl();
 
-        const params = new URLSearchParams();
-        if (organisation_id) params.append('organization_id', organisation_id);
-        if (limit) params.append('page_size', limit.toString());
-        params.append('ordering', '-timestamp');
-
-        const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
-
-        const response = await fetch(url, {
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const rawPayload = await response.json();
-
-        // Unwrap envelope: { status: 'success', data: ... }
-        const payload = rawPayload && rawPayload.status === 'success' && rawPayload.data ? rawPayload.data : rawPayload;
-
-        // Handle DRF pagination ({results: [...]}) and a few legacy/envelope shapes.
-        let results: Transaction[] = [];
-        if (Array.isArray(payload)) results = payload;
-        else if (Array.isArray(payload.results)) results = payload.results;
-        else if (payload.data && Array.isArray(payload.data.results)) results = payload.data.results;
-        else if (payload.data && Array.isArray(payload.data)) results = payload.data;
-        else if (Array.isArray(payload.data)) results = payload.data;
-        else {
-          if (DEBUG_LOGS) console.warn('[useTransactions] Unexpected response format:', payload);
-          results = [];
-        }
-
-        setTransactions(results);
+        const { results } = await transactionsApi.list(
+          { organizationId: organisation_id },
+          { params: { ordering: '-timestamp' }, pageSize: limit },
+        );
+        setTransactions(results as unknown as Transaction[]);
         setError(null);
       } catch (err) {
         console.error(err);

@@ -16,17 +16,10 @@ import {
   Layers, Trophy, Calendar, User, ChevronRight,
   Image, Film, FileText, Sparkles,
 } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './ContentOverviewCard.module.css';
 
-/* ── Helpers ────────────────────────────────────────────── */
-
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json?.data && Array.isArray(json.data)) return json.data;
-  if (json?.results && Array.isArray(json.results)) return json.results;
-  return [];
-}
+/* ── Helpers ──────────────────────────────────────────── */
 
 /** Map subtype → readable Dutch label */
 const SUBTYPE_LABELS: Record<string, string> = {
@@ -115,7 +108,6 @@ export const ContentOverviewCard: React.FC = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['match']));
   const [loading, setLoading] = useState(true);
-  const apiBaseUrl = getApiBaseUrl();
   const project = context.project as any;
 
   const toggleSection = useCallback((key: string) => {
@@ -132,18 +124,21 @@ export const ContentOverviewCard: React.FC = () => {
     (async () => {
       try {
         setLoading(true);
-        const projectParam = project ? `&project=${project.id}` : '';
+        const genParams: Record<string, string> = {
+          status: 'completed',
+          ordering: '-created_at',
+        };
+        if (project) genParams.project = project.id;
+
+        const mediaParams: Record<string, string> = {
+          ordering: '-created_at',
+        };
+        if (project) mediaParams.project = project.id;
 
         // Fetch both GenerationRequests AND MediaItems in parallel
-        const [genRes, mediaRes] = await Promise.all([
-          fetch(
-            `${apiBaseUrl}/api/v1/generative/requests/?status=completed${projectParam}&page_size=500&ordering=-created_at`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          ),
-          fetch(
-            `${apiBaseUrl}/api/v1/media/items/?${projectParam.replace('&', '')}&page_size=500&ordering=-created_at`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          ),
+        const [genData, mediaData] = await Promise.all([
+          api.list<any>('/generative/requests/', { params: genParams, pageSize: 500 }),
+          api.list<any>('/media/items/', { params: mediaParams, pageSize: 500 }),
         ]);
 
         // Track seen IDs to avoid double-counting (some MediaItems are linked to GenRequests)
@@ -155,9 +150,8 @@ export const ContentOverviewCard: React.FC = () => {
         const memberSubtypes: Record<string, number> = {};
 
         // Process GenerationRequests
-        if (genRes.ok) {
-          const genData = await genRes.json();
-          const genItems = extractItems<any>(genData);
+        {
+          const genItems = genData.results;
 
           for (const req of genItems) {
             // Track linked media IDs to avoid double-counting
@@ -190,9 +184,8 @@ export const ContentOverviewCard: React.FC = () => {
         }
 
         // Process MediaItems (only those not already counted)
-        if (mediaRes.ok) {
-          const mediaData = await mediaRes.json();
-          const mediaItems = extractItems<any>(mediaData);
+        {
+          const mediaItems = mediaData.results;
 
           for (const item of mediaItems) {
             // Skip if already counted via GenerationRequest
@@ -293,7 +286,7 @@ export const ContentOverviewCard: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiBaseUrl, project?.id]);
+  }, [project?.id]);
 
   const grandTotal = sections.reduce((s, sec) => s + sec.total, 0);
 

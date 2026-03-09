@@ -6,7 +6,7 @@ import { useSearchParams, useNavigate, useParams, type NavigateFunction } from '
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useBreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api, ApiError } from '../../api';
 import type { Organisation as SharedOrganisation } from '../../types';
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -66,21 +66,6 @@ export const mapMembershipRoleToDisplayRole = (membershipRole: string, hasParent
 type UserProjectRef = { id: string | number; slug?: string; role?: string; parent?: string | number | null; parent_name?: string | null; name?: string };
 
 type UserListEntry = Record<string, unknown> & { user?: User; projects?: UserProjectRef[]; role?: string };
-
-async function fetchAllFilterOptions<T = Record<string, unknown>>(initialUrl: string): Promise<T[]> {
-  const allResults: T[] = [];
-  let url: string | null = initialUrl;
-  while (url) {
-    const res: Response = await fetch(url, { credentials: 'include' });
-    if (!res.ok) break;
-    const data = await res.json() as { data?: { results?: T[]; next?: string | null }; results?: T[]; next?: string | null };
-    const results = data.data?.results || data.results || [];
-    const next: string | null = data.data?.next || data.next || null;
-    allResults.push(...results);
-    url = next;
-  }
-  return allResults;
-}
 
 const FALLBACK_ROLES = [
   'Superadmin', 'Land Admin', 'Club Admin', 'Team Admin',
@@ -242,16 +227,10 @@ export function useUsersData(): UseUsersDataReturn {
   useEffect(() => {
     if (!isSuperAdmin) return;
     const fetchOrgs = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
-        if (res.ok) {
-          const data = await res.json();
-          const orgs = data.data?.results || data.results || [];
-          setOrganisations(orgs);
-        }
+        const data = await api.list<OrganisationOption>('/organisations/', { pageSize: 100 });
+        setOrganisations(data.results);
       } catch (e) {
-        console.error(e);
         console.error('Failed to fetch organisations for filter', e);
       }
     };
@@ -261,12 +240,10 @@ export function useUsersData(): UseUsersDataReturn {
   // ── Fetch clubs ────────────────────────────────────────────────────
   useEffect(() => {
     const fetchClubs = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const results = await fetchAllFilterOptions<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`);
+        const results = await api.listAll<ProjectOption>('/projects/', { pageSize: 200, params: { parent_project__isnull: true } });
         setClubs(results);
       } catch (e) {
-        console.error(e);
         console.error('Failed to fetch clubs for filter', e);
       }
     };
@@ -276,12 +253,10 @@ export function useUsersData(): UseUsersDataReturn {
   // ── Fetch teams ────────────────────────────────────────────────────
   useEffect(() => {
     const fetchTeams = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const results = await fetchAllFilterOptions<ProjectOption>(`${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`);
+        const results = await api.listAll<ProjectOption>('/projects/', { pageSize: 200, params: { parent_project__isnull: false } });
         setTeams(results);
       } catch (e) {
-        console.error(e);
         console.error('Failed to fetch teams for filter', e);
       }
     };
@@ -291,19 +266,11 @@ export function useUsersData(): UseUsersDataReturn {
   // ── Fetch roles ────────────────────────────────────────────────────
   useEffect(() => {
     const fetchRoles = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const response = await fetch(`${apiBaseUrl}/api/v1/permissions/roles/`, { credentials: 'include' });
-        if (!response.ok) {
-          setAvailableRoles(FALLBACK_ROLES);
-          return;
-        }
-        const data = await response.json();
-        const results = data.data?.results || data.results || data;
-        const roleNames = results.map((role: { name: string }) => role.name);
+        const data = await api.list<{ name: string }>('/permissions/roles/');
+        const roleNames = data.results.map((role) => role.name);
         setAvailableRoles(['Superadmin', ...roleNames].sort());
       } catch (e) {
-        console.error(e);
         console.error('[UsersPage] Failed to fetch roles:', e);
         setAvailableRoles(FALLBACK_ROLES);
       }
@@ -356,52 +323,36 @@ export function useUsersData(): UseUsersDataReturn {
     setIsLoading(true);
     setError(null);
     const pageNumber = Number.parseInt(page, 10) || 1;
-    const params = new URLSearchParams();
-    params.append('page', pageNumber.toString());
-    params.append('page_size', limit.toString());
-    const apiBaseUrl = getApiBaseUrl();
+    const queryParams: Record<string, string | number | boolean | undefined> = {};
 
     try {
-      let url = '';
       const effectiveOrgSlug = (orgIdParam || (!isSuperAdmin ? context.organisation?.slug : null))?.toLowerCase();
       const effectiveProjectId = projectIdParam?.toLowerCase();
 
       if (effectiveProjectId) {
-        params.append('project_id', effectiveProjectId);
-        if (effectiveOrgSlug) params.append('organisation_id', effectiveOrgSlug);
-        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
+        queryParams.project_id = effectiveProjectId;
+        if (effectiveOrgSlug) queryParams.organisation_id = effectiveOrgSlug;
       } else if (isSuperAdmin) {
         const filterOrg = effectiveOrgSlug || selectedOrgId;
-        if (filterOrg) params.append('organisation_id', filterOrg);
-        if (selectedTeamKey) params.append('project_id', selectedTeamKey);
-        else if (selectedClubKey) params.append('project_id', selectedClubKey);
-        if (statusFilter === 'active') params.append('is_active', 'true');
-        else if (statusFilter === 'inactive') params.append('is_active', 'false');
-        if (roleFilter) params.append('role_label', roleFilter);
-        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
+        if (filterOrg) queryParams.organisation_id = filterOrg;
+        if (selectedTeamKey) queryParams.project_id = selectedTeamKey;
+        else if (selectedClubKey) queryParams.project_id = selectedClubKey;
+        if (statusFilter === 'active') queryParams.is_active = true;
+        else if (statusFilter === 'inactive') queryParams.is_active = false;
+        if (roleFilter) queryParams.role_label = roleFilter;
       } else if (effectiveOrgSlug) {
-        params.append('organisation_id', effectiveOrgSlug);
-        if (!orgIdParam) params.append('include_unassigned', 'true');
-        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
+        queryParams.organisation_id = effectiveOrgSlug;
+        if (!orgIdParam) queryParams.include_unassigned = true;
       } else {
-        if (selectedOrgId) params.append('organisation_id', selectedOrgId);
-        if (statusFilter === 'active') params.append('is_active', 'true');
-        else if (statusFilter === 'inactive') params.append('is_active', 'false');
-        if (roleFilter) params.append('role_label', roleFilter);
-        url = `${apiBaseUrl}/api/v1/admin/users/?${params.toString()}`;
+        if (selectedOrgId) queryParams.organisation_id = selectedOrgId;
+        if (statusFilter === 'active') queryParams.is_active = true;
+        else if (statusFilter === 'inactive') queryParams.is_active = false;
+        if (roleFilter) queryParams.role_label = roleFilter;
       }
 
-      const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-      if (!res.ok) {
-        if (res.status === 403) throw new Error('Permission denied. You do not have access to view users.');
-        throw new Error(`Failed to fetch users (${res.status})`);
-      }
-
-      const data = await res.json();
-      const results = data.data?.results || data.results || [];
-      const count = data.data?.count || data.count || 0;
-      setUsers(results);
-      setTotal(count);
+      const data = await api.list<UserListEntry>('/admin/users/', { params: queryParams, pageSize: limit, page: pageNumber });
+      setUsers(data.results);
+      setTotal(data.count);
     } catch (err: unknown) {
       console.error(err);
       console.error(err);
@@ -435,17 +386,9 @@ export function useUsersData(): UseUsersDataReturn {
 
   const handleSaveUser = async (updatedData: Partial<User>) => {
     if (!editingUser) return;
-    const apiBaseUrl = getApiBaseUrl();
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${editingUser.id}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') || '' },
-        body: JSON.stringify(updatedData),
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error('Failed to update user');
+      await api.patch(`/admin/users/${editingUser.id}/`, updatedData);
     } catch (e) {
-      console.error(e);
       console.error(e);
       alert('Failed to save user changes');
       throw e;

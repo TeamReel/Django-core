@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button, Alert } from '@django-core/design-system';
 import { useUserRole } from '../PermissionGuards';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api, ApiError } from '@/api';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './PolicyList.module.css';
 
@@ -28,13 +28,6 @@ interface NotificationPolicy {
   quiet_hours_rate_limit: number;
  }
 
-function unwrap<T>(raw: any): T | null {
-  if (!raw) return null;
-  if (raw.status === 'success' && raw.data) return raw.data as T;
-  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) return raw.data as T;
-  return raw as T;
-}
-
 export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
   const [balancePolicy, setBalancePolicy] = useState<BalancePolicy | null>(null);
   const [notificationPolicy, setNotificationPolicy] = useState<NotificationPolicy | null>(null);
@@ -59,32 +52,14 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
     async function fetchPolicies() {
       try {
         setLoading(true);
-        const apiBaseUrl = getApiBaseUrl();
 
-        const [balanceRes, notifRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/transactions/balance-policies/organization/${encodeURIComponent(organisationId)}/`, {
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-          }),
-          fetch(`${apiBaseUrl}/api/v1/contextual-notifications/org-policies/organization/${encodeURIComponent(organisationId)}/`, {
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-          }),
+        const [balanceResult, notifResult] = await Promise.allSettled([
+          api.get<BalancePolicy>(`/transactions/balance-policies/organization/${encodeURIComponent(organisationId)}/`),
+          api.get<NotificationPolicy>(`/contextual-notifications/org-policies/organization/${encodeURIComponent(organisationId)}/`),
         ]);
 
-        if (balanceRes.ok) {
-          const raw = await balanceRes.json().catch(() => null);
-          setBalancePolicy(unwrap<BalancePolicy>(raw));
-        } else {
-          setBalancePolicy(null);
-        }
-
-        if (notifRes.ok) {
-          const raw = await notifRes.json().catch(() => null);
-          setNotificationPolicy(unwrap<NotificationPolicy>(raw));
-        } else {
-          setNotificationPolicy(null);
-        }
+        setBalancePolicy(balanceResult.status === 'fulfilled' ? balanceResult.value : null);
+        setNotificationPolicy(notifResult.status === 'fulfilled' ? notifResult.value : null);
       } catch (err) {
         console.error(err);
         console.error('Error fetching policies', err);
@@ -120,38 +95,26 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
       setBalanceSaveError(null);
       setBalanceSaveSuccess(null);
 
-      const apiBaseUrl = getApiBaseUrl();
-
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/transactions/balance-policies/organization/${encodeURIComponent(organisationId)}/`,
+      const updated = await api.patch<BalancePolicy>(
+        `/transactions/balance-policies/organization/${encodeURIComponent(organisationId)}/`,
         {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            allow_negative: balanceDraft.allow_negative,
-            enforcement_mode: balanceDraft.enforcement_mode,
-            warn_threshold: balanceDraft.warn_threshold.trim() === '' ? null : balanceDraft.warn_threshold,
-          }),
-        }
+          allow_negative: balanceDraft.allow_negative,
+          enforcement_mode: balanceDraft.enforcement_mode,
+          warn_threshold: balanceDraft.warn_threshold.trim() === '' ? null : balanceDraft.warn_threshold,
+        },
       );
 
-      if (!res.ok) {
-        const payload = await res.json().catch(() => null);
-        const msg =
-          (payload && (payload.detail || payload.error)) ||
-          `Failed to save balance policy (HTTP ${res.status})`;
-        throw new Error(msg);
-      }
-
-      const raw = await res.json().catch(() => null);
-      const updated = unwrap<BalancePolicy>(raw);
       setBalancePolicy(updated);
       setIsEditingBalance(false);
       setBalanceSaveSuccess('Saved');
     } catch (e: unknown) {
       console.error(e);
-      setBalanceSaveError(getErrorMessage(e) || 'Failed to save');
+      if (e instanceof ApiError) {
+        const body = e.body as any;
+        setBalanceSaveError(body?.detail || body?.error || `Failed to save balance policy (HTTP ${e.status})`);
+      } else {
+        setBalanceSaveError(getErrorMessage(e) || 'Failed to save');
+      }
     } finally {
       setBalanceSaving(false);
       setTimeout(() => setBalanceSaveSuccess(null), 2000);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
+import { api, projectsApi } from '../../api';
 import type { SeasonProject as Project } from '../../types/season';
 import { getUserDisplayName } from './memberDetailUtils';
 import s from './ProjectSeasonMemberDetailPage.module.css';
@@ -43,11 +44,6 @@ export function MemberIdentityTab({
     setSuccess(null);
 
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] || '';
-
       const existingMeta = membership?.metadata || {};
       const newMeta = {
         ...existingMeta,
@@ -55,25 +51,7 @@ export function MemberIdentityTab({
         jersey_number: editJerseyNumber.trim() || null,
       };
 
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${project.id}/members/${membership.id}/`,
-        {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-          },
-          body: JSON.stringify({ metadata: newMeta }),
-        }
-      );
-
-      if (!res.ok) {
-        throw new Error(`Failed to save: ${res.status}`);
-      }
-
-      const json = await res.json();
-      const updated = json?.data || json;
+      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: newMeta }) as any;
       onMembershipUpdate(updated);
       setIsEditing(false);
       setSuccess('Identity updated successfully');
@@ -100,25 +78,7 @@ export function MemberIdentityTab({
     setSuccess(null);
 
     try {
-      const csrfToken = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('csrftoken='))
-        ?.split('=')[1] || '';
-
-      const res = await fetch(`${apiBaseUrl}/api/v1/auth/avatar/set-path/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({ path }),
-      });
-
-      if (!res.ok) {
-        const errJson = await res.json().catch(() => null);
-        throw new Error(errJson?.error?.message || `Failed: ${res.status}`);
-      }
+      await api.post('/auth/avatar/set-path/', { path });
 
       setSuccess('Profile photo updated! Refresh to see changes.');
       setTimeout(() => setSuccess(null), 5000);

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
+import { activitiesApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
 
@@ -23,8 +24,8 @@ export interface CompetitionHierarchyTabProps {
   setSelectedEditMatch: (m: any) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
   setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
-  apiBaseUrl: string;
-  getCsrfToken: () => string;
+  apiBaseUrl?: string;
+  getCsrfToken?: () => string;
 }
 
 export function CompetitionHierarchyTab({
@@ -161,16 +162,8 @@ export function CompetitionHierarchyTab({
                               onClick={async () => {
                                 if (!window.confirm(`Delete match ${matchDisplayTitle(m)}?`)) return;
                                 try {
-                                  const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(m.id))}/`, {
-                                    method: 'DELETE',
-                                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                                    credentials: 'include',
-                                  });
-                                  if (res.ok) {
-                                    setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
-                                  } else {
-                                    alert('Error deleting match');
-                                  }
+                                  await activitiesApi.delete(String(m.id));
+                                  setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
                                 } catch (e) {
                                   console.error(e);
                                   console.error(e);

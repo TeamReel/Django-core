@@ -3,7 +3,7 @@ import { Card, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { Table } from '../../shims/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import {
   roleColumns, expectedPermissionKeys, permissionMatrix,
   formatPermissionLabel, permissionDescriptionFor, normalizeRoleKey,
@@ -34,41 +34,26 @@ export const PermissionsPage: React.FC = () => {
       try {
         setLoading(true);
         setError(null);
-        const baseUrl = getApiBaseUrl();
+        const userData = await api.get<any>('/auth/me/');
+        setCurrentUserRole(userData.role);
 
-        const userResponse = await fetch(`${baseUrl}/api/v1/auth/me/`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-          credentials: 'include',
-        });
-        if (userResponse.ok) {
-          const raw = await userResponse.json();
-          setCurrentUserRole((raw.data || raw).role);
+        const tree = await api.get<any>('/permissions/current/');
+        setPermissionsTree(tree);
+
+        const keys: string[] = [];
+        if (Array.isArray(tree?.global)) keys.push(...tree.global);
+        const orgs = tree?.organizations || tree?.organisations;
+        if (orgs && typeof orgs === 'object') {
+          Object.values(orgs as any).forEach((orgNode: any) => {
+            if (Array.isArray(orgNode?.permissions)) keys.push(...orgNode.permissions);
+            if (orgNode?.projects && typeof orgNode.projects === 'object') {
+              Object.values(orgNode.projects).forEach((pNode: any) => {
+                if (Array.isArray(pNode?.permissions)) keys.push(...pNode.permissions);
+              });
+            }
+          });
         }
-
-        const permissionsResponse = await fetch(`${baseUrl}/api/v1/permissions/current/`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-          credentials: 'include',
-        });
-        if (permissionsResponse.ok) {
-          const permissionsData = await permissionsResponse.json();
-          const tree = permissionsData?.data || permissionsData;
-          setPermissionsTree(tree);
-
-          const keys: string[] = [];
-          if (Array.isArray(tree?.global)) keys.push(...tree.global);
-          const orgs = tree?.organizations || tree?.organisations;
-          if (orgs && typeof orgs === 'object') {
-            Object.values(orgs as any).forEach((orgNode: any) => {
-              if (Array.isArray(orgNode?.permissions)) keys.push(...orgNode.permissions);
-              if (orgNode?.projects && typeof orgNode.projects === 'object') {
-                Object.values(orgNode.projects).forEach((pNode: any) => {
-                  if (Array.isArray(pNode?.permissions)) keys.push(...pNode.permissions);
-                });
-              }
-            });
-          }
-          setEffectivePermissionKeys(Array.from(new Set(keys.map(k => String(k).trim()).filter(Boolean))).sort());
-        }
+        setEffectivePermissionKeys(Array.from(new Set(keys.map(k => String(k).trim()).filter(Boolean))).sort());
       } catch (err) {
         console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch permissions');

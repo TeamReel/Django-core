@@ -42,9 +42,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
     setSubmitting(true);
     setError(null);
 
-    const { getApiBaseUrl } = await import('../utils/apiBase');
-    const apiBase = getApiBaseUrl();
-    const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
+    const { generativeApi } = await import('../api');
 
     const jobs: { templateId: string; styleVariant: string; outputAssetType: string }[] = [];
     if (selectedIntro) {
@@ -69,16 +67,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
           require_approval: true,
         };
         if (info.organisationId) body.organisation_id = info.organisationId;
-        const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-          body: JSON.stringify(body),
-        });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
-        }
+        await generativeApi.generate(body as any);
         succeeded++;
       } catch (e) {
         console.error(e);
@@ -182,9 +171,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
     setError(null);
 
     try {
-      const { getApiBaseUrl } = await import('../utils/apiBase');
-      const apiBase = getApiBaseUrl();
-      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
+      const { generativeApi } = await import('../api');
 
       const body: Record<string, unknown> = {
         template_id: 'photo_composite_video',
@@ -201,16 +188,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
         body.input_image_urls = { person_photo: info.approvedImageUrl, background: info.backgroundUrl };
       }
 
-      const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
-      }
+      await generativeApi.generate(body as any);
       setSubmitted(true);
     } catch (e) {
       console.error(e);

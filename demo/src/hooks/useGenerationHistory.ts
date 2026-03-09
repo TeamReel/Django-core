@@ -11,7 +11,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api, contentApi, generativeApi } from '@/api';
 
 // ============================================================================
 // Types
@@ -111,38 +111,25 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
     setError(null);
 
     try {
-      const base = getApiBaseUrl();
-
       // Fetch both template types in parallel
-      const [assetRes, contentRes] = await Promise.all([
-        fetch(`${base}/api/v1/generative/assets/templates/`, {
-          headers: getHeaders(),
-          credentials: 'include',
+      const [assetData, contentData] = await Promise.all([
+        api.get<any>('/generative/assets/templates/', controller.signal).catch(() => null),
+        api.list<ContentTemplate>('/content-generation/templates/', {
           signal: controller.signal,
-        }),
-        fetch(`${base}/api/v1/content-generation/templates/${orgId ? `?organisation=${orgId}` : ''}`, {
-          headers: getHeaders(),
-          credentials: 'include',
-          signal: controller.signal,
-        }),
+          params: orgId ? { organisation: orgId } : undefined,
+        }).catch(() => null),
       ]);
 
-      if (assetRes.ok) {
-        const json = await assetRes.json();
-        // Envelope: { status, data: { templates: [...] }, meta }
-        const arr = Array.isArray(json.data?.templates) ? json.data.templates : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.templates) ? json.templates : [];
+      if (assetData) {
+        const arr = Array.isArray(assetData?.templates) ? assetData.templates : Array.isArray(assetData?.results) ? assetData.results : Array.isArray(assetData) ? assetData : [];
         setAssetTemplates(arr);
       }
 
-      if (contentRes.ok) {
-        const json = await contentRes.json();
-        // Envelope: { status, data: { results: [...] }, meta }
-        const arr = Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.results) ? json.results : [];
-        setContentTemplates(arr);
+      if (contentData) {
+        setContentTemplates(contentData.results);
       }
     } catch (err: unknown) {
-      console.error(err);
-      if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && (err as any).name === 'AbortError')) {
+      if (!(err instanceof Error && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load templates');
       }
     } finally {
@@ -155,20 +142,10 @@ export function useGenerationHistory(): UseGenerationHistoryReturn {
     setError(null);
 
     try {
-      const base = getApiBaseUrl();
-      const res = await fetch(`${base}/api/v1/generative/assets/history/`, {
-        headers: getHeaders(),
-        credentials: 'include',
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        // Envelope: { status, data: { history: [...] }, meta }
-        const arr = Array.isArray(json.data?.history) ? json.data.history : Array.isArray(json.data?.results) ? json.data.results : Array.isArray(json.data) ? json.data : Array.isArray(json.history) ? json.history : [];
-        setHistory(arr);
-      }
+      const data = await api.get<any>('/generative/assets/history/');
+      const arr = Array.isArray(data?.history) ? data.history : Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+      setHistory(arr);
     } catch (err: unknown) {
-      console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to load history');
     } finally {
       setLoading(false);

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Input } from '@django-core/design-system';
+import { api, activitiesApi } from '../../api';
 import { periodPathKey } from '../../utils/periodPath';
-import { getCsrfToken } from '../../utils/csrf';
 import type { Period } from '../../types/season';
 import { getMatchParticipantsCount } from './seasonDetailUtils';
 import s from './ProjectSeasonDetailPage.module.css';
@@ -207,16 +207,8 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                             onClick={async () => {
                               if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                               try {
-                                const res = await fetch(`${apiBaseUrl}/api/v1/periods/${competition.id}/`, {
-                                  method: 'DELETE',
-                                  headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                                  credentials: 'include',
-                                });
-                                if (res.ok) {
-                                  setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
-                                } else {
-                                  alert('Error deleting competition');
-                                }
+                                await api.delete(`/periods/${competition.id}/`);
+                                setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
                               } catch (e) {
                                 console.error(e);
                                 console.error(e);
@@ -277,16 +269,8 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                       onClick={async () => {
                                         if (!window.confirm(`Delete match ${match.title || match.name}?`)) return;
                                         try {
-                                          const res = await fetch(`${apiBaseUrl}/api/v1/activities/${match.id}/`, {
-                                            method: 'DELETE',
-                                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                                            credentials: 'include',
-                                          });
-                                          if (res.ok) {
-                                            setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
-                                          } else {
-                                            alert('Error deleting match');
-                                          }
+                                          await activitiesApi.delete(match.id);
+                                          setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
                                         } catch (e) {
                                           console.error(e);
                                           console.error(e);

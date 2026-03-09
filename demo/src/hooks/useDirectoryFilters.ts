@@ -18,6 +18,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useSports } from './useSports';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import { isUuid, isNumericId, buildSeasonOptions } from '../utils/directoryHelpers';
 import type { Period, SeasonOption } from '../utils/directoryHelpers';
 import type { Organisation } from '../types';
@@ -270,19 +271,8 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
 
     let cancelled = false;
     const loadSlug = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, {
-          credentials: 'include',
-        });
-        if (!res.ok) return;
-        const raw: any = await res.json().catch(() => null);
-        const data: any = raw?.data ?? raw;
-        const list: Organisation[] = Array.isArray(data?.results)
-          ? data.results
-          : Array.isArray(data)
-            ? data
-            : [];
+        const { results: list } = await api.list<Organisation>('/organisations/', { pageSize: 250 });
         const match = list.find((o) => String(o?.id || '') === String(rawLockedId));
         const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);

@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
+import { api } from '@/api';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { periodPathKey } from '../utils/periodPath';
 import { getApiBaseUrl } from '../utils/apiBase';
@@ -120,22 +121,17 @@ export function useBreadcrumbsData({
     const run = async () => {
       setLoadingUsers(true);
       try {
-        const apiBaseUrl = getApiBaseUrl();
-
         let currentUserOption: BreadcrumbSwitcherOption | null = null;
         try {
-          const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(userDetailUserId)}/`, { credentials: 'include' });
-          if (res.ok) {
-            const raw = await res.json();
-            const u = raw?.data ?? raw;
-            const id = String(u?.id || userDetailUserId).trim();
-            const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
-            const email = String(u?.email || '').trim();
-            const label = name || email || (id ? `User ${id}` : 'User');
-            currentUserOption = { id, label };
-          }
+          const u = await api.get<any>(`/admin/users/${encodeURIComponent(userDetailUserId)}/`);
+          const id = String(u?.id || userDetailUserId).trim();
+          const name = `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim();
+          const email = String(u?.email || '').trim();
+          const label = name || email || (id ? `User ${id}` : 'User');
+          currentUserOption = { id, label };
         } catch { /* ignore */ }
 
+        const apiBaseUrl = getApiBaseUrl();
         const users = await fetchAllPages<any>(
           `${apiBaseUrl}/api/v1/admin/users/?page_size=200`,
           { credentials: 'include' },
@@ -170,15 +166,10 @@ export function useBreadcrumbsData({
     if (!effectiveOrg) return;
     const fetchClubs = async () => {
       try {
-        const apiBaseUrl = getApiBaseUrl();
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=250&parent_project__isnull=true`,
-          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        const { results } = await api.list<any>(
+          `/organisations/${encodeURIComponent(effectiveOrg)}/projects/`,
+          { params: { parent_project__isnull: 'true' }, pageSize: 250 },
         );
-        if (!res.ok) return;
-        const raw = await res.json();
-        const data = raw?.data || raw;
-        const results = data?.results || data?.data?.results || [];
         setClubOptions(
           (results || []).map((p: ApiProject) => ({
             id: String(p.id),
@@ -200,21 +191,16 @@ export function useBreadcrumbsData({
       setLoadingTeams(true);
       setTeamOptions([]);
       try {
-        const apiBaseUrl = getApiBaseUrl();
         const resolvedClub = (clubOptions || []).find((o) => {
           const slug = String(o?.slug || '').trim();
           const id = String(o?.id || '').trim();
           return slug === effectiveClub || id === effectiveClub;
         });
         const clubIdForQuery = String(resolvedClub?.id || effectiveClub).trim();
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrg)}/projects/?page_size=1000&parent_project=${encodeURIComponent(clubIdForQuery)}`,
-          { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
+        const { results } = await api.list<any>(
+          `/organisations/${encodeURIComponent(effectiveOrg)}/projects/`,
+          { params: { parent_project: clubIdForQuery }, pageSize: 1000 },
         );
-        if (!res.ok) return;
-        const raw = await res.json();
-        const data = raw?.data || raw;
-        const results = data?.results || data?.data?.results || [];
         const onlyThisClub = (Array.isArray(results) ? results : []).filter((p: ApiProject) => {
           const parent =
             p?.parent_id ??
@@ -240,15 +226,14 @@ export function useBreadcrumbsData({
 
   // ─── Shared helper: resolve project ID from team slug ───
   const resolveProjectId = async (org: string, team: string): Promise<string> => {
-    const apiBaseUrl = getApiBaseUrl();
-    const projectRes = await fetch(
-      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(team)}/`,
-      { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' }
-    );
-    if (!projectRes.ok) return '';
-    const rawProject: any = await projectRes.json();
-    const projectJson: any = rawProject?.data || rawProject;
-    return String(projectJson?.id || '').trim();
+    try {
+      const projectJson = await api.get<any>(
+        `/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(team)}/`,
+      );
+      return String(projectJson?.id || '').trim();
+    } catch {
+      return '';
+    }
   };
 
   const fetchRootPeriods = async (projectId: string) => {
@@ -359,12 +344,10 @@ export function useBreadcrumbsData({
         const seasonId = findSeasonId(rootPeriods, effectiveSeason);
         if (!seasonId || cancelled) return;
 
-        const apiBaseUrl = getApiBaseUrl();
-        const membersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/?period_id=${encodeURIComponent(seasonId)}&page_size=500`;
-        const membersRes = await fetch(membersUrl, { credentials: 'include' });
-        if (!membersRes.ok) return;
-        const membersRaw = await membersRes.json();
-        const membersList = membersRaw?.data?.data || membersRaw?.data?.results || membersRaw?.results || membersRaw?.data || [];
+        const { results: membersList } = await api.list<any>(
+          `/projects/${encodeURIComponent(projectId)}/members/`,
+          { params: { period_id: seasonId }, pageSize: 500 },
+        );
 
         const opts: BreadcrumbSwitcherOption[] = (Array.isArray(membersList) ? membersList : []).map((m: ApiMember) => {
           const id = String(m?.id || '').trim();

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import type { Period } from '../../types/season';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '../../api/client';
+import { periodsApi, activitiesApi } from '../../api';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -42,27 +43,11 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     const periodId = String(periodToEdit?.id || '').trim();
     if (!periodId) throw new Error('Missing period id');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(periodId)}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to save period');
-    }
-
-    const raw = await res.json().catch(() => null);
-    const server = raw?.data || raw;
+    const res = await periodsApi.update(periodId, patch as any);
+    const server = res && typeof res === 'object' ? res : null;
     const updated = server && typeof server === 'object' ? { ...periodToEdit, ...patch, ...server } : { ...periodToEdit, ...patch };
     if (String(updated?.id) === String(season?.id)) {
-      setSeason((prev) => prev ? { ...prev, ...updated } : updated);
+      setSeason((prev) => (prev ? { ...prev, ...updated } : updated) as Period);
     }
     setCompetitions((prev) => prev.map((p) => (String(p.id) === String(updated?.id) ? { ...p, ...updated } : p)));
   };
@@ -73,24 +58,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     const matchId = String(matchToEdit?.id || '').trim();
     if (!matchId) throw new Error('Missing match id');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchId)}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to save match');
-    }
-
-    const raw = await res.json().catch(() => null);
-    const updated = raw?.data || raw || { ...matchToEdit, ...patch };
+    const updated = await activitiesApi.update(matchId, patch as any) as any || { ...matchToEdit, ...patch };
     setMatches((prev) => prev.map((m) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } : m)));
   };
 
@@ -99,29 +67,16 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
   const handleDeleteSeason = useCallback(async () => {
     if (!window.confirm(`Are you sure you want to delete season ${season?.name}?`)) return;
     try {
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(resolvedSeasonId || effectiveSeasonId || ''))}/`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          credentials: 'include',
-        }
+      await api.delete(
+        `/periods/${encodeURIComponent(String(resolvedSeasonId || effectiveSeasonId || ''))}/`,
       );
-
-      if (res.ok) {
-        navigate(seasonsBasePath);
-      } else {
-        alert('Error deleting season');
-      }
+      navigate(seasonsBasePath);
     } catch (e) {
       console.error(e);
       console.error(e);
       alert('Error deleting season');
     }
-  }, [apiBaseUrl, resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
+  }, [resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
 
   // ── Activate context handler ──
 
@@ -159,26 +114,10 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
         },
       };
 
-      const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamIdValue)}/members/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        cache: 'no-store',
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Failed to add member');
-      }
+      const createdMembership = await api.post<any>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
 
       // Optimistically reflect the new membership in the current squad list.
       try {
-        const created: any = await res.json().catch(() => null);
-        const createdMembership = created?.data ?? created;
         const createdId = String(createdMembership?.id || '').trim();
         if (createdId) {
           setMembers((prev) => {

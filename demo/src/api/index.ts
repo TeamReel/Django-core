@@ -8,7 +8,7 @@
 
 // Core client & errors
 export { api } from './client';
-export type { ApiClient, ListResult, ListOptions, ListAllOptions, MutateOptions } from './client';
+export type { ApiClient, ListResult, ListOptions, ListAllOptions, GetOptions, MutateOptions } from './client';
 export { ApiError } from './errors';
 
 // Domain API modules

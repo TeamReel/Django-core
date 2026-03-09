@@ -8,15 +8,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { Users, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './MemberContentProgressCard.module.css';
-
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json?.data && Array.isArray(json.data)) return json.data;
-  if (json?.results && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 /** Expected member content types for a complete profile */
 const MEMBER_CONTENT_TYPES = [
@@ -49,7 +42,6 @@ export const MemberContentProgressCard: React.FC = () => {
   const [members, setMembers] = useState<MemberProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const org = context.organisation;
   const project = context.project;
 
@@ -65,13 +57,10 @@ export const MemberContentProgressCard: React.FC = () => {
         setLoading(true);
 
         // Fetch team members
-        const membersRes = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${org.slug}/projects/${project.slug}/members/?page_size=50`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+        const { results: memberList } = await api.list<any>(
+          `/organisations/${org.slug}/projects/${project.slug}/members/`,
+          { pageSize: 50 },
         );
-        if (!membersRes.ok) { setLoading(false); return; }
-        const membersData = await membersRes.json();
-        const memberList = extractItems<any>(membersData);
 
         if (memberList.length === 0) {
           if (!cancelled) setMembers([]);
@@ -79,12 +68,10 @@ export const MemberContentProgressCard: React.FC = () => {
         }
 
         // Fetch completed member generation requests
-        const genRes = await fetch(
-          `${apiBaseUrl}/api/v1/generative/requests/?status=completed&project=${project.id}&page_size=500`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-
-        const genItems = genRes.ok ? extractItems<any>(await genRes.json()) : [];
+        const { results: genItems } = await api.list<any>('/generative/requests/', {
+          params: { status: 'completed', project: project.id },
+          pageSize: 500,
+        });
 
         // Build map: member_id -> set of completed subtypes
         const memberContentMap = new Map<string, Set<string>>();
@@ -134,7 +121,7 @@ export const MemberContentProgressCard: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiBaseUrl, org?.slug, project?.slug, project?.id]);
+  }, [org?.slug, project?.slug, project?.id]);
 
   if (!project) return null;
   if (!loading && members.length === 0) return null;

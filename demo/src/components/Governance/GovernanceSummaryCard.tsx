@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './GovernanceSummaryCard.module.css';
 
@@ -36,8 +36,6 @@ export default function GovernanceSummaryCard(props: {
 
   const navigate = useNavigate();
 
-  const apiBaseUrl = getApiBaseUrl();
-
   const [policy, setPolicy] = useState<BalancePolicy | null>(null);
   const [source, setSource] = useState<'project' | 'organization' | 'default' | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,42 +67,27 @@ export default function GovernanceSummaryCard(props: {
       try {
         const hasProject = projectId !== undefined && projectId !== null && String(projectId).trim() !== '';
         if (hasProject) {
-          const params = new URLSearchParams();
-          params.set('organization_id', orgId);
-          params.set('project_id', String(projectId));
-          const effUrl = `${apiBaseUrl}/api/v1/transactions/balance-policies/effective/?${params.toString()}`;
-          const effRes = await fetch(effUrl, {
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-          });
-
-          // If backend doesn't have the effective endpoint yet, fall back to org-only.
-          if (effRes.ok) {
-            const effRaw = (await effRes.json().catch(() => null)) as EffectivePolicyResponse | null;
+          try {
+            const effRaw = await api.get<EffectivePolicyResponse>('/transactions/balance-policies/effective/', {
+              params: {
+                organization_id: orgId,
+                project_id: String(projectId),
+              },
+            });
             const effPolicy = unwrapBalancePolicy(effRaw?.policy);
             if (!cancelled) {
               setPolicy(effPolicy);
               setSource(effRaw?.source || 'default');
             }
             return;
+          } catch {
+            // If backend doesn't have the effective endpoint yet, fall back to org-only.
           }
         }
 
-        const url = `${apiBaseUrl}/api/v1/transactions/balance-policies/organization/${encodeURIComponent(orgId)}/`;
-        const res = await fetch(url, {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-        });
-
-        if (!res.ok) {
-          if (!cancelled) {
-            setPolicy(null);
-            setSource(null);
-          }
-          return;
-        }
-
-        const raw = await res.json().catch(() => null);
+        const raw = await api.get<any>(
+          `/transactions/balance-policies/organization/${encodeURIComponent(orgId)}/`,
+        );
         const data = unwrapBalancePolicy(raw);
         if (!cancelled) {
           setPolicy(data);
@@ -125,7 +108,7 @@ export default function GovernanceSummaryCard(props: {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, organisationId, projectId]);
+  }, [organisationId, projectId]);
 
   if (!String(organisationId || '').trim()) return null;
 

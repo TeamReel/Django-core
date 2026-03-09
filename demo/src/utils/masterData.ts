@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { getApiBaseUrl } from './apiBase';
+import { api } from '@/api';
 
 // ============================================================================
 // Types
@@ -75,52 +75,18 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 // ============================================================================
 
 async function fetchMediaTags(): Promise<MediaTag[]> {
-  const baseUrl = getApiBaseUrl();
-  const response = await fetch(`${baseUrl}/api/v1/media/tags/?is_system=true&page_size=200`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch media tags: ${response.status}`);
-  }
-
-  const data = await response.json();
-  // Handle envelope formats
-  const results = data?.data?.results || data?.results || data?.data || data || [];
-  return Array.isArray(results) ? results : [];
+  const { results } = await api.list<MediaTag>('/media/tags/', { params: { is_system: true }, pageSize: 200 });
+  return results;
 }
 
 async function fetchSports(): Promise<Sport[]> {
-  const baseUrl = getApiBaseUrl();
-  const response = await fetch(`${baseUrl}/api/v1/sport-configuration/sports/?page_size=100`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch sports: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const results = data?.data?.results || data?.results || data?.data || data || [];
-  return Array.isArray(results) ? results : [];
+  const { results } = await api.list<Sport>('/sport-configuration/sports/', { pageSize: 100 });
+  return results;
 }
 
 async function fetchFormations(): Promise<Formation[]> {
-  const baseUrl = getApiBaseUrl();
-  const response = await fetch(`${baseUrl}/api/v1/sport-configuration/formations/?page_size=100`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch formations: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const results = data?.data?.results || data?.results || data?.data || data || [];
-  return Array.isArray(results) ? results : [];
+  const { results } = await api.list<Formation>('/sport-configuration/formations/', { pageSize: 100 });
+  return results;
 }
 
 // ============================================================================

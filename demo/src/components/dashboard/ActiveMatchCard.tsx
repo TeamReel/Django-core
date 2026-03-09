@@ -12,19 +12,9 @@ import {
   Circle, Trophy, Sparkles, Calendar,
 } from 'lucide-react';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import styles from './ActiveMatchCard.module.css';
-
-/* ── Helpers ─────────────────────────────────────────────────────────── */
-
-/** Safely extract array from any paginated API response */
-function extractItems<T = any>(json: any): T[] {
-  if (Array.isArray(json)) return json;
-  if (json && Array.isArray(json.data)) return json.data;
-  if (json && Array.isArray(json.results)) return json.results;
-  return [];
-}
 
 /* ── Types ──────────────────────────────────────────────────────────── */
 
@@ -49,7 +39,6 @@ export const ActiveMatchCard: React.FC = () => {
   const [contentCount, setContentCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const project = context.project as any;
 
   useEffect(() => {
@@ -59,23 +48,24 @@ export const ActiveMatchCard: React.FC = () => {
       try {
         setLoading(true);
         const now = new Date().toISOString();
-        const projectParam = project ? `&project=${project.id}` : '';
+        const baseParams: Record<string, string> = {
+          activity_type: 'match',
+        };
+        if (project) baseParams.project = project.id;
 
         // Fetch both recent past and near future matches in parallel
-        const [pastRes, futureRes] = await Promise.all([
-          fetch(
-            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__lte=${encodeURIComponent(now)}&ordering=-start_time&page_size=3${projectParam}`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          ),
-          fetch(
-            `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=3${projectParam}`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          ),
+        const [pastData, futureData] = await Promise.all([
+          api.list<Match>('/activities/', {
+            params: { ...baseParams, start_time__lte: now, ordering: '-start_time' },
+            pageSize: 3,
+          }),
+          api.list<Match>('/activities/', {
+            params: { ...baseParams, start_time__gte: now, ordering: 'start_time' },
+            pageSize: 3,
+          }),
         ]);
 
-        const pastMatches = pastRes.ok ? extractItems<Match>(await pastRes.json()) : [];
-        const futureMatches = futureRes.ok ? extractItems<Match>(await futureRes.json()) : [];
-        const all = [...pastMatches, ...futureMatches];
+        const all = [...pastData.results, ...futureData.results];
 
         if (all.length === 0) {
           if (!cancelled) setMatch(null);
@@ -95,15 +85,11 @@ export const ActiveMatchCard: React.FC = () => {
         // Count content items for this match (gracefully handle 500s)
         if (closest) {
           try {
-            const mediaRes = await fetch(
-              `${apiBaseUrl}/api/v1/media/items/?activity=${closest.id}&page_size=1`,
-              { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-            );
-            if (mediaRes.ok) {
-              const mediaData = await mediaRes.json();
-              const count = mediaData?.meta?.pagination?.count ?? mediaData?.count ?? extractItems(mediaData).length;
-              if (!cancelled) setContentCount(count);
-            }
+            const mediaData = await api.list<any>('/media/items/', {
+              params: { activity: closest.id },
+              pageSize: 1,
+            });
+            if (!cancelled) setContentCount(mediaData.count ?? mediaData.results.length);
           } catch {
             // Media items endpoint may fail — ignore
           }
@@ -116,7 +102,7 @@ export const ActiveMatchCard: React.FC = () => {
     })();
 
     return () => { cancelled = true; };
-  }, [apiBaseUrl, project?.id]);
+  }, [project?.id]);
 
   // Derived state
   const matchState = useMemo(() => {

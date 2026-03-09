@@ -5,8 +5,7 @@ import {
   Input,
   Modal,
 } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 import type { PreferencesDataReturn } from './usePreferencesData';
 
 /* ------------------------------------------------------------------ */
@@ -132,34 +131,14 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setProfileSaving(true);
                   setProfileError(null);
 
-                  const apiBaseUrl = getApiBaseUrl();
-                  const response = await fetch(`${apiBaseUrl}/api/v1/auth/profile/`, {
-                    method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'X-Requested-With': 'XMLHttpRequest',
-                      'X-CSRFToken': getCsrfToken(),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                      first_name: profileFirstName,
-                      last_name: profileLastName,
-                      email: profileEmail,
-                      two_factor_enabled: profileTwoFactorEnabled,
-                      current_password: profileCurrentPassword,
-                    }),
+                  const updatedUser = await api.patch<any>('/auth/profile/', {
+                    first_name: profileFirstName,
+                    last_name: profileLastName,
+                    email: profileEmail,
+                    two_factor_enabled: profileTwoFactorEnabled,
+                    current_password: profileCurrentPassword,
                   });
 
-                  const json = await response.json().catch(() => ({}));
-                  if (!response.ok) {
-                    const message =
-                      json?.error?.message ||
-                      json?.message ||
-                      `Failed to update profile (${response.status})`;
-                    throw new Error(message);
-                  }
-
-                  const updatedUser = json?.data || json;
                   if (typeof setUser === 'function') {
                     setUser(updatedUser);
                   }
@@ -262,30 +241,11 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setPasswordError(null);
                   setPasswordSuccess(false);
 
-                  const apiBaseUrl = getApiBaseUrl();
-                  const response = await fetch(`${apiBaseUrl}/api/v1/auth/change-password/`, {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'X-Requested-With': 'XMLHttpRequest',
-                      'X-CSRFToken': getCsrfToken(),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                      current_password: passwordCurrent,
-                      new_password: passwordNext,
-                      new_password_confirm: passwordConfirm,
-                    }),
+                  await api.post('/auth/change-password/', {
+                    current_password: passwordCurrent,
+                    new_password: passwordNext,
+                    new_password_confirm: passwordConfirm,
                   });
-
-                  const json = await response.json().catch(() => ({}));
-                  if (!response.ok) {
-                    const message =
-                      json?.error?.message ||
-                      json?.message ||
-                      `Failed to change password (${response.status})`;
-                    throw new Error(message);
-                  }
 
                   setPasswordSuccess(true);
                   setPasswordCurrent('');
@@ -371,30 +331,8 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setAvatarSaving(true);
                   setAvatarError(null);
 
-                  const apiBaseUrl = getApiBaseUrl();
-                  const formData = new FormData();
-                  formData.append('avatar', avatarFile);
+                  const updatedUser = await api.upload<any>('/auth/avatar/', avatarFile);
 
-                  const response = await fetch(`${apiBaseUrl}/api/v1/auth/avatar/`, {
-                    method: 'POST',
-                    headers: {
-                      'X-Requested-With': 'XMLHttpRequest',
-                      'X-CSRFToken': getCsrfToken(),
-                    },
-                    credentials: 'include',
-                    body: formData,
-                  });
-
-                  const json = await response.json().catch(() => ({}));
-                  if (!response.ok) {
-                    const message =
-                      json?.error?.message ||
-                      json?.message ||
-                      `Failed to upload avatar (${response.status})`;
-                    throw new Error(message);
-                  }
-
-                  const updatedUser = json?.data || json;
                   if (typeof setUser === 'function') {
                     setUser(updatedUser);
                   }

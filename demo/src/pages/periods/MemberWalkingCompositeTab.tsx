@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { projectsApi } from '../../api';
 import {
   normalizeVariantValue,
   getBestUrl,
@@ -187,8 +188,8 @@ export function MemberWalkingCompositeTab({
                           if (result.ok) {
                             if (isCancelling) {
                               try {
-                                const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(membershipId!)}/`, { credentials: 'include' });
-                                if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+                                const memberData = await projectsApi.getMember(project?.id || '', membershipId!);
+                                setMembership(memberData as any);
                               } catch { /* best-effort */ }
                             } else {
                               const rawUrl = getVariantRawUrl(walkingVideoData) || '';

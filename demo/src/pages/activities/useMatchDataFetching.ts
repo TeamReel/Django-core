@@ -1,9 +1,9 @@
 import { useEffect, useCallback } from 'react';
+import { api } from '@/api';
 import { periodPathKey } from '../../utils/periodPath';
 import { FORMATION_LAYOUTS } from '../identity/ContentGenerationModal';
 import type { Period, SeasonProject as Project } from '../../types/season';
 import type { MatchDetail, OrgMember, SeasonSquadParticipation, ProjectMember } from './matchDetailTypes';
-import { getEnvelopeData } from './matchDetailTypes';
 
 // ─── Local types ─────────────────────────────────────────────────────────────
 
@@ -90,16 +90,11 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           // Fallback: search by slug via API when provider hasn't loaded yet
           if (!competitionUuid && resolvedSeasonId) {
             try {
-              const searchRes = await fetch(
-                `${apiBaseUrl}/api/v1/periods/?parent=${encodeURIComponent(resolvedSeasonId)}&slug=${encodeURIComponent(effectiveCompetitionIdVal)}`,
-                { credentials: 'include' },
-              );
-              if (searchRes.ok) {
-                const searchData = await searchRes.json();
-                const results = Array.isArray(searchData) ? searchData : (searchData?.results || searchData?.data || []);
-                if (results.length > 0) {
-                  competitionUuid = String(results[0].id || '').trim();
-                }
+              const { results } = await api.list<any>('/periods/', {
+                params: { parent: resolvedSeasonId, slug: effectiveCompetitionIdVal },
+              });
+              if (results.length > 0) {
+                competitionUuid = String(results[0].id || '').trim();
               }
             } catch { /* ignore — will fall through to error */ }
           }
@@ -112,13 +107,11 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         }
         setResolvedCompetitionUuid(competitionUuid);
 
-        const [competitionRes, matchRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(competitionUuid)}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(effectiveMatchIdVal)}/`, { credentials: 'include' }),
+        const [competitionJson, matchJson] = await Promise.all([
+          api.get<Period>(`/periods/${encodeURIComponent(competitionUuid)}/`),
+          api.get<MatchDetail>(`/activities/${encodeURIComponent(effectiveMatchIdVal)}/`),
         ]);
 
-        if (!competitionRes.ok) throw new Error('Failed to load competition');
-        const competitionJson = getEnvelopeData<Period>(await competitionRes.json());
         setCompetition(competitionJson);
 
         const desiredCompetitionKey = periodPathKey(competitionJson) || '';
@@ -131,18 +124,14 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           return;
         }
 
-        if (!matchRes.ok) throw new Error(matchRes.status === 404 ? 'Match not found' : 'Failed to load match');
-        const matchJson = getEnvelopeData<MatchDetail>(await matchRes.json());
+        if (!matchJson) throw new Error('Match not found');
         setMatch(matchJson);
 
         const oppClubId = String(matchJson.metadata?.teamreel?.match_context?.opponent_club_id || '').trim();
         if (oppClubId && orgSlugOrId) {
           try {
-            const oppClubRes = await fetch(
-              `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(oppClubId)}/`,
-              { credentials: 'include' }
-            );
-            if (oppClubRes.ok) setOpponentClub(getEnvelopeData<Project>(await oppClubRes.json()));
+            const oppClub = await api.get<Project>(`/projects/${encodeURIComponent(oppClubId)}/`);
+            if (oppClub) setOpponentClub(oppClub);
           } catch { /* ignore */ }
         }
 
@@ -165,7 +154,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
     };
 
     run();
-  }, [apiBaseUrl, resolvedSeasonId, providerCompetitions, effectiveCompetitionIdVal, effectiveMatchIdVal, seasonsBasePath, seasonKeyOrId, orgSlugOrId]);
+  }, [resolvedSeasonId, providerCompetitions, effectiveCompetitionIdVal, effectiveMatchIdVal, seasonsBasePath, seasonKeyOrId, orgSlugOrId]);
 
   // ── Roster loading ──
   useEffect(() => {
@@ -176,35 +165,22 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         setRosterError(null);
 
         const asArray = (value: any): any[] => (Array.isArray(value) ? value : []);
-        const unwrap = (raw: any): any => raw?.data ?? raw;
-        const extractList = (payload: any): any[] => {
-          const u = unwrap(payload);
-          if (Array.isArray(u)) return u;
-          if (Array.isArray(u?.results)) return u.results;
-          if (Array.isArray(u?.items)) return u.items;
-          if (Array.isArray(u?.data)) return u.data;
-          if (Array.isArray(u?.data?.results)) return u.data.results;
-          if (Array.isArray(u?.data?.items)) return u.data.items;
-          if (Array.isArray(u?.data?.data)) return u.data.data;
-          if (Array.isArray(u?.data?.data?.results)) return u.data.data.results;
-          return [];
-        };
         const buildSyntheticMember = (id: string, label: string): OrgMember => ({ id, user: { id, full_name: label } });
 
         const seasonUuid = String(resolvedSeasonId || '').trim();
-        const baseMembersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(match.project.id))}/members/`;
 
         const fetchMembers = async (withSeasonFilter: boolean) => {
-          const p = new URLSearchParams();
-          p.set('page_size', '500');
-          if (withSeasonFilter && seasonUuid) p.set('period', seasonUuid);
-          const res = await fetch(`${baseMembersUrl}?${p.toString()}`, { credentials: 'include' });
-          if (!res.ok) {
-            const detail = await res.text().catch(() => '');
-            return { ok: false, status: res.status, detail, list: [] };
+          try {
+            const params: Record<string, string | undefined> = {};
+            if (withSeasonFilter && seasonUuid) params.period = seasonUuid;
+            const { results } = await api.list<any>(`/projects/${encodeURIComponent(String(match.project.id))}/members/`, {
+              pageSize: 500,
+              params,
+            });
+            return { ok: true, status: 200, detail: '', list: results };
+          } catch (e: any) {
+            return { ok: false, status: e?.status || 0, detail: e?.message || '', list: [] };
           }
-          const raw = await res.json().catch(() => null);
-          return { ok: true, status: res.status, detail: '', list: extractList(raw) };
         };
 
         let projectMembers: ProjectMember[] = [];
@@ -248,12 +224,8 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         let orgMembers: OrgMember[] = [];
         if (eligibleFromProjectMembers.length === 0) {
           try {
-            const orgRes = await fetch(
-              `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/?page_size=1000`,
-              { credentials: 'include' }
-            );
-            if (orgRes.ok) orgMembers = extractList(await orgRes.json().catch(() => null)) as OrgMember[];
-            else { const d = await orgRes.text().catch(() => ''); throw new Error(`Failed to load organisation members (${orgRes.status}) ${d || ''}`.trim()); }
+            const { results } = await api.list<OrgMember>(`/organisations/${encodeURIComponent(String(orgSlugOrId))}/members/`, { pageSize: 1000 });
+            orgMembers = results;
           } catch (e) { throw e; }
         }
         setOrgMembersAll(orgMembers);
@@ -265,16 +237,16 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         if (eligibleFromProjectMembers.length > 0) preferredEligibleMembers = eligibleFromProjectMembers;
 
         if ((!preferredEligibleMembers || preferredEligibleMembers.length === 0) && seasonUuid) {
-          const baseSquadParams = new URLSearchParams();
-          baseSquadParams.set('page_size', '500');
-          baseSquadParams.set('period_id', seasonUuid);
 
           const fetchSquad = async (withRoleFilter: boolean) => {
-            const p = new URLSearchParams(baseSquadParams);
-            if (withRoleFilter) p.set('role', 'squad_member');
-            const res = await fetch(`${apiBaseUrl}/api/v1/participations/?${p.toString()}`, { credentials: 'include' });
-            if (!res.ok) { const d = await res.text().catch(() => ''); return { ok: false, status: res.status, detail: d, list: [] }; }
-            return { ok: true, status: res.status, detail: '', list: extractList(await res.json().catch(() => null)) };
+            try {
+              const params: Record<string, string> = { period_id: seasonUuid };
+              if (withRoleFilter) params.role = 'squad_member';
+              const { results } = await api.list<any>('/participations/', { pageSize: 500, params });
+              return { ok: true, status: 200, detail: '', list: results };
+            } catch (e: any) {
+              return { ok: false, status: e?.status || 0, detail: e?.message || '', list: [] };
+            }
           };
 
           const squadAttempt = await fetchSquad(true);
@@ -317,11 +289,10 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         setEligibleMembers(preferredEligibleMembers || []);
 
         if (club?.id) {
-          const clubRes = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/members/?page_size=500`,
-            { credentials: 'include' }
-          );
-          if (clubRes.ok) setClubProjectMembers(extractList(await clubRes.json().catch(() => null)) as ProjectMember[]);
+          try {
+            const { results } = await api.list<ProjectMember>(`/projects/${encodeURIComponent(String(club.id))}/members/`, { pageSize: 500 });
+            setClubProjectMembers(results);
+          } catch { /* ignore */ }
         }
       } catch (e) {
         console.error(e);
@@ -332,7 +303,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
     };
 
     run();
-  }, [apiBaseUrl, club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonId]);
+  }, [club?.id, match?.project?.id, orgSlugOrId, resolvedSeasonId]);
 
   // ── Squad for formation lineup editor ──
   useEffect(() => {
@@ -342,29 +313,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
     const fetchSquadData = async () => {
       setLineupSquadLoading(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectIdVal))}/members/?page_size=100`;
-        const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-        if (!res.ok) return;
-        const raw = await res.json();
-        let members: SquadMemberRecord[] = [];
-        if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
-        else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
-        else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
-        else if (Array.isArray(raw?.data)) members = raw.data;
-        else if (Array.isArray(raw)) members = raw;
-
-        let nextUrl = raw?.meta?.pagination?.next;
-        while (nextUrl) {
-          const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-          if (!nr.ok) break;
-          const nd = await nr.json();
-          let nm: SquadMemberRecord[] = [];
-          if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
-          else if (Array.isArray(nd?.data)) nm = nd.data;
-          else if (Array.isArray(nd)) nm = nd;
-          members = [...members, ...nm];
-          nextUrl = nd?.meta?.pagination?.next;
-        }
+        const members = await api.listAll<SquadMemberRecord>(`/projects/${encodeURIComponent(String(projectIdVal))}/members/`, { pageSize: 100 });
 
         const groups: Record<string, SquadMemberRecord[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
         members.forEach((p: SquadMemberRecord) => {
@@ -381,7 +330,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
     };
 
     fetchSquadData();
-  }, [apiBaseUrl, match?.project?.id]);
+  }, [match?.project?.id]);
 
   // ── Load saved lineup from match metadata ──
   useEffect(() => {
@@ -398,13 +347,11 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
   // ── Refresh match from API ──
   const refreshMatch = useCallback(async () => {
     if (!match?.id) return;
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(match.id))}/`, {
-      credentials: 'include',
-    });
-    if (!res.ok) return;
-    const raw = await res.json().catch(() => null);
-    setMatch(getEnvelopeData(raw));
-  }, [match?.id, apiBaseUrl]);
+    try {
+      const raw = await api.get<MatchDetail>(`/activities/${encodeURIComponent(String(match.id))}/`);
+      setMatch(raw);
+    } catch { /* ignore */ }
+  }, [match?.id]);
 
   return { refreshMatch };
 }

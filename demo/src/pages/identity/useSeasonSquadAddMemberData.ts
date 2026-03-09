@@ -5,6 +5,7 @@ import type {
   UserOption,
   SeasonSquadAddMemberModalProps,
 } from './seasonSquadAddMember.types';
+import { api } from '../../api';
 
 type HookProps = Omit<SeasonSquadAddMemberModalProps, 'onClose'>;
 
@@ -19,31 +20,6 @@ interface RawUserRecord {
   email?: string;
   name?: string;
 }
-
-const extractList = (raw: any): any[] => {
-  const list = raw?.data?.data || raw?.data?.results || raw?.results || raw?.data || raw;
-  return Array.isArray(list) ? list : [];
-};
-
-const getNextUrl = (raw: any): string => {
-  const next = raw?.data?.next ?? raw?.next;
-  return typeof next === 'string' ? next : '';
-};
-
-const fetchAllPages = async (url: string, opts: RequestInit, maxItems = 1000): Promise<any[]> => {
-  const all: any[] = [];
-  let nextUrl = url;
-  const seen = new Set<string>();
-  while (nextUrl && all.length < maxItems && !seen.has(nextUrl)) {
-    seen.add(nextUrl);
-    const res = await fetch(nextUrl, opts);
-    if (!res.ok) break;
-    const raw = await res.json().catch(() => null);
-    all.push(...extractList(raw));
-    nextUrl = getNextUrl(raw);
-  }
-  return all.slice(0, maxItems);
-};
 
 const normalizeUser = (u: RawUserRecord): UserOption | null => {
   if (!u) return null;
@@ -216,11 +192,9 @@ export function useSeasonSquadAddMemberData({
     const load = async () => {
       setLoadingOrganisations(true);
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=500`, { credentials: 'include' });
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
-        const list = extractList(raw)
-          .map((o: { id?: string; name?: string; slug?: string }) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
+        const data = await api.list<{ id?: string; name?: string; slug?: string }>('/organisations/', { pageSize: 500 });
+        const list = data.results
+          .map((o) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
           .filter((o) => o.id);
         const unique = [...new Map(list.map((o) => [String(o.id), o])).values()];
         if (!cancelled) setRemoteOrganisations(unique);
@@ -241,10 +215,10 @@ export function useSeasonSquadAddMemberData({
       setLoadingClubs(true);
       try {
         if (orgId && !orgSlug) { if (!cancelled) setRemoteClubs([]); return; }
-        const baseUrl = orgId
-          ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=true`
-          : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`;
-        const rawList = await fetchAllPages(baseUrl, { credentials: 'include', signal: abortController.signal }, 1000);
+        const path = orgId
+          ? `/organisations/${encodeURIComponent(orgSlug)}/projects/`
+          : '/projects/';
+        const rawList = await api.listAll<any>(path, { pageSize: 200, params: { parent_project__isnull: true }, maxItems: 1000, signal: abortController.signal });
         const list = rawList.map((p: ProjectOption) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteClubs(unique);
@@ -266,12 +240,15 @@ export function useSeasonSquadAddMemberData({
       setLoadingTeams(true);
       try {
         if (!clubId && orgId && !orgSlug) { if (!cancelled) setRemoteTeams([]); return; }
-        const baseUrl = clubId
-          ? `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=200`
+        const path = clubId
+          ? '/projects/'
           : orgId
-            ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=false`
-            : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
-        const rawList = await fetchAllPages(baseUrl, { credentials: 'include', signal: abortController.signal }, 1000);
+            ? `/organisations/${encodeURIComponent(orgSlug)}/projects/`
+            : '/projects/';
+        const params: Record<string, string | number | boolean | undefined> = clubId
+          ? { parent_project: clubId }
+          : { parent_project__isnull: false };
+        const rawList = await api.listAll<any>(path, { pageSize: 200, params, maxItems: 1000, signal: abortController.signal });
         const list = rawList.map((p: ProjectOption) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique);
@@ -303,30 +280,15 @@ export function useSeasonSquadAddMemberData({
         let usersRaw: any[] = [];
         if (teamId) {
           if (!season) throw new Error('Missing season context');
-          const params = new URLSearchParams();
-          params.set('period', season);
-          params.set('page_size', '500');
-          if (clubId) params.set('scope_project_id', clubId);
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/searchable-users/?${params.toString()}`,
-            { credentials: 'include', signal: abortController.signal },
-          );
-          if (!res.ok) throw new Error('Failed to load users');
-          usersRaw = extractList(await res.json().catch(() => null));
+          const queryParams: Record<string, string | number | boolean | undefined> = { period: season, scope_project_id: clubId || undefined };
+          const data = await api.list<any>(`/projects/${encodeURIComponent(teamId)}/members/searchable-users/`, { pageSize: 500, params: queryParams, signal: abortController.signal });
+          usersRaw = data.results;
         } else if (clubId) {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubId)}/members/?page_size=500`,
-            { credentials: 'include', signal: abortController.signal },
-          );
-          if (!res.ok) throw new Error('Failed to load club members');
-          usersRaw = extractList(await res.json().catch(() => null)).map((m: { user?: unknown }) => m?.user).filter(Boolean);
+          const data = await api.list<any>(`/projects/${encodeURIComponent(clubId)}/members/`, { pageSize: 500, signal: abortController.signal });
+          usersRaw = data.results.map((m: { user?: unknown }) => m?.user).filter(Boolean);
         } else {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?page_size=500&include_project_memberships=true`,
-            { credentials: 'include', signal: abortController.signal },
-          );
-          if (!res.ok) throw new Error('Failed to load federation members');
-          usersRaw = extractList(await res.json().catch(() => null)).map((m: { user?: unknown }) => m?.user).filter(Boolean);
+          const data = await api.list<any>(`/organisations/${encodeURIComponent(orgSlug)}/members/`, { pageSize: 500, params: { include_project_memberships: true }, signal: abortController.signal });
+          usersRaw = data.results.map((m: { user?: unknown }) => m?.user).filter(Boolean);
         }
 
         const normalized = usersRaw.map(normalizeUser).filter(Boolean) as UserOption[];

@@ -11,7 +11,7 @@ import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
   Circle, Loader2, AlertCircle, Sparkles,
 } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import { formatRelativeTime, getDateUrgency } from '../../utils/relativeTime';
 import { CONTENT_TYPES } from '../../pages/identity/ContentGenerationModal';
 import { SkeletonCard } from '../Skeleton';
@@ -148,7 +148,6 @@ export const NextMatchHero: React.FC = () => {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
 
   // Fetch next upcoming match
   useEffect(() => {
@@ -157,26 +156,19 @@ export const NextMatchHero: React.FC = () => {
       try {
         setLoading(true);
         const now = new Date().toISOString();
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=1`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+        const data = await api.get<any>(
+          `/activities/?activity_type=match&start_time__gte=${encodeURIComponent(now)}&ordering=start_time&page_size=1`,
         );
-        if (!res.ok) throw new Error('fetch failed');
-        const data = await res.json();
         const items = extractItems<Match>(data);
         const m = items[0] ?? null;
         if (!cancelled) setMatch(m);
 
         // If we have a match, fetch its media items to compute readiness
         if (m) {
-          const mediaRes = await fetch(
-            `${apiBaseUrl}/api/v1/media/items/?activity=${m.id}&page_size=100`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+          const mediaData = await api.get<any>(
+            `/media/items/?activity=${m.id}&page_size=100`,
           );
-          if (mediaRes.ok) {
-            const mediaData = await mediaRes.json();
-            if (!cancelled) setMediaItems(extractItems<MediaItem>(mediaData));
-          }
+          if (!cancelled) setMediaItems(extractItems<MediaItem>(mediaData));
         }
       } catch {
         // silently fail
@@ -185,7 +177,7 @@ export const NextMatchHero: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiBaseUrl]);
+  }, []);
 
   // Compute readiness
   const { percent, checklist } = useMemo(() => {

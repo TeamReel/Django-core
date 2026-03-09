@@ -2,7 +2,7 @@
  * useTemplatesData – Hook for fetching and resolving content templates
  */
 import { useState, useCallback } from 'react';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '@/api';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { ContentTemplate } from '../../../pages/identity/ContentGenerationModal/types';
 
@@ -19,7 +19,6 @@ export interface UseTemplatesDataReturn {
 }
 
 export function useTemplatesData(): UseTemplatesDataReturn {
-  const apiBaseUrl = getApiBaseUrl();
   const { setSelectedTemplate, setTemplatesError, lineupFormation } = useMatchWizard();
   const [availableTemplates, setAvailableTemplates] = useState<Record<string, ContentTemplate[]>>({});
   const [templatesLoading, setTemplatesLoading] = useState(false);
@@ -28,18 +27,10 @@ export function useTemplatesData(): UseTemplatesDataReturn {
     setTemplatesLoading(true);
     setTemplatesError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?is_active=true&page_size=500`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+      const { results: all } = await api.list<ContentTemplate>('/content-generation/templates/', {
+        params: { is_active: true },
+        pageSize: 500,
       });
-      if (!res.ok) {
-        setTemplatesError('Kon sjablonen niet laden');
-        setTemplatesLoading(false);
-        return;
-      }
-      const data = await res.json();
-      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-      const all: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 
       const grouped: Record<string, ContentTemplate[]> = {};
       all.forEach(t => {
@@ -55,7 +46,7 @@ export function useTemplatesData(): UseTemplatesDataReturn {
     } finally {
       setTemplatesLoading(false);
     }
-  }, [apiBaseUrl, setTemplatesError]);
+  }, [setTemplatesError]);
 
   const resolveTemplate = useCallback((subtype: string): ContentTemplate | null => {
     const templates = availableTemplates[subtype] || [];

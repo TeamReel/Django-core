@@ -11,10 +11,10 @@
  * - handleMetadataUpdate (PATCH membership metadata)
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { api } from '@/api';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
 import { getBestUrl } from '../../constants/assetProcessingSpecs';
 import { resolvePresignedUrls } from '../../hooks/useBrandProfile';
-import { getCsrfToken } from '../../utils/csrf';
 import {
   createEmptyMediaForm,
   createEmptyVideoVariants,
@@ -154,15 +154,11 @@ export function useMemberMediaActions({
     setProfileUploading(true);
     setProfilePreview(URL.createObjectURL(file));
     try {
-      const csrfToken = getCsrfToken();
       const fd = new FormData();
       fd.append('avatar', file);
-      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${userId}/avatar/`, {
-        method: 'POST', credentials: 'include', headers: { 'X-CSRFToken': csrfToken }, body: fd,
-      });
-      if (!res.ok) { const errBody = await res.text().catch(() => ''); throw new Error(`Upload mislukt: ${res.status} ${errBody.slice(0, 200)}`); }
-      const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`, { credentials: 'include' });
-      if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+      await api.post(`/admin/users/${userId}/avatar/`, fd);
+      const memberData = await api.get<any>(`/projects/${project?.id}/members/${membershipId}/`);
+      if (memberData) setMembership(memberData);
     } catch (err) {
       console.error(err);
       console.error('Profile photo upload error:', err);
@@ -184,43 +180,32 @@ export function useMemberMediaActions({
     setLegacyPhotoUploading(true);
     setLegacyPhotoPreview(URL.createObjectURL(file));
     try {
-      const csrfToken = getCsrfToken();
       const fd = new FormData();
       fd.append('file', file);
       fd.append('path_prefix', `members/${membershipId}/media/legacy_photo`);
-      const uploadRes = await fetch(`${apiBaseUrl}/api/v1/files/`, {
-        method: 'POST', credentials: 'include',
-        headers: { 'X-CSRFToken': csrfToken, 'X-Organization-ID': organizationId },
-        body: fd,
-      });
-      if (!uploadRes.ok) { const errBody = await uploadRes.text().catch(() => ''); throw new Error(`Upload mislukt: ${uploadRes.status} ${errBody.slice(0, 200)}`); }
-      const uploadData = await uploadRes.json();
-      const storagePath = uploadData?.data?.storage_path || uploadData?.storage_path;
+      fd.append('organization', organizationId);
+      const uploadData = await api.post<any>('/files/', fd);
+      const storagePath = uploadData?.storage_path;
       if (!storagePath) throw new Error('Geen storage path ontvangen');
 
-      const patchRes = await fetch(`${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`, {
-        method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify({
-          metadata: {
-            ...(membership?.metadata || {}),
-            teamreel_assets: {
-              ...(membership?.metadata?.teamreel_assets || {}),
-              media: {
-                ...(membership?.metadata?.teamreel_assets?.media || {}),
-                legacy_photo: { url: storagePath, caption: '' },
-              },
+      await api.patch(`/projects/${project?.id}/members/${membershipId}/`, {
+        metadata: {
+          ...(membership?.metadata || {}),
+          teamreel_assets: {
+            ...(membership?.metadata?.teamreel_assets || {}),
+            media: {
+              ...(membership?.metadata?.teamreel_assets?.media || {}),
+              legacy_photo: { url: storagePath, caption: '' },
             },
           },
-        }),
+        },
       });
-      if (!patchRes.ok) throw new Error(`Metadata update failed: ${patchRes.status}`);
 
-      const uploadedPresignedUrl = uploadData?.data?.presigned_url || uploadData?.presigned_url;
+      const uploadedPresignedUrl = uploadData?.presigned_url;
       if (uploadedPresignedUrl) setPresignedCache(prev => ({ ...prev, [storagePath]: uploadedPresignedUrl }));
 
-      const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${project?.id}/members/${membershipId}/`, { credentials: 'include' });
-      if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+      const memberData = await api.get<any>(`/projects/${project?.id}/members/${membershipId}/`);
+      if (memberData) setMembership(memberData);
 
       setLegacyPhotoPreview(null);
       alert('Legacy foto succesvol geüpload!');
@@ -240,16 +225,8 @@ export function useMemberMediaActions({
     if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
     setCroppingCloseup(prev => ({ ...prev, [kitType]: true }));
     try {
-      const csrfToken = getCsrfToken();
-      const res = await fetch(`${apiBaseUrl}/api/v1/generative/assets/crop-closeup/`, {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify({ membership_id: membershipId, kit_type: kitType }),
-      });
-      const raw = await res.json();
-      const inner = (raw.data ?? raw) as Record<string, string>;
-      if (!res.ok) throw new Error(inner?.error || raw?.error || `Server error ${res.status}`);
-      const storagePath: string = inner.storage_path || '';
+      const result = await api.post<Record<string, string>>('/generative/assets/crop-closeup/', { membership_id: membershipId, kit_type: kitType });
+      const storagePath: string = result?.storage_path || '';
       if (!storagePath) throw new Error('Geen storage pad ontvangen van de server');
       setVideoVariants(prev => ({
         ...prev,
@@ -262,7 +239,7 @@ export function useMemberMediaActions({
     } finally {
       setCroppingCloseup(prev => ({ ...prev, [kitType]: false }));
     }
-  }, [apiBaseUrl, membershipId]);
+  }, [membershipId]);
 
   // ── Crop halfbody from fullbody ──
   const [croppingHalfbody, setCroppingHalfbody] = useState<Record<string, boolean>>({});
@@ -271,16 +248,8 @@ export function useMemberMediaActions({
     if (!membershipId) { alert('Membership ID ontbreekt.'); return; }
     setCroppingHalfbody(prev => ({ ...prev, [kitType]: true }));
     try {
-      const csrfToken = getCsrfToken();
-      const res = await fetch(`${apiBaseUrl}/api/v1/generative/assets/crop-halfbody/`, {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify({ membership_id: membershipId, kit_type: kitType }),
-      });
-      const raw = await res.json();
-      const inner = (raw.data ?? raw) as Record<string, string>;
-      if (!res.ok) throw new Error(inner?.error || raw?.error || `Server error ${res.status}`);
-      const storagePath: string = inner.storage_path || '';
+      const result = await api.post<Record<string, string>>('/generative/assets/crop-halfbody/', { membership_id: membershipId, kit_type: kitType });
+      const storagePath: string = result?.storage_path || '';
       if (!storagePath) throw new Error('Geen storage pad ontvangen van de server');
       setVideoVariants(prev => ({
         ...prev,
@@ -293,7 +262,7 @@ export function useMemberMediaActions({
     } finally {
       setCroppingHalfbody(prev => ({ ...prev, [kitType]: false }));
     }
-  }, [apiBaseUrl, membershipId]);
+  }, [membershipId]);
 
   // ── Metadata update (PATCH) ──
   const [saving, setSaving] = useState(false);
@@ -312,15 +281,8 @@ export function useMemberMediaActions({
     setSaving(true);
     setSaveError(null);
     try {
-      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1] || '';
-      const res = await fetch(`${apiBaseUrl}/api/v1/projects/${project.id}/members/${idToUse}/`, {
-        method: 'PATCH', credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify({ metadata: newMetadata }),
-      });
-      if (!res.ok) throw new Error(`Failed to update: ${res.status}`);
-      const json = await res.json();
-      setMembership(json?.data || json);
+      const result = await api.patch<any>(`/projects/${project.id}/members/${idToUse}/`, { metadata: newMetadata });
+      setMembership(result);
     } catch (e) {
       console.error(e);
       setSaveError(e instanceof Error ? e.message : 'Failed to update');

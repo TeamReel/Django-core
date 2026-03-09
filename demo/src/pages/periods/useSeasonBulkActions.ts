@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { Period } from '../../types/season';
+import { api } from '../../api/client';
 import { getCsrfToken } from '../../utils/csrf';
-import { fetchAllPages } from '../../utils/fetchAllPages';
 import { sleep, fetchWithThrottleRetry } from './seasonDetailUtils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -199,34 +199,19 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     if (!teamIdValue) throw new Error('Select a team first');
     if (!seasonIdValue) throw new Error('Select a season first');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        organisation_id: orgIdValue,
-        project_id: teamIdValue ? Number(teamIdValue) : undefined,
-        parent_period_id: seasonIdValue,
-        name: payload.name,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        sport_id: payload.sport_id || undefined,
-        metadata: { type: 'competition' },
-      }),
+    const created = await api.post<any>('/periods/', {
+      organisation_id: orgIdValue,
+      project_id: teamIdValue ? Number(teamIdValue) : undefined,
+      parent_period_id: seasonIdValue,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      sport_id: payload.sport_id || undefined,
+      metadata: { type: 'competition' },
     });
 
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create competition');
-    }
-
     // Update UI immediately; refresh list in background.
-    const raw: any = await res.json().catch(() => null);
-    const created: any = raw?.data?.data || raw?.data || raw;
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {
@@ -243,12 +228,10 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       void (async () => {
         setCompetitionsLoading(true);
         try {
-          const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(resolvedSeasonId)}&page_size=500`;
-          const competitionResults = await fetchAllPages<Period>(
-            competitionsUrl,
-            { credentials: 'include' },
-            { ttlMs: 10_000, cacheKey: `periods:children:${resolvedSeasonId}` }
-          );
+          const competitionResults = await api.listAll<Period>('/periods/', {
+            params: { parent_id: resolvedSeasonId },
+            pageSize: 500,
+          });
           setCompetitions(competitionResults);
         } finally {
           setCompetitionsLoading(false);
@@ -265,39 +248,24 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     if (!teamIdValue) throw new Error('Select a team first');
     if (!competitionIdValue) throw new Error('Select a competition first');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken(),
+    const created = await api.post<any>('/activities/', {
+      title: payload.title,
+      activity_type: 'match',
+      project_id: teamIdValue ? Number(teamIdValue) : undefined,
+      opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
+      period_id: competitionIdValue,
+      start_time: payload.start_time,
+      end_time: payload.end_time,
+      location: payload.location,
+      description: payload.description,
+      metadata: {
+        venue: payload.venue || 'Home',
+        is_home: (payload.venue || 'Home') === 'Home',
+        ...payload?.metadata,
       },
-      credentials: 'include',
-      body: JSON.stringify({
-        title: payload.title,
-        activity_type: 'match',
-        project_id: teamIdValue ? Number(teamIdValue) : undefined,
-        opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
-        period_id: competitionIdValue,
-        start_time: payload.start_time,
-        end_time: payload.end_time,
-        location: payload.location,
-        description: payload.description,
-        metadata: {
-          venue: payload.venue || 'Home',
-          is_home: (payload.venue || 'Home') === 'Home',
-          ...payload?.metadata,
-        },
-      }),
     });
 
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create match');
-    }
-
     // Update UI immediately; refresh matches in background if currently visible.
-    const raw: any = await res.json().catch(() => null);
-    const created: any = raw?.data?.data || raw?.data || raw;
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {
@@ -317,16 +285,16 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
             const projectNumericId = String(project?.id || '').trim();
           const seasonUuid = String(resolvedSeasonId || '').trim();
           if (projectNumericId && seasonUuid) {
-            const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
-              projectNumericId
-            )}&period_id=${encodeURIComponent(
-              seasonUuid
-            )}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`;
-            const seasonMatches = await fetchAllPages<any>(
-              url,
-              { credentials: 'include' },
-              { ttlMs: 10_000, cacheKey: `matches:season:${projectNumericId}:${seasonUuid}`, maxItems: 250 }
-            );
+            const seasonMatches = await api.listAll<any>('/activities/', {
+              params: {
+                project_id: projectNumericId,
+                period_id: seasonUuid,
+                include_descendants: 'true',
+                activity_type: 'match',
+                ordering: '-start_time',
+              },
+              pageSize: 250, maxItems: 250,
+            });
             setMatches(seasonMatches);
           }
         } finally {

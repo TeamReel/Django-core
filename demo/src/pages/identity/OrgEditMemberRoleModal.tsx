@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 
 export interface OrgEditMemberRoleModalProps {
   opened: boolean;
@@ -22,11 +22,6 @@ export function OrgEditMemberRoleModal({
   const [error, setError] = useState<string | null>(null);
 
   if (!opened || !editingMember) return null;
-
-  const getApiV1BaseUrl = () => {
-    const raw = getApiBaseUrl();
-    return raw.endsWith('/api/v1') ? raw : `${raw}/api/v1`;
-  };
 
   return (
     <div
@@ -101,24 +96,8 @@ export function OrgEditMemberRoleModal({
               try {
                 setSaving(true);
                 setError(null);
-                const apiV1BaseUrl = getApiV1BaseUrl();
-                const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-                const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/${editingMember.id}/`, {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken || '',
-                  },
-                  credentials: 'include',
-                  body: JSON.stringify({ role: editingMemberRole }),
-                });
+                const updated = await api.patch(`/organisations/${currentOrgSlug}/members/${editingMember.id}/`, { role: editingMemberRole });
 
-                if (!res.ok) {
-                  const detail = await res.text().catch(() => '');
-                  throw new Error(detail || 'Failed to update member');
-                }
-
-                const updated = await res.json().catch(() => null);
                 onSaved(updated, editingMemberRole);
               } catch (e) {
                 console.error(e);

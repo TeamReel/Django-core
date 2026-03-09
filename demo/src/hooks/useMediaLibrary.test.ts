@@ -2,15 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useMediaLibrary } from './useMediaLibrary';
 
-// Mock dependencies
-vi.mock('../utils/apiBase', () => ({
-  getApiBaseUrl: () => 'http://test-api.com'
+// Mock the API module
+const mockList = vi.fn();
+vi.mock('@/api', () => ({
+  api: {
+    list: (...args: any[]) => mockList(...args),
+  },
 }));
 
 describe('useMediaLibrary', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        global.fetch = vi.fn();
     });
 
     it('should fetch items successfully', async () => {
@@ -18,16 +20,14 @@ describe('useMediaLibrary', () => {
             results: [
                 { id: '1', title: 'Test Item', tags: [] }
             ],
+            count: 1,
             next: null,
             previous: null
         };
 
         // Delay the response slightly to verify loading state
-        (global.fetch as any).mockImplementationOnce(() =>
-            new Promise(resolve => setTimeout(() => resolve({
-                ok: true,
-                json: async () => mockData
-            }), 10))
+        mockList.mockImplementationOnce(() =>
+            new Promise(resolve => setTimeout(() => resolve(mockData), 10))
         );
 
         const { result } = renderHook(() => useMediaLibrary());
@@ -54,10 +54,7 @@ describe('useMediaLibrary', () => {
     });
 
     it('should handle errors', async () => {
-        (global.fetch as any).mockResolvedValueOnce({
-            ok: false,
-            statusText: 'Server Error'
-        });
+        mockList.mockRejectedValueOnce(new Error('Error fetching media items: Server Error'));
 
         const { result } = renderHook(() => useMediaLibrary());
 

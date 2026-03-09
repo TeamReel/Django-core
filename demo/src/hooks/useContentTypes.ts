@@ -7,8 +7,8 @@
  * Uses: GET /api/v1/workflows/content-types/?models=activity,projectmembership,...
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { useState, useEffect, useCallback } from 'react';
+import { api } from '@/api';
 
 // Module-level cache shared across all hook instances
 const contentTypeCache: Record<string, number> = {};
@@ -27,7 +27,7 @@ const KNOWN_MODELS = [
 
 export type ContentTypeName = typeof KNOWN_MODELS[number];
 
-async function fetchContentTypes(apiBase: string): Promise<void> {
+async function fetchContentTypes(): Promise<void> {
   if (Object.keys(contentTypeCache).length > 0) return;
 
   // Deduplicate concurrent fetches
@@ -39,18 +39,7 @@ async function fetchContentTypes(apiBase: string): Promise<void> {
   cacheFetchPromise = (async () => {
     try {
       const models = KNOWN_MODELS.join(',');
-      const response = await fetch(
-        `${apiBase}/api/v1/workflows/content-types/?models=${models}`,
-        { credentials: 'include' }
-      );
-
-      if (!response.ok) {
-        console.warn('[useContentTypes] Failed to fetch content types:', response.status);
-        return;
-      }
-
-      const json = await response.json();
-      const data = json?.data || json;
+      const data = await api.get<Record<string, number>>(`/workflows/content-types/?models=${models}`);
 
       if (typeof data === 'object' && data !== null) {
         Object.entries(data).forEach(([model, id]) => {
@@ -85,11 +74,10 @@ export interface UseContentTypesReturn {
 
 export function useContentTypes(): UseContentTypesReturn {
   const [ready, setReady] = useState(Object.keys(contentTypeCache).length > 0);
-  const apiBase = useRef(getApiBaseUrl());
 
   useEffect(() => {
     let cancelled = false;
-    fetchContentTypes(apiBase.current).then(() => {
+    fetchContentTypes().then(() => {
       if (!cancelled) setReady(true);
     });
     return () => { cancelled = true; };
@@ -114,6 +102,6 @@ export async function resolveContentTypeId(
 ): Promise<number | null> {
   if (contentTypeCache[modelName]) return contentTypeCache[modelName];
 
-  await fetchContentTypes(getApiBaseUrl());
+  await fetchContentTypes();
   return contentTypeCache[modelName] ?? null;
 }

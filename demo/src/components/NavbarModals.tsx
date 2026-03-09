@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppIcon } from './AppIcon';
+import { api } from '@/api';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
@@ -25,11 +26,7 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
     setSubmitting(true);
     setError(null);
     try {
-      const { getApiBaseUrl } = await import('../utils/apiBase');
-      const apiBase = getApiBaseUrl();
-      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
-
-      const body = {
+      await api.post('/generative/assets/generate/', {
         template_id: 'photo_composite_video',
         parameters: {},
         variant_count: 1,
@@ -39,18 +36,7 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
         input_image_urls: { person_photo: info.approvedImageUrl },
         output_type: 'video',
         require_approval: true,
-      };
-
-      const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        body: JSON.stringify(body),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
-      }
       setSubmitted(true);
     } catch (e) {
       console.error(e);

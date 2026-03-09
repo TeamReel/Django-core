@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔴 In Progress (9/18 fases done)
+**Status:** 🔴 In Progress (10/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -70,7 +70,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 |------|------|-------|---------|--------|
 | **A1** | Core API Client | Uitbreiden `apiFetch.ts` → typed `apiClient.get<T>()`, `.post<T>()`, `.patch<T>()`, `.delete()` met error handling, auth, base URL | 1 module | 3 uur |
 | **A2** | Domain API Modules | `api/projects.ts`, `api/activities.ts`, `api/members.ts`, etc. — typed wrappers rond apiClient | ~10 modules | 4 uur |
-| **A3** | Hook Migration | `use*Data` hooks: raw fetch → domain API calls (batch per domain) | ~132 files | 6 uur |
+| **A3** | ✅ Hook Migration | 536 → 12 raw `fetch()` (98% reduction) | `pending` | 6 uur |
 
 ### Track S — Splitting & Structure
 

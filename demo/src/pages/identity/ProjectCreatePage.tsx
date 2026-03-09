@@ -14,7 +14,7 @@ import {
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi } from '../../api';
 
 export const ProjectCreatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -52,35 +52,12 @@ export const ProjectCreatePage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${currentOrgSlug}/projects/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name,
-          slug: slug || undefined, // Optional if backend generates it
-          description,
-          organisation_id: currentOrgId,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Failed to create project');
-      }
-
-      const project = await response.json();
+      const project = await organisationsApi.createProject(currentOrgSlug!, {
+        name,
+        slug: slug || undefined,
+        description,
+        organisation_id: currentOrgId,
+      } as any) as any;
       navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`);
     } catch (err) {
       console.error(err);

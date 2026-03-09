@@ -10,6 +10,7 @@ import {
   Plus, CalendarDays,
 } from 'lucide-react';
 import { Card } from '@django-core/design-system';
+import { api } from '../../api';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../../components/matchWizardTypes';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
@@ -164,15 +165,9 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
     setLoadingContent((prev) => new Set(prev).add(matchId));
 
     try {
-      const [mediaRes, contentRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/api/v1/media/items/?activity=${matchId}&page_size=100`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        }),
-        fetch(`${apiBaseUrl}/api/v1/content-generation/items/?activity=${matchId}&page_size=100`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        }),
+      const [mediaData, contentData] = await Promise.all([
+        api.get<any>(`/media/items/?activity=${matchId}&page_size=100`),
+        api.get<any>(`/content-generation/items/?activity=${matchId}&page_size=100`),
       ]);
 
       let mediaCount = 0;
@@ -180,9 +175,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
       const mediaSubtypes: string[] = [];
       const generatingSubtypes: string[] = [];
 
-      if (mediaRes.ok) {
-        const data = await mediaRes.json();
-        const items = data?.results || data?.data?.results || [];
+      {
+        const items = mediaData?.results || mediaData?.data?.results || [];
         // Count unique subtypes that have media
         const subtypes = new Set<string>();
         for (const item of (Array.isArray(items) ? items : [])) {
@@ -196,9 +190,8 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
         mediaSubtypes.push(...subtypes);
       }
 
-      if (contentRes.ok) {
-        const data = await contentRes.json();
-        const items = data?.data?.results || data?.results || data?.data || [];
+      {
+        const items = contentData?.data?.results || contentData?.results || contentData?.data || [];
         for (const item of (Array.isArray(items) ? items : [])) {
           if (['queued', 'generating'].includes(item.status)) {
             generatingCount++;

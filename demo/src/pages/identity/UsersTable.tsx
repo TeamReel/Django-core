@@ -4,8 +4,8 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCookie, type User } from './useUsersData';
+import { api } from '../../api/client';
+import { type User } from './useUsersData';
 import styles from './UsersTable.module.css';
 
 /** Minimal shape for a user project membership from the API. */
@@ -301,18 +301,8 @@ const UserActions: React.FC<UserActionsProps> = ({
   const handleDelete = async () => {
     if (!window.confirm(`Are you sure you want to delete user ${user.email}? This action cannot be undone.`)) return;
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const csrfToken = getCookie('csrftoken');
-      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${user.id}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        credentials: 'include',
-      });
-      if (res.ok) fetchUsers();
-      else {
-        const data = await res.json();
-        alert(data.message || 'Failed to delete user');
-      }
+      await api.delete(`/admin/users/${user.id}/`);
+      fetchUsers();
     } catch (e) {
       console.error(e);
       console.error(e);
@@ -323,15 +313,8 @@ const UserActions: React.FC<UserActionsProps> = ({
   const handleUnassign = async () => {
     if (!window.confirm(`Remove ${user.email} from organisation?`)) return;
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const csrfToken = getCookie('csrftoken');
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${effectiveOrgSlug}/members/${orgMembershipId}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        credentials: 'include',
-      });
-      if (res.ok) fetchUsers();
-      else alert('Failed to remove member');
+      await api.delete(`/organisations/${effectiveOrgSlug}/members/${orgMembershipId}/`);
+      fetchUsers();
     } catch (e) {
       console.error(e);
       console.error(e);

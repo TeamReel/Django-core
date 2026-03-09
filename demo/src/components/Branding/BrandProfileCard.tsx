@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { unwrapEnvelope } from '../../utils/apiEnvelope';
+import { api } from '@/api';
 import { Palette, Image, Type, Circle, Square, Hash } from 'lucide-react';
 import styles from './BrandProfileCard.module.css';
 
@@ -74,8 +73,6 @@ export default function BrandProfileCard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const apiBaseUrl = getApiBaseUrl();
-
   // Determine entity type and display name
   const entityType = seasonId ? 'season' : projectId ? 'project' : 'organisation';
   const entityName = seasonName || projectName || organisationName || 'this entity';
@@ -86,34 +83,18 @@ export default function BrandProfileCard({
       setError(null);
 
       try {
-        // Build query params based on entity type
-        let queryParam = '';
-        if (projectId) {
-          queryParam = `project=${encodeURIComponent(projectId)}`;
-        } else if (organisationId) {
-          queryParam = `organisation=${encodeURIComponent(organisationId)}`;
-        } else {
+        if (!projectId && !organisationId) {
           setProfile(null);
           setLoading(false);
           return;
         }
 
         // Fetch brand profile for this entity
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/branding/profiles/?${queryParam}`,
-          { credentials: 'include' }
-        );
-
-        if (!res.ok) {
-          if (res.status === 404) {
-            setProfile(null);
-            return;
-          }
-          throw new Error(`Failed to fetch brand profile (${res.status})`);
-        }
-
-        const data = unwrapEnvelope<any>(await res.json());
-        const results = Array.isArray(data) ? data : (data?.results || []);
+        const { results } = await api.list<any>('/branding/profiles/', {
+          params: projectId
+            ? { project: projectId }
+            : { organisation: organisationId! },
+        });
 
         if (results.length === 0) {
           setProfile(null);
@@ -124,15 +105,10 @@ export default function BrandProfileCard({
         const profileData = results[0];
 
         // Fetch full profile with tokens
-        const detailRes = await fetch(
-          `${apiBaseUrl}/api/v1/branding/profiles/${profileData.id}/`,
-          { credentials: 'include' }
-        );
-
-        if (detailRes.ok) {
-          const detailData = unwrapEnvelope<BrandProfile>(await detailRes.json());
+        try {
+          const detailData = await api.get<BrandProfile>(`/branding/profiles/${profileData.id}/`);
           setProfile(detailData);
-        } else {
+        } catch {
           setProfile(profileData);
         }
       } catch (err) {
@@ -148,7 +124,7 @@ export default function BrandProfileCard({
     } else {
       setLoading(false);
     }
-  }, [apiBaseUrl, projectId, organisationId]);
+  }, [projectId, organisationId]);
 
   // Group tokens by type
   const tokensByType = React.useMemo(() => {

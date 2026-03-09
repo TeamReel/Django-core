@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { api } from '../../api/client';
 import { getActiveContext } from '../../utils/activeContext';
 
 /** Minimal project shape for the hook params. */
@@ -105,11 +105,9 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
 
     const loadBrandProfile = async () => {
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${project.id}`, { credentials: 'include' });
-        if (!res.ok) return;
-        const json = await res.json();
-        const data = json?.data || json;
-        const results = data?.results || (Array.isArray(data) ? data : []);
+        const { results } = await api.list<any>('/branding/profiles/', {
+          params: { project: String(project.id) },
+        });
         if (results.length > 0 && !cancelled) {
           setBrandProfileId(results[0]?.id || null);
         }
@@ -132,14 +130,12 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       setMembersLoading(true);
       setMembersError(null);
       try {
-        const membersUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(
-          projectIdForMembers
-        )}/members/?period=${encodeURIComponent(seasonUuid)}&page_size=200`;
-
-        const membersList = await fetchAllPages<any>(
-          membersUrl,
-          { credentials: 'include' },
-          { bypass: true, maxItems: 5000 }
+        const membersList = await api.listAll<any>(
+          `/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
+          {
+            params: { period: seasonUuid },
+            pageSize: 200, maxItems: 5000,
+          },
         );
 
         if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
@@ -171,11 +167,9 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       setTeamRosterError(null);
       try {
         // Fetch team-level memberships (project memberships without period filter)
-        const rosterUrl = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectIdForMembers)}/members/?page_size=500`;
-        const roster = await fetchAllPages<any>(
-          rosterUrl,
-          { credentials: 'include' },
-          { bypass: true, maxItems: 5000 }
+        const roster = await api.listAll<any>(
+          `/projects/${encodeURIComponent(projectIdForMembers)}/members/`,
+          { pageSize: 500, maxItems: 5000 },
         );
 
         // Only merge org members on the squad tab — the team tab should only show
@@ -191,11 +185,9 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
           const orgSlugForMembers = String(org?.slug || orgSlugOrId || '').trim();
           if (orgSlugForMembers) {
             try {
-              const orgMembersUrl = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForMembers)}/members/?page_size=500`;
-              const orgMembers = await fetchAllPages<any>(
-                orgMembersUrl,
-                { credentials: 'include' },
-                { bypass: true, maxItems: 5000 }
+              const orgMembers = await api.listAll<any>(
+                `/organisations/${encodeURIComponent(orgSlugForMembers)}/members/`,
+                { pageSize: 500, maxItems: 5000 },
               );
               for (const m of Array.isArray(orgMembers) ? orgMembers : []) {
                 const uid = String(m?.user?.id || m?.user_id || '').trim();
@@ -240,21 +232,16 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
     const run = async () => {
       setMatchesLoading(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(
-          projectNumericId
-        )}&period_id=${encodeURIComponent(
-          seasonUuid
-        )}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`;
-
-        const seasonMatches = await fetchAllPages<any>(
-          url,
-          { credentials: 'include' },
-          {
-            ttlMs: 30_000,
-            cacheKey: `matches:season:${projectNumericId}:${seasonUuid}`,
-            maxItems: 250,
-          }
-        );
+        const seasonMatches = await api.listAll<any>('/activities/', {
+          params: {
+            project_id: projectNumericId,
+            period_id: seasonUuid,
+            include_descendants: 'true',
+            activity_type: 'match',
+            ordering: '-start_time',
+          },
+          pageSize: 250, maxItems: 250,
+        });
 
         if (!cancelled) setMatches(seasonMatches);
       } catch (e) {
@@ -287,12 +274,8 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
       await Promise.all(
         clubIds.map(async (cid) => {
           try {
-            const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(cid)}/`, { credentials: 'include' });
-            if (res.ok) {
-              const raw: any = await res.json();
-              const data = raw?.data ?? raw;
-              if (data?.name) results[cid] = data.name;
-            }
+            const data = await api.get<any>(`/projects/${encodeURIComponent(cid)}/`);
+            if (data?.name) results[cid] = data.name;
           } catch { /* ignore */ }
         })
       );

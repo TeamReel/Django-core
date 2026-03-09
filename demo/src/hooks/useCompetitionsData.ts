@@ -8,6 +8,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../utils/fetchAllPages';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import {
   chunkArray,
   sortKey,
@@ -19,7 +20,6 @@ import {
   isPeriodActive,
   matchesSportFilter,
 } from '../utils/directoryHelpers';
-import { getCsrfToken } from '../utils/csrf';
 import type { Period } from '../utils/directoryHelpers';
 import type { Filters, UseCompetitionsDataReturn } from './competitionsDataTypes';
 
@@ -359,21 +359,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
   // ── CRUD ──────────────────────────────────────────────────────────
 
   const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
-    const apiBaseUrl = getApiBaseUrl();
-    const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(detail || 'Failed to update competition');
-    }
+    await api.patch(`/periods/${periodId}/`, payload);
   }, []);
 
   const createCompetition = useCallback(async (payload: {
@@ -385,8 +371,6 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
     project_id?: string;
     parent_period_id?: string;
   }) => {
-    const apiBaseUrl = getApiBaseUrl();
-
     const orgId = String(payload.organisation_id || selectedOrgId || '');
     const teamId = String(payload.project_id || selectedTeamId || '');
     const seasonId = String(payload.parent_period_id || selectedSeasonIds[0] || '');
@@ -394,29 +378,16 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
     if (!teamId) throw new Error('Select a team first');
     if (!seasonId) throw new Error('Select a season first');
 
-    const response = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        organisation_id: orgId,
-        project_id: teamId ? Number(teamId) : undefined,
-        parent_period_id: seasonId || null,
-        name: payload.name,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        metadata: { type: 'competition' },
-      }),
+    await api.post('/periods/', {
+      organisation_id: orgId,
+      project_id: teamId ? Number(teamId) : undefined,
+      parent_period_id: seasonId || null,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      metadata: { type: 'competition' },
     });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(detail || 'Failed to create competition');
-    }
 
     invalidateFetchAllPagesCache();
     triggerRefresh();
@@ -426,19 +397,8 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
     if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
       return;
     }
-    const apiBaseUrl = getApiBaseUrl();
     try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/periods/${compId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken() || '',
-        },
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete competition');
-      }
+      await api.delete(`/periods/${compId}/`);
       setCompetitions((prev) => prev.filter((c) => c.id !== compId));
     } catch (err) {
       console.error(err);

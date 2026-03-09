@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { api as apiClient } from '../../api/client';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import type { Activity, Period } from '../../types';
@@ -305,13 +305,10 @@ export function useUserDetailData(): UserDetailDataReturn {
             try {
                 setUserBalanceLoading(true);
                 setUserBalanceError(null);
-                const response = await fetch(
-                    `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(orgIdForBalance)}/balance/me/`,
-                    { credentials: 'include', signal: controller.signal },
+                const data = await apiClient.get<{ current_balance?: number }>(
+                    `/transactions/organizations/${encodeURIComponent(orgIdForBalance)}/balance/me/`,
+                    controller.signal,
                 );
-                if (!response.ok) throw new Error(`Failed to fetch balance (${response.status})`);
-                const raw = await response.json();
-                const data = raw?.data ?? raw;
                 const v = data?.current_balance;
                 if (!cancelled) setUserBalance(v != null ? String(v) : null);
             } catch (e: unknown) {
@@ -333,11 +330,10 @@ export function useUserDetailData(): UserDetailDataReturn {
             if (!userId || !primaryOrgSlug || !api.user) return;
             setLoadingRelations(true);
             try {
-                const clubs = await fetchAllPages<any>(
-                    `${apiBaseUrl}/api/v1/projects/?organisation_id=${encodeURIComponent(primaryOrgSlug)}&parent_project__isnull=true&page_size=200`,
-                    { credentials: 'include' },
-                    { ttlMs: 30_000, cacheKey: `user:${userId}:clubs:${primaryOrgSlug}`, maxItems: 2000 },
-                );
+                const clubs = await apiClient.listAll<any>('/projects/', {
+                    params: { organisation_id: primaryOrgSlug, parent_project__isnull: 'true' },
+                    pageSize: 200, maxItems: 2000,
+                });
                 if (!cancelled) {
                     const map = new Map<string, any>();
                     for (const c of clubs || []) {
@@ -349,17 +345,21 @@ export function useUserDetailData(): UserDetailDataReturn {
                 const competitionsAll: Period[] = [];
                 const matchesAll: Activity[] = [];
                 for (const pair of teamSeasonPairs) {
-                    const competitions = await fetchAllPages<any>(
-                        `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(pair.seasonId)}&project_id=${encodeURIComponent(pair.teamId)}&page_size=250`,
-                        { credentials: 'include' },
-                        { ttlMs: 30_000, cacheKey: `user:${userId}:competitions:${pair.teamId}:${pair.seasonId}`, maxItems: 2000 },
-                    );
+                    const competitions = await apiClient.listAll<any>('/periods/', {
+                        params: { parent_id: pair.seasonId, project_id: pair.teamId },
+                        pageSize: 250, maxItems: 2000,
+                    });
                     competitionsAll.push(...(competitions || []));
-                    const matches = await fetchAllPages<any>(
-                        `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(pair.teamId)}&period_id=${encodeURIComponent(pair.seasonId)}&include_descendants=true&activity_type=match&ordering=-start_time&page_size=250`,
-                        { credentials: 'include' },
-                        { ttlMs: 30_000, cacheKey: `user:${userId}:matches:${pair.teamId}:${pair.seasonId}`, maxItems: 250 },
-                    );
+                    const matches = await apiClient.listAll<any>('/activities/', {
+                        params: {
+                            project_id: pair.teamId,
+                            period_id: pair.seasonId,
+                            include_descendants: 'true',
+                            activity_type: 'match',
+                            ordering: '-start_time',
+                        },
+                        pageSize: 250, maxItems: 250,
+                    });
                     matchesAll.push(...(matches || []));
                 }
                 if (!cancelled) {

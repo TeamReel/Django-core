@@ -11,7 +11,7 @@ import {
 } from '@django-core/page-templates';
 // Removed usePolling import - using direct useEffect instead
 import { ObservabilityCharts } from '../../components/ObservabilityCharts';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { apiFetch } from '../../utils/apiFetch';
 import type { ObservabilityMetrics } from '../../types/chart';
 import styles from './ObservabilityPage.module.css';
 // import AppShell from '../../components/AppShell';
@@ -56,13 +56,7 @@ export const ObservabilityPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/observability/metrics/`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
+      const response = await apiFetch('/api/observability/metrics/');
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

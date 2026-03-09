@@ -5,7 +5,7 @@
  * getMemberAssetUrl/getMemberNameById helpers.
  */
 import { useState, useEffect, useMemo } from 'react';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { projectsApi } from '../../../api';
 import type { ContentTemplate, Participation } from './types';
 import { ASSET_TYPE_TO_MEDIA_KEY } from './constants';
 import { groupParticipationsByRole } from './utils';
@@ -53,40 +53,8 @@ export function useSeasonSquadData({
 
     const fetchSeasonSquad = async () => {
       try {
-        const url = `${getApiBaseUrl()}/api/v1/projects/${projectId}/members/?page_size=100`;
-        const response = await fetch(url, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          let members: Participation[] = [];
-          if (data?.data?.data && Array.isArray(data.data.data)) members = data.data.data;
-          else if (data?.data?.results && Array.isArray(data.data.results)) members = data.data.results;
-          else if (data?.results && Array.isArray(data.results)) members = data.results;
-          else if (Array.isArray(data?.data)) members = data.data;
-          else if (Array.isArray(data)) members = data;
-
-          // Handle pagination
-          let nextUrl = data?.meta?.pagination?.next;
-          while (nextUrl) {
-            const nextResp = await fetch(nextUrl, {
-              credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
-            });
-            if (!nextResp.ok) break;
-            const nextData = await nextResp.json();
-            let nextMembers: Participation[] = [];
-            if (nextData?.data?.data && Array.isArray(nextData.data.data)) nextMembers = nextData.data.data;
-            else if (Array.isArray(nextData?.data)) nextMembers = nextData.data;
-            else if (Array.isArray(nextData)) nextMembers = nextData;
-            members = [...members, ...nextMembers];
-            nextUrl = nextData?.meta?.pagination?.next;
-          }
-
-          setSeasonSquad(groupParticipationsByRole(members));
-        }
+        const members = await projectsApi.listAllMembers(projectId) as unknown as Participation[];
+        setSeasonSquad(groupParticipationsByRole(members));
       } catch (err) {
         console.error(err);
         console.error('Error fetching season squad:', err);

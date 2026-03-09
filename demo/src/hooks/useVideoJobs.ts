@@ -12,8 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
-import { getCsrfToken } from '../utils/csrf';
+import { api } from '@/api';
 
 // ============================================================================
 // Types
@@ -82,36 +81,29 @@ async function videoApiFetch<T>(
   projectId?: string | number | null,
   options?: RequestInit
 ): Promise<T> {
-  const apiBase = getApiBaseUrl();
-  const url = `${apiBase}${path}`;
-
-  const headers: Record<string, string> = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-    'X-CSRFToken': getCsrfToken(),
-  };
+  const headers: Record<string, string> = {};
   if (projectId) headers['X-Project-ID'] = String(projectId);
 
-  const response = await fetch(url, {
-    credentials: 'include',
-    headers,
-    ...options,
-  });
+  // Build query params from path, add headers
+  const method = options?.method || 'GET';
 
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => '');
-    // Tag permission errors so callers can handle them gracefully
-    if (response.status === 403) {
-      const err = new Error(`HTTP 403: ${errorBody || response.statusText}`);
-      (err as any).status = 403;
-      throw err;
-    }
-    throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`);
+  if (method === 'GET') {
+    const raw = await api.get<any>(path);
+    return raw as T;
+  } else if (method === 'POST') {
+    const body = options?.body ? JSON.parse(options.body as string) : undefined;
+    const raw = await api.post<any>(path, body);
+    return raw as T;
+  } else if (method === 'DELETE') {
+    await api.delete(path);
+    return {} as T;
+  } else if (method === 'PATCH') {
+    const body = options?.body ? JSON.parse(options.body as string) : undefined;
+    const raw = await api.patch<any>(path, body);
+    return raw as T;
   }
 
-  if (response.status === 204) return {} as T;
-  const json = await response.json();
-  return json?.data ?? json;
+  return {} as T;
 }
 
 function unwrapResults<T>(payload: any): T[] {
@@ -222,7 +214,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
         params.append('ordering', '-created_at');
 
         const data = await videoApiFetch<any>(
-          `/api/v1/video/jobs/?${params.toString()}`,
+          `/video/jobs/?${params.toString()}`,
           projectId
         );
 
@@ -276,7 +268,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
 
   const cancelJob = useCallback(async (jobId: string) => {
     await videoApiFetch<void>(
-      `/api/v1/video/jobs/${jobId}/`,
+      `/video/jobs/${jobId}/`,
       projectId,
       { method: 'DELETE' }
     );
@@ -285,7 +277,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
 
   const retryJob = useCallback(async (jobId: string) => {
     await videoApiFetch<VideoJob>(
-      `/api/v1/video/jobs/${jobId}/retry/`,
+      `/video/jobs/${jobId}/retry/`,
       projectId,
       { method: 'POST' }
     );
@@ -294,7 +286,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
 
   const createJob = useCallback(async (params: CreateVideoJobParams) => {
     const result = await videoApiFetch<VideoJob>(
-      '/api/v1/video/jobs/',
+      '/video/jobs/',
       projectId,
       { method: 'POST', body: JSON.stringify(params) }
     );
@@ -304,7 +296,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
 
   const approveJob = useCallback(async (jobId: string) => {
     const result = await videoApiFetch<VideoJob>(
-      `/api/v1/video/jobs/${jobId}/approve/`,
+      `/video/jobs/${jobId}/approve/`,
       projectId,
       { method: 'POST' }
     );
@@ -314,7 +306,7 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
 
   const rejectJob = useCallback(async (jobId: string) => {
     const result = await videoApiFetch<VideoJob>(
-      `/api/v1/video/jobs/${jobId}/reject/`,
+      `/video/jobs/${jobId}/reject/`,
       projectId,
       { method: 'POST' }
     );
@@ -356,7 +348,7 @@ export function useVideoPresets(projectId: string | number): UseVideoPresetsRetu
     async function fetchPresets() {
       try {
         const data = await videoApiFetch<any>(
-          '/api/v1/video/presets/',
+          '/video/presets/',
           projectId
         );
         if (!cancelled) {

@@ -5,6 +5,7 @@ import {
   getJobTypeDisplay,
   type VideoJob,
 } from '../../hooks/useVideoJobs';
+import { contentApi } from '../../api';
 import ContentGenerationModal, { CONTENT_TYPES, type ContentTemplate } from '../identity/ContentGenerationModal';
 import VideoPreviewModal from './VideoPreviewModal';
 import ThenVsNowModal, { type ThenVsNowVideoType } from './ThenVsNowModal';
@@ -73,36 +74,28 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
     if (!org?.sport?.id) return;
     setTemplatesLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.append('is_active', 'true');
-      if (org?.id) params.append('organisation', String(org.id));
+      const params: Record<string, string> = { is_active: 'true' };
+      if (org?.id) params.organisation = String(org.id);
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?${params.toString()}`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+      const data = await contentApi.listTemplates(params as any) as any;
+      const rawResults = data?.results || data?.data?.results || data?.data || data || [];
+      const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
+
+      const sportId = org.sport.id;
+      const matchingTemplates = allTemplates.filter(t => {
+        if (!t.sport) return true;
+        if (t.sport === sportId) return true;
+        if (t.sport_detail?.id === sportId) return true;
+        return false;
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        const rawResults = data?.data?.results || data?.results || data?.data || data || [];
-        const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
-
-        const sportId = org.sport.id;
-        const matchingTemplates = allTemplates.filter(t => {
-          if (!t.sport) return true;
-          if (t.sport === sportId) return true;
-          if (t.sport_detail?.id === sportId) return true;
-          return false;
-        });
-
-        const grouped: Record<string, ContentTemplate[]> = {};
-        matchingTemplates.forEach(t => {
-          const subtype = t.template_subtype || t.template_type;
-          if (!grouped[subtype]) grouped[subtype] = [];
-          grouped[subtype].push(t);
-        });
-        setAvailableTemplates(grouped);
-      }
+      const grouped: Record<string, ContentTemplate[]> = {};
+      matchingTemplates.forEach(t => {
+        const subtype = t.template_subtype || t.template_type;
+        if (!grouped[subtype]) grouped[subtype] = [];
+        grouped[subtype].push(t);
+      });
+      setAvailableTemplates(grouped);
     } catch (err) {
       console.error(err);
       console.error('Error fetching templates:', err);

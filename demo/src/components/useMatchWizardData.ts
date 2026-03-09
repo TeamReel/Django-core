@@ -9,7 +9,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import type React from 'react';
 import { useNavigate, type NavigateFunction } from 'react-router-dom';
 import { useActivities, Activity } from '../hooks/useActivities';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import { useToast } from '../components/ui/Toast';
 import { CheckCircle, Clock } from 'lucide-react';
 import type { ContentTemplate, GeneratedVariant, GeneratedOutput } from '../pages/identity/ContentGenerationModal/types';
@@ -133,7 +133,6 @@ export interface UseMatchWizardDataReturn {
 
 export function useMatchWizardData(isOpen: boolean, onClose: () => void, initialMatchId?: string): UseMatchWizardDataReturn {
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const { pushToast } = useToast();
 
   // ── Wizard step & match state ───────────────────────────
@@ -272,17 +271,12 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
           // Match not in initial fetch — load it directly from API
           (async () => {
             try {
-              const res = await fetch(
-                `${apiBaseUrl}/api/v1/activities/${encodeURIComponent(initialMatchId)}/`,
-                { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
+              const data = await api.get<any>(
+                `/activities/${encodeURIComponent(initialMatchId)}/`,
               );
-              if (res.ok) {
-                const raw = await res.json();
-                const data = raw?.data || raw;
-                if (data?.id) {
-                  setSelectedMatch(data as Activity);
-                  setCurrentStep('content');
-                }
+              if (data?.id) {
+                setSelectedMatch(data as Activity);
+                setCurrentStep('content');
               }
             } catch (err) {
               console.error(err);
@@ -294,7 +288,7 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
         setSelectedMatch(upcomingMatches[0]);
       }
     }
-  }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch, matchesLoading, apiBaseUrl]);
+  }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch, matchesLoading]);
 
   // Reset to initial state when wizard closes
   useEffect(() => {
@@ -352,30 +346,10 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     setSquadLoading(true);
     setSquadError(null);
     try {
-      const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(pid))}/members/?page_size=100`;
-      const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-      if (!res.ok) { setSquadError('Kon spelers niet laden'); setSquadLoading(false); return; }
-
-      const raw = await res.json();
-      let members: SquadMember[] = [];
-      if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
-      else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
-      else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
-      else if (Array.isArray(raw?.data)) members = raw.data;
-      else if (Array.isArray(raw)) members = raw;
-
-      let nextUrl = raw?.meta?.pagination?.next;
-      while (nextUrl) {
-        const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-        if (!nr.ok) break;
-        const nd = await nr.json();
-        let nm: SquadMember[] = [];
-        if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
-        else if (Array.isArray(nd?.data)) nm = nd.data;
-        else if (Array.isArray(nd)) nm = nd;
-        members = [...members, ...nm];
-        nextUrl = nd?.meta?.pagination?.next;
-      }
+      const members = await api.listAll<SquadMember>(
+        `/projects/${encodeURIComponent(String(pid))}/members/`,
+        { pageSize: 100 },
+      );
 
       const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [] };
       members.forEach(p => {
@@ -407,13 +381,10 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     setTemplatesLoading(true);
     setTemplatesError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/content-generation/templates/?is_active=true&page_size=500`, {
-        credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      const { results: all } = await api.list<ContentTemplate>('/content-generation/templates/', {
+        params: { is_active: 'true' },
+        pageSize: 500,
       });
-      if (!res.ok) { setTemplatesError('Kon sjablonen niet laden'); setTemplatesLoading(false); return; }
-      const data = await res.json();
-      const rawResults = data?.data?.data || data?.data?.results || data?.results || data?.data || data || [];
-      const all: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
       const grouped: Record<string, ContentTemplate[]> = {};
       all.forEach(t => {
         const subtype = t.template_subtype || t.template_type;
@@ -437,14 +408,8 @@ export function useMatchWizardData(isOpen: boolean, onClose: () => void, initial
     try {
       const matchId = selectedMatch.slug || selectedMatch.id;
       const existingMetadata = selectedMatch.metadata || {};
-      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
-      await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        credentials: 'include',
-        body: JSON.stringify({
-          metadata: { ...existingMetadata, formation: lineupFormation, lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player } },
-        }),
+      await api.patch(`/activities/${encodeURIComponent(String(matchId))}/`, {
+        metadata: { ...existingMetadata, formation: lineupFormation, lineup: { formation: lineupFormation, goalkeeper: lineupSlots.goalkeeper, player: lineupSlots.player } },
       });
     } catch (err) {
       console.error(err);

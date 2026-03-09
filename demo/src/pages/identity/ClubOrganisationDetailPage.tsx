@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { getCsrfToken } from '../../utils/csrf';
+
+import { api } from '../../api';
 
 import MobileTabBar from '../../components/MobileTabBar';
 import { useUserRole } from '../../components/PermissionGuards';
@@ -172,12 +173,7 @@ export default function ClubOrganisationDetailPage() {
                         });
                         if (!ok) return;
                         try {
-                          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(club.id))}/`, {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                            credentials: 'include',
-                          });
-                          if (!res.ok) throw new Error('Failed');
+                          await api.delete(`/projects/${encodeURIComponent(String(club.id))}/`);
                           navigate(backToOrgHref);
                         } catch {
                           alert('Kon club niet verwijderen');

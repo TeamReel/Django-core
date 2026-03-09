@@ -11,8 +11,8 @@
  */
 import { useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
+import { api } from '@/api';
 import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getCsrfToken } from '../../utils/csrf';
 import type { Organisation, Project } from '../../types';
 
 /* ------------------------------------------------------------------ */
@@ -52,26 +52,9 @@ export function useUserDetailApi(params: UserDetailApiParams) {
     const fetchUser = async () => {
         try {
             setLoading(true);
-            const response = await fetch(
-                `${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`,
-                { credentials: 'include' },
+            const userData = await api.get<any>(
+                `/admin/users/${encodeURIComponent(String(userId))}/`,
             );
-
-            if (!response.ok) {
-                const status = response.status;
-                let errorMsg = `Failed to fetch user details (${status})`;
-                try {
-                    const errorData = await response.json();
-                    if (errorData.message) errorMsg = errorData.message;
-                    else if (errorData.detail) errorMsg = errorData.detail;
-                } catch {
-                    // Ignore JSON parse error
-                }
-                throw new Error(errorMsg);
-            }
-
-            const rawData = await response.json();
-            const userData = rawData.data || rawData;
             setUser(userData);
         } catch (err) {
           console.error(err);
@@ -83,24 +66,10 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
     const handleSaveUser = async (updatedUser: Record<string, unknown>) => {
         try {
-            const res = await fetch(
-                `${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken(),
-                    },
-                    body: JSON.stringify(updatedUser),
-                    credentials: 'include',
-                },
+            await api.patch(
+                `/admin/users/${encodeURIComponent(String(userId))}/`,
+                updatedUser,
             );
-
-            if (!res.ok) {
-                const data = await res.json().catch(() => null);
-                alert(data?.message || 'Failed to update user');
-                throw new Error(data?.message || 'Failed to update user');
-            }
         } catch (e) {
           console.error(e);
             console.error(e);
@@ -113,18 +82,9 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!userId) return;
         if (!window.confirm('Delete this user? This cannot be undone.')) return;
         try {
-            const res = await fetch(
-                `${apiBaseUrl}/api/v1/admin/users/${encodeURIComponent(String(userId))}/`,
-                {
-                    method: 'DELETE',
-                    headers: { 'X-CSRFToken': getCsrfToken() },
-                    credentials: 'include',
-                },
+            await api.delete(
+                `/admin/users/${encodeURIComponent(String(userId))}/`,
             );
-            if (!res.ok) {
-                const text = await res.text().catch(() => '');
-                throw new Error(text || 'Failed to delete user');
-            }
             navigate(orgId ? `/organisations/${orgId}/users` : '/users');
         } catch (e) {
           console.error(e);
@@ -182,27 +142,12 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!slugOrId) return;
 
         const membershipId = await findOrganisationMembershipId(slugOrId);
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
-            {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': getCsrfToken(),
-                },
-                credentials: 'include',
-                body: JSON.stringify({ role }),
-            },
+        const res = await api.patch<any>(
+            `/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
+            { role },
         );
 
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || 'Failed to update federation role');
-        }
-
-        const data = await res.json().catch(() => ({}));
-        if (data?.data?.detail && String(data.data.detail).includes('Promotion requested')) {
+        if (res?.data?.detail && String(res.data.detail).includes('Promotion requested')) {
             alert(
                 'Role change requested. The user must accept the promotion before it takes effect.',
             );
@@ -217,19 +162,9 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!slugOrId) return;
 
         const membershipId = await findOrganisationMembershipId(slugOrId);
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
-            {
-                method: 'DELETE',
-                headers: { 'X-CSRFToken': getCsrfToken() },
-                credentials: 'include',
-            },
+        await api.delete(
+            `/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
         );
-
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || 'Failed to unlink federation');
-        }
 
         await fetchUser();
     };
@@ -279,18 +214,9 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!pid) return;
 
         const membershipId = await findProjectMembershipId(pid, directMembershipId);
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
-            {
-                method: 'DELETE',
-                headers: { 'X-CSRFToken': getCsrfToken() },
-                credentials: 'include',
-            },
+        await api.delete(
+            `/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
         );
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || 'Failed to remove membership');
-        }
 
         await fetchUser();
     };
@@ -305,27 +231,12 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!pid) return;
 
         const membershipId = await findProjectMembershipId(pid, directMembershipId);
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
-            {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': getCsrfToken(),
-                },
-                credentials: 'include',
-                body: JSON.stringify({ role }),
-            },
+        const res = await api.patch<any>(
+            `/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
+            { role },
         );
 
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || 'Failed to update role');
-        }
-
-        const data = await res.json().catch(() => ({}));
-        if (data?.data?.detail && String(data.data.detail).includes('Promotion requested')) {
+        if (res?.data?.detail && String(res.data.detail).includes('Promotion requested')) {
             alert(
                 'Role change requested. The user must accept the promotion before it takes effect.',
             );
@@ -344,23 +255,10 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         const matchIdValue = String(matchToEdit?.id || '').trim();
         if (!matchIdValue) throw new Error('Missing match id');
 
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`,
-            {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken(),
-                },
-                credentials: 'include',
-                body: JSON.stringify(patch || {}),
-            },
+        await api.patch(
+            `/activities/${encodeURIComponent(matchIdValue)}/`,
+            patch || {},
         );
-
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || 'Failed to update match');
-        }
 
         setRelationsReloadToken((t) => t + 1);
     };
@@ -369,19 +267,9 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         const matchIdValue = String(matchToDelete?.id || '').trim();
         if (!matchIdValue) throw new Error('Missing match id');
 
-        const res = await fetch(
-            `${apiBaseUrl}/api/v1/activities/${encodeURIComponent(matchIdValue)}/`,
-            {
-                method: 'DELETE',
-                headers: { 'X-CSRFToken': getCsrfToken() },
-                credentials: 'include',
-            },
+        await api.delete(
+            `/activities/${encodeURIComponent(matchIdValue)}/`,
         );
-
-        if (!res.ok) {
-            const text = await res.text().catch(() => '');
-            throw new Error(text || 'Failed to delete match');
-        }
 
         setRelationsReloadToken((t) => t + 1);
     };

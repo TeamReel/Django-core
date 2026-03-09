@@ -9,7 +9,7 @@ import { Table } from '../../shims/design-system';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import { countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
-import { getCsrfToken } from '../../utils/csrf';
+import { generativeApi } from '../../api';
 import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
@@ -121,23 +121,8 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
     }
     setCroppingGuestCloseup(true);
     try {
-      const csrfToken = getCsrfToken();
-      const res = await fetch(`${apiBaseUrl}/api/v1/generative/assets/crop-closeup/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({ project_id: projectId, kit_type: kitType }),
-      });
-
-      const raw = await res.json();
-      const inner = (raw.data ?? raw) as Record<string, string>;
-
-      if (!res.ok) {
-        throw new Error(inner?.error || raw?.error || `Server error ${res.status}`);
-      }
+      const raw = await generativeApi.cropCloseup({ project_id: projectId, kit_type: kitType } as any) as any;
+      const inner = (raw?.data ?? raw) as Record<string, string>;
 
       setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
       setTimeout(() => { window.location.reload(); }, 500);

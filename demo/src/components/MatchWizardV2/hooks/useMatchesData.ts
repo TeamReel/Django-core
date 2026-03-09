@@ -4,10 +4,9 @@
 import { useEffect } from 'react';
 import { useActivities, type Activity } from '../../../hooks/useActivities';
 import { useMatchWizard } from '../MatchWizardContext';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '@/api';
 
 export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
-  const apiBaseUrl = getApiBaseUrl();
   const { activities, loading, error } = useActivities({ limit: 10 });
   const {
     setSelectedMatch,
@@ -42,16 +41,9 @@ export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
       if (!loading) {
         (async () => {
           try {
-            const res = await fetch(
-              `${apiBaseUrl}/api/v1/activities/${encodeURIComponent(initialMatchId)}/`,
-              { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-            );
-            if (res.ok) {
-              const raw = await res.json();
-              const data = raw?.data || raw;
-              if (data?.id) {
-                setSelectedMatch(data as Activity);
-              }
+            const data = await api.get<Activity>(`/activities/${encodeURIComponent(initialMatchId)}/`);
+            if (data?.id) {
+              setSelectedMatch(data);
             }
           } catch (err) {
             console.error(err);
@@ -60,5 +52,5 @@ export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
         })();
       }
     }
-  }, [isOpen, activities, initialMatchId, selectedMatch, loading, apiBaseUrl, setSelectedMatch]);
+  }, [isOpen, activities, initialMatchId, selectedMatch, loading, setSelectedMatch]);
 }

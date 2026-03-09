@@ -13,8 +13,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
-import { getCsrfToken } from '../utils/csrf';
+import { api } from '@/api';
 
 // ============================================================================
 // Types
@@ -103,7 +102,6 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const [notifications, setNotifications] = useState<UserNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const apiBaseRef = useRef(getApiBaseUrl());
 
   // ── Fetch notifications ─────────────────────────────────────────
 
@@ -112,15 +110,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     try {
       if (!silent) setLoading(true);
 
-      const response = await fetch(
-        `${apiBaseRef.current}/api/v1/user-notifications/?page_size=${pageSize}`,
-        { credentials: 'include' }
-      );
+      const { results } = await api.list<UserNotification>('/user-notifications/', {
+        params: { page_size: pageSize },
+      });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-      const raw = await response.json();
-      setNotifications(unwrapNotifications(raw));
+      setNotifications(results);
       setError(null);
     } catch (err: unknown) {
       console.error(err);
@@ -159,18 +153,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markRead = useCallback(async (notificationId: string) => {
     try {
-      await fetch(
-        `${apiBaseRef.current}/api/v1/user-notifications/${notificationId}/`,
-        {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          body: JSON.stringify({ is_read: true }),
-        }
-      );
+      await api.patch(`/user-notifications/${notificationId}/`, { is_read: true });
       // Optimistic update
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
@@ -184,18 +167,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markUnread = useCallback(async (notificationId: string) => {
     try {
-      await fetch(
-        `${apiBaseRef.current}/api/v1/user-notifications/${notificationId}/`,
-        {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          body: JSON.stringify({ is_read: false }),
-        }
-      );
+      await api.patch(`/user-notifications/${notificationId}/`, { is_read: false });
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, is_read: false } : n)
       );
@@ -208,14 +180,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markAllRead = useCallback(async () => {
     try {
-      await fetch(
-        `${apiBaseRef.current}/api/v1/user-notifications/mark-all-read/`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'X-CSRFToken': getCsrfToken() },
-        }
-      );
+      await api.post('/user-notifications/mark-all-read/', undefined);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       dispatchChange();
     } catch (err) {
@@ -226,14 +191,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
   const markAllUnread = useCallback(async () => {
     try {
-      await fetch(
-        `${apiBaseRef.current}/api/v1/user-notifications/mark-all-unread/`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'X-CSRFToken': getCsrfToken() },
-        }
-      );
+      await api.post('/user-notifications/mark-all-unread/', undefined);
       setNotifications(prev => prev.map(n => ({ ...n, is_read: false })));
       dispatchChange();
     } catch (err) {
@@ -265,19 +223,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
 
 export function useUnreadCount(): number {
   const [count, setCount] = useState(0);
-  const apiBaseRef = useRef(getApiBaseUrl());
 
   const fetchCount = useCallback(async () => {
     try {
-      const response = await fetch(
-        `${apiBaseRef.current}/api/v1/user-notifications/`,
-        { credentials: 'include' }
-      );
-      if (!response.ok) return;
-
-      const raw = await response.json();
-      const list = unwrapNotifications(raw);
-      setCount(list.filter(n => !n.is_read).length);
+      const { results } = await api.list<UserNotification>('/user-notifications/');
+      setCount(results.filter(n => !n.is_read).length);
     } catch {
       // Silent fail for badge
     }

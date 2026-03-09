@@ -3,6 +3,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import type React from 'react';
+import { api, ApiError } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
 import type { EntityType, EntityData, BrandProfile, DesignToken } from './entityEditTypes';
@@ -42,7 +43,6 @@ export function useEntityEditData(
   initialEntityData?: EntityData,
   initialBrandProfile?: BrandProfile | null,
 ): UseEntityEditDataReturn {
-  const apiBaseUrl = getApiBaseUrl();
 
   // Tab
   const [activeTab, setActiveTab] = useState<'general' | 'brand' | 'settings'>('general');
@@ -71,6 +71,8 @@ export function useEntityEditData(
       if (!organisationId || !entityId) { setError('Organisation ID and entity ID required for uploads'); return null; }
       setUploading(true); setError(null);
       try {
+        // Kept as fetch — needs X-Organization-ID header not supported by api.upload
+        const apiBaseUrl = getApiBaseUrl();
         const formData = new FormData();
         formData.append('file', file);
         formData.append('is_public', 'true');
@@ -88,7 +90,7 @@ export function useEntityEditData(
       } catch (e) { setError(e instanceof Error ? e.message : 'Upload failed'); return null; }
       finally { setUploading(false); }
     },
-    [apiBaseUrl, entityId, organisationId],
+    [entityId, organisationId],
   );
 
   // ── Fetch on open ──────────────────────────────────────────────────
@@ -102,10 +104,10 @@ export function useEntityEditData(
           setEntityData(initialEntityData); setOriginalEntityData(initialEntityData);
         } else {
           const endpoint = entityType === 'organisation'
-            ? `${apiBaseUrl}/api/v1/organisations/${entityId}/`
-            : `${apiBaseUrl}/api/v1/projects/${entityId}/`;
-          const res = await fetch(endpoint, { credentials: 'include' });
-          if (res.ok) { const json = await res.json(); const data = json.data || json; setEntityData(data); setOriginalEntityData(data); }
+            ? `/organisations/${entityId}/`
+            : `/projects/${entityId}/`;
+          const data = await api.get<any>(endpoint);
+          setEntityData(data); setOriginalEntityData(data);
         }
 
         if (initialBrandProfile !== undefined) {
@@ -113,16 +115,11 @@ export function useEntityEditData(
           setTokens(initialBrandProfile?.tokens || []);
           setOriginalTokens(initialBrandProfile?.tokens || []);
         } else {
-          const qp = entityType === 'organisation' ? `organisation=${organisationId || entityId}` : `project=${projectId || entityId}`;
-          const brandRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?${qp}`, { credentials: 'include' });
-          if (brandRes.ok) {
-            const bj = await brandRes.json();
-            const bd = bj.data || bj;
-            const profiles = Array.isArray(bd) ? bd : bd?.results || [];
-            if (profiles.length > 0) {
-              const dRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${profiles[0].id}/`, { credentials: 'include' });
-              if (dRes.ok) { const dj = await dRes.json(); const d = dj.data || dj; setBrandProfile(d); setTokens(d.tokens || []); setOriginalTokens(d.tokens || []); }
-            }
+          const qp = entityType === 'organisation' ? { organisation: organisationId || entityId } : { project: projectId || entityId };
+          const { results: profiles } = await api.list<any>('/branding/profiles/', { params: qp });
+          if (profiles.length > 0) {
+            const d = await api.get<any>(`/branding/profiles/${profiles[0].id}/`);
+            setBrandProfile(d); setTokens(d.tokens || []); setOriginalTokens(d.tokens || []);
           }
         }
       } catch (err) { setError(err instanceof Error ? err.message : 'Failed to load data'); }
@@ -131,7 +128,7 @@ export function useEntityEditData(
 
     fetchData();
     setNewTokens([]); setDeletedTokenIds([]); setSuccess(null); setActiveTab('general');
-  }, [isOpen, entityId, entityType, apiBaseUrl, initialEntityData, initialBrandProfile, organisationId, projectId]);
+  }, [isOpen, entityId, entityType, initialEntityData, initialBrandProfile, organisationId, projectId]);
 
   // ── Change detection ───────────────────────────────────────────────
   const hasMetadataChanges = JSON.stringify(entityData.metadata?.identity) !== JSON.stringify(originalEntityData.metadata?.identity);
@@ -161,47 +158,31 @@ export function useEntityEditData(
         // Save entity
         if (hasGeneralChanges && canEditGeneral) {
           const endpoint = entityType === 'organisation'
-            ? `${apiBaseUrl}/api/v1/organisations/${entityId}/`
-            : `${apiBaseUrl}/api/v1/projects/${entityId}/`;
+            ? `/organisations/${entityId}/`
+            : `/projects/${entityId}/`;
           const existingMeta = originalEntityData.metadata || {};
           const updatedMeta = { ...existingMeta, identity: { ...(existingMeta.identity || {}), ...entityData.metadata?.identity } };
-          const res = await fetch(endpoint, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-            credentials: 'include',
-            body: JSON.stringify({
-              name: entityData.name, description: entityData.description, is_active: entityData.is_active,
-              ...(entityType === 'organisation' && entityData.slug ? { slug: entityData.slug } : {}),
-              metadata: updatedMeta,
-            }),
+          await api.patch(endpoint, {
+            name: entityData.name, description: entityData.description, is_active: entityData.is_active,
+            ...(entityType === 'organisation' && entityData.slug ? { slug: entityData.slug } : {}),
+            metadata: updatedMeta,
           });
-          if (!res.ok) { const err = await res.json(); throw new Error(err.detail || err.message || `Failed to update ${entityType}`); }
         }
 
         // Save brand changes
         if (hasBrandChanges && brandProfile && canEditBrand) {
           for (const tid of deletedTokenIds) {
-            await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${brandProfile.id}/tokens/${tid}/`, {
-              method: 'DELETE', headers: { 'X-CSRFToken': getCsrfToken() }, credentials: 'include',
-            });
+            await api.delete(`/branding/profiles/${brandProfile.id}/tokens/${tid}/`);
           }
           for (const token of tokens) {
             const orig = originalTokens.find((ot) => ot.id === token.id);
             if (orig && (token.key !== orig.key || token.value !== orig.value || token.type !== orig.type)) {
-              await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${brandProfile.id}/tokens/${token.id}/`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                credentials: 'include', body: JSON.stringify({ key: token.key, value: token.value, type: token.type }),
-              });
+              await api.patch(`/branding/profiles/${brandProfile.id}/tokens/${token.id}/`, { key: token.key, value: token.value, type: token.type });
             }
           }
           for (const nt of newTokens) {
             if (nt.key && nt.value) {
-              await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${brandProfile.id}/tokens/`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                credentials: 'include', body: JSON.stringify({ profile: brandProfile.id, key: nt.key, value: nt.value, type: nt.type }),
-              });
+              await api.post(`/branding/profiles/${brandProfile.id}/tokens/`, { profile: brandProfile.id, key: nt.key, value: nt.value, type: nt.type });
             }
           }
         }
@@ -211,7 +192,7 @@ export function useEntityEditData(
       } catch (err) { setError(err instanceof Error ? err.message : 'Failed to save changes'); }
       finally { setSaving(false); }
     },
-    [apiBaseUrl, brandProfile, deletedTokenIds, entityData, entityId, entityType, hasBrandChanges, hasGeneralChanges, newTokens, originalEntityData, originalTokens, tokens],
+    [brandProfile, deletedTokenIds, entityData, entityId, entityType, hasBrandChanges, hasGeneralChanges, newTokens, originalEntityData, originalTokens, tokens],
   );
 
   return {

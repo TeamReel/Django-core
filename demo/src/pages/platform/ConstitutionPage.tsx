@@ -9,7 +9,7 @@ import {
   PageContent,
 } from '@django-core/page-templates';
 import { Table } from '../../shims/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { apiFetch } from '../../utils/apiFetch';
 // import AppShell from '../../components/AppShell';
 
 /**
@@ -48,14 +48,7 @@ export const ConstitutionPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/constitution/rules/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
+        const response = await apiFetch('/api/constitution/rules/');
 
         if (response.ok) {
           const json = await response.json();

@@ -5,8 +5,7 @@ import {
   type SeasonAssets,
   getEffectiveSponsor,
 } from '../constants/clubAssets';
-import { getApiBaseUrl } from '../utils/apiBase';
-import { getCsrfToken } from '../utils/csrf';
+import { api } from '@/api';
 
 interface SeasonAssetsCardProps {
   seasonId: string;
@@ -29,7 +28,6 @@ export default function SeasonAssetsCard({
   clubAssets,
   onAssetsUpdated,
 }: SeasonAssetsCardProps) {
-  const apiBaseUrl = getApiBaseUrl();
 
   // Extract current assets from metadata
   const currentAssets = useMemo<SeasonAssets>(() => {
@@ -78,28 +76,12 @@ export default function SeasonAssetsCard({
       }
 
       // Update period metadata
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonId)}/`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            metadata: {
-              ...seasonMetadata,
-              teamreel_assets: newAssets,
-            },
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(detail || `Failed to save sponsor (${res.status})`);
-      }
+      await api.patch(`/periods/${encodeURIComponent(seasonId)}/`, {
+        metadata: {
+          ...seasonMetadata,
+          teamreel_assets: newAssets,
+        },
+      });
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -110,7 +92,7 @@ export default function SeasonAssetsCard({
     } finally {
       setSaving(false);
     }
-  }, [apiBaseUrl, seasonId, seasonMetadata, currentAssets, sponsorUrl, onAssetsUpdated]);
+  }, [seasonId, seasonMetadata, currentAssets, sponsorUrl, onAssetsUpdated]);
 
   // Clear override (use club sponsor)
   const handleClearOverride = useCallback(() => {

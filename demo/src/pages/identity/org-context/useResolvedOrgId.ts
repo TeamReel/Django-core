@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { looksLikeUuid } from '../../../utils/periodPath';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { organisationsApi } from '../../../api';
 
 type ResolvedOrgIdState = {
   orgId: string;
@@ -36,13 +36,8 @@ export const useResolvedOrgId = (orgIdOrSlug?: string): ResolvedOrgIdState => {
     const run = async () => {
       setState((prev) => ({ ...prev, orgId: k, loading: true, error: undefined }));
       try {
-        const apiBaseUrl = getApiBaseUrl();
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(k)}/`, {
-          credentials: 'include',
-        });
-        if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
-        const json = await res.json();
-        const resolved = String(json?.id || json?.data?.id || k).trim();
+        const org = await organisationsApi.get(encodeURIComponent(k));
+        const resolved = String((org as any)?.id || k).trim();
 
         if (cancelled) return;
         setState({ orgId: resolved || k, loading: false });

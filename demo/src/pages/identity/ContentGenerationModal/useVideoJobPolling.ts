@@ -4,8 +4,7 @@
  * Manages video job state, polling, and approval actions.
  */
 import { useState, useEffect, useRef } from 'react';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
+import { videoApi } from '../../../api';
 
 /* ================================================================== */
 /*  Types                                                              */
@@ -94,13 +93,7 @@ export function useVideoJobPolling({
       while (!controller.signal.aborted && attempts < maxAttempts) {
         attempts++;
         try {
-          const res = await fetch(
-            `${getApiBaseUrl()}/api/v1/video/jobs/${videoJobId}/`,
-            { credentials: 'include', signal: controller.signal },
-          );
-          if (!res.ok) break;
-          const data = await res.json();
-          const job = data?.data || data;
+          const job = await videoApi.getJob(videoJobId, controller.signal) as any;
 
           setVideoJobStatus(job.status);
           setVideoJobProgressRaw(job.progress_percent || 0);
@@ -118,6 +111,8 @@ export function useVideoJobPolling({
         } catch (err: unknown) {
           console.error(err);
           if (err instanceof Error && err.name === 'AbortError') return;
+          // HTTP errors (ApiError) → stop polling; network errors → retry
+          if (typeof (err as any)?.status === 'number') break;
           console.warn('Poll error:', err);
         }
         await new Promise(r => setTimeout(r, 5000));
@@ -135,14 +130,10 @@ export function useVideoJobPolling({
     setVideoApprovalStatus(isApprove ? 'approving' : 'rejecting');
     setVideoApprovalError(null);
     try {
-      const res = await fetch(`${getApiBaseUrl()}/api/v1/video/jobs/${videoJobId}/${action}/`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'X-CSRFToken': getCsrfToken() },
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error || err?.detail || `${action} failed`);
+      if (isApprove) {
+        await videoApi.approveJob(videoJobId);
+      } else {
+        await videoApi.rejectJob(videoJobId);
       }
       setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
       if (isApprove) onGenerated?.('Video goedgekeurd en opgeslagen.');

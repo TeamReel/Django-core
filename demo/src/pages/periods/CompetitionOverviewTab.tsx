@@ -5,7 +5,7 @@ import React from 'react';
 import { Button, Card } from '@django-core/design-system';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
-import { getCsrfToken } from '../../utils/csrf';
+import { periodsApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 
 interface CompetitionOverviewTabProps {
@@ -119,24 +119,16 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
           canEdit={Boolean(userCanEditProject && competition)}
           onSave={async (next) => {
             if (!competition?.id) throw new Error('Competition not loaded');
-            const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(String(competition.id))}/`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-              credentials: 'include',
-              body: JSON.stringify({
-                metadata: {
-                  ...(competition?.metadata || {}),
-                  identity: {
-                    ...((competition?.metadata || {})?.identity || {}),
-                    logo_url: String(next.logoUrl || '').trim() || null,
-                    default_location: String(next.defaultLocation || '').trim() || null,
-                  },
+            const updated = await periodsApi.update(String(competition.id), {
+              metadata: {
+                ...(competition?.metadata || {}),
+                identity: {
+                  ...((competition?.metadata || {})?.identity || {}),
+                  logo_url: String(next.logoUrl || '').trim() || null,
+                  default_location: String(next.defaultLocation || '').trim() || null,
                 },
-              }),
-            });
-            if (!res.ok) { const d = await res.text().catch(() => ''); throw new Error(d || `Failed to save (${res.status})`); }
-            const raw = await res.json().catch(() => null);
-            const updated: any = raw?.data?.data || raw?.data || raw;
+              },
+            } as any);
             setCompetition((prev: any) => ({ ...prev, ...updated }));
           }}
         />

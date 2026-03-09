@@ -2,7 +2,8 @@ import React from 'react';
 import type { Organisation, Project } from '../../types';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { getApiV1BaseUrl, getCsrfToken } from './orgDataHelpers';
+import { getApiV1BaseUrl } from './orgDataHelpers';
+import { api } from '../../api';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -64,17 +65,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
     try {
       setInviteLoading(true);
       const apiV1BaseUrl = getApiV1BaseUrl();
-      const csrfToken = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='))?.split('=')[1];
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        credentials: 'include',
-        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
-      });
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.email?.[0] || data.detail || 'Failed to invite member');
-      }
+      await api.post(`/organisations/${currentOrgSlug}/members/`, { email: inviteEmail, role: inviteRole });
       try {
         const p = new URLSearchParams();
         p.set('include_project_memberships', 'true');
@@ -104,14 +95,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
     if (!window.confirm('Are you sure you want to delete this organisation? This action cannot be undone.')) return;
     try {
       setDeleteLoading(true);
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const csrfToken = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='))?.split('=')[1];
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error(`Failed to delete organisation (${response.status})`);
+      await api.delete(`/organisations/${currentOrgSlug}/`);
       navigate('/federations');
     } catch (err) {
       console.error(err);
@@ -140,16 +124,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
     if (!org || !editName.trim()) { alert('Organisation name is required'); return; }
     try {
       setSaving(true);
-      const apiV1BaseUrl = getApiV1BaseUrl();
-      const csrfToken = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='))?.split('=')[1];
-      const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        credentials: 'include',
-        body: JSON.stringify({ name: editName.trim(), metadata: { ...org.metadata, type: editType.trim(), country: editCountry.trim() } }),
-      });
-      if (!response.ok) throw new Error(`Failed to update organisation (${response.status})`);
-      const updatedOrg = await response.json();
+      const updatedOrg = await api.patch<Organisation>(`/organisations/${currentOrgSlug}/`, { name: editName.trim(), metadata: { ...org.metadata, type: editType.trim(), country: editCountry.trim() } });
       setOrg(updatedOrg);
       setIsEditMode(false);
     } catch (err) {
@@ -163,52 +138,21 @@ export function useOrgActions(params: UseOrgActionsParams) {
 
   const saveOrganisationEdits = async (orgData: Partial<Organisation> & { sport_id?: string | null }) => {
     if (!org) throw new Error('Missing organisation');
-    const apiV1BaseUrl = getApiV1BaseUrl();
     const patch: any = { ...orgData };
     delete patch.slug;
     delete patch.sport;
-    const response = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() || '' },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(detail || `Failed to update organisation (${response.status})`);
-    }
-    const raw = await response.json().catch(() => null);
-    const updatedOrg = raw?.data || raw;
+    const updatedOrg = await api.patch<Organisation>(`/organisations/${currentOrgSlug}/`, patch);
     if (updatedOrg) setOrg(updatedOrg);
     invalidateFetchAllPagesCache();
     try {
-      const refreshedRes = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/`, {
-        credentials: 'include', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      });
-      if (refreshedRes.ok) {
-        const refreshedRaw = await refreshedRes.json().catch(() => null);
-        const refreshed = refreshedRaw?.data || refreshedRaw;
-        if (refreshed) setOrg(refreshed);
-      }
+      const refreshed = await api.get<Organisation>(`/organisations/${currentOrgSlug}/`);
+      if (refreshed) setOrg(refreshed);
     } catch { /* Best-effort */ }
   };
 
   const saveProjectEdits = async (project: Project, patch: Partial<Project>) => {
-    const apiV1BaseUrl = getApiV1BaseUrl();
     const projectSlugOrId = project.slug || project.id;
-    const res = await fetch(`${apiV1BaseUrl}/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      credentials: 'include',
-      body: JSON.stringify(patch),
-    });
-    if (!res.ok) {
-      let msg = `Failed to save (${res.status})`;
-      try { const data = await res.json(); msg = data?.detail || msg; } catch { /* ignore */ }
-      throw new Error(msg);
-    }
-    const json = await res.json();
-    const updated = json?.data || json;
+    const updated = await api.patch<Project>(`/organisations/${currentOrgSlug}/projects/${projectSlugOrId}/`, patch);
     setClubs((prev) => prev.map((p) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
     setTeams((prev) => prev.map((p) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));
     setAllClubsForTeams((prev) => prev.map((p) => (String(p.id) === String(project.id) ? { ...p, ...updated } : p)));

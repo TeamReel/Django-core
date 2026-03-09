@@ -6,8 +6,8 @@
  */
 
 import { useEffect, useState, useMemo, useCallback, type Dispatch, type SetStateAction } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { api } from '../../api/client';
+import { organisationsApi } from '../../api';
 import { getAssetTypeLabel } from './contentLibraryTypes';
 import {
   CONTENT_CATEGORIES,
@@ -125,13 +125,8 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
       return;
     }
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const orgs = await fetchAllPages<any>(
-          `${apiBaseUrl}/api/v1/organisations/?page_size=100`,
-          { credentials: 'include' },
-          { ttlMs: 120_000 },
-        );
+        const orgs = await api.listAll<any>('/organisations/', { pageSize: 100 });
         setOrganisations((orgs || []).map((o: { id: string | number; name: string; slug?: string }) => ({ id: String(o.id), name: o.name, slug: o.slug || '' })));
       } catch { /* ignore */ }
     };
@@ -141,23 +136,16 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   // ── Load clubs/teams when org changes ──
   useEffect(() => {
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       const selectedOrg = selectedOrgId ? organisations.find((o) => String(o.id) === String(selectedOrgId)) : null;
       const orgSlugForApi = selectedOrg?.slug || orgSlug || '';
       if (!orgSlugForApi) { setClubs([]); setTeams([]); return; }
       try {
         const [allClubs, allTeams] = await Promise.all([
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=500&parent_project__isnull=true`,
-            { credentials: 'include' }, { ttlMs: 120_000 },
-          ),
-          fetchAllPages<ProjectOption>(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugForApi)}/projects/?page_size=2000&parent_project__isnull=false`,
-            { credentials: 'include' }, { ttlMs: 120_000 },
-          ),
+          organisationsApi.listAllProjects(orgSlugForApi, { parent_project__isnull: 'true' }, { pageSize: 500 }),
+          organisationsApi.listAllProjects(orgSlugForApi, { parent_project__isnull: 'false' }, { pageSize: 2000 }),
         ]);
-        setClubs(allClubs);
-        setTeams(allTeams);
+        setClubs(allClubs as unknown as ProjectOption[]);
+        setTeams(allTeams as unknown as ProjectOption[]);
       } catch { /* ignore */ }
     };
     load();
@@ -176,17 +164,12 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   useEffect(() => {
     if (!selectedTeamId) { setSeasons([]); return; }
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const response = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project=${selectedTeamId}&period_type=season&page_size=100`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const items = data?.results || data?.data?.results || [];
-          setSeasons(items.map((s: { id: string | number; name: string; key?: string; slug?: string }) => ({ id: String(s.id), name: s.name, key: s.key || s.slug })));
-        }
+        const { results: items } = await api.list<any>('/periods/', {
+          params: { project: selectedTeamId, period_type: 'season' },
+          pageSize: 100,
+        });
+        setSeasons(items.map((s: { id: string | number; name: string; key?: string; slug?: string }) => ({ id: String(s.id), name: s.name, key: s.key || s.slug || '' })));
       } catch { /* ignore */ }
     };
     load();
@@ -196,17 +179,12 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
   useEffect(() => {
     if (!selectedSeasonId) { setMatches([]); return; }
     const load = async () => {
-      const apiBaseUrl = getApiBaseUrl();
       try {
-        const response = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?period=${selectedSeasonId}&activity_type=match&page_size=100&ordering=-activity_date`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } }
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const items = data?.results || data?.data?.results || [];
-          setMatches(items.map((m: { id: string | number; title?: string; name?: string; slug?: string; activity_date?: string }) => ({ id: String(m.id), title: m.title || m.name, slug: m.slug, activity_date: m.activity_date })));
-        }
+        const { results: items } = await api.list<any>('/activities/', {
+          params: { period: selectedSeasonId, activity_type: 'match', ordering: '-activity_date' },
+          pageSize: 100,
+        });
+        setMatches(items.map((m: { id: string | number; title?: string; name?: string; slug?: string; activity_date?: string }) => ({ id: String(m.id), title: m.title || m.name || '', slug: m.slug, activity_date: m.activity_date })));
       } catch { /* ignore */ }
     };
     load();
@@ -217,19 +195,12 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
     setLoading(true);
     setError(null);
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      let url = `${apiBaseUrl}/api/v1/media/items/?page_size=200`;
-      if (selectedMatchId) url += `&activity=${selectedMatchId}`;
-      else if (selectedTeamId) url += `&project=${selectedTeamId}`;
-      else if (selectedClubId) url += `&project=${selectedClubId}`;
-      const response = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
-      if (response.ok) {
-        const data = await response.json();
-        const items = data?.results || data?.data?.results || [];
-        setContentItems(Array.isArray(items) ? items : []);
-      } else {
-        setError('Kon content niet laden');
-      }
+      const params: Record<string, string> = {};
+      if (selectedMatchId) params.activity = selectedMatchId;
+      else if (selectedTeamId) params.project = selectedTeamId;
+      else if (selectedClubId) params.project = selectedClubId;
+      const { results: items } = await api.list<any>('/media/items/', { params, pageSize: 200 });
+      setContentItems(Array.isArray(items) ? items : []);
     } catch (err) {
       console.error(err);
       setError('Fout bij laden van content');

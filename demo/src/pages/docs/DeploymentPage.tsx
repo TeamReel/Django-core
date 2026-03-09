@@ -3,7 +3,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Button, Card, Badge, Alert, Spinner } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { apiFetch } from '../../utils/apiFetch';
 import styles from './DeploymentPage.module.css';
 
 interface ServiceStatus {
@@ -19,10 +19,7 @@ export function DeploymentPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const apiBase = getApiBaseUrl();
-    const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-
-    fetch(`${baseUrl}/api/observability/demo-health/`)
+    apiFetch('/api/observability/demo-health/')
       .then(r => r.json())
       .then(data => {
         setServices([

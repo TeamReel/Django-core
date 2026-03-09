@@ -7,7 +7,7 @@
  * - Toast notifications when a job transitions to completed/failed
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -94,7 +94,6 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGe
 
   const fetchJobs = useCallback(async () => {
     if (document.hidden) return; // Skip while tab is in background
-    const apiBaseUrl = getApiBaseUrl();
     const params = new URLSearchParams();
     if (status) params.set('status', status);
     if (project_id) params.set('project_id', project_id);
@@ -102,14 +101,8 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGe
     params.set('limit', '100');
 
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/generative/jobs/?${params}`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      // Backend uses EnvelopeJSONRenderer → actual payload is under data.data
-      const payload = data.data ?? data;
-      const newJobs: GenerationJob[] = payload.results ?? (Array.isArray(payload) ? payload : []);
+      const data = await api.get<any>(`/generative/jobs/?${params}`);
+      const newJobs: GenerationJob[] = data.results ?? (Array.isArray(data) ? data : []);
 
       // Detect status changes and fire callback
       if (onStatusChange) {
@@ -195,23 +188,11 @@ export async function reviewJob(
   action: 'approve' | 'reject',
   variantIndices?: number[],   // omit to review whole job
 ): Promise<{ approval_status: GenJobApprovalStatus; output_variants: OutputVariant[] }> {
-  const { getApiBaseUrl } = await import('../utils/apiBase');
-  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
   const body: Record<string, unknown> = { action };
   if (variantIndices !== undefined) body.variant_indices = variantIndices;
-  const res = await fetch(`${getApiBaseUrl()}/api/v1/generative/jobs/${taskId}/review/`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.data?.error || err?.error || `HTTP ${res.status}`);
-  }
-  const data = await res.json();
-  return data.data ?? data;
+  const data = await api.post<{ approval_status: GenJobApprovalStatus; output_variants: OutputVariant[] }>(
+    `/generative/jobs/${taskId}/review/`,
+    body,
+  );
+  return data;
 }

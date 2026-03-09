@@ -16,8 +16,8 @@ import {
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
+import { api, organisationsApi, projectsApi } from '../../api';
 import { Project } from '../../types';
-import { getApiBaseUrl } from '../../utils/apiBase';
 
 export const ProjectEditPage: React.FC = () => {
   const navigate = useNavigate();
@@ -70,30 +70,14 @@ export const ProjectEditPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const apiBaseUrl = getApiBaseUrl();
-
         // Use nested route if we have org context
-        const endpoint = resolvedOrg
-          ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
-          : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
-
-        const response = await fetch(endpoint, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch project (${response.status})`);
-        }
-
-        const rawData = await response.json();
+        const rawData = resolvedOrg
+          ? await organisationsApi.getProject(resolvedOrg.slug, currentProjectSlug)
+          : await projectsApi.get(currentProjectSlug);
         // Handle B13 envelope pattern: {status: 'success', data: {...}}
-        const data: Project = rawData.data || rawData;
+        const data: Project = (rawData as any).data || rawData;
         setName(data.name);
-        setSlug(data.slug || ''); // Assuming backend returns slug now, or we use what we have
+        setSlug(data.slug || '');
         setDescription(data.description || '');
         setIsActive(data.is_active);
         setIsPrivate(data.is_private || false);
@@ -116,44 +100,19 @@ export const ProjectEditPage: React.FC = () => {
       setSaving(true);
       setError(null);
 
-      // Use relative path to ensure we go through Vite proxy (if in dev)
-      // or same origin (if in prod), so that cookies/CSRF work correctly.
-      const apiBaseUrl = '';
-
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
       // Use nested route if we have org context
       const endpoint = resolvedOrg
-        ? `${apiBaseUrl}/api/v1/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
-        : `${apiBaseUrl}/api/v1/projects/${currentProjectSlug}/`;
+        ? `/organisations/${resolvedOrg.slug}/projects/${currentProjectSlug}/`
+        : `/projects/${currentProjectSlug}/`;
 
-      const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
+      const response = await api.patch<any>(endpoint, {
           name,
           slug: slug || undefined,
           description,
           is_active: isActive,
           is_private: isPrivate,
-        }),
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.detail || 'Failed to update project');
-      }
-
-      await response.json();
       // Navigate back to project detail page
       const nextSlug = slug || currentProjectSlug;
       navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${nextSlug}`);

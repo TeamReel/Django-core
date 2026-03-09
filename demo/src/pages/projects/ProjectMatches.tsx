@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import SmartEmptyState from '../../components/SmartEmptyState';
 
 
@@ -31,12 +31,10 @@ interface Match {
 
 interface ProjectMatchesProps {
   projectId: string;
-  apiBaseUrl?: string;
 }
 
 export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
   projectId,
-  apiBaseUrl = getApiBaseUrl()
 }) => {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);
@@ -50,17 +48,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
     const fetchMatches = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(
-          `${apiBaseUrl}/api/v1/activities/?project=${projectId}&activity_type=match&page_size=100`, // Fetch plenty
-          {
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-          }
-        );
-
-        if (!response.ok) throw new Error('Failed to fetch matches');
-
-        const data = await response.json();
+        const data = await api.get<any>(`/activities/?project=${projectId}&activity_type=match&page_size=100`);
         const results = data.results || data; // Handle pagination or list
 
         // Sort by start_time
@@ -79,7 +67,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
     };
 
     fetchMatches();
-  }, [projectId, apiBaseUrl]);
+  }, [projectId]);
 
   if (isLoading) return <div className="p-20 text-muted">Loading matches...</div>;
   if (error) return <div className="p-20 text-error">{error}</div>;

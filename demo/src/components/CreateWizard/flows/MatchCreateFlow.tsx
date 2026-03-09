@@ -18,8 +18,7 @@ import { MatchConfirmStep, type MatchConfirmData } from '../steps/MatchConfirmSt
 
 import { useMatchCreateData } from '../../../pages/identity/useMatchCreateData';
 import type { MatchCreatePayload } from '../../../pages/identity/matchCreateTypes';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
+import { api } from '@/api';
 
 // ─── Step config ──────────────────────────────────────────
 
@@ -48,42 +47,27 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
 
   // Build the onCreate handler that POSTs to the API
   const handleCreateMatch = useCallback(async (payload: MatchCreatePayload) => {
-    const apiBaseUrl = getApiBaseUrl();
-    const csrfToken = getCsrfToken();
     const teamId = String(payload.project_id || '').trim();
     const competitionId = String(payload.period_id || '').trim();
     if (!teamId) throw new Error('Selecteer eerst een team.');
     if (!competitionId) throw new Error('Selecteer eerst een competitie.');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken || '',
+    await api.post('/activities/', {
+      title: payload.title,
+      activity_type: 'match',
+      project_id: teamId ? Number(teamId) : undefined,
+      opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
+      period_id: competitionId,
+      start_time: payload.start_time,
+      end_time: payload.end_time,
+      location: payload.location,
+      description: payload.description,
+      metadata: {
+        venue: payload.venue || 'Home',
+        is_home: (payload.venue || 'Home') === 'Home',
+        ...(payload.metadata || {}),
       },
-      credentials: 'include',
-      body: JSON.stringify({
-        title: payload.title,
-        activity_type: 'match',
-        project_id: teamId ? Number(teamId) : undefined,
-        opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
-        period_id: competitionId,
-        start_time: payload.start_time,
-        end_time: payload.end_time,
-        location: payload.location,
-        description: payload.description,
-        metadata: {
-          venue: payload.venue || 'Home',
-          is_home: (payload.venue || 'Home') === 'Home',
-          ...(payload.metadata || {}),
-        },
-      }),
     });
-
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Wedstrijd aanmaken mislukt');
-    }
 
     // Trigger queue update event so lists refresh
     window.dispatchEvent(new CustomEvent('teamreel:queue-update'));

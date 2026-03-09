@@ -9,8 +9,7 @@ import { useLocation } from 'react-router-dom';
 import { useTheme } from '@django-core/theme-system';
 import { useAuth } from '@django-core/auth-ui';
 import type { AuditEvent } from '../../types';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '../../api';
 
 import type {
   UserPreferences,
@@ -150,39 +149,17 @@ export function usePreferencesData(): PreferencesDataReturn {
     try {
       const userId = user?.id;
       if (!userId) throw new Error('User ID not available');
-      const baseUrl = getApiBaseUrl();
-      const response = await fetch(
-        `${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}&event_type=${eventType}&channel=${channel}`,
-        { headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include' },
+      const result = await api.list<NotificationPreference>(
+        `/contextual-notifications/preferences/`,
+        { params: { user: userId, event_type: eventType, channel } },
       );
 
-      if (response.ok) {
-        const result = await response.json();
-        let existingPrefs: NotificationPreference[] = [];
-        if (result.data?.results) existingPrefs = result.data.results;
-        else if (result.data && Array.isArray(result.data)) existingPrefs = result.data;
-        else if (Array.isArray(result)) existingPrefs = result;
+      const existingPrefs = result.results || [];
 
-        if (existingPrefs.length > 0) {
-          const updateResponse = await fetch(
-            `${baseUrl}/api/v1/contextual-notifications/preferences/${existingPrefs[0].id}/`,
-            {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-              credentials: 'include',
-              body: JSON.stringify({ enabled: newEnabledValue }),
-            },
-          );
-          if (!updateResponse.ok) throw new Error('Update failed');
-        } else {
-          const createResponse = await fetch(`${baseUrl}/api/v1/contextual-notifications/preferences/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-            credentials: 'include',
-            body: JSON.stringify({ user: userId, event_type: eventType, channel, enabled: newEnabledValue }),
-          });
-          if (!createResponse.ok) throw new Error('Create failed');
-        }
+      if (existingPrefs.length > 0) {
+        await api.patch(`/contextual-notifications/preferences/${existingPrefs[0].id}/`, { enabled: newEnabledValue });
+      } else {
+        await api.post(`/contextual-notifications/preferences/`, { user: userId, event_type: eventType, channel, enabled: newEnabledValue });
       }
     } catch {
       setChannelPrefs(prev =>
@@ -202,13 +179,7 @@ export function usePreferencesData(): PreferencesDataReturn {
     setSuccess(false);
 
     try {
-      const baseUrl = getApiBaseUrl();
-      await fetch(`${baseUrl}/api/v1/preferences/me/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-        body: JSON.stringify({ language: preferences.language, timezone: preferences.timezone }),
-      });
+      await api.patch(`/preferences/me/`, { language: preferences.language, timezone: preferences.timezone });
     } catch (err) {
       console.error(err);
       console.error('[PreferencesPage] Failed to save preferences to backend:', err);
@@ -267,17 +238,8 @@ export function usePreferencesData(): PreferencesDataReturn {
       try {
         setMyAuditLoading(true);
         setMyAuditError(null);
-        const baseUrl = getApiBaseUrl();
-        const params = new URLSearchParams();
-        params.set('limit', '200');
-        params.set('offset', '0');
-        const response = await fetch(`${baseUrl}/api/v1/activity/?${params.toString()}`, {
-          headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        });
-        if (!response.ok) throw new Error(`Failed to load audit events (${response.status})`);
-        const raw = await response.json();
-        const data = (raw?.data ?? raw);
-        const results: AuditEvent[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        const data = await api.list<AuditEvent>('/activity/', { params: { limit: 200, offset: 0 } });
+        const results: AuditEvent[] = data.results;
         const filtered = results
           .filter((e) => {
             const uid = String(e?.user?.id || '').trim();
@@ -322,18 +284,14 @@ export function usePreferencesData(): PreferencesDataReturn {
       setLoading(false);
 
       try {
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/preferences/me/`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
-        });
-        if (response.ok) {
-          const effective = await response.json();
-          setEffectivePrefs(effective);
-        } else if (response.status === 404) {
+        const effective = await api.get<I18nEffectivePreferences>(`/preferences/me/`);
+        setEffectivePrefs(effective);
+      } catch (e: any) {
+        if (e?.status === 404) {
           setEffectivePrefs({ language: fullLangCode, timezone: 'UTC', date_format: 'YYYY-MM-DD', time_format: '24h', currency: 'USD', resolved_from: 'user' });
+        } else {
+          setEffectivePrefs({ language: fullLangCode, timezone: 'UTC', date_format: 'YYYY-MM-DD', time_format: '24h', currency: 'USD', resolved_from: 'system' });
         }
-      } catch {
-        setEffectivePrefs({ language: fullLangCode, timezone: 'UTC', date_format: 'YYYY-MM-DD', time_format: '24h', currency: 'USD', resolved_from: 'system' });
       }
     };
     loadPreferences();
@@ -373,21 +331,13 @@ export function usePreferencesData(): PreferencesDataReturn {
       if (!user || !user.id) { setChannelPrefsLoading(false); return; }
       const userId = user.id;
       try {
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/contextual-notifications/preferences/?user=${userId}`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
-        });
-        if (response.ok) {
-          const result = await response.json();
-          let prefs: NotificationPreference[] = [];
-          if (result.data?.results) prefs = result.data.results;
-          else if (result.data && Array.isArray(result.data)) prefs = result.data;
-          else if (Array.isArray(result)) prefs = result;
-          if (prefs.length === 0) { setDemoMode(false); setChannelPrefs(getMockChannelPreferences()); }
-          else { setChannelPrefs(groupPreferencesByEventType(prefs)); setDemoMode(false); }
-        } else {
-          setDemoMode(true); setChannelPrefs(getMockChannelPreferences());
-        }
+        const result = await api.list<NotificationPreference>(
+          `/contextual-notifications/preferences/`,
+          { params: { user: userId } },
+        );
+        const prefs = result.results || [];
+        if (prefs.length === 0) { setDemoMode(false); setChannelPrefs(getMockChannelPreferences()); }
+        else { setChannelPrefs(groupPreferencesByEventType(prefs)); setDemoMode(false); }
       } catch {
         setDemoMode(true); setChannelPrefs(getMockChannelPreferences());
       } finally {

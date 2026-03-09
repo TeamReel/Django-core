@@ -11,7 +11,7 @@ import {
 import { Badge, Button, Card } from '@django-core/design-system';
 
 import { unwrapEnvelope as unwrap } from '../../types/season';
-import { getCsrfToken } from '../../utils/csrf';
+import { projectsApi } from '../../api';
 import { useMemberMediaActions } from './useMemberMediaActions';
 import { MemberAiModal, type MemberAiModalHandle } from './MemberAiModal';
 import { MemberAssetsTab } from './MemberAssetsTab';
@@ -102,12 +102,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     const run = async () => {
       try {
         if (!project?.id || !membershipId) return;
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membershipId)}/`,
-          { credentials: 'include' },
-        );
-        if (!res.ok) throw new Error('Failed to load member');
-        const json = unwrap<any>(await res.json());
+        const json = await projectsApi.getMember(project.id, membershipId) as any;
         if (!cancelled) setMembership(json);
       } catch (e) {
         console.error(e);
@@ -131,18 +126,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     setSaving(true);
     try {
       const nextMetadata = mergeAssetsIntoMetadata(membership?.metadata, media.form, media.videoVariants);
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project.id)}/members/${encodeURIComponent(membership.id)}/`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-          credentials: 'include',
-          body: JSON.stringify({ metadata: nextMetadata }),
-        },
-      );
-      if (!res.ok) throw new Error('Save failed');
-      const raw = await res.json().catch(() => null);
-      const updated = raw?.data || raw || null;
+      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: nextMetadata }) as any;
       setMembership(updated ? { ...membership, ...updated } : membership);
       onMemberUpdated?.();
     } catch {

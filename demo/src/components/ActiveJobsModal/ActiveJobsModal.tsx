@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { Modal } from '../ui';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './ActiveJobsModal.module.css';
 
 // ============================================================================
@@ -34,8 +34,6 @@ interface ActiveJobsModalProps {
   projectId: string;
 }
 
-import { getCsrfToken } from '../../utils/csrf';
-
 // ============================================================================
 // Styles
 // ============================================================================
@@ -55,27 +53,13 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [cancellingIds, setCancellingIds] = useState<Set<string>>(new Set());
 
-  const apiBase = getApiBaseUrl();
-
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(
-        `${apiBase}/api/v1/video/jobs/active-processing-jobs/?project=${projectId}`,
-        {
-          credentials: 'include',
-          headers: {
-            'X-Project-ID': projectId,
-          },
-        }
-      );
-      if (!res.ok) {
-        throw new Error(`Failed to fetch active jobs: ${res.status}`);
-      }
-      const json = await res.json();
-      // Handle API envelope: { status, data: { jobs: [...] } }
-      const data = json.data || json;
+      const data = await api.get<any>('/video/jobs/active-processing-jobs/', {
+        params: { project: projectId },
+      });
       setJobs(data.jobs || []);
     } catch (err) {
       console.error(err);
@@ -83,7 +67,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [apiBase, projectId]);
+  }, [projectId]);
 
   // Poll for updates every 5 seconds when open
   useEffect(() => {
@@ -99,24 +83,12 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       setCancellingIds((prev) => new Set(prev).add(jobKey));
 
       try {
-        const res = await fetch(`${apiBase}/api/v1/video/jobs/cancel-asset-processing/`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-            'X-Project-ID': projectId,
-          },
-          body: JSON.stringify({
-            membership_id: job.membership_id,
-            asset_type: job.asset_type,
-            kit_type: job.kit_type,
-            variant_id: job.variant_id,
-          }),
+        await api.post('/video/jobs/cancel-asset-processing/', {
+          membership_id: job.membership_id,
+          asset_type: job.asset_type,
+          kit_type: job.kit_type,
+          variant_id: job.variant_id,
         });
-        if (!res.ok) {
-          console.error('Failed to cancel job:', await res.text());
-        }
         // Refresh immediately
         await fetchJobs();
       } catch (err) {
@@ -130,7 +102,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
         });
       }
     },
-    [apiBase, projectId, fetchJobs]
+    [projectId, fetchJobs]
   );
 
   const cancelAllJobs = useCallback(async () => {

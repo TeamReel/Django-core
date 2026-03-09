@@ -6,8 +6,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api, ApiError } from '../../api';
 import { getMemberName } from './memberBatchAction.types';
 import type { BatchMemberEntry, TeamOption, ActionType, ActionConfig } from './memberBatchAction.types';
 
@@ -137,8 +136,6 @@ export function useMemberBatchAction({
     // ── Execute batch ──
     const executeBatch = useCallback(async () => {
         setStep('running');
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = getCsrfToken();
         const total = members.length;
         let success = 0;
         let failed = 0;
@@ -156,16 +153,7 @@ export function useMemberBatchAction({
                     if (isTeamContext && teamProjectId) {
                         const pmId = m.project_membership_id;
                         if (!pmId) throw new Error('Geen team membership gevonden');
-                        const res = await fetch(
-                            `${apiBaseUrl}/api/v1/projects/${teamProjectId}/members/${pmId}/`,
-                            {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                                body: JSON.stringify({ role: selectedRole }),
-                                credentials: 'include',
-                            }
-                        );
-                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        await api.patch(`/projects/${teamProjectId}/members/${pmId}/`, { role: selectedRole });
                     } else {
                         const memberships = Array.isArray(m.project_memberships) ? m.project_memberships : [];
                         const relevantPm = memberships.find((pm) => {
@@ -176,64 +164,30 @@ export function useMemberBatchAction({
                         });
                         if (!relevantPm?.id) throw new Error('Geen club membership gevonden');
                         const projectId = String(relevantPm.project_id ?? relevantPm.project?.id ?? '');
-                        const res = await fetch(
-                            `${apiBaseUrl}/api/v1/projects/${projectId}/members/${relevantPm.id}/`,
-                            {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                                body: JSON.stringify({ role: selectedRole }),
-                                credentials: 'include',
-                            }
-                        );
-                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        await api.patch(`/projects/${projectId}/members/${relevantPm.id}/`, { role: selectedRole });
                     }
                     success++;
 
                 } else if (selectedAction === 'assign_team') {
                     const userId = m.id;
                     if (!userId) throw new Error('Geen user ID');
-                    const res = await fetch(
-                        `${apiBaseUrl}/api/v1/projects/${selectedTeamId}/members/`,
-                        {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                            body: JSON.stringify({ user_id: Number(userId), role: 'viewer' }),
-                            credentials: 'include',
-                        }
-                    );
-                    if (res.ok || res.status === 201) {
-                        success++;
-                    } else if (res.status === 400) {
-                        success++;
-                    } else {
-                        throw new Error(`HTTP ${res.status}`);
+                    try {
+                        await api.post(`/projects/${selectedTeamId}/members/`, { user_id: Number(userId), role: 'viewer' });
+                    } catch (e) {
+                        // 400 = already a member → treat as success
+                        if (!(e instanceof ApiError && e.status === 400)) throw e;
                     }
+                    success++;
 
                 } else if (selectedAction === 'delete') {
                     if (isTeamContext && teamProjectId) {
                         const pmId = m.project_membership_id;
                         if (!pmId) throw new Error('Geen team membership gevonden');
-                        const res = await fetch(
-                            `${apiBaseUrl}/api/v1/projects/${teamProjectId}/members/${pmId}/`,
-                            {
-                                method: 'DELETE',
-                                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                                credentials: 'include',
-                            }
-                        );
-                        if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
+                        await api.delete(`/projects/${teamProjectId}/members/${pmId}/`);
                     } else {
                         const membershipId = m.membership?.id;
                         if (!membershipId || !orgSlug) throw new Error('Geen org membership gevonden');
-                        const res = await fetch(
-                            `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${membershipId}/`,
-                            {
-                                method: 'DELETE',
-                                headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' },
-                                credentials: 'include',
-                            }
-                        );
-                        if (!res.ok && res.status !== 204) throw new Error(`HTTP ${res.status}`);
+                        await api.delete(`/organisations/${orgSlug}/members/${membershipId}/`);
                     }
                     success++;
                 }

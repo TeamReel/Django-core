@@ -8,6 +8,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../utils/fetchAllPages';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import {
   chunkArray,
   sortKey,
@@ -16,7 +17,6 @@ import {
   getClubName,
   matchesSportFilter,
 } from '../utils/directoryHelpers';
-import { getCsrfToken } from '../utils/csrf';
 import type { Period } from '../utils/directoryHelpers';
 import type { useDirectoryFilters } from './useDirectoryFilters';
 
@@ -258,21 +258,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   // ── CRUD ──────────────────────────────────────────────────────────
 
   const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
-    const apiBaseUrl = getApiBaseUrl();
-    const response = await fetch(`${apiBaseUrl}/api/v1/periods/${periodId}/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(detail || 'Failed to update season');
-    }
+    await api.patch(`/periods/${periodId}/`, payload);
   }, []);
 
   const createSeason = useCallback(async (payload: {
@@ -283,35 +269,21 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
     organisation_id?: string;
     project_id?: string;
   }) => {
-    const apiBaseUrl = getApiBaseUrl();
     const orgId = String(payload.organisation_id || selectedOrgId || '');
     const teamId = String(payload.project_id || selectedTeamId || '');
     if (!orgId) throw new Error('Select a federation first');
     if (!teamId) throw new Error('Select a team first');
 
-    const response = await fetch(`${apiBaseUrl}/api/v1/periods/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCsrfToken() || '',
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        organisation_id: orgId,
-        project_id: teamId ? Number(teamId) : undefined,
-        parent_period_id: null,
-        name: payload.name,
-        description: payload.description,
-        start_date: payload.start_date,
-        end_date: payload.end_date,
-        metadata: { type: 'season' },
-      }),
+    await api.post('/periods/', {
+      organisation_id: orgId,
+      project_id: teamId ? Number(teamId) : undefined,
+      parent_period_id: null,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      metadata: { type: 'season' },
     });
-
-    if (!response.ok) {
-      const detail = await response.text().catch(() => '');
-      throw new Error(detail || 'Failed to create season');
-    }
 
     invalidateFetchAllPagesCache();
     triggerRefresh();
@@ -321,19 +293,8 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
     if (!seasonId || !window.confirm(`Are you sure you want to delete season "${seasonName}"?`)) {
       return;
     }
-    const apiBaseUrl = getApiBaseUrl();
     try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/periods/${seasonId}/`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken() || '',
-        },
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete season');
-      }
+      await api.delete(`/periods/${seasonId}/`);
       setSeasons((prev) => prev.filter((s) => s.id !== seasonId));
     } catch (err) {
       console.error(err);

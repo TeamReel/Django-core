@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Badge, Button, Select } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import SmartEmptyState from '../../../components/SmartEmptyState';
+import { api, projectsApi } from '../../../api';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 
 interface Member {
@@ -50,23 +51,17 @@ export const MemberList: React.FC<MemberListProps> = ({
   useEffect(() => {
     const fetchSeasons = async () => {
       try {
-        const response = await fetch(
-            `${apiBaseUrl}/api/v1/periods/?project=${projectId}&type=season`,
-            { headers: { 'Content-Type': 'application/json' }, credentials: 'include' }
-        );
-        if (response.ok) {
-           const data = await response.json();
-           const results = data.results || data;
-           setPeriods(results);
+        const data = await api.get<any>(`/periods/?project=${projectId}&type=season`);
+        const results = data.results || data;
+        setPeriods(results);
 
-           // Auto-select latest season
-           if (results.length > 0) {
-               // Sort by start_date desc
-               const sorted = results.sort((a: Period, b: Period) =>
-                   new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
-               );
-               setSelectedPeriod(sorted[0].id);
-           }
+        // Auto-select latest season
+        if (results.length > 0) {
+          // Sort by start_date desc
+          const sorted = results.sort((a: Period, b: Period) =>
+            new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
+          );
+          setSelectedPeriod(sorted[0].id);
         }
       } catch (e) {
         console.error(e);
@@ -97,15 +92,8 @@ export const MemberList: React.FC<MemberListProps> = ({
 
              // Let's assume we re-fetch project members, but ideally we want specific season roster.
              // If the backend doesn't filter memberships by period yet, this might just return all.
-             const response = await fetch(
-                 `${apiBaseUrl}/api/v1/projects/${projectId}/members/?period=${selectedPeriod}`,
-                 { headers: { 'Content-Type': 'application/json' }, credentials: 'include' }
-             );
-
-             if (response.ok) {
-                 const data = await response.json();
-                 setMembers(data.results || []);
-             }
+             const data = await projectsApi.listMembers(projectId, { periodId: selectedPeriod }) as any;
+             setMembers(data.results || data || []);
           } catch (e) {
             console.error(e);
               console.error("Failed to fetch members", e);

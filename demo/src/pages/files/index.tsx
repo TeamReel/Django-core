@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-core/design-system';
 import type { FileUploadFile } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 import styles from './index.module.css';
 
 interface FileAsset {
@@ -86,21 +86,8 @@ const FilesPage: React.FC = () => {
   const fetchFiles = async () => {
     try {
       setLoading(true);
-      const baseUrl = getApiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/v1/files/`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setFiles(data.results || data);
-      } else {
-        // Any non-200 response falls back to demo mode
-        throw new Error('API not available');
-      }
+      const data = await api.get<any>('/files/');
+      setFiles(data.results || data);
     } catch (err) {
       console.error(err);
       // Demo mode: Load files from localStorage
@@ -141,37 +128,20 @@ const FilesPage: React.FC = () => {
 
         // Try API upload first
         try {
-            const apiBaseUrl = getApiBaseUrl();
-            const csrfToken = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('csrftoken='))
-                ?.split('=')[1];
+            const data = await api.upload<any>('/files/', file, { is_public: 'false' });
 
-            const response = await fetch(`${apiBaseUrl}/api/v1/files/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken || '',
-                },
-                credentials: 'include',
-                body: formData,
-            });
+            // Update progress to success
+            setActiveUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'success', progress: 100 } : u));
 
-            if (response.ok) {
-                const data = await response.json();
+            setFiles(prev => [data, ...prev]);
+            setSuccess(`Successfully uploaded ${file.name}`);
 
-                // Update progress to success
-                setActiveUploads(prev => prev.map(u => u.id === uploadId ? { ...u, status: 'success', progress: 100 } : u));
+            // Remove from active uploads after delay
+            setTimeout(() => {
+                setActiveUploads(prev => prev.filter(u => u.id !== uploadId));
+            }, 2000);
 
-                setFiles(prev => [data, ...prev]);
-                setSuccess(`Successfully uploaded ${file.name}`);
-
-                // Remove from active uploads after delay
-                setTimeout(() => {
-                    setActiveUploads(prev => prev.filter(u => u.id !== uploadId));
-                }, 2000);
-
-                return; // Exit success
-            }
+            return; // Exit success
         } catch (e) {
           console.error(e);
             console.warn("API upload failed, falling back to demo mode", e);

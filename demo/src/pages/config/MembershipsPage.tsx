@@ -4,8 +4,7 @@ import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { unwrapEnvelope as unwrap, extractList } from '../../utils/apiEnvelope';
+import { api } from '@/api';
 import styles from './MembershipsPage.module.css';
 
 type Period = {
@@ -47,8 +46,6 @@ export const MembershipsPage: React.FC = () => {
     return firstOrgId;
   }, [context, organisations]);
 
-  const apiBaseUrl = getApiBaseUrl();
-
   const [seasons, setSeasons] = useState<Period[]>([]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
   const [seasonsError, setSeasonsError] = useState<string | null>(null);
@@ -69,18 +66,11 @@ export const MembershipsPage: React.FC = () => {
         setSeasonsLoading(true);
         setSeasonsError(null);
 
-        const params = new URLSearchParams();
-        params.set('organisation_id', orgIdForSeasons);
-        params.set('parent_id', 'null');
-        params.set('page_size', '100');
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, {
-          credentials: 'include',
+        const { results } = await api.list<Period>('/periods/', {
+          params: { organisation_id: orgIdForSeasons, parent_id: 'null' },
+          pageSize: 100,
         });
-        if (!res.ok) throw new Error(`Failed to load seasons (${res.status})`);
-        const raw = await res.json();
-        const data = unwrap<any>(raw);
-        const list = extractList(data);
-        if (!cancelled) setSeasons(list as Period[]);
+        if (!cancelled) setSeasons(results);
       } catch (e) {
         console.error(e);
         if (!cancelled) setSeasonsError(e instanceof Error ? e.message : 'Failed to load seasons');
@@ -92,20 +82,14 @@ export const MembershipsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [apiBaseUrl, orgIdForSeasons]);
+  }, [orgIdForSeasons]);
 
   const ensureCompetitionsLoaded = async (seasonId: string) => {
     if (competitionsBySeason[seasonId]) return;
     setLoadingCompetitions((prev) => ({ ...prev, [seasonId]: true }));
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonId)}/children/`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error(`Failed to load competitions (${res.status})`);
-      const raw = await res.json();
-      const data = unwrap<any>(raw);
-      const list = extractList(data);
-      setCompetitionsBySeason((prev) => ({ ...prev, [seasonId]: list as Period[] }));
+      const { results } = await api.list<Period>(`/periods/${encodeURIComponent(seasonId)}/children/`);
+      setCompetitionsBySeason((prev) => ({ ...prev, [seasonId]: results }));
     } finally {
       setLoadingCompetitions((prev) => ({ ...prev, [seasonId]: false }));
     }
@@ -115,17 +99,11 @@ export const MembershipsPage: React.FC = () => {
     if (matchesByCompetition[competitionId]) return;
     setLoadingMatches((prev) => ({ ...prev, [competitionId]: true }));
     try {
-      const params = new URLSearchParams();
-      params.set('period_id', competitionId);
-      params.set('page_size', '100');
-      const res = await fetch(`${apiBaseUrl}/api/v1/activities/?${params.toString()}`, {
-        credentials: 'include',
+      const { results } = await api.list<Activity>('/activities/', {
+        params: { period_id: competitionId },
+        pageSize: 100,
       });
-      if (!res.ok) throw new Error(`Failed to load matches (${res.status})`);
-      const raw = await res.json();
-      const data = unwrap<any>(raw);
-      const list = extractList(data);
-      setMatchesByCompetition((prev) => ({ ...prev, [competitionId]: list as Activity[] }));
+      setMatchesByCompetition((prev) => ({ ...prev, [competitionId]: results }));
     } finally {
       setLoadingMatches((prev) => ({ ...prev, [competitionId]: false }));
     }

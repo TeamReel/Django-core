@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useLocation, useNavigate, useParams, type NavigateFunction } from 'react-router-dom';
 import type { BreadcrumbSwitcherOption } from '@django-core/page-templates';
+import { api } from '@/api';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { isSeasonPeriod } from './orgDetailUtils';
@@ -218,11 +219,7 @@ export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
             try {
                 if (!orgSlugOrId || !clubSlugOrId) throw new Error('Missing organisation or club identifier.');
                 if (!effectiveOrgSlug) {
-                    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=250`, { credentials: 'include' });
-                    if (!res.ok) throw new Error(`Failed to resolve organisation (${res.status})`);
-                    const json = await res.json().catch(() => null);
-                    const raw = unwrapEnvelope<any>(json);
-                    const list: Array<{ id?: string; slug?: string }> = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+                    const { results: list } = await api.list<{ id?: string; slug?: string }>('/organisations/', { pageSize: 250 });
                     const match = list.find((o) => String(o?.id || '') === String(orgSlugOrId));
                     const slug = String(match?.slug || '').trim();
                     if (!slug) throw new Error('Organisation not found');
@@ -230,14 +227,10 @@ export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
                     setResolvedOrgSlug(slug);
                     return;
                 }
-                const [orgRes, clubRes] = await Promise.all([
-                    fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/`, { credentials: 'include' }),
-                    fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`, { credentials: 'include' }),
+                const [loadedOrg, loadedClub] = await Promise.all([
+                    api.get<Organisation>(`/organisations/${encodeURIComponent(effectiveOrgSlug)}/`),
+                    api.get<Project>(`/organisations/${encodeURIComponent(effectiveOrgSlug)}/projects/${encodeURIComponent(clubSlugOrId)}/`),
                 ]);
-                if (!orgRes.ok) throw new Error(`Failed to load organisation (${orgRes.status})`);
-                if (!clubRes.ok) throw new Error(`Failed to load club (${clubRes.status})`);
-                const loadedOrg = unwrapEnvelope<Organisation>(await orgRes.json().catch(() => null));
-                const loadedClub = unwrapEnvelope<Project>(await clubRes.json().catch(() => null));
                 if (cancelled) return;
                 setOrg(loadedOrg);
                 setClub(loadedClub);
@@ -266,11 +259,10 @@ export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
             setOverviewLoading(true);
             setOverviewError(null);
             try {
-                const teamsRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000&include_archived=true&parent_project__isnull=false`, { credentials: 'include' });
-                if (!teamsRes.ok) throw new Error(`Failed to load teams (${teamsRes.status})`);
-                const teamsJson = await teamsRes.json().catch(() => null);
-                const teamsRaw = unwrapEnvelope<any>(teamsJson);
-                const teamsList: Project[] = Array.isArray(teamsRaw?.results) ? teamsRaw.results : Array.isArray(teamsRaw) ? teamsRaw : [];
+                const { results: teamsList } = await api.list<any>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+                    pageSize: 2000,
+                    params: { include_archived: 'true', parent_project__isnull: 'false' },
+                });
                 const clubTeams: Project[] = (teamsList || [])
                     .filter((t) => String(getTeamParentId(t) || '') === String(clubId))
                     .map((t) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
@@ -284,34 +276,25 @@ export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
                     for (let i = 0; i < teamIds.length; i += chunkSize) chunks.push(teamIds.slice(i, i + chunkSize));
                     const seasonsChunks = await Promise.all(
                         chunks.map(async (chunk) => {
-                            const params = new URLSearchParams();
-                            params.set('project_id__in', chunk.join(','));
-                            params.set('page_size', '500');
-                            const typed = new URLSearchParams(params);
-                            typed.set('type', 'season');
-                            const typedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${typed.toString()}`, { credentials: 'include' });
-                            if (!typedRes.ok) throw new Error(`Failed to load seasons (${typedRes.status})`);
-                            const typedJson = await typedRes.json().catch(() => null);
-                            const typedList: Period[] = extractList(unwrapEnvelope<any>(typedJson));
+                            const { results: typedList } = await api.list<Period>('/periods/', {
+                                pageSize: 500,
+                                params: { project_id__in: chunk.join(','), type: 'season' },
+                            });
                             if (typedList.length > 0) return typedList;
-                            const untypedRes = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-                            if (!untypedRes.ok) throw new Error(`Failed to load seasons (${untypedRes.status})`);
-                            const untypedJson = await untypedRes.json().catch(() => null);
-                            return extractList(unwrapEnvelope<any>(untypedJson)).filter(isSeasonPeriod);
+                            const { results: untypedList } = await api.list<Period>('/periods/', {
+                                pageSize: 500,
+                                params: { project_id__in: chunk.join(',') },
+                            });
+                            return untypedList.filter(isSeasonPeriod);
                         }),
                     );
                     mergedSeasons = mergeUniqueById(seasonsChunks.flat());
                 }
 
-                const memberParams = new URLSearchParams();
-                memberParams.set('page_size', '250');
-                memberParams.set('include_project_memberships', 'true');
-                memberParams.set('include_project_membership_details', 'true');
-                const membersRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?${memberParams.toString()}`, { credentials: 'include' });
-                if (!membersRes.ok) throw new Error(`Failed to load members (${membersRes.status})`);
-                const membersJson = await membersRes.json().catch(() => null);
-                const membersRawList = membersJson?.data?.data || membersJson?.data?.results || membersJson?.results || membersJson?.data || [];
-                const membersList: RawMemberApiItem[] = Array.isArray(membersRawList) ? membersRawList : [];
+                const { results: membersList } = await api.list<RawMemberApiItem>(`/organisations/${encodeURIComponent(orgSlug)}/members/`, {
+                    pageSize: 250,
+                    params: { include_project_memberships: 'true', include_project_membership_details: 'true' },
+                });
                 const isMemberInClub = (item: RawMemberApiItem): boolean => {
                     const nestedUser = item?.user;
                     const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
@@ -362,20 +345,11 @@ export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
             const pid = club?.id;
             if (!pid) return;
             try {
-                const profileListRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/?project=${pid}`, { credentials: 'include' });
-                if (!profileListRes.ok) return;
-                const profileListJson = await profileListRes.json().catch(() => null);
-                const profileListData = profileListJson?.data;
-                let profileId: string | null = null;
-                if (profileListData?.results && Array.isArray(profileListData.results) && profileListData.results.length > 0) profileId = profileListData.results[0]?.id;
-                else if (profileListData?.id) profileId = profileListData.id;
-                else if (Array.isArray(profileListData) && profileListData.length > 0) profileId = profileListData[0]?.id;
+                const { results: profileList } = await api.list<any>('/branding/profiles/', { params: { project: String(pid) } });
+                let profileId: string | null = profileList.length > 0 ? String(profileList[0]?.id || '') : null;
                 if (!profileId) return;
                 if (!cancelled) setBrandProfileId(profileId);
-                const profileDetailRes = await fetch(`${apiBaseUrl}/api/v1/branding/profiles/${profileId}/`, { credentials: 'include' });
-                if (!profileDetailRes.ok) return;
-                const profileDetailJson = await profileDetailRes.json().catch(() => null);
-                const profile = profileDetailJson?.data || profileDetailJson;
+                const profile = await api.get<any>(`/branding/profiles/${profileId}/`);
                 const assetList = profile?.assets || [];
                 const logoAsset = assetList.find((a: { asset_type?: string; url?: string }) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
                 if (logoAsset?.url && !cancelled) {
@@ -397,15 +371,10 @@ export function useClubOrgDetailData(): UseClubOrgDetailDataReturn {
             if (!orgSlug) return;
             setOrgClubsForSwitcherLoading(true);
             try {
-                const params = new URLSearchParams();
-                params.set('page_size', '500');
-                params.set('include_archived', 'true');
-                params.set('parent_project__isnull', 'true');
-                const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?${params.toString()}`, { credentials: 'include' });
-                if (!res.ok) throw new Error(`Failed to load clubs (${res.status})`);
-                const json = await res.json().catch(() => null);
-                const raw = unwrapEnvelope<any>(json);
-                const list: Array<{ id?: string; name?: string; slug?: string }> = Array.isArray(raw?.results) ? raw.results : Array.isArray(raw) ? raw : [];
+                const { results: list } = await api.list<{ id?: string; name?: string; slug?: string }>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+                    pageSize: 500,
+                    params: { include_archived: 'true', parent_project__isnull: 'true' },
+                });
                 const normalized = mergeUniqueById(
                     (list || []).map((p) => ({ id: String(p?.id || '').trim(), name: String(p?.name || 'Club'), slug: p?.slug ? String(p.slug) : undefined })).filter((p) => Boolean(p.id)),
                 );

@@ -3,7 +3,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Alert, Spinner } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api';
 
 interface CeleryTask {
   id: string;
@@ -34,22 +34,18 @@ export function TasksPage() {
         else setIsRefreshing(true);
         setError(null);
 
-        const apiBaseUrl = getApiBaseUrl();
-        const response = await fetch(`${apiBaseUrl}/api/v1/tasks/`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (!response.ok) throw new Error(`API error: ${response.status}`);
-
-        const data = await response.json();
-        const taskData = data.data || data;
+        const taskData = await api.get<{
+          active?: Array<Record<string, unknown>>;
+          scheduled?: Array<Record<string, unknown>>;
+          reserved?: Array<Record<string, unknown>>;
+          beat_schedule?: BeatScheduleEntry[];
+        }>('/tasks/');
 
         const allTasks = [
           ...(taskData.active || []).map((t: Record<string, unknown>) => ({ ...t, status: 'running' })),
           ...(taskData.scheduled || []).map((t: Record<string, unknown>) => ({ ...t, status: 'scheduled' })),
           ...(taskData.reserved || []).map((t: Record<string, unknown>) => ({ ...t, status: 'pending' })),
-        ];
+        ] as CeleryTask[];
         setTasks(allTasks);
         setBeatSchedule(taskData.beat_schedule || []);
       } catch (err) {

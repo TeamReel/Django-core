@@ -4,7 +4,7 @@ import { Button, Badge } from '@django-core/design-system';
 import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
 import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { activitiesApi } from '../../../api';
 import { periodPathKey } from '../../../utils/periodPath';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
@@ -12,7 +12,6 @@ import MatchCreateModal from '../MatchCreateModal';
 import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
 import { useMatchesData } from '../../../hooks/useMatchesData';
 import { resolveRowContext } from '../../../utils/directoryHelpers';
-import { getCsrfToken } from '../../../utils/csrf';
 import type { DirectoryListProps, RowContextConfig, Activity, Period } from '../../../utils/directoryHelpers';
 import styles from './MatchesList.module.css';
 
@@ -274,58 +273,33 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
 
   const handleSaveMatch = async (payload: Record<string, any>) => {
     if (!editMatch) return;
-    const csrfToken = getCsrfToken();
-    const apiBaseUrl = getApiBaseUrl();
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/${editMatch.id}/`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to update match');
-    }
+    const res = await activitiesApi.update(String(editMatch.id), payload as any);
     triggerRefresh();
   };
 
   const handleCreateMatch = async (payload: Record<string, any>) => {
-    const apiBaseUrl = getApiBaseUrl();
-    const csrfToken = getCsrfToken();
     const teamId = String(payload.project_id || '');
     const competitionId = String(payload.period_id || '');
     if (!teamId) throw new Error('Select a team first');
     if (!competitionId) throw new Error('Select a competition first');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/activities/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-      credentials: 'include',
-      body: JSON.stringify({
-        title: payload.title,
-        activity_type: 'match',
-        project_id: Number(teamId),
-        opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
-        period_id: competitionId,
-        start_time: payload.start_time,
-        end_time: payload.end_time,
-        location: payload.location,
-        description: payload.description,
-        metadata: {
-          venue: payload.venue || 'Home',
-          is_home: (payload.venue || 'Home') === 'Home',
-          ...payload?.metadata,
-        },
-      }),
-    });
+    const created = await activitiesApi.create({
+      title: payload.title,
+      activity_type: 'match',
+      project_id: Number(teamId) as any,
+      opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
+      period_id: competitionId,
+      start_time: payload.start_time,
+      end_time: payload.end_time,
+      location: payload.location,
+      description: payload.description,
+      metadata: {
+        venue: payload.venue || 'Home',
+        is_home: (payload.venue || 'Home') === 'Home',
+        ...payload?.metadata,
+      },
+    } as any) as any;
 
-    if (!res.ok) {
-      const detail = await res.text().catch(() => '');
-      throw new Error(detail || 'Failed to create match');
-    }
-
-    const raw: any = await res.json().catch(() => null);
-    const created: any = raw?.data?.data || raw?.data || raw;
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();
       if (createdId) {

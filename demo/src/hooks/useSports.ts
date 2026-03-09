@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { getApiBaseUrl } from "../utils/apiBase";
+import { api } from '@/api';
 
 // Sport interface matching backend SportSerializer
 export interface Sport {
@@ -87,21 +87,8 @@ export function useSports(): UseSportsReturn {
     setError(null);
 
     try {
-      const baseUrl = getApiBaseUrl();
-      const response = await fetch(`${baseUrl}/api/v1/sports/`, {
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch sports: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const sportsList = normalizeSportsList(data);
-      setSports(sportsList);
+      const { results } = await api.list<Sport>('/sports/', { pageSize: 1000 });
+      setSports(results);
     } catch (err) {
       console.error(err);
       const message = err instanceof Error ? err.message : "Failed to fetch sports";

@@ -28,6 +28,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from '../components/PermissionGuards';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { canEditProject, canDeleteProject } from '../utils/permissions';
 import { looksLikeUuid, periodPathKey } from '../utils/periodPath';
@@ -124,36 +125,23 @@ export function SeasonProvider({ children }: PropsWithChildren) {
         setError(null);
 
         // 1. Fetch org + project + club in parallel
-        const [orgRes, projectRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, {
-            credentials: 'include',
-          }),
-          fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(projectSlugOrId)}/`,
-            { credentials: 'include' },
+        const [orgJson, projectJson, clubJson] = await Promise.all([
+          api.get<SeasonOrganisation>(`/organisations/${encodeURIComponent(orgSlugOrId)}/`),
+          api.get<SeasonProject>(
+            `/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(projectSlugOrId)}/`,
           ),
           isTeamRoute
-            ? fetch(
-                `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-                { credentials: 'include' },
-              )
+            ? api.get<SeasonProject>(
+                `/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+              ).catch(() => null)
             : Promise.resolve(null),
         ]);
 
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-
-        const orgJson = unwrap<SeasonOrganisation>(await orgRes.json());
-        const projectJson = unwrap<SeasonProject>(await projectRes.json());
         setOrg(orgJson);
         setProject(projectJson);
 
-        if (isTeamRoute && clubRes && clubRes.ok) {
-          try {
-            setClub(unwrap<SeasonProject>(await clubRes.json()));
-          } catch {
-            // ignore parse error
-          }
+        if (isTeamRoute && clubJson) {
+          setClub(clubJson);
         } else if (!isTeamRoute) {
           setClub(null);
         }
@@ -184,12 +172,9 @@ export function SeasonProvider({ children }: PropsWithChildren) {
         setResolvedSeasonId(seasonUuid);
 
         // 4. Fetch season detail
-        const seasonRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`,
-          { credentials: 'include' },
+        const seasonJson = await api.get<Period>(
+          `/periods/${encodeURIComponent(seasonUuid)}/`,
         );
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const seasonJson = unwrap<Period>(await seasonRes.json());
         setSeason(seasonJson);
 
         // 5. Canonicalize URL to slug when possible

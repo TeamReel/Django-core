@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
 import { SkeletonList } from '../../../components/Skeleton';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { generativeApi } from '../../../api';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
 
 
@@ -33,12 +33,8 @@ export const ContentOverview: React.FC = () => {
     let cancelled = false;
     (async () => {
       try {
-        const base = getApiBaseUrl();
-        const res = await fetch(`${base}/api/v1/generative/jobs/?limit=200`, { credentials: 'include' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const payload = data.data ?? data;
-        if (!cancelled) setJobs(payload.results ?? []);
+        const { results } = await generativeApi.listJobs({ limit: 200 });
+        if (!cancelled) setJobs(results as unknown as GenerationJob[]);
       } catch (e) {
         console.error(e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');

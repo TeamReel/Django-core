@@ -11,7 +11,7 @@ import {
   PageHeader,
   PageContent,
 } from '@django-core/page-templates';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { apiFetch } from '../../utils/apiFetch';
 import styles from './SecurityPage.module.css';
 // import AppShell from '../../components/AppShell';
 
@@ -150,14 +150,7 @@ export const SecurityPage: React.FC = () => {
         if (filterSeverity !== 'all') query.append('severity', filterSeverity);
         if (filterStatus !== 'all') query.append('status', filterStatus);
 
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/security/events/?${query.toString()}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
+        const response = await apiFetch(`/api/security/events/?${query.toString()}`);
 
         if (response.ok) {
           const rawData = await response.json();

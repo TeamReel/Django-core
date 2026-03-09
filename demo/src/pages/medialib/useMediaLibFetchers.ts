@@ -6,8 +6,7 @@
  * Extracted from useMediaLibData.tsx during Phase 26 refactoring.
  */
 import { useState, useCallback } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '../../api';
 import type { BrandAsset } from '../../hooks/useBrandAssets';
 import type { MemberMediaItem } from './medialibHelpers';
 
@@ -74,37 +73,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
         setBrandError(null);
 
         try {
-            const apiBaseUrl = getApiBaseUrl();
 
-            const fetchPaginated = async <T,>(url: string): Promise<T[]> => {
-                const all: T[] = [];
-                let nextUrl: string | null = url;
-                while (nextUrl) {
-                    const res: Response = await fetch(nextUrl, { credentials: 'include' });
-                    if (!res.ok) {
-                        console.warn('[MediaLib] Fetch failed:', url, res.status);
-                        break;
-                    }
-                    const json: Record<string, any> = await res.json();
-                    const items: T[] = Array.isArray(json.data?.results)
-                        ? json.data.results
-                        : Array.isArray(json.data)
-                          ? json.data
-                          : Array.isArray(json.results)
-                            ? json.results
-                            : Array.isArray(json)
-                              ? json
-                              : [];
-                    all.push(...items);
-                    nextUrl =
-                        json.data?.next || json.meta?.pagination?.next || json.next || null;
-                }
-                return all;
-            };
-
-            const allProfiles = await fetchPaginated<BrandProfileRef>(
-                `${apiBaseUrl}/api/v1/branding/profiles/?organisation_scope=${orgId}&page_size=500`,
-            );
+            const allProfiles = await api.listAll<BrandProfileRef>('/branding/profiles/', { pageSize: 500, params: { organisation_scope: orgId } });
 
             const orgProfiles = allProfiles.filter((p) => !p.project);
             const clubProfiles = allProfiles.filter((p) => p.project_type === 'club');
@@ -112,21 +82,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
 
             let allAssets: BrandAsset[] = [];
             try {
-                const bulkUrl = `${apiBaseUrl}/api/v1/branding/assets/?organisation_scope=${orgId}&page_size=500`;
-                const bulkRes = await fetch(bulkUrl, { credentials: 'include' });
-
-                if (bulkRes.ok) {
-                    const bulkJson = await bulkRes.json();
-                    allAssets = Array.isArray(bulkJson.data?.results)
-                        ? bulkJson.data.results
-                        : Array.isArray(bulkJson.data)
-                          ? bulkJson.data
-                          : Array.isArray(bulkJson.results)
-                            ? bulkJson.results
-                            : Array.isArray(bulkJson)
-                              ? bulkJson
-                              : [];
-                }
+                const bulkData = await api.list<BrandAsset>('/branding/assets/', { pageSize: 500, params: { organisation_scope: orgId } });
+                allAssets = bulkData.results;
             } catch (bulkErr) {
               console.error(bulkErr);
                 console.warn(
@@ -143,22 +100,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                     const batchResults = await Promise.all(
                         batch.map(async (profile: BrandProfileRef) => {
                             try {
-                                const res = await fetch(
-                                    `${apiBaseUrl}/api/v1/branding/profiles/${profile.id}/assets/?page_size=100`,
-                                    { credentials: 'include' },
-                                );
-                                if (!res.ok) return [];
-                                const json = await res.json();
-                                const assets: BrandAsset[] = Array.isArray(json.data?.results)
-                                    ? json.data.results
-                                    : Array.isArray(json.data)
-                                      ? json.data
-                                      : Array.isArray(json.results)
-                                        ? json.results
-                                        : Array.isArray(json)
-                                          ? json
-                                          : [];
-                                return assets.map((a: BrandAsset) => ({
+                                const data = await api.list<BrandAsset>(`/branding/profiles/${profile.id}/assets/`, { pageSize: 100 });
+                                return data.results.map((a: BrandAsset) => ({
                                     ...a,
                                     profile_name: profile.name,
                                     project_id: profile.project
@@ -205,34 +148,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
         setMemberMediaLoading(true);
 
         try {
-            const apiBaseUrl = getApiBaseUrl();
 
-            const fetchPaginated = async <T,>(url: string): Promise<T[]> => {
-                const all: T[] = [];
-                let nextUrl: string | null = url;
-                while (nextUrl) {
-                    const res: Response = await fetch(nextUrl, { credentials: 'include' });
-                    if (!res.ok) break;
-                    const json: Record<string, any> = await res.json();
-                    const items: T[] = Array.isArray(json.data?.results)
-                        ? json.data.results
-                        : Array.isArray(json.data)
-                          ? json.data
-                          : Array.isArray(json.results)
-                            ? json.results
-                            : Array.isArray(json)
-                              ? json
-                              : [];
-                    all.push(...items);
-                    nextUrl =
-                        json.data?.next || json.meta?.pagination?.next || json.next || null;
-                }
-                return all;
-            };
-
-            const allProjects = await fetchPaginated<ProjectRef>(
-                `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=2000`,
-            );
+            const allProjects = await api.listAll<ProjectRef>(`/organisations/${encodeURIComponent(orgSlug!)}/projects/`, { pageSize: 2000 });
             const teamProjects = allProjects.filter((p) => !!p.parent_id);
 
             const memberAssets: MemberMediaItem[] = [];
@@ -246,25 +163,8 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 const batchResults = await Promise.all(
                     batch.map(async (team: ProjectRef) => {
                         try {
-                            const res = await fetch(
-                                `${apiBaseUrl}/api/v1/projects/${team.id}/members/?page_size=200`,
-                                { credentials: 'include' },
-                            );
-                            if (!res.ok) {
-                                failedTeamCount++;
-                                return [];
-                            }
-                            const json = await res.json();
-                            const memberships: MembershipRef[] = Array.isArray(json.data?.results)
-                                ? json.data.results
-                                : Array.isArray(json.data)
-                                  ? json.data
-                                  : Array.isArray(json.results)
-                                    ? json.results
-                                    : Array.isArray(json)
-                                      ? json
-                                      : [];
-                            return memberships.map((m) => ({ membership: m, team }));
+                            const data = await api.list<MembershipRef>(`/projects/${team.id}/members/`, { pageSize: 200 });
+                            return data.results.map((m) => ({ membership: m, team }));
                         } catch {
                             failedTeamCount++;
                             return [];
@@ -349,8 +249,6 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
 
             if (pathsToConvert.length > 0) {
                 try {
-                    const csrfToken = getCsrfToken();
-
                     const chunks: string[][] = [];
                     for (let i = 0; i < pathsToConvert.length; i += 100) {
                         chunks.push(pathsToConvert.slice(i, i + 100));
@@ -358,31 +256,13 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
 
                     const urlMap: Record<string, string | null> = {};
                     for (const chunk of chunks) {
-                        const presignedRes = await fetch(
-                            `${apiBaseUrl}/api/v1/files/presigned-urls/`,
-                            {
-                                method: 'POST',
-                                credentials: 'include',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-                                },
-                                body: JSON.stringify({ paths: chunk }),
-                            },
-                        );
-
-                        if (!presignedRes.ok) {
-                            console.warn(
-                                '[MediaLib] Presigned URL fetch failed:',
-                                presignedRes.status,
-                            );
-                            continue;
+                        try {
+                            const presignedJson = await api.post<{ urls?: Record<string, string | null> }>('/files/presigned-urls/', { paths: chunk });
+                            const chunkMap = presignedJson?.urls || {};
+                            Object.assign(urlMap, chunkMap);
+                        } catch {
+                            console.warn('[MediaLib] Presigned URL fetch failed for chunk');
                         }
-
-                        const presignedJson = await presignedRes.json();
-                        const chunkMap =
-                            presignedJson.data?.urls || presignedJson.urls || {};
-                        Object.assign(urlMap, chunkMap);
                     }
 
                     for (const asset of memberAssets) {

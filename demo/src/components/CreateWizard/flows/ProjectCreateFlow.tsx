@@ -19,8 +19,7 @@ import { ChooseFlowStep } from '../steps/ChooseFlowStep';
 import { ProjectContextStep, type ProjectContextData, type ProjectType, type OrgOption, type ClubOption } from '../steps/ProjectContextStep';
 import { ProjectDetailsStep, type ProjectDetailsData } from '../steps/ProjectDetailsStep';
 import { ProjectConfirmStep, type ProjectConfirmData } from '../steps/ProjectConfirmStep';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
+import { api, ApiError } from '@/api';
 
 // ─── Step config ──────────────────────────────────────────
 
@@ -59,15 +58,12 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
 
   useEffect(() => {
     if (!isOpen) return;
-    const apiBase = getApiBaseUrl();
 
     // Load orgs
-    fetch(`${apiBase}/api/v1/organisations/?page_size=250`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((json) => {
-        const data = json.data?.results || json.data || json.results || [];
+    api.list<any>('/organisations/', { pageSize: 250 })
+      .then(({ results }) => {
         setOrganisations(
-          (Array.isArray(data) ? data : [])
+          (Array.isArray(results) ? results : [])
             .map((o: Record<string, unknown>) => ({ id: String(o.id), name: String(o.name || ''), slug: String(o.slug || '') }))
             .sort((a: OrgOption, b: OrgOption) => a.name.localeCompare(b.name)),
         );
@@ -75,11 +71,9 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
       .catch(() => setOrganisations([]));
 
     // Load clubs (projects without parent)
-    fetch(`${apiBase}/api/v1/projects/?page_size=500&parent_project_id=null`, { credentials: 'include' })
-      .then((r) => r.json())
-      .then((json) => {
-        const data = json.data?.results || json.data?.data || json.data || json.results || [];
-        setAllClubs(Array.isArray(data) ? data : []);
+    api.list<any>('/projects/', { params: { parent_project_id: 'null' }, pageSize: 500 })
+      .then(({ results }) => {
+        setAllClubs(Array.isArray(results) ? results : []);
       })
       .catch(() => setAllClubs([]));
   }, [isOpen]);
@@ -139,27 +133,16 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
         body.parent_project_id = selectedClubId;
       }
 
-      const res = await fetch(`${getApiBaseUrl()}/api/v1/organisations/${orgSlug}/projects/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken() || '',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(detail || `${projectTypeLabel} aanmaken mislukt`);
-      }
+      await api.post(`/organisations/${orgSlug}/projects/`, body);
 
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
     } catch (err: unknown) {
       console.error(err);
-      setError(getErrorMessage(err) || `${projectTypeLabel} aanmaken mislukt`);
+      const msg = err instanceof ApiError
+        ? ((err.body as any)?.detail || (err.body as any)?.message || `${projectTypeLabel} aanmaken mislukt`)
+        : getErrorMessage(err) || `${projectTypeLabel} aanmaken mislukt`;
+      setError(msg);
       setIsSaving(false);
       throw err;
     }

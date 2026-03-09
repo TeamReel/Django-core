@@ -14,7 +14,7 @@ import {
 } from '../../shims/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { SkeletonDetailPage } from '../../components/Skeleton';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './MemberDetailPage.module.css';
 
 /** Org member record from the members API */
@@ -84,23 +84,8 @@ export const MemberDetailPage: React.FC = () => {
       }
 
       try {
-        const apiBaseUrl = getApiBaseUrl();
-        const url = `${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/?page_size=100`;
-
-        const response = await fetch(url, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // API might return array directly or object with results
-          const members = Array.isArray(data) ? data : (data.results || []);
-          setOrgMembers(members);
-        }
+        const { results } = await api.list<OrgMemberRecord>(`/organisations/${orgSlug}/members/`, { pageSize: 100 });
+        setOrgMembers(results);
       } catch (err) {
         console.error(err);
         console.error('Failed to fetch org members for switcher:', err);
@@ -114,22 +99,8 @@ export const MemberDetailPage: React.FC = () => {
     const fetchMember = async () => {
       try {
         setLoading(true);
-        const apiBaseUrl = getApiBaseUrl();
-        const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
-        const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${memberId}/`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken || '',
-            },
-            credentials: 'include',
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch member details');
-        }
-
-        const data = await response.json();
+        const data = await api.get<any>(`/organisations/${orgSlug}/members/${memberId}/`);
         setMember(data);
         setRole(data.role);
       } catch (err) {
@@ -157,44 +128,8 @@ export const MemberDetailPage: React.FC = () => {
   const handleSave = async () => {
       try {
           setSaving(true);
-          const apiBaseUrl = getApiBaseUrl();
-          const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
 
-          const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/members/${memberId}/`, {
-              method: 'PATCH',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': csrfToken || '',
-              },
-              credentials: 'include',
-              body: JSON.stringify({ role }),
-          });
-
-          if (!response.ok) {
-              const errorText = await response.text();
-              console.error('PATCH failed:', {
-                status: response.status,
-                statusText: response.statusText,
-                body: errorText.substring(0, 500) // Show first 500 chars
-              });
-
-              // Try to extract error from HTML if it's a Django error page
-              if (errorText.includes('<!DOCTYPE html>')) {
-                const titleMatch = errorText.match(/<title>(.*?)<\/title>/);
-                const errorTitle = titleMatch ? titleMatch[1] : 'Server Error';
-                throw new Error(`Server error: ${errorTitle}`);
-              }
-
-              let errorData;
-              try {
-                errorData = JSON.parse(errorText);
-              } catch {
-                throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
-              }
-              throw new Error(errorData.role?.[0] || errorData.detail || 'Failed to update member');
-          }
-
-          const data = await response.json();
+          const data = await api.patch<any>(`/organisations/${orgSlug}/members/${memberId}/`, { role });
           setMember(data);
           setIsEditing(false);
       } catch (err) {

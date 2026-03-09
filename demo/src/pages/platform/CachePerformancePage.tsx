@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 // import AppShell from '../../components/AppShell';
 import {
   LineChart,
@@ -61,28 +60,12 @@ export const CachePerformancePage: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [benchmarkResult, setBenchmarkResult] = useState<BenchmarkResult | null>(null);
 
-  const apiBaseUrl = getApiBaseUrl();
-
   const fetchMetrics = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/system/cache/metrics/`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch metrics: ${response.status} ${response.statusText}`);
-      }
-
-      const responseData = await response.json();
-
-      // Unwrap the standard API response wrapper
-      const data = responseData.data || responseData;
+      const data = await api.get<CacheMetricsResponse>('/system/cache/metrics/');
 
       // Validate response structure
       if (!data.realtime) {
@@ -105,21 +88,7 @@ export const CachePerformancePage: React.FC = () => {
       setActionLoading('clear');
       setError(null);
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/system/cache/clear/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to clear cache: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      const result = responseData.data || responseData;
+      const result = await api.post<any>('/system/cache/clear/');
       alert(`Cache cleared successfully! ${result.cleared_keys} keys removed.`);
 
       // Refresh metrics
@@ -138,21 +107,7 @@ export const CachePerformancePage: React.FC = () => {
       setError(null);
       setBenchmarkResult(null);
 
-      const response = await fetch(`${apiBaseUrl}/api/v1/system/cache/benchmark/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to run benchmark: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      const result = responseData.data || responseData;
+      const result = await api.post<BenchmarkResult>('/system/cache/benchmark/');
       setBenchmarkResult(result);
     } catch (err) {
       console.error(err);

@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import type { AuditEvent } from '../../types';
+import { apiFetch } from '../../utils/apiFetch';
+import { api } from '../../api/client';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
 const LIMIT = 50;
@@ -74,6 +76,7 @@ export function useAuditLogData(): UseAuditLogDataReturn {
   const page = searchParams.get('page') || '1';
 
   const contextOrgId = String((context as { organisation?: { id: string } })?.organisation?.id || '').trim();
+  const baseUrl = getApiBaseUrl();
 
   // Default to org-scoped audit
   useEffect(() => {
@@ -91,36 +94,24 @@ export function useAuditLogData(): UseAuditLogDataReturn {
       try {
         setLoading(true);
         setError(null);
-        const params = new URLSearchParams();
-        params.append('limit', LIMIT.toString());
-        params.append('offset', ((parseInt(page) - 1) * LIMIT).toString());
-        if (eventType) params.append('event_type', eventType);
-        if (user) params.append('user__name__icontains', user);
-        if (dateFrom) params.append('created_at__gte', `${dateFrom}T00:00:00`);
-        if (dateTo) params.append('created_at__lte', `${dateTo}T23:59:59`);
-        if (organization) params.append('organization', organization);
-
-        const baseUrl = getApiBaseUrl();
-        const response = await fetch(`${baseUrl}/api/v1/activity/?${params.toString()}`, {
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+        const { results, count } = await api.list<AuditEvent>('/activity/', {
+          params: {
+            limit: LIMIT,
+            offset: (parseInt(page) - 1) * LIMIT,
+            ...(eventType ? { event_type: eventType } : {}),
+            ...(user ? { user__name__icontains: user } : {}),
+            ...(dateFrom ? { created_at__gte: `${dateFrom}T00:00:00` } : {}),
+            ...(dateTo ? { created_at__lte: `${dateTo}T23:59:59` } : {}),
+            ...(organization ? { organization } : {}),
+          },
         });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Audit API error:', response.status, errorText);
-          throw new Error(`Failed to load audit log. Backend error: ${response.status}`);
-        }
-
-        const rawData = await response.json();
-        const data = rawData.data || rawData;
-        let filteredEvents = data.results || [];
+        let filteredEvents = results;
 
         if (outcome) {
           filteredEvents = filteredEvents.filter((event: AuditEvent) => getEventOutcome(event) === outcome);
         }
         setEvents(filteredEvents);
-        setTotal(outcome ? filteredEvents.length : (data.count || 0));
+        setTotal(outcome ? filteredEvents.length : count);
       } catch (err) {
         console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to load audit log. Backend error.');
@@ -141,8 +132,7 @@ export function useAuditLogData(): UseAuditLogDataReturn {
 
     const connect = async () => {
       try {
-        const baseUrl = getApiBaseUrl();
-        const tokenResponse = await fetch(`${baseUrl}/api/ws/token/`, { credentials: 'include' });
+        const tokenResponse = await apiFetch('/api/ws/token/');
         if (!tokenResponse.ok) {
           console.error('[AuditLog] Failed to get WebSocket token', tokenResponse.status);
           reconnectTimer = setTimeout(connect, 5000);

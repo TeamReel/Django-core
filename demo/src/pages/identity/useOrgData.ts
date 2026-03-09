@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import type { OrgDataReturn } from './orgDataTypes';
 import { getActiveContext } from '../../utils/activeContext';
 import { DEBUG_LOGS, getApiV1BaseUrl, getCsrfToken } from './orgDataHelpers';
+import { organisationsApi } from '../../api';
 import { useOrgFormState } from './useOrgFormState';
 import { useOrgDerived } from './useOrgDerived';
 import { useOrgDataFetching } from './useOrgDataFetching';
@@ -158,14 +159,7 @@ export function useOrgData(): OrgDataReturn {
       try {
         s.setLoading(true);
         s.setError(null);
-        const apiV1BaseUrl = getApiV1BaseUrl();
-        const orgResponse = await fetch(`${apiV1BaseUrl}/organisations/${s.currentOrgSlug}/`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-Organisation-ID': String(s.currentOrgId || '') },
-          credentials: 'include',
-        });
-        if (!orgResponse.ok) throw new Error(`Failed to fetch organisation (${orgResponse.status})`);
-        const rawOrgData = await orgResponse.json();
-        const orgData = rawOrgData.data || rawOrgData;
+        const orgData = await organisationsApi.get(s.currentOrgSlug) as any;
         s.setOrg(orgData);
         const organisationIdForCounts = String(orgData.id || s.currentOrgId || '');
         if (organisationIdForCounts) fetching.fetchFederationCounts(organisationIdForCounts);

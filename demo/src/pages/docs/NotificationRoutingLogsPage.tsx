@@ -13,7 +13,7 @@ import {
 } from '@django-core/page-templates';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api, ApiError } from '../../api';
 import styles from './NotificationRoutingLogsPage.module.css';
 
 interface RoutingLog {
@@ -83,32 +83,19 @@ export const NotificationRoutingLogsPage: React.FC = () => {
         setError(null);
         setDemoMode(false);
 
-        // Determine Base URL
-        const apiBase = getApiBaseUrl();
-        const baseUrl = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-
         // Build URL with org filter
-        let url = `${baseUrl}/api/v1/contextual-notifications/routing-logs/`;
+        let path = `/contextual-notifications/routing-logs/`;
 
         // In global mode, no org filter (show all)
         // In org mode, filter by currentOrgId
         if (editMode === 'org' && currentOrgId) {
-          url += `?org_id=${currentOrgId}`;
+          path += `?org_id=${currentOrgId}`;
         } else if (!isSuperAdmin && currentOrgId) {
           // Non-superadmins always filter by their org
-          url += `?org_id=${currentOrgId}`;
+          path += `?org_id=${currentOrgId}`;
         }
 
-        const response = await fetch(url, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
+        const data = await api.get<any>(path);
 
           let rawResults: Record<string, unknown>[] = [];
           if (Array.isArray(data)) {
@@ -140,7 +127,8 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           });
 
           setLogs(mappedResults);
-        } else if (response.status === 404) {
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
           // Demo mode: Use mock routing logs
           setDemoMode(true);
           const demoLogs: RoutingLog[] = [
@@ -174,12 +162,10 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           ];
           setLogs(demoLogs);
         } else {
-          throw new Error(`API error: ${response.status}`);
-        }
-      } catch (err) {
         console.error(err);
         setError(err instanceof Error ? err.message : 'Failed to fetch routing logs');
         console.error('Routing logs fetch error:', err);
+        }
       } finally {
         setLoading(false);
       }

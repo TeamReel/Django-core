@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { projectsApi } from '../../api';
 import type { ProjectOption } from './matchCreateTypes';
 import { getParentProjectId, getProjectIdentity } from './matchCreateHelpers';
 import type { useMatchFormState } from './useMatchFormState';
@@ -50,12 +51,7 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
       if (!key) return;
       if (projectDetailsById[key]) return;
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(key)}/`, {
-          credentials: 'include',
-          signal: abortController.signal,
-        });
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
+        const raw = await projectsApi.get(key) as any;
         const data = raw?.data?.data || raw?.data || raw;
         if (!cancelled && data && typeof data === 'object') {
           setProjectDetailsById((prev) => ({ ...prev, [key]: data }));

@@ -4,6 +4,7 @@ import {
   Alert,
   Button,
 } from '@django-core/design-system';
+import { apiFetch } from '../../utils/apiFetch';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
   PageHeader,
@@ -27,21 +28,13 @@ interface ApiDocsMeta {
 
 export const ApiDocsPage: React.FC = () => {
   const [meta, setMeta] = useState<ApiDocsMeta | null>(null);
-
-  // Determine Base URL (centralized utility handles env + fallbacks)
   const baseUrl = getApiBaseUrl();
 
   useEffect(() => {
     // Try to fetch API schema to extract metadata
     const fetchMeta = async () => {
       try {
-        const response = await fetch(`${baseUrl}/api/schema/?format=json`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
+        const response = await apiFetch('/api/schema/?format=json');
 
         if (response.ok) {
           const schema = await response.json();

@@ -13,8 +13,7 @@ import {
 } from '@django-core/page-templates';
 import { User } from '../../types';
 import AppShell from '../../components/AppShell';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api, ApiError } from '../../api';
 import styles from './ProfilePage.module.css';
 
 /**
@@ -42,33 +41,18 @@ export const ProfilePage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const apiBaseUrl = getApiBaseUrl();
-        const response = await fetch(`${apiBaseUrl}/api/v1/auth/me/`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest',
-          },
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Not authenticated. Please log in.');
-          }
-          throw new Error(`Failed to fetch profile (${response.status})`);
-        }
-
-        const userData: User = await response.json();
-
-        // Handle B13 envelope if present
-        const actualUser = (userData as any).data || userData;
+        const actualUser = await api.get<User>('/auth/me/');
 
         setUser(actualUser);
         setFirstName(actualUser.first_name || '');
         setLastName(actualUser.last_name || '');
       } catch (err) {
         console.error(err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+        if (err instanceof ApiError && err.status === 401) {
+          setError('Not authenticated. Please log in.');
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch profile');
+        }
         console.error('Profile fetch error:', err);
       } finally {
         setLoading(false);
@@ -86,28 +70,10 @@ export const ProfilePage: React.FC = () => {
       setSaveSuccess(false);
       setError(null);
 
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/v1/auth/profile/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-        }),
+      const updatedUser = await api.patch<User>('/auth/profile/', {
+        first_name: firstName,
+        last_name: lastName,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to update profile (${response.status})`);
-      }
-
-      const updatedData = await response.json();
-      const updatedUser = updatedData.data || updatedData;
 
       setUser(updatedUser);
       setFirstName(updatedUser.first_name || '');

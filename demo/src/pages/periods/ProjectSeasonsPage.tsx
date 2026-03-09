@@ -4,7 +4,7 @@ import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import { periodPathKey } from '../../utils/periodPath';
 import styles from './ProjectSeasonsPage.module.css';
 
@@ -38,8 +38,6 @@ type Organisation = {
 export const ProjectSeasonsPage: React.FC = () => {
   const navigate = useNavigate();
   const { orgId, projectId, clubId } = useParams<{ orgId: string; projectId: string; clubId?: string }>();
-
-  const apiBaseUrl = getApiBaseUrl();
 
   const [org, setOrg] = useState<Organisation | null>(null);
   const [project, setProject] = useState<Project | null>(null);
@@ -98,46 +96,25 @@ export const ProjectSeasonsPage: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [orgRes, projectRes, clubRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/`, { credentials: 'include' }),
-          fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`, { credentials: 'include' }),
+        const [orgJson, projectJson, clubJson] = await Promise.all([
+          api.get<Organisation>(`/organisations/${orgSlugOrId}/`),
+          api.get<Project>(`/organisations/${orgSlugOrId}/projects/${projectSlugOrId}/`),
           isTeamRoute
-            ? fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`, {
-                credentials: 'include',
-              })
+            ? api.get<Project>(`/organisations/${orgSlugOrId}/projects/${clubSlugOrId}/`).catch(() => null)
             : Promise.resolve(null),
         ]);
-
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-
-        const rawOrg: any = await orgRes.json();
-        const rawProject: any = await projectRes.json();
-
-        const orgJson: Organisation = rawOrg?.data?.data || rawOrg?.data || rawOrg;
-        const projectJson: Project = rawProject?.data?.data || rawProject?.data || rawProject;
 
         setOrg(orgJson);
         setProject(projectJson);
 
-        if (isTeamRoute && clubRes && clubRes.ok) {
-          try {
-            setClub(await clubRes.json());
-          } catch {
-            // ignore
-          }
+        if (isTeamRoute && clubJson) {
+          setClub(clubJson);
         }
 
-        const seasonsRes = await fetch(
-          `${apiBaseUrl}/api/v1/periods/?project_id=${encodeURIComponent(String(projectJson.id))}&page_size=250`,
-          { credentials: 'include' }
-        );
-        if (!seasonsRes.ok) throw new Error('Failed to load seasons');
-        const rawSeasons: any = await seasonsRes.json();
-        const seasonsData = rawSeasons?.data || rawSeasons;
-        const allPeriods = Array.isArray(seasonsData)
-          ? seasonsData
-          : seasonsData?.results || seasonsData?.data?.results || [];
+        const { results: allPeriods } = await api.list<Period>('/periods/', {
+          params: { project_id: String(projectJson.id) },
+          pageSize: 250,
+        });
         // Filter client-side for seasons (periods without parent)
         const seasonResults = allPeriods.filter((p: Period) => !p.parent_period);
         setSeasons(seasonResults);
@@ -150,7 +127,7 @@ export const ProjectSeasonsPage: React.FC = () => {
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId]);
+  }, [orgSlugOrId, projectSlugOrId]);
 
   return (
     <>

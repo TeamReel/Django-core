@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { useUserRole } from '../../components/PermissionGuards';
 
@@ -218,16 +217,7 @@ export default function TeamOrganisationDetailPage() {
                       onClick={async () => {
                         const newType = (team as any)?.team_type === 'legends' ? 'regular' : 'legends';
                         try {
-                          const res = await fetch(
-                            `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`,
-                            {
-                              method: 'PATCH',
-                              headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                              credentials: 'include',
-                              body: JSON.stringify({ team_type: newType }),
-                            },
-                          );
-                          if (!res.ok) throw new Error('Failed');
+                          await api.patch(`/projects/${encodeURIComponent(String(team.id))}/`, { team_type: newType });
                           setTeam((prev) => prev ? { ...prev, team_type: newType } : prev);
                         } catch {
                           alert('Kon team type niet opslaan');
@@ -245,12 +235,7 @@ export default function TeamOrganisationDetailPage() {
                       onClick={async () => {
                         if (!window.confirm(`Weet je zeker dat je team ${team.name} wilt verwijderen?`)) return;
                         try {
-                          const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-                            method: 'DELETE',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-                            credentials: 'include',
-                          });
-                          if (!res.ok) throw new Error('Failed');
+                          await api.delete(`/projects/${encodeURIComponent(String(team.id))}/`);
                           navigate(backToClubHref);
                         } catch {
                           alert('Kon team niet verwijderen');
@@ -387,17 +372,11 @@ export default function TeamOrganisationDetailPage() {
                   sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
                   onSponsorModeChange={async (mode) => {
                     if (!team) return;
-                    const csrfToken = getCsrfToken();
-                    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(team.id))}/`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json', ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}) },
-                      credentials: 'include',
-                      body: JSON.stringify({ metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } }),
-                    });
-                    if (res.ok) {
-                      const raw = await res.json().catch(() => null);
-                      const updated: any = raw?.data ?? raw;
+                    try {
+                      const updated = await api.patch<any>(`/projects/${encodeURIComponent(String(team.id))}/`, { metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } });
                       setTeam((prev) => ({ ...prev, ...updated }));
+                    } catch {
+                      // Silently ignore — matches original behaviour
                     }
                   }}
                 />

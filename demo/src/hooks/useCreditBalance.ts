@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@django-core/auth-ui';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { organisationsApi, transactionsApi } from '@/api';
 
 interface BalancePolicy {
   id: string;
@@ -33,33 +32,20 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
     async function fetchData() {
       try {
         setLoading(true);
-        const apiBaseUrl = getApiBaseUrl();
 
         // 1. Fetch Organisation for Balance
-        const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${organisationSlug}/`, {
-           credentials: 'include',
-           headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!orgRes.ok) throw new Error('Failed to fetch organisation credits');
-        const orgData = await orgRes.json();
-        const currentBalance = (orgData.data || orgData).credit_balance || 0;
+        const orgData = await organisationsApi.get(organisationSlug!);
+        const currentBalance = (orgData as any).credit_balance || 0;
         setBalance(currentBalance);
 
         // 2. Fetch Policies
-        const policiesRes = await fetch(`${apiBaseUrl}/api/v1/transactions/balance-policies/?organisation=${organisationId}`, {
-           credentials: 'include',
-           headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (policiesRes.ok) {
-          const policiesData = await policiesRes.json();
-          const policies: BalancePolicy[] = Array.isArray(policiesData) ? policiesData : (policiesData.results || []);
+        try {
+          const { results: policies } = await transactionsApi.listBalancePolicies(
+            { organisation: organisationId },
+          ) as any;
 
           // Find active policy for low balance
-          // Assuming 'block' or 'notify' action on low balance.
-          // We take the max threshold that is active just to be safe, or looking for specific action logic
-          const activePolicy = policies.find(p => p.is_active && p.min_threshold > 0);
+          const activePolicy = (policies as any[]).find((p: any) => p.is_active && p.min_threshold > 0);
 
           if (activePolicy) {
             setThreshold(activePolicy.min_threshold);
@@ -69,6 +55,8 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
               setLowBalanceAlert(false);
             }
           }
+        } catch {
+          // Policy fetch failed — non-critical
         }
 
         setError(null);

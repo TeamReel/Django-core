@@ -4,7 +4,7 @@ import type { Organisation } from '@django-core/context-switcher';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@django-core/theme-system';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 import styles from './TopNavigation.module.css';
 
 interface NotificationResponse {
@@ -77,16 +77,9 @@ export default function TopNavigation() {
 
     const fetchUnreadCount = async () => {
       try {
-        const apiBaseUrl = getApiBaseUrl();
-        const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data: NotificationResponse = await response.json();
-          const unread = data.results?.filter(n => !n.is_read).length || 0;
-          setUnreadCount(unread);
-        }
+        const data = await api.get<NotificationResponse>('/user-notifications/');
+        const unread = data.results?.filter(n => !n.is_read).length || 0;
+        setUnreadCount(unread);
       } catch (err) {
         console.error(err);
         console.error('Failed to fetch notification count:', err);

@@ -7,8 +7,8 @@ import { useNavigate, useParams, type NavigateFunction } from 'react-router-dom'
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 
+import { api } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import { fetchAllPages } from '../../utils/fetchAllPages';
@@ -210,38 +210,31 @@ export function useSquadPageData(): UseSquadPageDataReturn {
           return /^\d+$/.test(v) || /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
         };
 
-        const teamScopedProjectUrl = (org: string, club: string, team: string) =>
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(club)}/teams/${encodeURIComponent(team)}/`;
-        const defaultProjectUrl = (team: string) =>
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(team)}/`;
+        const teamScopedProjectPath = (org: string, club: string, team: string) =>
+          `/organisations/${encodeURIComponent(org)}/projects/${encodeURIComponent(club)}/teams/${encodeURIComponent(team)}/`;
+        const defaultProjectPath = (team: string) =>
+          `/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(team)}/`;
 
-        const projectUrl =
+        const projectPath =
           isTeamRoute && clubSlugOrId && projectSlugOrId && !looksLikeIdentifier(projectSlugOrId)
-            ? teamScopedProjectUrl(orgSlugOrId, clubSlugOrId, projectSlugOrId)
-            : defaultProjectUrl(projectSlugOrId);
+            ? teamScopedProjectPath(orgSlugOrId, clubSlugOrId, projectSlugOrId)
+            : defaultProjectPath(projectSlugOrId);
 
-        const [orgRes, projectRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/`, { credentials: 'include' }),
-          fetch(projectUrl, { credentials: 'include' }),
+        const [orgJson, projectJson] = await Promise.all([
+          api.get<Organisation>(`/organisations/${encodeURIComponent(orgSlugOrId)}/`),
+          api.get<Project>(projectPath),
         ]);
-        if (!orgRes.ok) throw new Error('Failed to load organisation');
-        if (!projectRes.ok) throw new Error('Failed to load project');
-
-        const orgJson = unwrap<Organisation>(await orgRes.json());
-        const projectJson = unwrap<Project>(await projectRes.json());
         if (isCancelled) return;
         setOrganisation(orgJson);
         setProject(projectJson);
 
         if (isTeamRoute) {
-          const clubRes = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-            { credentials: 'include' },
-          );
-          if (clubRes.ok) {
-            const clubJson = unwrap<Project>(await clubRes.json());
+          try {
+            const clubJson = await api.get<Project>(
+              `/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
+            );
             if (!isCancelled) setClubProject(clubJson);
-          }
+          } catch { /* ignore */ }
         }
 
         // Resolve season UUID
@@ -259,9 +252,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         if (!seasonUuid) throw new Error('Season not found');
         if (!isCancelled) setResolvedSeasonId(seasonUuid);
 
-        const seasonRes = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, { credentials: 'include' });
-        if (!seasonRes.ok) throw new Error('Failed to load season');
-        const seasonJson = unwrap<Period>(await seasonRes.json());
+        const seasonJson = await api.get<Period>(`/periods/${encodeURIComponent(seasonUuid)}/`);
         if (!isCancelled) setSeason(seasonJson);
 
         const desiredKey = periodPathKey(seasonJson);
@@ -302,13 +293,8 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     if (!seasonUuid) return;
     if (!window.confirm(`Are you sure you want to delete season ${season?.name || ''}?`)) return;
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(seasonUuid)}/`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-      });
-      if (res.ok) { navigate(seasonsBasePath); return; }
-      alert('Error deleting season');
+      await api.delete(`/periods/${encodeURIComponent(seasonUuid)}/`);
+      navigate(seasonsBasePath);
     } catch (e) { console.error(e); alert('Error deleting season'); }
   };
 
@@ -320,11 +306,9 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     const displayName = u.name || `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.email || 'this member';
     if (!window.confirm(`Remove ${displayName} from this team?`)) return;
     try {
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
-        { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() }, credentials: 'include' },
+      await api.delete(
+        `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
       );
-      if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to remove member'); }
       setMembers((prev) => prev.filter((m) => String(m.id) !== membershipId));
     } catch (e) { console.error(e); alert(e instanceof Error ? e.message : 'Error removing member'); }
   };
@@ -333,15 +317,8 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     if (!selectedEditPeriod) return;
     const periodId = String(selectedEditPeriod?.id || '').trim();
     if (!periodId) return;
-    const res = await fetch(`${apiBaseUrl}/api/v1/periods/${encodeURIComponent(periodId)}/`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to save season'); }
-    const raw = await res.json().catch(() => null);
-    const updated = raw?.data || raw || { ...selectedEditPeriod, ...payload };
+    const res = await api.patch<any>(`/periods/${encodeURIComponent(periodId)}/`, payload);
+    const updated = res ?? { ...selectedEditPeriod, ...payload };
     setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
   };
 
@@ -350,16 +327,10 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     const projectId = String(project?.id || '').trim();
     if (!membershipId || !projectId) return;
 
-    const res = await fetch(
-      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-        body: JSON.stringify({ role }),
-      },
+    await api.patch(
+      `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
+      { role },
     );
-    if (!res.ok) { const detail = await res.text().catch(() => ''); throw new Error(detail || 'Failed to save member'); }
 
     const membershipUserId = Number(selectedMembership?.user?.id);
     if (!membershipUserId) throw new Error('Missing user id');
@@ -374,29 +345,17 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     const toRemove = Array.from(prevSet).filter((r) => !nextSet.has(r));
 
     if (toAdd.length) {
-      const assignRes = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/functional-roles/assign/`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-          credentials: 'include',
-          body: JSON.stringify({ user_id: membershipUserId, roles: toAdd }),
-        },
+      await api.post(
+        `/projects/${encodeURIComponent(projectId)}/functional-roles/assign/`,
+        { user_id: membershipUserId, roles: toAdd },
       );
-      if (!assignRes.ok) { const detail = await assignRes.text().catch(() => ''); throw new Error(detail || 'Failed to assign functional roles'); }
     }
 
     if (toRemove.length) {
-      const unassignRes = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/functional-roles/unassign/`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': getCsrfToken() },
-          credentials: 'include',
-          body: JSON.stringify({ user_id: membershipUserId, roles: toRemove }),
-        },
+      await api.post(
+        `/projects/${encodeURIComponent(projectId)}/functional-roles/unassign/`,
+        { user_id: membershipUserId, roles: toRemove },
       );
-      if (!unassignRes.ok) { const detail = await unassignRes.text().catch(() => ''); throw new Error(detail || 'Failed to unassign functional roles'); }
     }
 
     setMembers((prev) =>

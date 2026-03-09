@@ -3,7 +3,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './DocsNotificationsPage.module.css';
 
 interface DocsNotification {
@@ -27,16 +27,8 @@ export function DocsNotificationsPage() {
       setLoading(true);
       setError(null);
 
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/`, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-
-      const data = await response.json();
-      const results = data.data?.results || data.results || data.data || data || [];
-      setNotifications(Array.isArray(results) ? results : []);
+      const { results } = await api.list<DocsNotification>('/user-notifications/');
+      setNotifications(results);
     } catch (err) {
       console.error(err);
       console.error('Failed to fetch notifications:', err);
@@ -51,18 +43,7 @@ export function DocsNotificationsPage() {
   const handleToggleRead = async (id: string, currentReadStatus: boolean) => {
     setMarking(id);
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const csrfToken = document.cookie.split('; ').find((row) => row.startsWith('csrftoken='))?.split('=')[1];
-
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/${id}/`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        body: JSON.stringify({ is_read: !currentReadStatus }),
-      });
-      if (!response.ok) throw new Error(`Failed to update notification: ${response.status}`);
-
-      const updated = await response.json();
+      const updated = await api.patch<DocsNotification>(`/user-notifications/${id}/`, { is_read: !currentReadStatus });
       setNotifications(prev => prev.map(n => n.id === id ? updated : n));
       window.dispatchEvent(new CustomEvent('notificationChanged'));
     } catch (err) {
@@ -76,15 +57,7 @@ export function DocsNotificationsPage() {
 
   const markAllAsRead = async () => {
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const csrfToken = document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-
-      const response = await fetch(`${apiBaseUrl}/api/v1/user-notifications/mark-all-read/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken || '' },
-        credentials: 'include',
-      });
-      if (!response.ok) throw new Error('Failed to mark all as read');
+      await api.post('/user-notifications/mark-all-read/');
 
       await fetchNotifications();
       window.dispatchEvent(new Event('notificationChanged'));

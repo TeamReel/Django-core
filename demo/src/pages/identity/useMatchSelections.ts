@@ -1,10 +1,7 @@
 import { useEffect, useMemo } from 'react';
-import { fetchAllPages } from '../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '../../api/client';
 import type { OrgOption, ProjectOption, PeriodOption } from './matchCreateTypes';
 import {
-  extractList,
-  fetchAllPagesLocal,
   getParentProjectId,
   getClubOrganisationId,
   getTeamParentId,
@@ -67,13 +64,8 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingOrganisations(true);
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=500`, {
-          credentials: 'include',
-          signal: abortController.signal,
-        });
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
-        const list = (extractList(raw) as OrgOption[])
+        const { results } = await api.list<OrgOption>('/organisations/', { pageSize: 500, signal: abortController.signal });
+        const list = results
           .map((o) => ({ id: String(o.id), name: String(o.name || o.slug || o.id), slug: o.slug }))
           .filter((o) => o.id);
         const unique = [...new Map(list.map((o) => [String(o.id), o])).values()];
@@ -111,16 +103,17 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingClubs(true);
       try {
-        const params = new URLSearchParams();
-        params.set('page_size', '200');
-        params.set('parent_project__isnull', 'true');
-        if (orgId) params.set('organisation_id', orgId);
+        const params: Record<string, string> = {
+          parent_project__isnull: 'true',
+        };
+        if (orgId) params.organisation_id = orgId;
 
-        const list = await fetchAllPages<ProjectOption>(
-          `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
-          { credentials: 'include', signal: abortController.signal },
-          { ttlMs: 10_000, cacheKey: `projects:clubs:${orgId || 'all'}`, maxItems: 3000 }
-        );
+        const list = await api.listAll<ProjectOption>('/projects/', {
+          params,
+          pageSize: 200,
+          maxItems: 3000,
+          signal: abortController.signal,
+        });
         const unique = [...new Map((list || []).map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteClubs(unique);
       } catch {
@@ -146,15 +139,32 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingTeams(true);
       try {
-        const baseUrl = clubId
-          ? `${apiBaseUrl}/api/v1/projects/?parent_project=${encodeURIComponent(clubId)}&page_size=200`
-          : orgId
-            ? orgSlug
-              ? `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=200&parent_project__isnull=false`
-              : `${apiBaseUrl}/api/v1/projects/?organisation_id=${encodeURIComponent(orgId)}&page_size=200&parent_project__isnull=false`
-            : `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`;
-
-        const rawList = await fetchAllPagesLocal(baseUrl, { credentials: 'include', signal: abortController.signal }, 3000);
+        let rawList: any[];
+        if (clubId) {
+          rawList = await api.listAll<any>('/projects/', {
+            params: { parent_project: clubId },
+            pageSize: 200, maxItems: 3000,
+            signal: abortController.signal,
+          });
+        } else if (orgId && orgSlug) {
+          rawList = await api.listAll<any>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, {
+            params: { parent_project__isnull: 'false' },
+            pageSize: 200, maxItems: 3000,
+            signal: abortController.signal,
+          });
+        } else if (orgId) {
+          rawList = await api.listAll<any>('/projects/', {
+            params: { organisation_id: orgId, parent_project__isnull: 'false' },
+            pageSize: 200, maxItems: 3000,
+            signal: abortController.signal,
+          });
+        } else {
+          rawList = await api.listAll<any>('/projects/', {
+            params: { parent_project__isnull: 'false' },
+            pageSize: 200, maxItems: 3000,
+            signal: abortController.signal,
+          });
+        }
         const list = rawList.map((p: any) => ({ ...p, id: p.id, name: p.name, slug: p.slug }));
         const unique = [...new Map(list.map((p) => [String(p.id), p])).values()];
         if (!cancelled) setRemoteTeams(unique);
@@ -182,16 +192,14 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingOpponentClubs(true);
       try {
-        const params = new URLSearchParams();
-        params.set('page_size', '200');
-        params.set('parent_project__isnull', 'true');
-        params.set('organisation_id', orgId);
-
-        const list = await fetchAllPages<ProjectOption>(
-          `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
-          { credentials: 'include', signal: abortController.signal },
-          { ttlMs: 10_000, cacheKey: `projects:clubs:opponent:${orgId}`, maxItems: 3000 }
-        );
+        const list = await api.listAll<ProjectOption>('/projects/', {
+          params: {
+            parent_project__isnull: 'true',
+            organisation_id: orgId,
+          },
+          pageSize: 200, maxItems: 3000,
+          signal: abortController.signal,
+        });
         const unique = [...new Map((list || []).map((p) => [String(p.id), p])).values()];
         if (!cancelled) setOpponentClubs(unique);
       } catch {
@@ -214,16 +222,13 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingOpponentTeams(true);
       try {
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('organisation_id', orgId);
-        params.set('parent_project__isnull', 'false');
-
-        const results = await fetchAllPages<ProjectOption>(
-          `${apiBaseUrl}/api/v1/projects/?${params.toString()}`,
-          { credentials: 'include' },
-          { ttlMs: 10_000, cacheKey: `projects:teams:org:${orgId}`, maxItems: 3000 }
-        );
+        const results = await api.listAll<ProjectOption>('/projects/', {
+          params: {
+            organisation_id: orgId,
+            parent_project__isnull: 'false',
+          },
+          pageSize: 250, maxItems: 3000,
+        });
         setOpponentTeams(Array.isArray(results) ? results : []);
       } catch {
         setOpponentTeams([]);
@@ -247,16 +252,14 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingSeasons(true);
       try {
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('parent_id', 'null');
-        params.set('organisation_id', String(selectedOrganisationId));
-        params.set('project_id', String(selectedTeamId));
-
-        const res = await fetch(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-        if (!res.ok) { setSeasonOptions([]); return; }
-        const data = await res.json();
-        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const { results } = await api.list<PeriodOption>('/periods/', {
+          params: {
+            parent_id: 'null',
+            organisation_id: String(selectedOrganisationId),
+            project_id: String(selectedTeamId),
+          },
+          pageSize: 250,
+        });
         const roots = (Array.isArray(results) ? results : [] as PeriodOption[]).filter(
           (p: PeriodOption) => p?.parent_period_id == null && !p?.parent_period
         );
@@ -288,17 +291,14 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingCompetitions(true);
       try {
-        const apiBase = getApiBaseUrl();
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('parent_id', String(selectedSeasonId));
-        params.set('organisation_id', String(selectedOrganisationId));
-        params.set('project_id', String(selectedTeamId));
-
-        const res = await fetch(`${apiBase}/api/v1/periods/?${params.toString()}`, { credentials: 'include' });
-        if (!res.ok) { setCompetitionOptions([]); return; }
-        const data = await res.json();
-        const results = data.data?.data || data.data?.results || data.results || data.data || [];
+        const { results } = await api.list<PeriodOption>('/periods/', {
+          params: {
+            parent_id: String(selectedSeasonId),
+            organisation_id: String(selectedOrganisationId),
+            project_id: String(selectedTeamId),
+          },
+          pageSize: 250,
+        });
         const list = Array.isArray(results) ? results : [];
         const unique = [...new Map(list.map((p: PeriodOption) => [String(p.id), p])).values()];
         const sorted = unique.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));

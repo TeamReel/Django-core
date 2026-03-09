@@ -14,18 +14,11 @@ import {
   Package, Shirt, ImageIcon, Shield, CheckCircle2, Circle,
   ChevronRight, AlertTriangle, Users,
 } from 'lucide-react';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api } from '@/api';
 import styles from './AssetsOverviewCard.module.css';
 
 /* ── Helpers ────────────────────────────────────────────── */
 
-function extractItems<T = unknown>(json: unknown): T[] {
-  const r = json as Record<string, any>;
-  if (Array.isArray(r)) return r;
-  if (r?.data && Array.isArray(r.data)) return r.data;
-  if (r?.results && Array.isArray(r.results)) return r.results;
-  return [];
-}
 
 /* ── Brand asset type definitions ──────────────────────── */
 
@@ -74,7 +67,6 @@ interface MemberAssetProgress {
 export const AssetsOverviewCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const apiBaseUrl = getApiBaseUrl();
   const org = context.organisation;
   const project = context.project;
 
@@ -94,11 +86,9 @@ export const AssetsOverviewCard: React.FC = () => {
         setLoading(true);
 
         // ── 1. Fetch brand assets ──
-        const brandRes = await fetch(
-          `${apiBaseUrl}/api/v1/branding/assets/?organisation_scope=${org.slug || org.id}`,
-          { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-        );
-        const brandItems = brandRes.ok ? extractItems<any>(await brandRes.json()) : [];
+        const { results: brandItems } = await api.list<any>('/branding/assets/', {
+          params: { organisation_scope: org.slug || org.id },
+        }).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
 
         // Determine which are present (only active assets)
         const activeTypes = new Set(
@@ -117,19 +107,17 @@ export const AssetsOverviewCard: React.FC = () => {
 
         // ── 2. Fetch member content coverage ──
         if (project) {
-          const membersRes = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${org.slug}/projects/${project.slug}/members/?page_size=50`,
-            { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-          );
-          const memberList = membersRes.ok ? extractItems<any>(await membersRes.json()) : [];
+          const { results: memberList } = await api.list<any>(
+            `/organisations/${org.slug}/projects/${project.slug}/members/`,
+            { pageSize: 50 },
+          ).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
 
           if (memberList.length > 0) {
             // Fetch completed generation requests
-            const genRes = await fetch(
-              `${apiBaseUrl}/api/v1/generative/requests/?status=completed&project=${project.id}&page_size=500`,
-              { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-            );
-            const genItems = genRes.ok ? extractItems<any>(await genRes.json()) : [];
+            const { results: genItems } = await api.list<any>('/generative/requests/', {
+              params: { status: 'completed', project: project.id },
+              pageSize: 500,
+            }).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
 
             // Build member → completed subtypes map
             const memberContentMap = new Map<string, Set<string>>();
@@ -172,7 +160,7 @@ export const AssetsOverviewCard: React.FC = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [apiBaseUrl, org?.slug, org?.id, project?.slug, project?.id]);
+  }, [org?.slug, org?.id, project?.slug, project?.id]);
 
   // Derived stats
   const teamPresent = teamAssets.filter(a => a.present).length;

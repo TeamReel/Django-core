@@ -1,7 +1,7 @@
 import React from 'react';
 import s from './ProjectSeasonDetailPage.module.css';
 import { getFunctionalRolesFromMembership, type AccessRoleOption } from './seasonDetailUtils';
-import { getCsrfToken } from '../../utils/csrf';
+import { projectsApi } from '../../api';
 
 interface EditMemberModalProps {
   member: any;
@@ -52,32 +52,13 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         return;
       }
 
-      const res = await fetch(
-        `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            role: editAccessRole,
-            metadata: {
-              ...(member?.metadata || {}),
-              functional_roles: functionalRoles,
-            },
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error('[Error] Save failed:', text);
-        throw new Error(text || 'Failed to update member');
-      }
-
-      const responseData = await res.json();
+      const res = await projectsApi.updateMember(projectId, membershipId, {
+        role: editAccessRole,
+        metadata: {
+          ...(member?.metadata || {}),
+          functional_roles: functionalRoles,
+        },
+      } as any);
 
       onSaved(membershipId, editAccessRole, functionalRoles);
     } catch (err: unknown) {

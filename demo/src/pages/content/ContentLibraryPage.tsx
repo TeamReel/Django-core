@@ -100,11 +100,9 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
   const handleDelete = async (item: ContentItem) => {
     if (confirm(`Weet je zeker dat je "${item.title || 'dit item'}" wilt verwijderen?`)) {
       try {
-        const apiBaseUrl = (await import('../../utils/apiBase')).getApiBaseUrl();
-        const response = await fetch(`${apiBaseUrl}/api/v1/media/items/${item.id}/`, { method: 'DELETE', credentials: 'include' });
-        if (response.ok) {
-          data.setContentItems(prev => prev.filter(i => i.id !== item.id));
-        } else { alert('Verwijderen mislukt'); }
+        const { api: apiClient } = await import('../../api');
+        await apiClient.delete(`/media/items/${item.id}/`);
+        data.setContentItems(prev => prev.filter(i => i.id !== item.id));
       } catch { alert('Verwijderen mislukt'); }
     }
   };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './ThenVsNowModal.module.css';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '../../api';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -107,14 +107,9 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/app-backgrounds/`, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
-          const bgs = items
+        const data = await api.get<any>('/branding/assets/app-backgrounds/');
+        const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
+        const bgs = items
             .filter((a: any) => a.url)
             .map((a: any) => ({
               id: a.id,
@@ -123,7 +118,6 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
               profile_name: a.project_name || a.profile_name || '',
             }));
           setBackgrounds(bgs);
-        }
       } catch (err) {
         console.error(err);
         console.warn('Failed to fetch app backgrounds:', err);
@@ -153,14 +147,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
         compositionStyle = 'overlay';
       }
 
-      const res = await fetch(`${apiBaseUrl}/api/v1/video/jobs/then-vs-now-compilation/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken(),
-        },
-        credentials: 'include',
-        body: JSON.stringify({
+      const data = await api.post<any>('/video/jobs/then-vs-now-compilation/', {
           project_id: projectId,
           video_type: apiVideoType,
           ...(compositionStyle ? { composition_style: compositionStyle } : {}),
@@ -168,14 +155,8 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
           selected_member_ids: selected,
           ...(selectedBgUrl ? { background_url: selectedBgUrl } : {}),
           ...(Object.keys(variantKeys).length > 0 ? { member_variant_keys: variantKeys } : {}),
-        }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(err.error || err.detail || `Failed (${res.status})`);
-      }
-      const data = await res.json();
-      const jobId = data.data?.id || data.id;
+      const jobId = data?.data?.id || data?.id || data;
       setJobId(jobId);
 
       setStep('submitted');

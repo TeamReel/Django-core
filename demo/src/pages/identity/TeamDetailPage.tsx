@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 import TeamOrganisationDetailPage from './TeamOrganisationDetailPage';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi, projectsApi } from '../../api';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 
 type Project = {
@@ -26,8 +26,6 @@ const looksLikeIdentifier = (value: string) => {
 export default function TeamDetailPage() {
   const { orgId, clubId, projectId } = useParams<{ orgId: string; clubId: string; projectId: string }>();
   const location = useLocation();
-  const apiBaseUrl = getApiBaseUrl();
-
   const orgSlugOrId = String(orgId || '').trim();
   const clubSlugOrId = String(clubId || '').trim();
   const teamSlugOrId = String(projectId || '').trim();
@@ -45,36 +43,29 @@ export default function TeamDetailPage() {
 
         // Try organisation-scoped endpoint first.
         if (orgSlugOrId) {
-          const res = await fetch(
-            `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
-            { credentials: 'include' }
-          );
-          if (res.ok) {
-            const project = unwrapEnvelope<Project>(await res.json().catch(() => null));
+          try {
+            const project = await organisationsApi.getProject(orgSlugOrId, clubSlugOrId) as any;
             const slug = String(project?.slug || '').trim();
             if (slug) {
               setResolvedClubSlug(slug);
               return;
             }
-          }
+          } catch { /* fall through */ }
         }
 
         // Fallback: global project endpoint.
-        const res2 = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(clubSlugOrId)}/`, {
-          credentials: 'include',
-        });
-        if (res2.ok) {
-          const project = unwrapEnvelope<Project>(await res2.json().catch(() => null));
+        try {
+          const project = await projectsApi.get(clubSlugOrId) as any;
           const slug = String(project?.slug || '').trim();
           if (slug) setResolvedClubSlug(slug);
-        }
+        } catch { /* ignore */ }
       } finally {
         setResolved(true);
       }
     };
 
     run();
-  }, [apiBaseUrl, clubSlugOrId, orgSlugOrId, shouldResolveClub]);
+  }, [clubSlugOrId, orgSlugOrId, shouldResolveClub]);
 
   // If we need to resolve the club slug, avoid rendering the detail page until we know whether to redirect.
   if (shouldResolveClub && !resolved) return null;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
+import type { ListResult } from '@/api';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -74,33 +75,7 @@ export interface TransitionHistoryEntry {
   created_at: string;
 }
 
-// ─── Fetch helpers ──────────────────────────────────────────────────────────
-
-async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const apiBaseUrl = getApiBaseUrl();
-  const url = `${apiBaseUrl}${path}`;
-
-  const response = await fetch(url, {
-    credentials: 'include',
-    headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    },
-    ...options,
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => '');
-    throw new Error(`HTTP ${response.status}: ${errorBody || response.statusText}`);
-  }
-
-  if (response.status === 204) return {} as T;
-  const json = await response.json();
-
-  // Unwrap envelope if present
-  const payload = json?.status === 'success' && json.data ? json.data : json;
-  return payload as T;
-}
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function unwrapResults<T>(payload: any): T[] {
   if (Array.isArray(payload)) return payload;
@@ -127,7 +102,7 @@ export function useWorkflowTemplates(): UseWorkflowTemplatesReturn {
     async function fetchTemplates() {
       try {
         setLoading(true);
-        const data = await apiFetch<any>('/api/v1/workflows/templates/?is_active=true');
+        const data = await api.get<any>('/workflows/templates/?is_active=true');
         setTemplates(unwrapResults<WorkflowTemplate>(data));
         setError(null);
       } catch (err: unknown) {
@@ -185,7 +160,7 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}):
         if (options.current_state) params.append('current_state', options.current_state);
         if (options.page_size) params.append('page_size', String(options.page_size));
 
-        const data = await apiFetch<any>(`/api/v1/workflows/instances/?${params.toString()}`);
+        const data = await api.get<any>(`/workflows/instances/?${params.toString()}`);
         let results = unwrapResults<WorkflowInstance>(data);
 
         // Client-side filter by content_type_name and object_id if provided
@@ -235,7 +210,7 @@ export function useWorkflowInstance(instanceId: number | string | null): UseWork
     async function fetchInstance() {
       try {
         setLoading(true);
-        const data = await apiFetch<WorkflowInstance>(`/api/v1/workflows/instances/${instanceId}/`);
+        const data = await api.get<WorkflowInstance>(`/workflows/instances/${instanceId}/`);
         setInstance(data);
         setError(null);
       } catch (err: unknown) {
@@ -271,7 +246,7 @@ export function useTransitionHistory(instanceId: number | string | null): UseTra
     async function fetchHistory() {
       try {
         setLoading(true);
-        const data = await apiFetch<any>(`/api/v1/workflows/history/?instance=${instanceId}&ordering=-created_at`);
+        const data = await api.get<any>(`/workflows/history/?instance=${instanceId}&ordering=-created_at`);
         setHistory(unwrapResults<TransitionHistoryEntry>(data));
         setError(null);
       } catch (err: unknown) {
@@ -300,9 +275,9 @@ export async function executeTransition(
   if (comment) body.comment = comment;
   if (contextUpdates) body.context_updates = contextUpdates;
 
-  return apiFetch<TransitionHistoryEntry>(
-    `/api/v1/workflows/instances/${instanceId}/execute/`,
-    { method: 'POST', body: JSON.stringify(body) }
+  return api.post<TransitionHistoryEntry>(
+    `/workflows/instances/${instanceId}/execute/`,
+    body,
   );
 }
 
@@ -315,9 +290,9 @@ export async function createWorkflowInstance(data: {
   object_id: number;
   context?: Record<string, any>;
 }): Promise<WorkflowInstance> {
-  return apiFetch<WorkflowInstance>(
-    '/api/v1/workflows/instances/',
-    { method: 'POST', body: JSON.stringify(data) }
+  return api.post<WorkflowInstance>(
+    '/workflows/instances/',
+    data,
   );
 }
 

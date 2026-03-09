@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import SmartEmptyState from '../../components/SmartEmptyState';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi } from '../../api';
 import type { Organisation } from '../../types';
 
 type OrganisationCard = Organisation & {
@@ -15,37 +15,13 @@ export default function OrganisationListPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiBaseUrl = getApiBaseUrl();
-
-    fetch(`${apiBaseUrl}/api/v1/organisations/`, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch organisations');
-        return res.json();
-      })
-      .then(data => {
-        // Handle various API response formats:
-        // 1. Array directly: [...]
-        // 2. B13 envelope: { data: [...] }
-        // 3. DRF pagination: { results: [...] }
-        let orgs: OrganisationCard[] = [];
-        if (Array.isArray(data)) {
-          orgs = data as OrganisationCard[];
-        } else if (Array.isArray(data.data)) {
-          orgs = data.data as OrganisationCard[];
-        } else if (Array.isArray(data.results)) {
-          orgs = data.results as OrganisationCard[];
-        }
-
-        setOrganisations(orgs);
+    organisationsApi.list()
+      .then(({ results }) => {
+        setOrganisations(results as OrganisationCard[]);
         setIsLoading(false);
       })
       .catch(err => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
         setIsLoading(false);
       });
   }, []);

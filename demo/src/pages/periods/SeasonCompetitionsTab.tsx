@@ -1,7 +1,7 @@
 import React from 'react';
 import { Alert, Badge, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '../../api';
 import type { Period } from '../../types/season';
 import s from './ProjectSeasonDetailPage.module.css';
 
@@ -10,7 +10,7 @@ export interface SeasonCompetitionsTabProps {
   competitionsLoading: boolean;
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
-  apiBaseUrl: string;
+  apiBaseUrl?: string;
   getMatchCountForCompetition: (competition: Period) => number;
   getCompetitionParticipantsCount: (competition: Period) => number;
   setIsCreateCompetitionModalOpen: (v: boolean) => void;
@@ -125,23 +125,8 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                             onClick={async () => {
                               if (!window.confirm(`Are you sure you want to delete competition ${competition.name}?`)) return;
                               try {
-                                const res = await fetch(
-                                  `${apiBaseUrl}/api/v1/periods/${competition.id}/`,
-                                  {
-                                    method: 'DELETE',
-                                    headers: {
-                                      'Content-Type': 'application/json',
-                                      'X-CSRFToken': getCsrfToken(),
-                                    },
-                                    credentials: 'include',
-                                  }
-                                );
-
-                                if (res.ok) {
-                                  setCompetitions((prev) => prev.filter((c) => c.id !== competition.id));
-                                } else {
-                                  alert('Error deleting competition');
-                                }
+                                await api.delete(`/periods/${competition.id}/`);
+                                setCompetitions((prev) => prev.filter((c) => c.id !== competition.id));
                               } catch (e) {
                                 console.error(e);
                                 console.error(e);

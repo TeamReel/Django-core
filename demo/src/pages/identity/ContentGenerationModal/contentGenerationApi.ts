@@ -4,8 +4,7 @@
  * Pure async functions for all content generation API calls.
  * No React hooks — just fetch + return.
  */
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
+import { api } from '@/api';
 import type { ContentTemplate, GeneratedVariant, GeneratedOutput } from './types';
 import { CONTENT_TYPES, ASSET_TYPE_TO_MEDIA_KEY } from './constants';
 
@@ -26,25 +25,8 @@ export const resolveProjectId = (
   return String(id);
 };
 
-export const postJson = async (url: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
-  const res = await fetch(url, {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': getCsrfToken(),
-      ...extra,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    const msg = typeof err?.error === 'string'
-      ? err.error
-      : err?.error?.message || err?.error?.detail || err?.detail || `API Error: ${res.status}`;
-    throw new Error(msg);
-  }
-  return res.json();
+export const postJson = async (path: string, body: Record<string, unknown>, extra?: Record<string, string>) => {
+  return api.post<any>(path, body, extra ? { headers: extra } as any : undefined);
 };
 
 /* ================================================================== */
@@ -74,14 +56,10 @@ export const fetchContentTemplates = async ({
     params.append('sport', String(organisationSport.id));
   }
 
-  const response = await fetch(
-    `${getApiBaseUrl()}/api/v1/content-generation/templates/?${params.toString()}`,
-    { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-  );
-  if (!response.ok) throw new Error('Failed to fetch templates');
-
-  const data = await response.json();
-  let results = data.results || data || [];
+  const response = await api.list<ContentTemplate>('/content-generation/templates/', {
+    params: Object.fromEntries(params),
+  });
+  let results = response.results;
 
   // Fallback: try without sport filter
   if (results.length === 0 && organisationSport?.id && sportRequired) {
@@ -90,13 +68,13 @@ export const fetchContentTemplates = async ({
     paramsAll.append('template_type', templateType);
     paramsAll.append('template_subtype', templateSubtype);
 
-    const responseAll = await fetch(
-      `${getApiBaseUrl()}/api/v1/content-generation/templates/?${paramsAll.toString()}`,
-      { credentials: 'include', headers: { 'Content-Type': 'application/json' } },
-    );
-    if (responseAll.ok) {
-      const dataAll = await responseAll.json();
-      results = dataAll.results || dataAll || [];
+    try {
+      const responseAll = await api.list<ContentTemplate>('/content-generation/templates/', {
+        params: Object.fromEntries(paramsAll),
+      });
+      results = responseAll.results;
+    } catch {
+      // ignore fallback failure
     }
   }
 
@@ -123,7 +101,7 @@ export const generateLineupFlyer = async (p: GenerateLineupFlyerParams): Promise
 
   const formation = p.lineupFormation || p.matchData?.metadata?.formation || '4-3-3';
   const data = await postJson(
-    `${getApiBaseUrl()}/api/v1/video/jobs/lineup-flyer/`,
+    '/video/jobs/lineup-flyer/',
     {
       activity_id: p.matchData.id,
       template_id: p.selectedTemplateId || null,
@@ -171,7 +149,7 @@ export const generateTeamPoster = async (p: GenerateTeamPosterParams): Promise<G
 
   const formation = p.lineupFormation || p.matchData?.metadata?.formation || '4-3-3';
   const data = await postJson(
-    `${getApiBaseUrl()}/api/v1/video/jobs/team-poster/`,
+    '/video/jobs/team-poster/',
     {
       activity_id: p.matchData.id,
       template_id: p.selectedTemplateId || null,
@@ -219,7 +197,7 @@ export const generateMatchFlyer = async (p: GenerateMatchFlyerParams): Promise<G
   if (!p.matchData?.id) throw new Error('No match/activity data available for flyer generation');
 
   const data = await postJson(
-    `${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`,
+    '/video/jobs/match-flyer/',
     {
       activity_id: p.matchData.id,
       variant: p.matchFlyerVariant,
@@ -278,7 +256,7 @@ export const generateMatchSummary = async (p: GenerateMatchSummaryParams): Promi
     .filter(s => s.length > 0);
 
   const data = await postJson(
-    `${getApiBaseUrl()}/api/v1/video/jobs/match-flyer/`,
+    '/video/jobs/match-flyer/',
     {
       activity_id: p.matchData.id,
       variant: 'summary',
@@ -328,7 +306,7 @@ export const generateGenericAI = async (p: GenerateGenericAIParams): Promise<Gen
     (p.selectedType?.subtype || '').includes('sponsor');
   const variantCount = isStandardize ? 3 : 1;
 
-  const data = await postJson(`${getApiBaseUrl()}/api/v1/generative/assets/generate/`, {
+  const data = await postJson('/generative/assets/generate/', {
     template_id: p.selectedTemplate?.id?.toString() || 'default',
     params: {
       template_type: p.selectedType?.type || p.selectedTemplate?.template_type,
@@ -432,7 +410,7 @@ export const saveGeneratedVariant = async (p: SaveVariantParams): Promise<SaveVa
 
   const filename = p.variant.filename || (isVideo ? 'lineup.mp4' : 'saved_asset.png');
 
-  const data = await postJson(`${getApiBaseUrl()}/api/v1/generative/assets/save/`, {
+  const data = await postJson('/generative/assets/save/', {
     storage_path: p.variant.storage_info?.storage_path,
     presigned_url: p.variant.presigned_url,
     video_url: isVideo ? p.variant.presigned_url : null,

@@ -8,6 +8,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import { ResponsiveGrid } from '../ui/ResponsiveGrid';
+import { api } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
 // ============================================================================
@@ -67,7 +68,6 @@ export function KitsTab({
   readOnly = false,
   onKitUploaded,
 }: KitsTabProps) {
-  const apiBaseUrl = getApiBaseUrl();
   const [kits, setKits] = useState<KitAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,23 +82,15 @@ export function KitsTab({
     }
 
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${brandProfileId}`, {
-        credentials: 'include',
-      });
-      if (!res.ok) throw new Error(`Failed to load assets: ${res.status}`);
-
-      const json = await res.json();
-      const assets = json?.data?.results || json?.data || json?.results || [];
-      const assetList = Array.isArray(assets) ? assets : [];
-
-      setKits(assetList.filter((a) => String(a.asset_type || '').startsWith('kit_')));
+      const { results } = await api.list<any>('/branding/assets/', { params: { profile: brandProfileId } });
+      setKits(results.filter((a: any) => String(a.asset_type || '').startsWith('kit_')));
       setLoading(false);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : 'Failed to load kits');
       setLoading(false);
     }
-  }, [apiBaseUrl, brandProfileId]);
+  }, [brandProfileId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,7 +109,8 @@ export function KitsTab({
     setError(null);
 
     try {
-      // Step 1: Upload file
+      // Step 1: Upload file (kept as fetch — needs X-Organization-ID header)
+      const apiBaseUrl = getApiBaseUrl();
       const formData = new FormData();
       formData.append('file', file);
       formData.append('is_public', 'true');
@@ -146,30 +139,15 @@ export function KitsTab({
       const existingKit = kits.find((k) => k.asset_type === kitTypeId);
 
       if (existingKit) {
-        const updateRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/${existingKit.id}/`, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-          body: JSON.stringify({ file: fileId }),
-        });
-        if (!updateRes.ok) throw new Error(`Failed to update brand asset: ${updateRes.status}`);
+        await api.patch<any>(`/branding/assets/${existingKit.id}/`, { file: fileId });
       } else {
-        const assetRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-          body: JSON.stringify({
-            profile: brandProfileId,
-            file: fileId,
-            asset_type: kitTypeId,
-            alt_text: `${projectName} ${KIT_TYPES.find((t) => t.id === kitTypeId)?.label || kitTypeId}`,
-            is_active: true,
-          }),
+        await api.post<any>('/branding/assets/', {
+          profile: brandProfileId,
+          file: fileId,
+          asset_type: kitTypeId,
+          alt_text: `${projectName} ${KIT_TYPES.find((t) => t.id === kitTypeId)?.label || kitTypeId}`,
+          is_active: true,
         });
-        if (!assetRes.ok) {
-          const errText = await assetRes.text();
-          throw new Error(`Failed to create brand asset: ${assetRes.status} - ${errText}`);
-        }
       }
 
       await loadKits();

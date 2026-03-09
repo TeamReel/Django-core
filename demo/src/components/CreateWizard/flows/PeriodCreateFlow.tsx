@@ -19,8 +19,7 @@ import { ChooseFlowStep } from '../steps/ChooseFlowStep';
 import { PeriodTypeStep, type PeriodTypeData, type PeriodType, type SeasonOption } from '../steps/PeriodTypeStep';
 import { PeriodDetailsStep, type PeriodDetailsData, type SportVariantOption } from '../steps/PeriodDetailsStep';
 import { PeriodConfirmStep, type PeriodConfirmData } from '../steps/PeriodConfirmStep';
-import { getApiBaseUrl } from '../../../utils/apiBase';
-import { getCsrfToken } from '../../../utils/csrf';
+import { api } from '@/api';
 import { useSports } from '../../../hooks/useSports';
 
 // ─── Step config ──────────────────────────────────────────
@@ -77,29 +76,25 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
     const loadSeasons = async () => {
       setSeasonsLoading(true);
       try {
-        const apiBase = getApiBaseUrl();
-        const params = new URLSearchParams({ page_size: '250', parent_id: 'null' });
+        const params: Record<string, string> = { parent_id: 'null' };
 
         const teamId = prefill.teamProjectId ? String(prefill.teamProjectId) : '';
         if (teamId) {
-          params.set('project_id', teamId);
+          params.project_id = teamId;
         } else if (prefill.organisationId) {
-          params.set('organisation_id', prefill.organisationId);
+          params.organisation_id = prefill.organisationId;
         }
 
-        const res = await fetch(`${apiBase}/api/v1/periods/?${params.toString()}`, {
-          credentials: 'include',
+        const { results } = await api.list<any>('/periods/', {
+          params,
+          pageSize: 250,
         });
-        if (!res.ok) { setSeasonOptions([]); return; }
-
-        const json = await res.json();
-        const results = json.data?.data || json.data?.results || json.results || json.data || [];
-        const roots = (Array.isArray(results) ? results : [])
-          .filter((p) => p?.parent_period_id == null && !p?.parent_period);
-        const unique = [...new Map(roots.map((p) => [String(p.id), p])).values()];
+        const roots = results
+          .filter((p: any) => p?.parent_period_id == null && !p?.parent_period);
+        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
         const sorted = unique
-          .sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')))
-          .map((p) => ({ id: String(p.id), name: String(p.name) }));
+          .sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')))
+          .map((p: any) => ({ id: String(p.id), name: String(p.name) }));
 
         setSeasonOptions(sorted);
       } catch {
@@ -194,20 +189,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
         body.sport_id = selectedSportId;
       }
 
-      const res = await fetch(`${getApiBaseUrl()}/api/v1/periods/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': getCsrfToken() || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(detail || `${periodTypeLabel} aanmaken mislukt`);
-      }
+      await api.post('/periods/', body);
 
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);

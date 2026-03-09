@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useLocation, useParams } from 'react-router-dom';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { organisationsApi } from '../../api';
 
 type Project = {
   id: string;
@@ -19,8 +19,6 @@ export default function ProjectHierarchyMatchRedirectPage() {
   }>();
 
   const location = useLocation();
-
-  const apiBaseUrl = getApiBaseUrl();
 
   const orgSlugOrId = String(orgId || '').trim();
   const projectSlugOrId = String(projectId || '').trim();
@@ -41,14 +39,7 @@ export default function ProjectHierarchyMatchRedirectPage() {
       try {
         if (!orgSlugOrId || !projectSlugOrId) return;
 
-        const res = await fetch(
-          `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/projects/${encodeURIComponent(projectSlugOrId)}/`,
-          { credentials: 'include' }
-        );
-
-        if (!res.ok) return;
-        const raw = await res.json().catch(() => null);
-        const project = (raw?.data ?? raw) as Project;
+        const project = await organisationsApi.getProject(orgSlugOrId, projectSlugOrId) as unknown as Project;
 
         const clubKey =
           String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
@@ -59,7 +50,7 @@ export default function ProjectHierarchyMatchRedirectPage() {
     };
 
     run();
-  }, [apiBaseUrl, orgSlugOrId, projectSlugOrId]);
+  }, [orgSlugOrId, projectSlugOrId]);
 
   if (loading) return null;
 

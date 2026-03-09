@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api, ApiError } from '../../api';
 import type { Organisation, ProjectOption, User, PeriodOption, LinkUserModalProps } from './linkUserModalTypes';
 
 type HookProps = Pick<LinkUserModalProps, 'opened' | 'user' | 'organisations' | 'clubs' | 'teams' | 'initialOrganisationSlugOrId' | 'onSuccess' | 'onClose'>;
@@ -179,16 +179,14 @@ export function useLinkUserModal({
     const orgSlugOrId = String(org?.slug || org?.id || '').trim();
     if (!orgSlugOrId) throw new Error('Organisation slug/id missing');
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      credentials: 'include',
-      body: JSON.stringify({ email: user.email, role: orgRole }),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      if (/already|exists|duplicate/i.test(text)) return;
-      throw new Error(text || 'Failed to assign user to federation');
+    try {
+      await api.post(`/organisations/${encodeURIComponent(orgSlugOrId)}/members/`, { email: user.email, role: orgRole });
+    } catch (e) {
+      if (e instanceof ApiError) {
+        const bodyText = typeof e.body === 'string' ? e.body : JSON.stringify(e.body || '');
+        if (/already|exists|duplicate/i.test(bodyText)) return;
+      }
+      throw e instanceof ApiError ? new Error(e.detail || 'Failed to assign user to federation') : e;
     }
   };
 
@@ -198,20 +196,18 @@ export function useLinkUserModal({
     if (!pid) return;
     if (!periodId && existingProjectIds.has(pid)) return;
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      credentials: 'include',
-      body: JSON.stringify({
+    try {
+      await api.post(`/projects/${encodeURIComponent(pid)}/members/`, {
         user_id: Number(user.id),
         role: accessRole,
         period_id: String(periodId || '').trim() || undefined,
-      }),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      if (/already|exists|duplicate/i.test(text)) return;
-      throw new Error(text || 'Failed to assign user to project');
+      });
+    } catch (e) {
+      if (e instanceof ApiError) {
+        const bodyText = typeof e.body === 'string' ? e.body : JSON.stringify(e.body || '');
+        if (/already|exists|duplicate/i.test(bodyText)) return;
+      }
+      throw e instanceof ApiError ? new Error(e.detail || 'Failed to assign user to project') : e;
     }
   };
 
@@ -222,16 +218,7 @@ export function useLinkUserModal({
     const cleaned = (Array.isArray(roles) ? roles : []).map((r) => String(r || '').trim()).filter(Boolean);
     if (cleaned.length === 0) return;
 
-    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/functional-roles/assign/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-      credentials: 'include',
-      body: JSON.stringify({ user_id: Number(user.id), roles: cleaned }),
-    });
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || 'Failed to assign functional roles');
-    }
+    await api.post(`/projects/${encodeURIComponent(pid)}/functional-roles/assign/`, { user_id: Number(user.id), roles: cleaned });
   };
 
   const findOrganisationMembershipId = async (): Promise<string> => {
@@ -274,18 +261,7 @@ export function useLinkUserModal({
     if (!orgSlugOrId) throw new Error('Federation slug/id missing');
     const membershipId = await findOrganisationMembershipId();
 
-    const res = await fetch(
-      `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlugOrId)}/members/${encodeURIComponent(membershipId)}/`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-      },
-    );
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || 'Failed to unlink user from federation');
-    }
+    await api.delete(`/organisations/${encodeURIComponent(orgSlugOrId)}/members/${encodeURIComponent(membershipId)}/`);
   };
 
   const findProjectMembershipId = async (pid: string): Promise<string> => {
@@ -320,18 +296,7 @@ export function useLinkUserModal({
     if (!pid) throw new Error('Select a club/team first');
     const membershipId = await findProjectMembershipId(pid);
 
-    const res = await fetch(
-      `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
-      {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-        credentials: 'include',
-      },
-    );
-    if (!res.ok) {
-      const text = await res.text().catch(() => '');
-      throw new Error(text || 'Failed to unlink user from project');
-    }
+    await api.delete(`/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`);
   };
 
   // ── submit ─────────────────────────────────────────────────

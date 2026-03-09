@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchAllPages } from '../../../utils/fetchAllPages';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { creditsApi, transactionsApi } from '../../../api';
 
 /* ─── Types ─── */
 
@@ -35,13 +34,6 @@ export type Transaction = {
 };
 
 /* ─── Utility functions ─── */
-
-function unwrapObject<T>(raw: any): T | null {
-  if (!raw) return null;
-  if (raw.status === 'success' && raw.data) return raw.data as T;
-  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) return raw.data as T;
-  return raw as T;
-}
 
 export function formatCredits(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return '—';
@@ -118,10 +110,6 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
   const [transactionsLoading, setTransactionsLoading] = useState(false);
   const [transactionsError, setTransactionsError] = useState<string | null>(null);
 
-  const apiBaseUrl = useMemo(() => {
-    return getApiBaseUrl();
-  }, []);
-
   const numericBalance = useMemo(() => {
     const v = balance?.current_balance;
     const n = typeof v === 'number' ? v : Number(v);
@@ -151,11 +139,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     setBalanceError(null);
 
     try {
-      const url = `${apiBaseUrl}/api/v1/credits/projects/${encodeURIComponent(String(projectId))}/`;
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.json();
-      const data = unwrapObject<ProjectCreditsBalance>(raw);
+      const data = await creditsApi.getProjectBalance(projectId) as unknown as ProjectCreditsBalance;
       setBalance(data);
     } catch (e: unknown) {
       console.error(e);
@@ -176,13 +160,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     setUserBalanceError(null);
 
     try {
-      const url = `${apiBaseUrl}/api/v1/transactions/organizations/${encodeURIComponent(
-        String(organisationId)
-      )}/balance/me/`;
-      const res = await fetch(url, { credentials: 'include' });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const raw = await res.json();
-      const data = unwrapObject<UserWalletBalance>(raw);
+      const data = await creditsApi.getUserWalletBalance(String(organisationId)) as unknown as UserWalletBalance;
       setUserBalance(data);
     } catch (e: unknown) {
       console.error(e);
@@ -198,12 +176,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     setTransactionsError(null);
 
     try {
-      const params = new URLSearchParams();
-      params.set('project_id', String(projectId));
-      params.set('page_size', '100');
-
-      const url = `${apiBaseUrl}/api/v1/transactions/transactions/?${params.toString()}`;
-      const results = await fetchAllPages<Transaction>(url, { credentials: 'include' }, { ttlMs: 60_000, maxPages: 5 });
+      const results = await transactionsApi.listAll({ projectId: String(projectId) }, { pageSize: 100, maxItems: 500 }) as unknown as Transaction[];
       setTransactions(Array.isArray(results) ? results : []);
     } catch (e: unknown) {
       console.error(e);
@@ -218,21 +191,21 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     fetchBalance();
     fetchUserBalance();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBaseUrl, projectId, organisationId, reloadToken]);
+  }, [projectId, organisationId, reloadToken]);
 
   useEffect(() => {
     if (view === 'transactions') {
       fetchTransactionsList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, apiBaseUrl, projectId, organisationId, reloadToken]);
+  }, [view, projectId, organisationId, reloadToken]);
 
   useEffect(() => {
     if (view === 'balance') {
       fetchTransactionsList();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, apiBaseUrl, projectId, organisationId, reloadToken]);
+  }, [view, projectId, organisationId, reloadToken]);
 
   return {
     balance,

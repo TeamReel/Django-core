@@ -5,8 +5,7 @@
  * project loading, membership fetching, and all role update functions.
  */
 import { useMemo, useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction, type RefObject, type ChangeEvent } from 'react';
-import { getApiBaseUrl } from '../../utils/apiBase';
-import { getCsrfToken } from '../../utils/csrf';
+import { api } from '@/api';
 import {
   type User,
   type ProjectChoice,
@@ -107,8 +106,6 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
   const [addingToOrg, setAddingToOrg] = useState(false);
   const [addingToProject, setAddingToProject] = useState(false);
 
-  const apiBaseUrl = getApiBaseUrl();
-
   // ── Available projects memo ──
   const availableProjects = useMemo<ProjectChoice[]>(() => {
     let list = Array.isArray(user?.projects) ? user!.projects : [];
@@ -182,13 +179,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       if (!orgSlug) { setOrgProjects([]); setOrgProjectsError(null); return; }
       setOrgProjectsLoading(true); setOrgProjectsError(null);
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?page_size=500`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
-        });
-        if (!res.ok) throw new Error('Failed to load projects');
-        const raw = await res.json().catch(() => null);
-        const list = raw?.data?.results || raw?.results || raw?.data || [];
-        const rawItems = Array.isArray(list) ? list : [];
+        const { results: rawItems } = await api.list<Record<string, unknown>>(`/organisations/${encodeURIComponent(orgSlug)}/projects/`, { pageSize: 500 });
         const idToSlug = new Map<string, string>();
         for (const p of rawItems) { const pid = String(p?.id || '').trim(); const pslug = String(p?.slug || '').trim(); if (pid && pslug) idToSlug.set(pid, pslug); }
         const choices: OrgProjectChoice[] = rawItems.map((p: Record<string, unknown>) => {
@@ -209,7 +200,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       finally { setOrgProjectsLoading(false); }
     };
     void run();
-  }, [opened, organisationSlug, apiBaseUrl]);
+  }, [opened, organisationSlug]);
 
   // ── Fetch member info helper ──
   const fetchMemberInfo = useCallback(async (projectKey: string) => {
@@ -222,30 +213,21 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       const knownId = local?.membership_id ? String(local.membership_id).trim() : null;
       if (knownId) {
         try {
-          const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownId)}/`, {
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
-          });
-          if (r.ok) found = await r.json();
+          found = await api.get<any>(`/projects/${encodeURIComponent(projectKey)}/members/${encodeURIComponent(knownId)}/`);
         } catch { /* fallback */ }
       }
       if (!found) {
-        const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/?page_size=500`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'include',
-        });
-        if (r.ok) {
-          const raw = await r.json();
-          const members = raw?.data?.results || raw?.results || raw?.data || [];
-          const uid = String(user?.id || '').trim();
+        const { results: members } = await api.list<any>(`/projects/${encodeURIComponent(projectKey)}/members/`, { pageSize: 500 });
+        const uid = String(user?.id || '').trim();
           const matches = members.filter((m: { user?: Record<string, unknown>; user_id?: string }) => {
             const mUid = m?.user?.id ?? m?.user_id ?? m?.user;
             return String(mUid || '').trim() === uid;
           });
           found = matches.find((m: { period_id?: string; period?: unknown }) => !String(m?.period_id ?? m?.period ?? '')) || matches[0] || null;
-        }
       }
       return found;
     } catch (e) { console.warn('Fetch member failed', e); return null; }
-  }, [apiBaseUrl, user, opened]);
+  }, [user, opened]);
 
   // ── Club membership effect ──
   useEffect(() => {
@@ -291,53 +273,34 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     try {
       const fd = new FormData();
       fd.append('avatar', file);
-      const res = await fetch(`${apiBaseUrl}/api/v1/admin/users/${user.id}/avatar/`, {
-        method: 'POST', credentials: 'include', headers: { 'X-CSRFToken': getCsrfToken() }, body: fd,
-      });
-      if (!res.ok) { const errBody = await res.text().catch(() => ''); throw new Error(`Upload failed: ${res.status} ${errBody.slice(0, 300)}`); }
+      await api.post(`/admin/users/${user.id}/avatar/`, fd);
       onSaved?.();
     } catch (err) { console.error('Avatar upload error:', err); setExtraError('Avatar upload mislukt.'); }
     finally { setAvatarUploading(false); }
-  }, [apiBaseUrl, user?.id, onSaved]);
+  }, [user?.id, onSaved]);
 
   // ── Role update functions ──
   const updateClubRole = useCallback(async () => {
     if (!selectedClubKey || !clubMembershipId) return;
-    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedClubKey)}/members/${encodeURIComponent(clubMembershipId)}/`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'include', body: JSON.stringify({ role: clubAccessRole }),
-    });
-    if (!res.ok) { const txt = await res.text(); throw new Error(`Failed to update club role: ${txt}`); }
-  }, [apiBaseUrl, selectedClubKey, clubMembershipId, clubAccessRole]);
+    await api.patch(`/projects/${encodeURIComponent(selectedClubKey)}/members/${encodeURIComponent(clubMembershipId)}/`, { role: clubAccessRole });
+  }, [selectedClubKey, clubMembershipId, clubAccessRole]);
 
   const updateTeamRole = useCallback(async () => {
     if (!selectedTeamKey || !teamMembershipId) return;
-    const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedTeamKey)}/members/${encodeURIComponent(teamMembershipId)}/`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'include', body: JSON.stringify({ role: teamAccessRole }),
-    });
-    if (!res.ok) { const txt = await res.text(); throw new Error(`Failed to update team role: ${txt}`); }
+    await api.patch(`/projects/${encodeURIComponent(selectedTeamKey)}/members/${encodeURIComponent(teamMembershipId)}/`, { role: teamAccessRole });
     const prev = new Set(initialFunctionalRoles);
     const next = new Set(functionalRoles);
     const toAdd = Array.from(next).filter(r => !prev.has(r));
     const toRemove = Array.from(prev).filter(r => !next.has(r));
     const uid = Number(user?.id);
     if (toAdd.length) {
-      const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/assign/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'include', body: JSON.stringify({ user_id: uid, roles: toAdd }),
-      });
-      if (!r.ok) throw new Error('Failed to assign roles');
+      await api.post(`/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/assign/`, { user_id: uid, roles: toAdd });
     }
     if (toRemove.length) {
-      const r = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/unassign/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'include', body: JSON.stringify({ user_id: uid, roles: toRemove }),
-      });
-      if (!r.ok) throw new Error('Failed to unassign roles');
+      await api.post(`/projects/${encodeURIComponent(selectedTeamKey)}/functional-roles/unassign/`, { user_id: uid, roles: toRemove });
     }
     setInitialFunctionalRoles(Array.from(next).sort());
-  }, [apiBaseUrl, selectedTeamKey, teamMembershipId, teamAccessRole, functionalRoles, initialFunctionalRoles, user]);
+  }, [selectedTeamKey, teamMembershipId, teamAccessRole, functionalRoles, initialFunctionalRoles, user]);
 
   const updateOrgRoleIfNeeded = useCallback(async () => {
     const orgSlug = String(organisationSlug || '').trim();
@@ -346,12 +309,8 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     const currentEntry = orgs.find((o: { membership_id?: string }) => String(o?.membership_id || '').trim() === String(orgMembershipId));
     const currentRole = String(currentEntry?.role || '').trim().toLowerCase();
     if (currentRole === String(orgRole)) return;
-    const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/${encodeURIComponent(orgMembershipId)}/`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-      credentials: 'include', body: JSON.stringify({ role: orgRole }),
-    });
-    if (!res.ok) { const text = await res.text().catch(() => ''); throw new Error(text || 'Failed to update organisation role'); }
-  }, [apiBaseUrl, organisationSlug, orgMembershipId, orgRole, user]);
+    await api.patch(`/organisations/${encodeURIComponent(orgSlug)}/members/${encodeURIComponent(orgMembershipId)}/`, { role: orgRole });
+  }, [organisationSlug, orgMembershipId, orgRole, user]);
 
   const linkToOrganisation = useCallback(async () => {
     if (!user) return;
@@ -359,14 +318,10 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     if (!orgSlug) throw new Error('No federation selected');
     setAddingToOrg(true); setExtraError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'include', body: JSON.stringify({ email: user.email, role: inviteOrgRole }),
-      });
-      if (!res.ok) { const text = await res.text().catch(() => ''); throw new Error(text || 'Failed to add user to federation'); }
+      await api.post(`/organisations/${encodeURIComponent(orgSlug)}/members/`, { email: user.email, role: inviteOrgRole });
       await onSaved?.();
     } finally { setAddingToOrg(false); }
-  }, [apiBaseUrl, user, organisationSlug, inviteOrgRole, onSaved]);
+  }, [user, organisationSlug, inviteOrgRole, onSaved]);
 
   const performLinkToProject = useCallback(async (key: string, role: string, type: 'club' | 'team') => {
     if (!user) return;
@@ -374,17 +329,13 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
     if (!projectKey) throw new Error('Select a project first');
     setAddingToProject(true); setExtraError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(projectKey)}/members/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'include', body: JSON.stringify({ user_id: Number(user?.id), role }),
-      });
-      if (!res.ok) { const text = await res.text().catch(() => ''); throw new Error(text || 'Failed to link user to project'); }
+      await api.post(`/projects/${encodeURIComponent(projectKey)}/members/`, { user_id: Number(user?.id), role });
       if (type === 'club') setSelectedClubKey(projectKey);
       if (type === 'team') { setSelectedTeamKey(projectKey); const p = orgProjects.find(op => op.key === projectKey); if (p?.parentKey) setSelectedClubKey(p.parentKey); }
       setActiveTab('access');
       await onSaved?.();
     } finally { setAddingToProject(false); }
-  }, [apiBaseUrl, user, orgProjects, onSaved]);
+  }, [user, orgProjects, onSaved]);
 
   return {
     activeTab, setActiveTab, formData, setFormData, saving, setSaving, extraError, setExtraError,

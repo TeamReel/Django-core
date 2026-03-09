@@ -5,7 +5,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
-import { getApiBaseUrl } from '../../utils/apiBase';
+import { api, ApiError } from '../../api';
 import styles from './CreateUserModal.module.css';
 
 interface CreateUserModalProps {
@@ -33,43 +33,18 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
     try {
       setLoading(true);
       setError(null);
-      const apiBaseUrl = getApiBaseUrl();
 
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
-
-      // Append organisation_id if available in context
-      let url = `${apiBaseUrl}/api/v1/admin/users/`;
+      // Build path with optional org query param
+      let path = '/admin/users/';
       if (context.organisation) {
-          url += `?organisation_id=${context.organisation.id}`;
+          path += `?organisation_id=${context.organisation.id}`;
       }
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken || '',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          ...formData,
-          // Backend expects password_confirm (DRF validation).
-          password_confirm: formData.password_confirm || formData.password,
-        }),
+      await api.post(path, {
+        ...formData,
+        // Backend expects password_confirm (DRF validation).
+        password_confirm: formData.password_confirm || formData.password,
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(
-          data.email?.[0] ||
-            data.password?.[0] ||
-            data.password_confirm?.[0] ||
-            data.detail ||
-            'Failed to create user'
-        );
-      }
 
       onSuccess();
       onClose();
@@ -77,7 +52,18 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
     } catch (err) {
       console.error(err);
       console.error('Create user error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create user');
+      if (err instanceof ApiError) {
+        const body = err.body as any;
+        setError(
+          body?.email?.[0] ||
+            body?.password?.[0] ||
+            body?.password_confirm?.[0] ||
+            body?.detail ||
+            'Failed to create user'
+        );
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to create user');
+      }
     } finally {
       setLoading(false);
     }

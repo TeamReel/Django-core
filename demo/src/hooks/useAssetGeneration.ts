@@ -11,8 +11,7 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
-import { getCsrfToken } from '../utils/csrf';
+import { api } from '@/api';
 import { createWorkflowInstance } from './useWorkflows';
 import { resolveContentTypeId, type ContentTypeName } from './useContentTypes';
 import {
@@ -54,7 +53,6 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
   } | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
-  const apiBase = getApiBaseUrl();
 
   const reset = useCallback(() => {
     if (abortRef.current) {
@@ -79,21 +77,13 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
         if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 
-        const res = await fetch(
-          `${apiBase}/api/v1/generative/assets/generate/${taskId}/status/`,
-          { signal, credentials: 'include' }
+        const res = await api.get<any>(
+          `/generative/assets/generate/${taskId}/status/`,
+          signal,
         );
 
-        if (res.status === 404) {
-          throw new Error('Generatie taak verlopen of niet gevonden');
-        }
-        if (!res.ok) {
-          throw new Error(`Status check mislukt: HTTP ${res.status}`);
-        }
-
-        const rawJson = await res.json();
-        // API envelope: { status: 'success', data: { task_id, status, ... } }
-        const data = rawJson.data || rawJson;
+        // api.get auto-unwraps envelope, so `res` is the inner data
+        const data = res;
 
         if (data.status === 'completed') {
           const responseData = data.data || {};
@@ -138,7 +128,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
       throw new Error('Video generatie timeout (te lang gewacht)');
     },
-    [apiBase]
+    []
   );
 
   // ── Submit generation request ──────────────────────────────────────
@@ -188,15 +178,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           controller.abort();
         }, 120_000);
 
-        const res = await fetch(`${apiBase}/api/v1/generative/assets/generate/`, {
-          method: 'POST',
-          signal: controller.signal,
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          body: JSON.stringify({
+        const res = await api.post<any>('/generative/assets/generate/', {
             template_id: params.templateId,
             params: finalParams,
             variant_count: params.variantCount,
@@ -210,34 +192,29 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(params.model ? { model: params.model } : {}),
             // Route through approval queue if requested
             ...(params.requireApproval ? { save_to_brand: false, save_to_media_library: false } : {}),
-          }),
-        });
+        }, { signal: controller.signal });
 
         clearTimeout(timeoutId);
         clearInterval(progressTimer);
 
-        // ── Async path: video generation returns 202 + task_id ───────
-        if (res.status === 202) {
-          const asyncJson = await res.json();
-          // API envelope: { status: 'success', data: { task_id, ... } }
-          const asyncData = asyncJson.data || asyncJson;
-          const taskId = asyncData.task_id;
-          if (!taskId) throw new Error('Backend returned 202 but no task_id');
+        // api.post returns the unwrapped data; check for task_id (async path)
+        const asyncData = res;
+        const taskId = asyncData?.task_id;
 
+        if (taskId) {
+          // ── Async path: video generation returns task_id ───────
           // Store task_id in context so acceptVariant can auto-approve the job
           setContext(prev => prev ? { ...prev, taskId } : prev);
 
           if (params.requireApproval) {
-            // Approval flow: show "queued" and let user close — result goes
-            // through the Approvals page review flow instead.
+            // Approval flow: show "queued" and let user close
             setQueuedTaskId(taskId);
             setStep('queued');
             setProgress(100);
             return;
           }
 
-          // Non-approval flow (celebration, intro, then_vs_now):
-          // Poll for result in-modal so the user can accept & save to metadata.
+          // Non-approval flow: Poll for result in-modal
           setStep('polling');
           setProgress(15);
 
@@ -255,16 +232,8 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
           return;
         }
 
-        // ── Sync path: image generation returns 200 ─────────────────
-        if (!res.ok) {
-          const errJson = await res.json().catch(() => ({}));
-          throw new Error(errJson?.error || errJson?.detail || `Fout: ${res.status}`);
-        }
-
-        const json = await res.json();
-
-        // Handle standardized API response format { status: "success", data: { variants: [] } }
-        const responseData = json.data || json;
+        // ── Sync path: image generation returns variants directly ─────
+        const responseData = res;
         const variantsList = responseData.variants || [];
 
         // Map response variants
@@ -302,7 +271,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         setStep('error');
       }
     },
-    [apiBase, pollForResult]
+    [pollForResult]
   );
 
   const acceptVariant = useCallback(
@@ -349,14 +318,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         const isVideo = selectedVariant.mime_type?.startsWith('video/') ||
             !!selectedVariant.video_url || !!selectedVariant.video_base64;
 
-        const response = await fetch(`${apiBase}/api/v1/generative/assets/save/`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCsrfToken(),
-          },
-          body: JSON.stringify({
+        const response = await api.post<any>('/generative/assets/save/', {
             storage_path: selectedVariant.storage_path || selectedVariant.storage_info?.storage_path,
             presigned_url: selectedVariant.presigned_url,
             video_url: selectedVariant.video_url,
@@ -373,27 +335,10 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             ...(context?.taskId ? { task_id: context.taskId, variant_index: variantIndex } : {}),
             // Label for multi-instance types (e.g. club backgrounds)
             ...(context?.label ? { label: context.label } : {}),
-          }),
         });
 
-        if (!response.ok) {
-           const errText = await response.text();
-           console.error('Failed to save asset (raw):', errText);
-           let errData = {};
-           try {
-             errData = JSON.parse(errText);
-           } catch (e) {
-             console.error(e);
-             // ignore
-           }
-           console.error('Failed to save asset (json):', errData);
-           // @ts-ignore
-           throw new Error(errData?.error || 'Failed to save asset');
-        }
-
-        // Parse save response to get authoritative storage_path
-        const saveJson = await response.json();
-        const saveData = saveJson?.data?.data || saveJson?.data || saveJson;
+        // api.post auto-unwraps envelope; drill into nested .data if present
+        const saveData = response?.data || response;
 
         const result: SaveResult = {
           file_asset_id: saveData?.file_asset_id,
@@ -438,7 +383,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         return null;
       }
     },
-    [apiBase, variants, context]
+    [variants, context]
   );
 
   return {

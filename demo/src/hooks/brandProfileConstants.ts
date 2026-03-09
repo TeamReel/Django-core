@@ -4,7 +4,7 @@
  * Shared across useBrandProfile hook and any consumer that needs brand types.
  */
 
-import { getApiBaseUrl } from '../utils/apiBase';
+import { api } from '@/api';
 
 // ============================================================================
 // Types
@@ -176,24 +176,13 @@ export function getAssetUrl(storagePath: string | null | undefined): string | nu
 export async function resolvePresignedUrls(
   paths: string[],
 ): Promise<Record<string, string>> {
-  const apiBase = getApiBaseUrl();
   // Filter to only raw S3 keys (not already full URLs)
   const rawPaths = paths.filter((p) => p && !p.startsWith('http'));
   if (rawPaths.length === 0) return {};
 
-  const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
-
   try {
-    const res = await fetch(`${apiBase}/api/v1/files/presigned-urls/`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-      body: JSON.stringify({ paths: rawPaths }),
-    });
-    if (!res.ok) return {};
-    const data = await res.json();
-    // EnvelopeJSONRenderer wraps ALL responses: { status, data: { urls }, meta }
-    return data.data?.urls || data.urls || {};
+    const data = await api.post<{ urls: Record<string, string> }>('/files/presigned-urls/', { paths: rawPaths });
+    return data.urls || {};
   } catch {
     return {};
   }

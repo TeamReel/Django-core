@@ -6,8 +6,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { getApiBaseUrl } from '../utils/apiBase';
-import { getCsrfToken } from '../utils/csrf';
+import { api } from '@/api';
 import {
   type BrandProfile,
   type BrandAsset,
@@ -76,8 +75,6 @@ export function useBrandProfile({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const apiBase = getApiBaseUrl();
-
   const fetchProfile = useCallback(async () => {
     if (!organisationId && !projectId) return;
 
@@ -86,21 +83,12 @@ export function useBrandProfile({
 
     try {
       // Step 1: Find brand profile
-      const params = new URLSearchParams();
-      if (projectId) params.set('project', String(projectId));
-      else if (organisationId) params.set('organisation', organisationId);
+      const params: Record<string, string> = {};
+      if (projectId) params['project'] = String(projectId);
+      else if (organisationId) params['organisation'] = organisationId;
 
-      const listRes = await fetch(
-        `${apiBase}/api/v1/branding/profiles/?${params}`,
-        { credentials: 'include', cache: 'no-store' }
-      );
-
-      if (!listRes.ok) throw new Error(`Failed to fetch profiles: ${listRes.status}`);
-
-      const listJson = await listRes.json();
-      // Unwrap API envelope: {"status":"success","data":{...}}
-      const listData = listJson?.data || listJson;
-      const profiles = listData?.results || (Array.isArray(listData) ? listData : []);
+      const listData = await api.list<BrandProfile>('/branding/profiles/', { params });
+      const profiles = Array.isArray(listData) ? listData : [];
 
       if (!profiles.length) {
         setProfile(null);
@@ -112,16 +100,7 @@ export function useBrandProfile({
       const brandProfile = profiles[0];
 
       // Step 2: Fetch detail with nested assets + tokens
-      const detailRes = await fetch(
-        `${apiBase}/api/v1/branding/profiles/${brandProfile.id}/`,
-        { credentials: 'include', cache: 'no-store' }
-      );
-
-      if (!detailRes.ok) throw new Error(`Failed to fetch profile detail: ${detailRes.status}`);
-
-      const detailJson = await detailRes.json();
-      // Unwrap API envelope
-      const detail: BrandProfile = detailJson?.data || detailJson;
+      const detail = await api.get<BrandProfile>(`/branding/profiles/${brandProfile.id}/`);
       setProfile(detail);
       setAssets(detail.assets || []);
     } catch (err) {
@@ -131,7 +110,7 @@ export function useBrandProfile({
     } finally {
       setLoading(false);
     }
-  }, [apiBase, organisationId, projectId]);
+  }, [organisationId, projectId]);
 
   useEffect(() => {
     if (autoFetch) {
@@ -174,24 +153,8 @@ export function useBrandProfile({
             createBody['organisation'] = organisationId;
           }
 
-          const createRes = await fetch(`${apiBase}/api/v1/branding/profiles/`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-CSRFToken': getCsrfToken(),
-            },
-            body: JSON.stringify(createBody),
-          });
-
-          if (createRes.ok) {
-            const createJson = await createRes.json();
-            activeProfile = createJson?.data || createJson;
-            setProfile(activeProfile);
-          } else {
-            console.error('[useBrandProfile] Failed to auto-create profile:', createRes.status);
-            return null;
-          }
+          activeProfile = await api.post<BrandProfile>('/branding/profiles/', createBody);
+          setProfile(activeProfile);
         } catch (err) {
           console.error(err);
           console.error('[useBrandProfile] Auto-create profile error:', err);
@@ -203,28 +166,12 @@ export function useBrandProfile({
 
       try {
         // Step 1: Upload file to FileAsset
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('original_name', file.name);
-        formData.append('is_public', 'true');
-
         const prefix = pathPrefix || `brand/${activeProfile.id}/${assetType}`;
-        const fileRes = await fetch(
-          `${apiBase}/api/v1/files/?path_prefix=${encodeURIComponent(prefix)}`,
-          {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'X-Organization-ID': organisationId,
-              'X-CSRFToken': getCsrfToken(),
-            },
-            body: formData,
-          }
+        const fileData = await api.upload<{ id: string }>(
+          `/files/?path_prefix=${encodeURIComponent(prefix)}`,
+          file,
+          { original_name: file.name, is_public: 'true' },
         );
-
-        if (!fileRes.ok) throw new Error(`File upload failed: ${fileRes.status}`);
-        const fileJson = await fileRes.json();
-        const fileData = fileJson?.data || fileJson;
 
         // Step 2: Create or update BrandAsset
         // Multi-instance types always create new; single-instance types update existing
@@ -235,44 +182,22 @@ export function useBrandProfile({
 
         if (existing) {
           // Update existing
-          const updateRes = await fetch(
-            `${apiBase}/api/v1/branding/profiles/${activeProfile.id}/assets/${existing.id}/`,
-            {
-              method: 'PATCH',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-              },
-              body: JSON.stringify({ file: fileData.id }),
-            }
+          brandAsset = await api.patch<BrandAsset>(
+            `/branding/profiles/${activeProfile.id}/assets/${existing.id}/`,
+            { file: fileData.id },
           );
-          if (!updateRes.ok) throw new Error(`Asset update failed: ${updateRes.status}`);
-          const updateJson = await updateRes.json();
-          brandAsset = updateJson?.data || updateJson;
         } else {
           // Create new
-          const createRes = await fetch(
-            `${apiBase}/api/v1/branding/profiles/${activeProfile.id}/assets/`,
+          brandAsset = await api.post<BrandAsset>(
+            `/branding/profiles/${activeProfile.id}/assets/`,
             {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-              },
-              body: JSON.stringify({
-                profile: activeProfile.id,
-                file: fileData.id,
-                asset_type: assetType,
-                is_active: true,
-                ...(label ? { label } : {}),
-              }),
-            }
+              profile: activeProfile.id,
+              file: fileData.id,
+              asset_type: assetType,
+              is_active: true,
+              ...(label ? { label } : {}),
+            },
           );
-          if (!createRes.ok) throw new Error(`Asset create failed: ${createRes.status}`);
-          const createJson = await createRes.json();
-          brandAsset = createJson?.data || createJson;
         }
 
         // Refresh all assets
@@ -285,7 +210,7 @@ export function useBrandProfile({
         return null;
       }
     },
-    [apiBase, organisationId, projectId, profile, assets, fetchProfile]
+    [organisationId, projectId, profile, assets, fetchProfile]
   );
 
   const deleteAssetById = useCallback(
@@ -293,17 +218,7 @@ export function useBrandProfile({
       if (!profile) return false;
 
       try {
-        const res = await fetch(
-          `${apiBase}/api/v1/branding/profiles/${profile.id}/assets/${assetId}/`,
-          {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-              'X-CSRFToken': getCsrfToken(),
-            },
-          }
-        );
-        if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`);
+        await api.delete(`/branding/profiles/${profile.id}/assets/${assetId}/`);
         await fetchProfile();
         return true;
       } catch (err) {
@@ -313,7 +228,7 @@ export function useBrandProfile({
         return false;
       }
     },
-    [apiBase, profile, fetchProfile]
+    [profile, fetchProfile]
   );
 
   const deleteAsset = useCallback(
@@ -324,17 +239,7 @@ export function useBrandProfile({
       if (!existing) return false;
 
       try {
-        const res = await fetch(
-          `${apiBase}/api/v1/branding/profiles/${profile.id}/assets/${existing.id}/`,
-          {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-              'X-CSRFToken': getCsrfToken(),
-            },
-          }
-        );
-        if (!res.ok && res.status !== 204) throw new Error(`Delete failed: ${res.status}`);
+        await api.delete(`/branding/profiles/${profile.id}/assets/${existing.id}/`);
         await fetchProfile();
         return true;
       } catch (err) {
@@ -344,7 +249,7 @@ export function useBrandProfile({
         return false;
       }
     },
-    [apiBase, profile, assets, fetchProfile]
+    [profile, assets, fetchProfile]
   );
 
   const fetchHistory = useCallback(
@@ -355,39 +260,28 @@ export function useBrandProfile({
          else if (organisationId) params.set('organisation_id', organisationId);
          params.set('asset_type', assetType);
 
-         const res = await fetch(`${apiBase}/api/v1/generative/assets/history/?${params}`, {
-             credentials: 'include'
-         });
-         if (!res.ok) throw new Error('Failed to fetch history');
-         const json = await res.json();
-         return json.history || [];
+         const data = await api.get<{ history: Array<{id: string, url: string, created_at: string, original_name: string}> }>(
+           `/generative/assets/history/?${params}`,
+         );
+         return data.history || [];
       } catch (e) {
         console.error(e);
          console.error(e);
          return [];
       }
     },
-    [apiBase, projectId, organisationId]
+    [projectId, organisationId]
   );
 
   const restoreAsset = useCallback(
     async (fileAssetId: string, assetType: string) => {
        try {
-         const res = await fetch(`${apiBase}/api/v1/generative/assets/restore/`, {
-             method: 'POST',
-             credentials: 'include',
-             headers: {
-                 'Content-Type': 'application/json',
-                 'X-CSRFToken': getCsrfToken()
-             },
-             body: JSON.stringify({
-                 file_asset_id: fileAssetId,
-                 asset_type: assetType,
-                 project_id: projectId,
-                 organisation_id: organisationId
-             })
+         await api.post('/generative/assets/restore/', {
+             file_asset_id: fileAssetId,
+             asset_type: assetType,
+             project_id: projectId,
+             organisation_id: organisationId,
          });
-         if (!res.ok) throw new Error('Restore failed');
          await fetchProfile(); // Reload
          return true;
        } catch (e) {
@@ -396,7 +290,7 @@ export function useBrandProfile({
           return false;
        }
     },
-    [apiBase, projectId, organisationId, fetchProfile]
+    [projectId, organisationId, fetchProfile]
   );
 
   return {

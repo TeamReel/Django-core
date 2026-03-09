@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
-import { fetchAllPages } from '../../utils/fetchAllPages';
+import { api } from '../../api/client';
 import { getMediaProcessingState } from '../../utils/mediaHelpers';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import useBrandProfile from '../../hooks/useBrandProfile';
@@ -222,36 +222,33 @@ export function useTeamTabData({
 
       try {
         // 1) Seasons for this team (typed query first; fallback to untyped + competition parent seasons)
-        const baseSeasonParams = new URLSearchParams();
-        baseSeasonParams.set('page_size', '2000');
-
         const seasonProjectIds = [teamIdForDirectoryLists, clubIdForDirectoryLists].filter(Boolean);
-        if (seasonProjectIds.length === 1) {
-          baseSeasonParams.set('project_id', seasonProjectIds[0]);
-        } else if (seasonProjectIds.length > 1) {
-          baseSeasonParams.set('project_id__in', seasonProjectIds.join(','));
-        }
 
-        const typedParams = new URLSearchParams(baseSeasonParams);
-        typedParams.set('type', 'season');
+        const typedList: Period[] = await api.listAll<any>(`/periods/`, {
+          params: {
+            ...(seasonProjectIds.length === 1 ? { project_id: seasonProjectIds[0] } : {}),
+            ...(seasonProjectIds.length > 1 ? { project_id__in: seasonProjectIds.join(',') } : {}),
+            type: 'season',
+          },
+          pageSize: 2000, maxItems: 5000,
+        });
 
-        const typedUrl = `${apiBaseUrl}/api/v1/periods/?${typedParams.toString()}`;
-        const typedList: Period[] = await fetchAllPages<any>(typedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
-
-        const untypedUrl = `${apiBaseUrl}/api/v1/periods/?${baseSeasonParams.toString()}`;
-        const untypedList: Period[] = await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const untypedList: Period[] = await api.listAll<any>(`/periods/`, {
+          params: {
+            ...(seasonProjectIds.length === 1 ? { project_id: seasonProjectIds[0] } : {}),
+            ...(seasonProjectIds.length > 1 ? { project_id__in: seasonProjectIds.join(',') } : {}),
+          },
+          pageSize: 2000, maxItems: 5000,
+        });
 
         // Pull season parents from competitions as a last-resort source of truth.
-        const competitionsParams = new URLSearchParams();
-        competitionsParams.set('project_id', teamIdForDirectoryLists);
-        competitionsParams.set('page_size', '2000');
-        competitionsParams.set('type', 'competition');
-        const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?${competitionsParams.toString()}`;
-        const competitionsList: Period[] = await fetchAllPages<any>(
-          competitionsUrl,
-          { credentials: 'include' },
-          { bypass: true, maxItems: 5000 },
-        );
+        const competitionsList: Period[] = await api.listAll<any>(`/periods/`, {
+          params: {
+            project_id: teamIdForDirectoryLists,
+            type: 'competition',
+          },
+          pageSize: 2000, maxItems: 5000,
+        });
         const parentSeasonsFromCompetitions = (competitionsList || [])
           .map((c: Period) => c?.parent_period)
           .filter((p): p is NonNullable<Period['parent_period']> => !!(p && (p?.id || (p as Record<string, unknown>)?.slug))) as Period[];
@@ -267,12 +264,10 @@ export function useTeamTabData({
         setHierarchySeasons(seasons);
 
         // 2) Competitions for this team (fetch all periods and group by season parent id)
-        const periodsParams = new URLSearchParams();
-        periodsParams.set('project_id', teamIdForDirectoryLists);
-        periodsParams.set('page_size', '1000');
-
-        const periodsUrl = `${apiBaseUrl}/api/v1/periods/?${periodsParams.toString()}`;
-        const periodsList: Period[] = await fetchAllPages<any>(periodsUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const periodsList: Period[] = await api.listAll<any>(`/periods/`, {
+          params: { project_id: teamIdForDirectoryLists },
+          pageSize: 1000, maxItems: 5000,
+        });
 
         const seasonIds = new Set(seasons.map((s) => String(s.id)));
         const competitions = (periodsList || []).filter((p: Period) => {
@@ -378,17 +373,18 @@ export function useTeamTabData({
       setOverviewMembersError(null);
 
       try {
-        const params = new URLSearchParams();
-        params.set('page_size', '250');
-        params.set('include_project_memberships', 'true');
-        params.set('include_project_membership_details', 'true');
+        const { results: rawList, count } = await api.list<any>(
+          `/organisations/${encodeURIComponent(orgSlug)}/members/`,
+          {
+            params: {
+              include_project_memberships: 'true',
+              include_project_membership_details: 'true',
+            },
+            pageSize: 250,
+          },
+        );
+        const json = { results: rawList, count };
 
-        const url = `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/members/?${params.toString()}`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) throw new Error(`Failed to load members (${res.status})`);
-        const json = await res.json().catch(() => null);
-
-        const rawList = json?.data?.data || json?.data?.results || json?.results || json?.data || [];
         const list: OrgMemberItem[] = Array.isArray(rawList) ? rawList : [];
 
         const isMemberInTeam = (item: OrgMemberItem): boolean => {
@@ -448,12 +444,10 @@ export function useTeamTabData({
 
       setFullMembersLoading(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(teamId)}/members/?page_size=200`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) throw new Error(`Failed (${res.status})`);
-        const json = await res.json();
-        const data = json?.data || json;
-        const results = data?.results || (Array.isArray(data) ? data : []);
+        const { results } = await api.list<any>(
+          `/projects/${encodeURIComponent(teamId)}/members/`,
+          { pageSize: 200 },
+        );
 
         // ── Deduplicate by user id (same player may appear with different periods) ──
         const byUserId = new Map<string, any>();
@@ -510,12 +504,10 @@ export function useTeamTabData({
 
       setContentCountLoading(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/generation-requests/?project=${encodeURIComponent(teamId)}&page_size=1`;
-        const res = await fetch(url, { credentials: 'include' });
-        if (!res.ok) { if (!cancelled) setContentCount(0); return; }
-        const json = await res.json();
-        const data = json?.data || json;
-        const count = data?.count ?? data?.meta?.pagination?.total ?? (Array.isArray(data?.results) ? data.results.length : 0);
+        const { count } = await api.list<any>('/generation-requests/', {
+          params: { project: teamId },
+          pageSize: 1,
+        });
         if (!cancelled) setContentCount(typeof count === 'number' ? count : 0);
       } catch {
         if (!cancelled) setContentCount(0);
@@ -539,8 +531,14 @@ export function useTeamTabData({
 
       setTeamMatchesLoading(true);
       try {
-        const url = `${apiBaseUrl}/api/v1/activities/?project_id=${encodeURIComponent(teamId)}&activity_type=match&ordering=-start_time&page_size=250`;
-        const list = await fetchAllPages<any>(url, { credentials: 'include' }, { bypass: true, maxItems: 500 });
+        const list = await api.listAll<any>('/activities/', {
+          params: {
+            project_id: teamId,
+            activity_type: 'match',
+            ordering: '-start_time',
+          },
+          pageSize: 250, maxItems: 500,
+        });
         if (!cancelled) setTeamMatches(list || []);
       } catch {
         if (!cancelled) setTeamMatches([]);

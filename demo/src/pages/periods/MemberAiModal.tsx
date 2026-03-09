@@ -6,6 +6,7 @@
  * previousResultUrl computation, onAssetSaved asset routing.
  */
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { projectsApi } from '../../api';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
 import { getBestUrl } from '../../constants/assetProcessingSpecs';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
@@ -169,8 +170,8 @@ export function MemberAiModal({
 
     const refreshMembership = async () => {
       try {
-        const memberRes = await fetch(`${apiBaseUrl}/api/v1/projects/${encodeURIComponent(project?.id || '')}/members/${encodeURIComponent(saveMembershipId)}/`, { credentials: 'include' });
-        if (memberRes.ok) { const json = await memberRes.json(); setMembership(json?.data || json); }
+        const memberData = await projectsApi.getMember(project?.id || '', saveMembershipId);
+        setMembership(memberData as any);
       } catch { /* best-effort */ }
     };
 

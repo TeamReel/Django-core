@@ -2,7 +2,7 @@
  * useSquadData – Hook for fetching and managing team squad
  */
 import { useCallback } from 'react';
-import { getApiBaseUrl } from '../../../utils/apiBase';
+import { api } from '@/api';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { SquadMember } from '../types';
 
@@ -17,7 +17,6 @@ export interface UseSquadDataReturn {
 }
 
 export function useSquadData(): UseSquadDataReturn {
-  const apiBaseUrl = getApiBaseUrl();
   const {
     selectedMatch,
     setSquadGroups,
@@ -38,44 +37,10 @@ export function useSquadData(): UseSquadDataReturn {
     setSquadError(null);
 
     try {
-      const url = `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(pid))}/members/?page_size=100`;
-      const res = await fetch(url, {
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!res.ok) {
-        setSquadError('Kon spelers niet laden');
-        setSquadLoading(false);
-        return;
-      }
-
-      const raw = await res.json();
-      let members: SquadMember[] = [];
-
-      // Handle various API response formats
-      if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
-      else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
-      else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
-      else if (Array.isArray(raw?.data)) members = raw.data;
-      else if (Array.isArray(raw)) members = raw;
-
-      // Handle pagination
-      let nextUrl = raw?.meta?.pagination?.next;
-      while (nextUrl) {
-        const nr = await fetch(nextUrl, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!nr.ok) break;
-        const nd = await nr.json();
-        let nm: SquadMember[] = [];
-        if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
-        else if (Array.isArray(nd?.data)) nm = nd.data;
-        else if (Array.isArray(nd)) nm = nd;
-        members = [...members, ...nm];
-        nextUrl = nd?.meta?.pagination?.next;
-      }
+      const members = await api.listAll<SquadMember>(
+        `/projects/${encodeURIComponent(String(pid))}/members/`,
+        { pageSize: 100 },
+      );
 
       // Group by role
       const groups: Record<string, SquadMember[]> = { goalkeeper: [], player: [] };
@@ -107,7 +72,7 @@ export function useSquadData(): UseSquadDataReturn {
     } finally {
       setSquadLoading(false);
     }
-  }, [selectedMatch, apiBaseUrl, setSquadGroups, setSquadLoading, setSquadError]);
+  }, [selectedMatch, setSquadGroups, setSquadLoading, setSquadError]);
 
   // Load saved lineup from match metadata
   const loadSavedLineup = useCallback(() => {
@@ -136,23 +101,17 @@ export function useSquadData(): UseSquadDataReturn {
     try {
       const matchId = selectedMatch.slug || selectedMatch.id;
       const existingMetadata = selectedMatch.metadata || {};
-      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
 
-      await fetch(`${apiBaseUrl}/api/v1/activities/${encodeURIComponent(String(matchId))}/`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-        credentials: 'include',
-        body: JSON.stringify({
-          metadata: {
-            ...existingMetadata,
-            formation: lineupSlots,
-            lineup: {
-              formation: (lineupSlots as any).formation || '4-3-3',
-              goalkeeper: lineupSlots.goalkeeper,
-              player: lineupSlots.player,
-            },
+      await api.patch(`/activities/${encodeURIComponent(String(matchId))}/`, {
+        metadata: {
+          ...existingMetadata,
+          formation: lineupSlots,
+          lineup: {
+            formation: (lineupSlots as any).formation || '4-3-3',
+            goalkeeper: lineupSlots.goalkeeper,
+            player: lineupSlots.player,
           },
-        }),
+        },
       });
       return true;
     } catch (err) {
@@ -160,7 +119,7 @@ export function useSquadData(): UseSquadDataReturn {
       console.error('Failed to save lineup:', err);
       return false;
     }
-  }, [selectedMatch, lineupSlots, apiBaseUrl]);
+  }, [selectedMatch, lineupSlots]);
 
   return {
     fetchSquad,

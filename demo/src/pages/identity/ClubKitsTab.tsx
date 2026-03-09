@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card } from '@django-core/design-system';
-import { KIT_TYPES, getCsrfToken, type Project, type KitAsset } from './clubOrgDetailHelpers';
+import { api } from '@/api';
+import { KIT_TYPES, type Project, type KitAsset } from './clubOrgDetailHelpers';
 
 /* ─── ClubKitsTab ──────────────────────────────────────────── */
 
@@ -23,12 +24,8 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
   const loadKits = React.useCallback(async () => {
     if (!brandProfileId) { setLoading(false); return; }
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/branding/assets/?profile=${brandProfileId}`, { credentials: 'include' });
-      if (!res.ok) throw new Error(`Failed to load assets: ${res.status}`);
-      const json = await res.json();
-      const assets = json?.data?.results || json?.data || json?.results || [];
-      const assetList = Array.isArray(assets) ? assets : [];
-      const kitAssets = assetList.filter((a) => String(a.asset_type || '').startsWith('kit_'));
+      const { results } = await api.list<KitAsset>('/branding/assets/', { params: { profile: brandProfileId } });
+      const kitAssets = results.filter((a) => String(a.asset_type || '').startsWith('kit_'));
       setKits(kitAssets);
       setLoading(false);
     } catch (e) {
@@ -57,35 +54,19 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       formData.append('file', file);
       formData.append('is_public', 'true');
       const pathPrefix = `kits/${club.slug}/${kitTypeId}`;
-      const fileRes = await fetch(`${apiBaseUrl}/api/v1/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, {
-        method: 'POST', credentials: 'include',
-        headers: { 'X-Organization-ID': orgId, 'X-CSRFToken': getCsrfToken() },
-        body: formData,
-      });
-      if (!fileRes.ok) { const errText = await fileRes.text(); throw new Error(`File upload failed: ${fileRes.status} - ${errText}`); }
-      const fileData = await fileRes.json();
-      const fileId = fileData?.data?.id || fileData?.id;
+      const fileData = await api.upload<any>(`/files/?path_prefix=${encodeURIComponent(pathPrefix)}`, file, { is_public: 'true' }, { signal: undefined } as any);
+      const fileId = fileData?.id;
       if (!fileId) throw new Error('No file ID returned from upload');
 
       const existingKit = kits.find((k) => k.asset_type === kitTypeId);
       if (existingKit) {
-        const updateRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/${existingKit.id}/`, {
-          method: 'PATCH', credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-          body: JSON.stringify({ file: fileId }),
-        });
-        if (!updateRes.ok) throw new Error(`Failed to update brand asset: ${updateRes.status}`);
+        await api.patch(`/branding/assets/${existingKit.id}/`, { file: fileId });
       } else {
-        const assetRes = await fetch(`${apiBaseUrl}/api/v1/branding/assets/`, {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
-          body: JSON.stringify({
-            profile: brandProfileId, file: fileId, asset_type: kitTypeId,
-            alt_text: `${club.name} ${KIT_TYPES.find((t) => t.id === kitTypeId)?.label || kitTypeId}`,
-            is_active: true,
-          }),
+        await api.post('/branding/assets/', {
+          profile: brandProfileId, file: fileId, asset_type: kitTypeId,
+          alt_text: `${club.name} ${KIT_TYPES.find((t) => t.id === kitTypeId)?.label || kitTypeId}`,
+          is_active: true,
         });
-        if (!assetRes.ok) { const errText = await assetRes.text(); throw new Error(`Failed to create brand asset: ${assetRes.status} - ${errText}`); }
       }
       await loadKits();
       onKitUploaded?.();

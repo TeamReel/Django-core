@@ -14,7 +14,6 @@
 import React, { useMemo, useState } from 'react';
 import styles from './MediaAssetCard.module.css';
 import { getAssetUrl } from '../hooks/useBrandProfile';
-import { getApiBaseUrl } from '../utils/apiBase';
 import { getStateDisplay } from '../hooks/useWorkflows';
 
 // ============================================================================

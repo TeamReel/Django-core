@@ -11,11 +11,7 @@ import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
 import { getApiBaseUrl } from '../../utils/apiBase';
-
-function getCsrfToken() {
-  const row = document.cookie.split('; ').find(r => r.startsWith('csrftoken='));
-  return row ? decodeURIComponent(row.split('=')[1]) : '';
-}
+import { api } from '../../api';
 
 export interface UseProjectsPageDataReturn {
   // Context
@@ -150,12 +146,10 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
     const load = async () => {
       const apiBaseUrl = getApiBaseUrl();
       try {
-        const res = await fetch(`${apiBaseUrl}/api/v1/organisations/?page_size=100`, { credentials: 'include' });
-        if (!res.ok) throw new Error('fallback');
-        const data = await res.json();
-        const orgs = data.data?.results || data.results || [];
-        setFilterOrganisationOptions(orgs.map((o: { id: string; name: string }) => ({ id: String(o.id), name: o.name })));
-        setOrgNavigationIndex(orgs.map((o: { id: string; slug?: string }) => ({ id: String(o.id), slug: o.slug })));
+        const res = await api.list<{ id: string; name: string; slug?: string }>('/organisations/', { pageSize: 100 });
+        const orgs = res.results || [];
+        setFilterOrganisationOptions(orgs.map((o) => ({ id: String(o.id), name: o.name })));
+        setOrgNavigationIndex(orgs.map((o) => ({ id: String(o.id), slug: o.slug })));
       } catch {
         const fallback = organisations.map((o) => ({ id: String(o.id), name: o.name }));
         setFilterOrganisationOptions(fallback);
@@ -197,11 +191,10 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       if (resolvedOrg) {
         setOrgName(resolvedOrg.name);
       } else if (orgId) {
-        const orgRes = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgId}/`, {
-          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-          credentials: 'include',
-        });
-        if (orgRes.ok) { const d = await orgRes.json(); setOrgName(d.name); }
+        try {
+          const d = await api.get<{ name: string }>(`/organisations/${orgId}/`);
+          setOrgName(d.name);
+        } catch { /* ignore */ }
       } else {
         setOrgName(context.organisation?.name || '');
       }
@@ -212,18 +205,13 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       if (search) params.append('search', search);
 
       const endpoint = apiOrgSlug
-        ? `${apiBaseUrl}/api/v1/organisations/${apiOrgSlug}/projects/?${params}`
-        : `${apiBaseUrl}/api/v1/projects/?${params}`;
+        ? `/organisations/${apiOrgSlug}/projects/`
+        : `/projects/`;
 
-      const response = await fetch(endpoint, {
-        headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-        credentials: 'include',
+      const res = await api.list<Project>(endpoint, {
+        params: { sort, order, search: search || undefined },
       });
-
-      if (!response.ok) throw new Error(`API error: ${response.status}`);
-      const data = await response.json() as { data?: { results?: Project[] }; results?: Project[] };
-      const results = data.data?.results || data.results || [];
-      setProjects(Array.isArray(results) ? results : []);
+      setProjects(res.results || []);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : 'Failed to fetch projects');
@@ -239,9 +227,6 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   const handleSaveProject = async (projectData: Partial<Project>) => {
     if (!selectedProject) return;
     try {
-      const apiBaseUrl = getApiBaseUrl();
-      const csrfToken = getCsrfToken();
-
       const project = projects.find(p => p.id === selectedProject.id);
       let projectOrgSlug: string | undefined;
 
@@ -255,21 +240,17 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       const projectSlug = selectedProject.slug;
       if (!projectSlug) throw new Error('Could not determine project slug');
 
-      let response = await fetch(
-        `${apiBaseUrl}/api/v1/organisations/${projectOrgSlug}/projects/${projectSlug}/`,
-        { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }, credentials: 'include', body: JSON.stringify(projectData) },
-      );
-
-      if (!response.ok && (response.status === 404 || response.status === 403)) {
-        response = await fetch(
-          `${apiBaseUrl}/api/v1/projects/projects/${projectSlug}/`,
-          { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }, credentials: 'include', body: JSON.stringify(projectData) },
+      let response;
+      try {
+        response = await api.patch<Project>(
+          `/organisations/${projectOrgSlug}/projects/${projectSlug}/`,
+          projectData,
         );
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `Failed to update project (${response.status})`);
+      } catch {
+        response = await api.patch<Project>(
+          `/projects/projects/${projectSlug}/`,
+          projectData,
+        );
       }
 
       setIsEditModalOpen(false);
@@ -286,7 +267,6 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
   const handleDelete = async (projectId: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
     try {
-      const csrfToken = getCsrfToken();
       const projectToDelete = projects.find(p => p.id === projectId);
       const projectSlug = projectToDelete?.slug || projectId;
 
@@ -296,16 +276,8 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
 
       if (!orgSlug) { alert('Failed to delete project: missing organisation context'); return; }
 
-      const apiBaseUrl = getApiBaseUrl();
-      const response = await fetch(`${apiBaseUrl}/api/v1/organisations/${orgSlug}/projects/${projectSlug}/`, {
-        method: 'DELETE',
-        headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-CSRFToken': csrfToken },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        setProjects(projects.filter(p => p.id !== projectId));
-      } else { alert('Failed to delete project'); }
+      await api.delete(`/organisations/${orgSlug}/projects/${projectSlug}/`);
+      setProjects(projects.filter(p => p.id !== projectId));
     } catch { alert('Error deleting project'); }
   };
 
