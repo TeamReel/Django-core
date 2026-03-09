@@ -124,8 +124,8 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                             return await fetchAllPages<any>(`${apiBaseUrl}/api/v1/periods/?${params.toString()}`, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
                         }),
                     );
-                    const allPeriods: any[] = periodsChunks.flat();
-                    const childrenMap = new Map<string, any[]>();
+                    const allPeriods: Period[] = periodsChunks.flat();
+                    const childrenMap = new Map<string, Period[]>();
                     for (const p of allPeriods || []) {
                         const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
                         if (!parentId) continue;

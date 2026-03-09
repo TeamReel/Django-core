@@ -18,6 +18,16 @@ export interface ApiFeatureFlag extends FeatureFlag {
 
 export type ScopeType = 'GLOBAL' | 'ORGANISATION' | 'PROJECT';
 
+/** Minimal shape for content template records from the API */
+interface ContentTemplateRecord {
+  name?: string;
+  template_type?: string;
+  template_subtype?: string;
+  style_variant?: string;
+  is_active?: boolean;
+  is_latest?: boolean;
+}
+
 export async function fetchFlags(orgId: string | null, projectId?: string | null): Promise<ApiFeatureFlag[]> {
   const baseUrl = getApiBaseUrl();
   const url = new URL(`${baseUrl}${API_BASE}/resolve-all/`, window.location.origin);
@@ -263,9 +273,9 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
     return results;
   };
 
-  const fetchTemplates = async (): Promise<any[]> => {
+  const fetchTemplates = async (): Promise<ContentTemplateRecord[]> => {
     try {
-      const allTemplates: any[] = [];
+      const allTemplates: ContentTemplateRecord[] = [];
       // Fetch ALL templates (not just active) to ensure we get everything
       let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200`;
 
@@ -387,9 +397,9 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
   };
 
   // Fetch only active + latest templates (matches backend canonical set)
-  const fetchTemplates = async (): Promise<any[]> => {
+  const fetchTemplates = async (): Promise<ContentTemplateRecord[]> => {
     try {
-      const allTemplates: any[] = [];
+      const allTemplates: ContentTemplateRecord[] = [];
       let nextUrl: string | null = `${baseUrl}/api/v1/content-generation/templates/?page_size=200&is_active=true&is_latest=true`;
       while (nextUrl) {
         const res: Response = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });

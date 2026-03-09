@@ -208,7 +208,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdId) {
         setOrgPeriods((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: Record<string, unknown>) => String(p?.id || '').trim() === createdId)) return list;
+          if (list.some((p) => String(p?.id || '').trim() === createdId)) return list;
           const next = [created, ...list];
           recomputePeriodCounts(next);
           return next;
@@ -262,7 +262,7 @@ export function createOrgModalHandlers(deps: HandlerDeps) {
       if (createdId) {
         setOrgPeriods((prev) => {
           const list = Array.isArray(prev) ? prev : [];
-          if (list.some((p: Record<string, unknown>) => String(p?.id || '').trim() === createdId)) return list;
+          if (list.some((p) => String(p?.id || '').trim() === createdId)) return list;
           const next = [created, ...list];
           recomputePeriodCounts(next);
           return next;

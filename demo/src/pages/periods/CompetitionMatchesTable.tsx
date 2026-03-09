@@ -7,14 +7,15 @@ import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { getCsrfToken } from '../../utils/csrf';
+import type { Activity } from '../../types/api/activity';
 
 export interface CompetitionMatchesTableProps {
-  rows: any[];
+  rows: Activity[];
   matchesLoading: boolean;
   matchDisplayTitle: (m: any, fallback?: string) => string;
   matchDetailPath: (matchId: string) => string;
   apiBaseUrl: string;
-  setMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   setSelectedDetailMatch: (m: any) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
   setSelectedEditMatch: (m: any) => void;

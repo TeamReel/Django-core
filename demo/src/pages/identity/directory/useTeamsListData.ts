@@ -136,7 +136,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
         if (!res.ok) return;
         const raw: any = await res.json().catch(() => null);
         const data: any = raw?.data ?? raw;
-        const list: any[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
+        const list: Record<string, unknown>[] = Array.isArray(data?.results) ? data.results : Array.isArray(data) ? data : [];
         const match = list.find((o: { id?: string; slug?: string }) => String(o?.id || '') === String(rawLockedId));
         const slug = String(match?.slug || '').trim();
         if (!cancelled && slug) setLockedOrgSlug(slug);

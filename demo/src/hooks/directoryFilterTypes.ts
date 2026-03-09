@@ -4,7 +4,7 @@
 import type { useSports } from './useSports';
 import type { useContextSwitcher } from '@django-core/context-switcher';
 import type { OrganisationOption, ProjectOption } from '../pages/work/WorkFilterBar';
-import type { DirectoryListProps, SeasonOption } from '../utils/directoryHelpers';
+import type { DirectoryListProps, SeasonOption, Period } from '../utils/directoryHelpers';
 
 // Re-export so consumers only need one import
 export type { OrganisationOption, ProjectOption };
@@ -45,13 +45,13 @@ export interface DirectoryFiltersState {
   selectedSeasonName: string;
   seasonOptions: SeasonOption[];
   selectedSeasonIds: string[];
-  seasons: any[];
-  setSeasons: React.Dispatch<React.SetStateAction<any[]>>;
+  seasons: Period[];
+  setSeasons: React.Dispatch<React.SetStateAction<Period[]>>;
 
   // Competition cascade (Matches only)
   selectedCompetitionId: string;
-  competitions: any[];
-  setCompetitions: React.Dispatch<React.SetStateAction<any[]>>;
+  competitions: Period[];
+  setCompetitions: React.Dispatch<React.SetStateAction<Period[]>>;
 
   // Setters with cascade resets
   setSelectedOrgId: (v: string) => void;

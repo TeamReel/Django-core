@@ -6,17 +6,18 @@ import { Button, Card } from '@django-core/design-system';
 import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySettingsCard';
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
 import { getCsrfToken } from '../../utils/csrf';
+import type { Activity } from '../../types/api/activity';
 
 interface CompetitionOverviewTabProps {
   competition: any;
   competitionMatchesCount: number;
   membersCount: number;
-  matches: any[];
+  matches: Activity[];
   matchesLoading: boolean;
   matchDisplayTitle: (m: any, fallback?: string) => string;
   matchDetailPath: (matchId: string) => string;
   navigateToTab: (tab: string) => void;
-  setMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   setSelectedDetailMatch: (m: any) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
   setSelectedEditMatch: (m: any) => void;

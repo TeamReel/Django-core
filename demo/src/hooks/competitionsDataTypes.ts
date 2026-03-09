@@ -2,14 +2,15 @@
  * Type definitions for the useCompetitionsData hook.
  */
 import type { useDirectoryFilters } from './useDirectoryFilters';
+import type { Period } from '../utils/directoryHelpers';
 
 export type Filters = ReturnType<typeof useDirectoryFilters>;
 
 export interface UseCompetitionsDataReturn {
-  competitions: any[];
+  competitions: Period[];
   competitionsLoading: boolean;
-  filteredCompetitions: any[];
-  sortedCompetitions: any[];
+  filteredCompetitions: Period[];
+  sortedCompetitions: Period[];
   savePeriodEdits: (periodId: string, payload: any) => Promise<void>;
   createCompetition: (payload: {
     name: string;

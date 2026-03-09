@@ -17,6 +17,13 @@ import { SkeletonDetailPage } from '../../components/Skeleton';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './MemberDetailPage.module.css';
 
+/** Org member record from the members API */
+interface OrgMemberRecord {
+  id: string;
+  user?: { first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
+  [key: string]: any;
+}
+
 export const MemberDetailPage: React.FC = () => {
   const { id, memberId } = useParams<{ id: string; memberId: string }>();
   const navigate = useNavigate();
@@ -27,7 +34,7 @@ export const MemberDetailPage: React.FC = () => {
   const [role, setRole] = useState('');
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [orgMembers, setOrgMembers] = useState<any[]>([]);
+  const [orgMembers, setOrgMembers] = useState<OrgMemberRecord[]>([]);
 
   const { organisations, context } = useContextSwitcher();
 

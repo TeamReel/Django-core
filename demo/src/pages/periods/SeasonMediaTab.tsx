@@ -20,8 +20,17 @@ import MediaMobileCardList from './MediaMobileCardList';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './SeasonMediaTab.module.css';
 
+/** Squad member record with metadata and media assets */
+interface SquadMember {
+  id?: string;
+  user?: { id?: string; first_name?: string; last_name?: string; email?: string; name?: string; avatar_url?: string | null; [key: string]: unknown };
+  user_id?: string;
+  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };
+  [key: string]: any;
+}
+
 export interface SeasonMediaTabProps {
-  members: any[];
+  members: SquadMember[];
   membersLoading: boolean;
   project: any;
   org: any;

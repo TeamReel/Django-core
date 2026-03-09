@@ -13,7 +13,7 @@ import { useDirectoryFilters } from '../../../hooks/useDirectoryFilters';
 import { useMatchesData } from '../../../hooks/useMatchesData';
 import { resolveRowContext } from '../../../utils/directoryHelpers';
 import { getCsrfToken } from '../../../utils/csrf';
-import type { DirectoryListProps, RowContextConfig, Activity } from '../../../utils/directoryHelpers';
+import type { DirectoryListProps, RowContextConfig, Activity, Period } from '../../../utils/directoryHelpers';
 import styles from './MatchesList.module.css';
 
 // ─── MatchRow sub-component ──────────────────────────────────────────
@@ -24,8 +24,8 @@ interface MatchRowProps {
   orgLocked: boolean;
   clubLocked: boolean;
   teamLocked: boolean;
-  seasons: any[];
-  competitions: any[];
+  seasons: Period[];
+  competitions: Period[];
   navigate: ReturnType<typeof useNavigate>;
   onView: (m: Activity) => void;
   onEdit: (m: Activity) => void;

@@ -234,7 +234,7 @@ export function TeamSelectieTab({
   /* ── Group by first letter ── */
   const letterGroups = useMemo(() => {
     const groups: { letter: string; members: MemberRecord[] }[] = [];
-    const map = new Map<string, any[]>();
+    const map = new Map<string, MemberRecord[]>();
     for (const m of filtered) {
       const name = getMemberName(m);
       const letter = (name[0] || '?').toUpperCase();

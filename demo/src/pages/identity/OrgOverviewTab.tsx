@@ -1,12 +1,12 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { Organisation } from '../../types';
+import { Activity, Organisation, Project } from '../../types';
 import ov from './OrgOverviewTab.module.css';
 
 export interface OrgOverviewTabProps {
   org: Organisation;
-  clubs: any[];
-  teams: any[];
+  clubs: Project[];
+  teams: Project[];
   members: any[];
   clubsCount: number;
   clubsLoading: boolean;
@@ -14,7 +14,7 @@ export interface OrgOverviewTabProps {
   teamsLoading: boolean;
   membersLoading: boolean;
   matchesCount: number | null;
-  scheduledMatches: any[];
+  scheduledMatches: Activity[];
   scheduledMatchesLoading: boolean;
   navigate: (path: string) => void;
   makeTabHref: (tabId: string) => string;

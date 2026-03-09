@@ -44,7 +44,7 @@ interface UseMatchDataFetchingParams {
   setEligibleMembers: (v: OrgMember[]) => void;
   setClubProjectMembers: (v: ProjectMember[]) => void;
   setLineupSquadLoading: (v: boolean) => void;
-  setLineupSquad: (v: Record<string, any[]>) => void;
+  setLineupSquad: (v: Record<string, SquadMemberRecord[]>) => void;
   setLineupFormation: (v: string) => void;
   setLineupSlots: (v: Record<string, string[]>) => void;
   setLineupBenchStatus: (v: Record<string, string>) => void;
@@ -207,7 +207,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           return { ok: true, status: res.status, detail: '', list: extractList(raw) };
         };
 
-        let projectMembers: any[] = [];
+        let projectMembers: ProjectMember[] = [];
         let lastRosterError: string | null = null;
         if (seasonUuid) {
           const seasonAttempt = await fetchMembers(true);
@@ -346,7 +346,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
         if (!res.ok) return;
         const raw = await res.json();
-        let members: any[] = [];
+        let members: SquadMemberRecord[] = [];
         if (raw?.data?.data && Array.isArray(raw.data.data)) members = raw.data.data;
         else if (raw?.data?.results && Array.isArray(raw.data.results)) members = raw.data.results;
         else if (raw?.results && Array.isArray(raw.results)) members = raw.results;
@@ -358,7 +358,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           const nr = await fetch(nextUrl, { credentials: 'include', headers: { 'Content-Type': 'application/json' } });
           if (!nr.ok) break;
           const nd = await nr.json();
-          let nm: any[] = [];
+          let nm: SquadMemberRecord[] = [];
           if (nd?.data?.data && Array.isArray(nd.data.data)) nm = nd.data.data;
           else if (Array.isArray(nd?.data)) nm = nd.data;
           else if (Array.isArray(nd)) nm = nd;
@@ -366,7 +366,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           nextUrl = nd?.meta?.pagination?.next;
         }
 
-        const groups: Record<string, any[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
+        const groups: Record<string, SquadMemberRecord[]> = { goalkeeper: [], player: [], coach: [], assistant: [] };
         members.forEach((p: SquadMemberRecord) => {
           let roles: string[] = [];
           if (p.functional_roles && Array.isArray(p.functional_roles) && p.functional_roles.length > 0) roles = p.functional_roles;

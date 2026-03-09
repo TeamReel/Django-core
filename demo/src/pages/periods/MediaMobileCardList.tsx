@@ -12,8 +12,21 @@ import { MEDIA_SLOTS } from '../../constants/mediaSlots';
 import { countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
 import styles from './SeasonMediaTab.module.css';
 
+/** Squad member record with metadata and media assets */
+interface SquadMember {
+  id?: string;
+  user?: { id?: string; first_name?: string; last_name?: string; email?: string; name?: string; avatar_url?: string | null; [key: string]: unknown };
+  user_id?: string;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };
+  [key: string]: any;
+}
+
 export interface MediaMobileCardListProps {
-  members: any[];
+  members: SquadMember[];
   guestPlayer: { has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: any } | null;
   batchSelectedMemberIds: Set<string>;
   setBatchSelectedMemberIds: React.Dispatch<React.SetStateAction<Set<string>>>;

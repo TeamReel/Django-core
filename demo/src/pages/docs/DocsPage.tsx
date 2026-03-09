@@ -5,8 +5,15 @@ import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
 import styles from './DocsPage.module.css';
 
+interface ModuleStatus {
+  id: string;
+  name: string;
+  status: string;
+  docs: boolean;
+}
+
 export function DocsPage() {
-  const [modules, setModules] = useState<any[]>([]);
+  const [modules, setModules] = useState<ModuleStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

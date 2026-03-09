@@ -89,7 +89,7 @@ export default function NotificationsPage() {
       const data = unwrapResponseData<any>(raw);
       debugLog('Fetched notifications:', data);
 
-      const list: any[] = Array.isArray(data)
+      const list: Notification[] = Array.isArray(data)
         ? data
         : Array.isArray(data?.results)
           ? data.results

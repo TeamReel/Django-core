@@ -6,6 +6,17 @@ import { ChevronRight } from 'lucide-react';
 import { type Period } from './teamDetailTypes';
 import h from './TeamHierarchyTab.module.css';
 
+/** Match / activity record */
+interface MatchRecord {
+  id?: string | number;
+  slug?: string;
+  name?: string;
+  date?: string;
+  start_time?: string;
+  metadata?: Record<string, unknown>;
+  [key: string]: any;
+}
+
 interface TeamHierarchyTabProps {
   hierarchySeasons: Period[];
   hierarchyCompetitionsBySeasonId: Record<string, Period[]>;
@@ -15,7 +26,7 @@ interface TeamHierarchyTabProps {
   hierarchyError: string | null;
   hierarchySearch: string;
   setHierarchySearch: (v: string) => void;
-  teamMatchesByPeriodId: Record<string, any[]>;
+  teamMatchesByPeriodId: Record<string, MatchRecord[]>;
   teamMatchesLoading: boolean;
   orgKeyForRoutes: string;
   clubKeyForRoutes: string;

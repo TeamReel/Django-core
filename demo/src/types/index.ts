@@ -44,6 +44,7 @@ export interface Organisation {
   updated_at?: string;
   logo_url?: string;
   user_role?: 'admin' | 'member';
+  role?: string;
   sport?: {
     id: string;
     name: string;
@@ -66,7 +67,7 @@ export interface Project {
   slug?: string;
   description?: string;
   organisation_id: string;
-  organisation?: { id?: string; name?: string; slug?: string; user_role?: string };
+  organisation?: { id: string; name?: string; slug?: string; user_role?: string };
   member_count?: number;
   is_active: boolean;
   is_private?: boolean;
@@ -85,6 +86,7 @@ export interface Project {
   parent_project_id?: string | number | null;
   parent_name?: string | null;
   parent_project_name?: string | null;
+  membership_id?: string;
 }
 
 /**
@@ -101,6 +103,52 @@ export interface AuditEvent {
   resource_id?: string;
   metadata?: Record<string, unknown>;
   details?: string;
+}
+
+/**
+ * Period entity (season or competition)
+ */
+export interface Period {
+  id: string;
+  name: string;
+  slug?: string;
+  project_id?: string | number;
+  project?: { id?: string | number; name?: string; slug?: string };
+  parent_period_id?: string | number | null;
+  parent_period?: { id?: string | number; name?: string; slug?: string; parent_period_id?: string | number | null } | null;
+  type?: string;
+  period_type?: string;
+  start_date?: string;
+  end_date?: string;
+  activities_count?: number;
+  matches_count?: number;
+  children_count?: number;
+  created_at?: string;
+  metadata?: Record<string, unknown>;
+  data?: Record<string, unknown>;
+}
+
+/**
+ * Activity entity (match, training, event)
+ */
+export interface Activity {
+  id: string;
+  title?: string;
+  name?: string;
+  slug?: string;
+  activity_type?: string;
+  project_id?: string | number;
+  project?: { id?: string | number; name?: string; slug?: string };
+  project_name?: string;
+  period_id?: string;
+  period?: { id?: string; name?: string; slug?: string; parent_period?: { id?: string; name?: string; slug?: string } | null; parent_period_id?: string | number | null } | null;
+  start_time?: string;
+  end_time?: string | null;
+  location?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  created_at?: string;
+  [key: string]: unknown;
 }
 
 /**

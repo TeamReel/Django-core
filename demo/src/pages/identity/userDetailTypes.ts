@@ -6,6 +6,7 @@
 import type React from 'react';
 import type { NavigateFunction, Location } from 'react-router-dom';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
+import type { Organisation, Project, Period, Activity } from '../../types';
 
 export interface UserDetailDataReturn {
     /* route */
@@ -29,13 +30,13 @@ export interface UserDetailDataReturn {
     setTab: (tab: string) => void;
 
     /* derived membership data */
-    userOrgs: any[];
-    userProjects: any[];
+    userOrgs: Organisation[];
+    userProjects: Project[];
     primaryOrgSlug: string;
-    clubMemberships: any[];
+    clubMemberships: Record<string, unknown>[];
     directClubMembershipById: Map<string, any>;
-    teamMemberships: any[];
-    clubsForTab: any[];
+    teamMemberships: Record<string, unknown>[];
+    clubsForTab: Project[];
     clubSlugById: Map<string, string>;
     teamSeasonPairs: Array<{
         teamId: string;
@@ -52,8 +53,8 @@ export interface UserDetailDataReturn {
 
     /* relations */
     clubsById: Map<string, any>;
-    linkedCompetitions: any[];
-    linkedMatches: any[];
+    linkedCompetitions: Period[];
+    linkedMatches: Activity[];
     loadingRelations: boolean;
 
     /* match edit/delete */
@@ -132,9 +133,9 @@ export interface UserDetailDataReturn {
     ) => void;
 
     /* link modal options */
-    linkOrgs: any[];
-    linkClubs: any[];
-    linkTeams: any[];
+    linkOrgs: Organisation[];
+    linkClubs: Project[];
+    linkTeams: Project[];
     linkOptionsLoading: boolean;
     linkOptionsError: string | null;
 

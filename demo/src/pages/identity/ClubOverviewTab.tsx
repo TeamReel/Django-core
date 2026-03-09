@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert } from '@django-core/design-system';
 import { ChevronRight } from 'lucide-react';
 import ov from './ClubOverviewTab.module.css';
+import type { Project } from './teamDetailTypes';
 
 type Period = {
   id: string;
@@ -28,7 +29,7 @@ export interface ClubOverviewTabProps {
   org: any;
   overviewError: string | null;
   overviewLoading: boolean;
-  overviewTeams: any[];
+  overviewTeams: Project[];
   overviewSeasons: Period[];
   overviewMembers: OverviewMember[];
   overviewCounts: { teams: number; seasons: number; members: number } | null;

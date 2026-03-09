@@ -13,6 +13,7 @@ import { useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getCsrfToken } from '../../utils/csrf';
+import type { Organisation, Project } from '../../types';
 
 /* ------------------------------------------------------------------ */
 /*  Params                                                             */
@@ -38,9 +39,9 @@ export function useUserDetailApi(params: UserDetailApiParams) {
     const [error, setError] = useState<string | null>(null);
 
     /* ---------- link-modal options state ------------------------- */
-    const [linkOrgs, setLinkOrgs] = useState<any[]>([]);
-    const [linkClubs, setLinkClubs] = useState<any[]>([]);
-    const [linkTeams, setLinkTeams] = useState<any[]>([]);
+    const [linkOrgs, setLinkOrgs] = useState<Organisation[]>([]);
+    const [linkClubs, setLinkClubs] = useState<Project[]>([]);
+    const [linkTeams, setLinkTeams] = useState<Project[]>([]);
     const [linkOptionsLoading, setLinkOptionsLoading] = useState(false);
     const [linkOptionsError, setLinkOptionsError] = useState<string | null>(null);
 

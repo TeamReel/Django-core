@@ -14,7 +14,7 @@ interface ProjectMembership {
 
 interface MemberListProps {
   projectId: string;
-  initialMembers?: any[];
+  initialMembers?: ProjectMembership[];
 }
 
 export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMembers }) => {

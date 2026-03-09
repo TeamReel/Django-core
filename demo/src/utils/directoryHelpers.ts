@@ -130,7 +130,7 @@ export const getClubName = (
 /** Resolve season name from a period's parent_period or a seasons list. */
 export const getSeasonName = (
   item: any,
-  seasons: any[],
+  seasons: Record<string, any>[],
 ): string => {
   const season = item?.parent_period;
   if (typeof season === 'object' && season?.name) return season.name;

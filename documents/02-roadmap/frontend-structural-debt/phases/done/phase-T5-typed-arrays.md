@@ -1,8 +1,9 @@
 # T5 — Typed Arrays
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
+**Commit:** (pending push)
 **Effort:** 2 uur
-**Scope:** ~290 `any[]` usages
+**Scope:** 195 → 37 `any[]` in active files (81% reduction)
 **Vereist:** T1
 
 ---
@@ -25,5 +26,7 @@ const results: Match[] = await fetchAllPages<Match>(url);
 
 ## Verificatie
 
-- [ ] `any[]` count < 50 (van 290)
-- [ ] `npx vite build` slaagt
+- [x] `any[]` count 195 → 37 (81% reduction, target <50 ✅)
+- [x] `npx vite build` slaagt
+- [x] 0 TS errors
+- [x] 30/30 tests passing

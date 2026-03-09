@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Organisation, User, Project } from '../../types';
+import type { Organisation, Period, User, Project } from '../../types';
 import {
   getBestMatchDetailPath as getBestMatchDetailPathPure,
   ORG_TABS,
@@ -16,7 +16,7 @@ interface UseOrgDerivedParams {
   resolvedOrg: any;
   currentOrgSlug: string | undefined;
   currentOrgId: string | undefined;
-  orgPeriods: any[];
+  orgPeriods: Period[];
   members: User[];
   teams: Project[];
   clubs: Project[];
@@ -35,7 +35,7 @@ export function useOrgDerived(params: UseOrgDerivedParams) {
   } = params;
 
   const periodChildrenMap = useMemo(() => {
-    const map = new Map<string, any[]>();
+    const map = new Map<string, Period[]>();
     for (const p of orgPeriods) {
       const parentId = p.parent_period_id ?? p.parent_period?.id ?? null;
       if (parentId) {
@@ -74,14 +74,14 @@ export function useOrgDerived(params: UseOrgDerivedParams) {
 
   const createModalClubs = useMemo(() => {
     const list = allClubsForTeams.length > 0 ? allClubsForTeams : clubs;
-    return (list || []) as any[];
+    return (list || []) as Project[];
   }, [allClubsForTeams, clubs]);
 
   const membershipUserCounts = useMemo(() => {
     const clubUserIdsByClubId = new Map<string, Set<string>>();
     const teamUserIdsByTeamId = new Map<string, Set<string>>();
     const teamToClubId = new Map<string, string>();
-    for (const t of teams as any[]) {
+    for (const t of teams) {
       const teamId = String(t?.id ?? '').trim();
       if (!teamId) continue;
       const clubId = String(t?.parent_id ?? t?.parent ?? t?.parent_project ?? t?.parent_project_id ?? '').trim();

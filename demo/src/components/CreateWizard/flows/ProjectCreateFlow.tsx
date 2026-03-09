@@ -55,7 +55,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
   // ── Data loading ────────────────────────────────────
   const [organisations, setOrganisations] = useState<OrgOption[]>([]);
   const [clubs, setClubs] = useState<ClubOption[]>([]);
-  const [allClubs, setAllClubs] = useState<any[]>([]);
+  const [allClubs, setAllClubs] = useState<Record<string, unknown>[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;

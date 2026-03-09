@@ -17,10 +17,11 @@ interface MatchRecord {
 /** Minimal membership record shape. */
 interface MemberRecord {
   id?: string;
-  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string };
+  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
   user_id?: string;
   role?: string;
   metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────

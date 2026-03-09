@@ -21,6 +21,17 @@ interface BrandAssetItem {
   present: boolean;
 }
 
+/** Match / activity record */
+interface MatchRecord {
+  id?: string | number;
+  slug?: string;
+  name?: string;
+  date?: string;
+  start_time?: string;
+  metadata?: Record<string, any>;
+  [key: string]: any;
+}
+
 interface TeamOverviewTabProps {
   hierarchySeasons: Period[];
   hierarchyCompetitionsBySeasonId: Record<string, Period[]>;
@@ -45,7 +56,7 @@ interface TeamOverviewTabProps {
   contentCount: number | null;
   contentCountLoading: boolean;
   // Match data
-  teamMatches: any[];
+  teamMatches: MatchRecord[];
   teamMatchesLoading: boolean;
 }
 

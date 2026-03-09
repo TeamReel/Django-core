@@ -1,5 +1,5 @@
 import React from 'react';
-import { Organisation, Project } from '../../types';
+import { Activity, Organisation, Period, Project } from '../../types';
 import OrganisationDetailModal from './OrganisationDetailModal';
 import { EntityEditModal } from '../../components/EntityEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
@@ -37,8 +37,8 @@ export interface OrgModalsProps {
   setAllClubsForTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setTeamsCount: React.Dispatch<React.SetStateAction<number | null>>;
-  setOrgPeriods: React.Dispatch<React.SetStateAction<any[]>>;
-  setFederationMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setOrgPeriods: React.Dispatch<React.SetStateAction<Period[]>>;
+  setFederationMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   setMatchesCount: React.Dispatch<React.SetStateAction<number | null>>;
   setMembers: React.Dispatch<React.SetStateAction<any[]>>;
 
@@ -106,8 +106,8 @@ export interface OrgModalsProps {
   setIsUserDetailModalOpen: (v: boolean) => void;
 
   /* create-modal helper data */
-  createModalOrganisations: any[];
-  createModalClubs: any[];
+  createModalOrganisations: Organisation[];
+  createModalClubs: Project[];
   teams: Project[];
 }
 

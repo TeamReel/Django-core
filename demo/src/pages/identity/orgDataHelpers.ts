@@ -4,6 +4,7 @@
  */
 
 import { periodPathKey } from '../../utils/periodPath';
+import type { Project, Period } from '../../types';
 
 /* ------------------------------------------------------------------ */
 /*  Debug flag                                                         */
@@ -55,9 +56,9 @@ export const LEGACY_TAB_MAP: Record<string, string> = {
 
 export interface MatchPathDeps {
   currentOrgSlug: string | undefined;
-  clubs: any[];
-  teams: any[];
-  orgPeriods: any[];
+  clubs: Project[];
+  teams: Project[];
+  orgPeriods: Period[];
 }
 
 /**

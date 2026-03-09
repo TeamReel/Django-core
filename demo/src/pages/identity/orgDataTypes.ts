@@ -4,7 +4,7 @@
  */
 
 import type { useNavigate, useLocation } from 'react-router-dom';
-import type { Organisation, User, Project } from '../../types';
+import type { Organisation, User, Project, Period, Activity } from '../../types';
 
 /* ------------------------------------------------------------------
  *  Modal state bundle
@@ -160,7 +160,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   clubsPageSize: number;
   clubsLoading: boolean;
   allClubsForTeams: Project[];
-  clubsForHierarchy: any[];
+  clubsForHierarchy: Project[];
 
   /* --- teams ---------------------------------------------------- */
   teams: Project[];
@@ -168,7 +168,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   teamsLoading: boolean;
 
   /* --- periods / counts ----------------------------------------- */
-  orgPeriods: any[];
+  orgPeriods: Period[];
   orgPeriodsLoading: boolean;
   seasonsCount: number | null;
   competitionsCount: number | null;
@@ -178,11 +178,11 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   teamMatchesCountById: Record<string, number>;
 
   /* --- federation matches --------------------------------------- */
-  federationMatches: any[];
+  federationMatches: Activity[];
   federationMatchesLoading: boolean;
-  scheduledMatches: any[];
+  scheduledMatches: Activity[];
   scheduledMatchesLoading: boolean;
-  recentPlayedMatches: any[];
+  recentPlayedMatches: Activity[];
   recentPlayedMatchesLoading: boolean;
 
   /* --- inline edit ---------------------------------------------- */
@@ -221,12 +221,12 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   userCanDeleteProject: boolean;
 
   /* --- breadcrumb ----------------------------------------------- */
-  organisationOptions: any[];
+  organisationOptions: { id: string; label: string; slug?: string }[];
   handleOrganisationSwitch: (option: { id: string; label: string; slug?: string }) => void;
 
   /* --- create modal helpers ------------------------------------- */
-  createModalOrganisations: any[];
-  createModalClubs: any[];
+  createModalOrganisations: Organisation[];
+  createModalClubs: Project[];
   orgIdForDirectoryLists: string;
 
   /* --- misc functions ------------------------------------------- */
@@ -240,9 +240,9 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   setTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setAllClubsForTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setClubsCount: React.Dispatch<React.SetStateAction<number>>;
-  setOrgPeriods: React.Dispatch<React.SetStateAction<any[]>>;
+  setOrgPeriods: React.Dispatch<React.SetStateAction<Period[]>>;
   setMembers: React.Dispatch<React.SetStateAction<User[]>>;
-  setFederationMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setFederationMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   setMatchesCount: React.Dispatch<React.SetStateAction<number | null>>;
   setTeamsCount: React.Dispatch<React.SetStateAction<number | null>>;
   recomputePeriodCounts: (allPeriods: Record<string, unknown>[]) => void;

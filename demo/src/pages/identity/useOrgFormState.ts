@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
 import { useAuth } from '@django-core/auth-ui';
-import { Organisation, User, Project } from '../../types';
+import { Activity, Organisation, User, Project } from '../../types';
 import {
   canEditOrganisation,
   canDeleteOrganisation,
@@ -64,11 +64,11 @@ export function useOrgFormState() {
   const filters = useOrgFilters();
 
   /* ── Federation matches ── */
-  const [federationMatches, setFederationMatches] = useState<any[]>([]);
+  const [federationMatches, setFederationMatches] = useState<Activity[]>([]);
   const [federationMatchesLoading, setFederationMatchesLoading] = useState(false);
-  const [scheduledMatches, setScheduledMatches] = useState<any[]>([]);
+  const [scheduledMatches, setScheduledMatches] = useState<Activity[]>([]);
   const [scheduledMatchesLoading, setScheduledMatchesLoading] = useState(false);
-  const [recentPlayedMatches, setRecentPlayedMatches] = useState<any[]>([]);
+  const [recentPlayedMatches, setRecentPlayedMatches] = useState<Activity[]>([]);
   const [recentPlayedMatchesLoading, setRecentPlayedMatchesLoading] = useState(false);
 
   /* ── Inline edit ── */

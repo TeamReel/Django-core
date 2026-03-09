@@ -11,10 +11,10 @@ import s from './ProjectSeasonDetailPage.module.css';
 import st from './SeasonTeamTab.module.css';
 
 export interface SeasonTeamTabProps {
-  teamRoster: any[];
+  teamRoster: Record<string, unknown>[];
   teamRosterLoading: boolean;
   teamRosterError: string | null;
-  members: any[];
+  members: Record<string, unknown>[];
   userCanEditProject: boolean;
   bulkSubmitting: boolean;
   isTeamRoute: boolean;

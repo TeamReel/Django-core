@@ -38,7 +38,7 @@ export type TabType = 'balance' | 'transactions';
  * Parse DRF response envelope — handles all known wrapping shapes.
  * Eliminates 5× duplication of the same parsing logic.
  */
-export function parseTransactionEnvelope(rawData: any): any[] {
+export function parseTransactionEnvelope(rawData: any): Transaction[] {
   if (Array.isArray(rawData)) return rawData;
   if (Array.isArray(rawData.data?.data)) return rawData.data.data;
   if (Array.isArray(rawData.data?.results)) return rawData.data.results;

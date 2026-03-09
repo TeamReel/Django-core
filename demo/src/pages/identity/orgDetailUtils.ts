@@ -91,7 +91,14 @@ export const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, hasParen
   return hasParentProject ? 'Team Member' : 'Supporter';
 };
 
-export const getTeamreelRoleDisplay = (user: any, orgMembership: any, projectMemberships: any[]) => {
+/** Project membership record with nested project data */
+interface ProjectMembershipRecord {
+  role?: string;
+  project?: { parent_id?: string; parent?: { id?: string } | null; parent_project_id?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+export const getTeamreelRoleDisplay = (user: any, orgMembership: any, projectMemberships: ProjectMembershipRecord[]) => {
   const roles: string[] = [];
 
   const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';

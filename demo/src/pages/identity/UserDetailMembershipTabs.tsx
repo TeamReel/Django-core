@@ -34,7 +34,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
             </tr>
           </thead>
           <tbody>
-            {userOrgs.map((o: Record<string, unknown>) => {
+            {userOrgs.map((o) => {
               const orgSlugOrId = String(o?.slug || o?.id || '').trim();
               const orgPath = orgSlugOrId ? `/organisations/${orgSlugOrId}` : '';
               const currentRole = String(o?.role || o?.user_role || '').trim() || 'member';
@@ -95,7 +95,7 @@ export function UserDetailMembershipTabs({ data }: Props) {
             </tr>
           </thead>
           <tbody>
-            {clubsForTab.map((c: Record<string, unknown>) => {
+            {clubsForTab.map((c) => {
               const projectId = String(c?.id || '').trim();
               const direct = projectId ? directClubMembershipById.get(projectId) : null;
               const slug = String(c?.slug || direct?.slug || '').trim();

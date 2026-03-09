@@ -32,8 +32,15 @@ const STATE_LABEL: Record<string, string> = {
   empty: '—',
 };
 
+/** Squad member record */
+interface SquadMember {
+  id?: string | number;
+  user?: { id?: string | number; [key: string]: unknown };
+  [key: string]: any;
+}
+
 interface TeamMediaTabProps {
-  members: any[];
+  members: SquadMember[];
   membersLoading: boolean;
 }
 

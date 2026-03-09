@@ -23,7 +23,7 @@ type Props = {
 };
 
 function getMemberProjectMemberships(member: Record<string, unknown>): Record<string, unknown>[] {
-  return (member?.project_memberships || member?.projectMemberships || []) as any[];
+  return (member?.project_memberships || member?.projectMemberships || []) as Record<string, unknown>[];
 }
 
 function getPmTeamId(pm: Record<string, unknown>): string {

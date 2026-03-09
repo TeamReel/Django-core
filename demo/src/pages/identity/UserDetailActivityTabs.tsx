@@ -214,11 +214,11 @@ export function UserDetailActivityTabs({ data }: Props) {
                     <td className="detail-td">
                       <div className="detail-actions">
                         <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { if (matchPath) navigate(matchPath); }} disabled={!matchPath}>View</button>
-                        <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }}>Edit</button>
+                        <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m as Record<string, unknown>); setIsMatchEditModalOpen(true); }}>Edit</button>
                         <button type="button" className="app-action-button action-btn action-btn-danger" onClick={async () => {
                           if (!m?.id) return;
                           if (!window.confirm(`Delete match ${m.title || m.id}?`)) return;
-                          try { await deleteMatch(m.id); } catch (e) { alert(e instanceof Error ? e.message : 'Failed'); }
+                          try { await deleteMatch(m as Record<string, unknown>); } catch (e) { alert(e instanceof Error ? e.message : 'Failed'); }
                         }}>Delete</button>
                       </div>
                     </td>

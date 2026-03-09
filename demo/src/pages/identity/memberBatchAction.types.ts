@@ -15,7 +15,13 @@ export interface BatchMemberEntry {
     last_name?: string;
     role?: string;
     membership?: { id?: string; role?: string };
-    project_memberships?: any[];
+    project_memberships?: Array<{
+      id?: string;
+      role?: string;
+      project_id?: string;
+      project?: { id?: string; parent_id?: string; parent_project_id?: string; [key: string]: unknown };
+      [key: string]: unknown;
+    }>;
     project_membership_id?: string;
     [key: string]: any;
 }

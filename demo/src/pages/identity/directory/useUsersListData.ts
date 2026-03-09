@@ -12,7 +12,7 @@ import { useSearchParams, useNavigate, type NavigateFunction } from 'react-route
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { getApiBaseUrl } from '../../../utils/apiBase';
-import type { User, ProjectOption, UsersListProps } from './usersListTypes';
+import type { User, ProjectOption, UsersListProps, OrganisationOption } from './usersListTypes';
 import { AVAILABLE_ROLES } from './usersListTypes';
 import { getCsrfToken } from './usersListHelpers';
 import { useUsersListFetchers } from './useUsersListFetchers';
@@ -51,7 +51,7 @@ export interface UseUsersListDataReturn {
   isLoading: boolean;
   error: string | null;
   hasUsers: boolean;
-  organisations: any[];
+  organisations: OrganisationOption[];
   clubs: ProjectOption[];
   teams: ProjectOption[];
   availableRoles: string[];

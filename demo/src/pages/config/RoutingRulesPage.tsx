@@ -113,7 +113,7 @@ export const RoutingRulesPage: React.FC = () => {
       }
 
       const data = await res.json().catch(() => null);
-      const rawResults: any[] = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : Array.isArray(data?.data?.results) ? data.data.results : [];
+      const rawResults: RoutingRule[] = Array.isArray(data) ? data : Array.isArray(data?.results) ? data.results : Array.isArray(data?.data?.results) ? data.data.results : [];
 
       setRules(rawResults as RoutingRule[]);
     } catch (e: unknown) {

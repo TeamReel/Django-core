@@ -19,7 +19,7 @@ export interface User {
   role: string;
   is_active: boolean;
   organisations?: { id: string; name: string; slug: string; role: string }[];
-  projects?: any[];
+  projects?: UserProjectRef[];
   [key: string]: unknown;
 }
 
@@ -174,7 +174,7 @@ export function useUsersData(): UseUsersDataReturn {
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserListEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);

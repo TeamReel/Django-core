@@ -19,7 +19,8 @@ import { useSports } from './useSports';
 import { fetchAllPages } from '../utils/fetchAllPages';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { isUuid, isNumericId, buildSeasonOptions } from '../utils/directoryHelpers';
-import type { SeasonOption } from '../utils/directoryHelpers';
+import type { Period, SeasonOption } from '../utils/directoryHelpers';
+import type { Organisation } from '../types';
 import type {
   OrganisationOption,
   ProjectOption,
@@ -81,9 +82,9 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
 
   // Season/competition cascade
   const [selectedSeasonName, setSelectedSeasonName] = useState<string>('');
-  const [seasons, setSeasons] = useState<any[]>([]);
+  const [seasons, setSeasons] = useState<Period[]>([]);
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
-  const [competitions, setCompetitions] = useState<any[]>([]);
+  const [competitions, setCompetitions] = useState<Period[]>([]);
 
   const [refreshKey, setRefreshKey] = useState(0);
   const triggerRefresh = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -277,7 +278,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
         if (!res.ok) return;
         const raw: any = await res.json().catch(() => null);
         const data: any = raw?.data ?? raw;
-        const list: any[] = Array.isArray(data?.results)
+        const list: Organisation[] = Array.isArray(data?.results)
           ? data.results
           : Array.isArray(data)
             ? data

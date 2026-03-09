@@ -11,6 +11,7 @@ import {
   setActiveContext as apiSetActiveContext,
   type ActiveContextKind,
 } from '../../utils/activeContext';
+import type { Organisation, Project, Period, Activity } from '../../types';
 
 /* ================================================================== */
 /*  Types                                                              */
@@ -40,12 +41,12 @@ export interface CascadingEntitySelectionReturn {
   setHasEditedContext: (v: boolean) => void;
 
   /* entity lists */
-  organisations: any[];
-  clubs: any[];
-  teams: any[];
-  seasons: any[];
-  competitions: any[];
-  matches: any[];
+  organisations: Organisation[];
+  clubs: Project[];
+  teams: Project[];
+  seasons: Period[];
+  competitions: Period[];
+  matches: Activity[];
 
   /* loading */
   loadingOrgs: boolean;
@@ -80,12 +81,12 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
   const [selectedCompetitionId, setSelectedCompetitionId] = useState<string>('');
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
 
-  const [organisations, setOrganisations] = useState<any[]>([]);
-  const [clubs, setClubs] = useState<any[]>([]);
-  const [teams, setTeams] = useState<any[]>([]);
-  const [seasons, setSeasons] = useState<any[]>([]);
-  const [competitions, setCompetitions] = useState<any[]>([]);
-  const [matches, setMatches] = useState<any[]>([]);
+  const [organisations, setOrganisations] = useState<Organisation[]>([]);
+  const [clubs, setClubs] = useState<Project[]>([]);
+  const [teams, setTeams] = useState<Project[]>([]);
+  const [seasons, setSeasons] = useState<Period[]>([]);
+  const [competitions, setCompetitions] = useState<Period[]>([]);
+  const [matches, setMatches] = useState<Activity[]>([]);
 
   const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [loadingClubs, setLoadingClubs] = useState(false);
@@ -234,7 +235,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const baseUrl = getApiBaseUrl();
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
-        const collected: any[] = [];
+        const collected: Project[] = [];
         let nextUrl: string = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?is_club=true&page_size=250`;
         let safety = 0;
         while (nextUrl && safety < 25) {
@@ -273,7 +274,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const baseUrl = getApiBaseUrl();
         const org = organisations.find(o => String(o.id) === selectedOrgId || String(o.slug) === selectedOrgId);
         const orgSlug = org?.slug || selectedOrgId;
-        const collected: any[] = [];
+        const collected: Project[] = [];
         let nextUrl: string = `${baseUrl}/api/v1/organisations/${encodeURIComponent(orgSlug)}/projects/?parent_project__isnull=false&page_size=250`;
         let safety = 0;
         while (nextUrl && safety < 25) {

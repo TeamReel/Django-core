@@ -110,7 +110,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
 
-          let rawResults: any[] = [];
+          let rawResults: Record<string, unknown>[] = [];
           if (Array.isArray(data)) {
             rawResults = data;
           } else if (Array.isArray(data.results)) {
@@ -125,16 +125,19 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           }
 
           // Map API response to RoutingLog interface
-          const mappedResults: RoutingLog[] = rawResults.map((item) => ({
-            id: item.id.toString(),
-            timestamp: item.created_at,
-            notification_type: item.metadata?.notification_type || item.event_type,
-            recipient_count: item.metadata?.recipient_count || 0,
-            organisation: item.organization_name,
-            project: item.project_name,
-            decision: item.metadata?.decision || 'unknown',
-            delivery_channels: item.metadata?.delivery_channels || [],
-          }));
+          const mappedResults: RoutingLog[] = rawResults.map((item) => {
+            const rec = item as Record<string, any>;
+            return {
+              id: String(rec.id),
+              timestamp: rec.created_at ?? '',
+              notification_type: rec.metadata?.notification_type || rec.event_type || '',
+              recipient_count: rec.metadata?.recipient_count || 0,
+              organisation: rec.organization_name,
+              project: rec.project_name,
+              decision: rec.metadata?.decision || 'unknown',
+              delivery_channels: rec.metadata?.delivery_channels || [],
+            };
+          });
 
           setLogs(mappedResults);
         } else if (response.status === 404) {

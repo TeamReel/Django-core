@@ -4,8 +4,17 @@ import { Table } from '../../shims/design-system';
 import { getRbacLabel, getUserId, getUserLabel } from './seasonDetailUtils';
 import st from './SeasonSquadTab.module.css';
 
+/** Squad / roster member record */
+interface RosterMember {
+  id?: string;
+  user?: { id?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
+  user_id?: string;
+  role?: string;
+  [key: string]: any;
+}
+
 export interface EligibleMembersCardProps {
-  teamRoster: any[];
+  teamRoster: RosterMember[];
   teamRosterLoading?: boolean;
   teamRosterError?: string | null;
   squadUserIdSet: Set<string>;

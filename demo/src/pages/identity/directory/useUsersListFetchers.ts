@@ -13,13 +13,13 @@ import { normalizeRoleName, getUserTeamreelRoleNames } from './usersListHelpers'
 /** Normalized user record stored in state */
 interface UserRecord {
   id: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  is_active?: boolean;
-  role?: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  role: string;
   is_superuser?: boolean;
-  organisations?: unknown[];
+  organisations?: { id: string; name: string; slug: string; role: string }[];
   role_label?: string;
   role_assignments?: unknown[];
   functional_roles?: string[];
@@ -109,7 +109,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
     const [organisations, setOrganisations] = useState<OrganisationOption[]>([]);
     const [clubs, setClubs] = useState<ProjectOption[]>([]);
     const [teams, setTeams] = useState<ProjectOption[]>([]);
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<UserRecord[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [refreshKey, setRefreshKey] = useState(0);
@@ -218,9 +218,9 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                         const u = nestedUser && typeof nestedUser === 'object' ? nestedUser : item;
                         return {
                             id: String(u?.id ?? ''),
-                            email: u?.email as string | undefined,
-                            first_name: u?.first_name as string | undefined,
-                            last_name: u?.last_name as string | undefined,
+                            email: String(u?.email ?? ''),
+                            first_name: String(u?.first_name ?? ''),
+                            last_name: String(u?.last_name ?? ''),
                             avatar_url: u?.avatar_url ?? null,
                             is_active: u?.is_active ?? item?.is_active ?? true,
                             role: item?.role ?? 'viewer',
@@ -330,9 +330,9 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
                     const normalized = {
                         id: String(u?.id ?? item?.id ?? key),
-                        email: u?.email,
-                        first_name: u?.first_name,
-                        last_name: u?.last_name,
+                        email: String(u?.email ?? ''),
+                        first_name: String(u?.first_name ?? ''),
+                        last_name: String(u?.last_name ?? ''),
                         organisations: u?.organisations,
                         is_superuser: Boolean(u?.is_superuser),
                         is_active: u?.is_active ?? item?.is_active ?? true,

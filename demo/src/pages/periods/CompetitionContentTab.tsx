@@ -4,11 +4,12 @@ import { Alert, Card } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
+import type { Activity } from '../../types';
 import styles from './CompetitionContentTab.module.css';
 
 export interface CompetitionContentTabProps {
   matches: any[];
-  matchMediaMap: Record<string, any[]>;
+  matchMediaMap: Record<string, Record<string, unknown>[]>;
   matchMediaLoading: boolean;
   matchDisplayTitle: (m: any) => string;
   isTeamRoute: boolean;

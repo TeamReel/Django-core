@@ -1,7 +1,7 @@
 /**
  * PreferencesPage — Shared type definitions
  */
-import type { AuditEvent } from '../../types';
+import type { AuditEvent, Organisation, Project, Period, Activity } from '../../types';
 
 /* ------------------------------------------------------------------ */
 /*  Data types                                                         */
@@ -84,12 +84,12 @@ export interface PreferencesDataReturn {
   setHasEditedContext: (v: boolean) => void;
 
   /* entity lists */
-  organisations: any[];
-  clubs: any[];
-  teams: any[];
-  seasons: any[];
-  competitions: any[];
-  matches: any[];
+  organisations: Organisation[];
+  clubs: Project[];
+  teams: Project[];
+  seasons: Period[];
+  competitions: Period[];
+  matches: Activity[];
 
   /* entity loading */
   loadingOrgs: boolean;

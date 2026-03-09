@@ -6,8 +6,16 @@ import { Button, Card, Badge, Alert, Spinner } from '@django-core/design-system'
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './DeploymentPage.module.css';
 
+interface ServiceStatus {
+  name: string;
+  status: string;
+  version: string;
+  type: string;
+  detail?: string;
+}
+
 export function DeploymentPage() {
-  const [services, setServices] = useState<any[]>([]);
+  const [services, setServices] = useState<ServiceStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

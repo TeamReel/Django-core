@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** � In Progress (8/18 fases done)
+**Status:** 🔴 In Progress (9/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -60,7 +60,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 | **T2** | ✅ `as any` → Typed Casts | 1,006 → 193 casts (81% reduction) | `89c168de` | 4 uur |
 | **T3** | ✅ Typed Hook Returns | ~50 hooks: return type interfaces + param types | `78bc0f43` | 3 uur |
 | **T4** | ✅ Function Param Types | 724 → ~196 `: any` params (72% reduction) | `78bc0f43` | 4 uur |
-| **T5** | `any[]` → Typed Arrays | Array params/state met correcte item types | ~290 arrays | 2 uur |
+| **T5** | ✅ `any[]` → Typed Arrays | 195 → 37 `any[]` (81% reduction) | `pending` | 2 uur |
 
 ### Track A — API Architecture
 

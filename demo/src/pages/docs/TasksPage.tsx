@@ -5,9 +5,24 @@ import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Alert, Spinner } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 
+interface CeleryTask {
+  id: string;
+  name: string;
+  status: string;
+  worker?: string;
+  time_start?: number;
+  [key: string]: unknown;
+}
+
+interface BeatScheduleEntry {
+  name: string;
+  schedule?: string;
+  [key: string]: unknown;
+}
+
 export function TasksPage() {
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [beatSchedule, setBeatSchedule] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<CeleryTask[]>([]);
+  const [beatSchedule, setBeatSchedule] = useState<BeatScheduleEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -29,8 +29,8 @@ export const MembershipsPage: React.FC = () => {
   const { context } = useContextSwitcher();
   useSetBackNavigation({ label: 'Profile', path: '/profile' });
 
-  const organisations: any[] = Array.isArray(user?.organisations) ? user.organisations : [];
-  const projects: any[] = Array.isArray(user?.projects) ? user.projects : [];
+  const organisations: Record<string, unknown>[] = Array.isArray(user?.organisations) ? user.organisations : [];
+  const projects: Record<string, unknown>[] = Array.isArray(user?.projects) ? user.projects : [];
 
   const clubs = useMemo(() => {
     return projects.filter((p) => !p?.parent && !p?.parent_id && !p?.parentId);

@@ -61,7 +61,7 @@ export function useSeasonSquadData({
 
         if (response.ok) {
           const data = await response.json();
-          let members: any[] = [];
+          let members: Participation[] = [];
           if (data?.data?.data && Array.isArray(data.data.data)) members = data.data.data;
           else if (data?.data?.results && Array.isArray(data.data.results)) members = data.data.results;
           else if (data?.results && Array.isArray(data.results)) members = data.results;
@@ -77,7 +77,7 @@ export function useSeasonSquadData({
             });
             if (!nextResp.ok) break;
             const nextData = await nextResp.json();
-            let nextMembers: any[] = [];
+            let nextMembers: Participation[] = [];
             if (nextData?.data?.data && Array.isArray(nextData.data.data)) nextMembers = nextData.data.data;
             else if (Array.isArray(nextData?.data)) nextMembers = nextData.data;
             else if (Array.isArray(nextData)) nextMembers = nextData;

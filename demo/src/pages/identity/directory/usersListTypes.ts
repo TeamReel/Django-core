@@ -25,8 +25,8 @@ export interface User {
   member_id?: string;
   membership?: { id?: string; role?: string; source?: string; joined_at?: string };
   source?: string;
-  projects?: any[];
-  project_memberships?: any[];
+  projects?: Record<string, unknown>[];
+  project_memberships?: Record<string, unknown>[];
   [key: string]: unknown;
 }
 

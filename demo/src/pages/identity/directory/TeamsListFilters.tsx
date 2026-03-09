@@ -2,13 +2,25 @@ import React from 'react';
 import type { OrganisationOption } from '../../work/WorkFilterBar';
 import dp from './DirectoryPremium.module.css';
 
+interface ClubFilterOption {
+  id: string | number;
+  name: string;
+  organisation?: string | { id: string; name?: string; slug?: string };
+}
+
+interface SportCategoryOption {
+  id: string | number;
+  name: string;
+  sport_icon?: string;
+}
+
 interface TeamsListFiltersProps {
   isSuperAdmin: boolean;
   orgLocked: boolean;
   clubLocked: boolean;
   organisations: OrganisationOption[];
-  clubs: any[];
-  categories: any[];
+  clubs: ClubFilterOption[];
+  categories: SportCategoryOption[];
   selectedOrgId: string;
   selectedClubId: string;
   statusFilter: string;

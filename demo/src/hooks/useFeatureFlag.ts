@@ -3,6 +3,7 @@ import { getResolvedFlag } from '../utils/featureFlagStorage';
 import { fetchFlags } from '../utils/featureFlagsApi';
 import { getActiveContext } from '../utils/activeContext';
 import { useAuth } from '@django-core/auth-ui';
+import type { FeatureFlag } from '../types';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -35,7 +36,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
     return null;
   };
 
-  const resolveFlagMatch = (flags: any[], key: string) => {
+  const resolveFlagMatch = (flags: FeatureFlag[], key: string) => {
     const direct = flags.find((f) => f.key === key);
     if (direct) return direct;
 

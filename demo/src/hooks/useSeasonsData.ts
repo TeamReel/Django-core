@@ -88,7 +88,10 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
   } = filters;
 
   // ── State ─────────────────────────────────────────────────────────
-  const [seasons, setSeasons] = useState<any[]>([]);
+  const [seasons, setSeasons] = useState<Period[]>([]);
+  /** Accept PeriodLike[] from fetchers — safe at runtime because Period's extra
+   *  required fields (name, slug, …) are always present in API data. */
+  const setSeasonsFromApi = (items: PeriodLike[]) => setSeasons(items as Period[]);
   const [seasonsLoading, setSeasonsLoading] = useState(false);
 
   // ── Fetch Seasons ─────────────────────────────────────────────────
@@ -136,7 +139,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
           const merged = [...typed, ...untyped, ...parentSeasons].filter((p) => isLikelySeasonRoot(p));
           const unique = [...new Map(merged.map((p) => [String(p.id), p])).values()];
-          setSeasons(unique);
+          setSeasonsFromApi(unique);
           return;
         } else if (selectedClubId) {
           const clubTeams = teams.filter((t) => {
@@ -173,7 +176,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
             const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p) => isLikelySeasonRoot(p));
             const unique = [...new Map(merged.map((p) => [String(p.id), p])).values()];
-            setSeasons(unique);
+            setSeasonsFromApi(unique);
             return;
           }
         } else if (selectedOrgId) {
@@ -200,7 +203,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
             const merged = [...typedChunks.flat(), ...untypedChunks.flat()].filter((p) => isLikelySeasonRoot(p));
             const unique = [...new Map(merged.map((p) => [String(p.id), p])).values()];
-            setSeasons(unique);
+            setSeasonsFromApi(unique);
             return;
           }
 
@@ -234,13 +237,13 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
 
           const inferred = (Array.isArray(fallback) ? fallback : []).filter((p) => isLikelySeasonRoot(p));
           const unique = [...new Map(inferred.map((p) => [String(p.id), p])).values()];
-          setSeasons(unique);
+          setSeasonsFromApi(unique);
           return;
         }
 
         const filteredSeasons = results.filter((p) => isLikelySeasonRoot(p));
         const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p) => [String(p.id), p])).values()];
-        setSeasons(unique);
+        setSeasonsFromApi(unique);
       } catch (e) {
         console.error(e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');

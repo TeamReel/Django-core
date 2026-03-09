@@ -44,10 +44,21 @@ const SETTINGS_SECTIONS = [
   { id: 'security', label: 'Security' },
 ];
 
+interface DemoToast {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+  timestamp: string;
+  read: boolean;
+  org_id: string;
+  type: string;
+}
+
 export function TemplatesPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | number | null>(null);
   const [activeSettingsSection, setActiveSettingsSection] = useState('profile');
-  const [demoToasts, setDemoToasts] = useState<any[]>([]);
+  const [demoToasts, setDemoToasts] = useState<DemoToast[]>([]);
 
   const addToast = (type: 'success' | 'warning' | 'error') => {
     const newToast = {

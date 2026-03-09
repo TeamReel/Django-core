@@ -52,7 +52,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     return filtered.length > 0 ? filtered : variants;
   }, [variants, organisationSportId, getVariantsForCategory]);
 
-  const firstNonEmptyString = (...values: any[]): string => {
+  const firstNonEmptyString = (...values: unknown[]): string => {
     for (const v of values) {
       const s = String(v ?? '').trim();
       if (s) return s;

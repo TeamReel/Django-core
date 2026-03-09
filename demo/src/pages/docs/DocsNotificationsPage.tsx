@@ -6,8 +6,17 @@ import { Card, Badge, Spinner } from '@django-core/design-system';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './DocsNotificationsPage.module.css';
 
+interface DocsNotification {
+  id: string;
+  title: string;
+  message: string;
+  level: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export function DocsNotificationsPage() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<DocsNotification[]>([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState<string | null>(null);

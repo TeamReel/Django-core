@@ -1,4 +1,4 @@
-import type { Project } from '../../types';
+import type { Activity, Project } from '../../types';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
@@ -46,11 +46,11 @@ interface UseOrgDataFetchingParams {
   teamsFetchInFlightRef: React.MutableRefObject<boolean>;
   orgPeriodsFetchInFlightRef: React.MutableRefObject<boolean>;
   // Setters
-  setFederationMatches: (v: any[]) => void;
+  setFederationMatches: (v: Activity[]) => void;
   setFederationMatchesLoading: (v: boolean) => void;
-  setScheduledMatches: (v: any[]) => void;
+  setScheduledMatches: (v: Activity[]) => void;
   setScheduledMatchesLoading: (v: boolean) => void;
-  setRecentPlayedMatches: (v: any[]) => void;
+  setRecentPlayedMatches: (v: Activity[]) => void;
   setRecentPlayedMatchesLoading: (v: boolean) => void;
   setClubs: React.Dispatch<React.SetStateAction<Project[]>>;
   setClubsCount: (v: number) => void;

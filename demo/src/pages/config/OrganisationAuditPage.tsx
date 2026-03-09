@@ -21,7 +21,7 @@ export const OrganisationAuditPage: React.FC = () => {
 
   const projectLabelByKey = useMemo(() => {
     const map = new Map<string, string>();
-    const userProjects: any[] = Array.isArray(user?.projects) ? user.projects : [];
+    const userProjects: Record<string, unknown>[] = Array.isArray(user?.projects) ? user.projects : [];
     for (const p of userProjects) {
       const id = String(p?.id || '').trim();
       const slug = String(p?.slug || '').trim();

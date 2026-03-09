@@ -20,7 +20,7 @@ import styles from './MemberMediaMatrix.module.css';
 
 interface MemberMediaMatrixProps {
   /** Array of membership objects with metadata.teamreel_assets */
-  members: any[];
+  members: Record<string, unknown>[];
   /** Whether members are still loading */
   membersLoading: boolean;
   /** Error message if loading failed */

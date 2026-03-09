@@ -11,12 +11,23 @@ import ThenVsNowModal, { type ThenVsNowVideoType } from './ThenVsNowModal';
 import type { SeasonOrganisation as Organisation } from '../../types/season';
 import s from './ProjectSeasonDetailPage.module.css';
 
+/** Squad member record with metadata and media assets */
+interface SquadMember {
+  id?: string;
+  user?: { id?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
+  user_id?: string;
+  shirt_number?: string | number;
+  position?: string;
+  metadata?: { teamreel_assets?: Record<string, any>; shirt_number?: string | number; position?: string; [key: string]: unknown };
+  [key: string]: any;
+}
+
 export interface SeasonContentTabProps {
   org: Organisation | null;
   projectId: string;
   seasonId: string;
   apiBaseUrl: string;
-  members: any[];
+  members: SquadMember[];
   pushToast: (message: string, type: 'success' | 'info' | 'warning' | 'error') => void;
 }
 
@@ -169,8 +180,8 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
         id: String(m.id || ''),
         userId: String(m.user?.id || m.user_id || ''),
         name: m.user ? `${m.user.first_name || ''} ${m.user.last_name || ''}`.trim() || m.user.email || 'Unknown' : 'Unknown',
-        shirtNumber: m.metadata?.shirt_number || m.shirt_number || null,
-        position: m.metadata?.position || m.position || null,
+        shirtNumber: String(m.metadata?.shirt_number || m.shirt_number || '') || undefined,
+        position: String(m.metadata?.position || m.position || '') || undefined,
         hasDuoPortret,
         hasDuoPortretCover,
         hasDuoPortretOverlay,

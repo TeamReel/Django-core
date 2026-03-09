@@ -236,10 +236,10 @@ export function useTeamTabData({
         typedParams.set('type', 'season');
 
         const typedUrl = `${apiBaseUrl}/api/v1/periods/?${typedParams.toString()}`;
-        const typedList: any[] = await fetchAllPages<any>(typedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const typedList: Period[] = await fetchAllPages<any>(typedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         const untypedUrl = `${apiBaseUrl}/api/v1/periods/?${baseSeasonParams.toString()}`;
-        const untypedList: any[] = await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const untypedList: Period[] = await fetchAllPages<any>(untypedUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         // Pull season parents from competitions as a last-resort source of truth.
         const competitionsParams = new URLSearchParams();
@@ -247,14 +247,14 @@ export function useTeamTabData({
         competitionsParams.set('page_size', '2000');
         competitionsParams.set('type', 'competition');
         const competitionsUrl = `${apiBaseUrl}/api/v1/periods/?${competitionsParams.toString()}`;
-        const competitionsList: any[] = await fetchAllPages<any>(
+        const competitionsList: Period[] = await fetchAllPages<any>(
           competitionsUrl,
           { credentials: 'include' },
           { bypass: true, maxItems: 5000 },
         );
         const parentSeasonsFromCompetitions = (competitionsList || [])
           .map((c: Period) => c?.parent_period)
-          .filter((p): p is NonNullable<Period['parent_period']> => !!(p && (p?.id || (p as Record<string, unknown>)?.slug)));
+          .filter((p): p is NonNullable<Period['parent_period']> => !!(p && (p?.id || (p as Record<string, unknown>)?.slug))) as Period[];
 
         const seasons = mergeUniqueById(
           [...(typedList || []), ...(untypedList || []), ...parentSeasonsFromCompetitions]
@@ -272,7 +272,7 @@ export function useTeamTabData({
         periodsParams.set('page_size', '1000');
 
         const periodsUrl = `${apiBaseUrl}/api/v1/periods/?${periodsParams.toString()}`;
-        const periodsList: any[] = await fetchAllPages<any>(periodsUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
+        const periodsList: Period[] = await fetchAllPages<any>(periodsUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
 
         const seasonIds = new Set(seasons.map((s) => String(s.id)));
         const competitions = (periodsList || []).filter((p: Period) => {
@@ -293,7 +293,7 @@ export function useTeamTabData({
         }
 
         // Build children map for recursive activity counts.
-        const childrenMap = new Map<string, any[]>();
+        const childrenMap = new Map<string, Period[]>();
         for (const p of periodsList || []) {
           const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
           if (!parentId) continue;
@@ -389,7 +389,7 @@ export function useTeamTabData({
         const json = await res.json().catch(() => null);
 
         const rawList = json?.data?.data || json?.data?.results || json?.results || json?.data || [];
-        const list: any[] = Array.isArray(rawList) ? rawList : [];
+        const list: OrgMemberItem[] = Array.isArray(rawList) ? rawList : [];
 
         const isMemberInTeam = (item: OrgMemberItem): boolean => {
           const nestedUser = item?.user;
@@ -555,7 +555,7 @@ export function useTeamTabData({
 
   /** Matches grouped by period (competition) id */
   const teamMatchesByPeriodId = useMemo(() => {
-    const map: Record<string, any[]> = {};
+    const map: Record<string, TeamMatchRecord[]> = {};
     for (const m of teamMatches) {
       const pid = String(m?.period_id || (typeof m?.period === 'object' ? m?.period?.id : m?.period) || '').trim();
       if (!pid) continue;

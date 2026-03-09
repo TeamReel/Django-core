@@ -181,7 +181,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
             disabled={(!selectedCompetitionId && !(selectedSeasonId && competitions.length === 0)) || loadingMatches || savingContext || matches.length === 0}
             placeholder={selectedCompetitionId ? '— Select Match —' : (selectedSeasonId && competitions.length === 0) ? '— Select Match —' : '— Select Competition first —'}
             loading={(!!selectedCompetitionId || (!!selectedSeasonId && competitions.length === 0)) && loadingMatches}
-            options={matches.map((m) => ({ id: m.id, name: m.title || m.name }))}
+            options={matches.map((m) => ({ id: m.id, name: m.title || m.name || '' }))}
             onChange={(v) => { setHasEditedContext(true); setSelectedMatchId(v); applyContext({ matchId: v }); }}
           />
 

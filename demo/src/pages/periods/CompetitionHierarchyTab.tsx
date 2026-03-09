@@ -2,13 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button, Card, Input } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
+import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
 
 export interface CompetitionHierarchyTabProps {
   hierarchySearch: string;
   setHierarchySearch: (v: string) => void;
   matchesLoading: boolean;
-  filteredMatches: any[];
+  filteredMatches: Activity[];
   navigate: (path: string) => void;
   matchDetailPath: (id: string) => string;
   matchDisplayTitle: (m: any) => string;
@@ -21,7 +22,7 @@ export interface CompetitionHierarchyTabProps {
   setIsMatchDetailModalOpen: (v: boolean) => void;
   setSelectedEditMatch: (m: any) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
-  setMatches: React.Dispatch<React.SetStateAction<any[]>>;
+  setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   apiBaseUrl: string;
   getCsrfToken: () => string;
 }
@@ -92,7 +93,7 @@ export function CompetitionHierarchyTab({
       ) : (
         (() => {
           // Group by date
-          const groups = new Map<string, { label: string; rows: any[] }>();
+          const groups = new Map<string, { label: string; rows: Activity[] }>();
           for (const m of filteredMatches) {
             if (m?.start_time) {
               const dt = new Date(m.start_time);

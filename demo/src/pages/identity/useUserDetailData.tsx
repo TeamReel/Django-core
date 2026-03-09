@@ -13,6 +13,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
+import type { Activity, Period } from '../../types';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import type { UserDetailDataReturn } from './userDetailTypes';
 import { useUserDetailApi } from './useUserDetailApi';
@@ -65,8 +66,8 @@ export function useUserDetailData(): UserDetailDataReturn {
 
     /* ---------- relations state ----------------------------------- */
     const [clubsById, setClubsById] = useState<Map<string, any>>(new Map());
-    const [linkedCompetitions, setLinkedCompetitions] = useState<any[]>([]);
-    const [linkedMatches, setLinkedMatches] = useState<any[]>([]);
+    const [linkedCompetitions, setLinkedCompetitions] = useState<Period[]>([]);
+    const [linkedMatches, setLinkedMatches] = useState<Activity[]>([]);
     const [loadingRelations, setLoadingRelations] = useState(false);
 
     /* ---------- hierarchy search ---------------------------------- */
@@ -345,8 +346,8 @@ export function useUserDetailData(): UserDetailDataReturn {
                     }
                     setClubsById(map);
                 }
-                const competitionsAll: any[] = [];
-                const matchesAll: any[] = [];
+                const competitionsAll: Period[] = [];
+                const matchesAll: Activity[] = [];
                 for (const pair of teamSeasonPairs) {
                     const competitions = await fetchAllPages<any>(
                         `${apiBaseUrl}/api/v1/periods/?parent_id=${encodeURIComponent(pair.seasonId)}&project_id=${encodeURIComponent(pair.teamId)}&page_size=250`,

@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction, FormEvent } from 'react';
-import type { MatchCreateModalProps } from './matchCreateTypes';
+import type { MatchCreateModalProps, OrgOption, ProjectOption, PeriodOption } from './matchCreateTypes';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { controlStyle } from './matchCreateHelpers';
 import { useMatchFormState } from './useMatchFormState';
@@ -85,13 +85,13 @@ export interface UseMatchCreateDataReturn {
   loadingOpponentTeams: boolean;
   loadingOpponentClubs: boolean;
   // Option lists
-  sortedOrganisations: any[];
-  filteredClubs: any[];
-  filteredTeams: any[];
-  seasonOptions: any[];
-  competitionOptions: any[];
-  opponentTeamOptions: any[];
-  filteredOpponentClubs: any[];
+  sortedOrganisations: OrgOption[];
+  filteredClubs: ProjectOption[];
+  filteredTeams: ProjectOption[];
+  seasonOptions: PeriodOption[];
+  competitionOptions: PeriodOption[];
+  opponentTeamOptions: ProjectOption[];
+  filteredOpponentClubs: ProjectOption[];
   // Derived
   derived: ReturnType<typeof useMatchDerived>['derived'];
   resolvedClubId: string;
