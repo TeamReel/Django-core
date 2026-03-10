@@ -9,8 +9,14 @@ export interface PeriodLike {
   description?: string;
   start_date?: string;
   end_date?: string;
-  data?: Record<string, any>;
-  metadata?: Record<string, any>;
+  title?: string;
+  label?: string;
+  type?: string;
+  sport_id?: string;
+  sport?: { id: string | number; name?: string } | null;
+  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
 }
 
 interface PeriodEditModalProps {
@@ -26,7 +32,7 @@ interface PeriodEditModalProps {
     description?: string;
     start_date?: string;
     end_date?: string;
-    data?: Record<string, any>;
+    data?: Record<string, unknown>;
     sport_id?: string | null;
   }) => Promise<void>;
 }
@@ -61,69 +67,70 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     return '';
   };
 
-  const extractPeriodName = (p: any): string =>
+  const extractPeriodName = (p: PeriodLike | null): string =>
     firstNonEmptyString(
       p?.name,
       p?.title,
       p?.label,
       p?.data?.name,
-      p?.data?.data?.name,
+      (p?.data?.data as Record<string, unknown> | undefined)?.name,
       p?.metadata?.name,
-      p?.metadata?.identity?.name,
+      (p?.metadata?.identity as Record<string, unknown> | undefined)?.name,
     );
 
-  const extractPeriodDescription = (p: any): string =>
+  const extractPeriodDescription = (p: PeriodLike | null): string =>
     firstNonEmptyString(
       p?.description,
       p?.data?.description,
-      p?.data?.data?.description,
+      (p?.data?.data as Record<string, unknown> | undefined)?.description,
       p?.metadata?.description,
     );
 
-  const extractPeriodType = (p: any): string =>
+  const extractPeriodType = (p: PeriodLike | null): string =>
     firstNonEmptyString(
       p?.type,
       p?.data?.type,
-      p?.data?.data?.type,
+      (p?.data?.data as Record<string, unknown> | undefined)?.type,
       p?.metadata?.type,
     );
 
-  const extractSportId = (p: any): string =>
+  const extractSportId = (p: PeriodLike | null): string =>
     firstNonEmptyString(
       p?.sport_id,
       p?.sport?.id,
       p?.metadata?.sport_id,
-      p?.metadata?.sport?.id,
+      (p?.metadata?.sport as Record<string, unknown> | undefined)?.id,
       p?.data?.sport_id,
-      p?.data?.sport?.id,
-      p?.data?.metadata?.sport_id,
-      p?.data?.metadata?.sport?.id,
-      p?.data?.data?.sport_id,
-      p?.data?.data?.sport?.id,
+      (p?.data?.sport as Record<string, unknown> | undefined)?.id,
+      (p?.data?.metadata as Record<string, unknown> | undefined)?.sport_id,
+      ((p?.data?.metadata as Record<string, unknown> | undefined)?.sport as Record<string, unknown> | undefined)?.id,
+      (p?.data?.data as Record<string, unknown> | undefined)?.sport_id,
+      ((p?.data?.data as Record<string, unknown> | undefined)?.sport as Record<string, unknown> | undefined)?.id,
     );
 
   // Some endpoints/pages pass a wrapped API response shape like { data: { ...periodFields } }.
   // Detect that and unwrap it so the form pre-fills correctly.
-  const resolvedPeriod: any = useMemo(() => {
+  const resolvedPeriod: PeriodLike | null = useMemo(() => {
     if (!period) return null;
-    const candidate: any = period;
+    const candidate = period as Record<string, unknown>;
 
-    const looksLikePeriod = (obj: any): boolean => {
+    const looksLikePeriod = (obj: unknown): obj is PeriodLike => {
       if (!obj || typeof obj !== 'object') return false;
+      const r = obj as Record<string, unknown>;
       // Heuristics: Period objects have an id, and at least some period-ish fields.
-      const hasId = obj.id != null;
+      const hasId = r.id != null;
       const hasAnyFields =
-        obj.name != null ||
-        obj.description != null ||
-        obj.start_date != null ||
-        obj.end_date != null ||
-        obj.sport_id != null ||
-        obj.sport != null;
+        r.name != null ||
+        r.description != null ||
+        r.start_date != null ||
+        r.end_date != null ||
+        r.sport_id != null ||
+        r.sport != null;
       if (hasId && hasAnyFields) return true;
 
       // Sometimes we only get name + any other period fields.
-      const hasName = obj.name != null;
-      const hasOther = obj.description != null || obj.start_date != null || obj.end_date != null || obj.sport_id != null || obj.sport != null;
+      const hasName = r.name != null;
+      const hasOther = r.description != null || r.start_date != null || r.end_date != null || r.sport_id != null || r.sport != null;
       if (hasName && hasOther) return true;
       return false;
     };
@@ -132,9 +139,9 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     // - { data: { ...period } }
     // - { data: { data: { ...period } } }
     // - { id: <something>, data: { ...period } }  (id present but fields live under data)
-    const d1: any = candidate?.data;
-    const d2: any = candidate?.data?.data;
-    const d3: any = candidate?.data?.data?.data;
+    const d1 = candidate?.data as Record<string, unknown> | undefined;
+    const d2 = (d1?.data) as Record<string, unknown> | undefined;
+    const d3 = (d2?.data) as Record<string, unknown> | undefined;
 
     // If candidate already looks correct, keep it.
     if (looksLikePeriod(candidate)) return candidate;
@@ -145,7 +152,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     if (looksLikePeriod(d1)) return d1;
 
     // Fallback to whatever we got.
-    return candidate;
+    return candidate as PeriodLike;
   }, [period]);
 
   // Reset form state whenever modal opens or period changes
@@ -198,7 +205,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
     setSaving(true);
     setError(null);
     try {
-      const payload: any = {
+      const payload: { name?: string; description?: string; start_date?: string; end_date?: string; data?: Record<string, unknown>; sport_id?: string | null } = {
         name,
         description,
         start_date: startDate || undefined,
@@ -207,7 +214,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
 
       // Keep existing metadata but update its "type" when provided.
       if (type !== '') {
-        payload.data = { ...(resolvedPeriod as any).data, type };
+        payload.data = { ...(resolvedPeriod?.data ?? {}), type };
       }
 
       if (showSportVariant && selectedSportId !== initialSportId) {

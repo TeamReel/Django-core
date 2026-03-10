@@ -7,6 +7,19 @@
 
 import type { OrganisationOption, ProjectOption } from '../pages/work/WorkFilterBar';
 
+/** Loose row shape shared by all directory-list helpers (covers Period, Activity, etc.). */
+export type DirectoryRow = {
+  organisation?: { id: string; name: string; slug?: string; sport?: { id: string | number; name?: string } | null } | string | null;
+  organisation_id?: string | null;
+  project?: { id: string; name: string; slug?: string; parent_id?: string; parent_project_id?: string } | string | null;
+  project_id?: string | null;
+  parent_period?: { id: string; name: string; slug?: string; start_date?: string; end_date?: string } | null;
+  parent_period_id?: string | null;
+  start_date?: string;
+  end_date?: string;
+  [key: string]: unknown;
+};
+
 // ────────────────────────────────────────────
 // Generic array / ID helpers
 // ────────────────────────────────────────────
@@ -54,7 +67,7 @@ export const parseDateOnlyUtc = (value?: string | null): Date | null => {
 };
 
 /** Check whether a period is currently active based on start/end dates. */
-export const isPeriodActive = (p: any): boolean => {
+export const isPeriodActive = (p: DirectoryRow): boolean => {
   const start = parseDateOnlyUtc(p?.start_date) ?? parseDateOnlyUtc(p?.parent_period?.start_date);
   const end = parseDateOnlyUtc(p?.end_date) ?? parseDateOnlyUtc(p?.parent_period?.end_date);
   if (!start && !end) return false;
@@ -69,19 +82,19 @@ export const isPeriodActive = (p: any): boolean => {
 // ────────────────────────────────────────────
 
 /** Resolve a project's parent_project ID. */
-export const getTeamParentId = (t: any): string | null => {
+export const getTeamParentId = (t: { parent_id?: unknown; parent?: unknown; parent_project_id?: unknown; parent_project?: unknown } | null | undefined): string | null => {
   const parent =
     t?.parent_id ??
     t?.parent ??
     t?.parent_project_id ??
-    (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project);
+    (typeof t?.parent_project === 'object' ? (t.parent_project as Record<string, unknown>).id : t?.parent_project);
   if (parent == null) return null;
-  return String(typeof parent === 'object' ? parent.id : parent);
+  return String(typeof parent === 'object' ? (parent as Record<string, unknown>).id : parent);
 };
 
 /** Resolve the Federation name for a period/activity. */
 export const getFederationName = (
-  item: any,
+  item: DirectoryRow,
   organisations: OrganisationOption[],
 ): string => {
   const org = item?.organisation;
@@ -94,14 +107,14 @@ export const getFederationName = (
 };
 
 /** Extract the team (project) ID from an item. */
-export const getTeamId = (item: any): string => {
+export const getTeamId = (item: DirectoryRow): string => {
   const project = item?.project;
   return String(typeof project === 'object' ? project?.id : project || '');
 };
 
 /** Extract the team (project) name from an item + teams list. */
 export const getTeamName = (
-  item: any,
+  item: DirectoryRow,
   teams?: ProjectOption[],
 ): string => {
   const project = item?.project;
@@ -115,12 +128,12 @@ export const getTeamName = (
 
 /** Resolve the Club (parent project) name for an item. */
 export const getClubName = (
-  item: any,
+  item: DirectoryRow,
   clubs: ProjectOption[],
   teams: ProjectOption[],
 ): string => {
   const teamId = getTeamId(item);
-  const teamObj: any = teams.find((t) => String(t.id) === String(teamId));
+  const teamObj = teams.find((t) => String(t.id) === String(teamId));
   const clubId =
     teamObj?.parent_id || teamObj?.parent || teamObj?.parent_project_id;
   const clubObj = clubs.find((c) => String(c.id) === String(clubId));
@@ -129,8 +142,8 @@ export const getClubName = (
 
 /** Resolve season name from a period's parent_period or a seasons list. */
 export const getSeasonName = (
-  item: any,
-  seasons: Record<string, any>[],
+  item: DirectoryRow,
+  seasons: Record<string, unknown>[],
 ): string => {
   const season = item?.parent_period;
   if (typeof season === 'object' && season?.name) return season.name;
@@ -138,7 +151,7 @@ export const getSeasonName = (
   const fromList = seasonId
     ? seasons.find((s) => String(s.id) === String(seasonId))
     : undefined;
-  return fromList?.name || '';
+  return String(fromList?.name || '');
 };
 
 // ────────────────────────────────────────────
@@ -147,7 +160,7 @@ export const getSeasonName = (
 
 /** Filter a list of periods/activities by sportFilter against the organisation's sport. */
 export const matchesSportFilter = (
-  item: any,
+  item: DirectoryRow,
   sportFilter: string,
   organisations: OrganisationOption[],
 ): boolean => {
@@ -163,7 +176,7 @@ export const matchesSportFilter = (
   const org = orgId
     ? organisations.find((o) => String(o.id) === String(orgId))
     : undefined;
-  return String((org as any)?.sport?.id || '') === String(sportFilter);
+  return String(org?.sport?.id || '') === String(sportFilter);
 };
 
 // ────────────────────────────────────────────
@@ -244,7 +257,7 @@ export type Period = {
   children_matches_count?: number;
   matches_total_count?: number;
   members_count?: number;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   sport?: { id: string | number; name: string; slug?: string; sport_icon?: string; category_name?: string } | null;
   period_type?: string;
   [key: string]: unknown;
@@ -276,8 +289,8 @@ export type Activity = {
   organisation?: { id: string; name: string; slug: string } | null;
   organisation_id?: string;
   opponent_project?: { id: string; name: string; slug?: string } | null;
-  metadata?: Record<string, any>;
-  data?: Record<string, any>;
+  metadata?: Record<string, unknown>;
+  data?: Record<string, unknown>;
   location?: string;
   description?: string;
 };
@@ -312,8 +325,8 @@ export interface RowContext {
   teamId: string;
   teamName: string;
   teamSlug: string;
-  teamObj: any;
-  clubObj: any;
+  teamObj: ProjectOption | undefined;
+  clubObj: ProjectOption | undefined;
   orgObj: OrganisationOption | undefined;
   /** Canonical path to the team page. */
   teamBasePath: string;
@@ -328,7 +341,7 @@ export interface RowContext {
  * Call this once per row and destructure the result.
  */
 export function resolveRowContext(
-  item: any,
+  item: DirectoryRow,
   config: RowContextConfig,
 ): RowContext {
   const {
@@ -352,7 +365,7 @@ export function resolveRowContext(
   );
   const teamName =
     (typeof project === 'object' ? project?.name : undefined) || '-';
-  const teamObj: any = teamId
+  const teamObj = teamId
     ? teams.find((t) => String(t.id) === String(teamId))
     : undefined;
 
@@ -362,7 +375,7 @@ export function resolveRowContext(
       (typeof project === 'object' ? project?.parent_id : undefined) ??
       '',
   );
-  const clubObj: any = clubId
+  const clubObj = clubId
     ? clubs.find((c) => String(c.id) === String(clubId))
     : undefined;
   const clubName: string = clubObj?.name || '-';
