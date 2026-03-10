@@ -11,9 +11,9 @@ import { isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface UseOrgDerivedParams {
-  location: any;
+  location: { search: string; pathname: string };
   org: Organisation | null;
-  resolvedOrg: any;
+  resolvedOrg: Organisation | undefined;
   currentOrgSlug: string | undefined;
   currentOrgId: string | undefined;
   orgPeriods: Period[];
@@ -48,11 +48,11 @@ export function useOrgDerived(params: UseOrgDerivedParams) {
     return map;
   }, [orgPeriods]);
 
-  const getRecursiveMatchesCount = (p: any): number => {
-    let count = p.activities_count ?? 0;
+  const getRecursiveMatchesCount = (p: Record<string, unknown>): number => {
+    let count = (p.activities_count as number) ?? 0;
     const children = periodChildrenMap.get(String(p.id));
     if (children) {
-      for (const child of children) count += getRecursiveMatchesCount(child);
+      for (const child of children) count += getRecursiveMatchesCount(child as unknown as Record<string, unknown>);
     }
     return count;
   };
@@ -94,8 +94,8 @@ export function useOrgDerived(params: UseOrgDerivedParams) {
       map.set(key, next);
       return next;
     };
-    for (const item of members as any[]) {
-      const u = item?.user ?? item;
+    for (const item of members as unknown as Record<string, unknown>[]) {
+      const u = (item?.user ?? item) as Record<string, unknown>;
       const userId = String(u?.id ?? '').trim();
       if (!userId) continue;
       const raw = item?.project_memberships ?? item?.project_membership_details ?? item?.project_memberships_details ?? [];
@@ -148,7 +148,7 @@ export function useOrgDerived(params: UseOrgDerivedParams) {
 
   const orgSlugOrId = String(org?.slug || org?.id || currentOrgSlug || '');
 
-  const getBestMatchDetailPath = (m: any): string =>
+  const getBestMatchDetailPath = (m: Record<string, unknown>): string =>
     getBestMatchDetailPathPure(m, { currentOrgSlug, clubs, teams, orgPeriods });
 
   const clubsForHierarchy = useMemo(() => {

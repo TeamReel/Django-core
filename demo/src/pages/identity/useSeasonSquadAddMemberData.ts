@@ -118,7 +118,7 @@ export function useSeasonSquadAddMemberData({
   const getClubOrganisationId = (clubId: string): string | null => {
     const club = clubsOptions.find((c) => String(c.id) === String(clubId));
     if (!club) return null;
-    const org = typeof club.organisation === 'string' ? club.organisation : club.organisation?.id;
+    const org = typeof club.organisation === 'string' || typeof club.organisation === 'number' ? club.organisation : club.organisation?.id;
     return org ? String(org) : null;
   };
 
@@ -133,7 +133,7 @@ export function useSeasonSquadAddMemberData({
     const orgId = selectedOrganisationId;
     const list = orgId
       ? clubsOptions.filter((c) => {
-          const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+          const cOrg = typeof c.organisation === 'string' || typeof c.organisation === 'number' ? c.organisation : c.organisation?.id;
           return String(cOrg) === String(orgId);
         })
       : clubsOptions;

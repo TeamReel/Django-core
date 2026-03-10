@@ -125,13 +125,13 @@ export const UsageEventsPage: React.FC = () => {
                       <code className="fs-sm">{event.event_type}</code>
                     </td>
                     <td className="fs-sm">
-                      {event.user_email || event.user || '-'}
+                      {event.user_email || (typeof event.user === 'string' ? event.user : null) || '-'}
                     </td>
                     <td className="fs-sm">
-                      {event.organization_name || event.organization || '-'}
+                      {event.organization_name || (typeof event.organization === 'string' ? event.organization : null) || '-'}
                     </td>
                     <td className="fs-sm">
-                      {event.project_name || event.project || '-'}
+                      {event.project_name || (typeof event.project === 'string' ? event.project : null) || '-'}
                     </td>
                     <td className={styles.metadataCell}>
                       {event.metadata && Object.keys(event.metadata).length > 0 ? (

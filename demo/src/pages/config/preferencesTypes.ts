@@ -2,6 +2,7 @@
  * PreferencesPage — Shared type definitions
  */
 import type { AuditEvent, Organisation, Project, Period, Activity } from '../../types';
+import type { User } from '@django-core/auth-ui';
 
 /* ------------------------------------------------------------------ */
 /*  Data types                                                         */
@@ -49,8 +50,8 @@ export interface PreferencesDataReturn {
   resolvedMode: string;
 
   /* auth */
-  user: any;
-  setUser: (u: any) => void;
+  user: User | null;
+  setUser: (u: User) => void;
 
   /* preferences */
   preferences: UserPreferences | null;
@@ -62,7 +63,7 @@ export interface PreferencesDataReturn {
   success: boolean;
 
   /* active context */
-  activeContext: any | null;
+  activeContext: Record<string, unknown> | null;
   activeContextLoading: boolean;
   activeContextError: string | null;
   savingContext: boolean;

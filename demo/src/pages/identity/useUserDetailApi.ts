@@ -35,7 +35,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
     const { apiBaseUrl, userId, orgId, navigate } = params;
 
     /* ---------- core state --------------------------------------- */
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<Record<string, unknown> | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +53,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
     const fetchUser = async () => {
         try {
             setLoading(true);
-            const userData = await api.get<any>(
+            const userData = await api.get<Record<string, unknown>>(
                 `/admin/users/${encodeURIComponent(String(userId))}/`,
             );
             setUser(userData);
@@ -101,15 +101,15 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         const slugOrId = String(orgSlugOrId || '').trim();
         if (!slugOrId) throw new Error('Missing federation');
 
-        const orgs = Array.isArray(user?.organisations) ? user.organisations : [];
+        const orgs = Array.isArray((user as Record<string, unknown>)?.organisations) ? (user as Record<string, unknown>).organisations as Record<string, unknown>[] : [];
         const direct = orgs.find(
-            (o: any) =>
+            (o: Record<string, unknown>) =>
                 String(o?.slug || o?.id || '') === slugOrId || String(o?.id || '') === slugOrId,
         );
         const directMembershipId = String(direct?.membership_id ?? '').trim();
         if (directMembershipId) return directMembershipId;
 
-        const members = await fetchAllPages<any>(
+        const members = await fetchAllPages<Record<string, unknown>>(
             `${apiBaseUrl}/api/v1/organisations/${encodeURIComponent(slugOrId)}/members/?page_size=500`,
             { credentials: 'include' },
             {
@@ -125,7 +125,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         const found = (members || []).find((m) => {
             const memberId = String(m?.id ?? '').trim();
             if (!memberId) return false;
-            const mu = m?.user || m;
+            const mu = (m?.user || m) as Record<string, unknown>;
             const mid = String(mu?.id ?? '').trim();
             const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
             return (uid && mid && uid === mid) || (email && memail && email === memail);
@@ -142,12 +142,12 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!slugOrId) return;
 
         const membershipId = await findOrganisationMembershipId(slugOrId);
-        const res = await api.patch<any>(
+        const res = await api.patch<Record<string, unknown>>(
             `/organisations/${encodeURIComponent(slugOrId)}/members/${encodeURIComponent(membershipId)}/`,
             { role },
         );
 
-        if (res?.data?.detail && String(res.data.detail).includes('Promotion requested')) {
+        if ((res as Record<string, unknown>)?.data && String(((res as Record<string, unknown>).data as Record<string, unknown>)?.detail).includes('Promotion requested')) {
             alert(
                 'Role change requested. The user must accept the promotion before it takes effect.',
             );
@@ -175,13 +175,13 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
     const findProjectMembershipId = async (
         projectId: string,
-        directMembershipId?: any,
+        directMembershipId?: string | undefined,
     ): Promise<string> => {
         const direct = String(directMembershipId || '').trim();
         if (direct) return direct;
         if (!user) throw new Error('User missing');
 
-        const members = await fetchAllPages<any>(
+        const members = await fetchAllPages<Record<string, unknown>>(
             `${apiBaseUrl}/api/v1/projects/${encodeURIComponent(String(projectId))}/members/?page_size=500`,
             { credentials: 'include' },
             {
@@ -197,7 +197,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         const found = (members || []).find((m) => {
             const memberId = String(m?.id ?? '').trim();
             if (!memberId) return false;
-            const mu = m?.user || m;
+            const mu = (m?.user || m) as Record<string, unknown>;
             const mid = String(mu?.id ?? '').trim();
             const memail = String(mu?.email ?? m?.email ?? '').trim().toLowerCase();
             return (uid && mid && uid === mid) || (email && memail && email === memail);
@@ -208,7 +208,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         return membershipId;
     };
 
-    const removeProjectMembership = async (projectId: string, directMembershipId?: any) => {
+    const removeProjectMembership = async (projectId: string, directMembershipId?: string | undefined) => {
         if (!user) return;
         const pid = String(projectId || '').trim();
         if (!pid) return;
@@ -223,7 +223,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
 
     const updateProjectMembershipRole = async (
         projectId: string,
-        directMembershipId: any,
+        directMembershipId: string | undefined,
         role: string,
     ) => {
         if (!user) return;
@@ -231,12 +231,12 @@ export function useUserDetailApi(params: UserDetailApiParams) {
         if (!pid) return;
 
         const membershipId = await findProjectMembershipId(pid, directMembershipId);
-        const res = await api.patch<any>(
+        const res = await api.patch<Record<string, unknown>>(
             `/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(membershipId)}/`,
             { role },
         );
 
-        if (res?.data?.detail && String(res.data.detail).includes('Promotion requested')) {
+        if ((res as Record<string, unknown>)?.data && String(((res as Record<string, unknown>).data as Record<string, unknown>)?.detail).includes('Promotion requested')) {
             alert(
                 'Role change requested. The user must accept the promotion before it takes effect.',
             );
@@ -286,17 +286,17 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             setLinkOptionsError(null);
 
             const [orgs, clubs, teams] = await Promise.all([
-                fetchAllPages<any>(
+                fetchAllPages<Organisation>(
                     `${apiBaseUrl}/api/v1/organisations/?page_size=200`,
                     { credentials: 'include' },
                     { ttlMs: 60_000, cacheKey: 'user-detail:link:orgs', maxItems: 5000 },
                 ),
-                fetchAllPages<any>(
+                fetchAllPages<Project>(
                     `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=true`,
                     { credentials: 'include' },
                     { ttlMs: 60_000, cacheKey: 'user-detail:link:clubs', maxItems: 20_000 },
                 ),
-                fetchAllPages<any>(
+                fetchAllPages<Project>(
                     `${apiBaseUrl}/api/v1/projects/?page_size=200&parent_project__isnull=false`,
                     { credentials: 'include' },
                     { ttlMs: 60_000, cacheKey: 'user-detail:link:teams', maxItems: 50_000 },

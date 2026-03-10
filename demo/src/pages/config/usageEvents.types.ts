@@ -2,14 +2,14 @@ export interface UsageEvent {
   id: string;
   timestamp: string;
   event_type: string;
-  user?: any;
+  user?: Record<string, unknown> | null;
   user_email?: string;
   user_full_name?: string;
-  organization?: any;
+  organization?: Record<string, unknown> | null;
   organization_name?: string;
-  project?: any;
+  project?: Record<string, unknown> | null;
   project_name?: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export const EVENT_TYPE_OPTIONS = [

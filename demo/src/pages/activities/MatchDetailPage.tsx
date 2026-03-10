@@ -106,7 +106,7 @@ export default function HierarchyMatchDetailPage() {
           <div className={styles.actions}>
             {/* Make active — always visible, primary action */}
             {(() => {
-              const isActive = !!match && String(d.activeContext?.match?.id ?? '') === String(match?.id ?? '');
+              const isActive = !!match && String((d.activeContext?.match as Record<string, unknown> | undefined)?.id ?? '') === String(match?.id ?? '');
               return (
                 <button
                   type="button"

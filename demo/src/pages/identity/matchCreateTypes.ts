@@ -6,19 +6,19 @@ export type ProjectOption = {
   id: string | number;
   name: string;
   slug?: string;
-  organisation?: any;
-  parent_id?: any;
-  parent?: any;
-  parent_project_id?: any;
-  parent_project?: any;
+  organisation?: { id?: string | number; name?: string; slug?: string } | string | number;
+  parent_id?: string | number | null;
+  parent?: { id?: string | number; name?: string } | string | number | null;
+  parent_project_id?: string | number | null;
+  parent_project?: { id?: string | number; name?: string } | string | number | null;
 };
 
 export type PeriodOption = {
   id: string;
   name: string;
   slug?: string;
-  parent_period?: any;
-  parent_period_id?: any;
+  parent_period?: { id?: string | number; name?: string } | null;
+  parent_period_id?: string | number | null;
 };
 
 export interface MatchCreatePayload {
@@ -28,7 +28,7 @@ export interface MatchCreatePayload {
   location?: string;
   description?: string;
 
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 
   venue?: 'Home' | 'Away';
 

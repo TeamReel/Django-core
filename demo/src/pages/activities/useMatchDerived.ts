@@ -11,14 +11,14 @@ interface UseMatchDerivedParams {
   effectiveMatchIdVal: string;
   seasonKeyOrId: string | null;
   seasonsBasePath: string;
-  location: any;
+  location: { search: string; pathname: string };
   isPlayer: boolean;
   isSupporter: boolean;
-  project: any;
+  project: { id?: string | number; name?: string; [key: string]: unknown } | null;
   match: MatchDetail | null;
-  club: any;
-  opponentClub: any;
-  opponentClubBrand: any;
+  club: { id?: string | number; name?: string; [key: string]: unknown } | null;
+  opponentClub: { id?: string | number; name?: string; [key: string]: unknown } | null;
+  opponentClubBrand: { getAsset?: (key: string) => { url: string | null } | undefined };
   brandLogoUrl: string | null;
 }
 

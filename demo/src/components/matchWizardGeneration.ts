@@ -22,6 +22,9 @@ import {
   generateMatchIntro,
 } from '../pages/identity/ContentGenerationModal/contentGenerationVideoApi';
 import type { WizardStep } from './matchWizardTypes';
+import type { ToastItem } from '../components/ui/Toast';
+import type { UseSeasonSquadDataReturn } from '../pages/identity/ContentGenerationModal/useSeasonSquadData';
+import type { useContentOptions } from '../pages/identity/ContentGenerationModal/useContentOptions';
 
 // ── Param / callback shapes ───────────────────────────────
 
@@ -31,9 +34,9 @@ export interface GenerationParams {
   lineupFormation: string;
   lineupSlots: { goalkeeper: string[]; player: string[] };
   projectId: string | undefined;
-  matchDataForApi: any;
-  seasonSquad: any;
-  options: any;
+  matchDataForApi: { id: string; project?: { id: string }; metadata?: Record<string, unknown> } | null;
+  seasonSquad: UseSeasonSquadDataReturn;
+  options: ReturnType<typeof useContentOptions>;
   selectedTemplate: ContentTemplate | null;
   selectedType: { type: string; subtype: string; label: string } | null;
   organisationId: string | null | undefined;
@@ -48,7 +51,7 @@ export interface GenerationCallbacks {
   setVideoJobId: (id: string) => void;
   abortActiveVideoJobPoll: () => void;
   resetVideo: () => void;
-  pushToast: (opts: any) => void;
+  pushToast: (opts: Omit<ToastItem, 'id'>) => void;
   navigate: (path: string) => void;
 }
 

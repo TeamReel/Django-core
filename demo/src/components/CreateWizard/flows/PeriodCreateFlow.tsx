@@ -86,7 +86,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
           params.organisation_id = prefill.organisationId;
         }
 
-        const { results } = await api.list<any>('/periods/', {
+        const { results } = await api.list<Record<string, unknown>>('/periods/', {
           params,
           pageSize: 250,
         });
@@ -94,7 +94,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
           .filter((p: { id?: string; name?: string; parent_period?: Record<string, unknown>; parent_period_id?: string }) => p?.parent_period_id == null && !p?.parent_period);
         const unique = [...new Map(roots.map((p: { id?: string; name?: string }) => [String(p.id), p])).values()];
         const sorted = unique
-          .sort((a: { name?: string }, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')))
+          .sort((a: { name?: string }, b: { name?: string }) => String(a?.name || '').localeCompare(String(b?.name || '')))
           .map((p: { id?: string; name?: string }) => ({ id: String(p.id), name: String(p.name) }));
 
         setSeasonOptions(sorted);

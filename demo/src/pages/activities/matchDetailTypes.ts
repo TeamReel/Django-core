@@ -37,7 +37,7 @@ export type ActivityEvent = {
   team_project?: { id: string; name: string };
   member?: { id: string; user_name?: string };
   related_member?: { id: string; user_name?: string };
-  data?: any;
+  data?: Record<string, unknown>;
 };
 
 export type OrgMember = {
@@ -59,7 +59,7 @@ export type SeasonSquadParticipation = {
   period?: { id: string; name?: string };
   role?: string;
   status?: string;
-  data?: any;
+  data?: Record<string, unknown>;
 };
 
 export type ProjectMember = {
@@ -87,7 +87,16 @@ export type MatchDetail = {
   project: { id: string; name: string; slug?: string };
   opponent_project?: { id: string; name: string; slug?: string };
   period?: { id: string; name: string; parent_period?: { id: string; name: string } | null };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown> & {
+    status?: string;
+    venue?: string;
+    is_home?: boolean;
+    home_score?: number;
+    away_score?: number;
+    formation?: string;
+    lineup?: { formation?: string; goalkeeper?: string[]; player?: string[]; bench?: Record<string, string> };
+    teamreel?: { match_context?: { is_home?: boolean; venue?: string; opponent_club_id?: string } };
+  };
   participations?: Participation[];
   events?: ActivityEvent[];
 };
@@ -122,14 +131,14 @@ export const looksLikeIdentifier = (value: string): boolean => {
 };
 
 export const getEnvelopeData = <T,>(raw: unknown): T => {
-  const r = raw as Record<string, any>;
+  const r = raw as Record<string, unknown>;
   return (r?.data ?? raw) as T;
 };
 
 export const getEnvelopeListResults = <T,>(raw: unknown): T[] => {
-  const r = raw as Record<string, any>;
-  const envelope = r?.data ?? r;
-  const results = envelope?.results ?? envelope?.data?.results ?? envelope?.data ?? envelope;
+  const r = raw as Record<string, unknown>;
+  const envelope = (r?.data ?? r) as Record<string, unknown>;
+  const results = (envelope as Record<string, unknown>)?.results ?? ((envelope as Record<string, unknown>)?.data as Record<string, unknown>)?.results ?? (envelope as Record<string, unknown>)?.data ?? envelope;
   return Array.isArray(results) ? (results as T[]) : [];
 };
 
@@ -152,7 +161,7 @@ export const buildTemplateFlagKeys = (t: ContentTemplate): string[] => {
   return keys;
 };
 
-export const isTemplateEnabled = (t: ContentTemplate, flags: Record<string, any>): boolean => {
+export const isTemplateEnabled = (t: ContentTemplate, flags: Record<string, unknown>): boolean => {
   const keys = buildTemplateFlagKeys(t);
   if (keys.length === 0) return true;
   return keys.some((k) => {
@@ -207,7 +216,7 @@ export interface MatchDetailDataReturn {
   /* active context */
   activatingContext: boolean;
   setActivatingContext: (v: boolean) => void;
-  activeContext: any | null;
+  activeContext: Record<string, unknown> | null;
   setActiveContextState: (v: Record<string, unknown> | null) => void;
 
   /* modals */
@@ -330,7 +339,7 @@ export interface MatchDetailDataReturn {
   saveMatchEdits: (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => Promise<void>;
   handleDeleteMatch: () => Promise<void>;
   createParticipation: (memberId: string, side: 'home' | 'away') => Promise<void>;
-  updateParticipation: (p: Participation, patch: any) => Promise<void>;
+  updateParticipation: (p: Participation, patch: Record<string, unknown>) => Promise<void>;
   deleteParticipation: (p: Participation) => Promise<void>;
   bulkCreateParticipations: (memberIds: string[], side: 'home' | 'away') => Promise<void>;
   bulkDeleteParticipations: (participationIds: string[]) => Promise<void>;

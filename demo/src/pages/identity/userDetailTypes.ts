@@ -34,7 +34,7 @@ export interface UserDetailDataReturn {
     userProjects: Project[];
     primaryOrgSlug: string;
     clubMemberships: Record<string, unknown>[];
-    directClubMembershipById: Map<string, any>;
+    directClubMembershipById: Map<string, { role?: string; slug?: string; membership_id?: string; [key: string]: unknown }>;
     teamMemberships: Record<string, unknown>[];
     clubsForTab: Project[];
     clubSlugById: Map<string, string>;
@@ -49,10 +49,10 @@ export interface UserDetailDataReturn {
     }>;
     hierarchySearch: string;
     setHierarchySearch: (v: string) => void;
-    hierarchyRows: Array<any>;
+    hierarchyRows: Array<{ clubName: string; clubSlug: string; teamId: string; teamName: string; teamPath: string; seasonId: string; seasonName: string; seasonPath: string; [key: string]: unknown }>;
 
     /* relations */
-    clubsById: Map<string, any>;
+    clubsById: Map<string, Record<string, unknown>>;
     linkedCompetitions: Period[];
     linkedMatches: Activity[];
     loadingRelations: boolean;
@@ -97,10 +97,10 @@ export interface UserDetailDataReturn {
     /* project membership CRUD */
     updateProjectMembershipRole: (
         projectId: string,
-        directMembershipId: any,
+        directMembershipId: string | undefined,
         role: string,
     ) => Promise<void>;
-    removeProjectMembership: (projectId: string, directMembershipId?: any) => Promise<void>;
+    removeProjectMembership: (projectId: string, directMembershipId?: string | undefined) => Promise<void>;
 
     /* modal state */
     isViewModalOpen: boolean;
@@ -113,8 +113,8 @@ export interface UserDetailDataReturn {
     setIsCreateTxnModalOpen: (v: boolean) => void;
     isMatchEditModalOpen: boolean;
     setIsMatchEditModalOpen: (v: boolean) => void;
-    selectedEditMatch: any | null;
-    setSelectedEditMatch: (v: Record<string, unknown> | null) => void;
+    selectedEditMatch: Activity | null;
+    setSelectedEditMatch: (v: Activity | null) => void;
     isEditMembershipModalOpen: boolean;
     setIsEditMembershipModalOpen: (v: boolean) => void;
     editingMembership: {

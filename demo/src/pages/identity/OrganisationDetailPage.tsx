@@ -69,8 +69,8 @@ export const OrganisationDetailPage: React.FC = () => {
 
   const org = d.org;
   const isActive =
-    String(d.activeContext?.organisation?.id ?? '') === String(org?.id ?? '') ||
-    d.activeContext?.organisation?.slug === org?.slug;
+    String((d.activeContext?.organisation as Record<string, unknown> | undefined)?.id ?? '') === String(org?.id ?? '') ||
+    (d.activeContext?.organisation as Record<string, unknown> | undefined)?.slug === org?.slug;
 
   return (
     <>
@@ -202,7 +202,7 @@ export const OrganisationDetailPage: React.FC = () => {
           org={org}
           currentOrgSlug={d.currentOrgSlug}
           currentOrgId={d.currentOrgId}
-          permissionContext={d.permissionContext}
+          permissionContext={d.permissionContext!}
           getApiV1BaseUrl={d.getApiV1BaseUrl}
           getCsrfToken={d.getCsrfToken}
           fetchClubsPage={d.fetchClubsPage}
@@ -257,7 +257,7 @@ export const OrganisationDetailPage: React.FC = () => {
           setIsOrgDetailModalOpen={d.setIsOrgDetailModalOpen}
           isOrgEditModalOpen={d.isOrgEditModalOpen}
           setIsOrgEditModalOpen={d.setIsOrgEditModalOpen}
-          detailUser={d.detailUser}
+          detailUser={d.detailUser as { id: string; email: string; first_name: string; last_name: string; is_active: boolean; role?: string } | null}
           isUserDetailModalOpen={d.isUserDetailModalOpen}
           setIsUserDetailModalOpen={d.setIsUserDetailModalOpen}
           createModalOrganisations={d.createModalOrganisations}

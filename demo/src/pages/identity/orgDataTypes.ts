@@ -37,14 +37,14 @@ export interface OrgModalState {
   setIsCreateMatchModalOpen: (v: boolean) => void;
   isEditMemberRoleModalOpen: boolean;
   setIsEditMemberRoleModalOpen: (v: boolean) => void;
-  editingMember: any;
+  editingMember: Record<string, unknown> | null;
   setEditingMember: (v: Record<string, unknown>) => void;
   isOrgDetailModalOpen: boolean;
   setIsOrgDetailModalOpen: (v: boolean) => void;
   isOrgEditModalOpen: boolean;
   setIsOrgEditModalOpen: (v: boolean) => void;
-  detailUser: any;
-  setDetailUser: (v: Record<string, unknown>) => void;
+  detailUser: User | null;
+  setDetailUser: (v: User | null) => void;
   isUserDetailModalOpen: boolean;
   setIsUserDetailModalOpen: (v: boolean) => void;
 }
@@ -126,7 +126,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
   /* --- route / identity ----------------------------------------- */
   id: string | undefined;
   org: Organisation | null;
-  resolvedOrg: any;
+  resolvedOrg: Organisation | undefined;
   currentOrgSlug: string | undefined;
   currentOrgId: string | undefined;
   orgSlugOrId: string;
@@ -143,7 +143,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
 
   /* --- active context ------------------------------------------- */
   activatingContext: boolean;
-  activeContext: any;
+  activeContext: Record<string, unknown> | null;
   handleActivateContext: () => Promise<void>;
 
   /* --- members -------------------------------------------------- */
@@ -212,7 +212,7 @@ export interface OrgDataReturn extends OrgModalState, OrgFilterState {
 
   /* --- permissions ---------------------------------------------- */
   isSuperAdmin: boolean;
-  permissionContext: any;
+  permissionContext: Record<string, unknown> | null;
   userCanEditOrg: boolean;
   userCanDeleteOrg: boolean;
   userCanInvite: boolean;

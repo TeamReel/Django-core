@@ -124,13 +124,14 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
         </div>
 
         {(() => {
-          const membership = activeContext?.membership;
+          const membership = activeContext?.membership as Record<string, unknown> | undefined;
+          const memberUser = membership?.user as Record<string, unknown> | undefined;
           const membershipId = String(membership?.id || '').trim();
-          const memberName = String(membership?.user?.name || membership?.user?.email || '').trim();
-          const orgSlug = String(activeContext?.organisation?.slug || '').trim();
-          const clubSlug = String(activeContext?.club?.slug || '').trim();
-          const teamSlug = String(activeContext?.team?.slug || '').trim();
-          const seasonKey = String(activeContext?.season?.key || '').trim();
+          const memberName = String(memberUser?.name || memberUser?.email || '').trim();
+          const orgSlug = String((activeContext?.organisation as Record<string, unknown> | undefined)?.slug || '').trim();
+          const clubSlug = String((activeContext?.club as Record<string, unknown> | undefined)?.slug || '').trim();
+          const teamSlug = String((activeContext?.team as Record<string, unknown> | undefined)?.slug || '').trim();
+          const seasonKey = String((activeContext?.season as Record<string, unknown> | undefined)?.key || '').trim();
           if (!membershipId) return null;
           const canLink = Boolean(orgSlug && clubSlug && teamSlug && seasonKey);
           const href = canLink

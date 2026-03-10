@@ -4,10 +4,10 @@ export type ProjectOption = {
   id: string | number;
   name: string;
   slug?: string;
-  organisation?: any;
-  parent_id?: any;
-  parent_project_id?: any;
-  parent_project?: any;
+  organisation?: { id?: string | number; name?: string; slug?: string } | string | number;
+  parent_id?: string | number | null;
+  parent_project_id?: string | number | null;
+  parent_project?: { id?: string | number; name?: string } | string | number | null;
 };
 
 export type UserOption = {

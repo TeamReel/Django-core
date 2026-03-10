@@ -47,7 +47,9 @@ export const getProjectIdentity = (p: ProjectOption & { metadata?: { identity?: 
 };
 
 export const getProjectOrganisationId = (p: ProjectOption): string | null => {
-  const org = typeof p.organisation === 'string' ? p.organisation : p.organisation?.id;
+  const org = typeof p.organisation === 'string' || typeof p.organisation === 'number'
+    ? p.organisation
+    : p.organisation?.id;
   return org ? String(org) : null;
 };
 

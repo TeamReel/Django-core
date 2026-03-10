@@ -172,7 +172,7 @@ export const UserDetailModals: React.FC<UserDetailModalsProps> = ({ data }) => {
           setIsMatchEditModalOpen(false);
           setSelectedEditMatch(null);
         }}
-        match={selectedEditMatch}
+        match={selectedEditMatch as { id: string; title: string } | null}
         onSave={async (payload) => {
           if (!selectedEditMatch) return;
           await saveMatchEdits(selectedEditMatch, payload);

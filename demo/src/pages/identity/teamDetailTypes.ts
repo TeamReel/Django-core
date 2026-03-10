@@ -23,8 +23,8 @@ export type Period = {
   parent_period_id?: string | number | null;
   parent_period?: { id?: string | number } | null;
   type?: string;
-  data?: any;
-  metadata?: any;
+  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
   activities_count?: number;
 };
 
@@ -80,7 +80,7 @@ export const isSeasonPeriod = (p: Record<string, any>): boolean => {
   return true;
 };
 
-export const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
+export const mergeUniqueById = <T extends { id: string | number }>(items: T[]): T[] => {
   const seen = new Set<string>();
   const out: T[] = [];
   for (const item of items || []) {

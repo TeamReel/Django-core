@@ -354,7 +354,8 @@ export function usePreferencesData(): PreferencesDataReturn {
 
   return {
     resolvedMode,
-    user, setUser,
+    user,
+    setUser,
     preferences, setPreferences,
     initialPreferences, effectivePrefs,
     loading, saving, success,

@@ -177,7 +177,7 @@ export function useUsageEvents() {
       setError(null);
 
       const userId = user.id;
-      const testEvent: any = {
+      const testEvent: Record<string, unknown> = {
         event_type: 'test_action',
         user_id: userId,
         metadata: { source: 'demo', mode: editMode },

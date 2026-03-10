@@ -20,7 +20,7 @@ import type { Organisation, Project, Period, Activity } from '../../types';
 
 export interface CascadingEntitySelectionReturn {
   /* active context */
-  activeContext: any | null;
+  activeContext: Record<string, unknown> | null;
   activeContextLoading: boolean;
   activeContextError: string | null;
   savingContext: boolean;
@@ -69,7 +69,7 @@ export interface CascadingEntitySelectionReturn {
 /* ================================================================== */
 
 export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
-  const [activeContext, setActiveContext] = useState<any | null>(null);
+  const [activeContext, setActiveContext] = useState<Record<string, unknown> | null>(null);
   const [activeContextLoading, setActiveContextLoading] = useState(false);
   const [activeContextError, setActiveContextError] = useState<string | null>(null);
   const [savingContext, setSavingContext] = useState(false);
@@ -104,9 +104,15 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     return String(org?.slug || key).trim();
   };
 
-  const deriveSelectionFromActiveContext = (ctx: any) => {
-    const rawOrgId = String(ctx?.organisation?.id || '').trim();
-    const rawOrgSlug = String(ctx?.organisation?.slug || '').trim();
+  const deriveSelectionFromActiveContext = (ctx: Record<string, unknown>) => {
+    const ctxOrg = ctx?.organisation as Record<string, unknown> | undefined;
+    const ctxClub = ctx?.club as Record<string, unknown> | undefined;
+    const ctxTeam = ctx?.team as Record<string, unknown> | undefined;
+    const ctxSeason = ctx?.season as Record<string, unknown> | undefined;
+    const ctxCompetition = ctx?.competition as Record<string, unknown> | undefined;
+    const ctxMatch = ctx?.match as Record<string, unknown> | undefined;
+    const rawOrgId = String(ctxOrg?.id || '').trim();
+    const rawOrgSlug = String(ctxOrg?.slug || '').trim();
     const resolvedOrgId = rawOrgId
       ? rawOrgId
       : (rawOrgSlug
@@ -114,11 +120,11 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
           : '');
     return {
       orgId: resolvedOrgId,
-      clubId: String(ctx?.club?.id || '').trim(),
-      teamId: String(ctx?.team?.id || '').trim(),
-      seasonId: String(ctx?.season?.id || '').trim(),
-      competitionId: String(ctx?.competition?.id || '').trim(),
-      matchId: String(ctx?.match?.id || '').trim(),
+      clubId: String(ctxClub?.id || '').trim(),
+      teamId: String(ctxTeam?.id || '').trim(),
+      seasonId: String(ctxSeason?.id || '').trim(),
+      competitionId: String(ctxCompetition?.id || '').trim(),
+      matchId: String(ctxMatch?.id || '').trim(),
     };
   };
 
@@ -157,10 +163,10 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
     }
   };
 
-  const extractPaginated = (raw: any) => {
-    const data = raw?.data ?? raw;
-    const results = (Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : [])) as any[];
-    const next = String(data?.next || raw?.next || '').trim();
+  const extractPaginated = (raw: unknown) => {
+    const data = (raw as Record<string, unknown>)?.data ?? raw;
+    const results = (Array.isArray((data as Record<string, unknown>)?.results) ? (data as Record<string, unknown>).results : (Array.isArray(data) ? data : [])) as Record<string, unknown>[];
+    const next = String((data as Record<string, unknown>)?.next || (raw as Record<string, unknown>)?.next || '').trim();
     return { results, next };
   };
 
@@ -290,7 +296,8 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         };
         const filterRootPeriods = (periods: Period[]) => {
           return periods.filter((p) => {
-            const parent = (p as any)?.parent_period_id ?? (p as any)?.parent_period?.id ?? null;
+            const pRecord = p as unknown as Record<string, unknown>;
+            const parent = pRecord?.parent_period_id ?? (pRecord?.parent_period as Record<string, unknown> | null)?.id ?? null;
             return !parent;
           });
         };

@@ -1,4 +1,4 @@
-import type { Activity, Project } from '../../types';
+import type { Activity, Project, User } from '../../types';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
@@ -41,7 +41,7 @@ interface UseOrgDataFetchingParams {
   teamsLoading: boolean;
   orgPeriods: OrgPeriodRecord[];
   orgPeriodsLoading: boolean;
-  members: any[];
+  members: User[];
   membersLoading: boolean;
   // Refs
   teamsFetchedForOrgRef: React.MutableRefObject<string>;
@@ -69,7 +69,7 @@ interface UseOrgDataFetchingParams {
   setTeamSeasonsCountById: (v: Record<string, number>) => void;
   setTeamCompetitionsCountById: (v: Record<string, number>) => void;
   setTeamMatchesCountById: (v: Record<string, number>) => void;
-  setMembers: (v: any[]) => void;
+  setMembers: (v: User[]) => void;
   setMembersLoading: (v: boolean) => void;
 }
 
@@ -115,12 +115,12 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
       p.set('activity_type', 'match');
       p.set('organisation_id', organisationId);
       p.set('ordering', '-start_time');
-      const all = await fetchAllPages<any>(
+      const all = await fetchAllPages<Record<string, unknown>>(
         `${apiV1BaseUrl}/activities/?${p.toString()}`,
         { credentials: 'include' },
         { ttlMs: 30_000, cacheKey: `GET:activities:federation:matches:${organisationId}`, maxItems: 250 },
       );
-      setFederationMatches(Array.isArray(all) ? all : []);
+      setFederationMatches(Array.isArray(all) ? all as Activity[] : []);
     } catch (e) {
       logger.error('Failed to fetch federation matches', e);
       setFederationMatches([]);
@@ -159,9 +159,9 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     if (!currentOrgSlug) return;
     setClubsLoading(true);
     try {
-      const data = await api.get<any>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
+      const data = await api.get<Record<string, unknown>>(`/organisations/${currentOrgSlug}/projects/?page=${page}&page_size=${clubsPageSize}&parent_project__isnull=true`);
       const { results, count } = parseListEnvelope(data);
-      const clubsOnly = results.filter((p: any) => {
+      const clubsOnly = results.filter((p: Record<string, unknown>) => {
         const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
         return !parentId;
       });
@@ -195,12 +195,14 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         fetchAllPages<Project>(clubsUrl, { headers, credentials: 'include' }),
         fetchAllPages<Project>(teamsUrl, { headers, credentials: 'include' }),
       ]);
-      const clubsOnly = (clubsAll || []).filter((p: any) => {
-        const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
+      const clubsOnly = (clubsAll || []).filter((p: Project) => {
+        const pr = p as unknown as Record<string, unknown>;
+        const parentId = pr.parent_id ?? pr.parent ?? pr.parent_project ?? pr.parent_project_id ?? null;
         return !parentId;
       });
-      const teamsOnly = (teamsAll || []).filter((p: any) => {
-        const parentId = p.parent_id ?? p.parent ?? p.parent_project ?? p.parent_project_id ?? null;
+      const teamsOnly = (teamsAll || []).filter((p: Project) => {
+        const pr = p as unknown as Record<string, unknown>;
+        const parentId = pr.parent_id ?? pr.parent ?? pr.parent_project ?? pr.parent_project_id ?? null;
         return Boolean(parentId);
       });
       setAllClubsForTeams(clubsOnly);
@@ -275,7 +277,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     setOrgPeriodsLoading(true);
     const apiV1BaseUrl = getApiV1BaseUrl();
     try {
-      const unique = new Map<string, any>();
+      const unique = new Map<string, Record<string, unknown>>();
       const chunkSize = 6;
       const teamChunks = [];
       for (let i = 0; i < teams.length; i += chunkSize) teamChunks.push(teams.slice(i, i + chunkSize));
@@ -287,7 +289,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
           p.set('page_size', '250');
           p.set('project_id', String(teamId));
           try {
-            const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${p.toString()}`, { credentials: 'include' });
+            const periods = await fetchAllPages<Record<string, unknown>>(`${apiV1BaseUrl}/periods/?${p.toString()}`, { credentials: 'include' });
             for (const pr of periods || []) { if (pr?.id) unique.set(String(pr.id), pr); }
           } catch (e) { logger.warn(`Failed to fetch periods for team ${teamId}`, e); }
         }));
@@ -308,21 +310,21 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
     const apiV1BaseUrl = getApiV1BaseUrl();
     try {
       if (currentOrgSlug) {
-        const teamsData = await api.list<any>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
+        const teamsData = await api.list<Record<string, unknown>>(`/organisations/${currentOrgSlug}/projects/`, { pageSize: 1, params: { parent_project__isnull: false } });
         setTeamsCount(teamsData.count);
       }
       {
         const p = new URLSearchParams();
         p.set('page_size', '250');
         p.set('organisation_id', organisationId);
-        const allPeriods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${p.toString()}`, { credentials: 'include' });
+        const allPeriods = await fetchAllPages<Record<string, unknown>>(`${apiV1BaseUrl}/periods/?${p.toString()}`, { credentials: 'include' });
         const list = Array.isArray(allPeriods) ? allPeriods : [];
         setOrgPeriods(list);
         if (list.length > 0) recomputePeriodCounts(list);
         else void fetchTeamsForOrg({ force: true });
       }
       {
-        const matchesData = await api.list<any>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
+        const matchesData = await api.list<Record<string, unknown>>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
         setMatchesCount(matchesData.count);
       }
     } catch (e) { logger.warn('[OrganisationDetailPage] Failed to fetch counts', e); }
@@ -332,9 +334,10 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
   const fetchMembers = async (force = false) => {
     if (membersLoading) return;
     const haveMembershipDetails = members.some((item) => {
-      const u = item?.user || item;
-      const details = item?.project_membership_details || u?.project_membership_details ||
-        item?.project_memberships_details || u?.project_memberships_details;
+      const r = item as unknown as Record<string, unknown>;
+      const u = r?.user || r;
+      const details = r?.project_membership_details || (u as Record<string, unknown>)?.project_membership_details ||
+        r?.project_memberships_details || (u as Record<string, unknown>)?.project_memberships_details;
       return Array.isArray(details);
     });
     if (!force && members.length > 0 && haveMembershipDetails) return;
@@ -349,7 +352,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
       p.set('include_project_membership_details', 'true');
       p.set('page_size', '250');
       const membersUrl = `${apiV1BaseUrl}/organisations/${currentOrgSlug}/members/?${p.toString()}`;
-      const allMembers = await fetchAllPages<any>(
+      const allMembers = await fetchAllPages<User>(
         membersUrl,
         { headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-Organisation-ID': orgId }, credentials: 'include' },
         force ? { bypass: true } : { ttlMs: 5 * 60_000 },

@@ -253,7 +253,7 @@ export function useUserDetailData(): UserDetailDataReturn {
     const backPath = orgId ? `/organisations/${orgId}/users` : '/users';
     const userDisplayName = api.user
         ? `${api.user.first_name || ''} ${api.user.last_name || ''}`.trim() ||
-          api.user.email || `User ${userId}`
+          String(api.user.email || '') || `User ${userId}`
         : `User ${userId}`;
 
     /* ----------------------------------------------------------------

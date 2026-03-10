@@ -327,7 +327,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const orgId = selectedOrganisationId;
     const list = orgId
       ? clubsOptions.filter((c) => {
-          const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+          const cOrg = typeof c.organisation === 'string' || typeof c.organisation === 'number' ? c.organisation : c.organisation?.id;
           return String(cOrg) === String(orgId);
         })
       : clubsOptions;
@@ -360,7 +360,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const orgId = String(selectedOpponentOrganisationId || '').trim();
     const list = orgId
       ? (opponentClubs || []).filter((c) => {
-          const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
+          const cOrg = typeof c.organisation === 'string' || typeof c.organisation === 'number' ? c.organisation : c.organisation?.id;
           return !cOrg || String(cOrg) === String(orgId);
         })
       : opponentClubs || [];

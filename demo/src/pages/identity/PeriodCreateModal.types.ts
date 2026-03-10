@@ -8,14 +8,14 @@ export type ProjectOption = {
   id: string | number;
   name: string;
   slug?: string;
-  organisation?: any;
-  parent_id?: any;
-  parent?: any;
-  parent_project_id?: any;
-  parent_project?: any;
+  organisation?: { id?: string | number; name?: string; slug?: string } | string | number;
+  parent_id?: string | number | null;
+  parent?: { id?: string | number; name?: string } | string | number | null;
+  parent_project_id?: string | number | null;
+  parent_project?: { id?: string | number; name?: string } | string | number | null;
 };
 
-export type PeriodOption = { id: string; name: string; slug?: string; project?: any; project_id?: string | number; parent_period?: any; parent_period_id?: any };
+export type PeriodOption = { id: string; name: string; slug?: string; project?: { id?: string | number; name?: string } | string | number; project_id?: string | number; parent_period?: { id?: string | number; name?: string } | null; parent_period_id?: string | number | null };
 
 export interface PeriodCreatePayload {
   name: string;

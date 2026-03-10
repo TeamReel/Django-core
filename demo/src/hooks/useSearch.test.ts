@@ -5,7 +5,7 @@ import { installFetchMock, restoreFetch, mockApiResponse } from '@/test/api-mock
 // Mock createApiClient to return an object whose .get() uses global fetch
 vi.mock('@django-core/api-client', () => ({
   createApiClient: () => ({
-    get: async (url: string, opts?: any) => {
+    get: async (url: string, opts?: Record<string, unknown>) => {
       const resp = await fetch(url, opts);
       const data = await resp.json();
       return { data };
@@ -37,7 +37,7 @@ describe('useSearch', () => {
   it('searchGlobal returns null for empty query', async () => {
     const { result } = renderHook(() => useSearch());
 
-    let res: any;
+    let res: unknown;
     await act(async () => {
       res = await result.current.searchGlobal('  ');
     });
@@ -52,7 +52,7 @@ describe('useSearch', () => {
 
     const { result } = renderHook(() => useSearch());
 
-    let res: any;
+    let res: unknown;
     await act(async () => {
       res = await result.current.searchGlobal('test');
     });
@@ -68,7 +68,7 @@ describe('useSearch', () => {
 
     const { result } = renderHook(() => useSearch());
 
-    let res: any;
+    let res: unknown;
     await act(async () => {
       res = await result.current.searchFiltered('team', ['projects', 'organisations'], 2);
     });

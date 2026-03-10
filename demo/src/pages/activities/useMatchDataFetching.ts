@@ -27,10 +27,10 @@ interface UseMatchDataFetchingParams {
   seasonsBasePath: string;
   seasonKeyOrId: string | null;
   orgSlugOrId: string;
-  club: any;
+  club: { id?: string | number; name?: string; [key: string]: unknown } | null;
   match: MatchDetail | null;
   navigate: (to: string, opts?: { replace?: boolean }) => void;
-  location: any;
+  location: { search: string; pathname: string };
   // Setters from formState
   setLoading: (v: boolean) => void;
   setError: (v: string | null) => void;
@@ -91,7 +91,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           // Fallback: search by slug via API when provider hasn't loaded yet
           if (!competitionUuid && resolvedSeasonId) {
             try {
-              const { results } = await api.list<any>('/periods/', {
+              const { results } = await api.list<Record<string, unknown>>('/periods/', {
                 params: { parent: resolvedSeasonId, slug: effectiveCompetitionIdVal },
               });
               if (results.length > 0) {
@@ -165,7 +165,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         setRosterLoading(true);
         setRosterError(null);
 
-        const asArray = (value: any): any[] => (Array.isArray(value) ? value : []);
+        const asArray = <T = unknown>(value: unknown): T[] => (Array.isArray(value) ? value as T[] : []);
         const buildSyntheticMember = (id: string, label: string): OrgMember => ({ id, user: { id, full_name: label } });
 
         const seasonUuid = String(resolvedSeasonId || '').trim();
@@ -174,7 +174,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           try {
             const params: Record<string, string | undefined> = {};
             if (withSeasonFilter && seasonUuid) params.period = seasonUuid;
-            const { results } = await api.list<any>(`/projects/${encodeURIComponent(String(match.project.id))}/members/`, {
+            const { results } = await api.list<ProjectMember>(`/projects/${encodeURIComponent(String(match.project.id))}/members/`, {
               pageSize: 500,
               params,
             });
@@ -207,10 +207,10 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         setTeamProjectMembers(projectMembers as ProjectMember[]);
 
         const projectUserIds = new Set(
-          asArray(projectMembers).map((m) => String(m?.user?.id ?? m?.user_id ?? '')).filter(Boolean)
+          asArray<ProjectMember>(projectMembers).map((m) => String(m?.user?.id ?? m?.user_id ?? '')).filter(Boolean)
         );
 
-        const eligibleFromProjectMembers: OrgMember[] = asArray(projectMembers)
+        const eligibleFromProjectMembers: OrgMember[] = asArray<ProjectMember>(projectMembers)
           .map((m: OrgMember) => {
             const memberId = String(m?.organisation_membership_id || '').trim();
             if (!memberId) return null;
@@ -233,7 +233,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         setOrgMembersAll(orgMembers);
 
         const byOrgMembershipId = new Map<string, OrgMember>();
-        for (const m of asArray(orgMembers)) { if (m?.id) byOrgMembershipId.set(String(m.id), m); }
+        for (const m of asArray<OrgMember>(orgMembers)) { if (m?.id) byOrgMembershipId.set(String(m.id), m); }
 
         let preferredEligibleMembers: OrgMember[] | null = null;
         if (eligibleFromProjectMembers.length > 0) preferredEligibleMembers = eligibleFromProjectMembers;
@@ -244,11 +244,11 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
             try {
               const params: Record<string, string> = { period_id: seasonUuid };
               if (withRoleFilter) params.role = 'squad_member';
-              const { results } = await api.list<any>('/participations/', { pageSize: 500, params });
-              return { ok: true, status: 200, detail: '', list: results };
+              const { results } = await api.list<SeasonSquadParticipation>('/participations/', { pageSize: 500, params });
+              return { ok: true, status: 200, detail: '', list: results as SeasonSquadParticipation[] };
             } catch (_e: unknown) {
               const e = _e as { status?: number; message?: string };
-              return { ok: false, status: e?.status || 0, detail: e?.message || '', list: [] };
+              return { ok: false, status: e?.status || 0, detail: e?.message || '', list: [] as SeasonSquadParticipation[] };
             }
           };
 
@@ -280,7 +280,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
         }
 
         if (!preferredEligibleMembers || preferredEligibleMembers.length === 0) {
-          preferredEligibleMembers = asArray(orgMembers)
+          preferredEligibleMembers = asArray<OrgMember>(orgMembers)
             .filter((m: OrgMember) => m?.id && projectUserIds.has(String(m?.user?.id ?? '')))
             .sort((a: OrgMember, b: OrgMember) => {
               const an = String(a?.user?.full_name || `${a?.user?.first_name || ''} ${a?.user?.last_name || ''}`.trim() || a?.user?.email || '').toLowerCase();

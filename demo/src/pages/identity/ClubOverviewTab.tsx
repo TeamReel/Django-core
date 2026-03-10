@@ -13,8 +13,8 @@ type Period = {
   parent_period_id?: string | number | null;
   parent_period?: { id?: string | number } | null;
   type?: string;
-  data?: any;
-  metadata?: any;
+  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 };
 
 type OverviewMember = {
@@ -25,8 +25,8 @@ type OverviewMember = {
 };
 
 export interface ClubOverviewTabProps {
-  club: any;
-  org: any;
+  club: { name?: string; slug?: string; metadata?: Record<string, unknown>; [key: string]: unknown } | null;
+  org: { name?: string; [key: string]: unknown } | null;
   overviewError: string | null;
   overviewLoading: boolean;
   overviewTeams: Project[];
@@ -53,7 +53,7 @@ export function ClubOverviewTab({
   navigate,
   makeTabHref,
 }: ClubOverviewTabProps) {
-  const clubLocation = String(club?.metadata?.identity?.default_location || '').trim();
+  const clubLocation = String((club?.metadata?.identity as Record<string, unknown> | undefined)?.default_location || '').trim();
 
   return (
     <div className={ov.overviewRoot}>
