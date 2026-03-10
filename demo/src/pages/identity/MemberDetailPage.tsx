@@ -22,7 +22,7 @@ import styles from './MemberDetailPage.module.css';
 interface OrgMemberRecord {
   id: string;
   user?: { first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const MemberDetailPage: React.FC = () => {

@@ -9,10 +9,10 @@ const mockPatch = vi.fn();
 
 vi.mock('@/api', () => ({
   api: {
-    get: (...args: any[]) => mockGet(...args),
-    post: (...args: any[]) => mockPost(...args),
-    delete: (...args: any[]) => mockDelete(...args),
-    patch: (...args: any[]) => mockPatch(...args),
+    get: (...args: unknown[]) => mockGet(...args),
+    post: (...args: unknown[]) => mockPost(...args),
+    delete: (...args: unknown[]) => mockDelete(...args),
+    patch: (...args: unknown[]) => mockPatch(...args),
   },
 }));
 

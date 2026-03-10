@@ -27,7 +27,7 @@ interface ApiPeriod {
   id?: string | number;
   name?: string;
   slug?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface ApiUser {

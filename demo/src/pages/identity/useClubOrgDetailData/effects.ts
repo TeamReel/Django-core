@@ -145,8 +145,8 @@ export function useClubOrgEffects({
           params: { include_archived: 'true', parent_project__isnull: 'false' },
         });
         const clubTeams: Project[] = (teamsList || [])
-          .filter((t: any) => String(getTeamParentId(t) || '') === String(clubId))
-          .map((t: any) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
+          .filter((t: { id?: string; name?: string; organisation?: Record<string, unknown>; organisation_id?: string; slug?: string }) => String(getTeamParentId(t) || '') === String(clubId))
+          .map((t: { id?: string; name?: string; organisation?: Record<string, unknown>; organisation_id?: string; slug?: string }) => ({ id: String(t?.id || '').trim(), name: String(t?.name || 'Team'), slug: t?.slug ? String(t.slug) : undefined, organisation_id: t?.organisation_id ? String(t.organisation_id) : undefined, organisation: t?.organisation }))
           .filter((t: Project) => Boolean(t.id));
 
         const teamIds = clubTeams.map((t) => String(t.id)).filter(Boolean);

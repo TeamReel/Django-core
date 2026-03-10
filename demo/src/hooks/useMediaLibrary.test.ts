@@ -6,7 +6,7 @@ import { useMediaLibrary } from './useMediaLibrary';
 const mockList = vi.fn();
 vi.mock('@/api', () => ({
   api: {
-    list: (...args: any[]) => mockList(...args),
+    list: (...args: unknown[]) => mockList(...args),
   },
 }));
 

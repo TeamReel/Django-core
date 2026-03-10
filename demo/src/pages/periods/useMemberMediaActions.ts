@@ -29,8 +29,8 @@ export interface MemberMediaActionsParams {
   membership: any | null;
   setMembership: React.Dispatch<React.SetStateAction<any | null>>;
   membershipId: string;
-  project: { id: string; [k: string]: any } | null;
-  org: { id: string; [k: string]: any } | null;
+  project: { id: string; organisation?: { id: string }; [k: string]: unknown } | null;
+  org: { id: string; [k: string]: unknown } | null;
   apiBaseUrl: string;
 }
 

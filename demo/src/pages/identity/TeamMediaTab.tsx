@@ -36,7 +36,7 @@ const STATE_LABEL: Record<string, string> = {
 interface SquadMember {
   id?: string | number;
   user?: { id?: string | number; [key: string]: unknown };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface TeamMediaTabProps {

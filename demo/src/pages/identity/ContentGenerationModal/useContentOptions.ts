@@ -49,7 +49,7 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
         const data = await api.get<any>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.results || []);
         setAppBackgrounds(
-          items.filter((a: any) => a.url).map((a: any) => ({
+          items.filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url).map((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => ({
             id: a.id, url: a.url, label: a.label || '', profile_name: a.project_name || a.profile_name || '',
           })),
         );

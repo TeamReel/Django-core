@@ -111,6 +111,6 @@ describe('useSeasonsData', () => {
 
     await waitFor(() => expect(result.current.seasonsLoading).toBe(false));
 
-    expect(result.current.sortedSeasons.map((s: any) => s.name)).toEqual(['Alpha', 'Beta']);
+    expect(result.current.sortedSeasons.map((s: { name?: string }) => s.name)).toEqual(['Alpha', 'Beta']);
   });
 });

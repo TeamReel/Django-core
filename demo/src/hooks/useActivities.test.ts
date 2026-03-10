@@ -4,7 +4,7 @@ import { useActivities } from './useActivities';
 
 const mockList = vi.fn();
 vi.mock('@/api', () => ({
-  api: { list: (...args: any[]) => mockList(...args) },
+  api: { list: (...args: unknown[]) => mockList(...args) },
 }));
 
 describe('useActivities', () => {

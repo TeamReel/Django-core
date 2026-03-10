@@ -179,7 +179,8 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
               params,
             });
             return { ok: true, status: 200, detail: '', list: results };
-          } catch (e: any) {
+          } catch (_e: unknown) {
+            const e = _e as { status?: number; message?: string };
             return { ok: false, status: e?.status || 0, detail: e?.message || '', list: [] };
           }
         };
@@ -245,7 +246,8 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
               if (withRoleFilter) params.role = 'squad_member';
               const { results } = await api.list<any>('/participations/', { pageSize: 500, params });
               return { ok: true, status: 200, detail: '', list: results };
-            } catch (e: any) {
+            } catch (_e: unknown) {
+              const e = _e as { status?: number; message?: string };
               return { ok: false, status: e?.status || 0, detail: e?.message || '', list: [] };
             }
           };

@@ -14,7 +14,7 @@ interface MatchRecord {
   date?: string;
   start_time?: string;
   metadata?: Record<string, unknown>;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface TeamHierarchyTabProps {

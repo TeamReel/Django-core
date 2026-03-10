@@ -91,11 +91,11 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
           pageSize: 250,
         });
         const roots = results
-          .filter((p: any) => p?.parent_period_id == null && !p?.parent_period);
-        const unique = [...new Map(roots.map((p: any) => [String(p.id), p])).values()];
+          .filter((p: { id?: string; name?: string; parent_period?: Record<string, unknown>; parent_period_id?: string }) => p?.parent_period_id == null && !p?.parent_period);
+        const unique = [...new Map(roots.map((p: { id?: string; name?: string }) => [String(p.id), p])).values()];
         const sorted = unique
-          .sort((a: any, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')))
-          .map((p: any) => ({ id: String(p.id), name: String(p.name) }));
+          .sort((a: { name?: string }, b: any) => String(a?.name || '').localeCompare(String(b?.name || '')))
+          .map((p: { id?: string; name?: string }) => ({ id: String(p.id), name: String(p.name) }));
 
         setSeasonOptions(sorted);
       } catch {

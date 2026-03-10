@@ -6,10 +6,10 @@ const mockGetDownloadUrl = vi.fn();
 
 vi.mock('@/api', () => ({
   api: {
-    listAll: (...args: any[]) => mockListAll(...args),
+    listAll: (...args: unknown[]) => mockListAll(...args),
   },
   filesApi: {
-    getDownloadUrl: (...args: any[]) => mockGetDownloadUrl(...args),
+    getDownloadUrl: (...args: unknown[]) => mockGetDownloadUrl(...args),
   },
 }));
 

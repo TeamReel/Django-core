@@ -10,12 +10,12 @@ const mockUpload = vi.fn();
 
 vi.mock('@/api', () => ({
   api: {
-    list: (...args: any[]) => mockList(...args),
-    get: (...args: any[]) => mockGet(...args),
-    post: (...args: any[]) => mockPost(...args),
-    patch: (...args: any[]) => mockPatch(...args),
-    delete: (...args: any[]) => mockDelete(...args),
-    upload: (...args: any[]) => mockUpload(...args),
+    list: (...args: unknown[]) => mockList(...args),
+    get: (...args: unknown[]) => mockGet(...args),
+    post: (...args: unknown[]) => mockPost(...args),
+    patch: (...args: unknown[]) => mockPatch(...args),
+    delete: (...args: unknown[]) => mockDelete(...args),
+    upload: (...args: unknown[]) => mockUpload(...args),
   },
 }));
 

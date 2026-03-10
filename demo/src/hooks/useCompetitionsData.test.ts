@@ -115,7 +115,7 @@ describe('useCompetitionsData', () => {
 
     await waitFor(() => expect(result.current.competitionsLoading).toBe(false));
 
-    const names = result.current.sortedCompetitions.map((c: any) => c.name);
+    const names = result.current.sortedCompetitions.map((c: { name?: string }) => c.name);
     expect(names).toEqual(['Alpha League', 'Zulu Cup']);
   });
 });

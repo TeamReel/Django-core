@@ -10,7 +10,7 @@ interface RosterMember {
   user?: { id?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
   user_id?: string;
   role?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface EligibleMembersCardProps {

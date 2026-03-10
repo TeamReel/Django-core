@@ -97,7 +97,8 @@ export function useUsageEvents() {
         setEvents(eventList);
         setTotal(totalCount);
         setDemoMode(false);
-      } catch (fetchErr: any) {
+      } catch (_fetchErr: unknown) {
+        const fetchErr = _fetchErr as { status?: number };
         if (fetchErr?.status === 404) {
         // Demo mode fallback
         const demoEvents: UsageEvent[] = [
@@ -206,7 +207,8 @@ export function useUsageEvents() {
         try {
           await api.post('/usage-events/', testEvent);
           await fetchEvents();
-        } catch (postErr: any) {
+        } catch (_postErr: unknown) {
+          const postErr = _postErr as { status?: number; body?: unknown };
           logger.debug('Backend error during test event', postErr?.status, postErr?.body);
           if (postErr?.status === 404) {
             setDemoMode(true);

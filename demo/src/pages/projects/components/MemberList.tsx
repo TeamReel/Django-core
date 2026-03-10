@@ -22,7 +22,7 @@ interface Member {
   metadata?: {
     position?: string;
     shirt_number?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 

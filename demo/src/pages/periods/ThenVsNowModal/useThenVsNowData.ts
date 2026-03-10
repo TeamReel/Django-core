@@ -42,8 +42,8 @@ export function useThenVsNowData({
         const data = await api.get<any>('/branding/assets/app-backgrounds/');
         const items = Array.isArray(data) ? data : (data?.data || data?.results || []);
         const bgs = items
-          .filter((a: any) => a.url)
-          .map((a: any) => ({
+          .filter((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => a.url)
+          .map((a: { id?: string; label?: string; profile_name?: string; project_name?: string; url?: string }) => ({
             id: a.id,
             url: a.url,
             label: a.label || '',

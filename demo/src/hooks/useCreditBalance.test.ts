@@ -6,8 +6,8 @@ const mockOrgGet = vi.fn();
 const mockListPolicies = vi.fn();
 
 vi.mock('@/api', () => ({
-  organisationsApi: { get: (...args: any[]) => mockOrgGet(...args) },
-  transactionsApi: { listBalancePolicies: (...args: any[]) => mockListPolicies(...args) },
+  organisationsApi: { get: (...args: unknown[]) => mockOrgGet(...args) },
+  transactionsApi: { listBalancePolicies: (...args: unknown[]) => mockListPolicies(...args) },
 }));
 
 describe('useCreditBalance', () => {

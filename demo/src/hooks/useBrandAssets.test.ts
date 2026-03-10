@@ -6,8 +6,8 @@ const mockListAllProfileAssets = vi.fn();
 
 vi.mock('@/api', () => ({
   brandingApi: {
-    listAllProfiles: (...args: any[]) => mockListAllProfiles(...args),
-    listAllProfileAssets: (...args: any[]) => mockListAllProfileAssets(...args),
+    listAllProfiles: (...args: unknown[]) => mockListAllProfiles(...args),
+    listAllProfileAssets: (...args: unknown[]) => mockListAllProfileAssets(...args),
   },
 }));
 

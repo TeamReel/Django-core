@@ -3,7 +3,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 
 const mockGet = vi.fn();
 vi.mock('@/api', () => ({
-  api: { get: (...args: any[]) => mockGet(...args) },
+  api: { get: (...args: unknown[]) => mockGet(...args) },
 }));
 
 import { useGenerationJobs } from './useGenerationJobs';

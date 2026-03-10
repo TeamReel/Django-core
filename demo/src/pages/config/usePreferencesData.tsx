@@ -286,7 +286,8 @@ export function usePreferencesData(): PreferencesDataReturn {
       try {
         const effective = await api.get<I18nEffectivePreferences>(`/preferences/me/`);
         setEffectivePrefs(effective);
-      } catch (e: any) {
+      } catch (_e: unknown) {
+        const e = _e as { status?: number };
         if (e?.status === 404) {
           setEffectivePrefs({ language: fullLangCode, timezone: 'UTC', date_format: 'YYYY-MM-DD', time_format: '24h', currency: 'USD', resolved_from: 'user' });
         } else {

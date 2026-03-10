@@ -49,7 +49,8 @@ export default function ProjectListPage() {
         setProjects(projectsList);
         setIsLoading(false);
       })
-      .catch((err: any) => {
+      .catch((_err: unknown) => {
+        const err = _err as { message?: string; detail?: string };
         setError(err.message || err.detail || 'Failed to fetch projects');
         setIsLoading(false);
       });

@@ -7,9 +7,9 @@ const mockPost = vi.fn();
 
 vi.mock('@/api', () => ({
   api: {
-    list: (...args: any[]) => mockList(...args),
-    patch: (...args: any[]) => mockPatch(...args),
-    post: (...args: any[]) => mockPost(...args),
+    list: (...args: unknown[]) => mockList(...args),
+    patch: (...args: unknown[]) => mockPatch(...args),
+    post: (...args: unknown[]) => mockPost(...args),
   },
 }));
 

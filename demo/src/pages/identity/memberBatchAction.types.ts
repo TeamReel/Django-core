@@ -23,7 +23,7 @@ export interface BatchMemberEntry {
       [key: string]: unknown;
     }>;
     project_membership_id?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface TeamOption {

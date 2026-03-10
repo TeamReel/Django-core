@@ -141,7 +141,8 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
 
     try {
       await api.delete(`/organisations/${orgSlug}/members/${membershipId}/`);
-    } catch (err: any) {
+    } catch (_err: unknown) {
+      const err = _err as { message?: string };
       alert(err?.message || `Failed to delete member`);
       return;
     }
@@ -164,7 +165,8 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
 
     try {
       await api.delete(`/projects/${preselectedTeamId}/members/${projectMembershipId}/`);
-    } catch (err: any) {
+    } catch (_err: unknown) {
+      const err = _err as { message?: string };
       logger.error('Delete team member failed', err);
       alert(err?.message || `Failed to remove member`);
       return;

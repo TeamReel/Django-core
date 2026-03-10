@@ -95,7 +95,7 @@ export const getUserTeamreelRoleNames = (
   const memberships = Array.isArray(user?.project_memberships)
     ? user.project_memberships
     : [];
-  const scopedMemberships = memberships.filter((m: any) => {
+  const scopedMemberships = memberships.filter((m: { project?: Record<string, unknown>; project_id?: string; role?: string }) => {
     const projectId = String(m?.project_id ?? m?.project?.id ?? '').trim();
     if (!projectId) return false;
     if (selectedTeamId) return projectId === String(selectedTeamId);
