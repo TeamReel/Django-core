@@ -72,8 +72,8 @@ export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
             const cOrg = typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
             return String(cOrg) === String(selectedOrgId);
           })
-          .sort((a: any, b: any) => String(a.name).localeCompare(String(b.name)))
-          .map((c: any) => (
+          .sort((a: ClubFilterOption, b: ClubFilterOption) => String(a.name).localeCompare(String(b.name)))
+          .map((c: ClubFilterOption) => (
             <option key={c.id} value={String(c.id)}>{c.name}</option>
           ))}
       </select>
@@ -95,7 +95,7 @@ export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
       className={dp.filterSelect}
     >
       <option value="all">Sport: All</option>
-      {categories.map((sport: any) => (
+      {categories.map((sport: SportCategoryOption) => (
         <option key={sport.id} value={sport.id}>{sport.sport_icon} {sport.name}</option>
       ))}
     </select>

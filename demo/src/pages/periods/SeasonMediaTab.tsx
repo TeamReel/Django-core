@@ -18,26 +18,28 @@ import MediaDesktopTable from './MediaDesktopTable';
 import { useSeasonMediaTabData, type SquadMember } from './useSeasonMediaTabData';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './SeasonMediaTab.module.css';
+import type { SeasonProject, SeasonOrganisation } from '../../types/season';
+import type { UseBrandProfileReturn } from '../../hooks/useBrandProfile';
 
 export type { SquadMember };
 
 export interface SeasonMediaTabProps {
   members: SquadMember[];
   membersLoading: boolean;
-  project: any;
-  org: any;
-  club: any;
+  project: SeasonProject | null;
+  org: SeasonOrganisation | null;
+  club: SeasonProject | null;
   apiBaseUrl: string;
   memberDetailHref: (membershipId: string) => string;
   brandLogoUrl: string | null;
   brandSponsorUrl: string | null;
-  batchBrandKits: Record<string, any>;
-  clubBrand: any;
+  batchBrandKits: Record<string, string | null>;
+  clubBrand: UseBrandProfileReturn;
   onMembersReload: () => void;
   /** Additional props for inline member detail panel */
   isTeamRoute?: boolean;
   userCanEditProject?: boolean;
-  teamBrand?: any;
+  teamBrand?: UseBrandProfileReturn;
 }
 
 const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({

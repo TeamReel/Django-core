@@ -10,19 +10,28 @@ import {
 import { CONTENT_TYPES } from '../../components/matchWizardTypes';
 import styles from './SeasonMatchesTab.module.css';
 
+/** Minimal match shape consumed by MatchCard — compatible with MatchRecord and Activity. */
+interface MatchCardMatch {
+  id: string;
+  start_time?: string;
+  location?: string;
+  period?: { id?: string; name?: string } | null;
+  metadata?: Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested dynamic metadata
+}
+
 // ── Helper re-exports used by the card ──
-function getLineupInfo(match: any) {
-  const lineupMeta = match?.metadata?.lineup;
+function getLineupInfo(match: MatchCardMatch) {
+  const lineupMeta = match?.metadata?.lineup as Record<string, unknown> | undefined;
   if (!lineupMeta) return { filled: false, count: 0, formation: '' };
-  const positions = lineupMeta.positions || [];
+  const positions = (lineupMeta.positions as unknown[]) || [];
   return {
     filled: positions.length > 0,
     count: positions.length,
-    formation: lineupMeta.formation || '',
+    formation: (lineupMeta.formation as string) || '',
   };
 }
 
-function getScoreDisplay(match: any): string | null {
+function getScoreDisplay(match: MatchCardMatch): string | null {
   const md = match?.metadata;
   if (!md) return null;
   const home = md.score_home ?? md.home_score;
@@ -41,12 +50,12 @@ interface ContentDetail {
 }
 
 export interface MatchCardProps {
-  match: any;
+  match: MatchCardMatch;
   expanded: boolean;
   onToggle: () => void;
   contentDetail?: ContentDetail;
   contentLoading: boolean;
-  matchDisplayTitle: (m: Record<string, unknown>) => string;
+  matchDisplayTitle: (m: MatchCardMatch) => string;
   matchPath: string;
   isActive: boolean;
   onSetActive: () => void;
@@ -67,8 +76,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const date = match.start_time ? new Date(match.start_time) : null;
   const lineup = getLineupInfo(match);
   const score = getScoreDisplay(match);
-  const matchLocation = match.location || match.metadata?.venue || '';
-  const competition = match.period?.name || '';
+  const matchLocation = String(match.location || match.metadata?.venue || '');
+  const competition = String(match.period?.name || '');
 
   const metaParts: string[] = [];
   if (date) {

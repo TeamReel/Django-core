@@ -1,8 +1,9 @@
 import { useCallback } from 'react';
-import type { Period } from '../../types/season';
+import type { Period, SeasonProject, SeasonOrganisation } from '../../types/season';
 import type { SeasonSquadAddMemberPayload } from '../identity/seasonSquadAddMember.types';
 import { api } from '../../api/client';
 import { periodsApi, activitiesApi } from '../../api';
+import type { Period as ApiPeriod, Activity } from '../../types/api/activity';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { logger } from '@/utils/logger';
 
@@ -10,10 +11,19 @@ import { logger } from '@/utils/logger';
 
 type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 
+/** Minimal match record shape — structurally matches useSeasonDataFetching's MatchRecord */
+interface MatchRecord {
+  id: string;
+  slug?: string;
+  title?: string;
+  start_time?: string;
+  metadata?: Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested metadata
+}
+
 interface UseSeasonCrudActionsParams {
   apiBaseUrl: string;
-  org: any;
-  project: any;
+  org: SeasonOrganisation | null;
+  project: SeasonProject | null;
   season: Period | null;
   resolvedSeasonId: string | null;
   effectiveSeasonId: string | null;
@@ -22,11 +32,11 @@ interface UseSeasonCrudActionsParams {
   // State setters
   setSeason: Setter<Period | null>;
   setCompetitions: Setter<Period[]>;
-  setMatches: Setter<any[]>;
-  setMembers: Setter<any[]>;
+  setMatches: Setter<MatchRecord[]>;
+  setMembers: Setter<Record<string, unknown>[]>;
   setMembersReloadToken: Setter<number>;
   setActivatingContext: Setter<boolean>;
-  setActiveContextState: Setter<any>;
+  setActiveContextState: Setter<Record<string, unknown> | null>;
 }
 
 // ─── Hook: individual CRUD operations ────────────────────────────────────────
@@ -45,7 +55,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     const periodId = String(periodToEdit?.id || '').trim();
     if (!periodId) throw new Error('Missing period id');
 
-    const res = await periodsApi.update(periodId, patch as any);
+    const res = await periodsApi.update(periodId, patch as unknown as Partial<ApiPeriod>);
     const server = res && typeof res === 'object' ? res : null;
     const updated = server && typeof server === 'object' ? { ...periodToEdit, ...patch, ...server } : { ...periodToEdit, ...patch };
     if (String(updated?.id) === String(season?.id)) {
@@ -60,8 +70,8 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     const matchId = String(matchToEdit?.id || '').trim();
     if (!matchId) throw new Error('Missing match id');
 
-    const updated = await activitiesApi.update(matchId, patch as any) as any || { ...matchToEdit, ...patch };
-    setMatches((prev) => prev.map((m) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } : m)));
+    const updated = await activitiesApi.update(matchId, patch as unknown as Partial<Activity>) as unknown as Record<string, unknown> || { ...matchToEdit, ...patch };
+    setMatches((prev) => prev.map((m) => (String(m.id) === String(updated?.id) ? { ...m, ...updated } as MatchRecord : m)));
   };
 
   // ── Delete season handler ──
@@ -104,7 +114,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
     if (!teamIdValue || !seasonUuid || !userIdValue) return;
 
     try {
-      const body: any = {
+      const body: Record<string, unknown> = {
         user_id: Number(userIdValue),
         role: 'viewer',
         period_id: seasonUuid,
@@ -114,7 +124,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
         },
       };
 
-      const createdMembership = await api.post<any>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
+      const createdMembership = await api.post<Record<string, unknown>>(`/projects/${encodeURIComponent(teamIdValue)}/members/`, body);
 
       // Optimistically reflect the new membership in the current squad list.
       try {

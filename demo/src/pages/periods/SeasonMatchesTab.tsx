@@ -307,7 +307,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                   }}
                   contentDetail={contentCache[String(activeMatch.id)]}
                   contentLoading={loadingContent.has(String(activeMatch.id))}
-                  matchDisplayTitle={matchDisplayTitle as any}
+                  matchDisplayTitle={matchDisplayTitle}
                   matchPath={getMatchPath(activeMatch, isTeamRoute, seasonsBasePath, seasonPathKey)}
                   isActive={true}
                   onSetActive={() => handleSetActive(String(activeMatch.id))}
@@ -332,7 +332,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
                     }}
                     contentDetail={contentCache[String(match.id)]}
                     contentLoading={loadingContent.has(String(match.id))}
-                    matchDisplayTitle={matchDisplayTitle as any}
+                    matchDisplayTitle={matchDisplayTitle}
                     matchPath={getMatchPath(match, isTeamRoute, seasonsBasePath, seasonPathKey)}
                     isActive={false}
                     onSetActive={() => handleSetActive(String(match.id))}

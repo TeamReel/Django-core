@@ -9,17 +9,18 @@ import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { activitiesApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
+import type { MatchRef } from './useCompetitionMutations';
 
 export interface CompetitionMatchesTableProps {
   rows: Activity[];
   matchesLoading: boolean;
-  matchDisplayTitle: (m: any, fallback?: string) => string;
+  matchDisplayTitle: (m: Activity, fallback?: string) => string;
   matchDetailPath: (matchId: string) => string;
   apiBaseUrl?: string;
   setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
-  setSelectedDetailMatch: (m: any) => void;
+  setSelectedDetailMatch: (m: Activity | null) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
+  setSelectedEditMatch: (m: MatchRef | null) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
 }
 
@@ -80,14 +81,14 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                   <button
                     type="button"
                     className="app-action-button action-btn action-btn-primary"
-                    onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }}
+                    onClick={() => { setSelectedDetailMatch(m as Activity); setIsMatchDetailModalOpen(true); }}
                   >
                     View
                   </button>
                   <button
                     type="button"
                     className="app-action-button action-btn action-btn-warning"
-                    onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }}
+                    onClick={() => { setSelectedEditMatch(m as unknown as MatchRef); setIsMatchEditModalOpen(true); }}
                   >
                     Edit
                   </button>

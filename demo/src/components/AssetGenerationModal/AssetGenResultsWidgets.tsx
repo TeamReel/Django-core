@@ -7,6 +7,9 @@
 import React from 'react';
 import { Button } from '@django-core/design-system';
 import { VariantCard, ProgressBar } from './AssetGenSubComponents';
+import type { FeedbackFields } from './assetGenHelpers';
+import type { UseAssetGenerationReturn, GenerationVariant } from '../../hooks/assetGenerationTypes';
+import type { AssetTemplate } from '../../constants/assetTemplateTypes';
 import styles from './AssetGenResultsWidgets.module.css';
 
 // ── Results Step ─────────────────────────────────────────────────────
@@ -21,12 +24,12 @@ export function ResultsStep({
   requireApproval,
   handleRegenerate,
 }: {
-  generation: any;
-  selectedTemplate: any;
+  generation: UseAssetGenerationReturn;
+  selectedTemplate: AssetTemplate | null;
   selectedVariantIdx: number | null;
   setSelectedVariantIdx: (idx: number) => void;
-  feedbackFields: any;
-  setFeedbackFields: any;
+  feedbackFields: FeedbackFields;
+  setFeedbackFields: React.Dispatch<React.SetStateAction<FeedbackFields>>;
   requireApproval: boolean;
   handleRegenerate: () => void;
 }) {
@@ -133,7 +136,7 @@ export function ResultsStep({
             className={styles.variantGrid}
             data-cols={generation.variants.length === 1 ? '1' : '2'}
           >
-            {generation.variants.map((v: any) => {
+            {generation.variants.map((v: GenerationVariant) => {
               const fullSrc =
                 v.presigned_url ||
                 (v.image_base64
@@ -181,8 +184,8 @@ export function FeedbackRefinement({
   feedbackFields,
   setFeedbackFields,
 }: {
-  feedbackFields: any;
-  setFeedbackFields: any;
+  feedbackFields: FeedbackFields;
+  setFeedbackFields: React.Dispatch<React.SetStateAction<FeedbackFields>>;
 }) {
   const fields = [
     { id: 'colors', label: 'Kleuren (Vb: "Rood zoals V1")' },
@@ -203,9 +206,9 @@ export function FeedbackRefinement({
             </label>
             <input
               type="text"
-              value={feedbackFields[field.id]}
+              value={feedbackFields[field.id as keyof FeedbackFields]}
               onChange={(e) =>
-                setFeedbackFields((prev: Record<string, unknown>) => ({ ...prev, [field.id]: e.target.value }))
+                setFeedbackFields((prev: FeedbackFields) => ({ ...prev, [field.id]: e.target.value }))
               }
               className={styles.feedbackInput}
             />
@@ -222,7 +225,7 @@ export function FeedbackRefinement({
           type="text"
           value={feedbackFields.other}
           onChange={(e) =>
-            setFeedbackFields((prev: Record<string, unknown>) => ({ ...prev, other: e.target.value }))
+            setFeedbackFields((prev: FeedbackFields) => ({ ...prev, other: e.target.value }))
           }
           placeholder="Bijv. 'Sokken wit', 'Meer contrast in foto'..."
           className={styles.feedbackInput}

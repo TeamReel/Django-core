@@ -12,22 +12,24 @@ import { getBestUrl } from '../../constants/assetProcessingSpecs';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { mergeAssetsIntoMetadata } from './memberDetailUtils';
-import type { AssetVariantsMap } from './memberDetailUtils';
+import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
 import { logger } from '@/utils/logger';
+import type { SavedAssetInfo } from '../../components/AssetGenerationModal/assetGenHelpers';
+import type { UseBrandProfileReturn } from '../../hooks/useBrandProfile';
 
 export interface MemberAiModalProps {
   // Entity identifiers
   membershipId: string;
-  membership: any | null;
-  project: { id: string; [k: string]: any } | null;
-  org: { id: string; [k: string]: any } | null;
-  club: { id: string; [k: string]: any } | null;
+  membership: MembershipRecord | null;
+  project: { id: string; [k: string]: unknown } | null;
+  org: { id: string; [k: string]: unknown } | null;
+  club: { id: string; [k: string]: unknown } | null;
   isTeamRoute: boolean;
   apiBaseUrl: string;
 
   // Brand
-  clubBrand: any;
-  teamBrand: any;
+  clubBrand: UseBrandProfileReturn;
+  teamBrand: UseBrandProfileReturn | null;
   batchBrandKits: Record<string, string | null>;
 
   // Media state
@@ -38,7 +40,7 @@ export interface MemberAiModalProps {
   resolveDisplayUrl: (path: string | null | undefined) => string | null;
   setPresignedCache: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   handleMetadataUpdate: (meta: Record<string, unknown>, targetId?: string) => Promise<void>;
-  setMembership: React.Dispatch<React.SetStateAction<any | null>>;
+  setMembership: React.Dispatch<React.SetStateAction<MembershipRecord | null>>;
 }
 
 /** Imperative handle so the parent can call openAiModal */
@@ -113,11 +115,11 @@ export function MemberAiModal({
   }, [aiPreselectedTemplate, aiSelectedKitType, aiSelectedStyleVariant, videoVariants, form]);
 
   const inputAssets = useMemo(() => ({
-    logo: (teamBrand.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))
-      ? getAssetUrl((teamBrand.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))!.url)
+    logo: (teamBrand?.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))
+      ? getAssetUrl((teamBrand?.getAsset?.('logo_upload') || clubBrand.getAsset?.('logo_upload'))!.url)
       : null,
-    sponsor: (teamBrand.getAsset?.('sponsor_logo_upload') || clubBrand.getAsset?.('sponsor_logo_upload'))
-      ? getAssetUrl((teamBrand.getAsset?.('sponsor_logo_upload') || clubBrand.getAsset?.('sponsor_logo_upload'))!.url)
+    sponsor: (teamBrand?.getAsset?.('sponsor_logo_upload') || clubBrand.getAsset?.('sponsor_logo_upload'))
+      ? getAssetUrl((teamBrand?.getAsset?.('sponsor_logo_upload') || clubBrand.getAsset?.('sponsor_logo_upload'))!.url)
       : null,
     reference: aiSelectedKitUrl,
     person: aiInputPersonUrl
@@ -135,7 +137,7 @@ export function MemberAiModal({
   const availableBackgrounds = useMemo(() => {
     const bgs: Array<{ url: string; label?: string }> = [];
     const clubBgs = clubBrand.getAssets?.('club_background') || [];
-    clubBgs.forEach((bg: any, idx: number) => {
+    clubBgs.forEach((bg: { url?: string | null; label?: string }, idx: number) => {
       if (bg?.url) { const r = getAssetUrl(bg.url); if (r) bgs.push({ url: r, label: bg.label || `Clubachtergrond ${idx + 1}` }); }
     });
     const stadiumBg = clubBrand.getAsset?.('stadium_background');
@@ -143,7 +145,7 @@ export function MemberAiModal({
     return bgs;
   }, [clubBrand]);
 
-  const handleAssetSaved = useCallback(async (savedInfo: any) => {
+  const handleAssetSaved = useCallback(async (savedInfo: SavedAssetInfo | undefined) => {
     const saveMembershipId = membershipId;
     if (!saveMembershipId) { logger.error('onAssetSaved: no membershipId'); return; }
     setShowAiModal(false);
@@ -172,7 +174,7 @@ export function MemberAiModal({
     const refreshMembership = async () => {
       try {
         const memberData = await projectsApi.getMember(project?.id || '', saveMembershipId);
-        setMembership(memberData as any);
+        setMembership(memberData as unknown as MembershipRecord);
       } catch { /* best-effort */ }
     };
 

@@ -11,7 +11,7 @@
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '@django-core/auth-ui';
+import { useAuth, type User as AuthUser } from '@django-core/auth-ui';
 import { logger } from '@/utils/logger';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
 import { useSeasonContext } from '../../providers/SeasonProvider';
@@ -19,15 +19,17 @@ import type { Period, SeasonProject as Project, SeasonOrganisation as Organisati
 import { unwrapEnvelope as unwrap } from '../../types/season';
 import { projectsApi } from '../../api';
 import { UUID_RE, getUserDisplayName, mergeAssetsIntoMetadata } from './memberDetailUtils';
-import type { AssetVariantsMap } from './memberDetailUtils';
+import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
+import type { UseBrandProfileReturn } from '../../hooks/useBrandProfile';
+import type { ProjectMembership } from '../../types/api/project';
 
 export interface MemberDetailData {
   // Identity
-  membership: any | null;
-  setMembership: React.Dispatch<React.SetStateAction<any | null>>;
+  membership: MembershipRecord | null;
+  setMembership: React.Dispatch<React.SetStateAction<MembershipRecord | null>>;
   membershipId: string;
-  user: any;
+  user: AuthUser | null;
 
   // Season hierarchy (shadow state)
   loading: boolean;
@@ -44,8 +46,8 @@ export interface MemberDetailData {
   clubSlugOrId: string;
   seasonsBasePath: string;
   seasonKeyForLinks: string;
-  clubBrand: any;
-  teamBrand: any;
+  clubBrand: UseBrandProfileReturn;
+  teamBrand: UseBrandProfileReturn;
   batchBrandKits: Record<string, string | null>;
   isSuperAdmin: boolean;
   userCanEditProject: boolean;
@@ -58,7 +60,7 @@ export interface MemberDetailData {
   navigateToTab: (tabId: string) => void;
 
   // Active context
-  activeContext: any | null;
+  activeContext: { membership?: { id?: string }; [key: string]: unknown } | null;
   activatingContext: boolean;
   handleSetActiveContext: () => Promise<void>;
 
@@ -246,7 +248,7 @@ export function useMemberDetailData(): MemberDetailData {
     setSaveError(null);
     try {
       const nextMetadata = mergeAssetsIntoMetadata(membership?.metadata, form, videoVariants);
-      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: nextMetadata } as any);
+      const updated = await projectsApi.updateMember(project.id, membership.id as string, { metadata: nextMetadata } as Partial<ProjectMembership>) as unknown as MembershipRecord;
       setMembership(updated ? { ...membership, ...updated } : membership);
     } catch (e) {
       logger.error('Failed to save', e);

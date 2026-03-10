@@ -19,8 +19,11 @@ import { MemberIntroTab } from './MemberIntroTab';
 import { MemberCelebrationTab } from './MemberCelebrationTab';
 import { MemberActionPhotoTab } from './MemberActionPhotoTab';
 import { getUserDisplayName, mergeAssetsIntoMetadata } from './memberDetailUtils';
-import type { AssetVariantsMap } from './memberDetailUtils';
+import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
+import type { UseBrandProfileReturn } from '../../hooks/useBrandProfile';
+import type { SeasonProject, SeasonOrganisation } from '../../types/season';
+import type { ProjectMembership } from '../../types/api/project';
 import styles from './MemberDetailPanel.module.css';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import { logger } from '@/utils/logger';
@@ -36,14 +39,14 @@ export interface MemberDetailPanelProps {
   membershipId: string;
   /** Ordered list of all member IDs for navigation */
   memberIds: string[];
-  project: any;
-  org: any;
-  club: any;
+  project: SeasonProject | null;
+  org: SeasonOrganisation | null;
+  club: SeasonProject | null;
   apiBaseUrl: string;
   isTeamRoute: boolean;
   userCanEditProject: boolean;
-  clubBrand: any;
-  teamBrand: any;
+  clubBrand: UseBrandProfileReturn;
+  teamBrand: UseBrandProfileReturn | null;
   batchBrandKits: Record<string, string | null>;
   onClose: () => void;
   onNavigate: (membershipId: string) => void;
@@ -74,7 +77,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
   onNavigate,
   onMemberUpdated,
 }) => {
-  const [membership, setMembership] = useState<any>(null);
+  const [membership, setMembership] = useState<MembershipRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('assets');
@@ -103,7 +106,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     const run = async () => {
       try {
         if (!project?.id || !membershipId) return;
-        const json = await projectsApi.getMember(project.id, membershipId) as any;
+        const json = await projectsApi.getMember(project.id, membershipId) as unknown as MembershipRecord;
         if (!cancelled) setMembership(json);
       } catch (e) {
         logger.error('Failed to load membership', e);
@@ -127,7 +130,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
     setSaving(true);
     try {
       const nextMetadata = mergeAssetsIntoMetadata(membership?.metadata, media.form, media.videoVariants);
-      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: nextMetadata }) as any;
+      const updated = await projectsApi.updateMember(project.id, membership.id!, { metadata: nextMetadata } as Partial<ProjectMembership>) as unknown as MembershipRecord;
       setMembership(updated ? { ...membership, ...updated } : membership);
       onMemberUpdated?.();
     } catch {
@@ -163,9 +166,9 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
   const memberName = membership ? getUserDisplayName(membership) : 'Laden...';
 
-  // Tab props
+  // Tab props (only used inside the `membership &&` guard, so non-null assertion is safe)
   const tabCommonProps = {
-    membership,
+    membership: membership!,
     form: media.form,
     videoVariants: media.videoVariants,
     setVideoVariants: media.setVideoVariants,

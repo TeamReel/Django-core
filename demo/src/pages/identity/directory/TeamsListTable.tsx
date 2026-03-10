@@ -2,14 +2,28 @@ import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import { isNumericId, isUuid } from './useTeamsListData';
-import type { OrganisationOption } from '../../work/WorkFilterBar';
+import type { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 import styles from './TeamsListTable.module.css';
 import dp from './DirectoryPremium.module.css';
 
+/** Extended team record as returned by the directory API */
+type TeamRecord = ProjectOption & {
+  sport_variants_count?: number;
+  seasons_count?: number;
+  competitions_count?: number;
+  matches_count?: number;
+  member_count?: number;
+  is_active?: boolean;
+  organisation?: string | { id: string; name?: string; slug?: string; sport?: Record<string, unknown> };
+  parent_project?: string | number | { id: string; name?: string; slug?: string } | null;
+  parent_project_id?: string | number | null;
+  [key: string]: unknown;
+};
+
 interface TeamsListTableProps {
-  filteredTeams: any[];
+  filteredTeams: TeamRecord[];
   organisations: OrganisationOption[];
-  clubs: any[];
+  clubs: TeamRecord[];
   orgLocked: boolean;
   clubLocked: boolean;
   lockedOrgSlug: string;
@@ -17,8 +31,8 @@ interface TeamsListTableProps {
   userCanEditProject: boolean;
   userCanDeleteProject: boolean;
   navigate: (path: string) => void;
-  onView: (team: any) => void;
-  onEdit: (team: any) => void;
+  onView: (team: TeamRecord) => void;
+  onEdit: (team: TeamRecord) => void;
   onDelete: (orgSlugOrId: string, teamId: string, teamName: string) => void;
 }
 
@@ -58,9 +72,9 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                         className="text-blue-600 hover:underline"
                         onClick={(e) => { e.preventDefault(); navigate(`/organisations/${resolved.orgSlugOrId}`); }}
                       >
-                        {team.organisation?.name || '-'}
+                        {typeof team.organisation === 'object' ? team.organisation?.name || '-' : '-'}
                       </a>
-                    ) : (team.organisation?.name || '-')}
+                    ) : (typeof team.organisation === 'object' ? team.organisation?.name || '-' : '-')}
                   </td>
                 )}
 
@@ -93,8 +107,8 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
                 <td className="dir-td">
                   {resolved.orgSport ? (
                     <span className="flex-row gap-4">
-                      <span>{resolved.orgSport.sport_icon}</span>
-                      <span className="fs-12">{resolved.orgSport.name}</span>
+                      <span>{String(resolved.orgSport.sport_icon ?? '')}</span>
+                      <span className="fs-12">{String(resolved.orgSport.name ?? '')}</span>
                     </span>
                   ) : <span className="text-muted">—</span>}
                 </td>
@@ -137,20 +151,21 @@ export const TeamsListTable: React.FC<TeamsListTableProps> = ({
 /* ── Per-row slug resolution (extracted from inline map logic) ── */
 
 function resolveTeamRow(
-  team: any,
+  team: TeamRecord,
   organisations: OrganisationOption[],
-  clubs: any[],
+  clubs: TeamRecord[],
   lockedOrgSlug: string,
   selectedOrgId: string,
   orgLocked: boolean,
 ) {
-  const orgIdFromProject = team.organisation?.id || (typeof team.organisation === 'string' ? team.organisation : undefined);
-  const orgSlugFromProject = team.organisation?.slug;
+  const org = typeof team.organisation === 'object' ? team.organisation : undefined;
+  const orgIdFromProject = org?.id || (typeof team.organisation === 'string' ? team.organisation : undefined);
+  const orgSlugFromProject = org?.slug;
   const orgFromList = orgIdFromProject
     ? organisations.find((o) => String(o.id) === String(orgIdFromProject))
     : undefined;
 
-  const orgSport = team.organisation?.sport || orgFromList?.sport;
+  const orgSport = org?.sport || orgFromList?.sport;
 
   const contextSlug = lockedOrgSlug || (!isNumericId(selectedOrgId) && !isUuid(selectedOrgId) ? selectedOrgId : undefined);
   const orgSlugOrId =
@@ -161,10 +176,10 @@ function resolveTeamRow(
     selectedOrgId;
 
   const parent = team.parent_project || team.parent_id || team.parent_project_id;
-  const parentId = typeof parent === 'object' ? parent.id : parent;
-  const parentName = typeof parent === 'object' ? (parent.name || parent.slug) : parent;
+  const parentId = typeof parent === 'object' && parent !== null ? (parent as { id?: string }).id : parent;
+  const parentName = typeof parent === 'object' && parent !== null ? ((parent as { name?: string; slug?: string }).name || (parent as { name?: string; slug?: string }).slug) : parent;
   const clubObj = clubs.find((c) => String(c.id) === String(parentId));
-  const clubName = clubObj ? clubObj.name : (parentName || '-');
+  const clubName = clubObj ? clubObj.name : (String(parentName || '-'));
   const clubSlugOrId = clubObj ? (clubObj.slug || clubObj.id) : parentId;
   const teamSlugOrId = team.slug || team.id;
 

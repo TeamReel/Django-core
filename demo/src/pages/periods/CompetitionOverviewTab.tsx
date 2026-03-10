@@ -7,12 +7,13 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
 import { periodsApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
+import type { MatchRef } from './useCompetitionMutations';
 import styles from './CompetitionOverviewTab.module.css';
 
 export interface CompetitionOverviewMatchModals {
   setSelectedDetailMatch: (m: Activity | null) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: Record<string, unknown> | null) => void;
+  setSelectedEditMatch: (m: MatchRef | null) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
 }
 

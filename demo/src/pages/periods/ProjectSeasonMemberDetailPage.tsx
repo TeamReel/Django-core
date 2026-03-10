@@ -117,9 +117,9 @@ export default function ProjectSeasonMemberDetailPage() {
     );
   }
 
-  // ── Shared tab props ──
+  // ── Shared tab props (only used inside the `membership &&` guard, assertion is safe) ──
   const tabCommonProps = {
-    membership,
+    membership: membership!,
     form: media.form,
     videoVariants: media.videoVariants,
     setVideoVariants: media.setVideoVariants,

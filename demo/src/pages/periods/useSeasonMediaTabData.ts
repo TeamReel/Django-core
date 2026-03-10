@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { logger } from '@/utils/logger';
 import { generativeApi } from '../../api';
 import type { BatchMember } from '../../components/BatchGenerationModal';
+import type { SeasonProject } from '../../types/season';
 
 /** Squad member record with metadata and media assets */
 export interface SquadMember {
@@ -16,8 +17,12 @@ export interface SquadMember {
     [key: string]: unknown;
   };
   user_id?: string;
-  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };
-  [key: string]: any;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested dynamic metadata
+  [key: string]: unknown;
 }
 
 export interface GuestPlayerState {
@@ -25,16 +30,16 @@ export interface GuestPlayerState {
   has_closeup: boolean;
   has_intro: boolean;
   has_celebration: boolean;
-  guest_player: any;
+  guest_player: Record<string, any> | null;  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested dynamic metadata
 }
 
 interface UseSeasonMediaTabDataParams {
   members: SquadMember[];
-  project: any;
+  project: SeasonProject | null;
   apiBaseUrl: string;
   brandLogoUrl: string | null;
   brandSponsorUrl: string | null;
-  batchBrandKits: Record<string, any>;
+  batchBrandKits: Record<string, string | null>;
 }
 
 export function useSeasonMediaTabData({
@@ -100,8 +105,7 @@ export function useSeasonMediaTabData({
     }
     setCroppingGuestCloseup(true);
     try {
-      const raw = await generativeApi.cropCloseup({ project_id: projectId, kit_type: kitType } as any) as any;
-      const inner = (raw?.data ?? raw) as Record<string, string>;
+      await generativeApi.cropCloseup({ project_id: projectId, kit_type: kitType });
 
       setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
       setTimeout(() => { window.location.reload(); }, 500);
@@ -140,7 +144,7 @@ export function useSeasonMediaTabData({
         const extractUrl = (val: unknown): string | null => {
           if (!val) return null;
           if (typeof val === 'string') return val;
-          if (typeof val === 'object') return (val as any).processed || (val as any).raw || null;
+          if (typeof val === 'object') return (val as Record<string, unknown>).processed as string || (val as Record<string, unknown>).raw as string || null;
           return null;
         };
         for (const [k, v] of Object.entries(imgFb)) {

@@ -41,7 +41,7 @@ interface UseBrandProfileOptions {
   autoFetch?: boolean;
 }
 
-interface UseBrandProfileReturn {
+export interface UseBrandProfileReturn {
   profile: BrandProfile | null;
   assets: BrandAsset[];
   loading: boolean;
