@@ -1,4 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
+import { logger } from '@/utils/logger';
 
 import { api } from '@/api/client';
 import {
@@ -164,7 +165,7 @@ export function useHierarchyData({
         setHierarchyMatchesCountByCompetitionId(matchesCountByCompetitionId);
         setHierarchyMatchesCountBySeasonId(matchesCountBySeasonId);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load hierarchy', e);
         if (cancelled) return;
         setHierarchyError(e instanceof Error ? e.message : 'Failed to load hierarchy');
         setHierarchySeasons([]);

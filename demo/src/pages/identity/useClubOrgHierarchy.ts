@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import {
@@ -179,7 +180,7 @@ export function useClubOrgHierarchy({ activeTabFromUrl, apiBaseUrl, orgSlugForDi
                     if (!cancelled) setHierarchyMembersCountByTeamId(membersCountByTeamId);
                 } catch { if (!cancelled) setHierarchyMembersCountByTeamId({}); }
             } catch (e) {
-              console.error(e);
+              logger.error('Failed to load hierarchy', e);
                 if (cancelled) return;
                 setHierarchyError(e instanceof Error ? e.message : 'Failed to load hierarchy');
                 setHierarchyTeams([]); setHierarchySeasonsByTeamId({});

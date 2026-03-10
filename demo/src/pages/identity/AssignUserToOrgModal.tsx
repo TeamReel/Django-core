@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { organisationsApi, ApiError } from '../../api';
+import { logger } from '@/utils/logger';
 import type { Organisation as SharedOrganisation } from '../../types';
 import styles from './AssignUserToOrgModal.module.css';
 
@@ -54,8 +55,7 @@ if (!selectedOrg?.slug) return;
       onSuccess();
       onClose();
     } catch (err) {
-      console.error(err);
-      console.error('Assign user error:', err);
+      logger.error('Assign user error', err);
       if (err instanceof ApiError) {
         const body = err.body as any;
         setError(body?.email?.[0] || body?.detail || 'Failed to assign user to organisation');

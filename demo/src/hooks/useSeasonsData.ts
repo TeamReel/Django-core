@@ -9,6 +9,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../utils/fetchAllPages';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import {
   chunkArray,
   sortKey,
@@ -245,7 +246,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
         const unique = [...new Map((Array.isArray(filteredSeasons) ? filteredSeasons : []).map((p) => [String(p.id), p])).values()];
         setSeasonsFromApi(unique);
       } catch (e) {
-        console.error(e);
+        logger.error('useSeasonsData load error', e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');
       } finally {
         setSeasonsLoading(false);
@@ -297,8 +298,7 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
       await api.delete(`/periods/${seasonId}/`);
       setSeasons((prev) => prev.filter((s) => s.id !== seasonId));
     } catch (err) {
-      console.error(err);
-      console.error('Delete error:', err);
+      logger.error('useSeasonsData delete error', err);
       alert('Failed to delete season');
     }
   }, []);

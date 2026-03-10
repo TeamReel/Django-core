@@ -9,6 +9,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   Plus, CalendarDays,
 } from 'lucide-react';
+import { logger } from '@/utils/logger';
 import { Card } from '@django-core/design-system';
 import { api } from '../../api';
 import { periodPathKey } from '../../utils/periodPath';
@@ -206,8 +207,7 @@ const SeasonMatchesTab: React.FC<SeasonMatchesTabProps> = ({
         [matchId]: { mediaCount, generatingCount, totalChecked: CONTENT_TOTAL, mediaSubtypes, generatingSubtypes },
       }));
     } catch (err) {
-      console.error(err);
-      console.error('[MatchContent] Error loading content status:', err);
+      logger.error('Error loading content status', err);
     } finally {
       setLoadingContent((prev) => {
         const next = new Set(prev);

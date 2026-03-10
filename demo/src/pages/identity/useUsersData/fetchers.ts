@@ -3,6 +3,7 @@
  */
 import { useEffect, useCallback } from 'react';
 import { api } from '../../../api';
+import { logger } from '@/utils/logger';
 import type { OrganisationOption, ProjectOption, UserListEntry } from './types';
 import { FALLBACK_ROLES } from './types';
 
@@ -52,7 +53,7 @@ export function useUsersFetchers(params: UseUsersFetchersParams) {
         const data = await api.list<OrganisationOption>('/organisations/', { pageSize: 100 });
         setOrganisations(data.results);
       } catch (e) {
-        console.error('Failed to fetch organisations for filter', e);
+        logger.error('Failed to fetch organisations for filter', e);
       }
     };
     fetchOrgs();
@@ -65,7 +66,7 @@ export function useUsersFetchers(params: UseUsersFetchersParams) {
         const results = await api.listAll<ProjectOption>('/projects/', { pageSize: 200, params: { parent_project__isnull: true } });
         setClubs(results);
       } catch (e) {
-        console.error('Failed to fetch clubs for filter', e);
+        logger.error('Failed to fetch clubs for filter', e);
       }
     };
     fetchClubs();
@@ -78,7 +79,7 @@ export function useUsersFetchers(params: UseUsersFetchersParams) {
         const results = await api.listAll<ProjectOption>('/projects/', { pageSize: 200, params: { parent_project__isnull: false } });
         setTeams(results);
       } catch (e) {
-        console.error('Failed to fetch teams for filter', e);
+        logger.error('Failed to fetch teams for filter', e);
       }
     };
     fetchTeams();
@@ -92,7 +93,7 @@ export function useUsersFetchers(params: UseUsersFetchersParams) {
         const roleNames = data.results.map((role) => role.name);
         setAvailableRoles(['Superadmin', ...roleNames].sort());
       } catch (e) {
-        console.error('[UsersPage] Failed to fetch roles:', e);
+        logger.error('[UsersPage] Failed to fetch roles', e);
         setAvailableRoles(FALLBACK_ROLES);
       }
     };
@@ -135,7 +136,7 @@ export function useUsersFetchers(params: UseUsersFetchersParams) {
       setUsers(data.results);
       setTotal(data.count);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to load users', err);
       setError(err instanceof Error ? err.message : 'Failed to load users');
     } finally {
       setIsLoading(false);

@@ -13,6 +13,7 @@ import { AssetGenerationModal } from '../../components/AssetGenerationModal';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { mergeAssetsIntoMetadata } from './memberDetailUtils';
 import type { AssetVariantsMap } from './memberDetailUtils';
+import { logger } from '@/utils/logger';
 
 export interface MemberAiModalProps {
   // Entity identifiers
@@ -144,7 +145,7 @@ export function MemberAiModal({
 
   const handleAssetSaved = useCallback(async (savedInfo: any) => {
     const saveMembershipId = membershipId;
-    if (!saveMembershipId) { console.error('onAssetSaved: no membershipId'); return; }
+    if (!saveMembershipId) { logger.error('onAssetSaved: no membershipId'); return; }
     setShowAiModal(false);
 
     if (!savedInfo?.storagePath && !savedInfo?.presignedUrl) return;

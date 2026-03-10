@@ -4,6 +4,7 @@
 import { useEffect, useCallback } from 'react';
 import { createApiClient } from '@django-core/api-client';
 import { getApiBaseUrl } from '../../../../utils/apiBase';
+import { logger } from '@/utils/logger';
 import type { CreditsBalance, UserCreditsBalance, Transaction, TabType } from '../creditsTypes';
 import { parseTransactionEnvelope } from '../creditsTypes';
 import type { WalletScope } from './types';
@@ -85,7 +86,7 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
           setTransactions(creditTransactions);
         }
       } catch (err) {
-        console.error('[CreditsPage] Transactions fetch exception:', err);
+        logger.error('[CreditsPage] Transactions fetch exception', err);
         setTransactions([]);
       } finally {
         setTransactionsLoading(false);
@@ -116,7 +117,7 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
         window.location.href = '/login';
       }
     } catch (err) {
-      console.error('[CreditsPage] Recent transactions fetch exception:', err);
+      logger.error('[CreditsPage] Recent transactions fetch exception', err);
     }
   }, [scope, currentOrgId, setAllTransactions, setRecentTransactions]);
 
@@ -173,7 +174,7 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
           setCredits(creditsData);
         }
       } catch (err: unknown) {
-        console.error('[CreditsPage] Credits fetch exception:', err);
+        logger.error('[CreditsPage] Credits fetch exception', err);
         setError(err instanceof Error ? err.message : 'Failed to load credits balance');
         setCredits(null);
       } finally {
@@ -223,7 +224,7 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
           setPersonalCredits(creditsData);
         }
       } catch (err: unknown) {
-        console.error('[CreditsPage] Personal credits fetch exception:', err);
+        logger.error('[CreditsPage] Personal credits fetch exception', err);
         setPersonalError(err instanceof Error ? err.message : 'Failed to load personal credits balance');
         setPersonalCredits(null);
       } finally {
@@ -266,7 +267,7 @@ export function useCreditsFetchers(params: UseCreditsFetchersParams) {
         const txns = parseTransactionEnvelope(response.data);
         setPersonalRecentTransactions(txns.slice(0, 5));
       } catch (err) {
-        console.error('[CreditsPage] Personal transactions fetch exception:', err);
+        logger.error('[CreditsPage] Personal transactions fetch exception', err);
         setPersonalRecentTransactions([]);
       }
     };

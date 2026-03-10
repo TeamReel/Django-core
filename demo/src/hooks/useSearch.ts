@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { createApiClient } from '@django-core/api-client';
 import { getApiBaseUrl } from '../utils/apiBase';
+import { logger } from '@/utils/logger';
 
 export interface SearchResult {
   id: string;
@@ -110,8 +111,7 @@ export function useSearch(): UseSearchReturn {
       }
       return response.data ?? null;
     } catch (err: unknown) {
-      console.error(err);
-      console.error('[useSearch] Error:', err);
+      logger.error('useSearch error', err);
       if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }
@@ -161,7 +161,7 @@ export function useSearch(): UseSearchReturn {
         }
         return response.data ?? null;
       } catch (err: unknown) {
-        console.error(err);
+        logger.error('useSearch filtered error', err);
         if (err instanceof Error && err.name === 'AbortError') {
           return null;
         }
@@ -209,8 +209,7 @@ export function useSearch(): UseSearchReturn {
       }
       return response.data ?? null;
     } catch (err: unknown) {
-      console.error(err);
-      console.error('[useSearch] Hierarchy Error:', err);
+      logger.error('useSearch hierarchy error', err);
       if (err instanceof Error && err.name === 'AbortError') {
         return null;
       }

@@ -3,6 +3,7 @@ import { Card, Text, Stack, Alert, Badge } from '@django-core/design-system';
 import { api } from '@/api';
 import { Palette, Image, Type, Circle, Square, Hash } from 'lucide-react';
 import styles from './BrandProfileCard.module.css';
+import { logger } from '@/utils/logger';
 
 interface DesignToken {
   id: string;
@@ -112,7 +113,7 @@ export default function BrandProfileCard({
           setProfile(profileData);
         }
       } catch (err) {
-        console.error(err);
+        logger.error('Failed to load brand profile', err);
         setError(err instanceof Error ? err.message : 'Failed to load brand profile');
       } finally {
         setLoading(false);

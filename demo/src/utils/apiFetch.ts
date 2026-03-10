@@ -12,6 +12,7 @@
 
 import { getCsrfToken } from './csrf';
 import { getApiBaseUrl } from './apiBase';
+import { logger } from './logger';
 
 /* ------------------------------------------------------------------ */
 /*  Base URL helpers                                                    */
@@ -169,7 +170,7 @@ export async function apiFetchWithRetry(
 
       return res;
     } catch (err) {
-      console.error(err);
+      logger.error('API fetch failed', err);
       lastError = err;
 
       // Network failure (no response) — safe to retry any method

@@ -11,6 +11,7 @@ import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import { api } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './KitsTab.module.css';
+import { logger } from '@/utils/logger';
 
 // ============================================================================
 // Types & Constants
@@ -87,7 +88,7 @@ export function KitsTab({
       setKits(results.filter((a: any) => String(a.asset_type || '').startsWith('kit_')));
       setLoading(false);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to load kits', e);
       setError(e instanceof Error ? e.message : 'Failed to load kits');
       setLoading(false);
     }
@@ -154,7 +155,7 @@ export function KitsTab({
       await loadKits();
       onKitUploaded?.();
     } catch (e) {
-      console.error(e);
+      logger.error('Kit upload failed', e);
       setError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploadingType(null);

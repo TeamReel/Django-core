@@ -6,6 +6,7 @@ import { Table } from '../../shims/design-system';
 import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import styles from './ProjectCompetitionSquadPage.module.css';
+import { logger } from '@/utils/logger';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -148,7 +149,7 @@ export const ProjectCompetitionSquadPage: React.FC = () => {
 
         setMembers(participationRes.results);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load squad', e);
         setError(e instanceof Error ? e.message : 'Failed to load squad');
       } finally {
         setLoading(false);

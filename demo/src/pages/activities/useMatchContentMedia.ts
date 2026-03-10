@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useCallback } from 'react';
 import { fetchFlags } from '../../utils/featureFlagsApi';
 import { mediaApi, contentApi } from '../../api';
+import { logger } from '@/utils/logger';
 import type { MatchMediaItem } from '../../components/MediaAssetCard';
 import type { ContentItem, MatchDetail } from './matchDetailTypes';
 import { normalizeFlagKey as normalizeFlagKeyHelper, slugify as slugifyHelper } from './matchDetailTypes';
@@ -47,8 +48,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       const { results } = await mediaApi.listItems({ activityId: match.id });
       setMatchMedia(Array.isArray(results) ? results : []);
     } catch (err) {
-      console.error(err);
-      console.error('[Media] Error fetching match media:', err);
+      logger.error('Media: Error fetching match media', err);
     } finally {
       setMatchMediaLoading(false);
     }
@@ -95,8 +95,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       const { results } = await contentApi.listItems({ activityId: match.id });
       setContentItems((results as unknown as ContentItem[]).filter(Boolean));
     } catch (err) {
-      console.error(err);
-      console.error('[Content] Error fetching content items:', err);
+      logger.error('Content: Error fetching content items', err);
     } finally {
       setContentItemsLoading(false);
     }
@@ -144,8 +143,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       flags.forEach((flag) => { map[normalizeFlagKey(flag.key)] = Boolean(flag.enabled); });
       setTemplateFlagMap(map);
     } catch (err) {
-      console.error(err);
-      console.error('[Content] Failed to fetch template availability flags:', err);
+      logger.error('Content: Failed to fetch template availability flags', err);
     } finally {
       setTemplateFlagsLoading(false);
     }
@@ -195,8 +193,7 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       });
       setAvailableTemplates(grouped);
     } catch (err) {
-      console.error(err);
-      console.error('[Content] Error fetching templates:', err);
+      logger.error('Content: Error fetching templates', err);
     } finally {
       setTemplatesLoading(false);
     }

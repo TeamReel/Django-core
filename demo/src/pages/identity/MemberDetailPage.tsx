@@ -15,6 +15,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import styles from './MemberDetailPage.module.css';
 
 /** Org member record from the members API */
@@ -87,8 +88,7 @@ export const MemberDetailPage: React.FC = () => {
         const { results } = await api.list<OrgMemberRecord>(`/organisations/${orgSlug}/members/`, { pageSize: 100 });
         setOrgMembers(results);
       } catch (err) {
-        console.error(err);
-        console.error('Failed to fetch org members for switcher:', err);
+        logger.debug('Failed to fetch org members for switcher', err);
       }
     };
 
@@ -104,7 +104,7 @@ export const MemberDetailPage: React.FC = () => {
         setMember(data);
         setRole(data.role);
       } catch (err) {
-        console.error(err);
+        logger.error('Member fetch error', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setLoading(false);
@@ -133,8 +133,7 @@ export const MemberDetailPage: React.FC = () => {
           setMember(data);
           setIsEditing(false);
       } catch (err) {
-        console.error(err);
-          console.error('Failed to update member:', err);
+        logger.error('Failed to update member', err);
           alert(err instanceof Error ? err.message : 'Failed to update member');
       } finally {
           setSaving(false);

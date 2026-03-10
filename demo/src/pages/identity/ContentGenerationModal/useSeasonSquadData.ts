@@ -6,6 +6,7 @@
  */
 import { useState, useEffect, useMemo } from 'react';
 import { projectsApi } from '../../../api';
+import { logger } from '@/utils/logger';
 import type { ContentTemplate, Participation } from './types';
 import { ASSET_TYPE_TO_MEDIA_KEY } from './constants';
 import { groupParticipationsByRole } from './utils';
@@ -56,8 +57,7 @@ export function useSeasonSquadData({
         const members = await projectsApi.listAllMembers(projectId) as unknown as Participation[];
         setSeasonSquad(groupParticipationsByRole(members));
       } catch (err) {
-        console.error(err);
-        console.error('Error fetching season squad:', err);
+        logger.error('Error fetching season squad', err);
       }
     };
 

@@ -20,6 +20,7 @@ import { fetchAllPages } from '../utils/fetchAllPages';
 import { getApiBaseUrl } from '../utils/apiBase';
 import { api } from '@/api';
 import { isUuid, isNumericId, buildSeasonOptions } from '../utils/directoryHelpers';
+import { logger } from '@/utils/logger';
 import type { Period, SeasonOption } from '../utils/directoryHelpers';
 import type { Organisation } from '../types';
 import type {
@@ -379,7 +380,7 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
           setTeams(allTeams);
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load options', e);
         setError(e instanceof Error ? e.message : 'Failed to load options');
       } finally {
         setIsLoading(false);

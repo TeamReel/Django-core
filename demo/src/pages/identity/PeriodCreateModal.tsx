@@ -8,6 +8,7 @@ import type {
   PeriodCreateModalProps,
 } from './PeriodCreateModal.types';
 import styles from './PeriodCreateModal.module.css';
+import { logger } from '@/utils/logger';
 
 // Re-export for backward compatibility
 export type { PeriodCreatePayload } from './PeriodCreateModal.types';
@@ -217,7 +218,7 @@ export default function PeriodCreateModal({
       setSelectedSportId('');
       onClose();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to create period', err);
       setError(err instanceof Error ? err.message : 'Failed to create');
     } finally {
       setSaving(false);

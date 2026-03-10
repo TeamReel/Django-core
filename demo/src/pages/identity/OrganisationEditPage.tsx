@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 import {
   Button,
   Card,
@@ -61,7 +62,7 @@ export const OrganisationEditPage: React.FC = () => {
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);
       } catch (err: unknown) {
-        console.error(err);
+        logger.error('Failed to load organisation', err);
         setError(err instanceof Error ? err.message : 'Failed to load organisation');
       } finally {
         setLoading(false);
@@ -87,7 +88,7 @@ export const OrganisationEditPage: React.FC = () => {
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
       navigate(`/organisations/${slugOrId}`);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to update organisation', err);
       setError(err instanceof Error ? err.message : 'Failed to update organisation');
     } finally {
       setSaving(false);

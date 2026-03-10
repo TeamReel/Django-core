@@ -5,6 +5,7 @@
  */
 import { useState, useEffect, useRef } from 'react';
 import { videoApi } from '../../../api';
+import { logger } from '@/utils/logger';
 
 /* ================================================================== */
 /*  Types                                                              */
@@ -109,11 +110,11 @@ export function useVideoJobPolling({
             break;
           }
         } catch (err: unknown) {
-          console.error(err);
+          logger.error('Video job polling error', err);
           if (err instanceof Error && err.name === 'AbortError') return;
           // HTTP errors (ApiError) → stop polling; network errors → retry
           if (typeof (err as any)?.status === 'number') break;
-          console.warn('Poll error:', err);
+          logger.warn('Poll error', err);
         }
         await new Promise(r => setTimeout(r, 5000));
       }
@@ -138,7 +139,7 @@ export function useVideoJobPolling({
       setVideoApprovalStatus(isApprove ? 'approved' : 'rejected');
       if (isApprove) onGenerated?.('Video goedgekeurd en opgeslagen.');
     } catch (err) {
-      console.error(err);
+      logger.error('Video approval failed', err);
       setVideoApprovalError(err instanceof Error ? err.message : `${action} failed`);
       setVideoApprovalStatus('idle');
     }

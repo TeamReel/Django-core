@@ -6,6 +6,7 @@
  * Access tab: UserEditAccessTab
  */
 import { type FormEvent } from 'react';
+import { logger } from '@/utils/logger';
 import type { UserEditModalProps } from './userEditTypes';
 import { useUserEditData } from './useUserEditData';
 import { UserEditAccessTab } from './UserEditAccessTab';
@@ -27,8 +28,7 @@ export default function UserEditModal({
       await d.updateTeamRole();
       await onSaved?.();
     } catch (error) {
-      console.error(error);
-      console.error(error);
+      logger.error('Failed to save user', error);
       d.setExtraError(error instanceof Error ? error.message : 'Failed to save');
     } finally {
       d.setSaving(false);
@@ -159,8 +159,7 @@ export default function UserEditModal({
                         </select>
                       </div>
                       <div className="mt-24">
-                        <button type="button" disabled={d.addingToOrg || d.saving} onClick={async () => { try { await d.linkToOrganisation(); } catch (e) { d.setExtraError(e instanceof Error ? e.message : 'Failed to add to federation'); } }} className="btn-modal btn-modal-primary">
-                          console.error(e);
+                        <button type="button" disabled={d.addingToOrg || d.saving} onClick={async () => { try { await d.linkToOrganisation(); } catch (e) { logger.error('Failed to add to federation', e); d.setExtraError(e instanceof Error ? e.message : 'Failed to add to federation'); } }} className="btn-modal btn-modal-primary">
                           {d.addingToOrg ? 'Adding…' : 'Add to Federation'}
                         </button>
                       </div>

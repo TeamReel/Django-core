@@ -7,6 +7,7 @@ import type { AuthConfig } from '@django-core/auth-ui';
 import { ContextSwitcherProvider } from '@django-core/context-switcher';
 import type { ContextSwitcherConfig } from '@django-core/context-switcher';
 import { ThemeProvider, LocalStorageAdapter } from '@django-core/theme-system';
+import { logger } from './utils/logger';
 import { useReactRouterAdapter } from './adapters/reactRouterAdapter';
 import ErrorBoundary from './components/ErrorBoundary';
 import { ConfirmProvider } from './components/ui/ConfirmDialog';
@@ -51,7 +52,7 @@ function AppWithProviders() {
     routerAdapter,
     apiBaseUrl: import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/api/v1` : '/api/v1',
     onContextError: (error: unknown) => {
-      console.warn('Context switch error:', error);
+      logger.warn('Context switch error', error);
       // Handle 401 Unauthorized by redirecting to login
       if ((error as any)?.code === 401 || (error as any)?.status === 401) {
         window.location.href = '/login';

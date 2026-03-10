@@ -3,6 +3,7 @@
  * Split into focused modules for maintainability.
  */
 import { useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 import { api } from '../../../api';
 import { useUsersState } from './state';
 import { useUsersFetchers } from './fetchers';
@@ -113,7 +114,7 @@ export function useUsersData(): UseUsersDataReturn {
     try {
       await api.patch(`/admin/users/${state.editingUser.id}/`, updatedData);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save user changes', e);
       alert('Failed to save user changes');
       throw e;
     }

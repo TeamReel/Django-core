@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Button, Card, Input } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import SlotIcon from '../../../components/SlotIcon';
 import {
   CLUB_ASSET_SLOTS,
@@ -91,7 +92,7 @@ export default function ClubAssetsTab({
       setTimeout(() => setSaveSuccess(false), 3000);
       onAssetsUpdated?.();
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save', e);
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);
@@ -115,7 +116,7 @@ export default function ClubAssetsTab({
           'To generate optimized kit images.'
       );
     } catch (e) {
-      console.error(e);
+      logger.error('Generation failed', e);
       setGenerateError(e instanceof Error ? e.message : 'Generation failed');
     } finally {
       setGenerating(false);

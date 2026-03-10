@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSports } from '../../hooks/useSports';
+import { logger } from '@/utils/logger';
 import styles from './OrganisationCreateModal.module.css';
 
 interface OrganisationCreateModalProps {
@@ -29,8 +30,7 @@ export default function OrganisationCreateModal({
       setSportId(null);
       onClose();
     } catch (error) {
-      console.error(error);
-      console.error(error);
+      logger.error('Failed to create organisation', error);
     } finally {
       setSaving(false);
     }

@@ -23,6 +23,7 @@ import type { AssetVariantsMap } from './memberDetailUtils';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
 import styles from './MemberDetailPanel.module.css';
 import s from './ProjectSeasonMemberDetailPage.module.css';
+import { logger } from '@/utils/logger';
 
 const KIT_ROLE_META = [
   { id: 'home', label: 'Home', icon: 'home' },
@@ -105,7 +106,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
         const json = await projectsApi.getMember(project.id, membershipId) as any;
         if (!cancelled) setMembership(json);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load membership', e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed');
       } finally {
         if (!cancelled) setLoading(false);

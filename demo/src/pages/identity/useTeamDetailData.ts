@@ -7,6 +7,7 @@ import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { unwrapEnvelope } from '../../utils/apiEnvelope';
 import { useUserRole } from '../../components/PermissionGuards';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { logger } from '@/utils/logger';
 import { api } from '../../api';
 
 import {
@@ -103,8 +104,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
       } catch (e) {
-        console.error(e);
-        console.error('Failed to load active context:', e);
+        logger.error('Failed to load active context', e);
       }
     };
     void loadActiveContext();
@@ -150,7 +150,7 @@ export function useTeamDetailData(): UseTeamDetailDataReturn {
         setClub(loadedClub);
         setTeam(loadedTeam);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load team', e);
         if (cancelled) return;
         setError(e instanceof Error ? e.message : 'Failed to load team');
         setOrg(null);

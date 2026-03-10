@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import type { MatchDetail, Participation, ContentItem } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import { getEnvelopeData } from './matchDetailTypes';
@@ -54,7 +55,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
     try {
       await api.delete(`/media/items/${item.id}/`);
       await fetchMatchMedia();
-    } catch (err) { console.error('[Media] Error deleting media item:', err); }
+    } catch (err) { logger.error('Media: Error deleting media item', err); }
   }, [fetchMatchMedia]);
 
   const handleRestoreMediaItem = useCallback(async (item: MatchMediaItem) => {
@@ -69,7 +70,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
         asset_type: (item.extraction_metadata?.asset_type as string) || 'other',
       });
       await fetchMatchMedia();
-    } catch (err) { console.error('[Media] Error restoring media item:', err); }
+    } catch (err) { logger.error('Media: Error restoring media item', err); }
   }, [match?.id, org?.id, match?.project?.id, project?.id, fetchMatchMedia]);
 
   // ── Content modal ──
@@ -134,7 +135,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
       setLineupSaveSuccess(true);
       setTimeout(() => setLineupSaveSuccess(false), 3000);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save lineup', e);
       alert(e instanceof Error ? e.message : 'Failed to save lineup');
     } finally {
       setLineupSaving(false);

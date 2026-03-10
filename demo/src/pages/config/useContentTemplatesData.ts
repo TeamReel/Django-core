@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, type Dispatch, type SetStateAction } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
+import { logger } from '@/utils/logger';
 import {
   TEMPLATE_CATEGORIES,
   SUBTYPE_LABELS,
@@ -169,8 +170,7 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
         setSports(sportsListRes.results || []);
         setFormations(formationsListRes.results || []);
       } catch (e) {
-        console.error(e);
-        console.error('Failed to fetch data:', e);
+        logger.error('Failed to fetch templates data', e);
         setError('Failed to load templates');
       } finally {
         setLoading(false);
@@ -302,8 +302,7 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       await api.patch(`/content-generation/templates/${template.id}/`, { is_active: !template.is_active });
       setTemplates(prev => prev.map(t => t.id === template.id ? { ...t, is_active: !t.is_active } : t));
     } catch (e) {
-      console.error(e);
-      console.error('Failed to toggle template:', e);
+      logger.error('Failed to toggle template', e);
     }
   };
 
@@ -313,8 +312,7 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       await api.delete(`/content-generation/templates/${template.id}/`);
       setTemplates(prev => prev.filter(t => t.id !== template.id));
     } catch (e) {
-      console.error(e);
-      console.error('Failed to delete template:', e);
+      logger.error('Failed to delete template', e);
     }
   };
 
@@ -356,8 +354,7 @@ export function useContentTemplatesData(): UseContentTemplatesDataReturn {
       setIsCreateModalOpen(false);
       setEditingTemplate(null);
     } catch (e) {
-      console.error(e);
-      console.error('Failed to save template:', e);
+      logger.error('Failed to save template', e);
       alert('Failed to save template');
     } finally {
       setSaving(false);

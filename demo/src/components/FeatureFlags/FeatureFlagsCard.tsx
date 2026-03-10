@@ -14,6 +14,7 @@ import {
   ScopeType
 } from '../../utils/featureFlagsApi';
 import styles from './FeatureFlagsCard.module.css';
+import { logger } from '@/utils/logger';
 
 interface FeatureFlag {
   id: string;
@@ -65,7 +66,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       const scopeArray = Array.isArray(scopeData) ? scopeData : (scopeData?.results || []);
       setFlags(scopeArray);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to load feature flags', err);
       setError(err instanceof Error ? err.message : 'Failed to load flags');
     } finally {
       setLoading(false);
@@ -90,7 +91,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
       }
       await fetchData();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to update feature flag', err);
       setError(err instanceof Error ? err.message : 'Failed to update flag');
     } finally {
       setUpdating(null);

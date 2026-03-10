@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { api, ApiError } from '../../api';
@@ -319,7 +320,7 @@ export function useLinkUserModal({
       onSuccess();
       onClose();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to link user', err);
       setError(err instanceof Error ? err.message : 'Failed to link user');
     } finally {
       setSaving(false);
@@ -343,7 +344,7 @@ export function useLinkUserModal({
       onSuccess();
       onClose();
     } catch (err) {
-      console.error(err);
+      logger.error(`Failed to unlink ${kind}`, err);
       setError(err instanceof Error ? err.message : `Failed to unlink ${kind}`);
     } finally {
       setSaving(false);

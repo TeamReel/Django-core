@@ -4,6 +4,7 @@ import { createTeamreelDemoTransaction } from '../../utils/teamreelTransactions'
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './CreateTransactionModal.module.css';
+import { logger } from '@/utils/logger';
 
 export type WalletOption =
   | { kind: 'default'; label: string }
@@ -216,7 +217,7 @@ export default function CreateTransactionModal(props: {
                 onClose();
                 onCreated?.();
               } catch (e: unknown) {
-                console.error(e);
+                logger.error('Failed to create transaction', e);
                 setError(getErrorMessage(e) || 'Failed to create transaction');
               } finally {
                 setSubmitting(false);

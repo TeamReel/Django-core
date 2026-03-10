@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Badge, Button } from '@django-core/design-system';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { formatRelativeTime, getDateUrgency } from '../utils/relativeTime';
 import { SkeletonList } from './Skeleton';
 import SmartEmptyState from './SmartEmptyState';
@@ -45,8 +46,7 @@ export const UpcomingMatchesWidget: React.FC = () => {
         });
         setMatches(results);
       } catch (err) {
-        console.error(err);
-        console.error("Failed to fetch upcoming matches", err);
+        logger.error('Failed to fetch upcoming matches', err);
       } finally {
         setLoading(false);
       }

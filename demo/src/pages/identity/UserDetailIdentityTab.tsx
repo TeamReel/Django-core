@@ -2,6 +2,7 @@
  * UserDetailIdentityTab — Profile photo + editable profile details.
  */
 import { Alert, Badge, Input } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import type { UserDetailDataReturn } from './useUserDetailData';
 import styles from './UserDetailIdentityTab.module.css';
 
@@ -115,7 +116,7 @@ export function UserDetailIdentityTab({ data }: Props) {
                     setIdentitySaveSuccess(true);
                     setTimeout(() => setIdentitySaveSuccess(false), 3000);
                   } catch (e) {
-                    console.error(e);
+                    logger.error('Failed to save', e);
                     setIdentitySaveError(e instanceof Error ? e.message : 'Failed to save');
                   } finally {
                     setIdentitySaving(false);

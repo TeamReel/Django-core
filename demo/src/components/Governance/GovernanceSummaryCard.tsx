@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '@/api';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './GovernanceSummaryCard.module.css';
+import { logger } from '@/utils/logger';
 
 type BalancePolicy = {
   id: string;
@@ -94,7 +95,7 @@ export default function GovernanceSummaryCard(props: {
           setSource('organization');
         }
       } catch (e: unknown) {
-        console.error(e);
+        logger.error('Failed to load governance policy', e);
         if (cancelled) return;
         setPolicy(null);
         setSource(null);

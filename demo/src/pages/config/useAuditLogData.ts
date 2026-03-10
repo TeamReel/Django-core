@@ -6,6 +6,7 @@ import type { AuditEvent } from '../../types';
 import { apiFetch } from '../../utils/apiFetch';
 import { api } from '../../api/client';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { logger } from '@/utils/logger';
 
 const LIMIT = 50;
 
@@ -113,9 +114,8 @@ export function useAuditLogData(): UseAuditLogDataReturn {
         setEvents(filteredEvents);
         setTotal(outcome ? filteredEvents.length : count);
       } catch (err) {
-        console.error(err);
+        logger.error('Audit fetch error', err);
         setError(err instanceof Error ? err.message : 'Failed to load audit log. Backend error.');
-        console.error('Audit fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -134,7 +134,7 @@ export function useAuditLogData(): UseAuditLogDataReturn {
       try {
         const tokenResponse = await apiFetch('/api/ws/token/');
         if (!tokenResponse.ok) {
-          console.error('[AuditLog] Failed to get WebSocket token', tokenResponse.status);
+          logger.error('AuditLog: Failed to get WebSocket token', tokenResponse.status);
           reconnectTimer = setTimeout(connect, 5000);
           return;
         }
@@ -158,8 +158,7 @@ export function useAuditLogData(): UseAuditLogDataReturn {
               setTotal(prev => prev + 1);
             }
           } catch (e) {
-            console.error(e);
-            console.error('[AuditLog] Failed to parse WebSocket message', e);
+            logger.error('AuditLog: Failed to parse WebSocket message', e);
           }
         };
 
@@ -167,8 +166,7 @@ export function useAuditLogData(): UseAuditLogDataReturn {
           if (isMounted) reconnectTimer = setTimeout(connect, 3000);
         };
       } catch (e) {
-        console.error(e);
-        console.error('[AuditLog] Connection failed', e);
+        logger.error('AuditLog connection failed', e);
         if (isMounted) reconnectTimer = setTimeout(connect, 5000);
       }
     };

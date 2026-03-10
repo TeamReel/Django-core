@@ -4,6 +4,7 @@ import { Table } from '@/shims/design-system';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import SmartEmptyState from '../../components/SmartEmptyState';
+import { logger } from '@/utils/logger';
 
 
 interface Match {
@@ -59,8 +60,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
         setMatches(sorted);
         setIsLoading(false);
       } catch (err) {
-        console.error(err);
-        console.error('Error fetching matches:', err);
+        logger.error('Error fetching matches', err);
         setError('Failed to load match schedule.');
         setIsLoading(false);
       }

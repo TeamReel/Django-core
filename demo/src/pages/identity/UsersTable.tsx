@@ -5,6 +5,7 @@ import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import { api } from '../../api/client';
+import { logger } from '@/utils/logger';
 import { type User } from './useUsersData';
 import styles from './UsersTable.module.css';
 
@@ -304,8 +305,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       await api.delete(`/admin/users/${user.id}/`);
       fetchUsers();
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Error deleting user', e);
       alert('Error deleting user');
     }
   };
@@ -316,8 +316,7 @@ const UserActions: React.FC<UserActionsProps> = ({
       await api.delete(`/organisations/${effectiveOrgSlug}/members/${orgMembershipId}/`);
       fetchUsers();
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Error removing member', e);
       alert('Error removing member');
     }
   };

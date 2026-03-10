@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { creditsApi, transactionsApi } from '../../../api';
+import { logger } from '@/utils/logger';
 
 /* ─── Types ─── */
 
@@ -142,7 +143,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
       const data = await creditsApi.getProjectBalance(projectId) as unknown as ProjectCreditsBalance;
       setBalance(data);
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to load team credits balance', e);
       setBalance(null);
       setBalanceError(e instanceof Error ? e.message : 'Failed to load team credits balance');
     } finally {
@@ -163,7 +164,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
       const data = await creditsApi.getUserWalletBalance(String(organisationId)) as unknown as UserWalletBalance;
       setUserBalance(data);
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to load user wallet balance', e);
       setUserBalance(null);
       setUserBalanceError(e instanceof Error ? e.message : 'Failed to load your credits balance');
     } finally {
@@ -179,7 +180,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
       const results = await transactionsApi.listAll({ projectId: String(projectId) }, { pageSize: 100, maxItems: 500 }) as unknown as Transaction[];
       setTransactions(Array.isArray(results) ? results : []);
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to load team transactions', e);
       setTransactions([]);
       setTransactionsError(e instanceof Error ? e.message : 'Failed to load team transactions');
     } finally {

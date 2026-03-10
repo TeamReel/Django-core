@@ -12,6 +12,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { mediaApi, videoApi } from '../../api';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAppSelection } from '../../hooks/useAppSelection';
+import { logger } from '@/utils/logger';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
 import type { ContentItem } from '../content/contentLibraryTypes';
 
@@ -172,8 +173,7 @@ export function useStudioData(): StudioData {
       );
       setContentItems(Array.isArray(results) ? results : []);
     } catch (err) {
-      console.error(err);
-      console.error('[Studio] Content fetch error:', err);
+      logger.error('[Studio] Content fetch error', err);
       setError('Fout bij laden van content');
     } finally {
       setLoading(false);
@@ -201,8 +201,7 @@ export function useStudioData(): StudioData {
       }));
       setVideoJobs(jobs);
     } catch (err) {
-      console.error(err);
-      console.error('[Studio] Video jobs fetch error:', err);
+      logger.error('[Studio] Video jobs fetch error', err);
     } finally {
       setVideoJobsLoading(false);
     }

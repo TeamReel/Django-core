@@ -16,6 +16,7 @@ import type { OrgDataReturn } from './orgDataTypes';
 import { getActiveContext } from '../../utils/activeContext';
 import { DEBUG_LOGS, getApiV1BaseUrl, getCsrfToken } from './orgDataHelpers';
 import { organisationsApi } from '../../api';
+import { logger } from '@/utils/logger';
 import { useOrgFormState } from './useOrgFormState';
 import { useOrgDerived } from './useOrgDerived';
 import { useOrgDataFetching } from './useOrgDataFetching';
@@ -117,7 +118,7 @@ export function useOrgData(): OrgDataReturn {
       try {
         const context = await getActiveContext();
         if (!cancelled) s.setActiveContextState(context);
-      } catch (e) { console.error('Failed to load active context:', e); }
+      } catch (e) { logger.error('Failed to load active context', e); }
     };
     void loadActiveContext();
     return () => { cancelled = true; };
@@ -164,9 +165,8 @@ export function useOrgData(): OrgDataReturn {
         const organisationIdForCounts = String(orgData.id || s.currentOrgId || '');
         if (organisationIdForCounts) fetching.fetchFederationCounts(organisationIdForCounts);
       } catch (err) {
-        console.error(err);
+        logger.error('Org detail fetch error', err);
         s.setError(err instanceof Error ? err.message : 'Failed to fetch organisation details');
-        console.error('Org detail fetch error:', err);
       } finally {
         s.setLoading(false);
       }

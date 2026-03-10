@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { logger } from '@/utils/logger';
 import type {
   OrgOption,
   ProjectOption,
@@ -299,7 +300,7 @@ export function useSeasonSquadAddMemberData({
           if (selected && !unique.some((u) => String(u.id) === selected)) setSelectedUserId('');
         }
       } catch (e: unknown) {
-        console.error(e);
+        logger.error('Failed to load users', e);
         if (!cancelled && !(e instanceof Error && e.name === 'AbortError')) {
           setUserOptions([]);
           setError(e instanceof Error ? e.message : 'Failed to load users');
@@ -347,7 +348,7 @@ export function useSeasonSquadAddMemberData({
       });
       // Will be closed by caller
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to add user', e);
       setError(e instanceof Error ? e.message : 'Failed to add user');
     } finally {
       setSaving(false);

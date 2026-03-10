@@ -7,6 +7,7 @@ import type { QueueCounts } from '../../hooks/useQueueCounts';
 import { reviewJob } from '../../hooks/useGenerationJobs';
 import type { PhotoCompositeFollowUpInfo } from '../topNavbarHelpers';
 import type { LanguageCode } from './types';
+import { logger } from '@/utils/logger';
 
 interface UseTopNavbarHandlersParams {
   isTouchDevice: boolean;
@@ -126,7 +127,7 @@ export function useTopNavbarHandlers(params: UseTopNavbarHandlersParams) {
         }
       }
     } catch (e) {
-      console.error('Quick review failed:', e);
+      logger.error('Quick review failed', e);
     } finally {
       setQuickReviewBusy(false);
     }

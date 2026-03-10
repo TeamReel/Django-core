@@ -5,6 +5,7 @@ import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Alert, Spinner } from '@django-core/design-system';
 import { api } from '../../api';
 import styles from './TasksPage.module.css';
+import { logger } from '@/utils/logger';
 
 interface CeleryTask {
   id: string;
@@ -50,8 +51,7 @@ export function TasksPage() {
         setTasks(allTasks);
         setBeatSchedule(taskData.beat_schedule || []);
       } catch (err) {
-        console.error(err);
-        console.error('Failed to fetch tasks:', err);
+        logger.error('Failed to fetch tasks', err);
         setError('Failed to load tasks. Using demo data.');
         setTasks([
           { id: '1', name: 'Send welcome emails', status: 'running', time_start: Date.now() / 1000 },

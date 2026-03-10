@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import type { ListResult } from '@/api';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
@@ -106,8 +107,7 @@ export function useWorkflowTemplates(): UseWorkflowTemplatesReturn {
         setTemplates(unwrapResults<WorkflowTemplate>(data));
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error('[useWorkflowTemplates] Error:', err);
+        logger.error('useWorkflowTemplates error', err);
         setError(err instanceof Error ? err.message : 'Failed to load workflow templates');
       } finally {
         setLoading(false);
@@ -174,8 +174,7 @@ export function useWorkflowInstances(options: UseWorkflowInstancesOptions = {}):
         setInstances(results);
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error('[useWorkflowInstances] Error:', err);
+        logger.error('useWorkflowInstances error', err);
         setError(err instanceof Error ? err.message : 'Failed to load workflow instances');
       } finally {
         setLoading(false);
@@ -214,8 +213,7 @@ export function useWorkflowInstance(instanceId: number | string | null): UseWork
         setInstance(data);
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error('[useWorkflowInstance] Error:', err);
+        logger.error('useWorkflowInstance error', err);
         setError(err instanceof Error ? err.message : 'Failed to load workflow instance');
       } finally {
         setLoading(false);
@@ -250,8 +248,7 @@ export function useTransitionHistory(instanceId: number | string | null): UseTra
         setHistory(unwrapResults<TransitionHistoryEntry>(data));
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error('[useTransitionHistory] Error:', err);
+        logger.error('useTransitionHistory error', err);
         setError(err instanceof Error ? err.message : 'Failed to load transition history');
       } finally {
         setLoading(false);

@@ -1,6 +1,7 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react';
 import { api } from '../../api/client';
 import { getActiveContext } from '../../utils/activeContext';
+import { logger } from '@/utils/logger';
 
 /** Minimal project shape for the hook params. */
 interface ProjectParam { id?: string; name?: string; slug?: string }
@@ -90,8 +91,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
       } catch (e) {
-        console.error(e);
-        console.error('Failed to load active context:', e);
+        logger.error('Failed to load active context', e);
       }
     };
     void loadActiveContext();
@@ -140,7 +140,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
 
         if (!cancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load squad', e);
         const msg = e instanceof Error ? e.message : 'Failed to load squad';
         if (!cancelled) setMembersError(msg);
       } finally {
@@ -201,7 +201,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
 
         if (!cancelled) setTeamRoster(Array.from(byUserId.values()));
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load team roster', e);
         const msg = e instanceof Error ? e.message : 'Failed to load team roster';
         if (!cancelled) setTeamRosterError(msg);
       } finally {
@@ -245,8 +245,7 @@ export function useSeasonDataFetching(params: UseSeasonDataFetchingParams): UseS
 
         if (!cancelled) setMatches(seasonMatches);
       } catch (e) {
-        console.error(e);
-        console.error('Failed to fetch matches:', e);
+        logger.error('Failed to fetch matches', e);
       } finally {
         if (!cancelled) setMatchesLoading(false);
       }

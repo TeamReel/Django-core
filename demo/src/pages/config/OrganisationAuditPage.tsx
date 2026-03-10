@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Card } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { PageContent, PageHeader } from '@django-core/page-templates';
@@ -57,7 +58,7 @@ export const OrganisationAuditPage: React.FC = () => {
 
         if (!cancelled) setEvents(next);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load organisation audit', e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load organisation audit');
       } finally {
         if (!cancelled) setLoading(false);

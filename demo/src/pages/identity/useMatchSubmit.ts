@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@/utils/logger';
 import type { MatchCreatePayload } from './matchCreateTypes';
 import { combineDateTime, addHoursToIsoLike } from './matchCreateHelpers';
 import type { useMatchFormState } from './useMatchFormState';
@@ -126,7 +127,7 @@ export function useMatchSubmit({
       setDescriptionAutoValue('');
       onClose();
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to create match', e);
       setError(e instanceof Error ? e.message : 'Failed to create match');
     } finally {
       setIsSaving(false);

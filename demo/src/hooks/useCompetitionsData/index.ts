@@ -12,6 +12,7 @@ import type { Filters, UseCompetitionsDataReturn } from '../competitionsDataType
 import { fetchSeasons, fetchCompetitions } from './fetchers';
 import { useCompetitionHandlers } from './handlers';
 import { useDerivedCompetitions } from './derived';
+import { logger } from '@/utils/logger';
 
 // Re-export types for backward compatibility
 export type { Filters, UseCompetitionsDataReturn } from '../competitionsDataTypes';
@@ -55,7 +56,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
         });
         setSeasons(results);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load seasons', e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');
         setSeasons([]);
       }
@@ -80,7 +81,7 @@ export function useCompetitionsData(filters: Filters): UseCompetitionsDataReturn
         });
         setCompetitions(results);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load competitions', e);
         setError(e instanceof Error ? e.message : 'Failed to load competitions');
       } finally {
         setCompetitionsLoading(false);

@@ -7,6 +7,7 @@
  */
 import { useState, useCallback } from 'react';
 import { api } from '../../api';
+import { logger } from '@/utils/logger';
 import type { BrandAsset } from '../../hooks/useBrandAssets';
 import type { MemberMediaItem } from './medialibHelpers';
 
@@ -85,11 +86,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                 const bulkData = await api.list<BrandAsset>('/branding/assets/', { pageSize: 500, params: { organisation_scope: orgId } });
                 allAssets = bulkData.results;
             } catch (bulkErr) {
-              console.error(bulkErr);
-                console.warn(
-                    '[MediaLib] Bulk assets fetch failed, using fallback:',
-                    bulkErr,
-                );
+              logger.debug('Bulk assets fetch failed, using fallback', bulkErr);
             }
 
             // Fallback: if bulk endpoint returned 0 assets, fetch per-profile
@@ -131,7 +128,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
 
             setBrandAssets(allAssets);
         } catch (err: unknown) {
-          console.error(err);
+          logger.error('Failed to load brand assets', err);
             setBrandError(err instanceof Error ? err.message : 'Failed to load brand assets');
         } finally {
             setBrandLoading(false);
@@ -261,7 +258,7 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                             const chunkMap = presignedJson?.urls || {};
                             Object.assign(urlMap, chunkMap);
                         } catch {
-                            console.warn('[MediaLib] Presigned URL fetch failed for chunk');
+                            logger.debug('Presigned URL fetch failed for chunk');
                         }
                     }
 
@@ -272,18 +269,13 @@ export function useMediaLibFetchers(params: MediaLibFetcherParams) {
                     }
 
                 } catch (presignErr) {
-                  console.error(presignErr);
-                    console.warn(
-                        '[MediaLib] Presigned URL conversion error:',
-                        presignErr,
-                    );
+                    logger.debug('Presigned URL conversion error', presignErr);
                 }
             }
 
             setMemberMedia(memberAssets);
         } catch (err) {
-          console.error(err);
-            console.error('[MediaLib] Failed to fetch member assets:', err);
+            logger.error('MediaLib: Failed to fetch member assets', err);
             setMemberMedia([]);
         } finally {
             setMemberMediaLoading(false);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 import {
   Card,
   Button,
@@ -60,7 +61,7 @@ export const ProjectCreatePage: React.FC = () => {
       } as any) as any;
       navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`);
     } catch (err) {
-      console.error(err);
+      logger.error('An error occurred', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);

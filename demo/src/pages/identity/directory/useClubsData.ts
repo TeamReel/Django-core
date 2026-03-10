@@ -14,6 +14,7 @@ import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { api } from '../../../api/client';
 import { organisationsApi, projectsApi } from '../../../api';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
+import { logger } from '@/utils/logger';
 import { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
 /** ProjectOption extended with fields present in API responses but not in the base type. */
@@ -192,7 +193,7 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
           setTeams(allTeams as any);
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load clubs', e);
         setError(e instanceof Error ? e.message : 'Failed to load clubs');
       } finally {
         setIsLoading(false);
@@ -274,8 +275,7 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
       setClubs((prev) => prev.filter((p) => String(p.id) !== String(projectSlugOrId) && String(p.slug) !== String(projectSlugOrId)));
       if (String(selectedClubId) === String(projectSlugOrId)) setSelectedClubId('');
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Error deleting club', e);
       alert('Error deleting club');
     }
   };

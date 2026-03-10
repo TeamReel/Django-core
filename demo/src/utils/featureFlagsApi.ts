@@ -1,5 +1,6 @@
 import { FeatureFlag } from './featureFlagStorage';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 const API_BASE = '/settings/feature-flags';
 
@@ -92,7 +93,7 @@ export async function updateOrgOverride(overrideId: string, enabled: boolean): P
     await api.patch(url, { enabled });
     debugLog('[featureFlagsApi] updateOrgOverride completed successfully');
   } catch (error) {
-    console.error(error);
+    logger.error('Failed to update org override', error);
     throw error;
   }
 }
@@ -158,8 +159,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
       debugLog('[seedDefaultFlags] Fetched templates:', allTemplates.length);
       return allTemplates;
     } catch (err) {
-      console.error(err);
-      console.warn('Failed to fetch templates for seeding flags', err);
+      logger.debug('Failed to fetch templates for seeding flags', err);
       return [];
     }
   };
@@ -193,9 +193,8 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
       });
       created += 1;
     } catch (e) {
-      console.error(e);
+      logger.debug(`Failed to seed flag ${flag.key} (might already exist)`, e);
       failed += 1;
-      console.warn(`Failed to seed flag ${flag.key} (might already exist)`);
     }
   }
 
@@ -248,8 +247,7 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
         pageSize: 200,
       });
     } catch (err) {
-      console.error(err);
-      console.warn('Failed to fetch templates', err);
+      logger.debug('Failed to fetch templates', err);
       return [];
     }
   };

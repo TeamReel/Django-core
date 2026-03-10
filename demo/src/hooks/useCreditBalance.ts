@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { organisationsApi, transactionsApi } from '@/api';
+import { logger } from '@/utils/logger';
 
 interface BalancePolicy {
   id: string;
@@ -61,8 +62,7 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
 
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
-        console.error('Error fetching credit balance:', err);
+        logger.error('Error fetching credit balance', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@django-core/theme-system';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import styles from './TopNavigation.module.css';
 
 interface NotificationResponse {
@@ -81,8 +82,7 @@ export default function TopNavigation() {
         const unread = data.results?.filter(n => !n.is_read).length || 0;
         setUnreadCount(unread);
       } catch (err) {
-        console.error(err);
-        console.error('Failed to fetch notification count:', err);
+        logger.error('Failed to fetch notification count', err);
       }
     };
 

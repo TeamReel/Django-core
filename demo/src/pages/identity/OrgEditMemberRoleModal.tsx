@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@django-core/design-system';
 import { api } from '../../api';
 import styles from './OrgEditMemberRoleModal.module.css';
+import { logger } from '@/utils/logger';
 
 export interface OrgEditMemberRoleModalProps {
   opened: boolean;
@@ -84,7 +85,7 @@ export function OrgEditMemberRoleModal({
 
                 onSaved(updated, editingMemberRole);
               } catch (e) {
-                console.error(e);
+                logger.error('Failed to update member role', e);
                 setError(e instanceof Error ? e.message : 'Failed to update member');
               } finally {
                 setSaving(false);

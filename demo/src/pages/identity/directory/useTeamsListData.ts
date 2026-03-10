@@ -7,6 +7,7 @@ import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { canDeleteProject, canEditProject } from '../../../utils/permissions';
 import { api } from '../../../api/client';
 import { organisationsApi, projectsApi } from '../../../api';
+import { logger } from '@/utils/logger';
 import type { OrganisationOption, ProjectOption } from '../../work/WorkFilterBar';
 
 const isNumericId = (value: unknown) => /^\d+$/.test(String(value ?? '').trim());
@@ -234,7 +235,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
           setTeams(teamsData || []);
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load teams', e);
         setError(e instanceof Error ? e.message : 'Failed to load teams');
       } finally {
         setIsLoading(false);
@@ -322,8 +323,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
       setTeams((prev) => prev.filter((p) => String(p.id) !== String(teamId)));
       if (String(selectedTeamId) === String(teamId)) setSelectedTeamId('');
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Error deleting team', e);
       alert('Error deleting team');
     }
   };

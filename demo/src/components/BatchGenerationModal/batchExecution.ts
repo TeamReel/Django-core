@@ -6,6 +6,7 @@
  */
 import type { AssetTemplate } from '../../constants/assetTemplates';
 import { api, ApiError } from '@/api';
+import { logger } from '@/utils/logger';
 import type { BatchMember, MemberParams, MemberJobStatus } from './batchTypes';
 
 type SetJobStatuses = React.Dispatch<React.SetStateAction<Record<string, MemberJobStatus>>>;
@@ -73,8 +74,7 @@ export async function executeBatch(ctx: BatchContext): Promise<void> {
         organisationId, projectId, apiBase, abortRef, setJobStatuses,
       );
     } catch (err) {
-      console.error(err);
-      console.error(`Batch generation failed for ${member.name}:`, err);
+      logger.error(`Batch generation failed for ${member.name}`, err);
       setJobStatuses((prev) => ({
         ...prev,
         [member.id]: { status: 'error', error: err instanceof Error ? err.message : 'Onbekende fout' },
@@ -125,8 +125,7 @@ async function tryProcessExistingVariant(
       await pollVariantProcessing(member, selectedTemplate, projectId, apiBase, abortRef, setJobStatuses, procJson.total_queued || 0);
     }
   } catch (err) {
-    console.error(err);
-    console.error(`Batch processing existing variant failed for ${member.name}:`, err);
+    logger.error(`Batch processing existing variant failed for ${member.name}`, err);
     setJobStatuses((prev) => ({
       ...prev,
       [member.id]: { status: 'error', error: err instanceof Error ? err.message : 'Onbekende fout' },
@@ -229,7 +228,7 @@ async function generateForMember(
     if (!val) continue;
     let safeVal = val;
     if (!isValidUrl(safeVal)) safeVal = encodeURI(safeVal);
-    if (!isValidUrl(safeVal)) { console.warn(`Batch: skipping invalid URL for ${key}:`, val); continue; }
+    if (!isValidUrl(safeVal)) { logger.warn(`Batch: skipping invalid URL for ${key}:`, val); continue; }
 
     if (key === 'person') inputImageUrls['person_photo'] = safeVal;
     else if (key === 'reference') inputImageUrls['reference_photo'] = safeVal;
@@ -410,7 +409,6 @@ export async function updateMembershipMetadata(
       { metadata: updatedMeta },
     );
   } catch (err) {
-    console.error(err);
-    console.error(`Error updating metadata for ${member.name}:`, err);
+    logger.error(`Error updating metadata for ${member.name}`, err);
   }
 }

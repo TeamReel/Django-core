@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import {
   Card,
@@ -168,15 +169,13 @@ export const SecurityPage: React.FC = () => {
                 errorMessage += ` - ${errorData.detail}`;
             }
           } catch (e) {
-            console.error(e);
             // Ignore JSON parse error
           }
           throw new Error(errorMessage);
         }
       } catch (err) {
-        console.error(err);
+        logger.error('Security fetch error', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch security data');
-        console.error('Security fetch error:', err);
       } finally {
         setLoading(false);
       }

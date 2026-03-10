@@ -4,6 +4,7 @@ import { periodPathKey } from '../../utils/periodPath';
 import { FORMATION_LAYOUTS } from '../identity/ContentGenerationModal';
 import type { Period, SeasonProject as Project } from '../../types/season';
 import type { MatchDetail, OrgMember, SeasonSquadParticipation, ProjectMember } from './matchDetailTypes';
+import { logger } from '@/utils/logger';
 
 // ─── Local types ─────────────────────────────────────────────────────────────
 
@@ -146,7 +147,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           return;
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load match', e);
         setError(e instanceof Error ? e.message : 'Failed to load match');
       } finally {
         setLoading(false);
@@ -295,7 +296,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
           } catch { /* ignore */ }
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load roster', e);
         setRosterError(e instanceof Error ? e.message : 'Failed to load roster');
       } finally {
         setRosterLoading(false);

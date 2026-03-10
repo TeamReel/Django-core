@@ -11,6 +11,7 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { PullToRefresh } from '@django-core/design-system';
 import { useLocation } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
+import { logger } from '@/utils/logger';
 import MobileTabBar from '../components/MobileTabBar';
 import { useUserRole } from '../components/PermissionGuards';
 import {
@@ -212,7 +213,7 @@ export default function ApprovalsPage() {
         }
       }
     } catch (e) {
-      console.error(e);
+      logger.error('Review failed', e);
       pushToast(e instanceof Error ? e.message : 'Review mislukt', 'error');
       setOptimisticApprovals(prev => { const n = { ...prev }; delete n[taskId]; return n; });
     }
@@ -235,7 +236,7 @@ export default function ApprovalsPage() {
       await approveVideoJob(jobId);
       pushToast('✅ Video goedgekeurd!', 'success');
     } catch (e) {
-      console.error(e);
+      logger.error('Approve video failed', e);
       pushToast(e instanceof Error ? e.message : 'Goedkeuren mislukt', 'error');
     }
   }, [approveVideoJob, pushToast]);
@@ -245,7 +246,7 @@ export default function ApprovalsPage() {
       await rejectVideoJob(jobId);
       pushToast('❌ Video afgewezen', 'success');
     } catch (e) {
-      console.error(e);
+      logger.error('Reject video failed', e);
       pushToast(e instanceof Error ? e.message : 'Afwijzen mislukt', 'error');
     }
   }, [rejectVideoJob, pushToast]);

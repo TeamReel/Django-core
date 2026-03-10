@@ -10,6 +10,7 @@ import {
 } from '../../constants/assetProcessingSpecs';
 import { MEDIA_SLOTS, type MemberMediaForm } from '../../constants/mediaSlots';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 /** Minimal membership record shape for member-detail utilities. */
 export interface MembershipRecord {
@@ -271,7 +272,7 @@ export async function triggerAssetProcessing(
     });
     return { ok: true };
   } catch (e) {
-    console.error(e);
+    logger.error('Process asset error', e);
     return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
   }
 }
@@ -294,7 +295,7 @@ export async function cancelAssetProcessing(
     });
     return { ok: true };
   } catch (e) {
-    console.error(e);
+    logger.error('Cancel asset processing error', e);
     return { ok: false, error: e instanceof Error ? e.message : 'Unknown error' };
   }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Badge, Alert } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { Table } from '../../shims/design-system';
@@ -55,7 +56,7 @@ export const PermissionsPage: React.FC = () => {
         }
         setEffectivePermissionKeys(Array.from(new Set(keys.map(k => String(k).trim()).filter(Boolean))).sort());
       } catch (err) {
-        console.error(err);
+        logger.error('Failed to fetch permissions', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch permissions');
       } finally {
         setLoading(false);

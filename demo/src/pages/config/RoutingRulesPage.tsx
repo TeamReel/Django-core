@@ -16,6 +16,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import styles from './RoutingRulesPage.module.css';
 
 interface RoutingRule {
@@ -105,7 +106,7 @@ export const RoutingRulesPage: React.FC = () => {
 
       setRules(results);
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to load routing rules', e);
       setError(getErrorMessage(e) || 'Failed to load');
       setRules([]);
     } finally {
@@ -141,7 +142,7 @@ export const RoutingRulesPage: React.FC = () => {
 
       await fetchRules();
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to create routing rule', e);
       setError(getErrorMessage(e) || 'Failed to create');
     } finally {
       setCreating(false);
@@ -153,7 +154,7 @@ export const RoutingRulesPage: React.FC = () => {
       await api.patch(`/contextual-notifications/routing-rules/${rule.id}/`, { enabled: !rule.enabled });
       setRules(prev => prev.map(r => (r.id === rule.id ? { ...r, enabled: !r.enabled } : r)));
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to toggle routing rule', e);
       setError(getErrorMessage(e) || 'Failed to update');
     }
   }
@@ -163,7 +164,7 @@ export const RoutingRulesPage: React.FC = () => {
       await api.delete(`/contextual-notifications/routing-rules/${rule.id}/`);
       setRules(prev => prev.filter(r => r.id !== rule.id));
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to delete routing rule', e);
       setError(getErrorMessage(e) || 'Failed to delete');
     }
   }

@@ -12,6 +12,7 @@
 import { useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import type { Organisation, Project } from '../../types';
 
@@ -57,7 +58,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             );
             setUser(userData);
         } catch (err) {
-          console.error(err);
+          logger.error('Failed to fetch user', err);
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
             setLoading(false);
@@ -71,8 +72,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
                 updatedUser,
             );
         } catch (e) {
-          console.error(e);
-            console.error(e);
+          logger.error('Failed to save user changes', e);
             alert('Failed to save user changes');
             throw e;
         }
@@ -87,7 +87,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             );
             navigate(orgId ? `/organisations/${orgId}/users` : '/users');
         } catch (e) {
-          console.error(e);
+          logger.error('Failed to delete user', e);
             alert(e instanceof Error ? e.message : 'Failed to delete user');
         }
     };
@@ -307,7 +307,7 @@ export function useUserDetailApi(params: UserDetailApiParams) {
             setLinkClubs(Array.isArray(clubs) ? clubs : []);
             setLinkTeams(Array.isArray(teams) ? teams : []);
         } catch (e) {
-          console.error(e);
+          logger.error('Failed to load link options', e);
             setLinkOptionsError(e instanceof Error ? e.message : 'Failed to load link options');
             setLinkOrgs([]);
             setLinkClubs([]);

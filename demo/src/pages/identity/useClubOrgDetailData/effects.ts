@@ -5,6 +5,7 @@
 
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { getActiveContext } from '../../../utils/activeContext';
 import { isSeasonPeriod } from '../orgDetailUtils';
 import {
@@ -84,7 +85,7 @@ export function useClubOrgEffects({
       try {
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
-      } catch (error) { console.error('Failed to load active context:', error); }
+      } catch (error) { logger.debug('Failed to load active context', error); }
     };
     void run();
     return () => { cancelled = true; };
@@ -115,7 +116,7 @@ export function useClubOrgEffects({
         setOrg(loadedOrg);
         setClub(loadedClub);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load club', e);
         if (cancelled) return;
         setError(e instanceof Error ? e.message : 'Failed to load club');
         setOrg(null);
@@ -205,7 +206,7 @@ export function useClubOrgEffects({
         setOverviewMembers(sortedMembers.slice(0, 6));
         setOverviewCounts({ teams: clubTeams.length, seasons: sortedSeasons.length, members: sortedMembers.length });
       } catch (e) {
-        console.error(e);
+        logger.error('Overview load error', e);
         if (cancelled) return;
         setOverviewError(e instanceof Error ? e.message : 'Failed to load overview');
         setOverviewTeams([]); setOverviewSeasons([]); setOverviewMembers([]); setOverviewCounts(null);
@@ -237,7 +238,7 @@ export function useClubOrgEffects({
           if (url.startsWith('http')) setBrandLogoUrl(url);
           else setBrandLogoUrl(`https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`);
         }
-      } catch (e) { console.error('Failed to load brand logo:', e); }
+      } catch (e) { logger.debug('Failed to load brand logo', e); }
     };
     void loadBrandLogo();
     return () => { cancelled = true; };

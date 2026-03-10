@@ -5,6 +5,7 @@
  */
 import type React from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import type { Period, SeasonProject as Project } from '../../types/season';
@@ -104,7 +105,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     try {
       await api.delete(`/projects/${encodeURIComponent(pid)}/members/${encodeURIComponent(mid)}/`);
       setMembers((prev) => prev.filter((m: MemberRef) => String(m.id) !== mid));
-    } catch (e) { console.error(e); alert(e instanceof Error ? e.message : 'Error removing member'); }
+    } catch (e) { logger.error('Error removing member', e); alert(e instanceof Error ? e.message : 'Error removing member'); }
   };
 
   const saveMembershipRole = async (membership: MemberRef, role: string) => {
@@ -142,7 +143,7 @@ export function useCompetitionMutations(deps: CompetitionMutationsDeps) {
     try {
       await api.delete(`/periods/${encodeURIComponent(cid)}/`);
       navigate(`${seasonsBasePath}/${seasonKeyOrId}?tab=competitions`);
-    } catch (e) { console.error(e); alert('Error deleting competition'); }
+    } catch (e) { logger.error('Error deleting competition', e); alert('Error deleting competition'); }
   };
 
   const createMatchInCompetition = async (payload: CreateMatchPayload) => {

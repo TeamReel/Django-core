@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import { ACTIVE_CONTEXT_CHANGED_EVENT, getActiveContext, setActiveContext } from '../../utils/activeContext';
 import { useSeasonContext } from '../../providers/SeasonProvider';
 import type { Period, SeasonProject as Project, SeasonOrganisation as Organisation } from '../../types/season';
@@ -195,7 +196,7 @@ export function useMemberDetailData(): MemberDetailData {
         const memberJson = await projectsApi.getMember(project.id, membershipId);
         if (!cancelled) setMembership(memberJson);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load member', e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load member');
       }
     };
@@ -248,7 +249,7 @@ export function useMemberDetailData(): MemberDetailData {
       const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: nextMetadata } as any);
       setMembership(updated ? { ...membership, ...updated } : membership);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save', e);
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);

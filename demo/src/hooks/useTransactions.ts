@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { transactionsApi } from '@/api';
+import { logger } from '@/utils/logger';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -48,8 +49,7 @@ export function useTransactions({ organisation_id, limit = 5 }: UseTransactionsP
         setTransactions(results as unknown as Transaction[]);
         setError(null);
       } catch (err) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error('[useTransactions] Error:', err);
+        logger.error('useTransactions error', err);
         setError(err as Error);
       } finally {
         setLoading(false);

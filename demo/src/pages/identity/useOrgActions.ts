@@ -4,6 +4,7 @@ import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAl
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiV1BaseUrl } from './orgDataHelpers';
 import { api } from '../../api';
+import { logger } from '@/utils/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -83,8 +84,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       setInviteEmail('');
       alert('Member added successfully');
     } catch (err) {
-      console.error(err);
-      console.error('Invite error:', err);
+      logger.error('Invite error', err);
       alert(err instanceof Error ? err.message : 'Failed to invite member');
     } finally {
       setInviteLoading(false);
@@ -98,8 +98,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       await api.delete(`/organisations/${currentOrgSlug}/`);
       navigate('/federations');
     } catch (err) {
-      console.error(err);
-      console.error('Delete error:', err);
+      logger.error('Delete error', err);
       alert('Failed to delete organisation');
     } finally {
       setDeleteLoading(false);
@@ -128,8 +127,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
       setOrg(updatedOrg);
       setIsEditMode(false);
     } catch (err) {
-      console.error(err);
-      console.error('Update error:', err);
+      logger.error('Update error', err);
       alert('Failed to update organisation');
     } finally {
       setSaving(false);

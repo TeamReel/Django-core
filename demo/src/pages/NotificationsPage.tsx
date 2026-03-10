@@ -4,6 +4,7 @@ import { Alert, Button, Card, PullToRefresh } from '@django-core/design-system';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useSetBackNavigation } from '../providers/BackNavigationProvider';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import SwipeableCard from '../components/SwipeableCard';
 import styles from './NotificationsPage.module.css';
 
@@ -76,8 +77,7 @@ export default function NotificationsPage() {
       setNotifications(results);
       setError(null);
     } catch (err) {
-      console.error(err);
-      console.error('Error fetching notifications:', err);
+      logger.error('Error fetching notifications', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
       setLoading(false);
@@ -102,9 +102,8 @@ export default function NotificationsPage() {
         prev.map(n => n.id === notificationId ? updatedNotification : n)
       );
     } catch (err) {
-      console.error(err);
+      logger.error('Error marking notification as read', err);
       // Rollback on failure
-      console.error('Error marking notification as read:', err);
       setNotifications(previousNotifications);
       window.dispatchEvent(new Event('notificationChanged'));
     }
@@ -124,9 +123,8 @@ export default function NotificationsPage() {
       // Reconcile with server
       await fetchNotifications();
     } catch (err) {
-      console.error(err);
+      logger.error('Error marking all as read', err);
       // Rollback on failure
-      console.error('Error marking all as read:', err);
       setNotifications(previousNotifications);
       window.dispatchEvent(new Event('notificationChanged'));
     }
@@ -142,8 +140,7 @@ export default function NotificationsPage() {
       // Trigger event for badge update
       window.dispatchEvent(new Event('notificationChanged'));
     } catch (err) {
-      console.error(err);
-      console.error('Error marking all as unread:', err);
+      logger.error('Error marking all as unread', err);
     }
   };
 

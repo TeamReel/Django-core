@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { logger } from '@/utils/logger';
 
 /**
  * Options for the usePolling hook
@@ -56,7 +57,7 @@ export function usePolling<T = unknown>(
   const {
     interval = 30000, // 30 seconds default
     enabled = true,
-    onError = (error: Error) => console.error('Polling error:', error),
+    onError = (error: Error) => logger.error('Polling error', error),
     key,
     dependencies = [],
   } = options;
@@ -112,7 +113,7 @@ export function usePolling<T = unknown>(
 
       return result;
     } catch (err) {
-      console.error(err);
+      logger.error('Polling fetch error', err);
       const errorMsg = err instanceof Error ? err.message : 'Failed to fetch data';
       setError(errorMsg);
       onError(err instanceof Error ? err : new Error(errorMsg));

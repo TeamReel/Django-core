@@ -6,6 +6,7 @@ import { Table } from '../../shims/design-system';
 import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 import styles from './ProjectCompetitionMatchesPage.module.css';
+import { logger } from '@/utils/logger';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
@@ -160,7 +161,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
         });
         setMatches(matchResults);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load matches', e);
         setError(e instanceof Error ? e.message : 'Failed to load matches');
       } finally {
         setLoading(false);

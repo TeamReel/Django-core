@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { looksLikeUuid } from '../../../utils/periodPath';
 import { organisationsApi } from '../../../api';
+import { logger } from '@/utils/logger';
 
 type ResolvedOrgIdState = {
   orgId: string;
@@ -42,7 +43,7 @@ export const useResolvedOrgId = (orgIdOrSlug?: string): ResolvedOrgIdState => {
         if (cancelled) return;
         setState({ orgId: resolved || k, loading: false });
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to resolve organisation', e);
         if (cancelled) return;
         setState({ orgId: k, loading: false, error: e instanceof Error ? e.message : 'Failed to resolve organisation' });
       }

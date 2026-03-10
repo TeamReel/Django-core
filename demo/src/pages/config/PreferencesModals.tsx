@@ -6,6 +6,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import type { PreferencesDataReturn } from './usePreferencesData';
 import styles from './PreferencesModals.module.css';
 
@@ -145,7 +146,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   }
                   setIsProfileModalOpen(false);
                 } catch (e) {
-                  console.error(e);
+                  logger.error('Failed to update profile', e);
                   setProfileError(e instanceof Error ? e.message : 'Failed to update profile');
                 } finally {
                   setProfileSaving(false);
@@ -253,7 +254,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setPasswordNext('');
                   setPasswordConfirm('');
                 } catch (e) {
-                  console.error(e);
+                  logger.error('Failed to change password', e);
                   setPasswordError(e instanceof Error ? e.message : 'Failed to change password');
                 } finally {
                   setPasswordSaving(false);
@@ -341,7 +342,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
                   setIsAvatarModalOpen(false);
                   setAvatarFile(null);
                 } catch (e) {
-                  console.error(e);
+                  logger.error('Failed to upload avatar', e);
                   setAvatarError(e instanceof Error ? e.message : 'Failed to upload avatar');
                 } finally {
                   setAvatarSaving(false);

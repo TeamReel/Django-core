@@ -12,6 +12,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getErrorMessage } from '../../../utils/errorHelpers';
+import { logger } from '@/utils/logger';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
@@ -194,7 +195,7 @@ export function PeriodCreateFlow({ isOpen, onClose }: PeriodCreateFlowProps) {
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to create period', err);
       setError(getErrorMessage(err) || `${periodTypeLabel} aanmaken mislukt`);
       setIsSaving(false);
       throw err;

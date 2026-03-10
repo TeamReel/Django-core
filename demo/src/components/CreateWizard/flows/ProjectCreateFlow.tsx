@@ -12,6 +12,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getErrorMessage } from '../../../utils/errorHelpers';
+import { logger } from '@/utils/logger';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
@@ -138,7 +139,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to create project', err);
       const msg = err instanceof ApiError
         ? ((err.body as any)?.detail || (err.body as any)?.message || `${projectTypeLabel} aanmaken mislukt`)
         : getErrorMessage(err) || `${projectTypeLabel} aanmaken mislukt`;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSports } from '../../hooks/useSports';
+import { logger } from '@/utils/logger';
 import type { Organisation } from '../../types';
 import styles from './OrganisationEditModal.module.css';
 
@@ -34,8 +35,7 @@ export default function OrganisationEditModal({ opened, onClose, organisation, o
       await onSave(formData);
       onClose();
     } catch (error) {
-      console.error(error);
-      console.error(error);
+      logger.error('Failed to save organisation', error);
     } finally {
       setSaving(false);
     }

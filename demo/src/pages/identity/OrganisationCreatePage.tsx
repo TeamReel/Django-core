@@ -12,6 +12,7 @@ import {
 } from '../../shims/page-templates';
 import { organisationsApi } from '../../api';
 import styles from './OrganisationCreatePage.module.css';
+import { logger } from '@/utils/logger';
 
 /**
  * Organisation Create Page
@@ -40,7 +41,7 @@ export const OrganisationCreatePage: React.FC = () => {
         navigate('/federations');
       }
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to create organisation', err);
       setError(err instanceof Error ? err.message : 'Failed to create organisation');
     } finally {
       setLoading(false);

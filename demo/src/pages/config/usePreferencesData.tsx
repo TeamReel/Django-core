@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '@django-core/theme-system';
 import { useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import type { AuditEvent } from '../../types';
 import { api } from '../../api';
 
@@ -181,8 +182,7 @@ export function usePreferencesData(): PreferencesDataReturn {
     try {
       await api.patch(`/preferences/me/`, { language: preferences.language, timezone: preferences.timezone });
     } catch (err) {
-      console.error(err);
-      console.error('[PreferencesPage] Failed to save preferences to backend:', err);
+      logger.error('Failed to save preferences to backend', err);
     }
 
     await new Promise(r => setTimeout(r, 300));
@@ -249,7 +249,7 @@ export function usePreferencesData(): PreferencesDataReturn {
           .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
         if (!cancelled) setMyAuditEvents(filtered);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load audit events', e);
         if (!cancelled) setMyAuditError(e instanceof Error ? e.message : 'Failed to load audit events');
       } finally {
         if (!cancelled) setMyAuditLoading(false);

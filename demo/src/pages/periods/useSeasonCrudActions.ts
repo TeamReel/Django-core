@@ -3,6 +3,7 @@ import type { Period } from '../../types/season';
 import { api } from '../../api/client';
 import { periodsApi, activitiesApi } from '../../api';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
+import { logger } from '@/utils/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -72,8 +73,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
       );
       navigate(seasonsBasePath);
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Error deleting season', e);
       alert('Error deleting season');
     }
   }, [resolvedSeasonId, effectiveSeasonId, season?.name, seasonsBasePath, navigate]);
@@ -88,8 +88,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
       const updated = await getActiveContext();
       setActiveContextState(updated);
     } catch (e) {
-      console.error(e);
-      console.error('Failed to activate context:', e);
+      logger.error('Failed to activate context', e);
     } finally {
       setActivatingContext(false);
     }
@@ -132,8 +131,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
 
       setMembersReloadToken((x) => x + 1);
     } catch (err) {
-      console.error(err);
-      console.error('Add member error:', err);
+      logger.error('Add member error', err);
     }
   }, [apiBaseUrl, resolvedSeasonId]);
 

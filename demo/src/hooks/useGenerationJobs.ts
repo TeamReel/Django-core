@@ -8,6 +8,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,7 +129,7 @@ export function useGenerationJobs(options: UseGenerationJobsOptions = {}): UseGe
       });
       setError(null);
     } catch (e) {
-      console.error(e);
+      logger.error('useGenerationJobs fetch error', e);
       setError(e instanceof Error ? e.message : 'Failed to load jobs');
     } finally {
       setLoading(false);

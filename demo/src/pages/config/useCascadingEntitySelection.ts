@@ -5,6 +5,7 @@
  */
 import { useState, useEffect } from 'react';
 import { api } from '../../api';
+import { logger } from '@/utils/logger';
 import {
   ACTIVE_CONTEXT_CHANGED_EVENT,
   getActiveContext as fetchActiveContext,
@@ -149,7 +150,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
       setHasEditedContext(false);
       window.dispatchEvent(new Event(ACTIVE_CONTEXT_CHANGED_EVENT));
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save active context', e);
       setActiveContextError(e instanceof Error ? e.message : 'Failed to save active context');
     } finally {
       setSavingContext(false);
@@ -175,7 +176,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const data = await fetchActiveContext();
         if (!cancelled) setActiveContext(data);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load active context', e);
         if (!cancelled) setActiveContextError(e instanceof Error ? e.message : 'Failed to load active context');
       } finally {
         if (!cancelled) setActiveContextLoading(false);
@@ -208,7 +209,7 @@ export function useCascadingEntitySelection(): CascadingEntitySelectionReturn {
         const res = await api.list<Organisation>('/organisations/', { pageSize: 250 });
         if (!cancelled) setOrganisations(res.results || []);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load federations', e);
         if (!cancelled) setActiveContextError(`Failed to load federations: ${e instanceof Error ? e.message : 'Unknown error'}`);
       } finally {
         if (!cancelled) setLoadingOrgs(false);

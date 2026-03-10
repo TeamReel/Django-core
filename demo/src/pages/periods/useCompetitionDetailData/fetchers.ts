@@ -3,6 +3,7 @@
  */
 import { useEffect } from 'react';
 import { api } from '../../../api/client';
+import { logger } from '@/utils/logger';
 import { looksLikeUuid, periodPathKey } from '../../../utils/periodPath';
 import type { Period, SeasonProject as Project } from '../../../types/season';
 import type { Activity } from '../../../types/api/activity';
@@ -80,7 +81,7 @@ export function useCompetitionFetchers(params: UseFetchersParams) {
           );
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load competition', e);
         setError(e instanceof Error ? e.message : 'Failed to load competition');
       } finally {
         setLoading(false);
@@ -106,7 +107,7 @@ export function useCompetitionFetchers(params: UseFetchersParams) {
           pageSize: 250, maxItems: 250,
         });
         if (!cancelled) setMatches(results);
-      } catch (e) { console.error('Failed to fetch matches:', e); }
+      } catch (e) { logger.error('Failed to fetch matches', e); }
       finally { if (!cancelled) setMatchesLoading(false); }
     })();
     return () => { cancelled = true; };
@@ -145,7 +146,7 @@ export function useCompetitionFetchers(params: UseFetchersParams) {
       try {
         const { results: list } = await api.list<MemberRef>(`/projects/${pid}/members/`, { params: { period: cid } });
         if (!cancelled) setMembers(list);
-      } catch (e) { console.error('Failed to fetch members:', e); }
+      } catch (e) { logger.error('Failed to fetch members', e); }
       finally { if (!cancelled) setMembersLoading(false); }
     })();
     return () => { cancelled = true; };

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { SkeletonList } from '../../../components/Skeleton';
 import { generativeApi } from '../../../api';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
@@ -36,7 +37,7 @@ export const ContentOverview: React.FC = () => {
         const { results } = await generativeApi.listJobs({ limit: 200 });
         if (!cancelled) setJobs(results as unknown as GenerationJob[]);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load', e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
       } finally {
         if (!cancelled) setLoading(false);

@@ -10,6 +10,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { brandingApi } from '@/api';
+import { logger } from '@/utils/logger';
 
 // ============================================================================
 // Types
@@ -218,7 +219,7 @@ export function useBrandAssets(): UseBrandAssetsReturn {
 
       setAssets(filtered);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to load brand assets', err);
       if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && err.name === 'AbortError')) {
         setError(err instanceof Error ? err.message : 'Failed to load brand assets');
       }

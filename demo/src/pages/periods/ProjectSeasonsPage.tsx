@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { PageContent, PageHeader } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { Table } from '../../shims/design-system';
@@ -119,7 +120,7 @@ export const ProjectSeasonsPage: React.FC = () => {
         const seasonResults = allPeriods.filter((p: Period) => !p.parent_period);
         setSeasons(seasonResults);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load seasons', e);
         setError(e instanceof Error ? e.message : 'Failed to load seasons');
       } finally {
         setLoading(false);

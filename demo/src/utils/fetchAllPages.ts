@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 type Envelope<T> = {
   data?: {
     results?: T[];
@@ -86,7 +88,7 @@ async function fetchJsonWithCache(url: string, init: RequestInit, ttlMs: number,
       entry.expiresAt = Date.now() + ttlMs;
       return value;
     } catch (err) {
-      console.error(err);
+      logger.error('JSON cache fetch failed', err);
       pageCache.delete(key);
       throw err;
     }
@@ -183,7 +185,7 @@ export async function fetchAllPages<T>(
       entry.expiresAt = Date.now() + ttlMs;
       return value;
     } catch (err) {
-      console.error(err);
+      logger.error('Fetch all pages failed', err);
       cache.delete(cacheKey);
       throw err;
     }

@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Clock, CheckCircle } from 'lucide-react';
 
+import { logger } from '@/utils/logger';
 import type { GeneratedVariant, GeneratedOutput } from '@/pages/identity/ContentGenerationModal/types';
 import { useContentOptions } from '@/pages/identity/ContentGenerationModal/useContentOptions';
 import { useSeasonSquadData } from '@/pages/identity/ContentGenerationModal/useSeasonSquadData';
@@ -189,10 +190,9 @@ export function useMatchWizardGeneration(isOpen: boolean) {
         return 'video_queued';
       }
     } catch (err) {
-      console.error(err);
+      logger.error('[!] Generation failed', err);
       clearInterval(progressInterval);
       if ((err as { name?: string })?.name === 'AbortError') return 'abort';
-      console.error('[!] Generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Generation failed');
       return 'error';
     }
@@ -248,8 +248,7 @@ export function useMatchWizardGeneration(isOpen: boolean) {
         window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       }
     } catch (err) {
-      console.error(err);
-      console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
+      logger.error(`[!] Failed to save variant ${variantIdx + 1}`, err);
       setSaveError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally {
       setSavingAsset(false);

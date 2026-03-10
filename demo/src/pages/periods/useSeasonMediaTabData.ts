@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 import { generativeApi } from '../../api';
 import type { BatchMember } from '../../components/BatchGenerationModal';
 
@@ -105,8 +106,7 @@ export function useSeasonMediaTabData({
       setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
       setTimeout(() => { window.location.reload(); }, 500);
     } catch (err) {
-      console.error(err);
-      console.error('Guest closeup crop error:', err);
+      logger.error('Guest closeup crop error', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {
       setCroppingGuestCloseup(false);

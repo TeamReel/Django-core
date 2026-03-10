@@ -3,6 +3,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 
 export function useSettingsPage() {
   const location = useLocation();
@@ -81,8 +82,7 @@ export function useSettingsPage() {
         setSaveStatus('success');
         setTimeout(() => { setSaveStatus('idle'); }, 3000);
       } catch (error) {
-        console.error(error);
-        console.error('Failed to save preferences:', error);
+        logger.error('Failed to save preferences', error);
         setSaveStatus('error');
         setTimeout(() => { setSaveStatus('idle'); }, 3000);
       }
@@ -103,8 +103,7 @@ export function useSettingsPage() {
         setProfileSaveStatus('success');
         setTimeout(() => { setProfileSaveStatus('idle'); }, 3000);
       } catch (error) {
-        console.error(error);
-        console.error('Failed to save profile:', error);
+        logger.error('Failed to save profile', error);
         setProfileSaveStatus('error');
         setTimeout(() => { setProfileSaveStatus('idle'); }, 3000);
       }
@@ -131,8 +130,7 @@ export function useSettingsPage() {
         setNotificationsSaveStatus('success');
         setTimeout(() => { setNotificationsSaveStatus('idle'); }, 3000);
       } catch (error) {
-        console.error(error);
-        console.error('Failed to save notification settings:', error);
+        logger.error('Failed to save notification settings', error);
         setNotificationsSaveStatus('error');
         setTimeout(() => { setNotificationsSaveStatus('idle'); }, 3000);
       }

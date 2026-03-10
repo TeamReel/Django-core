@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './ThenVsNowModal.module.css';
 import { api } from '../../api';
@@ -119,8 +120,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
             }));
           setBackgrounds(bgs);
       } catch (err) {
-        console.error(err);
-        console.warn('Failed to fetch app backgrounds:', err);
+        logger.warn('Failed to fetch app backgrounds', err);
       }
     })();
   }, [apiBaseUrl]);
@@ -162,7 +162,7 @@ const ThenVsNowModal: React.FC<ThenVsNowModalProps> = ({
       setStep('submitted');
       setTimeout(() => onClose(), 2500);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to start compilation', err);
       setError(err instanceof Error ? err.message : 'Failed to start compilation');
       setStep('error');
     }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { logger } from '@/utils/logger';
 import styles from './ProjectCreateModal.module.css';
 
 type OrgOption = { id: string; name: string; slug?: string };
@@ -99,7 +100,7 @@ export default function ProjectCreateModal({
       setDescription('');
       onClose();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to create', err);
       setError(err instanceof Error ? err.message : 'Failed to create');
     } finally {
       setSaving(false);

@@ -5,6 +5,7 @@ import type { Period, SeasonProject as Project } from '../../types/season';
 import { useSeasonContext } from '../../providers/SeasonProvider';
 import { useBrandProfile } from '../../hooks/useBrandProfile';
 import { getActiveContext } from '../../utils/activeContext';
+import { logger } from '@/utils/logger';
 import type { MatchDetail, ContentItem, OrgMember, ProjectMember } from './matchDetailTypes';
 import type { ContentTemplate } from '../identity/ContentGenerationModal';
 import type { MatchMediaItem } from '../../components/MediaAssetCard';
@@ -118,8 +119,7 @@ export function useMatchFormState() {
         const context = await getActiveContext();
         if (!cancelled) setActiveContextState(context);
       } catch (e) {
-        console.error(e);
-        console.error('Failed to load active context:', e);
+        logger.error('Failed to load active context', e);
       }
     };
     void loadActiveContext();

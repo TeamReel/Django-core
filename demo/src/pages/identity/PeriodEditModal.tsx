@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSports } from '../../hooks/useSports';
 import styles from './PeriodEditModal.module.css';
+import { logger } from '@/utils/logger';
 
 export interface PeriodLike {
   id: string;
@@ -216,7 +217,7 @@ export default function PeriodEditModal({ opened, onClose, period, onSave, showS
       await onSave(payload);
       onClose();
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save period', e);
       setError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);

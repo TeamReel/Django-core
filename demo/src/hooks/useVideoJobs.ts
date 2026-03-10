@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 // ============================================================================
 // Types
@@ -223,12 +224,12 @@ export function useVideoJobs(options: UseVideoJobsOptions): UseVideoJobsReturn {
           setError(null);
         }
       } catch (err: unknown) {
-        console.error(err);
+        logger.error('useVideoJobs fetch error', err);
         if (!cancelled) {
           // 403 = user isn't a member of this project → treat as empty, not error
           const status = typeof err === 'object' && err !== null && 'status' in err ? err.status : undefined;
           if (status === 403) {
-            console.warn(`[useVideoJobs] No access to project ${projectId}, returning empty jobs`);
+            logger.debug(`useVideoJobs: No access to project ${projectId}, returning empty jobs`);
             setJobs([]);
             setError(null);
           } else {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, Badge, Card } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { Table } from '../../shims/design-system';
 import { api } from '../../api';
 import type { Period } from '../../types/season';
@@ -128,8 +129,7 @@ const SeasonCompetitionsTab: React.FC<SeasonCompetitionsTabProps> = ({
                                 await api.delete(`/periods/${competition.id}/`);
                                 setCompetitions((prev) => prev.filter((c) => c.id !== competition.id));
                               } catch (e) {
-                                console.error(e);
-                                console.error(e);
+                                logger.error('Error deleting competition', e);
                                 alert('Error deleting competition');
                               }
                             }}

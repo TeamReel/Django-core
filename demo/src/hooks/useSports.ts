@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 // Sport interface matching backend SportSerializer
 export interface Sport {
@@ -90,10 +91,9 @@ export function useSports(): UseSportsReturn {
       const { results } = await api.list<Sport>('/sports/', { pageSize: 1000 });
       setSports(results);
     } catch (err) {
-      console.error(err);
+      logger.error('Error fetching sports', err);
       const message = err instanceof Error ? err.message : "Failed to fetch sports";
       setError(message);
-      console.error("Error fetching sports:", err);
     } finally {
       setLoading(false);
     }

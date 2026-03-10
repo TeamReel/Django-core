@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import {
   type BrandProfile,
   type BrandAsset,
@@ -104,9 +105,8 @@ export function useBrandProfile({
       setProfile(detail);
       setAssets(detail.assets || []);
     } catch (err) {
-      console.error(err);
+      logger.error('useBrandProfile fetch error', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
-      console.error('[useBrandProfile] Error:', err);
     } finally {
       setLoading(false);
     }
@@ -156,8 +156,7 @@ export function useBrandProfile({
           activeProfile = await api.post<BrandProfile>('/branding/profiles/', createBody);
           setProfile(activeProfile);
         } catch (err) {
-          console.error(err);
-          console.error('[useBrandProfile] Auto-create profile error:', err);
+          logger.error('useBrandProfile auto-create profile error', err);
           return null;
         }
       }
@@ -204,8 +203,7 @@ export function useBrandProfile({
         await fetchProfile();
         return brandAsset;
       } catch (err) {
-        console.error(err);
-        console.error('[useBrandProfile] Upload error:', err);
+        logger.error('useBrandProfile upload error', err);
         setError(err instanceof Error ? err.message : 'Upload failed');
         return null;
       }
@@ -222,8 +220,7 @@ export function useBrandProfile({
         await fetchProfile();
         return true;
       } catch (err) {
-        console.error(err);
-        console.error('[useBrandProfile] DeleteById error:', err);
+        logger.error('useBrandProfile deleteById error', err);
         setError(err instanceof Error ? err.message : 'Delete failed');
         return false;
       }
@@ -243,8 +240,7 @@ export function useBrandProfile({
         await fetchProfile();
         return true;
       } catch (err) {
-        console.error(err);
-        console.error('[useBrandProfile] Delete error:', err);
+        logger.error('useBrandProfile delete error', err);
         setError(err instanceof Error ? err.message : 'Delete failed');
         return false;
       }
@@ -265,9 +261,8 @@ export function useBrandProfile({
          );
          return data.history || [];
       } catch (e) {
-        console.error(e);
-         console.error(e);
-         return [];
+        logger.error('useBrandProfile fetchHistory error', e);
+        return [];
       }
     },
     [projectId, organisationId]
@@ -285,9 +280,8 @@ export function useBrandProfile({
          await fetchProfile(); // Reload
          return true;
        } catch (e) {
-         console.error(e);
-          console.error(e);
-          return false;
+         logger.error('useBrandProfile restoreAsset error', e);
+         return false;
        }
     },
     [projectId, organisationId, fetchProfile]

@@ -5,6 +5,7 @@ import {
   Modal,
 } from '@django-core/design-system';
 import { organisationsApi, ApiError } from '../../api';
+import { logger } from '@/utils/logger';
 import styles from './InviteMemberModal.module.css';
 
 interface InviteMemberModalProps {
@@ -38,8 +39,7 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
       setEmail('');
       setRole('member');
     } catch (err) {
-      console.error(err);
-      console.error('Invite error:', err);
+      logger.error('Invite error', err);
       if (err instanceof ApiError) {
         const body = err.body as any;
         setError(body?.email?.[0] || body?.detail || 'Failed to invite member');

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Alert } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import styles from './UserDetailModals.module.css';
 import UserDetailModal from './UserDetailModal';
 import UserEditModal from './UserEditModal';
@@ -100,7 +101,7 @@ export function ProjectMembershipEditModal({
                   await onSave({ role });
                   onClose();
                 } catch (e) {
-                  console.error(e);
+                  logger.error('Failed to save', e);
                   setError(e instanceof Error ? e.message : 'Failed to save');
                 } finally {
                   setSaving(false);

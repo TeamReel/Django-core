@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Input } from '@django-core/design-system';
 import { api, activitiesApi } from '../../api';
+import { logger } from '@/utils/logger';
 import { periodPathKey } from '../../utils/periodPath';
 import type { Period } from '../../types/season';
 import { getMatchParticipantsCount } from './seasonDetailUtils';
@@ -217,8 +218,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                 await api.delete(`/periods/${competition.id}/`);
                                 setCompetitions((prev) => prev.filter((c) => String(c.id) !== String(competition.id)));
                               } catch (e) {
-                                console.error(e);
-                                console.error(e);
+                                logger.error('Error deleting competition', e);
                                 alert('Error deleting competition');
                               }
                             }}
@@ -279,8 +279,7 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
                                           await activitiesApi.delete(match.id);
                                           setMatches((prev) => prev.filter((m) => String(m.id) !== String(match.id)));
                                         } catch (e) {
-                                          console.error(e);
-                                          console.error(e);
+                                          logger.error('Error deleting match', e);
                                           alert('Error deleting match');
                                         }
                                       }}

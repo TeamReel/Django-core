@@ -3,6 +3,7 @@ import { api } from '@/api';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 import type { PhotoCompositeFollowUpInfo } from './topNavbarHelpers';
+import { logger } from '@/utils/logger';
 
 export interface NavbarPhotoCompositeFollowUpModalProps {
   info: PhotoCompositeFollowUpInfo;
@@ -32,8 +33,7 @@ export function NavbarPhotoCompositeFollowUpModal({ info, onClose, onSubmitted }
       });
       setSubmitted(true);
     } catch (e) {
-      console.error(e);
-      console.error('Failed to submit photo_composite_video:', e);
+      logger.error('Failed to submit photo_composite_video', e);
       setError(e instanceof Error ? e.message : 'Generatie mislukt');
       setSubmitting(false);
     }

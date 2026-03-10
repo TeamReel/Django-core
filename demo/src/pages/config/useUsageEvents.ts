@@ -7,6 +7,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { api } from '../../api/client';
+import { logger } from '@/utils/logger';
 import type { UsageEvent } from './usageEvents.types';
 
 const LIMIT = 50;
@@ -137,9 +138,8 @@ export function useUsageEvents() {
         }
       }
     } catch (err) {
-      console.error(err);
+      logger.error('Usage events fetch error', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch usage events');
-      console.error('Usage events fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -207,7 +207,7 @@ export function useUsageEvents() {
           await api.post('/usage-events/', testEvent);
           await fetchEvents();
         } catch (postErr: any) {
-          console.error('Backend error:', postErr?.status, postErr?.body);
+          logger.debug('Backend error during test event', postErr?.status, postErr?.body);
           if (postErr?.status === 404) {
             setDemoMode(true);
           } else {
@@ -216,8 +216,7 @@ export function useUsageEvents() {
         }
       }
     } catch (err) {
-      console.error(err);
-      console.error('Failed to generate test event:', err);
+      logger.error('Failed to generate test event', err);
     } finally {
       setGenerating(false);
     }

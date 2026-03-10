@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 // import AppShell from '../../components/AppShell';
 import {
   LineChart,
@@ -69,14 +70,13 @@ export const CachePerformancePage: React.FC = () => {
 
       // Validate response structure
       if (!data.realtime) {
-        console.error('[CachePerformancePage] Invalid API response:', data);
+        logger.error('Invalid API response', data);
         throw new Error('Invalid API response: missing realtime metrics');
       }
 
       setMetrics(data);
     } catch (err) {
-      console.error(err);
-      console.error('[CachePerformancePage] Fetch error:', err);
+      logger.error('[CachePerformancePage] Fetch error', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch metrics');
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ export const CachePerformancePage: React.FC = () => {
       // Refresh metrics
       await fetchMetrics();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to clear cache', err);
       setError(err instanceof Error ? err.message : 'Failed to clear cache');
     } finally {
       setActionLoading(null);
@@ -110,7 +110,7 @@ export const CachePerformancePage: React.FC = () => {
       const result = await api.post<BenchmarkResult>('/system/cache/benchmark/');
       setBenchmarkResult(result);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to run benchmark', err);
       setError(err instanceof Error ? err.message : 'Failed to run benchmark');
     } finally {
       setActionLoading(null);

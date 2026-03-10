@@ -10,6 +10,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import { api as apiClient } from '../../api/client';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
@@ -312,7 +313,7 @@ export function useUserDetailData(): UserDetailDataReturn {
                 const v = data?.current_balance;
                 if (!cancelled) setUserBalance(v != null ? String(v) : null);
             } catch (e: unknown) {
-              console.error(e);
+              logger.error('Failed to fetch balance', e);
                 if (!cancelled) setUserBalanceError(e instanceof Error ? e.message : 'Failed to fetch balance');
             } finally {
                 if (!cancelled) setUserBalanceLoading(false);

@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@/utils/logger';
 import s from './ProjectSeasonDetailPage.module.css';
 import { getFunctionalRolesFromMembership, type AccessRoleOption } from './seasonDetailUtils';
 import { projectsApi } from '../../api';
@@ -62,7 +63,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
       onSaved(membershipId, editAccessRole, functionalRoles);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to update member', err);
       alert(err instanceof Error ? err.message : 'Failed to update member');
     }
   };

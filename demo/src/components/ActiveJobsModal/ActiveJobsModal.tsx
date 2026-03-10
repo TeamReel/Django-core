@@ -9,6 +9,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Badge, Button } from '@django-core/design-system';
 import { Modal } from '../ui';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import styles from './ActiveJobsModal.module.css';
 
 // ============================================================================
@@ -62,7 +63,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
       });
       setJobs(data.jobs || []);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to fetch active jobs', err);
       setError(String(err));
     } finally {
       setLoading(false);
@@ -92,8 +93,7 @@ export const ActiveJobsModal: React.FC<ActiveJobsModalProps> = ({
         // Refresh immediately
         await fetchJobs();
       } catch (err) {
-        console.error(err);
-        console.error('Error cancelling job:', err);
+        logger.error('Error cancelling job', err);
       } finally {
         setCancellingIds((prev) => {
           const next = new Set(prev);

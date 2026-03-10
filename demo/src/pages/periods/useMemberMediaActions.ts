@@ -12,6 +12,7 @@
  */
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import type { MemberMediaForm } from '../../constants/mediaSlots';
 import { getBestUrl } from '../../constants/assetProcessingSpecs';
 import { resolvePresignedUrls } from '../../hooks/useBrandProfile';
@@ -160,8 +161,7 @@ export function useMemberMediaActions({
       const memberData = await api.get<any>(`/projects/${project?.id}/members/${membershipId}/`);
       if (memberData) setMembership(memberData);
     } catch (err) {
-      console.error(err);
-      console.error('Profile photo upload error:', err);
+      logger.error('Profile photo upload error', err);
       alert(err instanceof Error ? err.message : 'Upload mislukt');
     } finally {
       setProfileUploading(false);
@@ -210,8 +210,7 @@ export function useMemberMediaActions({
       setLegacyPhotoPreview(null);
       alert('Legacy foto succesvol geüpload!');
     } catch (err) {
-      console.error(err);
-      console.error('Legacy photo upload error:', err);
+      logger.error('Legacy photo upload error', err);
       alert(err instanceof Error ? err.message : 'Upload mislukt');
     } finally {
       setLegacyPhotoUploading(false);
@@ -233,8 +232,7 @@ export function useMemberMediaActions({
         closeup: { ...prev.closeup, [kitType]: { raw: storagePath, processed: storagePath, processing_state: 'processed' as const } },
       }));
     } catch (err) {
-      console.error(err);
-      console.error('Closeup crop error:', err);
+      logger.error('Closeup crop error', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {
       setCroppingCloseup(prev => ({ ...prev, [kitType]: false }));
@@ -256,8 +254,7 @@ export function useMemberMediaActions({
         halfbody: { ...prev.halfbody, [kitType]: { raw: storagePath, processed: storagePath, processing_state: 'processed' as const } },
       }));
     } catch (err) {
-      console.error(err);
-      console.error('Halfbody crop error:', err);
+      logger.error('Halfbody crop error', err);
       alert(err instanceof Error ? err.message : 'Crop mislukt');
     } finally {
       setCroppingHalfbody(prev => ({ ...prev, [kitType]: false }));
@@ -272,11 +269,11 @@ export function useMemberMediaActions({
     if (!project) return;
     const idToUse = targetMembershipId || membershipId || membership?.id;
     if (!idToUse) {
-      console.error('handleMetadataUpdate: no membership ID available — aborting');
+      logger.error('handleMetadataUpdate: no membership ID available — aborting');
       return;
     }
     if (membership?.id && idToUse !== String(membership.id)) {
-      console.warn(`⚠️ handleMetadataUpdate: using targetId=${idToUse} but membership.id=${membership.id}.`);
+      logger.warn(`handleMetadataUpdate: using targetId=${idToUse} but membership.id=${membership.id}.`);
     }
     setSaving(true);
     setSaveError(null);
@@ -284,9 +281,8 @@ export function useMemberMediaActions({
       const result = await api.patch<any>(`/projects/${project.id}/members/${idToUse}/`, { metadata: newMetadata });
       setMembership(result);
     } catch (e) {
-      console.error(e);
+      logger.error('Metadata update failed', e);
       setSaveError(e instanceof Error ? e.message : 'Failed to update');
-      console.error('Metadata update failed:', e);
     } finally {
       setSaving(false);
     }

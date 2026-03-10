@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import {
   Card,
   Button,
@@ -54,7 +55,7 @@ export const WebSocketTestPage: React.FC = () => {
           const data = JSON.parse(event.data);
           addLog('received', data);
         } catch (e) {
-          console.error(e);
+          logger.debug('WebSocket message parse fallback', e);
           addLog('received', event.data);
         }
       };
@@ -67,12 +68,12 @@ export const WebSocketTestPage: React.FC = () => {
 
       ws.onerror = (error) => {
         addLog('error', 'WebSocket error occurred');
-        console.error('WebSocket error:', error);
+        logger.error('WebSocket error', error);
       };
 
       socketRef.current = ws;
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to create WebSocket', e);
       addLog('error', `Failed to create WebSocket: ${e}`);
     }
   };

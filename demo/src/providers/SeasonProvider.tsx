@@ -24,6 +24,7 @@ import React, {
   type PropsWithChildren,
 } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { logger } from '@/utils/logger';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useUserRole } from '../components/PermissionGuards';
@@ -212,7 +213,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
           setCompetitionsLoading(false);
         }
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load season', e);
         setError(e instanceof Error ? e.message : 'Failed to load season');
       } finally {
         setLoading(false);

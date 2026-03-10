@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Alert, Button } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { PageContent } from '@django-core/page-templates';
 import AppShell from '../../components/AppShell';
 import { SkeletonDetailPage } from '../../components/Skeleton';
@@ -214,7 +215,7 @@ export default function LegacyMatchRedirectPage() {
         navigate(target, { replace: true, state: location.state });
         setStatus('redirected');
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to redirect', e);
         setError(e instanceof Error ? e.message : 'Failed to redirect');
         setStatus('fallback');
       }

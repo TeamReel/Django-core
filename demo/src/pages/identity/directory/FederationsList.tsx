@@ -16,6 +16,7 @@ import OrganisationDetailModal from '../OrganisationDetailModal';
 import OrganisationEditModal from '../OrganisationEditModal';
 import OrganisationCreateModal from '../OrganisationCreateModal';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { useSports } from '../../../hooks/useSports';
 import type { Organisation } from '../../../types';
 import styles from './FederationsList.module.css';
@@ -69,7 +70,7 @@ export const FederationsList: React.FC = () => {
         });
         setOrganisations(results);
       } catch (err) {
-        console.error(err);
+        logger.error('Failed to fetch organisations', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch organisations');
       } finally {
         setLoading(false);
@@ -93,8 +94,7 @@ export const FederationsList: React.FC = () => {
 
       setRefreshKey(k => k + 1);
     } catch (err) {
-      console.error(err);
-      console.error('Delete error:', err);
+      logger.error('Delete error', err);
       alert('Failed to delete organisation');
     }
   };

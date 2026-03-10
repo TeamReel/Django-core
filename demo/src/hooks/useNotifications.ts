@@ -14,6 +14,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 // ============================================================================
 // Types
@@ -117,7 +118,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       setNotifications(results);
       setError(null);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('useNotifications fetch error', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
       setLoading(false);
@@ -160,8 +161,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       );
       dispatchChange();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to mark notification read:', err);
+      logger.error('Failed to mark notification read', err);
     }
   }, []);
 
@@ -173,8 +173,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       );
       dispatchChange();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to mark notification unread:', err);
+      logger.error('Failed to mark notification unread', err);
     }
   }, []);
 
@@ -184,8 +183,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       dispatchChange();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to mark all read:', err);
+      logger.error('Failed to mark all read', err);
     }
   }, []);
 
@@ -195,8 +193,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       setNotifications(prev => prev.map(n => ({ ...n, is_read: false })));
       dispatchChange();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to mark all unread:', err);
+      logger.error('Failed to mark all unread', err);
     }
   }, []);
 

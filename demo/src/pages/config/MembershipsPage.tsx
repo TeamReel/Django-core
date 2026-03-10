@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import { PageHeader, PageContent } from '@django-core/page-templates';
+import { logger } from '@/utils/logger';
 import { useSetBackNavigation } from '../../providers/BackNavigationProvider';
 import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
@@ -72,7 +73,7 @@ export const MembershipsPage: React.FC = () => {
         });
         if (!cancelled) setSeasons(results);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load seasons', e);
         if (!cancelled) setSeasonsError(e instanceof Error ? e.message : 'Failed to load seasons');
       } finally {
         if (!cancelled) setSeasonsLoading(false);

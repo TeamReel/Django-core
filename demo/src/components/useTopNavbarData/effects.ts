@@ -7,6 +7,7 @@ import type { User } from '@django-core/auth-ui';
 import { api } from '@/api';
 import type { NotificationResponse } from '../topNavbarHelpers';
 import type { NotificationItem, LanguageCode } from './types';
+import { logger } from '@/utils/logger';
 
 interface UseTopNavbarEffectsParams {
   user: User | null;
@@ -99,7 +100,7 @@ export function useTopNavbarEffects(params: UseTopNavbarEffectsParams) {
           })));
         }
       } catch (err) {
-        console.error('Failed to fetch notification count:', err);
+        logger.error('Failed to fetch notification count', err);
       }
     };
     fetchUnreadCount();

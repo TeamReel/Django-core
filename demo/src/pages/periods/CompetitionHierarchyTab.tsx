@@ -5,6 +5,7 @@ import SmartEmptyState from '../../components/SmartEmptyState';
 import { activitiesApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
+import { logger } from '@/utils/logger';
 
 export interface CompetitionMatchModals {
   setIsMatchCreateModalOpen: (v: boolean) => void;
@@ -171,8 +172,7 @@ export function CompetitionHierarchyTab({
                                   await activitiesApi.delete(String(m.id));
                                   setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
                                 } catch (e) {
-                                  console.error(e);
-                                  console.error(e);
+                                  logger.error('Error deleting match', e);
                                   alert('Error deleting match');
                                 }
                               }}

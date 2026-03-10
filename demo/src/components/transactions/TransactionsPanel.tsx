@@ -6,6 +6,7 @@ import styles from './TransactionsPanel.module.css';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getErrorMessage } from '../../utils/errorHelpers';
+import { logger } from '@/utils/logger';
 
 type Transaction = {
   id: string;
@@ -85,7 +86,7 @@ export default function TransactionsPanel(props: {
       const results = await fetchAllPages<Transaction>(url, { credentials: 'include' }, { ttlMs: 15_000, maxPages: 5 });
       setItems(Array.isArray(results) ? results : []);
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to load transactions', e);
       setItems([]);
       setError(getErrorMessage(e) || 'Failed to load transactions');
     } finally {

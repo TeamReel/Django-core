@@ -10,6 +10,7 @@ import {
   type TransitionHistoryEntry,
 } from '../../hooks/useWorkflows';
 import styles from './WorkflowActionButtons.module.css';
+import { logger } from '@/utils/logger';
 
 interface WorkflowActionButtonsProps {
   instanceId: number | string;
@@ -42,7 +43,7 @@ export function WorkflowActionButtons({
       setComment('');
       onTransitionComplete?.(entry);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to execute workflow action', err);
       onError?.(err instanceof Error ? err.message : `Failed to execute "${action}"`);
     } finally {
       setExecuting(null);

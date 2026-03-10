@@ -2,6 +2,7 @@
  * Handlers/actions for useCreditsData hook
  */
 import { useCallback, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import { createApiClient } from '@django-core/api-client';
 import { useBreadcrumbContextSwitcher, type BreadcrumbSwitcherOption } from '@django-core/page-templates';
 import { getApiBaseUrl } from '../../../../utils/apiBase';
@@ -126,7 +127,7 @@ export function useCreditsHandlers(params: UseCreditsHandlersParams) {
         }
       }
     } catch (err: unknown) {
-      console.error('[CreditsPage] Exception creating transaction:', err);
+      logger.error('Exception creating transaction', err);
       setToastMessage(`Error: ${err instanceof Error ? err.message : 'Failed to create transaction'}`);
     } finally {
       setTimeout(() => setToastMessage(null), 5000);

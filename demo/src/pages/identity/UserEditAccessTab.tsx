@@ -5,6 +5,7 @@
  * and functional role checkboxes.
  */
 import type { User, ProjectChoice } from './userEditTypes';
+import { logger } from '@/utils/logger';
 import {
   FUNCTIONAL_ROLE_OPTIONS,
   ADMIN_LIKE_ROLES,
@@ -104,8 +105,7 @@ export function UserEditAccessTab({
                       <option value="member">member</option>
                       <option value="admin">admin</option>
                     </select>
-                    <button type="button" disabled={addingToOrg || saving} onClick={async () => { try { await linkToOrganisation(); } catch (e) { setExtraError(e instanceof Error ? e.message : 'Failed to add to federation'); } }} className={`btn-modal btn-modal-primary ${styles.addFedButton}`} data-busy={addingToOrg || saving}>
-                      console.error(e);
+                    <button type="button" disabled={addingToOrg || saving} onClick={async () => { try { await linkToOrganisation(); } catch (e) { logger.error('Failed to add to federation', e); setExtraError(e instanceof Error ? e.message : 'Failed to add to federation'); } }} className={`btn-modal btn-modal-primary ${styles.addFedButton}`} data-busy={addingToOrg || saving}>
                       {addingToOrg ? 'Adding…' : 'Add to federation'}
                     </button>
                   </div>

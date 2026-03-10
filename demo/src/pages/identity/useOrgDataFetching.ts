@@ -3,6 +3,7 @@ import { fetchAllPages } from '../../utils/fetchAllPages';
 import { parseListEnvelope, isSeasonPeriod, isCompetitionPeriod } from './orgDetailUtils';
 import { DEBUG_LOGS, getApiV1BaseUrl } from './orgDataHelpers';
 import { api } from '../../api';
+import { logger } from '@/utils/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -121,8 +122,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
       );
       setFederationMatches(Array.isArray(all) ? all : []);
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Failed to fetch federation matches', e);
       setFederationMatches([]);
     } finally {
       setFederationMatchesLoading(false);
@@ -138,7 +138,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         params: { activity_type: 'match', organisation_id: organisationId, ordering: 'start_time', start_time__gte: new Date().toISOString() },
       });
       setScheduledMatches(data.results);
-    } catch (e) { console.error(e); }
+    } catch (e) { logger.error('Failed to fetch scheduled matches', e); }
     finally { setScheduledMatchesLoading(false); }
   };
 
@@ -151,7 +151,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         params: { activity_type: 'match', organisation_id: organisationId, ordering: '-start_time', start_time__lt: new Date().toISOString() },
       });
       setRecentPlayedMatches(data.results);
-    } catch (e) { console.error(e); }
+    } catch (e) { logger.error('Failed to fetch recent matches', e); }
     finally { setRecentPlayedMatchesLoading(false); }
   };
 
@@ -168,8 +168,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
       setClubs(clubsOnly);
       setClubsCount(count);
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Failed to fetch clubs', e);
       setClubs([]);
       setClubsCount(0);
     } finally {
@@ -208,8 +207,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
       setTeams(teamsOnly);
       teamsFetchedForOrgRef.current = currentOrgSlug;
     } catch (e) {
-      console.error(e);
-      console.error(e);
+      logger.error('Failed to fetch teams', e);
       setTeams([]);
       setAllClubsForTeams([]);
     } finally {
@@ -291,15 +289,14 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
           try {
             const periods = await fetchAllPages<any>(`${apiV1BaseUrl}/periods/?${p.toString()}`, { credentials: 'include' });
             for (const pr of periods || []) { if (pr?.id) unique.set(String(pr.id), pr); }
-          } catch (e) { console.warn(`Failed to fetch periods for team ${teamId}`, e); }
+          } catch (e) { logger.warn(`Failed to fetch periods for team ${teamId}`, e); }
         }));
       }
       const merged = Array.from(unique.values());
       setOrgPeriods(merged);
       recomputePeriodCounts(merged);
     } catch (e) {
-      console.error(e);
-      console.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
+      logger.warn('[OrganisationDetailPage] Failed to load periods via team scope', e);
     } finally {
       setOrgPeriodsLoading(false);
       orgPeriodsFetchInFlightRef.current = false;
@@ -328,7 +325,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
         const matchesData = await api.list<any>('/activities/', { pageSize: 1, params: { activity_type: 'match', organisation_id: organisationId } });
         setMatchesCount(matchesData.count);
       }
-    } catch (e) { console.warn('[OrganisationDetailPage] Failed to fetch counts', e); }
+    } catch (e) { logger.warn('[OrganisationDetailPage] Failed to fetch counts', e); }
     if (!orgPeriodsLoading && orgPeriods.length === 0) void ensureOrgPeriodsLoaded();
   };
 
@@ -359,8 +356,7 @@ export function useOrgDataFetching(params: UseOrgDataFetchingParams): UseOrgData
       );
       setMembers(allMembers);
     } catch (e) {
-      console.error(e);
-      console.error('[OrganisationDetailPage] Members fetch failed:', e);
+      logger.error('[OrganisationDetailPage] Members fetch failed', e);
       setMembers([]);
     } finally {
       setMembersLoading(false);

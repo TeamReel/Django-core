@@ -3,6 +3,7 @@
  */
 import { useState, useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { ContentTemplate } from '../../../pages/identity/ContentGenerationModal/types';
 
@@ -40,8 +41,7 @@ export function useTemplatesData(): UseTemplatesDataReturn {
       });
       setAvailableTemplates(grouped);
     } catch (err) {
-      console.error(err);
-      console.error('Failed to fetch templates:', err);
+      logger.error('Failed to fetch templates', err);
       setTemplatesError('Kon sjablonen niet laden. Controleer je verbinding.');
     } finally {
       setTemplatesLoading(false);

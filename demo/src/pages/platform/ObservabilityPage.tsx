@@ -5,6 +5,7 @@ import {
   Button,
   Alert,
 } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import {
   PageHeader,
   PageContent,
@@ -74,9 +75,8 @@ export const ObservabilityPage: React.FC = () => {
 
       setBackendMetrics(data);
     } catch (err) {
-      console.error(err);
+      logger.error('Observability fetch error', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch observability metrics');
-      console.error('Observability fetch error:', err);
       setBackendMetrics(null);
     } finally {
       setLoading(false);

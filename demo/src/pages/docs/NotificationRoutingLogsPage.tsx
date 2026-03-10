@@ -15,6 +15,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { api, ApiError } from '../../api';
 import styles from './NotificationRoutingLogsPage.module.css';
+import { logger } from '@/utils/logger';
 
 interface RoutingLog {
   id: string;
@@ -162,9 +163,8 @@ export const NotificationRoutingLogsPage: React.FC = () => {
           ];
           setLogs(demoLogs);
         } else {
-        console.error(err);
+        logger.error('Routing logs fetch error', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch routing logs');
-        console.error('Routing logs fetch error:', err);
         }
       } finally {
         setLoading(false);

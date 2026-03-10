@@ -17,6 +17,7 @@ import type { UseMatchWizardDataReturn } from './matchWizardTypes';
 import { fetchSquadMembers, fetchContentTemplates, saveLineupToApi, resolveTemplate } from './matchWizardFetchers';
 import { executeGeneration } from './matchWizardGeneration';
 import { executeSaveVariant } from './matchWizardSaving';
+import { logger } from '@/utils/logger';
 
 export type { UseMatchWizardDataReturn } from './matchWizardTypes';
 
@@ -96,7 +97,7 @@ export function useMatchWizardData(
       else if (!matchesLoading) {
         api.get<any>(`/activities/${encodeURIComponent(initialMatchId)}/`)
           .then(data => { if (data?.id) { setSelectedMatch(data as Activity); setCurrentStep('content'); } })
-          .catch(err => console.error('[MatchWizard] Failed to fetch match by id:', err));
+          .catch(err => logger.error('[MatchWizard] Failed to fetch match by id', err));
       }
     } else if (upcomingMatches.length > 0) setSelectedMatch(upcomingMatches[0]);
   }, [isOpen, activities, initialMatchId, upcomingMatches, selectedMatch, matchesLoading]);
@@ -223,7 +224,7 @@ export function useMatchWizardData(
         setTimeout(() => handleClose(), 1200);
       }
     } catch (err) {
-      console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
+      logger.error(`[!] Failed to save variant ${variantIdx + 1}`, err);
       setGenerationError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally { setSavingAsset(false); }
   };

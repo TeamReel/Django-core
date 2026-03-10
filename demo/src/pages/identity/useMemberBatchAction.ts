@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { logger } from '@/utils/logger';
 import { api, ApiError } from '../../api';
 import { getMemberName } from './memberBatchAction.types';
 import type { BatchMemberEntry, TeamOption, ActionType, ActionConfig } from './memberBatchAction.types';
@@ -192,7 +193,7 @@ export function useMemberBatchAction({
                     success++;
                 }
             } catch (err: unknown) {
-              console.error(err);
+              logger.error('Batch action error', err);
                 failed++;
                 newErrors.push(`${name}: ${err instanceof Error ? err.message : 'Onbekende fout'}`);
             }

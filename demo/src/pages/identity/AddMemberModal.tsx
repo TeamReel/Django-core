@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Input } from '@django-core/design-system';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import {
   LEVEL_LABEL,
 } from './addMemberModalStyles';
@@ -185,7 +186,7 @@ export default function AddMemberModal({
         onClose();
       }, 1200);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to add member', err);
       setError(err instanceof Error ? err.message : 'Failed to add member');
     } finally {
       setLoading(false);
@@ -214,7 +215,7 @@ export default function AddMemberModal({
       // 2) Add to hierarchy using the same logic as existing user
       await addExistingUser(createdUser);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to create user', err);
       setError(err instanceof Error ? err.message : 'Failed to create user');
       setLoading(false);
     }

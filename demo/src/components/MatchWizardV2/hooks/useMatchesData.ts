@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { useActivities, type Activity } from '../../../hooks/useActivities';
 import { useMatchWizard } from '../MatchWizardContext';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
   const { activities, loading, error } = useActivities({ limit: 10 });
@@ -46,8 +47,7 @@ export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
               setSelectedMatch(data);
             }
           } catch (err) {
-            console.error(err);
-            console.error('[MatchWizard] Failed to fetch match by id:', err);
+            logger.error('[MatchWizard] Failed to fetch match by id', err);
           }
         })();
       }

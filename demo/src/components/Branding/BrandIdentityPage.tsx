@@ -6,6 +6,7 @@ import { Loader2, AlertCircle } from 'lucide-react';
 import type { BrandProfile, BrandIdentityPageProps, DesignToken } from './brandIdentity.types';
 import { ColorPaletteSection, TypographySection, OtherTokensSection, BrandAssetsSection } from './BrandTokenSections';
 import { ProfileHeader, EmptyState } from './BrandProfileChrome';
+import { logger } from '@/utils/logger';
 
 export default function BrandIdentityPage({
   projectId,
@@ -32,7 +33,7 @@ export default function BrandIdentityPage({
       await api.post(`/branding/profiles/${profile.id}/generate-tokens/`);
       await fetchProfile();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to generate tokens', err);
       setError(err instanceof Error ? err.message : 'Failed to generate tokens');
     } finally {
       setGeneratingTokens(false);
@@ -59,7 +60,7 @@ export default function BrandIdentityPage({
         setProfile(profileData);
       }
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to load brand profile', err);
       setError(err instanceof Error ? err.message : 'Failed to load brand profile');
     } finally {
       setLoading(false);

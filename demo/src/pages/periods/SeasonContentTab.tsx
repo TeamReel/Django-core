@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Badge, Card } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import {
   useVideoJobs,
   getJobTypeDisplay,
@@ -97,8 +98,7 @@ const SeasonContentTab: React.FC<SeasonContentTabProps> = ({
       });
       setAvailableTemplates(grouped);
     } catch (err) {
-      console.error(err);
-      console.error('Error fetching templates:', err);
+      logger.error('Error fetching templates', err);
     } finally {
       setTemplatesLoading(false);
     }

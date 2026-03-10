@@ -11,6 +11,7 @@ import type { Activity } from '../../utils/directoryHelpers';
 import type { Filters, UseMatchesDataReturn } from './types';
 import { fetchMatchesSeasons, fetchMatchesCompetitions, fetchMatches } from './fetchers';
 import { useDerivedMatches } from './derived';
+import { logger } from '@/utils/logger';
 
 // Re-export types
 export type { Filters, UseMatchesDataReturn } from './types';
@@ -114,7 +115,7 @@ export function useMatchesData(filters: Filters): UseMatchesDataReturn {
         if (seq !== loadMatchesSeqRef.current) return;
         setMatches(results);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load matches', e);
         setError(e instanceof Error ? e.message : 'Failed to load matches');
       } finally {
         if (seq === loadMatchesSeqRef.current) setMatchesLoading(false);

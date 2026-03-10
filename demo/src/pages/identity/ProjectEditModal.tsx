@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import styles from './ProjectEditModal.module.css';
 
 interface Project {
@@ -41,7 +42,7 @@ export default function ProjectEditModal({ opened, onClose, project, onSave }: P
       await onSave(formData);
       onClose();
     } catch (error) {
-      console.error(error);
+      logger.error('Failed to save changes', error);
       const message = error instanceof Error ? error.message : 'Failed to save changes';
       setError(message);
     } finally {

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Card, Input } from '@django-core/design-system';
 import styles from './IdentitySettingsCard.module.css';
+import { logger } from '@/utils/logger';
 
 export type IdentitySettingsValues = {
   logoUrl: string;
@@ -52,7 +53,7 @@ export default function IdentitySettingsCard({
       });
       setIsEditing(false);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save identity settings', e);
       setError(e instanceof Error ? e.message : 'Failed to save settings');
     } finally {
       setSaving(false);

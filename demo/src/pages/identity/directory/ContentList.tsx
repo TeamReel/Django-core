@@ -5,6 +5,7 @@ import SmartEmptyState from '../../../components/SmartEmptyState';
 import { generativeApi } from '../../../api';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
 import cl from './ContentList.module.css';
+import { logger } from '@/utils/logger';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -92,7 +93,7 @@ export const ContentList: React.FC = () => {
         const { results } = await generativeApi.listJobs({ limit: 200 });
         if (!cancelled) setJobs(results as unknown as GenerationJob[]);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load content', e);
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
       } finally {
         if (!cancelled) setLoading(false);

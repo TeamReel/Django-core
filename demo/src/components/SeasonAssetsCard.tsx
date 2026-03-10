@@ -6,6 +6,7 @@ import {
   getEffectiveSponsor,
 } from '../constants/clubAssets';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 interface SeasonAssetsCardProps {
   seasonId: string;
@@ -87,7 +88,7 @@ export default function SeasonAssetsCard({
       setTimeout(() => setSaveSuccess(false), 3000);
       onAssetsUpdated?.();
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save season assets', e);
       setSaveError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);

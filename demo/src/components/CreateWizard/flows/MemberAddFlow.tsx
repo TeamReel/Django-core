@@ -15,6 +15,7 @@
  */
 import React, { useCallback, useMemo, useState } from 'react';
 import { getErrorMessage } from '../../../utils/errorHelpers';
+import { logger } from '@/utils/logger';
 
 import { WizardProvider, WizardShell, WizardStep, type WizardStepConfig } from '../../Wizard';
 import { useCreateWizard } from '../CreateWizardContext';
@@ -229,7 +230,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
       window.dispatchEvent(new CustomEvent('teamreel:queue-update'));
       setIsSaving(false);
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to add member', err);
       setError(getErrorMessage(err) || 'Lid toevoegen mislukt');
       setIsSaving(false);
       throw err; // re-throw so MemberConfirmStep knows it failed

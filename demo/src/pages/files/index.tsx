@@ -3,6 +3,7 @@ import { FileUpload, Card, Stack, Text, Button, Badge, Alert } from '@django-cor
 import type { FileUploadFile } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
 import { api } from '../../api';
+import { logger } from '@/utils/logger';
 import styles from './index.module.css';
 
 interface FileAsset {
@@ -39,8 +40,7 @@ const FilesPage: React.FC = () => {
         return JSON.parse(stored);
       }
     } catch (err) {
-      console.error(err);
-      console.warn('Failed to load files from localStorage:', err);
+      logger.warn('Failed to load files from localStorage', err);
     }
 
     // Default demo files if nothing in localStorage
@@ -77,8 +77,7 @@ const FilesPage: React.FC = () => {
     try {
       localStorage.setItem('demo-files', JSON.stringify(fileList));
     } catch (err) {
-      console.error(err);
-      console.warn('Failed to save files to localStorage:', err);
+      logger.warn('Failed to save files to localStorage', err);
     }
   };
 
@@ -89,9 +88,8 @@ const FilesPage: React.FC = () => {
       const data = await api.get<any>('/files/');
       setFiles(data.results || data);
     } catch (err) {
-      console.error(err);
+      logger.debug('Loading demo mode files due to API unavailability', err);
       // Demo mode: Load files from localStorage
-      console.error('Loading demo mode files due to API unavailability');
       const demoFiles = loadDemoFiles();
       setFiles(demoFiles);
       // Clear any error since we have demo data
@@ -143,8 +141,7 @@ const FilesPage: React.FC = () => {
 
             return; // Exit success
         } catch (e) {
-          console.error(e);
-            console.warn("API upload failed, falling back to demo mode", e);
+          logger.warn("API upload failed, falling back to demo mode", e);
         }
 
         // Demo mode: Skip API call and simulate upload directly
@@ -177,7 +174,7 @@ const FilesPage: React.FC = () => {
         }, 500);
 
       } catch (err) {
-        console.error(err);
+        logger.error('Upload failed', err);
         const errorMsg = err instanceof Error ? err.message : 'Upload failed';
         setError(errorMsg);
 
@@ -219,7 +216,7 @@ const FilesPage: React.FC = () => {
 
       setSuccess(`Demo download started for ${file.original_filename} (saved as demo-${file.original_filename}.txt)`);
     } catch (err) {
-      console.error(err);
+      logger.error('Download failed', err);
       setError(err instanceof Error ? err.message : 'Download failed');
     }
   };
@@ -239,7 +236,7 @@ const FilesPage: React.FC = () => {
       });
       setSuccess(`Successfully deleted ${file.original_filename} (demo mode)`);
     } catch (err) {
-      console.error(err);
+      logger.error('Delete failed', err);
       setError(err instanceof Error ? err.message : 'Delete failed');
     }
   };

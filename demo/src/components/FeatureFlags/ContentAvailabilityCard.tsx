@@ -5,6 +5,7 @@
  */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import {
   createScopeOverride,
   deleteOrgOverride,
@@ -55,7 +56,7 @@ export default function ContentAvailabilityCard({
     try {
       await fetchAvailabilityFlags();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to load content availability', err);
       setError(err instanceof Error ? err.message : 'Failed to load content availability');
     } finally {
       setLoading(false);
@@ -215,7 +216,7 @@ export default function ContentAvailabilityCard({
       for (const row of toUpdate) {
         // Check hierarchy: can't enable if parent is disabled
         if (enabled && row.disableEnable) {
-          console.warn(`Skipping ${row.key}: ${row.disabledReason}`);
+          logger.warn(`Skipping ${row.key}: ${row.disabledReason}`);
           continue;
         }
         if (row.overrideId) {
@@ -232,8 +233,7 @@ export default function ContentAvailabilityCard({
       await fetchAvailabilityFlags();
       setSelectedIds(new Set());
     } catch (err) {
-      console.error(err);
-      console.error('Bulk update failed:', err);
+      logger.error('Bulk update failed', err);
       alert('Bulk update failed. Check console for details.');
     } finally {
       setBulkUpdating(false);
@@ -258,8 +258,7 @@ export default function ContentAvailabilityCard({
       }
       await fetchAvailabilityFlags();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to update availability flag:', err);
+      logger.error('Failed to update availability flag', err);
       alert('Failed to update availability. Check console for details.');
     } finally {
       setUpdatingKey(null);
@@ -273,8 +272,7 @@ export default function ContentAvailabilityCard({
       await deleteOrgOverride(row.overrideId);
       await fetchAvailabilityFlags();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to reset availability flag:', err);
+      logger.error('Failed to reset availability flag', err);
       alert('Failed to reset availability. Check console for details.');
     } finally {
       setUpdatingKey(null);

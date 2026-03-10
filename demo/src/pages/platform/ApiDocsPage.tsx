@@ -4,6 +4,7 @@ import {
   Alert,
   Button,
 } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { apiFetch } from '../../utils/apiFetch';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import {
@@ -48,8 +49,7 @@ export const ApiDocsPage: React.FC = () => {
           });
         }
       } catch (err) {
-        console.error(err);
-        console.error('Failed to fetch API schema:', err);
+        logger.error('Failed to fetch API schema', err);
         // Don't show metadata if we can't fetch real data
       }
     };

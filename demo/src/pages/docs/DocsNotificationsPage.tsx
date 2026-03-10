@@ -4,6 +4,7 @@ import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import styles from './DocsNotificationsPage.module.css';
 
 interface DocsNotification {
@@ -30,8 +31,7 @@ export function DocsNotificationsPage() {
       const { results } = await api.list<DocsNotification>('/user-notifications/');
       setNotifications(results);
     } catch (err) {
-      console.error(err);
-      console.error('Failed to fetch notifications:', err);
+      logger.error('Failed to fetch notifications', err);
       setError(err instanceof Error ? err.message : 'Failed to load notifications');
     } finally {
       setLoading(false);
@@ -47,8 +47,7 @@ export function DocsNotificationsPage() {
       setNotifications(prev => prev.map(n => n.id === id ? updated : n));
       window.dispatchEvent(new CustomEvent('notificationChanged'));
     } catch (err) {
-      console.error(err);
-      console.error('Failed to toggle notification:', err);
+      logger.error('Failed to toggle notification', err);
       alert(err instanceof Error ? err.message : 'Failed to update notification');
     } finally {
       setMarking(null);
@@ -62,8 +61,7 @@ export function DocsNotificationsPage() {
       await fetchNotifications();
       window.dispatchEvent(new Event('notificationChanged'));
     } catch (err) {
-      console.error(err);
-      console.error('Error marking all as read:', err);
+      logger.error('Error marking all as read', err);
       alert('Failed to mark all as read');
     }
   };

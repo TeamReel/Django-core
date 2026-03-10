@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logger } from '@/utils/logger';
 
 import { api } from '@/api/client';
 import type { OverviewMember } from './teamDetailTypes';
@@ -97,7 +98,7 @@ export function useOverviewMembers({
         setOverviewMembers(sorted.slice(0, 6));
         setOverviewMembersCount(extractMembersCount(json, normalized));
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load members', e);
         if (cancelled) return;
         setOverviewMembers([]);
         setOverviewMembersCount(null);

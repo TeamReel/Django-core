@@ -6,6 +6,7 @@
  */
 import { useMemo, useState, useEffect, useRef, useCallback, type Dispatch, type SetStateAction, type RefObject, type ChangeEvent } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import {
   type User,
   type ProjectChoice,
@@ -226,7 +227,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
           found = matches.find((m: { period_id?: string; period?: unknown }) => !String(m?.period_id ?? m?.period ?? '')) || matches[0] || null;
       }
       return found;
-    } catch (e) { console.warn('Fetch member failed', e); return null; }
+    } catch (e) { logger.warn('Fetch member failed', e); return null; }
   }, [user, opened]);
 
   // ── Club membership effect ──
@@ -275,7 +276,7 @@ export function useUserEditData({ opened, user, organisationSlug, scopeProjectKe
       fd.append('avatar', file);
       await api.post(`/admin/users/${user.id}/avatar/`, fd);
       onSaved?.();
-    } catch (err) { console.error('Avatar upload error:', err); setExtraError('Avatar upload mislukt.'); }
+    } catch (err) { logger.error('Avatar upload error', err); setExtraError('Avatar upload mislukt.'); }
     finally { setAvatarUploading(false); }
   }, [user?.id, onSaved]);
 

@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { api } from '@/api';
 import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import type { Period } from '../../utils/directoryHelpers';
+import { logger } from '@/utils/logger';
 
 interface UseCompetitionHandlersParams {
   selectedOrgId: string;
@@ -66,8 +67,7 @@ export function useCompetitionHandlers({
       await api.delete(`/periods/${compId}/`);
       setCompetitions((prev) => prev.filter((c) => c.id !== compId));
     } catch (err) {
-      console.error(err);
-      console.error('Delete error:', err);
+      logger.error('Failed to delete competition', err);
       alert('Failed to delete competition');
     }
   }, [setCompetitions]);

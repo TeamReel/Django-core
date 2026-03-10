@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 // Module-level cache shared across all hook instances
 const contentTypeCache: Record<string, number> = {};
@@ -49,8 +50,7 @@ async function fetchContentTypes(): Promise<void> {
         });
       }
     } catch (err) {
-      console.error(err);
-      console.warn('[useContentTypes] Error fetching content types:', err);
+      logger.error('[useContentTypes] Error fetching content types', err);
     } finally {
       cacheFetchPromise = null;
     }

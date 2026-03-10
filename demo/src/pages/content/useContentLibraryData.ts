@@ -8,6 +8,7 @@
 import { useEffect, useState, useMemo, useCallback, type Dispatch, type SetStateAction } from 'react';
 import { api } from '../../api/client';
 import { organisationsApi } from '../../api';
+import { logger } from '@/utils/logger';
 import { getAssetTypeLabel } from './contentLibraryTypes';
 import {
   CONTENT_CATEGORIES,
@@ -202,9 +203,8 @@ export function useContentLibraryData({ isSuperAdmin, myOrganisations, orgSlug, 
       const { results: items } = await api.list<any>('/media/items/', { params, pageSize: 200 });
       setContentItems(Array.isArray(items) ? items : []);
     } catch (err) {
-      console.error(err);
+      logger.error('[ContentLibrary] Error', err);
       setError('Fout bij laden van content');
-      console.error('[ContentLibrary] Error:', err);
     } finally {
       setLoading(false);
     }

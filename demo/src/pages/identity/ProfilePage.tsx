@@ -14,6 +14,7 @@ import {
 import { User } from '../../types';
 import AppShell from '../../components/AppShell';
 import { api, ApiError } from '../../api';
+import { logger } from '@/utils/logger';
 import styles from './ProfilePage.module.css';
 
 /**
@@ -47,13 +48,12 @@ export const ProfilePage: React.FC = () => {
         setFirstName(actualUser.first_name || '');
         setLastName(actualUser.last_name || '');
       } catch (err) {
-        console.error(err);
+        logger.error('Profile fetch error', err);
         if (err instanceof ApiError && err.status === 401) {
           setError('Not authenticated. Please log in.');
         } else {
           setError(err instanceof Error ? err.message : 'Failed to fetch profile');
         }
-        console.error('Profile fetch error:', err);
       } finally {
         setLoading(false);
       }
@@ -83,7 +83,7 @@ export const ProfilePage: React.FC = () => {
 
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to update profile', err);
       setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setSaving(false);

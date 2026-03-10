@@ -4,6 +4,7 @@ import { fetchWithCSRF } from '@django-core/api-client';
 import { User } from '../../types';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import styles from './MemberList.module.css';
+import { logger } from '@/utils/logger';
 
 interface ProjectMembership {
   id: string;
@@ -50,8 +51,7 @@ export const MemberList: React.FC<MemberListProps> = ({ projectId, initialMember
         // ProjectViewSet.members returns a list (Response(members_data))
         setMembers(data);
       } catch (err) {
-        console.error(err);
-        console.error('Error fetching members:', err);
+        logger.error('Error fetching project members', err);
         setError('Failed to load project members');
       } finally {
         setLoading(false);

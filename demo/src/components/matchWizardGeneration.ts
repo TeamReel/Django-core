@@ -6,6 +6,7 @@
  * appropriate flyer / video / generic-AI generator.
  */
 import { Clock } from 'lucide-react';
+import { logger } from '@/utils/logger';
 import type { ContentTemplate, GeneratedVariant, GeneratedOutput } from '../pages/identity/ContentGenerationModal/types';
 import {
   generateLineupFlyer,
@@ -201,10 +202,9 @@ export async function executeGeneration(
     callbacks.setProgress(100);
     setTimeout(() => callbacks.setCurrentStep('success'), 300);
   } catch (err) {
-    console.error(err);
+    logger.error('[!] Generation failed', err);
     clearInterval(progressInterval);
     if (err instanceof Error && err.name === 'AbortError') return;
-    console.error('[!] Generation failed:', err);
     callbacks.setGenerationError(err instanceof Error ? err.message : 'Generation failed');
     callbacks.setCurrentStep('error');
   }

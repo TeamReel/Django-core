@@ -14,6 +14,7 @@ import { useState, useCallback, useRef } from 'react';
 import { api } from '@/api';
 import { createWorkflowInstance } from './useWorkflows';
 import { resolveContentTypeId, type ContentTypeName } from './useContentTypes';
+import { logger } from '@/utils/logger';
 import {
   VIDEO_POLL_INTERVAL_MS,
   VIDEO_MAX_POLLS,
@@ -224,7 +225,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
             setStep('completed');
             setProgress(100);
           } catch (pollErr) {
-            console.error(pollErr);
+            logger.error('Video generation polling failed', pollErr);
             if ((pollErr as Error).name === 'AbortError') return;
             setError(pollErr instanceof Error ? pollErr.message : 'Video generatie mislukt');
             setStep('error');
@@ -258,7 +259,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         setStep('completed');
         setProgress(100);
       } catch (err) {
-        console.error(err);
+        logger.error('Asset generation failed', err);
         clearInterval(progressTimer);
         if ((err as Error).name === 'AbortError') {
           if (timedOut) {
@@ -278,7 +279,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
     async (variantIndex: number): Promise<SaveResult | null> => {
       const selectedVariant = variants.find(v => v.variant_index === variantIndex);
       if (!selectedVariant) {
-        console.error('Selected variant not found');
+        logger.error('Selected variant not found');
         return null;
       }
 
@@ -290,13 +291,13 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
 
       // Guard: variant with error should not be saved
       if (selectedVariant.error) {
-        console.error('Variant has error, cannot save:', selectedVariant.error);
+        logger.error('Variant has error, cannot save', selectedVariant.error);
         setError(selectedVariant.error);
         return null;
       }
 
       if (!orgId) {
-         console.error('Missing organisation context for saving asset');
+         logger.error('Missing organisation context for saving asset');
          return null;
       }
 
@@ -309,7 +310,7 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
         selectedVariant.storage_info?.storage_path;
 
       if (!hasContent) {
-        console.error('No content source in variant (image_base64, storage_path, presigned_url all missing)');
+        logger.error('No content source in variant (image_base64, storage_path, presigned_url all missing)');
         setError('Geen resultaat om op te slaan (server gaf geen afbeelding terug)');
         return null;
       }
@@ -369,16 +370,14 @@ export function useAssetGeneration(): UseAssetGenerationReturn {
               window.dispatchEvent(new Event('workflowChanged'));
             }
           } catch (wfErr) {
-            console.error(wfErr);
             // Non-blocking: workflow creation failure should not break the save flow
-            console.warn('[Workflow] Auto-workflow creation failed (non-blocking):', wfErr);
+            logger.warn('[Workflow] Auto-workflow creation failed (non-blocking)', wfErr);
           }
         }
 
         return result;
       } catch (e) {
-        console.error(e);
-        console.error('Error saving asset:', e);
+        logger.error('Error saving asset', e);
         setError(e instanceof Error ? e.message : 'Opslaan mislukt');
         return null;
       }

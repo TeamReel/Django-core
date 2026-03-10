@@ -6,6 +6,7 @@ import { formatTokenKey, getContrastColor, TOKEN_TYPE_ICONS, TOKEN_TYPE_LABELS, 
 import type { DesignToken, BrandAsset } from './brandIdentity.types';
 import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import styles from './BrandTokenSections.module.css';
+import { logger } from '@/utils/logger';
 
 // ── CopyableValue ────────────────────────────────────────────
 export function CopyableValue({ value, label }: { value: string; label?: string }) {
@@ -17,8 +18,7 @@ export function CopyableValue({ value, label }: { value: string; label?: string 
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error(err);
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy', err);
     }
   };
 

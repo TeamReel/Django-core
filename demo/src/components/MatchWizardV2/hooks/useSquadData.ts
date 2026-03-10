@@ -3,6 +3,7 @@
  */
 import { useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { useMatchWizard } from '../MatchWizardContext';
 import type { SquadMember } from '../types';
 
@@ -66,8 +67,7 @@ export function useSquadData(): UseSquadDataReturn {
 
       setSquadGroups(groups);
     } catch (err) {
-      console.error(err);
-      console.error('Failed to fetch squad:', err);
+      logger.error('Failed to fetch squad', err);
       setSquadError('Kon spelers niet laden. Controleer je verbinding.');
     } finally {
       setSquadLoading(false);
@@ -115,8 +115,7 @@ export function useSquadData(): UseSquadDataReturn {
       });
       return true;
     } catch (err) {
-      console.error(err);
-      console.error('Failed to save lineup:', err);
+      logger.error('Failed to save lineup', err);
       return false;
     }
   }, [selectedMatch, lineupSlots]);

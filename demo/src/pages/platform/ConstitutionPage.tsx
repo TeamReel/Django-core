@@ -4,6 +4,7 @@ import {
   Badge,
   Alert,
 } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import {
   PageHeader,
   PageContent,
@@ -60,9 +61,8 @@ export const ConstitutionPage: React.FC = () => {
           throw new Error(`Failed to fetch constitution rules (${response.status})`);
         }
       } catch (err) {
-        console.error(err);
+        logger.error('Constitution fetch error', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch constitution rules');
-        console.error('Constitution fetch error:', err);
       } finally {
         setLoading(false);
       }

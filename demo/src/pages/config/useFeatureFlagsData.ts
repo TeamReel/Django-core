@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { useBreadcrumbContextSwitcher } from '@django-core/page-templates';
+import { logger } from '@/utils/logger';
 import {
   fetchFlagsForScope,
   updateGlobalFlag,
@@ -154,9 +155,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
             setFlags(normalizedAfterSeed);
           }
         } catch (err: unknown) {
-          console.error(err);
-          console.warn('API failed:', err);
-
+          logger.debug('Feature flags API failed, fallback may be used', err);
           const errMsg = err instanceof Error ? err.message : '';
           if (errMsg && (errMsg.includes('401') || errMsg.includes('403'))) {
             setApiError('Permission denied. Please ensure you are logged in with the correct permissions.');
@@ -233,8 +232,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
         window.dispatchEvent(new CustomEvent('featureFlagsChanged'));
         debugLog('[FeatureFlagsPage] Successfully updated flag and reloaded data');
       } catch (err) {
-        console.error(err);
-        console.error('Failed to toggle flag via API:', err);
+        logger.error('Failed to toggle flag via API', err);
         alert('Failed to update flag. See console for details.');
       } finally {
         setUpdating(false);
@@ -333,8 +331,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       setFlags(normalized);
       setSelectedIds(new Set());
     } catch (err) {
-      console.error(err);
-      console.error('Bulk update failed:', err);
+      logger.error('Bulk update failed', err);
       alert('Bulk update failed. Check console for details.');
     } finally {
       setBulkUpdating(false);
@@ -358,8 +355,7 @@ export function useFeatureFlagsData(): UseFeatureFlagsDataReturn {
       }));
       setFlags(normalized);
     } catch (err) {
-      console.error(err);
-      console.error('Sync failed:', err);
+      logger.error('Sync failed', err);
       setSeedMessage('Sync failed. Check console for details.');
     } finally {
       setSyncing(false);

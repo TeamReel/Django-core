@@ -3,6 +3,7 @@ import AppShell from '../../components/AppShell';
 import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Button, Card, Badge, Alert, Spinner } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { apiFetch } from '../../utils/apiFetch';
 import styles from './DeploymentPage.module.css';
 
@@ -46,7 +47,7 @@ export function DeploymentPage() {
         setLoading(false);
       })
       .catch(err => {
-        console.error(err);
+        logger.error('Deployment health check error', err);
         setServices([
           { name: 'Backend API', status: 'down', version: '1.0.0', type: 'Service' },
           { name: 'Frontend', status: 'healthy', version: '1.0.0', type: 'Client' },

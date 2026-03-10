@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card } from '@django-core/design-system';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { KIT_TYPES, type Project, type KitAsset } from './clubOrgDetailHelpers';
 import styles from './ClubKitsTab.module.css';
 
@@ -30,7 +31,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       setKits(kitAssets);
       setLoading(false);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to load kits', e);
       setError(e instanceof Error ? e.message : 'Failed to load kits');
       setLoading(false);
     }
@@ -72,7 +73,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
       await loadKits();
       onKitUploaded?.();
     } catch (e) {
-      console.error(e);
+      logger.error('Upload failed', e);
       setError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploadingType(null);

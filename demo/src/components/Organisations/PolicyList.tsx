@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button, Alert } from '@django-core/design-system';
 import { useUserRole } from '../PermissionGuards';
 import { api, ApiError } from '@/api';
+import { logger } from '@/utils/logger';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import styles from './PolicyList.module.css';
 
@@ -61,8 +62,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
         setBalancePolicy(balanceResult.status === 'fulfilled' ? balanceResult.value : null);
         setNotificationPolicy(notifResult.status === 'fulfilled' ? notifResult.value : null);
       } catch (err) {
-        console.error(err);
-        console.error('Error fetching policies', err);
+        logger.error('Error fetching policies', err);
         setBalancePolicy(null);
         setNotificationPolicy(null);
       } finally {
@@ -108,7 +108,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
       setIsEditingBalance(false);
       setBalanceSaveSuccess('Saved');
     } catch (e: unknown) {
-      console.error(e);
+      logger.error('Failed to save balance policy', e);
       if (e instanceof ApiError) {
         const body = e.body as any;
         setBalanceSaveError(body?.detail || body?.error || `Failed to save balance policy (HTTP ${e.status})`);

@@ -5,6 +5,7 @@ import type { SeasonProject as Project } from '../../types/season';
 import { getUserDisplayName } from './memberDetailUtils';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import styles from './MemberIdentityTab.module.css';
+import { logger } from '@/utils/logger';
 
 export interface MemberIdentityTabProps {
   membership: any;
@@ -57,7 +58,7 @@ export function MemberIdentityTab({
       setSuccess('Identity updated successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save member identity', e);
       setError(e instanceof Error ? e.message : 'Failed to save');
     } finally {
       setSaving(false);
@@ -83,7 +84,7 @@ export function MemberIdentityTab({
       setSuccess('Profile photo updated! Refresh to see changes.');
       setTimeout(() => setSuccess(null), 5000);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to set profile photo', e);
       setError(e instanceof Error ? e.message : 'Failed to set profile photo');
     } finally {
       setSettingAsProfilePhoto(false);

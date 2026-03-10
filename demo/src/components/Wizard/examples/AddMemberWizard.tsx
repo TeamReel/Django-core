@@ -8,6 +8,7 @@
  * 4. Confirm
  */
 import React, { useState } from 'react';
+import { logger } from '@/utils/logger';
 import {
   WizardProvider,
   WizardShell,
@@ -239,8 +240,7 @@ export function AddMemberWizard({
       onMemberAdded?.(member);
       onClose();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to add member:', err);
+      logger.error('Failed to add member', err);
     } finally {
       setSubmitting(false);
     }
@@ -301,8 +301,7 @@ function ConfirmStepWrapper({
       onMemberAdded?.(member);
       close();
     } catch (err) {
-      console.error(err);
-      console.error('Failed to add member:', err);
+      logger.error('Failed to add member', err);
     } finally {
       setSubmitting(false);
     }

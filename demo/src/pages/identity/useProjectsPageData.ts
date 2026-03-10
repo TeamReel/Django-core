@@ -8,6 +8,7 @@ import { useContextSwitcher } from '@django-core/context-switcher';
 import { useAuth } from '@django-core/auth-ui';
 import { Project } from '../../types';
 import { canCreateProject, canEditProject, canDeleteProject } from '../../utils/permissions';
+import { logger } from '@/utils/logger';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { OrganisationOption, ProjectOption } from '../work/WorkFilterBar';
 import { getApiBaseUrl } from '../../utils/apiBase';
@@ -213,7 +214,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       });
       setProjects(res.results || []);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to fetch projects', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch projects');
     } finally {
       setLoading(false);
@@ -259,7 +260,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
       setTimeout(() => setSuccessMessage(null), 3000);
       await fetchProjects();
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to update project', err);
       alert(err instanceof Error ? err.message : 'Failed to update project');
     }
   };

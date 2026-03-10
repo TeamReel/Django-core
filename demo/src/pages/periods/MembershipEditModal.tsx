@@ -3,6 +3,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import styles from './MembershipEditModal.module.css';
+import { logger } from '@/utils/logger';
 
 const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'coach', label: 'Coach' },
@@ -138,7 +139,7 @@ export function MembershipEditModal({ opened, onClose, membership, onSave }: Mem
                   await onSave({ role, functional_roles: functionalRoles });
                   onClose();
                 } catch (e) {
-                  console.error(e);
+                  logger.error('Failed to save membership', e);
                   setError(e instanceof Error ? e.message : 'Failed to save');
                 } finally {
                   setSaving(false);

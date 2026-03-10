@@ -3,6 +3,7 @@ import { api } from '@/api';
 import { getErrorMessage } from '../../utils/errorHelpers';
 import SmartEmptyState from '../SmartEmptyState';
 import styles from './AuditLogTable.module.css';
+import { logger } from '@/utils/logger';
 
 interface AuditEvent {
   id: string;
@@ -50,7 +51,7 @@ export const AuditLogTable: React.FC<AuditLogTableProps> = ({
         setEvents(results);
         setError(null);
       } catch (err: unknown) {
-        console.error('Error fetching audit log:', err);
+        logger.error('Error fetching audit log', err);
         setError(getErrorMessage(err) || 'Unknown error');
       } finally {
         setLoading(false);

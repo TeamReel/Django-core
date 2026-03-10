@@ -4,6 +4,7 @@
 import { useCallback } from 'react';
 import { api } from '../../../../api/client';
 import type { User, ProjectOption } from '../usersListTypes';
+import { logger } from '@/utils/logger';
 
 export interface UserRow extends User {
   user?: User;
@@ -164,7 +165,7 @@ export function useUsersListHandlers(params: UseUsersListHandlersParams) {
     try {
       await api.delete(`/projects/${preselectedTeamId}/members/${projectMembershipId}/`);
     } catch (err: any) {
-      console.error('\u274C Delete failed:', err);
+      logger.error('Delete team member failed', err);
       alert(err?.message || `Failed to remove member`);
       return;
     }

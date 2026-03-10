@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Alert, Button } from '@django-core/design-system';
 import AppShell from '../../components/AppShell';
+import { logger } from '@/utils/logger';
 import styles from './IntegrationPatternsPage.module.css';
 
 const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?: string }) => {
@@ -12,8 +13,7 @@ const CodeBlock = ({ code, language = 'typescript' }: { code: string; language?:
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error(err);
-      console.error('Failed to copy:', err);
+      logger.error('Failed to copy', err);
     }
   };
 
@@ -131,7 +131,7 @@ export function UserProfile() {
         const response = await apiClient.get<UserData>(\`/users/\${user?.id}\`);
         setData(response.data);
       } catch (err) {
-        console.error(err);
+        logger.error('Failed to fetch user data', err);
         setError(err as Error);
       } finally {
         setLoading(false);
@@ -186,7 +186,7 @@ export function CreateProjectForm() {
       setSuccess(true);
       setName('');
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Failed to create project', err);
       // API errors are normalized
       setError(err.message || 'Failed to create project');
     } finally {

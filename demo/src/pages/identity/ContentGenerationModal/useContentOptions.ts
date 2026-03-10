@@ -5,6 +5,7 @@
  */
 import { useState, useEffect } from 'react';
 import { api } from '../../../api/client';
+import { logger } from '@/utils/logger';
 
 interface ContentOptionsConfig {
   isOpen: boolean;
@@ -53,8 +54,7 @@ export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
           })),
         );
       } catch (err) {
-        console.error(err);
-        console.warn('Failed to fetch app backgrounds:', err);
+        logger.warn('Failed to fetch app backgrounds', err);
       }
     };
     fetchBackgrounds();

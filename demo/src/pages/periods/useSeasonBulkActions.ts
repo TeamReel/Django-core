@@ -3,6 +3,7 @@ import type { Period } from '../../types/season';
 import { api } from '../../api/client';
 import { getCsrfToken } from '../../utils/csrf';
 import { sleep, fetchWithThrottleRetry } from './seasonDetailUtils';
+import { logger } from '@/utils/logger';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -115,7 +116,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       setMembersReloadToken((x) => x + 1);
       setTeamRosterReloadToken((x) => x + 1);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to assign users', e);
       alert(e instanceof Error ? e.message : 'Failed to assign users');
     } finally {
       setBulkSubmitting(false);
@@ -182,7 +183,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
       setMembersReloadToken((x) => x + 1);
       setTeamRosterReloadToken((x) => x + 1);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to unassign users', e);
       alert(e instanceof Error ? e.message : 'Failed to unassign users');
     } finally {
       setBulkSubmitting(false);

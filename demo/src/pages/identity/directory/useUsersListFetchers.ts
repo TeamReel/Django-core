@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../api/client';
 import { organisationsApi } from '../../../api';
+import { logger } from '@/utils/logger';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import { normalizeRoleName, getUserTeamreelRoleNames } from './usersListHelpers';
 
@@ -132,8 +133,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                     (orgs || []).map((o) => ({ id: String(o.id), name: o.name, slug: o.slug })),
                 );
             } catch (e) {
-              console.error(e);
-                console.error(e);
+              logger.error('Failed to load organisations', e);
             }
         };
         void load();
@@ -172,8 +172,7 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                 setClubs(allClubs as unknown as ProjectOption[]);
                 setTeams(allTeams as unknown as ProjectOption[]);
             } catch (e) {
-              console.error(e);
-                console.error(e);
+              logger.error('Failed to load clubs/teams', e);
             }
         };
         load();
@@ -390,8 +389,8 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
 
                 setUsers(results);
             } catch (e) {
-              console.error(e);
-                setError(e instanceof Error ? e.message : 'Error loading users');
+              logger.error('Error loading users', e);
+              setError(e instanceof Error ? e.message : 'Error loading users');
             } finally {
                 setIsLoading(false);
             }

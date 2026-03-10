@@ -3,6 +3,7 @@ import { Badge, Button, Select } from '@django-core/design-system';
 import { Table } from '@/shims/design-system';
 import SmartEmptyState from '../../../components/SmartEmptyState';
 import { api, projectsApi } from '../../../api';
+import { logger } from '@/utils/logger';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import styles from './MemberList.module.css';
 
@@ -65,8 +66,7 @@ export const MemberList: React.FC<MemberListProps> = ({
           setSelectedPeriod(sorted[0].id);
         }
       } catch (e) {
-        console.error(e);
-        console.error("Failed to fetch seasons", e);
+        logger.error('Failed to fetch seasons', e);
       }
     };
 
@@ -96,8 +96,7 @@ export const MemberList: React.FC<MemberListProps> = ({
              const data = await projectsApi.listMembers(projectId, { periodId: selectedPeriod }) as any;
              setMembers(data.results || data || []);
           } catch (e) {
-            console.error(e);
-              console.error("Failed to fetch members", e);
+            logger.error('Failed to fetch members', e);
           } finally {
               setIsLoading(false);
           }

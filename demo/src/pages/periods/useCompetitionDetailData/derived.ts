@@ -2,6 +2,7 @@
  * Derived/computed values for useCompetitionDetailData hook
  */
 import { useMemo, useCallback, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 import { periodPathKey } from '../../../utils/periodPath';
 import { getActiveContext } from '../../../utils/activeContext';
 import type { Period, SeasonProject as Project } from '../../../types/season';
@@ -45,7 +46,7 @@ export function useCompetitionDerived(params: UseDerivedParams) {
         const c = await getActiveContext();
         if (!cancelled) setActiveContextState(c);
       } catch (e) {
-        console.error('Failed to load active context:', e);
+        logger.error('Failed to load active context', e);
       }
     };
     void load();

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button, Input, Alert } from '@django-core/design-system';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import styles from './EditClubModal.module.css';
 
 interface Club {
@@ -82,7 +83,7 @@ export default function EditClubModal({
       setLogoUrl(s3Url);
       setPreviewUrl(s3Url);
     } catch (e) {
-      console.error(e);
+      logger.error('Upload failed', e);
       setError(e instanceof Error ? e.message : 'Upload failed');
     } finally {
       setUploading(false);
@@ -118,7 +119,7 @@ export default function EditClubModal({
       onSave?.({ ...club, ...updated });
       onClose();
     } catch (e) {
-      console.error(e);
+      logger.error('Save failed', e);
       setError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSaving(false);

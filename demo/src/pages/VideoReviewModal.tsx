@@ -10,6 +10,7 @@ import {
 import s from './ApprovalsPage.module.css';
 import styles from './ReviewModals.module.css';
 import { getErrorMessage } from '../utils/errorHelpers';
+import { logger } from '@/utils/logger';
 
 interface VideoReviewModalProps {
   job: VideoJob;
@@ -43,7 +44,7 @@ export function VideoReviewModal({ job, onClose, onActionComplete, pushToast, ap
       );
       onActionComplete();
     } catch (err: unknown) {
-      console.error(err);
+      logger.error('Video review action failed', err);
       pushToast(getErrorMessage(err) || `Actie "${action}" mislukt`, 'error');
     } finally {
       setReviewing(null);

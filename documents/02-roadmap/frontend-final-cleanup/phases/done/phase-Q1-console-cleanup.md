@@ -1,8 +1,8 @@
 # Q1 — Console Cleanup
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 3 uur
-**Scope:** 559 console statements → 0 (of proper logging)
+**Scope:** 544 console statements → 0 (+ logger utility)
 
 ---
 

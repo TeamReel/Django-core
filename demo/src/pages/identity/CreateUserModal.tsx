@@ -6,6 +6,7 @@ import {
 } from '@django-core/design-system';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import { api, ApiError } from '../../api';
+import { logger } from '@/utils/logger';
 import styles from './CreateUserModal.module.css';
 
 interface CreateUserModalProps {
@@ -50,8 +51,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
       onClose();
       setFormData({ email: '', first_name: '', last_name: '', password: '', password_confirm: '' });
     } catch (err) {
-      console.error(err);
-      console.error('Create user error:', err);
+      logger.error('Create user error', err);
       if (err instanceof ApiError) {
         const body = err.body as any;
         setError(

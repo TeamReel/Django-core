@@ -8,6 +8,7 @@ import { useAuth } from '@django-core/auth-ui';
 import { useContextSwitcher } from '@django-core/context-switcher';
 
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { canDeleteProject, canEditProject } from '../../utils/permissions';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
@@ -265,7 +266,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         const membersList = await fetchAllPages<any>(membersUrl, { credentials: 'include' }, { bypass: true, maxItems: 5000 });
         if (!isCancelled) setMembers(Array.isArray(membersList) ? membersList : []);
       } catch (e) {
-        console.error(e);
+        logger.error('Failed to load squad', e);
         if (!isCancelled) setError(e instanceof Error ? e.message : 'Failed to load squad');
       } finally {
         if (!isCancelled) setLoading(false);
@@ -295,7 +296,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     try {
       await api.delete(`/periods/${encodeURIComponent(seasonUuid)}/`);
       navigate(seasonsBasePath);
-    } catch (e) { console.error(e); alert('Error deleting season'); }
+    } catch (e) { logger.error('Error deleting season', e); alert('Error deleting season'); }
   };
 
   const deleteMembership = async (membership: Membership) => {
@@ -310,7 +311,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
         `/projects/${encodeURIComponent(projectId)}/members/${encodeURIComponent(membershipId)}/`,
       );
       setMembers((prev) => prev.filter((m) => String(m.id) !== membershipId));
-    } catch (e) { console.error(e); alert(e instanceof Error ? e.message : 'Error removing member'); }
+    } catch (e) { logger.error('Error removing member', e); alert(e instanceof Error ? e.message : 'Error removing member'); }
   };
 
   const savePeriodEdit = async (payload: Record<string, unknown>) => {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
 
@@ -78,8 +79,7 @@ export function useActivities({ limit = 10, project_id, organisation_id }: UseAc
         setActivities(results);
         setError(null);
       } catch (err: unknown) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error('[useActivities] Error fetching activities:', err);
+        logger.error('useActivities fetch error', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         setLoading(false);

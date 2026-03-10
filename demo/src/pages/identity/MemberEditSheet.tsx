@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { X, Shield, Users, Check, Loader2 } from 'lucide-react';
 import { api } from '@/api';
 import st from './MemberEditSheet.module.css';
+import { logger } from '@/utils/logger';
 
 /* ── Functional role definitions (must match backend valid choices) ── */
 const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string; emoji: string }> = [
@@ -145,7 +146,7 @@ export function MemberEditSheet({
         onClose();
       }, 600);
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to save member', e);
       setError(e instanceof Error ? e.message : 'Opslaan mislukt');
     } finally {
       setSaving(false);

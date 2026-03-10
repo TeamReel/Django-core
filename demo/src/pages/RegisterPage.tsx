@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSignUp, useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import styles from './RegisterPage.module.css';
 
 export default function RegisterPage() {
@@ -39,9 +40,8 @@ export default function RegisterPage() {
     try {
       await signUp(email, password, firstName, lastName);
     } catch (err) {
-      console.error(err);
       // Error is already handled by useSignUp hook
-      console.error('Registration failed:', err);
+      logger.error('Registration failed', err);
     }
   };
 

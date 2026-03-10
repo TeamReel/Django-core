@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from '@/utils/logger';
 import type { ListResult } from '@/api';
 
 export interface MediaTag {
@@ -92,7 +93,7 @@ export const useMediaLibrary = () => {
             setPagination({ next: result.next || null, previous: result.previous || null });
 
         } catch (err: unknown) {
-          console.error(err);
+          logger.error('Failed to fetch media items', err);
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);

@@ -11,6 +11,7 @@ import type {
   StepType,
   ContentGenerationModalProps,
 } from './types';
+import { logger } from '@/utils/logger';
 import {
   generateLineupFlyer,
   generateTeamPoster,
@@ -210,10 +211,9 @@ export function useGenerationDispatch(deps: GenerationDispatchDeps) {
       setProgress(100);
       setTimeout(() => setStep('success'), 300);
     } catch (err) {
-      console.error(err);
+      logger.error('[!] Generation failed', err);
       clearInterval(progressInterval);
       if (err instanceof Error && err.name === 'AbortError') return;
-      console.error('[!] Generation failed:', err);
       setGenerationError(err instanceof Error ? err.message : 'Generation failed');
       setStep('error');
     }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchAllPages } from '../../utils/fetchAllPages';
 import { combineDateTime, addHoursToIsoLike } from './competitionDetailUtils';
 import styles from './CompetitionLegacyMatchCreateModal.module.css';
+import { logger } from '@/utils/logger';
 
 export function CompetitionLegacyMatchCreateModal({
   opened,
@@ -118,7 +119,7 @@ export function CompetitionLegacyMatchCreateModal({
       });
       onClose();
     } catch (e) {
-      console.error(e);
+      logger.error('Failed to create match', e);
       setError(e instanceof Error ? e.message : 'Failed to create match');
     } finally {
       setIsSaving(false);

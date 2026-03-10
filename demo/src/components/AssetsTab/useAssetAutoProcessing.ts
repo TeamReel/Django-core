@@ -15,6 +15,7 @@ import {
   getAssetUrl,
   type BrandAsset,
 } from '../../hooks/useBrandProfile';
+import { logger } from '@/utils/logger';
 import { getTemplate } from '../../constants/assetTemplates';
 
 // ============================================================================
@@ -65,12 +66,12 @@ export function useAssetAutoProcessing({
         try {
           const variant = postProcessGen.variants[0];
           if (variant?.error) {
-            console.error('[Error] Postprocess variant has error:', variant.error);
+            logger.error('[Error] Postprocess variant has error', variant.error);
             alert(`Bewerken mislukt: ${variant.error}`);
             return;
           }
           if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
-            console.error('[Error] Postprocess variant has no content:', variant);
+            logger.error('[Error] Postprocess variant has no content', variant);
             alert('Bewerken mislukt: geen resultaat ontvangen van de server.');
             return;
           }
@@ -78,11 +79,10 @@ export function useAssetAutoProcessing({
           if (result) {
             await refresh();
           } else {
-            console.error('[Error] Postprocess save failed for', postProcessingAsset);
+            logger.error('[Error] Postprocess save failed for', postProcessingAsset);
           }
         } catch (err) {
-          console.error(err);
-          console.error('[Error] Postprocess auto-accept error:', err);
+          logger.error('[Error] Postprocess auto-accept error', err);
         } finally {
           setPostProcessingAsset(null);
           setPostProcessOutputType(null);
@@ -91,7 +91,7 @@ export function useAssetAutoProcessing({
         }
       })();
     } else if (postProcessGen.step === 'error' && postProcessingAsset) {
-      console.error('[Error] Postprocess failed:', postProcessGen.error);
+      logger.error('[Error] Postprocess failed', postProcessGen.error);
       alert(`Bewerken mislukt: ${postProcessGen.error || 'Onbekende fout'}`);
       setPostProcessingAsset(null);
       setPostProcessOutputType(null);
@@ -114,22 +114,21 @@ export function useAssetAutoProcessing({
         try {
           const variant = uploadAutoGen.variants[0];
           if (variant?.error) {
-            console.error('[Error] Upload auto-process variant has error:', variant.error);
+            logger.error('[Error] Upload auto-process variant has error', variant.error);
             return;
           }
           if (!variant?.image_base64 && !variant?.storage_path && !variant?.presigned_url && !variant?.storage_info?.storage_path) {
-            console.error('[Error] Upload auto-process variant has no content:', variant);
+            logger.error('[Error] Upload auto-process variant has no content', variant);
             return;
           }
           const result = await uploadAutoGen.acceptVariant(0);
           if (result) {
             await refresh();
           } else {
-            console.error('[Error] Upload auto-save failed for', uploadProcessingAsset);
+            logger.error('[Error] Upload auto-save failed for', uploadProcessingAsset);
           }
         } catch (err) {
-          console.error(err);
-          console.error('[Error] Upload auto-accept error:', err);
+          logger.error('[Error] Upload auto-accept error', err);
         } finally {
           setUploadProcessingAsset(null);
           uploadAutoGen.reset();
@@ -137,7 +136,7 @@ export function useAssetAutoProcessing({
         }
       })();
     } else if (uploadAutoGen.step === 'error' && uploadProcessingAsset) {
-      console.error('[Error] Upload auto-process failed:', uploadAutoGen.error);
+      logger.error('[Error] Upload auto-process failed', uploadAutoGen.error);
       setUploadProcessingAsset(null);
       uploadAutoGen.reset();
       uploadAutoSavingRef.current = false;

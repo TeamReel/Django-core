@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '@/api';
+import { logger } from './logger';
 
 // ============================================================================
 // Types
@@ -207,7 +208,7 @@ export function useMasterData<T>(
       }
       setData(result as T);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to load master data', err);
       setError(err instanceof Error ? err.message : 'Failed to load master data');
     } finally {
       setLoading(false);

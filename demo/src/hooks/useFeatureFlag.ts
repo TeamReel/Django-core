@@ -3,6 +3,7 @@ import { getResolvedFlag } from '../utils/featureFlagStorage';
 import { fetchFlags } from '../utils/featureFlagsApi';
 import { getActiveContext } from '../utils/activeContext';
 import { useAuth } from '@django-core/auth-ui';
+import { logger } from '@/utils/logger';
 import type { FeatureFlag } from '../types';
 
 const DEBUG_LOGS = Boolean(import.meta.env.DEV || import.meta.env.VITE_DEBUG_LOGS === 'true');
@@ -130,8 +131,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
               orgId = context.organisationId || null;
               projectId = context.projectId || null;
             } catch (e) {
-              console.error(e);
-              if (DEBUG_LOGS) console.error('[useFeatureFlag] Failed to parse demo_context:', e);
+              logger.debug('[useFeatureFlag] Failed to parse demo_context', e);
             }
           }
         }
@@ -161,8 +161,7 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
             if (DEBUG_LOGS) {
             }
           } catch (contextErr) {
-            console.error(contextErr);
-            if (DEBUG_LOGS) console.error('[useFeatureFlag] Active context fetch failed:', contextErr);
+            logger.debug('[useFeatureFlag] Active context fetch failed', contextErr);
           }
         }
 
@@ -178,19 +177,15 @@ export function useFeatureFlag(flagKey: string, defaultEnabled: boolean = true):
             return;
           }
         } catch (apiErr) {
-          console.error(apiErr);
           // API failed, fall back to localStorage
-          if (DEBUG_LOGS) {
-            console.error(`[useFeatureFlag] API fetch failed for "${flagKey}", using localStorage:`, apiErr);
-          }
+          logger.debug(`[useFeatureFlag] API fetch failed for "${flagKey}", using localStorage`, apiErr);
         }
 
         // Fallback: Resolve flag from localStorage
         const resolved = getResolvedFlag(flagKey, orgId, defaultEnabled);
         setIsEnabled(resolved);
       } catch (err) {
-        console.error(err);
-        if (DEBUG_LOGS) console.error(`[useFeatureFlag] Error resolving feature flag "${flagKey}":`, err);
+        logger.debug(`[useFeatureFlag] Error resolving feature flag "${flagKey}"`, err);
         setIsEnabled(defaultEnabled);
       }
     };

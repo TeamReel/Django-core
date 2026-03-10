@@ -17,6 +17,7 @@ import { SkeletonDetailPage } from '../../components/Skeleton';
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { api, organisationsApi, projectsApi } from '../../api';
+import { logger } from '@/utils/logger';
 import { Project } from '../../types';
 
 export const ProjectEditPage: React.FC = () => {
@@ -82,7 +83,7 @@ export const ProjectEditPage: React.FC = () => {
         setIsActive(data.is_active);
         setIsPrivate(data.is_private || false);
       } catch (err) {
-        console.error(err);
+        logger.error('Failed to load project', err);
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
         setLoading(false);
@@ -117,7 +118,7 @@ export const ProjectEditPage: React.FC = () => {
       const nextSlug = slug || currentProjectSlug;
       navigate(`/organisations/${resolvedOrg?.slug || resolvedOrg?.id}/projects/${nextSlug}`);
     } catch (err) {
-      console.error(err);
+      logger.error('Failed to save project', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setSaving(false);

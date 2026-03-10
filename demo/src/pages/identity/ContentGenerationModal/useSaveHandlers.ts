@@ -11,6 +11,7 @@ import type {
   ContentGenerationModalProps,
 } from './types';
 import { saveGeneratedVariant } from './contentGenerationApi';
+import { logger } from '@/utils/logger';
 import type { ToastItem } from '@/components/ui/Toast';
 import { CheckCircle } from 'lucide-react';
 
@@ -112,8 +113,7 @@ export function useSaveHandlers(deps: SaveHandlersDeps) {
         }, 1200);
       }
     } catch (err) {
-      console.error(err);
-      console.error(`[!] Failed to save variant ${variantIdx + 1}:`, err);
+      logger.error(`[!] Failed to save variant ${variantIdx + 1}`, err);
       setGenerationError(err instanceof Error ? err.message : 'Opslaan mislukt');
     } finally {
       setSavingAsset(false);

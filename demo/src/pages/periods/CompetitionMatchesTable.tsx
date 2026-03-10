@@ -4,6 +4,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@django-core/design-system';
+import { logger } from '@/utils/logger';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { activitiesApi } from '../../api';
@@ -98,7 +99,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
                       try {
                         await activitiesApi.delete(String(m.id));
                         setMatches((prev) => prev.filter((x) => String(x.id) !== String(m.id)));
-                      } catch (e) { console.error(e); alert('Error deleting match'); }
+                      } catch (e) { logger.error('Error deleting match', e); alert('Error deleting match'); }
                     }}
                   >
                     Delete
