@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔴 In Progress (14/18 fases done)
+**Status:** 🔴 In Progress (15/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -81,7 +81,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 | **S1** | Archive Cleanup | Verwijder `_archive/` imports, isoleer of delete `_archive/` files | 6 importers + 4 archive files | 1 uur |
 | **S2** | ✅ God-File Splitting | Top 8 god-files split to <300 lines | `pending` | 6 uur |
 | **S3** | ✅ Props → Context/Composition | 15 interfaces >15 props → 0 | `pending` | 4 uur |
-| **S4** | Modal Extraction | `NavbarModals.tsx`, `SeasonDetailModals.tsx` etc. → 1 modal per file | ~5 mega-modal files | 2 uur |
+| **S4** | ✅ Modal Extraction | 2 mega-modal files → 6 individual modals | `pending` | 2 uur |
 
 ### Track CSS — CSS Cleanup
 

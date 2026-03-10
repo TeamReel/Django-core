@@ -1,8 +1,8 @@
 # S4 — Modal Extraction
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 2 uur
-**Scope:** ~5 mega-modal files → 1 modal per file
+**Scope:** 2 mega-modal files → 6 individual modals + barrels
 
 ---
 
@@ -28,6 +28,6 @@ Files als `NavbarModals.tsx` (491 regels) en `SeasonDetailModals.tsx` bevatten m
 
 ## Verificatie
 
-- [ ] Elk modal-bestand < 200 regels
-- [ ] Barrel export in oorspronkelijke file (backward compatible)
-- [ ] `npx vite build` slaagt
+- [x] Elk modal-bestand < 200 regels (1 exception: 255)
+- [x] Barrel export in oorspronkelijke file (backward compatible)
+- [x] `npx vite build` slaagt
