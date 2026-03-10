@@ -181,7 +181,7 @@ export default function CreateTransactionModal(props: {
               try {
                 let effectiveProjectId: string | number | null | undefined = defaultProjectId;
                 let effectiveChargedUserId: number | null | undefined = chargedUserId ?? null;
-                let payerWallet: any = 'default';
+                let payerWallet: 'default' | 'organization' | 'project' | 'me' = 'default';
 
                 if (selectedWallet?.kind === 'organization') {
                   payerWallet = 'organization';

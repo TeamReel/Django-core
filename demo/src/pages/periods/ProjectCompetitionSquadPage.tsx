@@ -10,7 +10,7 @@ import { logger } from '@/utils/logger';
 
 type Organisation = { id: string; name: string; slug?: string };
 type Project = { id: string; name: string; slug?: string };
-type Period = { id: string; name: string; parent_period?: any };
+type Period = { id: string; name: string; parent_period?: { id: string; name: string } | null };
 
 type Participation = {
   id: string;
