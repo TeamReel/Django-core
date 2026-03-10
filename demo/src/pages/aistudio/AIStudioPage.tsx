@@ -8,16 +8,18 @@
  * Route: /studio
  */
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { PullToRefresh, Badge } from '@django-core/design-system';
 import {
   CheckCircle2, AlertCircle,
   Loader2, ChevronRight, Images, Film, Image as ImageIcon, Sparkles,
-  LayoutGrid, CalendarDays, X,
+  LayoutGrid, CalendarDays,
 } from 'lucide-react';
-import { useStudioData, type VideoJobSummary, type ContentGroup, type MatchGroup } from './useStudioData';
+import { useStudioData, type ContentGroup } from './useStudioData';
 import type { ContentItem } from '../content/contentLibraryTypes';
 import { StudioContentCard, StudioPreviewModal, ViewAllSheet, type ViewAllData, type ViewMode } from './StudioCards';
+import { StudioSection } from './StudioSection';
+import { VideoJobCard, ActiveJobsStrip } from './StudioJobComponents';
 import styles from './AIStudioPage.module.css';
 
 // ============================================================================
@@ -32,151 +34,6 @@ const PHASE_META: Record<string, { label: string; accent: string; icon: string }
   member: { label: 'Leden', accent: 'var(--studio-phase-member, #ec4899)', icon: '👤' },
   other: { label: 'Overig', accent: 'var(--studio-phase-other, #6b7280)', icon: '📄' },
 };
-
-// ============================================================================
-// Utility
-// ============================================================================
-
-function formatRelativeDate(iso: string): string {
-  const d = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMin = Math.floor(diffMs / 60_000);
-  if (diffMin < 1) return 'Zojuist';
-  if (diffMin < 60) return `${diffMin} min geleden`;
-  const diffHrs = Math.floor(diffMin / 60);
-  if (diffHrs < 24) return `${diffHrs} uur geleden`;
-  const diffDays = Math.floor(diffHrs / 24);
-  if (diffDays < 7) return `${diffDays} ${diffDays === 1 ? 'dag' : 'dagen'} geleden`;
-  return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
-}
-
-function getJobTypeLabel(jobType: string): string {
-  const labels: Record<string, string> = {
-    lineup: 'Lineup Video',
-    goal_celebration: 'Goal Celebration',
-    match_intro: 'Match Intro',
-    then_vs_now: 'Toen vs Nu',
-    transcode: 'Transcode',
-    compose: 'Compositie',
-    thumbnail: 'Thumbnail',
-  };
-  return labels[jobType] || jobType;
-}
-
-// ============================================================================
-// StudioContentCard — Single content item thumbnail
-// ============================================================================
-
-// ============================================================================
-// StudioSection — One content-type section with horizontal scroll
-// ============================================================================
-
-function StudioSection({
-  group,
-  onPreview,
-  onViewAll,
-  viewMode = 'type',
-}: {
-  group: ContentGroup;
-  onPreview: (item: ContentItem) => void;
-  onViewAll: (group: ContentGroup) => void;
-  viewMode?: ViewMode;
-}) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <section className={styles.section}>
-      <div className={styles.sectionHeader}>
-        <div className={styles.sectionTitleRow}>
-          <span className={styles.sectionIcon}>{group.icon}</span>
-          <h3 className={styles.sectionTitle}>{group.label}</h3>
-          <Badge size="sm" variant="default">{group.items.length}</Badge>
-        </div>
-        {group.items.length > 3 && (
-          <button className={styles.sectionViewAll} onClick={() => onViewAll(group)} type="button">
-            Bekijk alles <ChevronRight size={14} />
-          </button>
-        )}
-      </div>
-
-      <div className={styles.sectionScroll} ref={scrollRef}>
-        {group.items.slice(0, 20).map((item) => (
-          <StudioContentCard key={item.id} item={item} onPreview={onPreview} viewMode={viewMode} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// ============================================================================
-// VideoJobCard — Active or recently completed video job
-// ============================================================================
-
-function VideoJobCard({ job }: { job: VideoJobSummary }) {
-  const isActive = job.status === 'queued' || job.status === 'processing';
-  const isFailed = job.status === 'failed';
-  const isCompleted = job.status === 'completed';
-
-  return (
-    <div className={styles.jobCard} data-status={job.status}>
-      {/* Status icon */}
-      <div className={styles.jobIcon}>
-        {isActive && <Loader2 size={18} className={styles.jobSpinner} />}
-        {isCompleted && <CheckCircle2 size={18} />}
-        {isFailed && <AlertCircle size={18} />}
-        {job.status === 'cancelled' && <X size={18} />}
-      </div>
-
-      {/* Info */}
-      <div className={styles.jobInfo}>
-        <span className={styles.jobType}>{getJobTypeLabel(job.job_type)}</span>
-        <span className={styles.jobMeta}>
-          {isActive && job.progress_percent > 0
-            ? `${Math.round(job.progress_percent)}%`
-            : isActive ? 'Wachtrij...' : ''}
-          {isFailed && (job.error_message ? job.error_message.slice(0, 80) : 'Mislukt')}
-          {isCompleted && formatRelativeDate(job.completed_at || job.created_at)}
-        </span>
-      </div>
-
-      {/* Progress bar for active jobs */}
-      {isActive && (
-        <div className={styles.jobProgress}>
-          <div className={styles.jobProgressFill} style={{ width: `${job.progress_percent || 5}%` }} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================================
-// ActiveJobsStrip — Shows processing/queued jobs at top
-// ============================================================================
-
-function ActiveJobsStrip({ jobs }: { jobs: VideoJobSummary[] }) {
-  if (jobs.length === 0) return null;
-
-  return (
-    <div className={styles.activeJobsStrip}>
-      <div className={styles.activeJobsHeader}>
-        <Loader2 size={14} className={styles.jobSpinner} />
-        <span className={styles.activeJobsTitle}>
-          {jobs.length} video{jobs.length > 1 ? "'s" : ''} in verwerking
-        </span>
-      </div>
-      <div className={styles.activeJobsList}>
-        {jobs.map((job) => (
-          <VideoJobCard key={job.id} job={job} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Main Page
-// ============================================================================
 
 export default function AIStudioPage() {
   const data = useStudioData();

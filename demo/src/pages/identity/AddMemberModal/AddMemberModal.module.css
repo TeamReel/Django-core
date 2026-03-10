@@ -1,0 +1,68 @@
+/* AddMemberModal — CSS Module */
+
+.backdrop {
+  z-index: 1100;
+  -webkit-overflow-scrolling: touch;
+}
+
+.panel {
+  width: 700px;
+  max-width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-height: calc(100vh - 32px);
+  margin: auto;
+}
+
+.closeButton {
+  line-height: var(--leading-tight);
+}
+
+.tabBar {
+  border-bottom: 2px solid var(--app-border, #e0e0e0);
+  margin-bottom: var(--space-5);
+}
+
+.tab {
+  padding: var(--space-3) var(--space-6);
+  border: none;
+  background: transparent;
+  color: var(--app-text, var(--app-text));
+  cursor: pointer;
+  font-weight: var(--font-normal);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.tab[data-active="true"] {
+  background: var(--app-primary, #0b5ed7);
+  color: var(--color-white, #fff);
+  font-weight: var(--font-semibold);
+}
+
+.roleSelectWrapper {
+  width: 160px;
+}
+
+.searchResultsList {
+  max-height: 340px;
+}
+
+.userRow {
+  padding: var(--space-3) var(--space-3);
+  transition: background var(--duration-fast);
+}
+
+@media (hover: hover) {
+  .userRow:hover {
+  background-color: var(--app-hover-bg, var(--app-surface-2));
+  }
+}
+
+.emptyState {
+  padding: var(--space-8) var(--space-4);
+}
+
+.formBody {
+  min-height: 0;
+}

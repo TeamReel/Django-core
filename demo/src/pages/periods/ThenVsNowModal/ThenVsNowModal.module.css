@@ -1,0 +1,149 @@
+/* ─── ThenVsNowModal — extracted inline styles ──────────────── */
+
+/* ─── Custom Properties ──────────────────────────────────────── */
+
+:root {
+  --tnm-accent: var(--color-indigo-500);
+}
+
+/* ─── Header ─────────────────────────────────────────────────── */
+
+.subtitle {
+  margin-top: var(--space-1);
+}
+
+/* ─── Members Step ───────────────────────────────────────────── */
+
+.membersStep {
+  padding: var(--space-4) var(--space-5);
+}
+
+/* ─── Ordered Member Row ─────────────────────────────────────── */
+
+.orderedMemberRowBorder {
+  border-bottom: 1px solid var(--app-border);
+}
+
+.orderedMemberRowBorder[data-last="true"] {
+  border-bottom: none;
+}
+
+/* ─── Variant Pill ───────────────────────────────────────────── */
+
+.variantPill {
+  border: 1px solid var(--app-border);
+  background-color: transparent;
+  color: var(--app-muted-text);
+}
+
+.variantPill[data-active="true"] {
+  border-color: var(--app-primary, #2563eb);
+  background-color: var(--app-primary, #2563eb);
+  color: var(--color-white, #fff);
+}
+
+/* ─── Arrow Buttons ──────────────────────────────────────────── */
+
+.arrowBtn {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.arrowBtn[data-disabled="true"] {
+  cursor: default;
+  opacity: 0.25;
+}
+
+/* ─── Unselected Header Row ──────────────────────────────────── */
+
+.unselectedHeaderRow {
+  margin-bottom: var(--space-2);
+}
+
+/* ─── Search Input ───────────────────────────────────────────── */
+
+.searchInput {
+  flex: 1;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+/* ─── Scroll List ────────────────────────────────────────────── */
+
+.scrollList {
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+/* ─── Clickable Row Hover ────────────────────────────────────── */
+
+@media (hover: hover) {
+  .clickableRowHover:hover {
+  background-color: var(--app-surface-2, #2a2a3e);
+  }
+}
+
+/* ─── Background Selector Button ─────────────────────────────── */
+
+.bgButton {
+  position: relative;
+  border: 1px solid var(--app-border, var(--app-text));
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  padding: 0;
+  background: transparent;
+}
+
+.bgButton[data-active="true"] {
+  border: 2px solid var(--app-primary, #2563eb);
+  background: var(--app-surface-2, #2a2a3e);
+}
+
+/* ─── Background Emoji ───────────────────────────────────────── */
+
+.bgEmoji {
+  font-size: var(--text-lg);
+}
+
+/* ─── Background Option Label ────────────────────────────────── */
+
+.bgOptionLabel {
+  color: var(--app-muted-text);
+  background: var(--app-surface-2, #2a2a3e);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bgOptionLabel[data-active="true"] {
+  color: var(--color-white, #fff);
+  background: var(--app-primary, #2563eb);
+}
+
+/* ─── Background Preview Image ───────────────────────────────── */
+
+.bgPreviewImage {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  background-size: cover;
+  background-position: center;
+}
+
+/* ─── Submit Button ──────────────────────────────────────────── */
+
+.submitBtn {
+  cursor: pointer;
+  background: var(--tnm-accent, #6366f1);
+  opacity: 1;
+}
+
+.submitBtn[data-disabled="true"] {
+  cursor: not-allowed;
+  background: var(--app-muted-text);
+  opacity: 0.5;
+}

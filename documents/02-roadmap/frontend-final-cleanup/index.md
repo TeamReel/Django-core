@@ -1,6 +1,6 @@
 # Frontend Final Cleanup — Roadmap
 
-**Status:** 🔴 In Progress (2/12 fases done)
+**Status:** 🔴 In Progress (3/12 fases done)
 **Aangemaakt:** 2026-03-10
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -47,7 +47,7 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 | Fase | Naam | Scope | Target | Effort |
 |------|------|-------|--------|--------|
 | **F1** | ✅ Critical Hooks (>450 lines) | 10 hooks → 47 modules | `done` | 8 uur |
-| **F2** | Large Components (>400 lines) | Components splitsen in presentational + container | 15 files | 6 uur |
+| **F2** | ✅ Large Components (>400 lines) | 11 components → 52 modules | `done` | 6 uur |
 | **F3** | Medium Files (350-400 lines) | Remaining large files | ~25 files | 6 uur |
 | **F4** | Final Sweep (300-350 lines) | Alle resterende >300 line files | ~88 files | 8 uur |
 
