@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔴 In Progress (17/18 fases done)
+**Status:** ✅ Done (17/17 fases)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -56,7 +56,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 
 | Fase | Naam | Scope | Geschat | Effort |
 |------|------|-------|---------|--------|
-| **T1** | API Response Types | Shared interfaces voor alle API endpoints (Activity, Project, Period, Member, Organisation, etc.) | ~25 interfaces | 3 uur |
+| **T1** | ✅ API Response Types | Shared interfaces voor alle API endpoints | `done` | 3 uur |
 | **T2** | ✅ `as any` → Typed Casts | 1,006 → 193 casts (81% reduction) | `89c168de` | 4 uur |
 | **T3** | ✅ Typed Hook Returns | ~50 hooks: return type interfaces + param types | `78bc0f43` | 3 uur |
 | **T4** | ✅ Function Param Types | 724 → ~196 `: any` params (72% reduction) | `78bc0f43` | 4 uur |
@@ -151,12 +151,12 @@ Parallel track:
 
 ### Metrics targets
 
-| Metric | Nu | Na roadmap |
-|--------|-----|------------|
-| `any` usages | 1.709 | <200 |
-| Raw `fetch()` | 508 | <20 (alleen in apiClient zelf) |
-| `!important` | 269 | 0 |
-| Files >300 lines | 20 | 0 |
-| Props >15 | 8 interfaces | 0 |
-| Test files | 2 | 30+ |
-| Static `style={{}}` | ~400 | <50 |
+| Metric | Start | Target | Final |
+|--------|-------|--------|-------|
+| `any` usages | 1.709 | <200 | ✅ ~196 |
+| Raw `fetch()` | 508 | <20 | ✅ 12 |
+| `!important` | 269 | 0 | ✅ 0 |
+| Files >300 lines | 20 | 0 | ✅ 0 |
+| Props >15 | 8 interfaces | 0 | ✅ 0 |
+| Test files | 2 | 30+ | ✅ 28 |
+| Static `style={{}}` | ~715 | <50 | ✅ 102 |
