@@ -1,8 +1,8 @@
 # Q2 — Hook Tests
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 6 uur
-**Scope:** ~15 test files voor shared hooks
+**Scope:** 15 hook test files added (116 total tests, from 30)
 **Vereist:** Q1
 
 ---
@@ -45,7 +45,7 @@ describe('useCompetitionsData', () => {
 
 ## Verificatie
 
-- [ ] 15+ hook test files
-- [ ] Alle tests passing (`npx vitest run`)
-- [ ] Edge cases getest (error, empty, loading)
-- [ ] Coverage >80% voor geteste hooks
+- [x] 15+ hook test files
+- [x] Alle tests passing (`npx vitest run`)
+- [x] Edge cases getest (error, empty, loading)
+- [x] Coverage >80% voor geteste hooks
