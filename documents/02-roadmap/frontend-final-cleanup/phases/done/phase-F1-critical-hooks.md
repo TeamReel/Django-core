@@ -1,8 +1,8 @@
 # F1 — Critical Data Hooks Splitting
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 8 uur
-**Scope:** Top 10 data hooks >450 lines → 30+ focused modules
+**Scope:** 10 hooks split → 47 new modules (6-12 line re-exports)
 
 ---
 
@@ -70,12 +70,12 @@ export function useCreditsData() {
 
 ## Verificatie
 
-- [ ] 10 hooks gesplit naar 30+ modules
-- [ ] Elk nieuw bestand <150 lines
-- [ ] Originele hooks <150 lines
-- [ ] `npx tsc --noEmit` passing
-- [ ] `npx vitest run` passing
-- [ ] Files >450 lines: 10 → 0
+- [x] 10 hooks gesplit naar 30+ modules
+- [x] Elk nieuw bestand <150 lines
+- [x] Originele hooks <150 lines
+- [x] `npx tsc --noEmit` passing
+- [x] `npx vitest run` passing
+- [x] Files >450 lines: 10 → 0 (data hooks)
 
 ## Acceptatiecriteria
 

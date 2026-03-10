@@ -1,0 +1,80 @@
+/**
+ * useCompetitionsData/handlers.ts
+ * CRUD operations for competitions.
+ */
+
+import { useCallback } from 'react';
+import { api } from '@/api';
+import { invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
+import type { Period } from '../../utils/directoryHelpers';
+
+interface UseCompetitionHandlersParams {
+  selectedOrgId: string;
+  selectedTeamId: string;
+  selectedSeasonIds: string[];
+  triggerRefresh: () => void;
+  setCompetitions: React.Dispatch<React.SetStateAction<Period[]>>;
+}
+
+export function useCompetitionHandlers({
+  selectedOrgId,
+  selectedTeamId,
+  selectedSeasonIds,
+  triggerRefresh,
+  setCompetitions,
+}: UseCompetitionHandlersParams) {
+  const savePeriodEdits = useCallback(async (periodId: string, payload: Record<string, unknown>) => {
+    await api.patch(`/periods/${periodId}/`, payload);
+  }, []);
+
+  const createCompetition = useCallback(async (payload: {
+    name: string;
+    description?: string;
+    start_date?: string;
+    end_date?: string;
+    organisation_id?: string;
+    project_id?: string;
+    parent_period_id?: string;
+  }) => {
+    const orgId = String(payload.organisation_id || selectedOrgId || '');
+    const teamId = String(payload.project_id || selectedTeamId || '');
+    const seasonId = String(payload.parent_period_id || selectedSeasonIds[0] || '');
+    if (!orgId) throw new Error('Select a federation first');
+    if (!teamId) throw new Error('Select a team first');
+    if (!seasonId) throw new Error('Select a season first');
+
+    await api.post('/periods/', {
+      organisation_id: orgId,
+      project_id: teamId ? Number(teamId) : undefined,
+      parent_period_id: seasonId || null,
+      name: payload.name,
+      description: payload.description,
+      start_date: payload.start_date,
+      end_date: payload.end_date,
+      metadata: { type: 'competition' },
+    });
+
+    invalidateFetchAllPagesCache();
+    triggerRefresh();
+  }, [selectedOrgId, selectedTeamId, selectedSeasonIds, triggerRefresh]);
+
+  const handleDeleteCompetition = useCallback(async (orgId: string, compId: string, compName: string) => {
+    if (!compId || !window.confirm(`Are you sure you want to delete competition "${compName}"?`)) {
+      return;
+    }
+    try {
+      await api.delete(`/periods/${compId}/`);
+      setCompetitions((prev) => prev.filter((c) => c.id !== compId));
+    } catch (err) {
+      console.error(err);
+      console.error('Delete error:', err);
+      alert('Failed to delete competition');
+    }
+  }, [setCompetitions]);
+
+  return {
+    savePeriodEdits,
+    createCompetition,
+    handleDeleteCompetition,
+  };
+}
