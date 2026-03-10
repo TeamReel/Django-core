@@ -48,30 +48,30 @@
   /* Hide the action buttons row on mobile — they clutter the small header.
      Key actions are in the mobile-action-bar at the bottom instead. */
   .page-header-actions {
-    display: none !important;
+    display: none;
   }
 
   /* Show mobile-only action bar at bottom for key actions */
   .page-header-actions-mobile {
-    display: flex !important;
+    display: flex;
   }
 
   /* PageHeader: compact padding on mobile */
   [class*="PageHeader"],
   div[style*="padding: '24px'"][style*="borderBottom"] {
-    padding: var(--space-4) !important;
+    padding: var(--space-4);
   }
 
   /* PageHeader title: smaller on mobile */
   [class*="PageHeader"] h1,
   div[style*="fontSize: '28px'"] {
-    font-size: var(--text-lg) !important;
-    margin-bottom: var(--space-1) !important;
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-1);
   }
 
   /* Sticky action bar at bottom on mobile for important actions */
   .mobile-action-bar {
-    position: fixed !important;
+    position: fixed;
     bottom: 64px;
     left: 0;
     right: 0;
@@ -79,7 +79,7 @@
     background: var(--app-surface);
     border-top: 1px solid var(--app-border);
     z-index: 100;
-    display: flex !important;
+    display: flex;
     gap: var(--space-2);
   }
 
@@ -89,13 +89,13 @@
 
   /* Add bottom padding to content when action bar is present */
   .has-mobile-action-bar {
-    padding-bottom: 80px !important;
+    padding-bottom: 80px;
   }
 
   /* Filter sheet: full-width select controls */
   .mobile-filter-sheet-content select {
-    width: 100% !important;
-    max-width: none !important;
+    width: 100%;
+    max-width: none;
     min-height: 44px;
   }
 }
@@ -105,18 +105,18 @@
   .grid-cols-1.lg\:grid-cols-3,
   .grid.lg\:grid-cols-3,
   [style*="gridTemplateColumns: repeat(auto-fill"] {
-    display: flex !important;
-    flex-direction: column !important;
+    display: flex;
+    flex-direction: column;
   }
 
   .lg\:col-span-2 {
-    width: 100% !important;
+    width: 100%;
     order: 2;
   }
 
   /* Sidebar info card first on mobile */
   .lg\:col-span-1 {
-    width: 100% !important;
+    width: 100%;
     order: 1;
   }
 }
@@ -126,19 +126,19 @@
   /* Scoreboard layout vertical on mobile */
   .match-scoreboard,
   [style*="justifyContent: 'space-between'"][style*="alignItems: 'center'"][style*="padding: '20px"] {
-    flex-direction: column !important;
-    gap: var(--space-4) !important;
-    padding: var(--space-4) 0 !important;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
   }
 
   /* Smaller score text on mobile */
   [style*="fontSize: '2.5rem'"] {
-    font-size: 2rem !important;
+    font-size: 2rem;
   }
 
   /* Team names smaller */
   [style*="fontSize: '1.5rem'"] {
-    font-size: var(--text-base) !important;
+    font-size: var(--text-base);
   }
 }
 
@@ -146,11 +146,11 @@
 @media (max-width: 639px) {
   .tabs-container,
   [role="tablist"] {
-    display: flex !important;
-    overflow-x: auto !important;
+    display: flex;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     white-space: nowrap;
-    gap: var(--space-1) !important;
+    gap: var(--space-1);
     padding-bottom: var(--space-2);
   }
 
@@ -161,25 +161,25 @@
 
   [role="tab"] {
     flex-shrink: 0;
-    padding: var(--space-2) var(--space-3) !important;
-    font-size: var(--text-sm) !important;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
   }
 }
 
 /* Media grid on member detail - 2 columns on mobile */
 @media (max-width: 639px) {
   [style*="gridTemplateColumns: repeat(auto-fill, minmax(200px"] {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
   }
 
   /* Smaller media slot cards */
   [style*="gridTemplateColumns: repeat(auto-fill, minmax(200px"] > div {
-    padding: var(--space-3) !important;
+    padding: var(--space-3);
   }
 
   [style*="gridTemplateColumns: repeat(auto-fill, minmax(200px"] > div span[style*="fontSize: '20px'"] {
-    font-size: var(--text-base) !important;
+    font-size: var(--text-base);
   }
 }
 
@@ -187,21 +187,21 @@
 @media (max-width: 639px) {
   .Card,
   [class*="Card"] {
-    padding: var(--space-3) !important;
+    padding: var(--space-3);
   }
 
   /* Input fields full width */
   input, select, textarea {
-    width: 100% !important;
+    width: 100%;
   }
 
   /* Preview images smaller */
   [style*="maxWidth: '400px'"] {
-    max-width: 100% !important;
+    max-width: 100%;
   }
 
   [style*="maxHeight: '300px'"] {
-    max-height: 200px !important;
+    max-height: 200px;
   }
 }
 
@@ -209,9 +209,9 @@
 @media (max-width: 639px) {
   .grid-cols-1.md\:grid-cols-2,
   .md\:grid-cols-2 {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: var(--space-4) !important;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 }
 
@@ -226,7 +226,7 @@
 
 @media (max-width: 639px) {
   .mobile-tab-bar {
-    display: flex !important;
+    display: flex;
   }
 
   /* Shift action bar above bottom nav */
@@ -242,31 +242,31 @@
 @media (max-width: 639px) {
   /* 3 columns on mobile, tighter gap */
   .media-asset-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
   }
 
   /* Smaller preview area */
   .media-asset-grid > div [style*="aspectRatio"] {
-    min-height: 60px !important;
+    min-height: 60px;
   }
 
   /* Compact info area */
   .media-asset-grid > div > div:last-child {
-    padding: var(--space-1) var(--space-2) !important;
+    padding: var(--space-1) var(--space-2);
   }
 
   /* Smaller label text */
   .media-asset-grid > div > div:last-child > div:first-child {
-    font-size: var(--text-xs) !important;
-    line-height: var(--leading-tight) !important;
-    margin-bottom: var(--space-1) !important;
+    font-size: var(--text-xs);
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-1);
   }
 
   /* Smaller action buttons */
   .media-asset-grid > div > div:last-child button {
-    padding: var(--space-1) var(--space-1) !important;
-    font-size: var(--text-xs) !important;
+    padding: var(--space-1) var(--space-1);
+    font-size: var(--text-xs);
   }
 
   /* Hide inline scrollbar on pills */
@@ -283,38 +283,38 @@
   /* Gallery header compact */
   .gallery-header,
   div[style*="padding: 24"] > div[style*="padding: 24"] {
-    padding: var(--space-4) !important;
+    padding: var(--space-4);
   }
 
   /* Gallery toolbar: compact + search visible, rest in MobileFilterSheet */
   .gallery-toolbar {
-    gap: var(--space-2) !important;
-    padding: var(--space-3) var(--space-4) !important;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
   }
 
   .gallery-toolbar input,
   .gallery-toolbar select {
-    min-width: 0 !important;
-    width: 100% !important;
+    min-width: 0;
+    width: 100%;
   }
 
   /* Gallery grid: Instagram-style 3-column square grid on mobile */
   .gallery-grid,
   div[style*="gridTemplateColumns: 'repeat(auto-fill, minmax(220px"],
   div[style*="repeat(auto-fill, minmax(220px"] {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: var(--space-1) !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-1);
   }
 
   /* Gallery content area: reduce padding for edge-to-edge grid */
   .gallery-content {
-    padding: var(--space-1) var(--space-1) !important;
+    padding: var(--space-1) var(--space-1);
   }
 
   /* Filter chips: horizontal scroll, no wrap */
   .gallery-chips {
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
+    flex-wrap: nowrap;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: var(--space-1);
   }
@@ -325,60 +325,60 @@
 
   /* Instagram grid: square cells with no border gaps */
   .gallery-grid > div {
-    border-radius: 0 !important;
-    border: none !important;
-    overflow: hidden !important;
-    aspect-ratio: 1 / 1 !important;
+    border-radius: 0;
+    border: none;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
   }
 
   /* Card inner: fill entire square cell */
   .gallery-card-inner {
-    flex-direction: column !important;
-    height: 100% !important;
-    position: relative !important;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
   }
 
   /* Content card thumbnail — fill entire square */
   .gallery-card-thumb {
-    width: 100% !important;
-    min-width: unset !important;
-    height: 100% !important;
-    min-height: unset !important;
-    border: none !important;
-    position: absolute !important;
-    inset: 0 !important;
+    width: 100%;
+    min-width: unset;
+    height: 100%;
+    min-height: unset;
+    border: none;
+    position: absolute;
+    inset: 0;
   }
 
   .gallery-card-thumb img,
   .gallery-card-thumb video {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   /* Type badge overlay: bottom-left inside thumbnail */
   .gallery-card-thumb span[style*="position: absolute"] {
-    font-size: 8px !important;
-    padding: 1px var(--space-1) !important;
-    bottom: 4px !important;
-    left: 4px !important;
-    top: auto !important;
-    right: auto !important;
+    font-size: 8px;
+    padding: 1px var(--space-1);
+    bottom: 4px;
+    left: 4px;
+    top: auto;
+    right: auto;
   }
 
   /* Hide ALL text/metadata on mobile gallery — thumbnail only */
   .gallery-card-verbose {
-    display: none !important;
+    display: none;
   }
 
   /* Hide the info section (title, dates, buttons) below thumbnail */
   .gallery-card .gallery-card-inner > div:not(.gallery-card-thumb) {
-    display: none !important;
+    display: none;
   }
 
   /* Action buttons: hidden in grid view */
   .gallery-card .gallery-card-inner > div:last-child > div:last-child {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -395,23 +395,23 @@
 /* Gallery grid — switch to 2‑col compact when container < 480px */
 @container gallery (max-width: 480px) {
   .gallery-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
   }
 
   .gallery-card-thumb {
-    height: 120px !important;
+    height: 120px;
   }
 
   .gallery-card-verbose {
-    display: none !important;
+    display: none;
   }
 }
 
 /* Gallery grid — single column when container < 260px (e.g. sidebar) */
 @container gallery (max-width: 260px) {
   .gallery-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -424,7 +424,7 @@
 /* Stats grid — 4 columns when container ≥ 400px */
 @container stats (min-width: 400px) {
   .stats-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -439,7 +439,7 @@
 /* Dashboard grid — side-by-side when container ≥ 768px */
 @container dashboard (min-width: 768px) {
   .dashboard-grid {
-    grid-template-columns: 2fr 1fr !important;
+    grid-template-columns: 2fr 1fr;
   }
 
   .dashboard-main { order: 1; }
@@ -449,7 +449,7 @@
 /* Dashboard grid — stacked when container < 768px */
 @container dashboard (max-width: 767px) {
   .dashboard-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 
   .dashboard-sidebar { order: -1; }
@@ -464,15 +464,15 @@
 /* Card grid — 2 columns when container < 500px */
 @container card-grid (max-width: 500px) {
   .card-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-2) !important;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
   }
 }
 
 /* Card grid — single column when container < 280px */
 @container card-grid (max-width: 280px) {
   .card-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr;
   }
 }
 

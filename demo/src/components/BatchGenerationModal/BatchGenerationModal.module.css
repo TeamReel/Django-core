@@ -44,26 +44,26 @@
 
 /* ── Footer buttons ── */
 .footerBtnPrimary {
-  padding: var(--space-2) var(--space-4) !important;
-  font-size: var(--text-sm) !important;
-  font-weight: var(--font-semibold)!important;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
 }
 
 .footerBtnSecondary {
-  padding: var(--space-2) var(--space-3) !important;
-  font-size: var(--text-sm) !important;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
 }
 
 /* ── Desktop overrides (≥768px) ── */
 @media (min-width: 768px) {
   .overlay {
-    align-items: center !important;
-    padding: var(--space-5) !important;
+    align-items: center;
+    padding: var(--space-5);
   }
 
   .modal {
-    border-radius: var(--radius-lg) !important;
-    max-height: 85vh !important;
+    border-radius: var(--radius-lg);
+    max-height: 85vh;
   }
 
   .dragHandle {

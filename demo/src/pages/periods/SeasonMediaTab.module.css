@@ -73,7 +73,7 @@
 
 /* ── Zero-padding wrapper for mobile ── */
 .mobileWrapper {
-  padding: 0 !important;
+  padding: 0;
 }
 
 /* ── Mobile header: overall progress + legend ── */
@@ -239,10 +239,10 @@
 
 .mediaCardCheckbox {
   flex-shrink: 0;
-  width: 16px !important;
-  height: 16px !important;
-  margin: 1px 0 0 0 !important;
-  padding: 0 !important;
+  width: 16px;
+  height: 16px;
+  margin: 1px 0 0 0;
+  padding: 0;
   appearance: auto;
   -webkit-appearance: checkbox;
 }
@@ -297,8 +297,8 @@
 .mediaCardName {
   font-weight: var(--font-semibold);
   font-size: var(--text-xs);
-  color: var(--app-text) !important;
-  text-decoration: none !important;
+  color: var(--app-text);
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -313,7 +313,7 @@
 
 @media (hover: hover) {
   .mediaCardName:hover {
-  text-decoration: underline !important;
+  text-decoration: underline;
   }
 }
 
@@ -412,8 +412,8 @@
   align-items: center;
   gap: 0px;
   font-size: 9px;
-  color: var(--app-muted-text, #6b7280) !important;
-  text-decoration: none !important;
+  color: var(--app-muted-text, #6b7280);
+  text-decoration: none;
   padding: var(--space-1) 0;
 }
 
@@ -476,7 +476,7 @@
 
 .stickyBatchBtn {
   flex-shrink: 0;
-  padding: var(--space-2) var(--space-4) !important;
-  font-size: var(--text-sm) !important;
-  font-weight: var(--font-semibold)!important;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
 }

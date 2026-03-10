@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔴 In Progress (10/18 fases done)
+**Status:** 🔴 In Progress (11/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -60,7 +60,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 | **T2** | ✅ `as any` → Typed Casts | 1,006 → 193 casts (81% reduction) | `89c168de` | 4 uur |
 | **T3** | ✅ Typed Hook Returns | ~50 hooks: return type interfaces + param types | `78bc0f43` | 3 uur |
 | **T4** | ✅ Function Param Types | 724 → ~196 `: any` params (72% reduction) | `78bc0f43` | 4 uur |
-| **T5** | ✅ `any[]` → Typed Arrays | 195 → 37 `any[]` (81% reduction) | `pending` | 2 uur |
+| **T5** | ✅ `any[]` → Typed Arrays | 195 → 37 `any[]` (81% reduction) | `cdb2efa6` | 2 uur |
 
 ### Track A — API Architecture
 
@@ -70,7 +70,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 |------|------|-------|---------|--------|
 | **A1** | Core API Client | Uitbreiden `apiFetch.ts` → typed `apiClient.get<T>()`, `.post<T>()`, `.patch<T>()`, `.delete()` met error handling, auth, base URL | 1 module | 3 uur |
 | **A2** | Domain API Modules | `api/projects.ts`, `api/activities.ts`, `api/members.ts`, etc. — typed wrappers rond apiClient | ~10 modules | 4 uur |
-| **A3** | ✅ Hook Migration | 536 → 12 raw `fetch()` (98% reduction) | `pending` | 6 uur |
+| **A3** | ✅ Hook Migration | 536 → 12 raw `fetch()` (98% reduction) | `b80e06db` | 6 uur |
 
 ### Track S — Splitting & Structure
 
@@ -89,7 +89,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 
 | Fase | Naam | Scope | Geschat | Effort |
 |------|------|-------|---------|--------|
-| **CSS1** | `!important` Elimination | 269 `!important` → proper specificity via cascade layers | 269 in 20 files | 3 uur |
+| **CSS1** | ✅ `!important` Elimination | 269 → 0 (100% elimination) | `pending` | 3 uur |
 | **CSS2** | Static Inline → CSS Modules | `style={{}}` met vaste waarden → CSS module classes | ~400 (van 854) | 4 uur |
 
 ### Track Q — Quality & Testing
@@ -138,7 +138,7 @@ Parallel track:
 |------|-------|--------|
 | **P0 — Done** | T1, A1, Q1 | ✅ Foundation: types + API client + test setup |
 | **P1 — Done** | T2, A2, S1 | ✅ `as any` 81% weg + API modules + archive clean |
-| **P2 — Partial** | ~~T3, T4~~, A3, CSS1 | T3+T4 ✅, A3 + CSS1 remaining |
+| **P2 — Done** | ~~T3, T4, A3, CSS1~~ | ✅ All complete |
 | **P3 — Week 3** | T5, S2, S3, Q2 | Arrays + splitting + first tests |
 | **P4 — Week 4** | S4, CSS2, Q3 | Polish: modals + inline styles + API tests |
 

@@ -85,8 +85,8 @@
 
 .memberCardCheckbox {
   flex-shrink: 0;
-  width: 16px !important;
-  height: 16px !important;
+  width: 16px;
+  height: 16px;
   appearance: auto;
   -webkit-appearance: checkbox;
 }
@@ -109,8 +109,8 @@
 .memberCardName {
   font-weight: var(--font-semibold);
   font-size: var(--text-sm);
-  color: var(--app-text) !important;
-  text-decoration: none !important;
+  color: var(--app-text);
+  text-decoration: none;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -120,7 +120,7 @@
 
 @media (hover: hover) {
   .memberCardName:hover {
-  text-decoration: underline !important;
+  text-decoration: underline;
   }
 }
 

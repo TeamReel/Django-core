@@ -227,7 +227,7 @@
 }
 
 .overflowDanger {
-  color: var(--color-red-500, #ef4444) !important;
+  color: var(--color-red-500, #ef4444);
 }
 
 /* ── Loading skeleton ────────────────────────────────────────────────── */

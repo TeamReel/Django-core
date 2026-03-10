@@ -20,8 +20,8 @@
 }
 
 .sheetBody {
-  padding: 0 !important;
-  overflow: hidden !important;
+  padding: 0;
+  overflow: hidden;
 }
 
 /* ── Scrollable content area ────────────────────────── */

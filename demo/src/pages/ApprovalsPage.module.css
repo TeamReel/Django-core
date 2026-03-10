@@ -943,6 +943,6 @@
   .modalOverlay,
   .modalOverlay > * ,
   .toastContainer > div {
-    animation: none !important;
+    animation: none;
   }
 }

@@ -1,5 +1,5 @@
-﻿/* ======================================================================
-   RESPONSIVE STYLES â€” Mobile-first media queries, sidebar, navigation,
+/* ======================================================================
+   RESPONSIVE STYLES — Mobile-first media queries, sidebar, navigation,
    dashboard/detail layouts, gallery, container queries.
    Extracted from index.css for maintainability.
    ====================================================================== */
@@ -63,15 +63,15 @@
 @media (max-width: 1023px) {
   /* Tablet: Sidebar collapses to icons only by default */
   .sidebar-panel-a {
-    width: 72px !important;
+    width: 72px;
   }
 
   .sidebar-panel-b {
-    display: none !important;
+    display: none;
   }
 
   .sidebar-text {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -83,15 +83,15 @@
 @media (max-width: 639px) {
   /* Mobile: Sidebar becomes slide-out drawer */
   .mobile-menu-button {
-    display: flex !important;
+    display: flex;
   }
 
   .sidebar-collapse-button {
-    display: none !important;
+    display: none;
   }
 
   .sidebar-container {
-    position: fixed !important;
+    position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
@@ -105,23 +105,23 @@
   }
 
   .sidebar-panel-a {
-    width: 240px !important;
+    width: 240px;
   }
 
   .sidebar-text {
-    display: block !important;
+    display: block;
   }
 
   /* Main content takes full width on mobile */
   .main-content {
-    padding: var(--space-4) !important;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: var(--space-4);
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 
   /* Reduce padding on mobile */
   main {
-    padding: var(--space-3) !important;
-    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: var(--space-3);
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -149,14 +149,14 @@
   /* Hide columns marked with .hide-mobile */
   table th.hide-mobile,
   table td.hide-mobile {
-    display: none !important;
+    display: none;
   }
 
   /* Compact table cells */
   table th,
   table td {
-    padding: var(--space-2) var(--space-2) !important;
-    font-size: var(--text-sm) !important;
+    padding: var(--space-2) var(--space-2);
+    font-size: var(--text-sm);
     white-space: nowrap;
   }
 
@@ -173,22 +173,22 @@
   /* Force any grid to single column on mobile */
   [style*="gridTemplateColumns"],
   [style*="grid-template-columns"] {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: var(--space-4) !important;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
   }
 
   /* Override span-based grid children */
   [style*="gridColumn"],
   [style*="grid-column"] {
-    width: 100% !important;
+    width: 100%;
   }
 
   /* Stats grids: 2 columns instead of 4 */
   [style*="repeat(4, 1fr)"] {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: var(--space-3) !important;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
   }
 }
 
@@ -198,29 +198,29 @@
   .list-item,
   [class*="ListItem"],
   li {
-    padding: var(--space-3) !important;
+    padding: var(--space-3);
   }
 
   /* Reduce avatar/icon sizes */
   [style*="width: 32px"][style*="height: 32px"],
   [style*="width:32px"][style*="height:32px"] {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: var(--text-xs) !important;
+    width: 28px;
+    height: 28px;
+    font-size: var(--text-xs);
   }
 
   /* Hide email in user lists, show only name */
   .user-email,
   [style*="fontSize: '0.8em'"][style*="color: '#666'"],
   [style*="fontSize:'0.8em'"][style*="color:'#666'"] {
-    display: none !important;
+    display: none;
   }
 
   /* Compact badges */
   [style*="padding: '4px 8px'"],
   [style*="padding:'4px 8px'"] {
-    padding: var(--space-1) var(--space-2) !important;
-    font-size: var(--text-xs) !important;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
   }
 }
 
@@ -229,8 +229,8 @@
   body,
   #root,
   main {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   /* Prevent any element from causing horizontal overflow */
@@ -257,11 +257,11 @@
   /* Cards take full width on mobile */
   [class*="Card"],
   [class*="card"] {
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    border-radius: 0 !important;
-    border-left: none !important;
-    border-right: none !important;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
   }
 }
 
@@ -296,24 +296,24 @@
 /* --- Responsive Typography --- */
 @media (max-width: 639px) {
   h1 {
-    font-size: var(--text-xl) !important;
+    font-size: var(--text-xl);
   }
 
   h2 {
-    font-size: var(--text-lg) !important;
+    font-size: var(--text-lg);
   }
 
   h3 {
-    font-size: var(--text-base) !important;
+    font-size: var(--text-base);
   }
 }
 
 /* --- Responsive Page Headers --- */
 @media (max-width: 639px) {
   .page-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: var(--space-3) !important;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
   }
 
   .page-header-actions {
@@ -330,19 +330,19 @@
 
   /* Compact page titles */
   h1 {
-    font-size: var(--text-lg) !important;
-    margin-bottom: var(--space-3) !important;
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-3);
   }
 
   h2 {
-    font-size: var(--text-base) !important;
+    font-size: var(--text-base);
   }
 
   /* Hide breadcrumbs on mobile - take up too much space */
   nav[aria-label="breadcrumb"],
   .breadcrumb,
   [class*="Breadcrumb"] {
-    display: none !important;
+    display: none;
   }
 }
 
@@ -350,13 +350,13 @@
 @media (max-width: 639px) {
   [role="dialog"],
   .modal-content {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    border-radius: 0 !important;
-    max-height: 100vh !important;
-    height: 100vh !important;
-    /* Safe areas for notch/dynamicâ€‘island devices */
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+    height: 100vh;
+    /* Safe areas for notch/dynamic‑island devices */
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     padding-left: env(safe-area-inset-left, 0px);
@@ -367,7 +367,7 @@
 /* --- Responsive Form Controls --- */
 @media (max-width: 639px) {
   input, select, textarea {
-    font-size: var(--text-base) !important; /* Prevents zoom on iOS */
+    font-size: var(--text-base); /* Prevents zoom on iOS */
     min-height: 44px; /* Touch-friendly size */
   }
 
@@ -378,7 +378,7 @@
 
   /* Sidebar nav links on mobile drawer */
   .sidebar-panel-a a {
-    min-height: 44px !important;
+    min-height: 44px;
   }
 
   /* Landscape: protect left/right for camera housing */
@@ -398,7 +398,7 @@
 }
 
 .hide-desktop {
-  display: none !important;
+  display: none;
 }
 
 .show-mobile-only {
@@ -412,38 +412,38 @@
 
 @media (max-width: 639px) {
   .hide-mobile {
-    display: none !important;
+    display: none;
   }
 
   .show-mobile-only {
-    display: block !important;
+    display: block;
   }
 }
 
 @media (min-width: 640px) and (max-width: 1023px) {
   .hide-tablet {
-    display: none !important;
+    display: none;
   }
 }
 
 @media (min-width: 1024px) {
   .hide-desktop {
-    display: none !important;
+    display: none;
   }
 }
 
 /* --- Responsive Spacing Utilities --- */
 @media (max-width: 639px) {
   .p-responsive {
-    padding: var(--space-3) !important;
+    padding: var(--space-3);
   }
 
   .m-responsive {
-    margin: var(--space-3) !important;
+    margin: var(--space-3);
   }
 
   .gap-responsive {
-    gap: var(--space-3) !important;
+    gap: var(--space-3);
   }
 }
 

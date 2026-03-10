@@ -36,8 +36,8 @@ html {
 
 /* Global Accessibility: Ensure visible focus indicator for all interactive elements */
 :focus-visible {
-  outline: 2px solid var(--app-focus-ring) !important;
-  outline-offset: 2px !important;
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
   z-index: 10; /* Ensure focus ring is visible above other elements */
 }
 
@@ -65,27 +65,27 @@ body {
   color: var(--app-text);
 }
 
-.org-detail-page .text-gray-900 { color: var(--app-text) !important; }
-.org-detail-page .text-gray-800 { color: var(--app-text) !important; }
-.org-detail-page .text-gray-700 { color: var(--app-text) !important; }
-.org-detail-page .text-gray-600 { color: var(--app-muted-text) !important; }
-.org-detail-page .text-gray-500 { color: var(--app-muted-text) !important; }
-.org-detail-page .text-gray-400 { color: var(--app-muted-text) !important; }
+.org-detail-page .text-gray-900 { color: var(--app-text); }
+.org-detail-page .text-gray-800 { color: var(--app-text); }
+.org-detail-page .text-gray-700 { color: var(--app-text); }
+.org-detail-page .text-gray-600 { color: var(--app-muted-text); }
+.org-detail-page .text-gray-500 { color: var(--app-muted-text); }
+.org-detail-page .text-gray-400 { color: var(--app-muted-text); }
 
-.org-detail-page .bg-gray-50 { background-color: var(--app-bg) !important; }
-.org-detail-page .bg-gray-100 { background-color: var(--app-surface-2) !important; }
-.org-detail-page .bg-gray-200 { background-color: var(--app-surface-2) !important; }
-.org-detail-page .bg-gray-300 { background-color: var(--app-surface-2) !important; }
-.org-detail-page .bg-gray-800 { background-color: var(--app-surface) !important; }
-.org-detail-page .bg-gray-900 { background-color: var(--app-surface) !important; }
-.org-detail-page .bg-white { background-color: var(--app-surface) !important; }
+.org-detail-page .bg-gray-50 { background-color: var(--app-bg); }
+.org-detail-page .bg-gray-100 { background-color: var(--app-surface-2); }
+.org-detail-page .bg-gray-200 { background-color: var(--app-surface-2); }
+.org-detail-page .bg-gray-300 { background-color: var(--app-surface-2); }
+.org-detail-page .bg-gray-800 { background-color: var(--app-surface); }
+.org-detail-page .bg-gray-900 { background-color: var(--app-surface); }
+.org-detail-page .bg-white { background-color: var(--app-surface); }
 
-.org-detail-page .border-gray-100 { border-color: var(--app-border) !important; }
-.org-detail-page .border-gray-200 { border-color: var(--app-border) !important; }
-.org-detail-page .border-gray-300 { border-color: var(--app-border) !important; }
-.org-detail-page .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--app-border) !important; }
+.org-detail-page .border-gray-100 { border-color: var(--app-border); }
+.org-detail-page .border-gray-200 { border-color: var(--app-border); }
+.org-detail-page .border-gray-300 { border-color: var(--app-border); }
+.org-detail-page .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: var(--app-border); }
 
-.org-detail-page .text-blue-600 { color: var(--app-link) !important; }
+.org-detail-page .text-blue-600 { color: var(--app-link); }
 
 #root {
   background-color: var(--app-bg);
@@ -122,8 +122,8 @@ button {
    but allow opt-in bordered controls via .nav-icon-button / .nav-keep-border. */
 nav button:not(.nav-icon-button):not(.nav-keep-border),
 nav [class*="Button"]:not(.nav-icon-button):not(.nav-keep-border) {
-  border: none !important;
-  box-shadow: none !important;
+  border: none;
+  box-shadow: none;
 }
 
 /* Ensure form buttons (not in nav) have proper borders and contrast */
@@ -147,7 +147,7 @@ button[style*="backgroundColor: #0066cc"]:not(nav *) {
 /* Secondary/Cancel buttons - subtle but visible (excluding nav) */
 form button[type="button"]:not([type="submit"]):not(.app-action-button):not(.app-unstyled-button),
 button[type="button"]:not(nav *):not([type="submit"]):not(.app-action-button):not(.app-unstyled-button):not([style*="backgroundColor: #dc3545"]):not([style*="backgroundColor: '#dc3545'"]) {
-  border: 1px solid var(--app-border) !important;
+  border: 1px solid var(--app-border);
   background-color: var(--app-surface-2);
 }
 
@@ -173,17 +173,17 @@ button:focus-visible, [class*="Button"]:focus-visible {
 
 /* Utility: opt-out of global button chrome (used for badge-only click targets) */
 .app-unstyled-button {
-  border: none !important;
-  background: transparent !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  opacity: 1 !important;
+  border: none;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  opacity: 1;
 }
 
 @media (hover: hover) {
   .app-unstyled-button:hover {
-  box-shadow: none !important;
-  opacity: 1 !important;
+  box-shadow: none;
+  opacity: 1;
   }
 }
 
@@ -192,17 +192,17 @@ button:focus-visible, [class*="Button"]:focus-visible {
 button.app-action-button,
 button.app-action-button[type="button"],
 button.app-action-button[type="submit"] {
-  border: 1px solid currentColor !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  opacity: 1 !important;
+  border: 1px solid currentColor;
+  background-color: transparent;
+  box-shadow: none;
+  opacity: 1;
 }
 
 @media (hover: hover) {
   button.app-action-button:hover {
-  background-color: var(--app-surface-2) !important;
-  box-shadow: none !important;
-  opacity: 1 !important;
+  background-color: var(--app-surface-2);
+  box-shadow: none;
+  opacity: 1;
   }
 }
 
@@ -323,22 +323,22 @@ hr {
 [data-theme="dark"] [style*="background-color:#fff"],
 [data-theme="dark"] [style*="backgroundColor: '#fff'"],
 [data-theme="dark"] [style*='backgroundColor: "#fff"'] {
-  background-color: var(--app-surface) !important;
+  background-color: var(--app-surface);
 }
 
 [data-theme="dark"] [style*="color: #666"],
 [data-theme="dark"] [style*="color:#666"] {
-  color: var(--app-muted-text) !important;
+  color: var(--app-muted-text);
 }
 
 [data-theme="dark"] [style*="border-color: #ddd"],
 [data-theme="dark"] [style*="border: 1px solid #ddd"] {
-  border-color: var(--app-border) !important;
+  border-color: var(--app-border);
 }
 
 /* Ensure main content area uses theme background */
 main {
-  background-color: var(--app-bg) !important;
+  background-color: var(--app-bg);
   color: var(--app-text);
 }
 
@@ -351,12 +351,12 @@ h1, h2, h3, h4, h5, h6 {
 /* Better contrast for buttons with hardcoded colors */
 [data-theme="dark"] button[style*="color: var(--color-neutral-400)"],
 [data-theme="dark"] button[style*="color:var(--color-neutral-400)"] {
-  color: var(--color-neutral-300) !important;
+  color: var(--color-neutral-300);
 }
 
 [data-theme="dark"] button[style*="border: 1px solid var(--color-neutral-400)"],
 [data-theme="dark"] button[style*="border:1px solid var(--color-neutral-400)"] {
-  border-color: var(--color-neutral-300) !important;
+  border-color: var(--color-neutral-300);
 }
 
 /* Improve text contrast in dark mode */
@@ -371,12 +371,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Hide context switcher errors (non-critical, handled by error handler) */
 [role="alert"]:has([data-context-error]) {
-  display: none !important;
+  display: none;
 }
 
 /* Alternative: hide all error alerts in header if context switcher errors are shown there */
 header [role="alert"] {
-  display: none !important;
+  display: none;
 }
 
 /* ─── Page Transition Animation ────────────────────────────────────────── */
@@ -400,9 +400,9 @@ header [role="alert"] {
   }
 
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }
 

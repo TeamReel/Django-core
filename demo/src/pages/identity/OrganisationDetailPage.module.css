@@ -122,7 +122,7 @@
   background: var(--app-hover-bg, rgba(255, 255, 255, 0.06));
 }
 
-.overflowDanger { color: var(--color-red-400) !important; }
+.overflowDanger { color: var(--color-red-400); }
 
 /* ── Tab content area ── */
 .tabContent { padding: 0 16px 120px; }

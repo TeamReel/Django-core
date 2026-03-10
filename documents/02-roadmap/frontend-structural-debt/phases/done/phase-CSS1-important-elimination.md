@@ -1,8 +1,8 @@
 # CSS1 — `!important` Elimination
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 3 uur
-**Scope:** 269 `!important` in 20 files
+**Scope:** 269 → 0 `!important` (100% elimination in 20 files)
 
 ---
 
@@ -30,6 +30,6 @@
 
 ## Verificatie
 
-- [ ] 0 `!important` in codebase
-- [ ] Visuele regressie check op key pages
-- [ ] `npx vite build` slaagt
+- [x] 0 `!important` in codebase
+- [x] Visuele regressie check op key pages
+- [x] `npx vite build` slaagt

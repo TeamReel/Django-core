@@ -92,7 +92,7 @@
 
 .memberBadge {
   flex-shrink: 0;
-  font-size: 9px !important;
+  font-size: 9px;
 }
 
 .headerActions {

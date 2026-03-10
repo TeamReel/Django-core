@@ -267,7 +267,7 @@
 
 @media (hover: hover) {
   .videoPlayBtn:hover {
-  opacity: 1 !important;
+  opacity: 1;
   }
 }
 
