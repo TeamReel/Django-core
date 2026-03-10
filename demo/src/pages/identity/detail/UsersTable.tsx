@@ -294,9 +294,9 @@ export default function UsersTable({
 
             const teamId = teamIds.length === 1 ? teamIds[0] : '';
 
-            const getTeamNameFromPm = (pm: any): string =>
+            const getTeamNameFromPm = (pm: ProjectMembershipRecord): string =>
               String(pm?.project?.name ?? pm?.project_name ?? pm?.project?.title ?? '').trim();
-            const getTeamSlugFromPm = (pm: any): string =>
+            const getTeamSlugFromPm = (pm: ProjectMembershipRecord): string =>
               String(pm?.project?.slug ?? pm?.project_slug ?? '').trim();
 
             const team = teamId ? teamById.get(String(teamId)) : null;

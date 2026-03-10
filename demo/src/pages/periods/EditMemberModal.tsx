@@ -4,14 +4,24 @@ import s from './ProjectSeasonDetailPage.module.css';
 import { getFunctionalRolesFromMembership, type AccessRoleOption } from './seasonDetailUtils';
 import { projectsApi } from '../../api';
 
+/** Minimal member/membership shape for the edit modal */
+interface EditableMember {
+  id?: string;
+  user?: { name?: string; first_name?: string; last_name?: string; email?: string };
+  role?: string;
+  functional_roles?: string[];
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface EditMemberModalProps {
-  member: any;
+  member: EditableMember;
   editAccessRole: 'admin' | 'viewer';
   accessRoleOptions: AccessRoleOption[];
   apiBaseUrl: string;
   projectId: string;
   onAccessRoleChange: (role: 'admin' | 'viewer') => void;
-  onMemberChange: React.Dispatch<React.SetStateAction<any>>;
+  onMemberChange: React.Dispatch<React.SetStateAction<EditableMember | null>>;
   onSaved: (membershipId: string, role: string, functionalRoles: string[]) => void;
   onClose: () => void;
 }
@@ -59,7 +69,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           ...(member?.metadata || {}),
           functional_roles: functionalRoles,
         },
-      } as any);
+      } as Record<string, unknown>);
 
       onSaved(membershipId, editAccessRole, functionalRoles);
     } catch (err: unknown) {
@@ -142,7 +152,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                     checked={isChecked}
                     onChange={(e) => {
                       const checked = e.target.checked;
-                      onMemberChange((prev: any) => {
+                      onMemberChange((prev: EditableMember | null) => {
                         if (!prev) return prev;
                         const currentRoles = getFunctionalRolesFromMembership(prev);
                         let newRoles: string[];

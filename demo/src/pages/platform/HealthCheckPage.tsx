@@ -187,7 +187,14 @@ export const HealthCheckPage: React.FC = () => {
   );
 };
 
-function ServiceRow({ label, status, detail, getIcon, getColor, getTextColor }: any) {
+function ServiceRow({ label, status, detail, getIcon, getColor, getTextColor }: {
+  label: string;
+  status: string | undefined;
+  detail?: string;
+  getIcon: (s: string | undefined) => string;
+  getColor: (s: string | undefined) => string;
+  getTextColor: (s: string | undefined) => string;
+}) {
   return (
     <div className="flex-between p-8 bg-surface rounded-4 border">
       <span className="fw-500 text-primary">{label}</span>

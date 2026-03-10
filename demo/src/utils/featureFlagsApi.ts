@@ -120,7 +120,7 @@ export async function seedDefaultFlags(): Promise<{ total: number; created: numb
       .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
 
   // Build flag info with description from template
-  const buildTemplateFlagInfo = (template: any): Array<{ key: string; description: string }> => {
+  const buildTemplateFlagInfo = (template: ContentTemplateRecord): Array<{ key: string; description: string }> => {
     const type = normalizeKey(template?.template_type || '');
     const subtype = normalizeKey(template?.template_subtype || template?.template_type || '');
     const style = normalizeKey(template?.style_variant || '');
@@ -222,7 +222,7 @@ export async function syncFlags(): Promise<{ total: number; created: number; upd
       .trim()
       .replace(/(^\w|\s\w)/g, (m) => m.toUpperCase());
 
-  const buildTemplateFlagInfo = (template: any): Array<{ key: string; description: string }> => {
+  const buildTemplateFlagInfo = (template: ContentTemplateRecord): Array<{ key: string; description: string }> => {
     const type = normalizeKey(template?.template_type || '');
     const subtype = normalizeKey(template?.template_subtype || template?.template_type || '');
     const style = normalizeKey(template?.style_variant || '');

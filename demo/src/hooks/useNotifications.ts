@@ -37,12 +37,14 @@ export interface UserNotification {
 // Helpers
 // ============================================================================
 
-function unwrapNotifications(raw: any): UserNotification[] {
-  const data = raw?.data ?? raw;
+function unwrapNotifications(raw: unknown): UserNotification[] {
+  const r = raw as Record<string, unknown> | undefined;
+  const data = r?.data ?? raw;
+  const d = data as Record<string, unknown> | undefined;
   const list = Array.isArray(data)
     ? data
-    : Array.isArray(data?.results)
-      ? data.results
+    : Array.isArray(d?.results)
+      ? d.results
       : [];
   return list as UserNotification[];
 }

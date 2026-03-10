@@ -17,7 +17,7 @@ import styles from './WebSocketTestPage.module.css';
 interface LogMessage {
   timestamp: string;
   type: 'sent' | 'received' | 'info' | 'error';
-  data: any;
+  data: string;
 }
 
 export const WebSocketTestPage: React.FC = () => {
@@ -29,7 +29,7 @@ export const WebSocketTestPage: React.FC = () => {
   const [wsUrl, setWsUrl] = useState('ws://localhost:8000/ws/test/');
   const socketRef = useRef<WebSocket | null>(null);
 
-  const addLog = (type: LogMessage['type'], data: any) => {
+  const addLog = (type: LogMessage['type'], data: unknown) => {
     setLogs(prev => [{
       timestamp: new Date().toLocaleTimeString(),
       type,

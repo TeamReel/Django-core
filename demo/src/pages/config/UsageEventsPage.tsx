@@ -233,7 +233,7 @@ const AlertBanners: React.FC<{
   editMode: string;
   currentOrgId: string | null;
   currentOrgName: string;
-  currentProject: any;
+  currentProject: { id?: string; name?: string } | null;
   demoMode: boolean;
   success: boolean;
   error: string | null;

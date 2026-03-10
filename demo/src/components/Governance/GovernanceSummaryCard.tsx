@@ -18,10 +18,11 @@ type EffectivePolicyResponse = {
   policy: BalancePolicy;
 };
 
-function unwrapBalancePolicy(raw: any): BalancePolicy | null {
+function unwrapBalancePolicy(raw: unknown): BalancePolicy | null {
   if (!raw) return null;
-  if (raw.status === 'success' && raw.data) return raw.data as BalancePolicy;
-  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) return raw.data as BalancePolicy;
+  const r = raw as Record<string, unknown>;
+  if (r.status === 'success' && r.data) return r.data as BalancePolicy;
+  if (r.data && typeof r.data === 'object' && !Array.isArray(r.data)) return r.data as BalancePolicy;
   return raw as BalancePolicy;
 }
 

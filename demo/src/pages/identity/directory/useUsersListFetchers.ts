@@ -343,11 +343,11 @@ export function useUsersListFetchers(params: UsersListFetcherParams) {
                         ...(Array.isArray(normalized?.project_memberships) ? normalized.project_memberships : []),
                     ];
                     const merged = { ...existing, ...normalized, project_memberships: mergedMemberships };
-                    const score = (v: any) =>
+                    const score = (v: Record<string, unknown>) =>
                         Number(Boolean(v?.email)) +
                         Number(Boolean(v?.first_name)) +
                         Number(Boolean(v?.last_name)) +
-                        Number(Array.isArray(v?.organisations) && v.organisations.length > 0);
+                        Number(Array.isArray(v?.organisations) && (v.organisations as unknown[]).length > 0);
                     if (score(merged) > score(existing)) {
                         byKey.set(key, merged);
                     }

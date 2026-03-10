@@ -21,7 +21,7 @@ type Activity = {
   title?: string;
   start_datetime?: string;
   start_date?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 };
 
 export const MembershipsPage: React.FC = () => {

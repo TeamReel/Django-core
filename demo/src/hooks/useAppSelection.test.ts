@@ -16,7 +16,7 @@ vi.mock('../utils/fetchAllPages', () => ({
   fetchAllPages: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('../utils/periodPath', () => ({
-  periodPathKey: (p: any) => p?.slug || String(p?.id || ''),
+  periodPathKey: (p: Record<string, unknown>) => (p?.slug as string) || String(p?.id || ''),
 }));
 
 import { useAppSelection } from './useAppSelection';

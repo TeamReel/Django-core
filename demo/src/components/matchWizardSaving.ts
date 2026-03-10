@@ -16,7 +16,7 @@ export interface SaveVariantParams {
   totalVariants: number;
   selectedType: { type: string; subtype: string; label: string } | null;
   selectedTemplate: ContentTemplate | null;
-  matchDataForApi: any;
+  matchDataForApi: { id: string; project?: { id: string }; [key: string]: unknown } | null;
   organisationId: string | null | undefined;
   assetType: null;
 }

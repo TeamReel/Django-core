@@ -74,7 +74,7 @@ describe('useVideoJobs', () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    let created: any;
+    let created: unknown;
     await act(async () => {
       created = await result.current.createJob({
         job_type: 'transcode',

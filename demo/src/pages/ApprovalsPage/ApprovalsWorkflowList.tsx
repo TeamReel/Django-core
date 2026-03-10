@@ -37,7 +37,7 @@ export function ApprovalsWorkflowList({
               <div className={s.workflowBadgeRow}>
                 <span className={s.entityTypeBadge}>{getEntityLabel(instance.content_type_name)}</span>
                 <span className={s.entityTitle}>
-                  {instance.context?.title || instance.context?.name || `#${instance.object_id}`}
+                  {String(instance.context?.title || instance.context?.name || `#${instance.object_id}`)}
                 </span>
               </div>
               <div className={s.workflowMeta}>

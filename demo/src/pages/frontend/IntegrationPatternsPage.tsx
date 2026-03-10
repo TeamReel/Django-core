@@ -328,7 +328,7 @@ export function ProjectResources() {
       code: `import { ErrorBoundary } from 'react-error-boundary';
 import { Button, Alert } from '@django-core/design-system';
 
-function ErrorFallback({ error, resetErrorBoundary }: any) {
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
     <Alert variant="error" title="Something went wrong">
       <p>{error.message}</p>

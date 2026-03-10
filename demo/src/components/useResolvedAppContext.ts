@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { api } from '@/api';
 import { ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
+import type { User } from '@django-core/auth-ui';
 
 /* ------------------------------------------------------------------ */
 /*  Type                                                               */
@@ -29,7 +30,7 @@ export type ResolvedAppContext = {
 /* ------------------------------------------------------------------ */
 
 export function useResolvedAppContext(
-    user: any,
+    user: User | null,
     orgSlug: string,
     contextOrgSlug: string | undefined,
     contextOrgId: string | undefined,

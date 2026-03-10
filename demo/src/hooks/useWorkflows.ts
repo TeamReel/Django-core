@@ -53,7 +53,7 @@ export interface WorkflowInstance {
   content_type_name: string;
   object_id: number;
   current_state: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   version: number;
   created_by: number | null;
   created_by_username: string | null;
@@ -72,17 +72,19 @@ export interface TransitionHistoryEntry {
   actor_username?: string;
   comment: string;
   task_id: string | null;
-  context_snapshot: Record<string, any>;
+  context_snapshot: Record<string, unknown>;
   created_at: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function unwrapResults<T>(payload: any): T[] {
+function unwrapResults<T>(payload: unknown): T[] {
+  const p = payload as Record<string, unknown> | undefined;
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.results)) return payload.results;
-  if (payload?.data && Array.isArray(payload.data.results)) return payload.data.results;
-  if (payload?.data && Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(p?.results)) return p.results as T[];
+  const d = p?.data as Record<string, unknown> | undefined;
+  if (d && Array.isArray(d.results)) return d.results as T[];
+  if (d && Array.isArray(d)) return d as T[];
   return [];
 }
 
@@ -266,9 +268,9 @@ export async function executeTransition(
   instanceId: number | string,
   action: string,
   comment?: string,
-  contextUpdates?: Record<string, any>
+  contextUpdates?: Record<string, unknown>
 ): Promise<TransitionHistoryEntry> {
-  const body: Record<string, any> = { action };
+  const body: Record<string, unknown> = { action };
   if (comment) body.comment = comment;
   if (contextUpdates) body.context_updates = contextUpdates;
 
@@ -285,7 +287,7 @@ export async function createWorkflowInstance(data: {
   project: number;
   content_type: number;
   object_id: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }): Promise<WorkflowInstance> {
   return api.post<WorkflowInstance>(
     '/workflows/instances/',

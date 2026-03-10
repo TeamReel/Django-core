@@ -107,11 +107,13 @@ async function videoApiFetch<T>(
   return {} as T;
 }
 
-function unwrapResults<T>(payload: any): T[] {
+function unwrapResults<T>(payload: unknown): T[] {
+  const p = payload as Record<string, unknown> | undefined;
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload?.results)) return payload.results;
-  if (payload?.data && Array.isArray(payload.data.results)) return payload.data.results;
-  if (payload?.data && Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(p?.results)) return p.results as T[];
+  const d = p?.data as Record<string, unknown> | undefined;
+  if (d && Array.isArray(d.results)) return d.results as T[];
+  if (d && Array.isArray(d)) return d as T[];
   return [];
 }
 

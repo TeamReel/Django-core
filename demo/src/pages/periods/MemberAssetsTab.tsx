@@ -19,8 +19,8 @@ export interface MemberAssetsTabProps extends MemberTabCommonProps {
   cropCloseupFromFullbody: (kitId: string) => void;
   croppingHalfbody: Record<string, boolean>;
   cropHalfbodyFromFullbody: (kitId: string) => void;
-  org: any;
-  club: any;
+  org: { id?: string; slug?: string; name?: string } | null;
+  club: { id?: string; slug?: string; name?: string } | null;
 }
 
 export function MemberAssetsTab({

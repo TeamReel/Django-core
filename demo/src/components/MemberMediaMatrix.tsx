@@ -35,8 +35,8 @@ interface MemberMediaMatrixProps {
 // Helpers
 // ============================================================================
 
-function getMemberName(m: any): string {
-  const u = m?.user || m;
+function getMemberName(m: Record<string, unknown>): string {
+  const u = (m?.user || m) as Record<string, unknown>;
   return (
     String(u?.name || '').trim() ||
     `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||

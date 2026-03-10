@@ -18,10 +18,10 @@ import { SkeletonCard } from '../Skeleton';
 import styles from './NextMatchHero.module.css';
 
 /** Safely extract array from any paginated API response format */
-function extractItems<T = any>(json: any): T[] {
+function extractItems<T = unknown>(json: unknown): T[] {
   if (Array.isArray(json)) return json;
-  if (json && Array.isArray(json.data)) return json.data;
-  if (json && Array.isArray(json.results)) return json.results;
+  if (json && Array.isArray((json as Record<string, unknown>).data)) return (json as Record<string, unknown>).data as T[];
+  if (json && Array.isArray((json as Record<string, unknown>).results)) return (json as Record<string, unknown>).results as T[];
   return [];
 }
 
@@ -34,7 +34,7 @@ interface Match {
   start_time: string;
   project: { id: string; name: string };
   opponent_project?: { name: string };
-  metadata: { venue?: string; lineup?: any; formation?: string };
+  metadata: { venue?: string; lineup?: Record<string, unknown>; formation?: string };
 }
 
 interface MediaItem {

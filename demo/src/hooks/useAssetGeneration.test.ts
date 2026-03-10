@@ -139,7 +139,7 @@ describe('useAssetGeneration', () => {
 
     expect(result.current.step).toBe('completed');
 
-    let saveResult: any;
+    let saveResult: unknown;
     await act(async () => {
       saveResult = await result.current.acceptVariant(0);
     });
