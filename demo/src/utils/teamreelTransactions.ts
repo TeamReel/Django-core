@@ -12,22 +12,23 @@ const safeUuid = (): string => {
   }
 };
 
-async function postJson<T>(path: string, body: any): Promise<{ ok: boolean; status: number; data: T | any }> {
+async function postJson(path: string, body: Record<string, unknown>): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
   try {
-    const data = await api.post<T>(path, body);
-    return { ok: true, status: 200, data };
+    const data = await api.post<Record<string, unknown>>(path, body);
+    return { ok: true, status: 200, data: data as Record<string, unknown> };
   } catch (err) {
     if (err instanceof ApiError) {
-      return { ok: false, status: err.status, data: err.body };
+      return { ok: false, status: err.status, data: (err.body || {}) as Record<string, unknown> };
     }
     throw err;
   }
 }
 
-function unwrapObject<T>(raw: any): T {
+function unwrapObject<T>(raw: unknown): T {
   if (!raw) return raw as T;
-  if (raw.status === 'success' && raw.data) return raw.data as T;
-  if (raw.data && typeof raw.data === 'object' && !Array.isArray(raw.data)) return raw.data as T;
+  const obj = raw as Record<string, unknown>;
+  if (obj.status === 'success' && obj.data) return obj.data as T;
+  if (obj.data && typeof obj.data === 'object' && !Array.isArray(obj.data)) return obj.data as T;
   return raw as T;
 }
 
@@ -71,7 +72,7 @@ export async function createTeamreelDemoTransaction(args: {
   const topupAmount = (topupAmountOverride || '10.00').trim();
 
   const eventType = 'content_generation';
-  const metadata: Record<string, any> = {
+  const metadata: Record<string, unknown> = {
     source: 'ui_create_transaction',
     scope,
     organisation_id: organizationId,
@@ -102,12 +103,12 @@ export async function createTeamreelDemoTransaction(args: {
     metadata,
   };
 
-  const usageRes = await postJson<any>('/transactions/usage-events/', usageEventPayload);
+  const usageRes = await postJson('/transactions/usage-events/', usageEventPayload);
   if (!usageRes.ok && usageRes.status !== 409) {
     const msg = usageRes?.data?.message || usageRes?.data?.detail || `Failed to create usage event (HTTP ${usageRes.status})`;
     throw new Error(String(msg));
   }
-  const usageEvent = unwrapObject<any>(usageRes.data);
+  const usageEvent = unwrapObject<Record<string, unknown>>(usageRes.data);
   const usageEventId = String(usageEvent?.id || '');
   if (!usageEventId) throw new Error('Usage event created but no id returned');
 
@@ -115,7 +116,7 @@ export async function createTeamreelDemoTransaction(args: {
     payerWalletOverride === 'organization' || payerWalletOverride === 'me' ? null : projectId;
   const effectiveChargedUserId = payerWalletOverride === 'me' ? currentUserId : chargedUserId;
 
-  const txnPayloadBase: any = {
+  const txnPayloadBase: Record<string, unknown> = {
     organization_id: organizationId,
     project_id: effectiveProjectId,
     charged_user_id: effectiveChargedUserId,
@@ -141,12 +142,12 @@ export async function createTeamreelDemoTransaction(args: {
   };
 
   const createTxn = async (payload: Record<string, unknown>) => {
-    return await postJson<any>('/transactions/transactions/', payload);
+    return await postJson('/transactions/transactions/', payload);
   };
 
   const firstTxnRes = await createTxn(txnPayloadBase);
   if (firstTxnRes.ok) {
-    const txn = unwrapObject<any>(firstTxnRes.data);
+    const txn = unwrapObject<Record<string, unknown>>(firstTxnRes.data);
     return { usageEventId, transactionId: String(txn?.id || '') };
   }
 
@@ -159,7 +160,7 @@ export async function createTeamreelDemoTransaction(args: {
   }
 
   // Top-up the likely payer wallet, then retry once.
-  const topupPayload: any = {
+  const topupPayload: Record<string, unknown> = {
     organization_id: organizationId,
     project_id: effectiveProjectId,
     charged_user_id: effectiveChargedUserId,
@@ -177,7 +178,7 @@ export async function createTeamreelDemoTransaction(args: {
     const msg = topupRes?.data?.message || topupRes?.data?.detail || `Top-up failed (HTTP ${topupRes.status})`;
     throw new Error(String(msg));
   }
-  const topupTxn = unwrapObject<any>(topupRes.data);
+  const topupTxn = unwrapObject<Record<string, unknown>>(topupRes.data);
   const topupTransactionId = String(topupTxn?.id || '');
 
   const retryPayload = { ...txnPayloadBase, idempotency_key: `${baseKey}:txn2` };
@@ -186,7 +187,7 @@ export async function createTeamreelDemoTransaction(args: {
     const msg = retryRes?.data?.message || retryRes?.data?.detail || `Retry failed (HTTP ${retryRes.status})`;
     throw new Error(String(msg));
   }
-  const retryTxn = unwrapObject<any>(retryRes.data);
+  const retryTxn = unwrapObject<Record<string, unknown>>(retryRes.data);
 
   return {
     usageEventId,

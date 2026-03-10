@@ -10,26 +10,34 @@ import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionOverviewTab.module.css';
 
 export interface CompetitionOverviewMatchModals {
-  setSelectedDetailMatch: (m: any) => void;
+  setSelectedDetailMatch: (m: Activity | null) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
+  setSelectedEditMatch: (m: Record<string, unknown> | null) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
 }
 
+interface CompetitionRecord {
+  id: string;
+  name: string;
+  sport?: { id: string | number; name: string; sport_icon?: string | null; category_name?: string | null; slug?: string; is_variant?: boolean; parent_sport_id?: number | null } | null;
+  metadata?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
 interface CompetitionOverviewTabProps {
-  competition: any;
+  competition: CompetitionRecord | null;
   competitionMatchesCount: number;
   membersCount: number;
   matches: Activity[];
   matchesLoading: boolean;
-  matchDisplayTitle: (m: any, fallback?: string) => string;
+  matchDisplayTitle: (m: Activity, fallback?: string) => string;
   matchDetailPath: (matchId: string) => string;
   navigateToTab: (tab: string) => void;
   setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   matchModals: CompetitionOverviewMatchModals;
   apiBaseUrl: string;
   userCanEditProject: boolean;
-  setCompetition: React.Dispatch<React.SetStateAction<any>>;
+  setCompetition: React.Dispatch<React.SetStateAction<CompetitionRecord | null>>;
 }
 
 export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
@@ -115,23 +123,25 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
           title="Competition settings"
           description="Optional identity fields (logo) used for downstream UI."
           values={{
-            logoUrl: String(competition?.metadata?.identity?.logo_url || ''),
-            defaultLocation: String(competition?.metadata?.identity?.default_location || ''),
+            logoUrl: String(((competition?.metadata?.identity || {}) as Record<string, unknown>)?.logo_url || ''),
+            defaultLocation: String(((competition?.metadata?.identity || {}) as Record<string, unknown>)?.default_location || ''),
           }}
           canEdit={Boolean(userCanEditProject && competition)}
           onSave={async (next) => {
             if (!competition?.id) throw new Error('Competition not loaded');
+            const compMeta = (competition?.metadata || {}) as Record<string, unknown>;
+            const compIdentity = (compMeta?.identity || {}) as Record<string, unknown>;
             const updated = await periodsApi.update(String(competition.id), {
               metadata: {
-                ...(competition?.metadata || {}),
+                ...compMeta,
                 identity: {
-                  ...((competition?.metadata || {})?.identity || {}),
+                  ...compIdentity,
                   logo_url: String(next.logoUrl || '').trim() || null,
                   default_location: String(next.defaultLocation || '').trim() || null,
                 },
               },
-            } as any);
-            setCompetition((prev: any) => ({ ...prev, ...updated }));
+            } as Record<string, unknown>);
+            setCompetition((prev) => ({ ...prev, ...updated } as CompetitionRecord));
           }}
         />
       </div>

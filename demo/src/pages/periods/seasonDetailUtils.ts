@@ -3,15 +3,30 @@
  * These have NO dependency on React component state.
  */
 
-// ─── Membership helpers ──────────────────────────────────────────────
+// ─── Helper types ─────────────────────────────────────────────────────────────
 
-export const getUserId = (m: any): string => {
+interface MemberRecord {
+  user?: { id?: string | number; name?: string; first_name?: string; last_name?: string; email?: string };
+  user_id?: string | number;
+  id?: string | number;
+  name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  functional_roles?: unknown[];
+  functionalRoles?: unknown[];
+  metadata?: Record<string, unknown>;
+}
+
+// ─── Membership helpers ──────────────────────────────────────────────────────────
+
+export const getUserId = (m: MemberRecord | null | undefined): string => {
   const u = m?.user || m;
   const id = u?.id ?? m?.user_id;
   return String(id || '').trim();
 };
 
-export const getUserLabel = (m: any): { name: string; email: string } => {
+export const getUserLabel = (m: MemberRecord | null | undefined): { name: string; email: string } => {
   const u = m?.user || m;
   const name =
     u?.name ||
@@ -62,17 +77,17 @@ export const getAccessRoleOptions = (isTeamRoute: boolean): AccessRoleOption[] =
 
 // ─── Functional-role helpers ─────────────────────────────────────────
 
-export const getFunctionalRolesFromMembership = (m: any): string[] => {
+export const getFunctionalRolesFromMembership = (m: MemberRecord | null | undefined): string[] => {
   // Try top-level functional_roles field first (from API)
   const direct = m?.functional_roles ?? m?.functionalRoles;
   if (Array.isArray(direct) && direct.length > 0) {
-    return direct.map((r: any) => String(r || '').trim()).filter(Boolean);
+    return direct.map((r: unknown) => String(r || '').trim()).filter(Boolean);
   }
 
   // Then try metadata.functional_roles (where we save it)
   const meta = m?.metadata || {};
   if (Array.isArray(meta.functional_roles) && meta.functional_roles.length > 0) {
-    return meta.functional_roles.map((r: any) => String(r || '').trim()).filter(Boolean);
+    return (meta.functional_roles as unknown[]).map((r: unknown) => String(r || '').trim()).filter(Boolean);
   }
 
   // Legacy single role fields
@@ -82,18 +97,20 @@ export const getFunctionalRolesFromMembership = (m: any): string[] => {
 
 // ─── Match / competition count helpers ───────────────────────────────
 
-export const getMatchParticipantsCount = (match: any): number => {
+export const getMatchParticipantsCount = (match: unknown): number => {
+  if (!match || typeof match !== 'object') return 0;
+  const m = match as Record<string, unknown>;
   const direct = Number(
-    match?.participants_count ??
-      match?.participations_count ??
-      match?.participantsCount ??
-      match?.participationsCount
+    m?.participants_count ??
+      m?.participations_count ??
+      m?.participantsCount ??
+      m?.participationsCount
   );
   if (Number.isFinite(direct) && direct >= 0) return direct;
 
-  const maybeParticipants = match?.participants;
+  const maybeParticipants = m?.participants;
   if (Array.isArray(maybeParticipants)) return maybeParticipants.length;
-  const maybeParticipations = match?.participations;
+  const maybeParticipations = m?.participations;
   if (Array.isArray(maybeParticipations)) return maybeParticipations.length;
 
   return 0;

@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 import type { Period } from '../../types/season';
+import type { PeriodCreatePayload } from '../identity/PeriodCreateModal/types';
+import type { MatchCreatePayload } from '../identity/matchCreateTypes';
 import { api } from '../../api/client';
 import { getCsrfToken } from '../../utils/csrf';
 import { sleep, fetchWithThrottleRetry } from './seasonDetailUtils';
@@ -192,7 +194,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
 
   // ── Create competition handler ──
 
-  const handleCreateCompetition = useCallback(async (payload: Record<string, unknown>) => {
+  const handleCreateCompetition = useCallback(async (payload: PeriodCreatePayload) => {
     const orgIdValue = String(payload.organisation_id || org?.id || '').trim();
     const teamIdValue = String(payload.project_id || project?.id || '').trim();
     const seasonIdValue = String(payload.parent_period_id || resolvedSeasonId || season?.id || '').trim();
@@ -243,7 +245,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
 
   // ── Create match handler ──
 
-  const handleCreateMatch = useCallback(async (payload: Record<string, any>) => {
+  const handleCreateMatch = useCallback(async (payload: MatchCreatePayload) => {
     const teamIdValue = String(payload.project_id || project?.id || '').trim();
     const competitionIdValue = String(payload.period_id || '').trim();
     if (!teamIdValue) throw new Error('Select a team first');

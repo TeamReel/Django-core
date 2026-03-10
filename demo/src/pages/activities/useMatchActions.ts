@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import type { NavigateFunction } from 'react-router-dom';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import type { MatchDetail, Participation, ContentItem } from './matchDetailTypes';
@@ -12,10 +13,10 @@ interface UseMatchActionsParams {
   apiBaseUrl: string;
   match: MatchDetail | null;
   setMatch: React.Dispatch<React.SetStateAction<MatchDetail | null>>;
-  org: any;
-  project: any;
-  navigate: (to: any, opts?: any) => void;
-  location: any;
+  org: { id?: string | number } | null;
+  project: { id?: string | number } | null;
+  navigate: NavigateFunction;
+  location: { pathname: string; search: string };
   competitionBasePath: string;
   homeTeamName: string;
   awayTeamName: string;
@@ -114,7 +115,7 @@ export function useMatchActions(params: UseMatchActionsParams) {
     const matchIdValue = String(matchToEdit?.id || '').trim();
     if (!matchIdValue) throw new Error('Missing match id');
     const raw = await api.patch<MatchDetail>(`/activities/${encodeURIComponent(matchIdValue)}/`, patch || {});
-    setMatch(raw ?? (getEnvelopeData<MatchDetail>(matchToEdit as any)));
+    setMatch(raw ?? (getEnvelopeData<MatchDetail>(matchToEdit as unknown)));
   };
 
   // ── Lineup save ──
@@ -183,19 +184,19 @@ export function useMatchActions(params: UseMatchActionsParams) {
     if (!memberId || !match) return;
     const teamId = side === 'home' ? String(match.project.id) : String(match.opponent_project?.id || '');
     const teamName = side === 'home' ? homeTeamName : awayTeamName;
-    const body: any = {
+    const body = {
       member_id: memberId,
       activity_id: String(match.id),
       role: 'starter', status: 'confirmed',
       data: { side, team_id: teamId || undefined, team_name: teamName },
     };
-    const created = await api.post<any>('/participations/', body);
+    const created = await api.post<Participation>('/participations/', body);
     upsertParticipationInState(created);
     await refreshMatch();
   };
 
-  const updateParticipation = async (p: Participation, patch: any) => {
-    const updated = await api.patch<any>(`/participations/${encodeURIComponent(String(p.id))}/`, patch);
+  const updateParticipation = async (p: Participation, patch: Record<string, unknown>) => {
+    const updated = await api.patch<Participation>(`/participations/${encodeURIComponent(String(p.id))}/`, patch);
     upsertParticipationInState(updated);
     await refreshMatch();
   };

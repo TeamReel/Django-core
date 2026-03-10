@@ -14,7 +14,7 @@ export type Project = {
   organisation?: { id?: string; slug?: string };
   description?: string;
   is_active?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 };
 
 export type Period = {
@@ -26,8 +26,8 @@ export type Period = {
   parent_period_id?: string | number | null;
   parent_period?: { id?: string | number } | null;
   type?: string;
-  data?: any;
-  metadata?: any;
+  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 };
 
 export type OverviewMember = {
@@ -76,16 +76,24 @@ export const looksLikeIdentifier = (value: string): boolean => {
   return false;
 };
 
-export const getTeamParentId = (t: any): string => {
+interface TeamParentRecord {
+  parent_id?: string | number | null;
+  parent_project_id?: string | number | null;
+  parent_project?: { id?: string | number } | string | number | null;
+  parent?: { id?: string | number } | string | number | null;
+  [key: string]: unknown;
+}
+
+export const getTeamParentId = (t: TeamParentRecord | null | undefined): string => {
   const parent =
     t?.parent_id ??
     t?.parent_project_id ??
     (typeof t?.parent_project === 'object' ? t?.parent_project?.id : t?.parent_project) ??
     (typeof t?.parent === 'object' ? t?.parent?.id : t?.parent);
-  return parent != null ? String(typeof parent === 'object' ? parent.id : parent) : '';
+  return parent != null ? String(parent) : '';
 };
 
-export const mergeUniqueById = <T extends { id: any }>(items: T[]): T[] => {
+export const mergeUniqueById = <T extends { id: string | number }>(items: T[]): T[] => {
   const seen = new Set<string>();
   const out: T[] = [];
   for (const item of items || []) {

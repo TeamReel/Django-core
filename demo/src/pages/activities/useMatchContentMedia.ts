@@ -12,9 +12,9 @@ import type { ContentTemplate } from '../identity/ContentGenerationModal';
 interface UseMatchContentMediaParams {
   apiBaseUrl: string;
   match: MatchDetail | null;
-  org: any;
-  club: any;
-  competition: any;
+  org: { id?: string | number; sport?: { id?: string | number; parent_sport_id?: string | number | null } | null } | null;
+  club: { id?: string | number } | null;
+  competition: { sport?: { id?: string | number; parent_sport_id?: string | number | null } | null } | null;
   // Setters
   setMatchMedia: (v: MatchMediaItem[]) => void;
   setMatchMediaLoading: (v: boolean) => void;
@@ -165,8 +165,8 @@ export function useMatchContentMedia(params: UseMatchContentMediaParams) {
       const sportId = competitionSport?.id ? Number(competitionSport.id) : (orgSport?.id ? Number(orgSport.id) : undefined);
 
       const matchingTemplates = allTemplates.filter(t => {
-        const templateOrg = (t as any).organisation ?? null;
-        const templateProject = (t as any).project ?? null;
+        const templateOrg = (t as unknown as Record<string, unknown>).organisation ?? null;
+        const templateProject = (t as unknown as Record<string, unknown>).project ?? null;
         if (templateOrg && String(templateOrg) !== String(org?.id || '')) return false;
         if (templateProject && String(templateProject) !== String(club?.id || '')) return false;
         if (!t.sport) return true;

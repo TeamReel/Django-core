@@ -4,9 +4,12 @@ import { type PeriodLike } from '../identity/PeriodEditModal';
 import MatchEditModal from '../identity/MatchEditModal';
 import PeriodDetailModal from '../identity/PeriodDetailModal';
 import PeriodCreateModal from '../identity/PeriodCreateModal';
+import type { PeriodCreatePayload } from '../identity/PeriodCreateModal/types';
 import MatchCreateModal from '../identity/MatchCreateModal';
+import type { MatchCreatePayload } from '../identity/matchCreateTypes';
 import MatchDetailModal from '../identity/MatchDetailModal';
 import SeasonSquadAddMemberModal from '../identity/SeasonSquadAddMemberModal';
+import type { SeasonSquadAddMemberPayload } from '../identity/SeasonSquadAddMemberModal';
 import CreateTransactionModal, { type WalletOption } from '../../components/transactions/CreateTransactionModal';
 
 /** Minimal match shape for modal props. */
@@ -46,7 +49,7 @@ export interface PeriodEditConfig {
   selected: PeriodLike | null;
   isSeasonPeriod: (p: PeriodLike | null) => boolean;
   organisationSportId: string | null;
-  onSave: (period: any, payload: Record<string, unknown>) => Promise<void>;
+  onSave: (period: PeriodLike, payload: Record<string, unknown>) => Promise<void>;
 }
 
 export interface PeriodDetailConfig {
@@ -71,7 +74,7 @@ export interface MatchEditConfig {
 export interface CompetitionCreateConfig {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (payload: any) => Promise<void>;
+  onCreate: (payload: PeriodCreatePayload) => Promise<void>;
   organisations: ModalSelectOption[];
   clubs: ModalSelectOption[];
   teams: ModalSelectOption[];
@@ -84,14 +87,14 @@ export interface CompetitionCreateConfig {
 export interface MatchCreateGroupConfig {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (payload: any) => Promise<void>;
+  onCreate: (payload: MatchCreatePayload) => Promise<void>;
   apiBaseUrl: string;
 }
 
 export interface SquadAddMemberConfig {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (payload: any) => Promise<void>;
+  onAdd: (payload: SeasonSquadAddMemberPayload) => Promise<void>;
   seasonId: string;
 }
 

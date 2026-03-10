@@ -18,7 +18,7 @@ export interface OrgModalsProps {
   org: Organisation;
   currentOrgSlug: string | undefined;
   currentOrgId: string | undefined;
-  permissionContext: any;
+  permissionContext: Record<string, unknown>;
 
   /* helper functions */
   getApiV1BaseUrl: () => string;
@@ -40,7 +40,7 @@ export interface OrgModalsProps {
   setOrgPeriods: React.Dispatch<React.SetStateAction<Period[]>>;
   setFederationMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   setMatchesCount: React.Dispatch<React.SetStateAction<number | null>>;
-  setMembers: React.Dispatch<React.SetStateAction<any[]>>;
+  setMembers: React.Dispatch<React.SetStateAction<Record<string, unknown>[]>>;
 
   /* modal state: club detail */
   isClubModalOpen: boolean;
@@ -91,7 +91,7 @@ export interface OrgModalsProps {
   /* modal state: edit member role */
   isEditMemberRoleModalOpen: boolean;
   setIsEditMemberRoleModalOpen: (v: boolean) => void;
-  editingMember: any;
+  editingMember: Record<string, unknown> | null;
   setEditingMember: (v: Record<string, unknown> | null) => void;
 
   /* modal state: org detail / edit */
@@ -101,7 +101,7 @@ export interface OrgModalsProps {
   setIsOrgEditModalOpen: (v: boolean) => void;
 
   /* modal state: user detail */
-  detailUser: any;
+  detailUser: { id: string; email: string; first_name: string; last_name: string; is_active: boolean; role?: string } | null;
   isUserDetailModalOpen: boolean;
   setIsUserDetailModalOpen: (v: boolean) => void;
 
@@ -192,7 +192,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         project={selectedEditProject}
         onSave={(patch) => {
           if (!selectedEditProject) return Promise.resolve();
-          return saveProjectEdits(selectedEditProject, patch as any);
+          return saveProjectEdits(selectedEditProject, patch as Partial<Project>);
         }}
       />
 
@@ -235,7 +235,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         title="Create Season"
         organisations={createModalOrganisations}
         clubs={createModalClubs}
-        teams={teams as any}
+        teams={teams}
         requirements={{
           requireOrganisation: true,
           requireClub: true,
@@ -253,7 +253,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         title="Create Competition"
         organisations={createModalOrganisations}
         clubs={createModalClubs}
-        teams={teams as any}
+        teams={teams}
         requirements={{
           requireOrganisation: true,
           requireClub: true,
@@ -272,7 +272,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         selectOptions={{
           organisations: createModalOrganisations,
           clubs: createModalClubs,
-          teams: teams as any,
+          teams: teams,
         }}
         initialIds={{
           organisationId: createModalOrganisations[0]?.id || '',
@@ -322,7 +322,7 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
           slug: org.slug,
           description: org.description,
           is_active: org.is_active ?? true,
-          sport_id: org.sport?.id || (org as any).sport_id || null,
+          sport_id: String(org.sport?.id || (org as Organisation & { sport_id?: string | number }).sport_id || '') || null,
         } : undefined}
         canEditGeneral={canEditOrganisation(permissionContext)}
         canEditBrand={canEditOrganisation(permissionContext)}

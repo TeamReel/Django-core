@@ -9,9 +9,9 @@ import { logger } from '@/utils/logger';
 
 export interface CompetitionMatchModals {
   setIsMatchCreateModalOpen: (v: boolean) => void;
-  setSelectedDetailMatch: (m: any) => void;
+  setSelectedDetailMatch: (m: Activity | null) => void;
   setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
+  setSelectedEditMatch: (m: Record<string, unknown> | null) => void;
   setIsMatchEditModalOpen: (v: boolean) => void;
 }
 
@@ -22,9 +22,9 @@ export interface CompetitionHierarchyTabProps {
   filteredMatches: Activity[];
   navigate: (path: string) => void;
   matchDetailPath: (id: string) => string;
-  matchDisplayTitle: (m: any) => string;
-  competition: any;
-  season: any;
+  matchDisplayTitle: (m: Activity) => string;
+  competition: { name?: string } | null;
+  season: { name?: string } | null;
   seasonsBasePath: string;
   seasonKeyOrId: string;
   matchModals: CompetitionMatchModals;
@@ -160,7 +160,7 @@ export function CompetitionHierarchyTab({
                             <button type="button" className="app-action-button action-btn action-btn-primary" onClick={() => { setSelectedDetailMatch(m); setIsMatchDetailModalOpen(true); }}>
                               View
                             </button>
-                            <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch(m); setIsMatchEditModalOpen(true); }}>
+                            <button type="button" className="app-action-button action-btn action-btn-warning" onClick={() => { setSelectedEditMatch({ ...m }); setIsMatchEditModalOpen(true); }}>
                               Edit
                             </button>
                             <button

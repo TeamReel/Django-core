@@ -2,17 +2,25 @@ import React from 'react';
 
 // ── Period hierarchy helpers ──
 
-export const getPeriodType = (p: any): string => {
+interface PeriodRecord {
+  type?: string;
+  data?: { type?: string };
+  metadata?: { type?: string };
+  parent_period_id?: string | number | null;
+  parent_period?: { id?: string | number } | null;
+}
+
+export const getPeriodType = (p: PeriodRecord | null | undefined): string => {
   const t = p?.type ?? p?.data?.type ?? p?.metadata?.type;
   return String(t || '').toLowerCase();
 };
 
-export const getPeriodParentId = (p: any): string => {
+export const getPeriodParentId = (p: PeriodRecord | null | undefined): string => {
   const parentId = p?.parent_period_id ?? p?.parent_period?.id ?? null;
   return parentId ? String(parentId) : '';
 };
 
-export const isSeasonPeriod = (p: any): boolean => {
+export const isSeasonPeriod = (p: PeriodRecord | null | undefined): boolean => {
   // TeamReel hierarchy: Season is a root Period (no parent_period).
   // Do NOT infer by name; rely on parent/type.
   const parentId = getPeriodParentId(p);
@@ -27,7 +35,7 @@ export const isSeasonPeriod = (p: any): boolean => {
   return true;
 };
 
-export const isCompetitionPeriod = (p: any): boolean => {
+export const isCompetitionPeriod = (p: PeriodRecord | null | undefined): boolean => {
   const parentId = getPeriodParentId(p);
   if (parentId) return true;
 
@@ -98,7 +106,16 @@ interface ProjectMembershipRecord {
   [key: string]: unknown;
 }
 
-export const getTeamreelRoleDisplay = (user: any, orgMembership: any, projectMemberships: ProjectMembershipRecord[]) => {
+interface UserRecord {
+  is_superuser?: boolean;
+  role?: string;
+}
+
+interface OrgMembershipRecord {
+  role?: string;
+}
+
+export const getTeamreelRoleDisplay = (user: UserRecord | null | undefined, orgMembership: OrgMembershipRecord | null | undefined, projectMemberships: ProjectMembershipRecord[]) => {
   const roles: string[] = [];
 
   const isSuper = Boolean(user?.is_superuser) || normalizeRoleName(user?.role) === 'superadmin';

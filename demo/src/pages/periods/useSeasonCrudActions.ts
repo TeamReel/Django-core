@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import type { Period } from '../../types/season';
+import type { SeasonSquadAddMemberPayload } from '../identity/seasonSquadAddMember.types';
 import { api } from '../../api/client';
 import { periodsApi, activitiesApi } from '../../api';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
@@ -96,7 +97,7 @@ export function useSeasonCrudActions(params: UseSeasonCrudActionsParams) {
 
   // ── Add squad member handler ──
 
-  const handleAddSquadMember = useCallback(async (payload: Record<string, unknown>) => {
+  const handleAddSquadMember = useCallback(async (payload: SeasonSquadAddMemberPayload) => {
     const teamIdValue = String(payload.project_id || '').trim();
     const seasonUuid = String(resolvedSeasonId || '').trim();
     const userIdValue = String(payload.user_id || '').trim();

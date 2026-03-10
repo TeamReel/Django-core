@@ -32,7 +32,7 @@ export default function ProjectListPage() {
     if (!orgId) return;
 
     organisationsApi.get(orgId)
-      .then((data: any) => setOrgName(data.name))
+      .then((data) => setOrgName(String((data as unknown as Record<string, unknown>)?.name || 'Organisation')))
       .catch(() => setOrgName('Organisation'));
   }, [orgId]);
 
@@ -40,12 +40,21 @@ export default function ProjectListPage() {
     if (!orgId) return;
 
     organisationsApi.listProjects(orgId)
-      .then((data: any) => {
+      .then((data) => {
         // Handle both paginated (DRF) and non-paginated responses
-        let projectsList = data;
-        if (data.results && Array.isArray(data.results)) {
-          projectsList = data.results;
-        }
+        const results = ((data as unknown as Record<string, unknown>)?.results as { id: string | number; slug: string; name: string; [k: string]: unknown }[] | undefined) || [];
+        const projectsList: Project[] = results.map((p) => ({
+          id: String(p.id),
+          slug: String(p.slug || ''),
+          name: String(p.name || ''),
+          description: p.description as string | undefined,
+          status: p.status as string | undefined,
+          member_count: p.member_count as number | undefined,
+          seasons_count: p.seasons_count as number | undefined,
+          matches_count: p.matches_count as number | undefined,
+          parent_id: p.parent_id != null ? String(p.parent_id) : null,
+          parent_name: p.parent_name as string | undefined ?? null,
+        }));
         setProjects(projectsList);
         setIsLoading(false);
       })
