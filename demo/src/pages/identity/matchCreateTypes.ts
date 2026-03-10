@@ -40,6 +40,35 @@ export interface MatchCreatePayload {
   period_id?: string;
 }
 
+export interface MatchSelectOptions {
+  organisations?: OrgOption[];
+  clubs?: ProjectOption[];
+  teams?: ProjectOption[];
+}
+
+export interface MatchInitialIds {
+  organisationId?: string;
+  clubId?: string;
+  teamId?: string;
+  seasonId?: string;
+  competitionId?: string;
+}
+
+export interface MatchInitialOpponent {
+  organisationId?: string;
+  clubId?: string;
+  teamId?: string;
+}
+
+export interface MatchInitialFormValues {
+  title?: string;
+  matchDate?: string;
+  matchTime?: string;
+  venue?: 'Home' | 'Away';
+  location?: string;
+  description?: string;
+}
+
 export interface MatchCreateModalProps {
   opened: boolean;
   onClose: () => void;
@@ -52,24 +81,8 @@ export interface MatchCreateModalProps {
 
   apiBaseUrl?: string;
 
-  organisations?: OrgOption[];
-  clubs?: ProjectOption[];
-  teams?: ProjectOption[];
-
-  initialOrganisationId?: string;
-  initialClubId?: string;
-  initialTeamId?: string;
-  initialSeasonId?: string;
-  initialCompetitionId?: string;
-
-  initialOpponentOrganisationId?: string;
-  initialOpponentClubId?: string;
-  initialOpponentTeamId?: string;
-
-  initialTitle?: string;
-  initialMatchDate?: string;
-  initialMatchTime?: string;
-  initialVenue?: 'Home' | 'Away';
-  initialLocation?: string;
-  initialDescription?: string;
+  selectOptions?: MatchSelectOptions;
+  initialIds?: MatchInitialIds;
+  initialOpponent?: MatchInitialOpponent;
+  initialFormValues?: MatchInitialFormValues;
 }

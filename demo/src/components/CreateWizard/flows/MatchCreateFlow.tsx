@@ -79,11 +79,13 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
     onClose: handleClose,
     onCreate: handleCreateMatch,
     mode: 'team-context',
-    initialOrganisationId: prefill.organisationId || '',
-    initialClubId: prefill.clubProjectId ? String(prefill.clubProjectId) : '',
-    initialTeamId: prefill.teamProjectId ? String(prefill.teamProjectId) : '',
-    initialSeasonId: prefill.periodId || '',
-    initialCompetitionId: prefill.competitionId || '',
+    initialIds: {
+      organisationId: prefill.organisationId || '',
+      clubId: prefill.clubProjectId ? String(prefill.clubProjectId) : '',
+      teamId: prefill.teamProjectId ? String(prefill.teamProjectId) : '',
+      seasonId: prefill.periodId || '',
+      competitionId: prefill.competitionId || '',
+    },
   });
 
   // Map hook data → step data interfaces

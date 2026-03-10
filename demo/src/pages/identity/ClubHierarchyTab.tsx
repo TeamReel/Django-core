@@ -20,6 +20,15 @@ type Project = {
   slug?: string;
 };
 
+export interface ClubHierarchyCounts {
+  competitionsCountByTeamId: Record<string, number>;
+  matchesCountByTeamId: Record<string, number>;
+  competitionsCountBySeasonId: Record<string, number>;
+  matchesCountBySeasonId: Record<string, number>;
+  membersCountByTeamId: Record<string, number>;
+  membersCountForClub: number | null;
+}
+
 export interface ClubHierarchyTabProps {
   club: Project;
   orgKeyForRoutes: string;
@@ -28,12 +37,7 @@ export interface ClubHierarchyTabProps {
   setHierarchySearch: (v: string) => void;
   hierarchyTeams: Project[];
   hierarchySeasonsByTeamId: Record<string, Period[]>;
-  hierarchyCompetitionsCountByTeamId: Record<string, number>;
-  hierarchyMatchesCountByTeamId: Record<string, number>;
-  hierarchyCompetitionsCountBySeasonId: Record<string, number>;
-  hierarchyMatchesCountBySeasonId: Record<string, number>;
-  hierarchyMembersCountByTeamId: Record<string, number>;
-  hierarchyMembersCountForClub: number | null;
+  hierarchyCounts: ClubHierarchyCounts;
   hierarchyLoading: boolean;
   hierarchyError: string | null;
   navigate: (path: string) => void;
@@ -47,12 +51,14 @@ export function ClubHierarchyTab({
   setHierarchySearch,
   hierarchyTeams,
   hierarchySeasonsByTeamId,
-  hierarchyCompetitionsCountByTeamId,
-  hierarchyMatchesCountByTeamId,
-  hierarchyCompetitionsCountBySeasonId,
-  hierarchyMatchesCountBySeasonId,
-  hierarchyMembersCountByTeamId,
-  hierarchyMembersCountForClub,
+  hierarchyCounts: {
+    competitionsCountByTeamId: hierarchyCompetitionsCountByTeamId,
+    matchesCountByTeamId: hierarchyMatchesCountByTeamId,
+    competitionsCountBySeasonId: hierarchyCompetitionsCountBySeasonId,
+    matchesCountBySeasonId: hierarchyMatchesCountBySeasonId,
+    membersCountByTeamId: hierarchyMembersCountByTeamId,
+    membersCountForClub: hierarchyMembersCountForClub,
+  },
   hierarchyLoading,
   hierarchyError,
   navigate,

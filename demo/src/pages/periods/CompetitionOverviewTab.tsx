@@ -8,6 +8,13 @@ import { CompetitionMatchesTable } from './CompetitionMatchesTable';
 import { periodsApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 
+export interface CompetitionOverviewMatchModals {
+  setSelectedDetailMatch: (m: any) => void;
+  setIsMatchDetailModalOpen: (v: boolean) => void;
+  setSelectedEditMatch: (m: any) => void;
+  setIsMatchEditModalOpen: (v: boolean) => void;
+}
+
 interface CompetitionOverviewTabProps {
   competition: any;
   competitionMatchesCount: number;
@@ -18,10 +25,7 @@ interface CompetitionOverviewTabProps {
   matchDetailPath: (matchId: string) => string;
   navigateToTab: (tab: string) => void;
   setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
-  setSelectedDetailMatch: (m: any) => void;
-  setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
-  setIsMatchEditModalOpen: (v: boolean) => void;
+  matchModals: CompetitionOverviewMatchModals;
   apiBaseUrl: string;
   userCanEditProject: boolean;
   setCompetition: React.Dispatch<React.SetStateAction<any>>;
@@ -37,10 +41,7 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
   matchDetailPath,
   navigateToTab,
   setMatches,
-  setSelectedDetailMatch,
-  setIsMatchDetailModalOpen,
-  setSelectedEditMatch,
-  setIsMatchEditModalOpen,
+  matchModals: { setSelectedDetailMatch, setIsMatchDetailModalOpen, setSelectedEditMatch, setIsMatchEditModalOpen },
   apiBaseUrl,
   userCanEditProject,
   setCompetition,

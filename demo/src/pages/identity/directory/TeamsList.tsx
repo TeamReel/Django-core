@@ -26,10 +26,12 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
         organisations={d.organisations}
         clubs={d.clubs}
         categories={d.categories}
-        selectedOrgId={d.selectedOrgId}
-        selectedClubId={d.selectedClubId}
-        statusFilter={d.statusFilter}
-        sportFilter={d.sportFilter}
+        filterValues={{
+          selectedOrgId: d.selectedOrgId,
+          selectedClubId: d.selectedClubId,
+          statusFilter: d.statusFilter,
+          sportFilter: d.sportFilter,
+        }}
         userCanEditProject={d.userCanEditProject}
         onOrgChange={(id) => {
           d.setSelectedOrgId(id);

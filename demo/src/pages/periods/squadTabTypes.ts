@@ -7,6 +7,15 @@ export interface SquadMember {
   [key: string]: unknown;
 }
 
+export interface TeamRosterData {
+  teamRoster?: SquadMember[];
+  teamRosterLoading?: boolean;
+  teamRosterError?: string | null;
+  assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
+  getBestRoleForUser?: (userId: string) => string;
+  getFunctionalRolesForUser?: (userId: string) => string[];
+}
+
 export interface SeasonSquadTabProps {
   members: SquadMember[];
   membersLoading: boolean;
@@ -20,11 +29,5 @@ export interface SeasonSquadTabProps {
   unassignMembershipsFromSeasonSquad: (ids: string[]) => Promise<void>;
   setIsAddSquadMemberModalOpen: (v: boolean) => void;
   onMemberUpdated: (membershipId: string, role: string, functionalRoles: string[]) => void;
-  // Team roster (for merged "Niet in selectie" section)
-  teamRoster?: SquadMember[];
-  teamRosterLoading?: boolean;
-  teamRosterError?: string | null;
-  assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
-  getBestRoleForUser?: (userId: string) => string;
-  getFunctionalRolesForUser?: (userId: string) => string[];
+  teamRosterData?: TeamRosterData;
 }

@@ -98,10 +98,12 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 matchDetailPath={d.matchDetailPath}
                 navigateToTab={d.navigateToTab}
                 setMatches={d.setMatches}
-                setSelectedDetailMatch={d.setSelectedDetailMatch}
-                setIsMatchDetailModalOpen={d.setIsMatchDetailModalOpen}
-                setSelectedEditMatch={d.setSelectedEditMatch}
-                setIsMatchEditModalOpen={d.setIsMatchEditModalOpen}
+                matchModals={{
+                  setSelectedDetailMatch: d.setSelectedDetailMatch,
+                  setIsMatchDetailModalOpen: d.setIsMatchDetailModalOpen,
+                  setSelectedEditMatch: d.setSelectedEditMatch,
+                  setIsMatchEditModalOpen: d.setIsMatchEditModalOpen,
+                }}
                 apiBaseUrl={d.apiBaseUrl}
                 userCanEditProject={d.userCanEditProject}
                 setCompetition={d.setCompetition}
@@ -121,11 +123,13 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
                 season={d.season}
                 seasonsBasePath={d.seasonsBasePath}
                 seasonKeyOrId={d.seasonKeyOrId}
-                setIsMatchCreateModalOpen={d.setIsMatchCreateModalOpen}
-                setSelectedDetailMatch={d.setSelectedDetailMatch}
-                setIsMatchDetailModalOpen={d.setIsMatchDetailModalOpen}
-                setSelectedEditMatch={d.setSelectedEditMatch}
-                setIsMatchEditModalOpen={d.setIsMatchEditModalOpen}
+                matchModals={{
+                  setIsMatchCreateModalOpen: d.setIsMatchCreateModalOpen,
+                  setSelectedDetailMatch: d.setSelectedDetailMatch,
+                  setIsMatchDetailModalOpen: d.setIsMatchDetailModalOpen,
+                  setSelectedEditMatch: d.setSelectedEditMatch,
+                  setIsMatchEditModalOpen: d.setIsMatchEditModalOpen,
+                }}
                 setMatches={d.setMatches}
                 apiBaseUrl={d.apiBaseUrl}
                 getCsrfToken={d.getCsrfToken}
@@ -196,11 +200,13 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
               onClose={() => d.setIsMatchCreateModalOpen(false)}
               mode={d.isTeamRoute ? 'team-context' : 'default'}
               apiBaseUrl={d.apiBaseUrl}
-              initialOrganisationId={String(d.org?.id || '')}
-              initialClubId={String(d.club?.id || '')}
-              initialTeamId={String(d.project?.id || '')}
-              initialSeasonId={String(d.resolvedSeasonId || d.season?.id || '')}
-              initialCompetitionId={String(d.resolvedCompetitionId || d.competition?.id || '')}
+              initialIds={{
+                organisationId: String(d.org?.id || ''),
+                clubId: String(d.club?.id || ''),
+                teamId: String(d.project?.id || ''),
+                seasonId: String(d.resolvedSeasonId || d.season?.id || ''),
+                competitionId: String(d.resolvedCompetitionId || d.competition?.id || ''),
+              }}
               onCreate={async (payload) => { await d.createMatchInCompetition(payload); }}
             />
             <MembershipDetailModal

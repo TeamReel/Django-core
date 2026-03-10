@@ -8,26 +8,38 @@ import React from 'react';
 import type { OrganisationOption, ProjectOption } from './usersListTypes';
 import dp from './DirectoryPremium.module.css';
 
-interface UsersListFiltersProps {
-  isSuperAdmin: boolean;
-  orgLocked: boolean;
-  clubLocked: boolean;
-  teamLocked: boolean;
+export interface UsersListFilterState {
   selectedOrgId: string;
   selectedClubId: string;
   selectedTeamId: string;
   statusFilter: string;
   roleFilter: string;
-  organisations: OrganisationOption[];
-  clubs: ProjectOption[];
-  teams: ProjectOption[];
-  availableRoles: string[];
+}
+
+export interface UsersListFilterHandlers {
   onOrgChange: (orgId: string) => void;
   onClubChange: (clubId: string) => void;
   onTeamChange: (teamId: string) => void;
   onStatusChange: (status: string) => void;
   onRoleChange: (role: string) => void;
   onClearFilters: () => void;
+}
+
+export interface UsersListFilterOptions {
+  organisations: OrganisationOption[];
+  clubs: ProjectOption[];
+  teams: ProjectOption[];
+  availableRoles: string[];
+}
+
+interface UsersListFiltersProps {
+  isSuperAdmin: boolean;
+  orgLocked: boolean;
+  clubLocked: boolean;
+  teamLocked: boolean;
+  filterState: UsersListFilterState;
+  filterHandlers: UsersListFilterHandlers;
+  filterOptions: UsersListFilterOptions;
   onAddMember: () => void;
 }
 
@@ -36,21 +48,9 @@ export const UsersListFilters: React.FC<UsersListFiltersProps> = ({
   orgLocked,
   clubLocked,
   teamLocked,
-  selectedOrgId,
-  selectedClubId,
-  selectedTeamId,
-  statusFilter,
-  roleFilter,
-  organisations,
-  clubs,
-  teams,
-  availableRoles,
-  onOrgChange,
-  onClubChange,
-  onTeamChange,
-  onStatusChange,
-  onRoleChange,
-  onClearFilters,
+  filterState: { selectedOrgId, selectedClubId, selectedTeamId, statusFilter, roleFilter },
+  filterHandlers: { onOrgChange, onClubChange, onTeamChange, onStatusChange, onRoleChange, onClearFilters },
+  filterOptions: { organisations, clubs, teams, availableRoles },
   onAddMember,
 }) => (
   <div className={dp.filterBar}>

@@ -12,15 +12,19 @@ import type {
   ContentItem,
 } from './types';
 
-interface MatchOverviewTabProps {
-  match: MatchDetail;
-  org: Organisation | null;
-  competition: Period | null;
+export interface MatchTeamDisplay {
   isHome: boolean;
   homeTeamName: string;
   awayTeamName: string;
   homeLogoUrl: string | null;
   awayLogoUrl: string | null;
+}
+
+interface MatchOverviewTabProps {
+  match: MatchDetail;
+  org: Organisation | null;
+  competition: Period | null;
+  teamDisplay: MatchTeamDisplay;
   scoreDisplay: string;
   status: string;
   date: Date | null;
@@ -36,11 +40,7 @@ interface MatchOverviewTabProps {
 export default function MatchOverviewTab({
   match,
   competition,
-  isHome,
-  homeTeamName,
-  awayTeamName,
-  homeLogoUrl,
-  awayLogoUrl,
+  teamDisplay: { isHome, homeTeamName, awayTeamName, homeLogoUrl, awayLogoUrl },
   scoreDisplay,
   status,
   date,

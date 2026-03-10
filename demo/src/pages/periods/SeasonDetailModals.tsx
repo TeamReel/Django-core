@@ -27,218 +27,202 @@ interface ModalSelectOption {
   [key: string]: unknown;
 }
 
-// ─── Props ───────────────────────────────────────────────────────────────────
+// ─── Sub-interfaces ──────────────────────────────────────────────────────────
 
-export interface SeasonDetailModalsProps {
-  // Transaction modal
-  isCreateTxnModalOpen: boolean;
-  onCloseTxnModal: () => void;
-  onTxnCreated: () => void;
+export interface TransactionModalConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreated: () => void;
   orgId: string;
   projectId: string;
   seasonId: string;
   currentUserId: number;
-  seasonWalletOptions: WalletOption[];
+  walletOptions: WalletOption[];
+}
 
-  // Period edit modal
-  isPeriodEditModalOpen: boolean;
-  onClosePeriodEdit: () => void;
-  selectedEditPeriod: PeriodLike | null;
+export interface PeriodEditConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  selected: PeriodLike | null;
   isSeasonPeriod: (p: PeriodLike | null) => boolean;
   organisationSportId: string | null;
-  onSavePeriodEdits: (period: any, payload: Record<string, unknown>) => Promise<void>;
+  onSave: (period: any, payload: Record<string, unknown>) => Promise<void>;
+}
 
-  // Period detail modal
-  isPeriodDetailModalOpen: boolean;
-  onClosePeriodDetail: () => void;
-  selectedDetailPeriod: PeriodLike | null;
+export interface PeriodDetailConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  selected: PeriodLike | null;
+}
 
-  // Match detail modal
-  isMatchDetailModalOpen: boolean;
-  onCloseMatchDetail: () => void;
-  selectedDetailMatch: MatchLike | null;
+export interface MatchDetailConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  selected: MatchLike | null;
+}
 
-  // Match edit modal
-  isMatchEditModalOpen: boolean;
-  onCloseMatchEdit: () => void;
-  selectedEditMatch: MatchLike | null;
-  onSaveMatchEdits: (match: MatchLike, payload: Record<string, unknown>) => Promise<void>;
+export interface MatchEditConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  selected: MatchLike | null;
+  onSave: (match: MatchLike, payload: Record<string, unknown>) => Promise<void>;
+}
 
-  // Competition create modal
-  isCreateCompetitionModalOpen: boolean;
-  onCloseCreateCompetition: () => void;
-  onCreateCompetition: (payload: any) => Promise<void>;
-  createModalOrganisations: ModalSelectOption[];
-  createModalClubs: ModalSelectOption[];
-  createModalTeams: ModalSelectOption[];
+export interface CompetitionCreateConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (payload: any) => Promise<void>;
+  organisations: ModalSelectOption[];
+  clubs: ModalSelectOption[];
+  teams: ModalSelectOption[];
   initialOrganisationId: string;
   initialClubId: string;
   initialTeamId: string;
   initialSeasonId: string;
+}
 
-  // Match create modal
-  isCreateMatchModalOpen: boolean;
-  onCloseCreateMatch: () => void;
-  onCreateMatch: (payload: any) => Promise<void>;
+export interface MatchCreateGroupConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreate: (payload: any) => Promise<void>;
   apiBaseUrl: string;
+}
 
-  // Squad add member modal
-  isAddSquadMemberModalOpen: boolean;
-  onCloseAddSquadMember: () => void;
-  onAddSquadMember: (payload: any) => Promise<void>;
-  squadSeasonId: string;
+export interface SquadAddMemberConfig {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (payload: any) => Promise<void>;
+  seasonId: string;
+}
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+
+export interface SeasonDetailModalsProps {
+  transactionModal: TransactionModalConfig;
+  periodEdit: PeriodEditConfig;
+  periodDetail: PeriodDetailConfig;
+  matchDetail: MatchDetailConfig;
+  matchEdit: MatchEditConfig;
+  competitionCreate: CompetitionCreateConfig;
+  matchCreate: MatchCreateGroupConfig;
+  squadAddMember: SquadAddMemberConfig;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 const SeasonDetailModals: React.FC<SeasonDetailModalsProps> = ({
-  isCreateTxnModalOpen,
-  onCloseTxnModal,
-  onTxnCreated,
-  orgId,
-  projectId,
-  seasonId,
-  currentUserId,
-  seasonWalletOptions,
-
-  isPeriodEditModalOpen,
-  onClosePeriodEdit,
-  selectedEditPeriod,
-  isSeasonPeriod: isSeasonPeriodFn,
-  organisationSportId,
-  onSavePeriodEdits,
-
-  isPeriodDetailModalOpen,
-  onClosePeriodDetail,
-  selectedDetailPeriod,
-
-  isMatchDetailModalOpen,
-  onCloseMatchDetail,
-  selectedDetailMatch,
-
-  isMatchEditModalOpen,
-  onCloseMatchEdit,
-  selectedEditMatch,
-  onSaveMatchEdits,
-
-  isCreateCompetitionModalOpen,
-  onCloseCreateCompetition,
-  onCreateCompetition,
-  createModalOrganisations,
-  createModalClubs,
-  createModalTeams,
-  initialOrganisationId,
-  initialClubId,
-  initialTeamId,
-  initialSeasonId,
-
-  isCreateMatchModalOpen,
-  onCloseCreateMatch,
-  onCreateMatch,
-  apiBaseUrl,
-
-  isAddSquadMemberModalOpen,
-  onCloseAddSquadMember,
-  onAddSquadMember,
-  squadSeasonId,
+  transactionModal,
+  periodEdit,
+  periodDetail,
+  matchDetail,
+  matchEdit,
+  competitionCreate,
+  matchCreate,
+  squadAddMember,
 }) => (
   <>
     <CreateTransactionModal
-      isOpen={isCreateTxnModalOpen}
-      onClose={onCloseTxnModal}
-      onCreated={onTxnCreated}
+      isOpen={transactionModal.isOpen}
+      onClose={transactionModal.onClose}
+      onCreated={transactionModal.onCreated}
       title="Create season transaction"
       scope="season"
-      organizationId={orgId}
-      defaultProjectId={projectId}
-      seasonId={seasonId}
-      periodId={seasonId}
+      organizationId={transactionModal.orgId}
+      defaultProjectId={transactionModal.projectId}
+      seasonId={transactionModal.seasonId}
+      periodId={transactionModal.seasonId}
       activityId={null}
-      currentUserId={currentUserId}
+      currentUserId={transactionModal.currentUserId}
       chargedUserId={null}
-      walletOptions={seasonWalletOptions}
+      walletOptions={transactionModal.walletOptions}
     />
 
     <PeriodEditModal
-      opened={isPeriodEditModalOpen}
-      onClose={onClosePeriodEdit}
-      period={selectedEditPeriod}
-      showSportVariant={!isSeasonPeriodFn(selectedEditPeriod)}
-      organisationSportId={organisationSportId}
+      opened={periodEdit.isOpen}
+      onClose={periodEdit.onClose}
+      period={periodEdit.selected}
+      showSportVariant={!periodEdit.isSeasonPeriod(periodEdit.selected)}
+      organisationSportId={periodEdit.organisationSportId}
       onSave={async (payload) => {
-        if (!selectedEditPeriod) return;
-        await onSavePeriodEdits(selectedEditPeriod, payload);
+        if (!periodEdit.selected) return;
+        await periodEdit.onSave(periodEdit.selected, payload);
       }}
     />
 
     <PeriodDetailModal
-      opened={isPeriodDetailModalOpen}
-      onClose={onClosePeriodDetail}
-      period={selectedDetailPeriod}
+      opened={periodDetail.isOpen}
+      onClose={periodDetail.onClose}
+      period={periodDetail.selected}
     />
 
     <MatchDetailModal
-      opened={isMatchDetailModalOpen}
-      onClose={onCloseMatchDetail}
-      match={selectedDetailMatch}
+      opened={matchDetail.isOpen}
+      onClose={matchDetail.onClose}
+      match={matchDetail.selected}
     />
 
     <MatchEditModal
-      opened={isMatchEditModalOpen}
-      onClose={onCloseMatchEdit}
-      match={selectedEditMatch}
+      opened={matchEdit.isOpen}
+      onClose={matchEdit.onClose}
+      match={matchEdit.selected}
       onSave={async (payload) => {
-        if (!selectedEditMatch) return;
-        await onSaveMatchEdits(selectedEditMatch, payload);
+        if (!matchEdit.selected) return;
+        await matchEdit.onSave(matchEdit.selected, payload);
       }}
     />
 
     <PeriodCreateModal
-      opened={isCreateCompetitionModalOpen}
-      onClose={onCloseCreateCompetition}
+      opened={competitionCreate.isOpen}
+      onClose={competitionCreate.onClose}
       title="Create Competition"
-      organisations={createModalOrganisations}
-      clubs={createModalClubs}
-      teams={createModalTeams}
-      requireOrganisation
-      requireClub
-      requireTeam
-      requireSeason
-      showSportVariant
-      initialOrganisationId={initialOrganisationId}
-      initialClubId={initialClubId}
-      initialTeamId={initialTeamId}
-      initialSeasonId={initialSeasonId}
-      onCreate={onCreateCompetition}
+      organisations={competitionCreate.organisations}
+      clubs={competitionCreate.clubs}
+      teams={competitionCreate.teams}
+      requirements={{
+        requireOrganisation: true,
+        requireClub: true,
+        requireTeam: true,
+        requireSeason: true,
+        showSportVariant: true,
+      }}
+      initialOrganisationId={competitionCreate.initialOrganisationId}
+      initialClubId={competitionCreate.initialClubId}
+      initialTeamId={competitionCreate.initialTeamId}
+      initialSeasonId={competitionCreate.initialSeasonId}
+      onCreate={competitionCreate.onCreate}
     />
 
     <MatchCreateModal
-      opened={isCreateMatchModalOpen}
-      onClose={onCloseCreateMatch}
+      opened={matchCreate.isOpen}
+      onClose={matchCreate.onClose}
       mode="season-detail"
-      apiBaseUrl={apiBaseUrl}
-      organisations={createModalOrganisations}
-      clubs={createModalClubs}
-      teams={createModalTeams}
-      initialOrganisationId={initialOrganisationId}
-      initialClubId={initialClubId}
-      initialTeamId={initialTeamId}
-      initialSeasonId={initialSeasonId}
-      onCreate={onCreateMatch}
+      apiBaseUrl={matchCreate.apiBaseUrl}
+      selectOptions={{
+        organisations: competitionCreate.organisations,
+        clubs: competitionCreate.clubs,
+        teams: competitionCreate.teams,
+      }}
+      initialIds={{
+        organisationId: competitionCreate.initialOrganisationId,
+        clubId: competitionCreate.initialClubId,
+        teamId: competitionCreate.initialTeamId,
+        seasonId: competitionCreate.initialSeasonId,
+      }}
+      onCreate={matchCreate.onCreate}
     />
 
     <SeasonSquadAddMemberModal
-      opened={isAddSquadMemberModalOpen}
-      onClose={onCloseAddSquadMember}
-      apiBaseUrl={apiBaseUrl}
-      seasonId={squadSeasonId}
-      organisations={createModalOrganisations}
-      clubs={createModalClubs}
-      teams={createModalTeams}
-      initialOrganisationId={initialOrganisationId}
-      initialClubId={initialClubId}
-      initialTeamId={initialTeamId}
-      onAdd={onAddSquadMember}
+      opened={squadAddMember.isOpen}
+      onClose={squadAddMember.onClose}
+      apiBaseUrl={matchCreate.apiBaseUrl}
+      seasonId={squadAddMember.seasonId}
+      organisations={competitionCreate.organisations}
+      clubs={competitionCreate.clubs}
+      teams={competitionCreate.teams}
+      initialOrganisationId={competitionCreate.initialOrganisationId}
+      initialClubId={competitionCreate.initialClubId}
+      initialTeamId={competitionCreate.initialTeamId}
+      onAdd={squadAddMember.onAdd}
     />
   </>
 );

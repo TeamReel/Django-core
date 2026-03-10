@@ -19,23 +19,10 @@ type UseMatchCreateDataProps = Pick<
   | 'onCreate'
   | 'mode'
   | 'apiBaseUrl'
-  | 'organisations'
-  | 'clubs'
-  | 'teams'
-  | 'initialOrganisationId'
-  | 'initialClubId'
-  | 'initialTeamId'
-  | 'initialSeasonId'
-  | 'initialCompetitionId'
-  | 'initialOpponentOrganisationId'
-  | 'initialOpponentClubId'
-  | 'initialOpponentTeamId'
-  | 'initialTitle'
-  | 'initialMatchDate'
-  | 'initialMatchTime'
-  | 'initialVenue'
-  | 'initialLocation'
-  | 'initialDescription'
+  | 'selectOptions'
+  | 'initialIds'
+  | 'initialOpponent'
+  | 'initialFormValues'
   | 'submitText'
 >;
 
@@ -115,25 +102,30 @@ export function useMatchCreateData({
   onCreate,
   mode = 'default',
   apiBaseUrl: apiBaseUrlProp,
-  organisations = [],
-  clubs = [],
-  teams = [],
-  initialOrganisationId = '',
-  initialClubId = '',
-  initialTeamId = '',
-  initialSeasonId = '',
-  initialCompetitionId = '',
-  initialOpponentOrganisationId = '',
-  initialOpponentClubId = '',
-  initialOpponentTeamId = '',
-  initialTitle = '',
-  initialMatchDate = '',
-  initialMatchTime = '',
-  initialVenue = 'Home',
-  initialLocation = '',
-  initialDescription = '',
+  selectOptions,
+  initialIds,
+  initialOpponent,
+  initialFormValues,
   submitText,
 }: UseMatchCreateDataProps): UseMatchCreateDataReturn {
+  const organisations = selectOptions?.organisations ?? [];
+  const clubs = selectOptions?.clubs ?? [];
+  const teams = selectOptions?.teams ?? [];
+  const initialOrganisationId = initialIds?.organisationId ?? '';
+  const initialClubId = initialIds?.clubId ?? '';
+  const initialTeamId = initialIds?.teamId ?? '';
+  const initialSeasonId = initialIds?.seasonId ?? '';
+  const initialCompetitionId = initialIds?.competitionId ?? '';
+  const initialOpponentOrganisationId = initialOpponent?.organisationId ?? '';
+  const initialOpponentClubId = initialOpponent?.clubId ?? '';
+  const initialOpponentTeamId = initialOpponent?.teamId ?? '';
+  const initialTitle = initialFormValues?.title ?? '';
+  const initialMatchDate = initialFormValues?.matchDate ?? '';
+  const initialMatchTime = initialFormValues?.matchTime ?? '';
+  const initialVenue = initialFormValues?.venue ?? 'Home';
+  const initialLocation = initialFormValues?.location ?? '';
+  const initialDescription = initialFormValues?.description ?? '';
+
   const apiBaseUrl = apiBaseUrlProp || getApiBaseUrl();
   const isSeasonDetailMode = mode === 'season-detail';
   const isTeamContextMode = mode === 'team-context';
@@ -144,9 +136,19 @@ export function useMatchCreateData({
     opened, organisations, clubs, teams,
     initialOrganisationId, initialClubId, initialTeamId,
     initialSeasonId, initialCompetitionId,
-    initialOpponentOrganisationId, initialOpponentClubId, initialOpponentTeamId,
-    initialTitle, initialMatchDate, initialMatchTime,
-    initialVenue, initialLocation, initialDescription,
+    initialOpponent: {
+      organisationId: initialOpponentOrganisationId,
+      clubId: initialOpponentClubId,
+      teamId: initialOpponentTeamId,
+    },
+    initialDetails: {
+      title: initialTitle,
+      matchDate: initialMatchDate,
+      matchTime: initialMatchTime,
+      venue: initialVenue,
+      location: initialLocation,
+      description: initialDescription,
+    },
   });
 
   // 2. Cascading selections (load orgs/clubs/teams/seasons/competitions)

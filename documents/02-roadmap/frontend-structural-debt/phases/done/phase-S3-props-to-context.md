@@ -1,8 +1,8 @@
 # S3 — Props → Context/Composition
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 4 uur
-**Scope:** ~15 interfaces met >10 props, 8 met >15 props
+**Scope:** 15 interfaces with >15 props → 0 (all ≤15 top-level props)
 
 ---
 
@@ -60,6 +60,6 @@ const { season, matches, members } = useSeasonDetailContext();
 
 ## Verificatie
 
-- [ ] Geen interface met >15 props
-- [ ] Contexts correct cleanup (unmount)
-- [ ] `npx vite build` slaagt
+- [x] Geen interface met >15 props
+- [x] Contexts correct cleanup (unmount)
+- [x] `npx vite build` slaagt

@@ -29,6 +29,14 @@ export interface PeriodCreatePayload {
   sport_id?: string;
 }
 
+export interface PeriodCreateRequirements {
+  requireOrganisation?: boolean;
+  requireClub?: boolean;
+  requireTeam?: boolean;
+  requireSeason?: boolean;
+  showSportVariant?: boolean;
+}
+
 export interface PeriodCreateModalProps {
   opened: boolean;
   onClose: () => void;
@@ -39,11 +47,7 @@ export interface PeriodCreateModalProps {
   clubs?: ProjectOption[];
   teams?: ProjectOption[];
 
-  requireOrganisation?: boolean;
-  requireClub?: boolean;
-  requireTeam?: boolean;
-  requireSeason?: boolean;
-  showSportVariant?: boolean;
+  requirements?: PeriodCreateRequirements;
 
   initialOrganisationId?: string;
   initialClubId?: string;

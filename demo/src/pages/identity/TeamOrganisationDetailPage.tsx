@@ -269,29 +269,39 @@ export default function TeamOrganisationDetailPage() {
         <div className={s.tabContent}>
           {activeTabFromUrl === 'overview' && (
             <TeamOverviewTab
-              hierarchySeasons={tabData.hierarchySeasons}
-              hierarchyCompetitionsBySeasonId={tabData.hierarchyCompetitionsBySeasonId}
-              hierarchyMatchesCountBySeasonId={tabData.hierarchyMatchesCountBySeasonId}
-              hierarchyLoading={tabData.hierarchyLoading}
-              hierarchyError={tabData.hierarchyError}
-              overviewMembers={tabData.overviewMembers}
-              overviewMembersCount={tabData.overviewMembersCount}
-              overviewMembersLoading={tabData.overviewMembersLoading}
-              overviewMembersError={tabData.overviewMembersError}
-              orgKeyForRoutes={orgKeyForRoutes}
-              clubKeyForRoutes={clubKeyForRoutes}
-              teamKeyForRoutes={teamKeyForRoutes}
+              hierarchy={{
+                seasons: tabData.hierarchySeasons,
+                competitionsBySeasonId: tabData.hierarchyCompetitionsBySeasonId,
+                matchesCountBySeasonId: tabData.hierarchyMatchesCountBySeasonId,
+                loading: tabData.hierarchyLoading,
+                error: tabData.hierarchyError,
+              }}
+              overviewMembers={{
+                members: tabData.overviewMembers,
+                count: tabData.overviewMembersCount,
+                loading: tabData.overviewMembersLoading,
+                error: tabData.overviewMembersError,
+              }}
+              routeKeys={{
+                orgKey: orgKeyForRoutes,
+                clubKey: clubKeyForRoutes,
+                teamKey: teamKeyForRoutes,
+              }}
               team={team}
               club={club}
               org={org}
               makeTabHref={makeTabHref}
-              brandAssets={tabData.brandAssets}
-              assetStats={tabData.assetStats}
-              fullMembersLoading={tabData.fullMembersLoading}
-              contentCount={tabData.contentCount}
-              contentCountLoading={tabData.contentCountLoading}
-              teamMatches={tabData.teamMatches}
-              teamMatchesLoading={tabData.teamMatchesLoading}
+              brand={{
+                brandAssets: tabData.brandAssets,
+                assetStats: tabData.assetStats,
+                fullMembersLoading: tabData.fullMembersLoading,
+                contentCount: tabData.contentCount,
+                contentCountLoading: tabData.contentCountLoading,
+              }}
+              matchData={{
+                matches: tabData.teamMatches,
+                loading: tabData.teamMatchesLoading,
+              }}
             />
           )}
 

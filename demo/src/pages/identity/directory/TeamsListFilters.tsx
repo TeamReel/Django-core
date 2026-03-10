@@ -14,6 +14,13 @@ interface SportCategoryOption {
   sport_icon?: string;
 }
 
+export interface TeamsFilterValues {
+  selectedOrgId: string;
+  selectedClubId: string;
+  statusFilter: string;
+  sportFilter: string;
+}
+
 interface TeamsListFiltersProps {
   isSuperAdmin: boolean;
   orgLocked: boolean;
@@ -21,10 +28,7 @@ interface TeamsListFiltersProps {
   organisations: OrganisationOption[];
   clubs: ClubFilterOption[];
   categories: SportCategoryOption[];
-  selectedOrgId: string;
-  selectedClubId: string;
-  statusFilter: string;
-  sportFilter: string;
+  filterValues: TeamsFilterValues;
   userCanEditProject: boolean;
   onOrgChange: (id: string) => void;
   onClubChange: (id: string) => void;
@@ -36,7 +40,7 @@ interface TeamsListFiltersProps {
 
 export const TeamsListFilters: React.FC<TeamsListFiltersProps> = ({
   isSuperAdmin, orgLocked, clubLocked, organisations, clubs, categories,
-  selectedOrgId, selectedClubId, statusFilter, sportFilter,
+  filterValues: { selectedOrgId, selectedClubId, statusFilter, sportFilter },
   userCanEditProject, onOrgChange, onClubChange, onStatusChange, onSportChange,
   onClear, onCreateTeam,
 }) => (

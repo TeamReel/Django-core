@@ -32,60 +32,70 @@ interface MatchRecord {
   [key: string]: any;
 }
 
-interface TeamOverviewTabProps {
-  hierarchySeasons: Period[];
-  hierarchyCompetitionsBySeasonId: Record<string, Period[]>;
-  hierarchyMatchesCountBySeasonId: Record<string, number>;
-  hierarchyLoading: boolean;
-  hierarchyError: string | null;
-  overviewMembers: OverviewMember[];
-  overviewMembersCount: number | null;
-  overviewMembersLoading: boolean;
-  overviewMembersError: string | null;
-  orgKeyForRoutes: string;
-  clubKeyForRoutes: string;
-  teamKeyForRoutes: string;
-  team: Project;
-  club: Project;
-  org: Organisation;
-  makeTabHref: (tab: string) => string;
-  // Brand + media + content
+export interface HierarchyData {
+  seasons: Period[];
+  competitionsBySeasonId: Record<string, Period[]>;
+  matchesCountBySeasonId: Record<string, number>;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface OverviewMembersData {
+  members: OverviewMember[];
+  count: number | null;
+  loading: boolean;
+  error: string | null;
+}
+
+export interface RouteKeys {
+  orgKey: string;
+  clubKey: string;
+  teamKey: string;
+}
+
+export interface BrandContentData {
   brandAssets: BrandAssetItem[];
   assetStats: AssetStat[];
   fullMembersLoading: boolean;
   contentCount: number | null;
   contentCountLoading: boolean;
-  // Match data
-  teamMatches: MatchRecord[];
-  teamMatchesLoading: boolean;
+}
+
+export interface TeamMatchData {
+  matches: MatchRecord[];
+  loading: boolean;
+}
+
+interface TeamOverviewTabProps {
+  hierarchy: HierarchyData;
+  overviewMembers: OverviewMembersData;
+  routeKeys: RouteKeys;
+  team: Project;
+  club: Project;
+  org: Organisation;
+  makeTabHref: (tab: string) => string;
+  brand: BrandContentData;
+  matchData: TeamMatchData;
 }
 
 export function TeamOverviewTab({
-  hierarchySeasons,
-  hierarchyCompetitionsBySeasonId,
-  hierarchyMatchesCountBySeasonId,
-  hierarchyLoading,
-  hierarchyError,
+  hierarchy,
   overviewMembers,
-  overviewMembersCount,
-  overviewMembersLoading,
-  overviewMembersError,
-  orgKeyForRoutes,
-  clubKeyForRoutes,
-  teamKeyForRoutes,
+  routeKeys,
   team,
   club,
   org,
   makeTabHref,
-  brandAssets,
-  assetStats,
-  fullMembersLoading,
-  contentCount,
-  contentCountLoading,
-  teamMatches,
-  teamMatchesLoading,
+  brand,
+  matchData,
 }: TeamOverviewTabProps) {
   const navigate = useNavigate();
+
+  const { seasons: hierarchySeasons, competitionsBySeasonId: hierarchyCompetitionsBySeasonId, matchesCountBySeasonId: hierarchyMatchesCountBySeasonId, loading: hierarchyLoading, error: hierarchyError } = hierarchy;
+  const { members: overviewMembersList, count: overviewMembersCount, loading: overviewMembersLoading, error: overviewMembersError } = overviewMembers;
+  const { orgKey: orgKeyForRoutes, clubKey: clubKeyForRoutes, teamKey: teamKeyForRoutes } = routeKeys;
+  const { brandAssets, assetStats, fullMembersLoading, contentCount, contentCountLoading } = brand;
+  const { matches: teamMatches, loading: teamMatchesLoading } = matchData;
 
   const totalCompetitions = Object.values(hierarchyCompetitionsBySeasonId || {}).reduce(
     (sum, list) => sum + (list?.length || 0), 0,
@@ -372,13 +382,13 @@ export function TeamOverviewTab({
             Alle leden →
           </button>
         </div>
-        {overviewMembersLoading && overviewMembers.length === 0 ? (
+        {overviewMembersLoading && overviewMembersList.length === 0 ? (
           <div className={ov.loadingText}>Laden…</div>
-        ) : overviewMembers.length === 0 ? (
+        ) : overviewMembersList.length === 0 ? (
           <div className={ov.emptyText}>Geen leden gevonden.</div>
         ) : (
           <div className={ov.memberList}>
-            {overviewMembers.slice(0, 8).map((m) => (
+            {overviewMembersList.slice(0, 8).map((m) => (
               <div key={String(m.id)} className={ov.memberRow}>
                 <div className={ov.memberAvatar}>{getInitials(m)}</div>
                 <span className={ov.memberName}>{getLabel(m)}</span>

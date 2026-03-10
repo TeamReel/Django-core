@@ -221,11 +221,13 @@ export default function HierarchyMatchDetailPage() {
               match={match}
               org={d.org as any}
               competition={d.competition as any}
-              isHome={d.isHome}
-              homeTeamName={d.homeTeamName}
-              awayTeamName={d.awayTeamName}
-              homeLogoUrl={d.homeLogoUrl}
-              awayLogoUrl={d.awayLogoUrl}
+              teamDisplay={{
+                isHome: d.isHome,
+                homeTeamName: d.homeTeamName,
+                awayTeamName: d.awayTeamName,
+                homeLogoUrl: d.homeLogoUrl,
+                awayLogoUrl: d.awayLogoUrl,
+              }}
               scoreDisplay={d.scoreDisplay}
               status={d.status}
               date={d.date}

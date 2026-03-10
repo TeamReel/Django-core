@@ -1,29 +1,36 @@
 import { useEffect, useState, useMemo } from 'react';
-import type { OrgOption, ProjectOption, PeriodOption, MatchCreateModalProps } from './matchCreateTypes';
+import type { OrgOption, ProjectOption, PeriodOption } from './matchCreateTypes';
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 
-export type UseMatchFormStateProps = Pick<
-  MatchCreateModalProps,
-  | 'opened'
-  | 'organisations'
-  | 'clubs'
-  | 'teams'
-  | 'initialOrganisationId'
-  | 'initialClubId'
-  | 'initialTeamId'
-  | 'initialSeasonId'
-  | 'initialCompetitionId'
-  | 'initialOpponentOrganisationId'
-  | 'initialOpponentClubId'
-  | 'initialOpponentTeamId'
-  | 'initialTitle'
-  | 'initialMatchDate'
-  | 'initialMatchTime'
-  | 'initialVenue'
-  | 'initialLocation'
-  | 'initialDescription'
->;
+export interface MatchFormInitialOpponent {
+  organisationId?: string;
+  clubId?: string;
+  teamId?: string;
+}
+
+export interface MatchFormInitialDetails {
+  title?: string;
+  matchDate?: string;
+  matchTime?: string;
+  venue?: 'Home' | 'Away';
+  location?: string;
+  description?: string;
+}
+
+export interface UseMatchFormStateProps {
+  opened: boolean;
+  organisations?: OrgOption[];
+  clubs?: ProjectOption[];
+  teams?: ProjectOption[];
+  initialOrganisationId?: string;
+  initialClubId?: string;
+  initialTeamId?: string;
+  initialSeasonId?: string;
+  initialCompetitionId?: string;
+  initialOpponent?: MatchFormInitialOpponent;
+  initialDetails?: MatchFormInitialDetails;
+}
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
 
@@ -37,15 +44,19 @@ export function useMatchFormState({
   initialTeamId = '',
   initialSeasonId = '',
   initialCompetitionId = '',
-  initialOpponentOrganisationId = '',
-  initialOpponentClubId = '',
-  initialOpponentTeamId = '',
-  initialTitle = '',
-  initialMatchDate = '',
-  initialMatchTime = '',
-  initialVenue = 'Home',
-  initialLocation = '',
-  initialDescription = '',
+  initialOpponent: {
+    organisationId: initialOpponentOrganisationId = '',
+    clubId: initialOpponentClubId = '',
+    teamId: initialOpponentTeamId = '',
+  } = {},
+  initialDetails: {
+    title: initialTitle = '',
+    matchDate: initialMatchDate = '',
+    matchTime: initialMatchTime = '',
+    venue: initialVenue = 'Home',
+    location: initialLocation = '',
+    description: initialDescription = '',
+  } = {},
 }: UseMatchFormStateProps) {
   // ── Form fields ──
   const [title, setTitle] = useState('');

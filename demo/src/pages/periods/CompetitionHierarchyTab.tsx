@@ -6,6 +6,14 @@ import { activitiesApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 import styles from './CompetitionHierarchyTab.module.css';
 
+export interface CompetitionMatchModals {
+  setIsMatchCreateModalOpen: (v: boolean) => void;
+  setSelectedDetailMatch: (m: any) => void;
+  setIsMatchDetailModalOpen: (v: boolean) => void;
+  setSelectedEditMatch: (m: any) => void;
+  setIsMatchEditModalOpen: (v: boolean) => void;
+}
+
 export interface CompetitionHierarchyTabProps {
   hierarchySearch: string;
   setHierarchySearch: (v: string) => void;
@@ -18,11 +26,7 @@ export interface CompetitionHierarchyTabProps {
   season: any;
   seasonsBasePath: string;
   seasonKeyOrId: string;
-  setIsMatchCreateModalOpen: (v: boolean) => void;
-  setSelectedDetailMatch: (m: any) => void;
-  setIsMatchDetailModalOpen: (v: boolean) => void;
-  setSelectedEditMatch: (m: any) => void;
-  setIsMatchEditModalOpen: (v: boolean) => void;
+  matchModals: CompetitionMatchModals;
   setMatches: React.Dispatch<React.SetStateAction<Activity[]>>;
   apiBaseUrl?: string;
   getCsrfToken?: () => string;
@@ -40,11 +44,13 @@ export function CompetitionHierarchyTab({
   season,
   seasonsBasePath,
   seasonKeyOrId,
-  setIsMatchCreateModalOpen,
-  setSelectedDetailMatch,
-  setIsMatchDetailModalOpen,
-  setSelectedEditMatch,
-  setIsMatchEditModalOpen,
+  matchModals: {
+    setIsMatchCreateModalOpen,
+    setSelectedDetailMatch,
+    setIsMatchDetailModalOpen,
+    setSelectedEditMatch,
+    setIsMatchEditModalOpen,
+  },
   setMatches,
   apiBaseUrl,
   getCsrfToken,

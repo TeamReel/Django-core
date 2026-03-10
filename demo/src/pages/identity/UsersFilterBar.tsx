@@ -5,18 +5,15 @@ import React from 'react';
 import { Button } from '@django-core/design-system';
 import type { ProjectOption } from './useUsersData';
 
-interface UsersFilterBarProps {
-  isSuperAdmin: boolean;
-  orgIdParam: string | null | undefined;
-  context: any;
-  navigate: (to: string) => void;
-  canManageUsers: boolean;
-  // Filters
+export interface UsersFilterState {
   statusFilter: string;
   setStatusFilter: (v: string) => void;
   roleFilter: string;
   setRoleFilter: (v: string) => void;
   availableRoles: string[];
+}
+
+export interface UsersScopeState {
   selectedOrgId: string;
   setSelectedOrgId: (v: string) => void;
   selectedClubId: string;
@@ -25,10 +22,24 @@ interface UsersFilterBarProps {
   selectedTeamId: string;
   setSelectedTeamId: (v: string) => void;
   setSelectedTeamKey: (v: string) => void;
+}
+
+export interface UsersScopeOptions {
   organisations: { id: string | number; name: string }[];
   myOrganisations: { id: string | number; name: string }[];
   clubs: ProjectOption[];
   teams: ProjectOption[];
+}
+
+interface UsersFilterBarProps {
+  isSuperAdmin: boolean;
+  orgIdParam: string | null | undefined;
+  context: any;
+  navigate: (to: string) => void;
+  canManageUsers: boolean;
+  filterState: UsersFilterState;
+  scopeState: UsersScopeState;
+  scopeOptions: UsersScopeOptions;
   resetPageToFirst: () => void;
   setIsAddMemberOpen: (v: boolean) => void;
 }
@@ -39,23 +50,9 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
   context,
   navigate,
   canManageUsers,
-  statusFilter,
-  setStatusFilter,
-  roleFilter,
-  setRoleFilter,
-  availableRoles,
-  selectedOrgId,
-  setSelectedOrgId,
-  selectedClubId,
-  setSelectedClubId,
-  setSelectedClubKey,
-  selectedTeamId,
-  setSelectedTeamId,
-  setSelectedTeamKey,
-  organisations,
-  myOrganisations,
-  clubs,
-  teams,
+  filterState: { statusFilter, setStatusFilter, roleFilter, setRoleFilter, availableRoles },
+  scopeState: { selectedOrgId, setSelectedOrgId, selectedClubId, setSelectedClubId, setSelectedClubKey, selectedTeamId, setSelectedTeamId, setSelectedTeamKey },
+  scopeOptions: { organisations, myOrganisations, clubs, teams },
   resetPageToFirst,
   setIsAddMemberOpen,
 }) => (

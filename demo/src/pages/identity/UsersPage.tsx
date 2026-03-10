@@ -47,23 +47,29 @@ export default function UsersPage() {
             context={d.context}
             navigate={d.navigate}
             canManageUsers={d.canManageUsers}
-            statusFilter={d.statusFilter}
-            setStatusFilter={d.setStatusFilter}
-            roleFilter={d.roleFilter}
-            setRoleFilter={d.setRoleFilter}
-            availableRoles={d.availableRoles}
-            selectedOrgId={d.selectedOrgId}
-            setSelectedOrgId={d.setSelectedOrgId}
-            selectedClubId={d.selectedClubId}
-            setSelectedClubId={d.setSelectedClubId}
-            setSelectedClubKey={d.setSelectedClubKey}
-            selectedTeamId={d.selectedTeamId}
-            setSelectedTeamId={d.setSelectedTeamId}
-            setSelectedTeamKey={d.setSelectedTeamKey}
-            organisations={d.organisations}
-            myOrganisations={d.myOrganisations}
-            clubs={d.clubs}
-            teams={d.teams}
+            filterState={{
+              statusFilter: d.statusFilter,
+              setStatusFilter: d.setStatusFilter,
+              roleFilter: d.roleFilter,
+              setRoleFilter: d.setRoleFilter,
+              availableRoles: d.availableRoles,
+            }}
+            scopeState={{
+              selectedOrgId: d.selectedOrgId,
+              setSelectedOrgId: d.setSelectedOrgId,
+              selectedClubId: d.selectedClubId,
+              setSelectedClubId: d.setSelectedClubId,
+              setSelectedClubKey: d.setSelectedClubKey,
+              selectedTeamId: d.selectedTeamId,
+              setSelectedTeamId: d.setSelectedTeamId,
+              setSelectedTeamKey: d.setSelectedTeamKey,
+            }}
+            scopeOptions={{
+              organisations: d.organisations,
+              myOrganisations: d.myOrganisations,
+              clubs: d.clubs,
+              teams: d.teams,
+            }}
             resetPageToFirst={d.resetPageToFirst}
             setIsAddMemberOpen={d.setIsAddMemberOpen}
           />

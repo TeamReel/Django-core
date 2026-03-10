@@ -20,20 +20,14 @@ interface MatchRecord {
   [key: string]: unknown;
 }
 
-export interface SeasonHierarchyTabProps {
+export interface SeasonDataConfig {
   competitions: Period[];
   competitionsLoading: boolean;
   matches: MatchRecord[];
   matchesLoading: boolean;
-  isTeamRoute: boolean;
-  seasonsBasePath: string;
-  seasonPathKey: string;
-  userCanEditProject: boolean;
-  userCanDeleteProject: boolean;
-  apiBaseUrl: string;
-  matchDisplayTitle: (m: MatchRecord) => string;
-  getMatchCountForCompetition: (competition: Period) => number;
-  getCompetitionParticipantsCount: (competition: Period) => number;
+}
+
+export interface HierarchyActions {
   setIsCreateCompetitionModalOpen: (v: boolean) => void;
   setIsCreateMatchModalOpen: (v: boolean) => void;
   setSelectedDetailPeriod: (p: Period) => void;
@@ -48,11 +42,36 @@ export interface SeasonHierarchyTabProps {
   setMatches: React.Dispatch<React.SetStateAction<MatchRecord[]>>;
 }
 
+export interface SeasonHierarchyTabProps {
+  seasonData: SeasonDataConfig;
+  actions: HierarchyActions;
+  isTeamRoute: boolean;
+  seasonsBasePath: string;
+  seasonPathKey: string;
+  userCanEditProject: boolean;
+  userCanDeleteProject: boolean;
+  apiBaseUrl: string;
+  matchDisplayTitle: (m: MatchRecord) => string;
+  getMatchCountForCompetition: (competition: Period) => number;
+  getCompetitionParticipantsCount: (competition: Period) => number;
+}
+
 const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
-  competitions,
-  competitionsLoading,
-  matches,
-  matchesLoading,
+  seasonData: { competitions, competitionsLoading, matches, matchesLoading },
+  actions: {
+    setIsCreateCompetitionModalOpen,
+    setIsCreateMatchModalOpen,
+    setSelectedDetailPeriod,
+    setIsPeriodDetailModalOpen,
+    setSelectedEditPeriod,
+    setIsPeriodEditModalOpen,
+    setSelectedDetailMatch,
+    setIsMatchDetailModalOpen,
+    setSelectedEditMatch,
+    setIsMatchEditModalOpen,
+    setCompetitions,
+    setMatches,
+  },
   isTeamRoute,
   seasonsBasePath,
   seasonPathKey,
@@ -62,18 +81,6 @@ const SeasonHierarchyTab: React.FC<SeasonHierarchyTabProps> = ({
   matchDisplayTitle,
   getMatchCountForCompetition,
   getCompetitionParticipantsCount,
-  setIsCreateCompetitionModalOpen,
-  setIsCreateMatchModalOpen,
-  setSelectedDetailPeriod,
-  setIsPeriodDetailModalOpen,
-  setSelectedEditPeriod,
-  setIsPeriodEditModalOpen,
-  setSelectedDetailMatch,
-  setIsMatchDetailModalOpen,
-  setSelectedEditMatch,
-  setIsMatchEditModalOpen,
-  setCompetitions,
-  setMatches,
 }) => {
   const navigate = useNavigate();
   // ── Tab-local state ──

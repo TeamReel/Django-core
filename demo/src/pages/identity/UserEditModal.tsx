@@ -119,14 +119,20 @@ export default function UserEditModal({
                 user={user}
                 organisationSlug={organisationSlug}
                 saving={d.saving}
-                orgRole={d.orgRole} setOrgRole={d.setOrgRole} orgMembershipId={d.orgMembershipId}
-                inviteOrgRole={d.inviteOrgRole} setInviteOrgRole={d.setInviteOrgRole}
-                addingToOrg={d.addingToOrg} linkToOrganisation={d.linkToOrganisation} setExtraError={d.setExtraError}
-                selectedClubKey={d.selectedClubKey} setSelectedClubKey={d.setSelectedClubKey}
-                clubMembershipId={d.clubMembershipId} clubAccessRole={d.clubAccessRole} setClubAccessRole={d.setClubAccessRole}
-                selectedTeamKey={d.selectedTeamKey} setSelectedTeamKey={d.setSelectedTeamKey}
-                teamMembershipId={d.teamMembershipId} teamAccessRole={d.teamAccessRole} setTeamAccessRole={d.setTeamAccessRole}
-                functionalRoles={d.functionalRoles} setFunctionalRoles={d.setFunctionalRoles}
+                orgSettings={{
+                  orgRole: d.orgRole, setOrgRole: d.setOrgRole, orgMembershipId: d.orgMembershipId,
+                  inviteOrgRole: d.inviteOrgRole, setInviteOrgRole: d.setInviteOrgRole,
+                  addingToOrg: d.addingToOrg, linkToOrganisation: d.linkToOrganisation, setExtraError: d.setExtraError,
+                }}
+                clubSettings={{
+                  selectedClubKey: d.selectedClubKey, setSelectedClubKey: d.setSelectedClubKey,
+                  clubMembershipId: d.clubMembershipId, clubAccessRole: d.clubAccessRole, setClubAccessRole: d.setClubAccessRole,
+                }}
+                teamSettings={{
+                  selectedTeamKey: d.selectedTeamKey, setSelectedTeamKey: d.setSelectedTeamKey,
+                  teamMembershipId: d.teamMembershipId, teamAccessRole: d.teamAccessRole, setTeamAccessRole: d.setTeamAccessRole,
+                  functionalRoles: d.functionalRoles, setFunctionalRoles: d.setFunctionalRoles,
+                }}
                 availableProjects={d.availableProjects}
               />
             ) : null}

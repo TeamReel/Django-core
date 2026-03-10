@@ -24,12 +24,14 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   unassignMembershipsFromSeasonSquad,
   setIsAddSquadMemberModalOpen,
   onMemberUpdated,
-  teamRoster,
-  teamRosterLoading,
-  teamRosterError,
-  assignUsersToSeasonSquad,
-  getBestRoleForUser,
-  getFunctionalRolesForUser,
+  teamRosterData: {
+    teamRoster,
+    teamRosterLoading,
+    teamRosterError,
+    assignUsersToSeasonSquad,
+    getBestRoleForUser,
+    getFunctionalRolesForUser,
+  } = {},
 }) => {
   const {
     squadSearch,

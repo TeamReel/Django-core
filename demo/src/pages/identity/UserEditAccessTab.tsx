@@ -13,12 +13,7 @@ import {
 } from './userEditTypes';
 import styles from './UserEditAccessTab.module.css';
 
-interface UserEditAccessTabProps {
-  user: User;
-  organisationSlug?: string;
-  saving: boolean;
-
-  // Org
+export interface OrgSettingsConfig {
   orgRole: 'member' | 'admin';
   setOrgRole: (r: 'member' | 'admin') => void;
   orgMembershipId: string | null;
@@ -27,15 +22,17 @@ interface UserEditAccessTabProps {
   addingToOrg: boolean;
   linkToOrganisation: () => Promise<void>;
   setExtraError: (e: string | null) => void;
+}
 
-  // Club
+export interface ClubSettingsConfig {
   selectedClubKey: string;
   setSelectedClubKey: (k: string) => void;
   clubMembershipId: string | null;
   clubAccessRole: 'viewer' | 'editor' | 'admin';
   setClubAccessRole: (r: 'viewer' | 'editor' | 'admin') => void;
+}
 
-  // Team
+export interface TeamSettingsConfig {
   selectedTeamKey: string;
   setSelectedTeamKey: (k: string) => void;
   teamMembershipId: string | null;
@@ -43,17 +40,24 @@ interface UserEditAccessTabProps {
   setTeamAccessRole: (r: 'viewer' | 'editor' | 'admin') => void;
   functionalRoles: string[];
   setFunctionalRoles: React.Dispatch<React.SetStateAction<string[]>>;
+}
 
+interface UserEditAccessTabProps {
+  user: User;
+  organisationSlug?: string;
+  saving: boolean;
+  orgSettings: OrgSettingsConfig;
+  clubSettings: ClubSettingsConfig;
+  teamSettings: TeamSettingsConfig;
   availableProjects: ProjectChoice[];
 }
 
 export function UserEditAccessTab({
   organisationSlug, saving,
-  orgRole, setOrgRole, orgMembershipId,
-  inviteOrgRole, setInviteOrgRole, addingToOrg, linkToOrganisation, setExtraError,
-  selectedClubKey, setSelectedClubKey, clubMembershipId, clubAccessRole, setClubAccessRole,
-  selectedTeamKey, setSelectedTeamKey, teamMembershipId, teamAccessRole, setTeamAccessRole,
-  functionalRoles, setFunctionalRoles, availableProjects,
+  orgSettings: { orgRole, setOrgRole, orgMembershipId, inviteOrgRole, setInviteOrgRole, addingToOrg, linkToOrganisation, setExtraError },
+  clubSettings: { selectedClubKey, setSelectedClubKey, clubMembershipId, clubAccessRole, setClubAccessRole },
+  teamSettings: { selectedTeamKey, setSelectedTeamKey, teamMembershipId, teamAccessRole, setTeamAccessRole, functionalRoles, setFunctionalRoles },
+  availableProjects,
 }: UserEditAccessTabProps) {
 
   return (

@@ -3,19 +3,27 @@ import { ChevronRight } from 'lucide-react';
 import { Activity, Organisation, Project } from '../../types';
 import ov from './OrgOverviewTab.module.css';
 
+export interface OrgLoadingState {
+  clubsLoading: boolean;
+  teamsLoading: boolean;
+  membersLoading: boolean;
+  scheduledMatchesLoading: boolean;
+}
+
+export interface OrgCountsData {
+  clubsCount: number;
+  teamsCount: number | null;
+  matchesCount: number | null;
+}
+
 export interface OrgOverviewTabProps {
   org: Organisation;
   clubs: Project[];
   teams: Project[];
   members: any[];
-  clubsCount: number;
-  clubsLoading: boolean;
-  teamsCount: number | null;
-  teamsLoading: boolean;
-  membersLoading: boolean;
-  matchesCount: number | null;
+  loadingState: OrgLoadingState;
+  countsData: OrgCountsData;
   scheduledMatches: Activity[];
-  scheduledMatchesLoading: boolean;
   navigate: (path: string) => void;
   makeTabHref: (tabId: string) => string;
   getBestMatchDetailPath: (m: Record<string, unknown>) => string;
@@ -30,14 +38,9 @@ export function OrgOverviewTab({
   clubs,
   teams,
   members,
-  clubsCount,
-  clubsLoading,
-  teamsCount,
-  teamsLoading,
-  membersLoading,
-  matchesCount,
+  loadingState: { clubsLoading, teamsLoading, membersLoading, scheduledMatchesLoading },
+  countsData: { clubsCount, teamsCount, matchesCount },
   scheduledMatches,
-  scheduledMatchesLoading,
   navigate,
   makeTabHref,
   getBestMatchDetailPath,

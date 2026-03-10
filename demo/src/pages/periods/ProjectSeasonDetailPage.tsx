@@ -109,60 +109,76 @@ export const ProjectSeasonDetailPage: React.FC = () => {
         </div>
 
         <SeasonDetailModals
-          isCreateTxnModalOpen={d.isCreateTxnModalOpen}
-          onCloseTxnModal={() => d.setIsCreateTxnModalOpen(false)}
-          onTxnCreated={() => d.navigateToTab('transactions')}
-          orgId={String(d.org?.id || '').trim()}
-          projectId={d.project?.id != null ? String(d.project.id) : ''}
-          seasonId={String(d.resolvedSeasonId || d.effectiveSeasonId || '').trim()}
-          currentUserId={Number(d.user?.id)}
-          seasonWalletOptions={d.seasonWalletOptions}
-          isPeriodEditModalOpen={d.isPeriodEditModalOpen}
-          onClosePeriodEdit={() => {
-            d.setIsPeriodEditModalOpen(false);
-            d.setSelectedEditPeriod(null);
+          transactionModal={{
+            isOpen: d.isCreateTxnModalOpen,
+            onClose: () => d.setIsCreateTxnModalOpen(false),
+            onCreated: () => d.navigateToTab('transactions'),
+            orgId: String(d.org?.id || '').trim(),
+            projectId: d.project?.id != null ? String(d.project.id) : '',
+            seasonId: String(d.resolvedSeasonId || d.effectiveSeasonId || '').trim(),
+            currentUserId: Number(d.user?.id),
+            walletOptions: d.seasonWalletOptions,
           }}
-          selectedEditPeriod={d.selectedEditPeriod}
-          isSeasonPeriod={isSeasonPeriod}
-          organisationSportId={d.organisationSportId}
-          onSavePeriodEdits={d.savePeriodEdits}
-          isPeriodDetailModalOpen={d.isPeriodDetailModalOpen}
-          onClosePeriodDetail={() => {
-            d.setIsPeriodDetailModalOpen(false);
-            d.setSelectedDetailPeriod(null);
+          periodEdit={{
+            isOpen: d.isPeriodEditModalOpen,
+            onClose: () => {
+              d.setIsPeriodEditModalOpen(false);
+              d.setSelectedEditPeriod(null);
+            },
+            selected: d.selectedEditPeriod,
+            isSeasonPeriod: isSeasonPeriod,
+            organisationSportId: d.organisationSportId,
+            onSave: d.savePeriodEdits,
           }}
-          selectedDetailPeriod={d.selectedDetailPeriod}
-          isMatchDetailModalOpen={d.isMatchDetailModalOpen}
-          onCloseMatchDetail={() => {
-            d.setIsMatchDetailModalOpen(false);
-            d.setSelectedDetailMatch(null);
+          periodDetail={{
+            isOpen: d.isPeriodDetailModalOpen,
+            onClose: () => {
+              d.setIsPeriodDetailModalOpen(false);
+              d.setSelectedDetailPeriod(null);
+            },
+            selected: d.selectedDetailPeriod,
           }}
-          selectedDetailMatch={d.selectedDetailMatch}
-          isMatchEditModalOpen={d.isMatchEditModalOpen}
-          onCloseMatchEdit={() => {
-            d.setIsMatchEditModalOpen(false);
-            d.setSelectedEditMatch(null);
+          matchDetail={{
+            isOpen: d.isMatchDetailModalOpen,
+            onClose: () => {
+              d.setIsMatchDetailModalOpen(false);
+              d.setSelectedDetailMatch(null);
+            },
+            selected: d.selectedDetailMatch,
           }}
-          selectedEditMatch={d.selectedEditMatch}
-          onSaveMatchEdits={d.saveMatchEdits}
-          isCreateCompetitionModalOpen={d.isCreateCompetitionModalOpen}
-          onCloseCreateCompetition={() => d.setIsCreateCompetitionModalOpen(false)}
-          onCreateCompetition={d.handleCreateCompetition}
-          createModalOrganisations={d.createModalOrganisations}
-          createModalClubs={d.createModalClubs}
-          createModalTeams={d.createModalTeams}
-          initialOrganisationId={String(d.org?.id || '')}
-          initialClubId={String(d.club?.id || '')}
-          initialTeamId={String(d.project?.id || '')}
-          initialSeasonId={String(d.resolvedSeasonId || d.season?.id || '')}
-          isCreateMatchModalOpen={d.isCreateMatchModalOpen}
-          onCloseCreateMatch={() => d.setIsCreateMatchModalOpen(false)}
-          onCreateMatch={d.handleCreateMatch}
-          apiBaseUrl={d.apiBaseUrl}
-          isAddSquadMemberModalOpen={d.isAddSquadMemberModalOpen}
-          onCloseAddSquadMember={() => d.setIsAddSquadMemberModalOpen(false)}
-          onAddSquadMember={d.handleAddSquadMember}
-          squadSeasonId={String(d.resolvedSeasonId || '').trim()}
+          matchEdit={{
+            isOpen: d.isMatchEditModalOpen,
+            onClose: () => {
+              d.setIsMatchEditModalOpen(false);
+              d.setSelectedEditMatch(null);
+            },
+            selected: d.selectedEditMatch,
+            onSave: d.saveMatchEdits,
+          }}
+          competitionCreate={{
+            isOpen: d.isCreateCompetitionModalOpen,
+            onClose: () => d.setIsCreateCompetitionModalOpen(false),
+            onCreate: d.handleCreateCompetition,
+            organisations: d.createModalOrganisations,
+            clubs: d.createModalClubs,
+            teams: d.createModalTeams,
+            initialOrganisationId: String(d.org?.id || ''),
+            initialClubId: String(d.club?.id || ''),
+            initialTeamId: String(d.project?.id || ''),
+            initialSeasonId: String(d.resolvedSeasonId || d.season?.id || ''),
+          }}
+          matchCreate={{
+            isOpen: d.isCreateMatchModalOpen,
+            onClose: () => d.setIsCreateMatchModalOpen(false),
+            onCreate: d.handleCreateMatch,
+            apiBaseUrl: d.apiBaseUrl,
+          }}
+          squadAddMember={{
+            isOpen: d.isAddSquadMemberModalOpen,
+            onClose: () => d.setIsAddSquadMemberModalOpen(false),
+            onAdd: d.handleAddSquadMember,
+            seasonId: String(d.resolvedSeasonId || '').trim(),
+          }}
         />
 
         {/* Mobile Tab Bar — RBAC: Supporter (2), Member (5), Admin (8) */}
@@ -239,12 +255,14 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                   unassignMembershipsFromSeasonSquad={d.unassignMembershipsFromSeasonSquad}
                   setIsAddSquadMemberModalOpen={d.setIsAddSquadMemberModalOpen}
                   onMemberUpdated={() => d.setMembersReloadToken(t => t + 1)}
-                  teamRoster={d.teamRoster as any}
-                  teamRosterLoading={d.teamRosterLoading}
-                  teamRosterError={d.teamRosterError}
-                  assignUsersToSeasonSquad={d.assignUsersToSeasonSquad}
-                  getBestRoleForUser={d.getBestRoleForUser}
-                  getFunctionalRolesForUser={d.getFunctionalRolesForUser}
+                  teamRosterData={{
+                    teamRoster: d.teamRoster as any,
+                    teamRosterLoading: d.teamRosterLoading,
+                    teamRosterError: d.teamRosterError,
+                    assignUsersToSeasonSquad: d.assignUsersToSeasonSquad,
+                    getBestRoleForUser: d.getBestRoleForUser,
+                    getFunctionalRolesForUser: d.getFunctionalRolesForUser,
+                  }}
                 />
               )}
 

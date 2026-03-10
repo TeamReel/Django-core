@@ -409,12 +409,16 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
       <MatchCreateModal
         opened={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        organisations={organisations}
-        clubs={clubs}
-        teams={teams}
-        initialOrganisationId={selectedOrgId}
-        initialClubId={selectedClubId}
-        initialTeamId={selectedTeamId}
+        selectOptions={{
+          organisations: organisations,
+          clubs: clubs,
+          teams: teams,
+        }}
+        initialIds={{
+          organisationId: selectedOrgId,
+          clubId: selectedClubId,
+          teamId: selectedTeamId,
+        }}
         onCreate={handleCreateMatch}
       />
     </div>

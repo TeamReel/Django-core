@@ -236,9 +236,11 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         organisations={createModalOrganisations}
         clubs={createModalClubs}
         teams={teams as any}
-        requireOrganisation
-        requireClub
-        requireTeam
+        requirements={{
+          requireOrganisation: true,
+          requireClub: true,
+          requireTeam: true,
+        }}
         initialOrganisationId={createModalOrganisations[0]?.id || ''}
         initialClubId={seasonClubFilterId || ''}
         initialTeamId={seasonTeamFilterId || ''}
@@ -252,10 +254,12 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
         organisations={createModalOrganisations}
         clubs={createModalClubs}
         teams={teams as any}
-        requireOrganisation
-        requireClub
-        requireTeam
-        requireSeason
+        requirements={{
+          requireOrganisation: true,
+          requireClub: true,
+          requireTeam: true,
+          requireSeason: true,
+        }}
         initialOrganisationId={createModalOrganisations[0]?.id || ''}
         initialClubId={compClubFilterId || ''}
         initialTeamId={compTeamFilterId || ''}
@@ -265,12 +269,16 @@ export const OrgModals: React.FC<OrgModalsProps> = (props) => {
       <MatchCreateModal
         opened={isCreateMatchModalOpen}
         onClose={() => setIsCreateMatchModalOpen(false)}
-        organisations={createModalOrganisations}
-        clubs={createModalClubs}
-        teams={teams as any}
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        initialClubId={matchClubFilterId || ''}
-        initialTeamId={matchTeamFilterId || ''}
+        selectOptions={{
+          organisations: createModalOrganisations,
+          clubs: createModalClubs,
+          teams: teams as any,
+        }}
+        initialIds={{
+          organisationId: createModalOrganisations[0]?.id || '',
+          clubId: matchClubFilterId || '',
+          teamId: matchTeamFilterId || '',
+        }}
         onCreate={handleCreateMatch}
       />
 

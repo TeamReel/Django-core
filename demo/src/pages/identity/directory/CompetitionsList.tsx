@@ -279,11 +279,13 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
         organisations={organisations}
         clubs={clubs}
         teams={teams}
-        requireOrganisation
-        requireClub
-        requireTeam
-        requireSeason
-        showSportVariant
+        requirements={{
+          requireOrganisation: true,
+          requireClub: true,
+          requireTeam: true,
+          requireSeason: true,
+          showSportVariant: true,
+        }}
         initialOrganisationId={selectedOrgId}
         initialClubId={selectedClubId}
         initialTeamId={selectedTeamId}

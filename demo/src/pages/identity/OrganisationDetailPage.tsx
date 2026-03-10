@@ -152,14 +152,18 @@ export const OrganisationDetailPage: React.FC = () => {
               clubs={d.clubs}
               teams={d.teams}
               members={d.members}
-              clubsCount={d.clubsCount}
-              clubsLoading={d.clubsLoading}
-              teamsCount={d.teamsCount}
-              teamsLoading={d.teamsLoading}
-              membersLoading={d.membersLoading}
-              matchesCount={d.matchesCount}
+              loadingState={{
+                clubsLoading: d.clubsLoading,
+                teamsLoading: d.teamsLoading,
+                membersLoading: d.membersLoading,
+                scheduledMatchesLoading: d.scheduledMatchesLoading,
+              }}
+              countsData={{
+                clubsCount: d.clubsCount,
+                teamsCount: d.teamsCount,
+                matchesCount: d.matchesCount,
+              }}
               scheduledMatches={d.scheduledMatches}
-              scheduledMatchesLoading={d.scheduledMatchesLoading}
               navigate={d.navigate}
               makeTabHref={d.makeTabHref}
               getBestMatchDetailPath={d.getBestMatchDetailPath}

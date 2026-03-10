@@ -2925,12 +2925,16 @@ export const ProjectDetailPage: React.FC<{ forceMode?: DetailMode }> = ({ forceM
       <MatchCreateModal
         opened={isCreateMatchModalOpen}
         onClose={() => setIsCreateMatchModalOpen(false)}
-        organisations={createModalOrganisations}
-        clubs={createModalClubs}
-        teams={(isLikelyTeam ? [project] : childProjects) as any}
-        initialOrganisationId={createModalOrganisations[0]?.id || ''}
-        initialClubId={currentClubId || ''}
-        initialTeamId={matchTeamFilterId || (isLikelyTeam ? String(project?.id || '') : '')}
+        selectOptions={{
+          organisations: createModalOrganisations,
+          clubs: createModalClubs,
+          teams: (isLikelyTeam ? [project] : childProjects) as any,
+        }}
+        initialIds={{
+          organisationId: createModalOrganisations[0]?.id || '',
+          clubId: currentClubId || '',
+          teamId: matchTeamFilterId || (isLikelyTeam ? String(project?.id || '') : ''),
+        }}
         onCreate={async (payload) => {
           const apiV1BaseUrl = getApiV1BaseUrl();
           const teamIdValue = String(payload.project_id || '').trim();

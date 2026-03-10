@@ -93,17 +93,23 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
       apiBaseUrl={apiBaseUrl}
       headerText="Edit Match"
       submitText="Save"
-      initialOrganisationId={organisationId}
-      initialTeamId={teamId}
-      initialSeasonId={seasonId}
-      initialCompetitionId={competitionId}
-      initialOpponentTeamId={opponentTeamId}
-      initialTitle={match.title ?? ''}
-      initialMatchDate={parts.date}
-      initialMatchTime={parts.time || '14:30'}
-      initialVenue={initialVenue}
-      initialLocation={match.location ?? ''}
-      initialDescription={match.description ?? ''}
+      initialIds={{
+        organisationId: organisationId,
+        teamId: teamId,
+        seasonId: seasonId,
+        competitionId: competitionId,
+      }}
+      initialOpponent={{
+        teamId: opponentTeamId,
+      }}
+      initialFormValues={{
+        title: match.title ?? '',
+        matchDate: parts.date,
+        matchTime: parts.time || '14:30',
+        venue: initialVenue,
+        location: match.location ?? '',
+        description: match.description ?? '',
+      }}
       onCreate={async (payload: MatchCreatePayload) => {
         const patch: any = {
           title: payload.title,

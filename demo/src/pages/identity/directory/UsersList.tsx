@@ -57,21 +57,9 @@ export const UsersList: React.FC<UsersListProps> = (props) => {
         orgLocked={orgLocked}
         clubLocked={clubLocked}
         teamLocked={teamLocked}
-        selectedOrgId={selectedOrgId}
-        selectedClubId={selectedClubId}
-        selectedTeamId={selectedTeamId}
-        statusFilter={statusFilter}
-        roleFilter={roleFilter}
-        organisations={organisations}
-        clubs={clubs}
-        teams={teams}
-        availableRoles={availableRoles}
-        onOrgChange={onOrgChange}
-        onClubChange={onClubChange}
-        onTeamChange={onTeamChange}
-        onStatusChange={onStatusChange}
-        onRoleChange={onRoleChange}
-        onClearFilters={onClearFilters}
+        filterState={{ selectedOrgId, selectedClubId, selectedTeamId, statusFilter, roleFilter }}
+        filterHandlers={{ onOrgChange, onClubChange, onTeamChange, onStatusChange, onRoleChange, onClearFilters }}
+        filterOptions={{ organisations, clubs, teams, availableRoles }}
         onAddMember={onAddMember}
       />
 
