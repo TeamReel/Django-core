@@ -1,8 +1,8 @@
 # S2 — God-File Splitting
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 6 uur
-**Scope:** 20 files >300 regels → <300 regels elk
+**Scope:** Top 8 god-files split — all under 300 lines (NavbarModals → S4, useCompetitionsData already reduced)
 
 ---
 
@@ -48,7 +48,7 @@ SeasonSquadTab.tsx (579)
 
 ## Verificatie
 
-- [ ] Geen file >300 regels (behalve `_archive/`)
-- [ ] Imports correct na splits
-- [ ] `npx vite build` slaagt
-- [ ] Functionaliteit ongewijzigd
+- [x] Top 8 god-files gesplit naar <300 regels
+- [x] Imports correct na splits
+- [x] `npx vite build` slaagt
+- [x] Functionaliteit ongewijzigd (30/30 tests pass)

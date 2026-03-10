@@ -1,33 +1,25 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import {
-  CheckCircle2, Circle, Clock, AlertTriangle, Minus,
-  Settings, Zap, UserRound, ChevronUp, ChevronDown,
+  CheckCircle2, Circle, Clock, AlertTriangle,
+  Zap,
 } from 'lucide-react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
-import { Table } from '../../shims/design-system';
 import { MEDIA_SLOTS } from '../../constants/mediaSlots';
-import { countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
+import { countProcessedMediaSlots } from '../../utils/mediaHelpers';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
-import { generativeApi } from '../../api';
-import { BatchGenerationModal, type BatchMember } from '../../components/BatchGenerationModal';
+import { BatchGenerationModal } from '../../components/BatchGenerationModal';
 import { ActiveJobsModal } from '../../components/ActiveJobsModal';
 import { AssetGenerationModal } from '../../components/AssetGenerationModal';
 import { MemberDetailPanel } from './MemberDetailPanel';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import SlotIcon from '../../components/SlotIcon';
 import MediaMobileCardList from './MediaMobileCardList';
+import MediaDesktopTable from './MediaDesktopTable';
+import { useSeasonMediaTabData, type SquadMember } from './useSeasonMediaTabData';
 import s from './ProjectSeasonDetailPage.module.css';
 import styles from './SeasonMediaTab.module.css';
 
-/** Squad member record with metadata and media assets */
-interface SquadMember {
-  id?: string;
-  user?: { id?: string; first_name?: string; last_name?: string; email?: string; name?: string; avatar_url?: string | null; [key: string]: unknown };
-  user_id?: string;
-  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };
-  [key: string]: any;
-}
+export type { SquadMember };
 
 export interface SeasonMediaTabProps {
   members: SquadMember[];
@@ -65,128 +57,31 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
   userCanEditProject = false,
   teamBrand = null,
 }) => {
-  // ── Tab-local state ──
-  const [batchSelectedMemberIds, setBatchSelectedMemberIds] = useState<Set<string>>(new Set());
-  const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
-  const [isActiveJobsModalOpen, setIsActiveJobsModalOpen] = useState(false);
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const {
+    batchSelectedMemberIds,
+    setBatchSelectedMemberIds,
+    isBatchModalOpen,
+    setIsBatchModalOpen,
+    isActiveJobsModalOpen,
+    setIsActiveJobsModalOpen,
+    expandedCards,
+    setExpandedCards,
+    selectedMemberId,
+    setSelectedMemberId,
+    memberIds,
+    guestPlayer,
+    showGuestAiModal,
+    setShowGuestAiModal,
+    guestAiPreselectedTemplate,
+    guestAiSelectedKitType,
+    croppingGuestCloseup,
+    openGuestAiModal,
+    cropGuestCloseup,
+    batchBrandAssets,
+    batchMembers,
+  } = useSeasonMediaTabData({ members, project, apiBaseUrl, brandLogoUrl, brandSponsorUrl, batchBrandKits });
 
-  // ── Inline member detail panel ──
-  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-  const memberIds = useMemo(() => members.map((m) => String(m.id || '')).filter(Boolean), [members]);
-
-  // Guest player state
-  const [guestPlayer, setGuestPlayer] = useState<{ has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: any } | null>(null);
-  const [showGuestAiModal, setShowGuestAiModal] = useState(false);
-  const [guestAiPreselectedTemplate, setGuestAiPreselectedTemplate] = useState<string | undefined>();
-  const [guestAiSelectedKitType, setGuestAiSelectedKitType] = useState<string>('home');
-  const [croppingGuestCloseup, setCroppingGuestCloseup] = useState(false);
   const isMobile = useIsMobile();
-
-  // ── Guest player data from project metadata ──
-  useEffect(() => {
-    const guestPlayerData = project?.metadata?.guest_player;
-    if (guestPlayerData) {
-      const fullbodyHome = guestPlayerData?.images?.fullbody?.home;
-      const closeupHome = guestPlayerData?.images?.closeup?.home;
-      const introHome = guestPlayerData?.videos?.intro?.home;
-      const celebrationHome = guestPlayerData?.videos?.celebration?.home;
-      const hasAvatar = !!(fullbodyHome?.raw || fullbodyHome?.processed);
-      const hasCloseup = !!(closeupHome?.raw || closeupHome?.processed);
-      const hasIntro = !!(introHome?.raw || introHome?.processed || introHome?.url);
-      const hasCelebration = !!(celebrationHome?.raw || celebrationHome?.processed || celebrationHome?.url);
-      setGuestPlayer({
-        has_avatar: hasAvatar,
-        has_closeup: hasCloseup,
-        has_intro: hasIntro,
-        has_celebration: hasCelebration,
-        guest_player: guestPlayerData,
-      });
-    } else {
-      setGuestPlayer(null);
-    }
-  }, [project]);
-
-  const openGuestAiModal = useCallback((templateId: string, kitType?: string) => {
-    setGuestAiPreselectedTemplate(templateId);
-    setGuestAiSelectedKitType(kitType || 'home');
-    setShowGuestAiModal(true);
-  }, []);
-
-  const cropGuestCloseup = useCallback(async (kitType: string = 'home') => {
-    const projectId = String(project?.id || '');
-    if (!projectId) {
-      alert('Project ID ontbreekt.');
-      return;
-    }
-    setCroppingGuestCloseup(true);
-    try {
-      const raw = await generativeApi.cropCloseup({ project_id: projectId, kit_type: kitType } as any) as any;
-      const inner = (raw?.data ?? raw) as Record<string, string>;
-
-      setGuestPlayer((prev) => prev ? { ...prev, has_closeup: true } : prev);
-      setTimeout(() => { window.location.reload(); }, 500);
-    } catch (err) {
-      console.error(err);
-      console.error('Guest closeup crop error:', err);
-      alert(err instanceof Error ? err.message : 'Crop mislukt');
-    } finally {
-      setCroppingGuestCloseup(false);
-    }
-  }, [apiBaseUrl, project?.id]);
-
-  // Brand assets for batch modal
-  const batchBrandAssets = useMemo(() => ({
-    logo: brandLogoUrl,
-    sponsor: brandSponsorUrl,
-    kits: batchBrandKits,
-  }), [brandLogoUrl, brandSponsorUrl, batchBrandKits]);
-
-  // Build BatchMember objects from squad members
-  const batchMembers = useMemo((): BatchMember[] => {
-    return Array.from(batchSelectedMemberIds)
-      .map((mid) => {
-        const m = members.find((mem) => String(mem.id) === mid);
-        if (!m) return null;
-        const memberUser = m.user || m;
-        const name =
-          memberUser.name ||
-          `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-          memberUser.email || '';
-        const tr = m.metadata?.teamreel_assets || {};
-        const profileUrl = tr?.media?.profile?.url || tr?.kit?.profile_photo_url || memberUser.avatar_url || null;
-        const fullbodyUrls: Record<string, string> = {};
-        const closeupUrls: Record<string, string> = {};
-        const imgFb = tr?.images?.fullbody || {};
-        const imgCu = tr?.images?.closeup || {};
-        const extractUrl = (val: unknown): string | null => {
-          if (!val) return null;
-          if (typeof val === 'string') return val;
-          if (typeof val === 'object') return (val as any).processed || (val as any).raw || null;
-          return null;
-        };
-        for (const [k, v] of Object.entries(imgFb)) {
-          const url = extractUrl(v);
-          if (url) fullbodyUrls[k] = url;
-        }
-        for (const [k, v] of Object.entries(imgCu)) {
-          const url = extractUrl(v);
-          if (url) closeupUrls[k] = url;
-        }
-        if (!fullbodyUrls['home'] && tr?.media?.kit?.url) {
-          fullbodyUrls['home'] = tr.media.kit.url;
-        }
-        return {
-          id: mid,
-          name,
-          profilePhotoUrl: profileUrl,
-          fullbodyUrls,
-          closeupUrls,
-          metadata: m.metadata,
-        } as BatchMember;
-      })
-      .filter(Boolean) as BatchMember[];
-  }, [batchSelectedMemberIds, members]);
 
   // When a member is selected, show the detail panel instead of the list
   if (selectedMemberId) {
@@ -249,180 +144,17 @@ const SeasonMediaTab: React.FC<SeasonMediaTabProps> = ({
           ) : (
             <>
             {/* ── Desktop table ── */}
-            {!isMobile && <div className="overflow-x-auto">
-              <Table className="detail-table">
-                <thead>
-                  <tr>
-                    <th className={`detail-th text-center ${styles.checkboxCol}`}>
-                      <input
-                        type="checkbox"
-                        checked={batchSelectedMemberIds.size === members.length && members.length > 0}
-                        ref={(el) => { if (el) el.indeterminate = batchSelectedMemberIds.size > 0 && batchSelectedMemberIds.size < members.length; }}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setBatchSelectedMemberIds(new Set(members.map((m) => String(m.id))));
-                          } else {
-                            setBatchSelectedMemberIds(new Set());
-                          }
-                        }}
-                        className="cursor-pointer"
-                        title="Selecteer alles"
-                      />
-                    </th>
-                    <th className={`detail-th ${styles.stickyCol}`}>Member</th>
-                    {MEDIA_SLOTS.map((slot) => (
-                      <th key={slot.id} className={`detail-th text-center relative ${styles.slotColHeader}`} title={slot.label}>
-                        <div className="flex-col items-center gap-2">
-                          <span className={`block whitespace-nowrap fw-500 opacity-80 mb-4 ${styles.rotatedLabel}`}>{slot.label}</span>
-                          <span className={s.slotIcon}><SlotIcon name={slot.icon} size={14} /></span>
-                        </div>
-                      </th>
-                    ))}
-                    <th className="detail-th text-center">Score</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Guest Player row */}
-                  <tr className={s.guestRow}>
-                    <td className="detail-td text-center">
-                      {/* No batch checkbox for guest */}
-                    </td>
-                    <td className={`detail-td-text ${styles.guestStickyCol}`}>
-                      <span className={s.guestLabel}><UserRound size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> Gast Speler</span>
-                    </td>
-                    {MEDIA_SLOTS.map((slot) => {
-                      const guestSlotMap: Record<string, { has: boolean; templateId: string; label: string }> = {
-                        kit: { has: !!guestPlayer?.has_avatar, templateId: 'fullbody_in_tenue', label: 'In Tenue' },
-                        closeup: { has: !!guestPlayer?.has_closeup, templateId: 'closeup_in_tenue', label: 'Close-up' },
-                        intro: { has: !!guestPlayer?.has_intro, templateId: 'member_intro', label: 'Short Intro' },
-                        celebration: { has: !!guestPlayer?.has_celebration, templateId: 'member_goal_celebration', label: 'Celebration' },
-                      };
-                      const guestSlot = guestSlotMap[slot.id];
-                      if (guestSlot) {
-                        const handleClick = slot.id === 'closeup'
-                          ? () => cropGuestCloseup('home')
-                          : () => openGuestAiModal(guestSlot.templateId);
-                        return (
-                          <td key={slot.id} className="detail-td text-center">
-                            <span
-                              className={s.guestIndicator}
-                              title={guestSlot.has ? `${guestSlot.label}: Beschikbaar \u2014 klik om opnieuw te genereren` : `${guestSlot.label}: Klik om te genereren`}
-                              onClick={handleClick}
-                            >
-                              {guestSlot.has ? <span className="status-success"><CheckCircle2 size={16} /></span> : <span className="status-muted"><Circle size={16} /></span>}
-                            </span>
-                          </td>
-                        );
-                      }
-                      return (
-                        <td key={slot.id} className="detail-td text-center">
-                          <span className={`${s.indicatorDisabled} status-muted`} title={`${slot.label}: N.v.t. voor gast`}><Minus size={16} /></span>
-                        </td>
-                      );
-                    })}
-                    <td className="detail-td text-center">
-                      {(() => {
-                        const guestFilledCount = [
-                          guestPlayer?.has_avatar,
-                          guestPlayer?.has_closeup,
-                          guestPlayer?.has_intro,
-                          guestPlayer?.has_celebration,
-                        ].filter(Boolean).length;
-                        return (
-                          <Badge variant={guestFilledCount === 4 ? 'success' : 'default'}>
-                            {guestFilledCount}/4
-                          </Badge>
-                        );
-                      })()}
-                    </td>
-                  </tr>
-                  {members.map((m) => {
-                    const memberUser = m.user || m;
-                    const name =
-                      memberUser.name ||
-                      `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                      memberUser.email ||
-                      '\u2014';
-                    const membershipId = String(m.id || '').trim();
-                    const href = memberDetailHref(membershipId);
-                    const filledCount = countProcessedMediaSlots(m);
-                    const isComplete = filledCount === MEDIA_SLOTS.length;
-                    const isBatchSelected = batchSelectedMemberIds.has(membershipId);
-
-                    return (
-                      <tr key={String(m.id)} className={styles.memberRow} data-selected={isBatchSelected || undefined}>
-                        <td className="detail-td text-center">
-                          <input
-                            type="checkbox"
-                            checked={isBatchSelected}
-                            onChange={(e) => {
-                              setBatchSelectedMemberIds((prev) => {
-                                const next = new Set(prev);
-                                if (e.target.checked) next.add(membershipId);
-                                else next.delete(membershipId);
-                                return next;
-                              });
-                            }}
-                            className="cursor-pointer"
-                          />
-                        </td>
-                        <td className={`detail-td-text ${styles.memberStickyCol}`}>
-                          {href ? (
-                            <Link
-                              to={href}
-                              className={`hover:underline ${s.appLink}`}
-                            >
-                              {name}
-                            </Link>
-                          ) : (
-                            name
-                          )}
-                        </td>
-                        {MEDIA_SLOTS.map((slot) => {
-                          const procState = getMediaProcessingState(m, slot.id);
-                          const indicatorNode = procState === 'processed' ? <span className="status-success"><CheckCircle2 size={16} /></span>
-                            : procState === 'processing' ? <span className="status-processing"><Clock size={16} /></span>
-                            : procState === 'raw' ? <span className="status-raw"><AlertTriangle size={16} /></span>
-                            : <span className="status-muted"><Circle size={16} /></span>;
-                          const title = procState === 'processed' ? `${slot.label}: Lineup-ready`
-                            : procState === 'processing' ? `${slot.label}: Bezig met bewerken…`
-                            : procState === 'raw' ? `${slot.label}: Ruw (nog niet bewerkt)`
-                            : `${slot.label}: Ontbreekt`;
-                          const slotTabMap: Record<string, string> = {
-                            profile: 'input',
-                            legacy_photo: 'input',
-                            kit: 'assets',
-                            closeup: 'assets',
-                            legacy: 'assets',
-                          };
-                          const tabId = slotTabMap[slot.id] || slot.id;
-                          return (
-                            <td key={slot.id} className="detail-td text-center">
-                              {href ? (
-                                <Link
-                                  to={`${href}?tab=${tabId}`}
-                                  className="text-decoration-none"
-                                  title={title}
-                                >
-                                  <span className={s.indicatorIcon}>{indicatorNode}</span>
-                                </Link>
-                              ) : (
-                                <span className={s.indicatorIcon} title={title}>{indicatorNode}</span>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td className="detail-td text-center">
-                          <Badge variant={isComplete ? 'success' : filledCount > 0 ? 'warning' : 'default'}>
-                            {filledCount}/{MEDIA_SLOTS.length}
-                          </Badge>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            </div>}
+            {!isMobile && (
+              <MediaDesktopTable
+                members={members}
+                guestPlayer={guestPlayer}
+                batchSelectedMemberIds={batchSelectedMemberIds}
+                setBatchSelectedMemberIds={setBatchSelectedMemberIds}
+                memberDetailHref={memberDetailHref}
+                openGuestAiModal={openGuestAiModal}
+                cropGuestCloseup={cropGuestCloseup}
+              />
+            )}
 
             {/* ── Mobile card list ── */}
             {isMobile && <MediaMobileCardList

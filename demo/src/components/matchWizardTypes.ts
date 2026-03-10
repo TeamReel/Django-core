@@ -1,6 +1,13 @@
 /**
  * matchWizardTypes — Shared types and constants for MatchWizard.
  */
+import type React from 'react';
+import type { NavigateFunction } from 'react-router-dom';
+import type { Activity } from '../hooks/useActivities';
+import type { ContentTemplate, GeneratedVariant, GeneratedOutput } from '../pages/identity/ContentGenerationModal/types';
+import type { useContentOptions } from '../pages/identity/ContentGenerationModal/useContentOptions';
+import type { useSeasonSquadData } from '../pages/identity/ContentGenerationModal/useSeasonSquadData';
+import type { useVideoJobPolling } from '../pages/identity/ContentGenerationModal/useVideoJobPolling';
 import { Image, Video, FileText, Play, Zap, Users, Clock } from 'lucide-react';
 
 export type WizardStep = 'match' | 'content' | 'lineup' | 'options' | 'review' | 'generating' | 'video_queued' | 'success' | 'error';
@@ -117,4 +124,100 @@ export function getSquadMemberName(p: SquadMember): string {
   if (full) return full;
   if (user.email) return user.email;
   return 'Onbekend';
+}
+
+// ============================================================================
+// Return type for useMatchWizardData hook
+// ============================================================================
+
+export interface UseMatchWizardDataReturn {
+  navigate: NavigateFunction;
+  // Step
+  currentStep: WizardStep;
+  setCurrentStep: React.Dispatch<React.SetStateAction<WizardStep>>;
+  selectedMatch: Activity | null;
+  setSelectedMatch: React.Dispatch<React.SetStateAction<Activity | null>>;
+  // Lineup
+  lineupSlots: { goalkeeper: string[]; player: string[] };
+  lineupFormation: string;
+  setLineupFormation: React.Dispatch<React.SetStateAction<string>>;
+  squadGroups: Record<string, SquadMember[]>;
+  squadLoading: boolean;
+  editingPosition: number | null;
+  setEditingPosition: React.Dispatch<React.SetStateAction<number | null>>;
+  lineupSaving: boolean;
+  filledPositions: number;
+  totalPositions: number;
+  allPlayers: SquadMember[];
+  // Content
+  selectedContentPhase: ContentPhase;
+  setSelectedContentPhase: React.Dispatch<React.SetStateAction<ContentPhase>>;
+  pendingContent: { key: string; label: string; subtype: string; templateType: string } | null;
+  selectedTemplate: ContentTemplate | null;
+  selectedContentTypeLabel: string;
+  selectedType: { type: string; subtype: string; label: string } | null;
+  isLineupFlow: boolean;
+  // Options (from useContentOptions sub-hook)
+  options: ReturnType<typeof useContentOptions>;
+  // Generation state
+  progress: number;
+  generationError: string | null;
+  generatedOutput: GeneratedOutput | null;
+  generatedVariants: GeneratedVariant[];
+  selectedVariantIndex: number;
+  setSelectedVariantIndex: React.Dispatch<React.SetStateAction<number>>;
+  savingAsset: boolean;
+  saveSuccess: boolean;
+  savedVariantIndices: Set<number>;
+  // Season squad (for MembersStep and generation APIs)
+  seasonSquad: ReturnType<typeof useSeasonSquadData>;
+  // Video job polling
+  videoPoll: ReturnType<typeof useVideoJobPolling>;
+  // Team names
+  homeTeamName: string;
+  awayTeamName: string;
+  // Match data for API
+  matchDataForApi: {
+    id: string;
+    title: string;
+    project: Activity['project'];
+    opponent_project: Activity['opponent_project'] | undefined;
+    participations: Activity['participations'];
+    start_time: string;
+    location: string;
+    metadata: Record<string, unknown>;
+  } | null;
+  organisationId: string | null;
+  // Errors
+  matchesError: string | null;
+  templatesError: string | null;
+  squadError: string | null;
+  saveError: string | null;
+  // Matches
+  matchesLoading: boolean;
+  upcomingMatches: Activity[];
+  // Handlers
+  handleSelectPlayer: (positionIdx: number, isGoalkeeper: boolean, memberId: string | null) => void;
+  handleContentSelect: (contentKey: string, contentLabel: string, subtype: string, templateType: string) => void;
+  handleLineupConfirm: () => void;
+  handleOptionsConfirm: () => void;
+  handleReviewConfirm: () => void;
+  handleGenerate: () => Promise<void>;
+  handleSaveAsAsset: () => Promise<void>;
+  handleSaveAllAsAssets: () => Promise<void>;
+  handleSaveVariantByIndex: (variantIdx: number, opts?: { skipAutoClose?: boolean }) => Promise<void>;
+  handleBack: () => void;
+  handleClose: () => void;
+  // Guest players
+  guestPlayers: SquadMember[];
+  addGuestPlayer: (name: string, jerseyNumber?: string) => void;
+  removeGuestPlayer: (guestId: string) => void;
+  // Helpers
+  getStepTitle: () => string;
+  getMemberName: (memberId: string) => string;
+  getMemberJersey: (memberId: string) => string | null;
+  getMemberById: (memberId: string) => SquadMember | undefined;
+  // Retry
+  retrySquad: () => Promise<void>;
+  retryTemplates: () => Promise<void>;
 }

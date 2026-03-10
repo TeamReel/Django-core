@@ -1,50 +1,15 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
 import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
-import { Table } from '../../shims/design-system';
-import {
-  normalizeAccessRole,
-  getRbacLabel,
-  getAccessRoleOptions,
-  getFunctionalRolesFromMembership,
-  getUserId,
-} from './seasonDetailUtils';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import { normalizeAccessRole } from './seasonDetailUtils';
 import EditMemberModal from './EditMemberModal';
 import EligibleMembersCard from './EligibleMembersCard';
-import s from './ProjectSeasonDetailPage.module.css';
+import SquadMemberTable from './SquadMemberTable';
+import SquadMemberMobileList from './SquadMemberMobileList';
+import { useSeasonSquadTabState } from './useSeasonSquadTabState';
+import type { SquadMember, SeasonSquadTabProps } from './squadTabTypes';
 import st from './SeasonSquadTab.module.css';
 
-/** Shape for a squad membership record. */
-interface SquadMember {
-  id?: string;
-  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string };
-  role?: string;
-  metadata?: { position?: string; shirt_number?: string | number; [key: string]: unknown };
-  [key: string]: unknown;
-}
-
-export interface SeasonSquadTabProps {
-  members: SquadMember[];
-  membersLoading: boolean;
-  membersError: string | null;
-  userCanEditProject: boolean;
-  bulkSubmitting: boolean;
-  isTeamRoute: boolean;
-  apiBaseUrl: string;
-  projectId: string;
-  memberDetailHref: (membershipId: string) => string;
-  unassignMembershipsFromSeasonSquad: (ids: string[]) => Promise<void>;
-  setIsAddSquadMemberModalOpen: (v: boolean) => void;
-  onMemberUpdated: (membershipId: string, role: string, functionalRoles: string[]) => void;
-  // Team roster (for merged "Niet in selectie" section)
-  teamRoster?: SquadMember[];
-  teamRosterLoading?: boolean;
-  teamRosterError?: string | null;
-  assignUsersToSeasonSquad?: (userIds: string[]) => Promise<void>;
-  getBestRoleForUser?: (userId: string) => string;
-  getFunctionalRolesForUser?: (userId: string) => string[];
-}
+export type { SquadMember, SeasonSquadTabProps } from './squadTabTypes';
 
 const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   members,
@@ -66,54 +31,31 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
   getBestRoleForUser,
   getFunctionalRolesForUser,
 }) => {
-  // ── Tab-local state ──
-  const [squadSearch, setSquadSearch] = useState('');
-  const [selectedSquadMembershipIds, setSelectedSquadMembershipIds] = useState<Set<string>>(new Set());
-  const [isEditMemberModalOpen, setIsEditMemberModalOpen] = useState(false);
-  const [selectedEditMember, setSelectedEditMember] = useState<SquadMember | null>(null);
-  const [editAccessRole, setEditAccessRole] = useState<'admin' | 'viewer'>('viewer');
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
-  const isMobile = useIsMobile();
+  const {
+    squadSearch,
+    setSquadSearch,
+    selectedSquadMembershipIds,
+    setSelectedSquadMembershipIds,
+    isEditMemberModalOpen,
+    setIsEditMemberModalOpen,
+    selectedEditMember,
+    setSelectedEditMember,
+    editAccessRole,
+    setEditAccessRole,
+    expandedCards,
+    isMobile,
+    accessRoleOptions,
+    visibleSquadMembers,
+    toggleSquadMembership,
+    toggleExpandedCard,
+    squadUserIdSet,
+  } = useSeasonSquadTabState({ members, isTeamRoute });
 
-  const accessRoleOptions = getAccessRoleOptions(isTeamRoute);
-
-  const visibleSquadMembers = useMemo(() => {
-    const q = String(squadSearch || '').trim().toLowerCase();
-    if (!q) return members;
-    return (members || []).filter((m) => {
-      const memberUser = m.user || m;
-      const name = String(
-        memberUser.name ||
-          `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-          memberUser.email ||
-          ''
-      ).toLowerCase();
-      const email = String(memberUser.email || '').toLowerCase();
-      const position = String(m?.metadata?.position || '').toLowerCase();
-      const shirt = String(m?.metadata?.shirt_number ?? '').toLowerCase();
-      const role = String(m?.role || '').toLowerCase();
-      return name.includes(q) || email.includes(q) || position.includes(q) || shirt.includes(q) || role.includes(q);
-    });
-  }, [members, squadSearch]);
-
-  const toggleSquadMembership = (membershipId: string) => {
-    setSelectedSquadMembershipIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(membershipId)) next.delete(membershipId);
-      else next.add(membershipId);
-      return next;
-    });
+  const handleEditMember = (m: SquadMember) => {
+    setSelectedEditMember(m);
+    setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
+    setIsEditMemberModalOpen(true);
   };
-
-  // ── Team roster: members NOT in the squad ──
-  const squadUserIdSet = useMemo(() => {
-    const set = new Set<string>();
-    for (const m of members || []) {
-      const uid = getUserId(m);
-      if (uid) set.add(uid);
-    }
-    return set;
-  }, [members]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -200,344 +142,61 @@ const SeasonSquadTab: React.FC<SeasonSquadTabProps> = ({
                   <Alert variant="info">Geen leden in de selectie. Voeg team members toe via de sectie hieronder.</Alert>
                 ) : !membersLoading && !membersError ? (
                   <>
-                  {/* ── Desktop table ── */}
-                  {!isMobile && <div className="overflow-x-auto">
-                    <Table className="detail-table">
-                      <thead>
-                        <tr>
-                          <th className={`detail-th ${st.checkboxCol}`}></th>
-                          <th className="detail-th">Name</th>
-                          <th className="detail-th">Email</th>
-                          <th className="detail-th">Access</th>
-                          <th className="detail-th">Functional</th>
-                          <th className="detail-th">Position</th>
-                          <th className="detail-th">#</th>
-                          <th className={`detail-th text-right ${st.actionCol}`}>
-                            Action
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {visibleSquadMembers.map((m) => {
-                          const memberUser: any = m.user || m;
-                          const name =
-                            memberUser.name ||
-                            `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                            memberUser.email ||
-                            '\u2014';
-
-                          const email = memberUser.email || '\u2014';
-                          const role = normalizeAccessRole(m.role || 'viewer');
-                          const rbacLabel = getRbacLabel(m.role || 'viewer', isTeamRoute);
-                          const functionalRoles = getFunctionalRolesFromMembership(m);
-                          const position = m.metadata?.position || '\u2014';
-                          const shirtNumber = m.metadata?.shirt_number ?? '';
-                          const membershipId = String(m.id || '').trim();
-                          const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
-                          const href = memberDetailHref(membershipId);
-
-                          return (
-                            <tr key={membershipId}>
-                              <td className="detail-td">
-                                <input
-                                  type="checkbox"
-                                  checked={checked}
-                                  disabled={!membershipId || bulkSubmitting}
-                                  onChange={() => {
-                                    if (!membershipId) return;
-                                    toggleSquadMembership(membershipId);
-                                  }}
-                                />
-                              </td>
-                              <td className="detail-td-text">
-                                {href ? (
-                                  <Link
-                                    to={href}
-                                    className={`hover:underline ${s.appLink}`}
-                                  >
-                                    {name}
-                                  </Link>
-                                ) : (
-                                  name
-                                )}
-                              </td>
-                              <td className="detail-td-text">{email}</td>
-                              <td className="detail-td">
-                                <Badge variant={role === 'admin' ? 'warning' : 'default'}>
-                                  {rbacLabel}
-                                </Badge>
-                              </td>
-                              <td className="detail-td">
-                                {functionalRoles.length ? (
-                                  <div className={st.badgeGroup}>
-                                    {functionalRoles.map((r: string) => (
-                                      <Badge key={r} variant="default">
-                                        {r}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  '\u2014'
-                                )}
-                              </td>
-                              <td className="detail-td-text">{position}</td>
-                              <td className="detail-td">{shirtNumber || '\u2014'}</td>
-                              <td className="detail-td text-right">
-                                <div className="detail-actions">
-                                  <button
-                                    type="button"
-                                    className="app-action-button action-btn action-btn-primary"
-                                    disabled={!membershipId || bulkSubmitting}
-                                    onClick={() => {
-                                      if (!membershipId) return;
-                                      setSelectedEditMember(m);
-                                      setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
-                                      setIsEditMemberModalOpen(true);
-                                    }}
-                                    title="Edit member details"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="app-action-button action-btn action-btn-danger"
-                                    disabled={!membershipId || bulkSubmitting}
-                                    onClick={async () => {
-                                      if (!membershipId) return;
-                                      await unassignMembershipsFromSeasonSquad([membershipId]);
-                                    }}
-                                    title="Unassign this user from the season squad"
-                                  >
-                                    Unassign
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </Table>
-                  </div>}
-
-                  {/* ── Mobile card list ── */}
-                  {isMobile && <div className={st.mobileList}>
-                    {visibleSquadMembers.map((m) => {
-                      const memberUser: any = m.user || m;
-                      const name =
-                        memberUser.name ||
-                        `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                        memberUser.email ||
-                        '\u2014';
-                      const position = m.metadata?.position || '';
-                      const shirtNumber = m.metadata?.shirt_number ?? '';
-                      const rbacLabel = getRbacLabel(m.role || 'viewer', isTeamRoute);
-                      const role = normalizeAccessRole(m.role || 'viewer');
-                      const functionalRoles = getFunctionalRolesFromMembership(m);
-                      const membershipId = String(m.id || '').trim();
-                      const checked = Boolean(membershipId && selectedSquadMembershipIds.has(membershipId));
-                      const href = memberDetailHref(membershipId);
-                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ');
-                      const isExpanded = expandedCards.has(membershipId);
-                      return (
-                        <div
-                          key={membershipId}
-                          className={st.memberCard}
-                          data-selected={checked ? 'true' : undefined}
-                        >
-                          <input
-                            type="checkbox"
-                            className={st.memberCardCheckbox}
-                            checked={checked}
-                            disabled={!membershipId || bulkSubmitting}
-                            onChange={() => { if (membershipId) toggleSquadMembership(membershipId); }}
-                          />
-                          <div className={st.memberCardBody}>
-                            <div className={st.memberCardRow}>
-                              {href ? (
-                                <Link to={href} className={st.memberCardName}>{name}</Link>
-                              ) : (
-                                <span className={st.memberCardName}>{name}</span>
-                              )}
-                              {meta && <span className={st.memberCardMeta}>{meta}</span>}
-                              <button
-                                type="button"
-                                className={st.viewToggle}
-                                onClick={() => setExpandedCards(prev => {
-                                  const next = new Set(prev);
-                                  if (next.has(membershipId)) next.delete(membershipId); else next.add(membershipId);
-                                  return next;
-                                })}
-                                aria-label={isExpanded ? 'Hide' : 'Details'}
-                              >{isExpanded ? '\u25B2' : '\u25BC'}</button>
-                            </div>
-                            {isExpanded && (
-                              <div className={st.memberCardDetails}>
-                                <div className={st.memberCardBadges}>
-                                  <Badge variant={role === 'admin' ? 'warning' : 'default'}>{rbacLabel}</Badge>
-                                  {functionalRoles.map((r: string) => (
-                                    <Badge key={r} variant="default">{r}</Badge>
-                                  ))}
-                                </div>
-                                <div className={st.memberCardActions}>
-                                  <button
-                                    type="button"
-                                    className="app-action-button action-btn action-btn-primary"
-                                    disabled={!membershipId || bulkSubmitting}
-                                    onClick={() => {
-                                      if (!membershipId) return;
-                                      setSelectedEditMember(m);
-                                      setEditAccessRole(normalizeAccessRole(m.role || 'viewer') === 'admin' ? 'admin' : 'viewer');
-                                      setIsEditMemberModalOpen(true);
-                                    }}
-                                  >Edit</button>
-                                  <button
-                                    type="button"
-                                    className="app-action-button action-btn action-btn-danger"
-                                    disabled={!membershipId || bulkSubmitting}
-                                    onClick={async () => { if (membershipId) await unassignMembershipsFromSeasonSquad([membershipId]); }}
-                                  >Unassign</button>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>}
+                    {!isMobile && (
+                      <SquadMemberTable
+                        members={visibleSquadMembers}
+                        memberDetailHref={memberDetailHref}
+                        isTeamRoute={isTeamRoute}
+                        readOnly={false}
+                        selectedSquadMembershipIds={selectedSquadMembershipIds}
+                        bulkSubmitting={bulkSubmitting}
+                        toggleSquadMembership={toggleSquadMembership}
+                        onEditMember={handleEditMember}
+                        unassignMembershipsFromSeasonSquad={unassignMembershipsFromSeasonSquad}
+                      />
+                    )}
+                    {isMobile && (
+                      <SquadMemberMobileList
+                        members={visibleSquadMembers}
+                        memberDetailHref={memberDetailHref}
+                        isTeamRoute={isTeamRoute}
+                        readOnly={false}
+                        expandedCards={expandedCards}
+                        toggleExpandedCard={toggleExpandedCard}
+                        selectedSquadMembershipIds={selectedSquadMembershipIds}
+                        bulkSubmitting={bulkSubmitting}
+                        toggleSquadMembership={toggleSquadMembership}
+                        onEditMember={handleEditMember}
+                        unassignMembershipsFromSeasonSquad={unassignMembershipsFromSeasonSquad}
+                      />
+                    )}
                   </>
                 ) : null}
               </>
             ) : (
-              // Read-only view
               <>
                 {!membersLoading && !membersError && members.length === 0 ? (
                   <Alert variant="info">No members found for this season.</Alert>
                 ) : !membersLoading && !membersError ? (
                   <>
-                  {/* Desktop table */}
-                  {!isMobile && <div className="overflow-x-auto">
-                    <Table className="detail-table">
-                      <thead>
-                        <tr>
-                          <th className="detail-th">Name</th>
-                          <th className="detail-th">Email</th>
-                          <th className="detail-th">Access</th>
-                          <th className="detail-th">Functional</th>
-                          <th className="detail-th">Position</th>
-                          <th className="detail-th">#</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {members.map((m) => {
-                          const memberUser: any = m.user || m;
-                          const name =
-                            memberUser.name ||
-                            `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                            memberUser.email ||
-                            '\u2014';
-
-                          const email = memberUser.email || '\u2014';
-                          const role = normalizeAccessRole(m.role || 'viewer');
-                          const functionalRoles = getFunctionalRolesFromMembership(m);
-                          const position = m.metadata?.position || '\u2014';
-                          const shirtNumber = m.metadata?.shirt_number ?? '';
-                          const href = memberDetailHref(String(m.id || '').trim());
-
-                          return (
-                            <tr key={String(m.id || memberUser.email)}>
-                              <td className="detail-td-text">
-                                {href ? (
-                                  <Link
-                                    to={href}
-                                    className={`hover:underline ${s.appLink}`}
-                                  >
-                                    {name}
-                                  </Link>
-                                ) : (
-                                  name
-                                )}
-                              </td>
-                              <td className="detail-td-text">{email}</td>
-                              <td className="detail-td">
-                                <Badge variant={role === 'admin' ? 'warning' : 'default'}>
-                                  {getRbacLabel(m.role || 'viewer', isTeamRoute)}
-                                </Badge>
-                              </td>
-                              <td className="detail-td">
-                                {functionalRoles.length ? (
-                                  <div className={st.badgeGroup}>
-                                    {functionalRoles.map((r: string) => (
-                                      <Badge key={r} variant="default">
-                                        {r}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                ) : (
-                                  '\u2014'
-                                )}
-                              </td>
-                              <td className="detail-td-text">{position}</td>
-                              <td className="detail-td">{shirtNumber || '\u2014'}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </Table>
-                  </div>}
-
-                  {/* Mobile card list (read-only) */}
-                  {isMobile && <div className={st.mobileList}>
-                    {members.map((m) => {
-                      const memberUser: any = m.user || m;
-                      const name =
-                        memberUser.name ||
-                        `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
-                        memberUser.email ||
-                        '\u2014';
-                      const position = m.metadata?.position || '';
-                      const shirtNumber = m.metadata?.shirt_number ?? '';
-                      const role = normalizeAccessRole(m.role || 'viewer');
-                      const functionalRoles = getFunctionalRolesFromMembership(m);
-                      const href = memberDetailHref(String(m.id || '').trim());
-                      const meta = [position, shirtNumber ? `#${shirtNumber}` : ''].filter(Boolean).join(' · ');
-                      const mid = String(m.id || '').trim();
-                      const isExpanded = expandedCards.has(mid);
-                      return (
-                        <div key={String(m.id || memberUser.email)} className={st.memberCard}>
-                          <div className={st.memberCardBody}>
-                            <div className={st.memberCardRow}>
-                              {href ? (
-                                <Link to={href} className={st.memberCardName}>{name}</Link>
-                              ) : (
-                                <span className={st.memberCardName}>{name}</span>
-                              )}
-                              {meta && <span className={st.memberCardMeta}>{meta}</span>}
-                              <button
-                                type="button"
-                                className={st.viewToggle}
-                                onClick={() => setExpandedCards(prev => {
-                                  const next = new Set(prev);
-                                  if (next.has(mid)) next.delete(mid); else next.add(mid);
-                                  return next;
-                                })}
-                                aria-label={isExpanded ? 'Hide' : 'Details'}
-                              >{isExpanded ? '\u25B2' : '\u25BC'}</button>
-                            </div>
-                            {isExpanded && (
-                              <div className={st.memberCardDetails}>
-                                <div className={st.memberCardBadges}>
-                                  <Badge variant={role === 'admin' ? 'warning' : 'default'}>{getRbacLabel(m.role || 'viewer', isTeamRoute)}</Badge>
-                                  {functionalRoles.map((r: string) => (
-                                    <Badge key={r} variant="default">{r}</Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>}
+                    {!isMobile && (
+                      <SquadMemberTable
+                        members={members}
+                        memberDetailHref={memberDetailHref}
+                        isTeamRoute={isTeamRoute}
+                        readOnly
+                      />
+                    )}
+                    {isMobile && (
+                      <SquadMemberMobileList
+                        members={members}
+                        memberDetailHref={memberDetailHref}
+                        isTeamRoute={isTeamRoute}
+                        readOnly
+                        expandedCards={expandedCards}
+                        toggleExpandedCard={toggleExpandedCard}
+                      />
+                    )}
                   </>
                 ) : null}
               </>
