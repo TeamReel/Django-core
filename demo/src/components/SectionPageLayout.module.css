@@ -1,0 +1,14 @@
+/* SectionPageLayout – CSS Module */
+
+.container {
+  background-color: var(--app-bg);
+  min-height: 100%;
+}
+
+.header {
+  margin-bottom: var(--space-8);
+}
+
+.titleMargin {
+  margin-bottom: var(--space-2);
+}

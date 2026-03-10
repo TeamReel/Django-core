@@ -1,0 +1,29 @@
+/* EntityBrandTab – CSS Module */
+
+.tokenEditorRow {
+  grid-template-columns: 1fr 120px 1fr auto;
+  align-items: center;
+  background-color: var(--app-surface-alt, rgba(0, 0, 0, 0.02));
+}
+
+.colorInput {
+  width: 32px;
+  height: 32px;
+}
+
+.monoInput {
+  font-family: monospace;
+}
+
+.deleteButton {
+  background: none;
+  color: var(--app-error, #dc2626);
+}
+
+.iconFaded {
+  opacity: 0.3;
+}
+
+.emptyTokensBox {
+  border: 1px dashed var(--app-border);
+}

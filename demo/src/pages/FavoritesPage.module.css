@@ -1,0 +1,40 @@
+/* FavoritesPage.module.css — extracted inline styles */
+
+.page {
+  background-color: var(--app-bg);
+  min-height: 100%;
+}
+
+.navLink {
+  padding: var(--space-2) var(--space-3);
+  color: var(--app-text);
+  text-decoration: none;
+}
+
+.clearButton {
+  padding: var(--space-2) var(--space-3);
+  color: var(--app-text);
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--app-border);
+}
+
+.itemLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--app-text);
+  text-decoration: none;
+  min-width: 0;
+}
+
+.removeButton {
+  padding: var(--space-2) var(--space-2);
+  color: var(--app-text);
+}

@@ -1,0 +1,15 @@
+.spinnerContainer {
+  padding: var(--space-12);
+}
+
+.statsGrid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.table {
+  border-collapse: collapse;
+}
+
+.monospace {
+  font-family: monospace;
+}

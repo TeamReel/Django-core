@@ -72,7 +72,7 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
           {guestPlayers.length > 0 && (
             <div className={styles.guestSection}>
               <div className={`fs-12 fw-600 uppercase ${styles.guestSectionLabel}`}>Gasten</div>
-              <div className="flex-row gap-6" style={{ flexWrap: 'wrap' }}>
+              <div className={`flex-row gap-6 ${styles.guestTagsRow}`}>
                 {guestPlayers.map(g => (
                   <span key={g.id} className={styles.guestTag}>
                     {g.metadata?.shirt_number && <span className={styles.guestTagJersey}>#{g.metadata.shirt_number}</span>}
@@ -87,7 +87,7 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
           )}
           {showGuestForm ? (
             <div className={styles.guestForm}>
-              <div className="fw-600 fs-13 text-primary" style={{ marginBottom: 'var(--space-2)' }}>Gast toevoegen</div>
+              <div className={`fw-600 fs-13 text-primary ${styles.guestFormTitle}`}>Gast toevoegen</div>
               <div className="flex-row gap-8">
                 <input
                   className={styles.guestInput}
@@ -103,10 +103,9 @@ export function MatchWizardLineupStep({ d }: { d: Data }) {
                   value={guestJersey}
                   onChange={e => setGuestJersey(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddGuest()}
-                  style={{ maxWidth: 56 }}
                 />
               </div>
-              <div className="flex-row gap-8" style={{ marginTop: 'var(--space-2)' }}>
+              <div className={`flex-row gap-8 ${styles.guestFormButtons}`}>
                 <button onClick={handleAddGuest} disabled={!guestName.trim()} className={styles.guestAddBtn}>Toevoegen</button>
                 <button onClick={() => { setShowGuestForm(false); setGuestName(''); setGuestJersey(''); }} className={styles.guestCancelBtn}>Annuleren</button>
               </div>

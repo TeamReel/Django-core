@@ -536,3 +536,36 @@
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 }
+
+/* ── Margin utilities for modal ── */
+.marginBottomSpace6 {
+  margin-bottom: var(--space-6);
+}
+
+.cursorPointer {
+  cursor: pointer;
+}
+
+/* ── SeasonCompetitionsTab ── */
+.cardPadding {
+  padding: var(--space-4);
+}
+
+.competitionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.sportVariantCell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.sportVariantText {
+  font-size: var(--text-xs);
+}

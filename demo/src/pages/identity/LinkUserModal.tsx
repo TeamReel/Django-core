@@ -2,6 +2,7 @@ import React from 'react';
 import { useLinkUserModal } from './useLinkUserModal';
 import { accessRoleOptions, functionalRoleOptions } from './linkUserModalTypes';
 import type { LinkUserModalProps } from './linkUserModalTypes';
+import styles from './LinkUserModal.module.css';
 
 /* ── tiny DRY helper for the 3 unlink buttons ────────────── */
 function UnlinkButton({
@@ -41,11 +42,7 @@ export default function LinkUserModal(props: LinkUserModalProps) {
       onClick={onClose}
     >
       <div
-        className="bg-surface p-24 rounded-8 border shadow-lg"
-        style={{
-          width: '560px', maxWidth: '95%',
-          color: 'var(--app-text)',
-        }}
+        className={`bg-surface p-24 rounded-8 border shadow-lg ${styles.modalContent}`}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="mb-12 text-primary m-0">
@@ -164,12 +161,7 @@ export default function LinkUserModal(props: LinkUserModalProps) {
             <div>
               <label className="form-label-upper">Functional Roles (team only)</label>
               <div
-                style={{
-                  display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                  gap: 'var(--space-2) var(--space-3)', padding: 'var(--space-3)',
-                  border: '1px solid var(--app-border)', borderRadius: 'var(--radius-md)',
-                  backgroundColor: 'var(--app-surface)', opacity: d.teamId ? 1 : 0.6,
-                }}
+                className={`${styles.functionalRolesGrid} ${d.teamId ? '' : styles.functionalRolesGridDisabled}`}
               >
                 {functionalRoleOptions.map((opt) => {
                   const checked = d.functionalRoles.includes(opt.value);

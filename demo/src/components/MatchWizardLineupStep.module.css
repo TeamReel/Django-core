@@ -1,5 +1,25 @@
 /* MatchWizardLineupStep.module.css */
 
+/* Flex wrap row for guest tags */
+.guestTagsRow {
+  flex-wrap: wrap;
+}
+
+/* Guest form title */
+.guestFormTitle {
+  margin-bottom: var(--space-2);
+}
+
+/* Jersey input narrow */
+.jerseyInputNarrow {
+  max-width: 56px;
+}
+
+/* Guest form buttons container */
+.guestFormButtons {
+  margin-top: var(--space-2);
+}
+
 /* Base card style (mirrors CARD_STYLE from matchWizardTypes) */
 .card {
   display: flex;

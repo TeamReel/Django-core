@@ -4,6 +4,7 @@ import { PageHeader } from '@django-core/page-templates';
 import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Alert, Spinner } from '@django-core/design-system';
 import { api } from '../../api';
+import styles from './TasksPage.module.css';
 
 interface CeleryTask {
   id: string;
@@ -95,10 +96,10 @@ export function TasksPage() {
           {error && <Alert variant="warning" className="mb-16">{error}</Alert>}
 
           {loading ? (
-            <div className="flex-center" style={{ padding: 'var(--space-12)' }}><Spinner /></div>
+            <div className={`flex-center ${styles.spinnerContainer}`}><Spinner /></div>
           ) : (
             <>
-              <div className="grid gap-16 mb-24" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+              <div className={`grid gap-16 mb-24 ${styles.statsGrid}`}>
                 <Card className="p-16"><div className="fs-12 mb-4 text-muted">Total</div><div className="fs-24 fw-700">{tasks.length}</div></Card>
                 <Card className="p-16"><div className="fs-12 mb-4 text-muted">Running</div><div className="fs-24 fw-700">{statusCounts.running || 0}</div></Card>
                 <Card className="p-16"><div className="fs-12 mb-4 text-muted">Pending</div><div className="fs-24 fw-700">{statusCounts.pending || 0}</div></Card>
@@ -107,7 +108,7 @@ export function TasksPage() {
 
               <Card className="p-0 overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                  <table className={`w-full ${styles.table}`}>
                     <thead>
                       <tr className="bg-surface-2 border-bottom">
                         <th className="p-12 text-left fs-12 fw-600">Task Name</th>
@@ -137,7 +138,7 @@ export function TasksPage() {
                   <h2 className="fs-18 fw-600 mb-12">⏰ Periodic Tasks (Celery Beat Schedule)</h2>
                   <Card className="p-0 overflow-hidden">
                     <div className="overflow-x-auto">
-                      <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                      <table className={`w-full ${styles.table}`}>
                         <thead>
                           <tr className="bg-surface-2 border-bottom">
                             <th className="p-12 text-left fs-12 fw-600">Task Name</th>
@@ -148,7 +149,7 @@ export function TasksPage() {
                         <tbody>
                           {beatSchedule.map((task, index) => (
                             <tr key={index} className="border-bottom">
-                              <td className="p-12 fs-14" style={{ fontFamily: 'monospace' }}>{task.name}</td>
+                              <td className={`p-12 fs-14 ${styles.monospace}`}>{task.name}</td>
                               <td className="p-12 fs-14 text-muted">{task.schedule || 'N/A'}</td>
                               <td className="p-12"><Badge variant="success">Enabled</Badge></td>
                             </tr>

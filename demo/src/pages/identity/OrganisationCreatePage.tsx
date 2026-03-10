@@ -11,6 +11,7 @@ import {
   PageContent,
 } from '../../shims/page-templates';
 import { organisationsApi } from '../../api';
+import styles from './OrganisationCreatePage.module.css';
 
 /**
  * Organisation Create Page
@@ -57,15 +58,15 @@ export const OrganisationCreatePage: React.FC = () => {
       />
       <PageContent>
         <Card>
-          <form onSubmit={handleSubmit} style={{ maxWidth: '600px' }}>
+          <form onSubmit={handleSubmit} className={styles.form}>
             {error && (
-              <Alert variant="error" title="Error" style={{ marginBottom: '1rem' }}>
+              <Alert variant="error" title="Error" className={styles.errorAlert}>
                 {error}
               </Alert>
             )}
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'var(--font-medium)' }}>
+            <div className={styles.formGroup}>
+              <label htmlFor="name" className={styles.label}>
                 Name
               </label>
               <Input
@@ -79,8 +80,8 @@ export const OrganisationCreatePage: React.FC = () => {
               />
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label htmlFor="description" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'var(--font-medium)' }}>
+            <div className={styles.formGroupLarge}>
+              <label htmlFor="description" className={styles.label}>
                 Description
               </label>
               <Input
@@ -93,7 +94,7 @@ export const OrganisationCreatePage: React.FC = () => {
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem' }}>
+            <div className={styles.buttonRow}>
               <Button type="submit" variant="primary" disabled={loading}>
                 {loading ? 'Creating...' : 'Create Organisation'}
               </Button>

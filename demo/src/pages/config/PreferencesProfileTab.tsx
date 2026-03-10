@@ -5,6 +5,7 @@ import React from 'react';
 import { Card, Button, Badge, Alert } from '@django-core/design-system';
 import type { User as ApiUser } from '../../types/api/user';
 import type { usePreferencesData } from './usePreferencesData';
+import styles from './PreferencesProfileTab.module.css';
 
 /** Extended user profile — superset of auth User with backend-computed fields. */
 interface ProfileUser extends ApiUser {
@@ -55,11 +56,10 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
     <>
       {/* Profile card */}
       <Card>
-        <div className="gap-16" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div className={`gap-16 ${styles.profileHeader}`}>
           <div className="flex-row gap-16">
             <div
-              className="overflow-hidden flex-center fw-800 cursor-pointer rounded-full"
-              style={{ width: 56, height: 56, background: 'var(--app-border)' }}
+              className={`overflow-hidden flex-center fw-800 cursor-pointer rounded-full ${styles.avatarPlaceholder}`}
               role="button"
               tabIndex={0}
               title="Change profile photo"
@@ -72,7 +72,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
               }}
             >
               {String(u?.avatar_url || '').trim() ? (
-                <img src={String(u?.avatar_url)} alt="Profile" className="w-full h-full" style={{ objectFit: 'cover' }} />
+                <img src={String(u?.avatar_url)} alt="Profile" className={`w-full h-full ${styles.avatarImage}`} />
               ) : (
                 <span className="text-primary">
                   {String(u?.first_name || u?.email || 'U').trim().slice(0, 1).toUpperCase()}
@@ -94,7 +94,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
             </div>
           </div>
 
-          <div className="flex-wrap gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`flex-wrap gap-8 ${styles.actionsRow}`}>
             <Button variant="secondary" size="sm" onClick={() => {
               setProfileError(null);
               setProfileFirstName(String(u?.first_name || '').trim());
@@ -140,7 +140,7 @@ export function PreferencesProfileTab({ d }: { d: Data }) {
             <div className="mb-12">
               <div className="text-sm flex-row flex-wrap gap-8">
                 <Badge variant="default">Member: {memberName || membershipId.slice(0, 8) + '…'}</Badge>
-                {canLink && <a href={href} className="text-blue-600 hover:underline fs-13" style={{ textDecoration: 'none' }}>Open member profile</a>}
+                {canLink && <a href={href} className={`text-blue-600 hover:underline fs-13 ${styles.textLink}`}>Open member profile</a>}
               </div>
             </div>
           );

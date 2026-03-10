@@ -1,0 +1,20 @@
+/* IdentitySettingsCard – CSS Module */
+
+.titleLine {
+  line-height: 1.2;
+}
+
+.editButtons {
+  display: flex;
+}
+
+.settingsGrid {
+  grid-template-columns: 140px 1fr;
+  gap: var(--space-3) var(--space-4);
+}
+
+.logoImage {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+}

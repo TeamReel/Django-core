@@ -7,6 +7,7 @@ import {
 } from '@django-core/design-system';
 import { api } from '@/api';
 import type { PreferencesDataReturn } from './usePreferencesData';
+import styles from './PreferencesModals.module.css';
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                              */
@@ -114,7 +115,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
         }}
         title="Edit profile"
         footer={
-          <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`gap-8 ${styles.footer}`}>
             <Button
               variant="secondary"
               size="sm"
@@ -162,7 +163,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             <Alert variant="error">{profileError}</Alert>
           </div>
         )}
-        <div className="flex-col gap-12" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className={`flex-col gap-12 ${styles.flexColumn}`}>
           <Input
             label="First name"
             value={profileFirstName}
@@ -208,7 +209,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
             type="password"
             disabled={profileSaving}
           />
-          <div className="text-xs text-gray-500" style={{ marginTop: 'var(--space-2)' }}>
+          <div className={`text-xs text-gray-500 ${styles.marginTopSpace2}`}>
             Required to confirm changes to your account.
           </div>
         </div>
@@ -223,7 +224,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
         }}
         title="Change password"
         footer={
-          <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`gap-8 ${styles.footer}`}>
             <Button
               variant="secondary"
               size="sm"
@@ -309,7 +310,7 @@ export const PreferencesModals: React.FC<PreferencesModalsProps> = (props) => {
         }}
         title="Update profile photo"
         footer={
-          <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={`gap-8 ${styles.footer}`}>
             <Button
               variant="secondary"
               size="sm"

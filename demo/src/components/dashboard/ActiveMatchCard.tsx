@@ -124,9 +124,9 @@ export const ActiveMatchCard: React.FC = () => {
     return (
       <div className={styles.card}>
         <div className={styles.loadingState}>
-          <div className={styles.shimmerLine} style={{ width: '40%' }} />
-          <div className={styles.shimmerLine} style={{ width: '70%', height: '24px' }} />
-          <div className={styles.shimmerLine} style={{ width: '55%' }} />
+          <div className={`${styles.shimmerLine} ${styles.shimmerWidth40}`} />
+          <div className={`${styles.shimmerLine} ${styles.shimmerWidth70Tall}`} />
+          <div className={`${styles.shimmerLine} ${styles.shimmerWidth55}`} />
         </div>
       </div>
     );

@@ -9,6 +9,7 @@ import { Table } from '../../shims/design-system';
 import { useUsageEvents, formatTimestamp } from './useUsageEvents';
 import { UsageEventsFilters } from './UsageEventsFilters';
 import { UsageEventDetailModal } from './UsageEventDetailModal';
+import styles from './UsageEventsPage.module.css';
 
 export const UsageEventsPage: React.FC = () => {
   const d = useUsageEvents();
@@ -39,23 +40,14 @@ export const UsageEventsPage: React.FC = () => {
         actions={
           <div className="flex-row gap-12">
             {/* Role badge */}
-            <div className="fs-11 rounded-6 fw-600 cursor-default" style={{
-              padding: 'var(--space-1) var(--space-3)',
-              backgroundColor: d.isSuperadmin ? 'var(--color-blue-500)' : '#a855f7',
-              color: 'white',
-              letterSpacing: '0.5px',
-            }}>
+            <div className={`fs-11 rounded-6 fw-600 cursor-default ${styles.roleBadge}`} data-role={d.isSuperadmin ? 'admin' : 'org'}>
               {d.isSuperadmin ? '👑 ADMIN' : '👤 ORG'}
             </div>
 
             {/* Scope toggle — superadmin only */}
             {d.isSuperadmin && (
               <>
-                <div className="opacity-50" style={{
-                  height: '24px',
-                  width: '1px',
-                  backgroundColor: 'var(--app-border)',
-                }} />
+                <div className={`opacity-50 ${styles.scopeDivider}`} />
                 <ScopeToggle editMode={d.editMode} onSetEditMode={d.setEditMode} />
               </>
             )}
@@ -141,7 +133,7 @@ export const UsageEventsPage: React.FC = () => {
                     <td className="fs-sm">
                       {event.project_name || event.project || '-'}
                     </td>
-                    <td style={{ fontSize: '0.75rem', maxWidth: '200px' }}>
+                    <td className={styles.metadataCell}>
                       {event.metadata && Object.keys(event.metadata).length > 0 ? (
                         <code className="block truncate">
                           {JSON.stringify(event.metadata)}
@@ -153,8 +145,7 @@ export const UsageEventsPage: React.FC = () => {
                     <td>
                       <button
                         onClick={() => d.setSelectedEvent(event)}
-                        className="px-8 py-4 fs-12 border-none cursor-pointer bg-transparent"
-                        style={{ color: 'var(--app-primary)', textDecoration: 'underline' }}
+                        className={`px-8 py-4 fs-12 border-none cursor-pointer bg-transparent ${styles.detailsButton}`}
                       >
                         Details
                       </button>
@@ -168,7 +159,7 @@ export const UsageEventsPage: React.FC = () => {
 
         {/* Pagination */}
         {!d.loading && d.events.length > 0 && (
-          <div className="flex-center gap-12" style={{ marginTop: 'var(--space-5)' }}>
+          <div className={`flex-center gap-12 ${styles.pagination}`}>
             <Button
               variant="secondary"
               onClick={() => {
@@ -217,7 +208,7 @@ const ScopeToggle: React.FC<{
   editMode: 'global' | 'org';
   onSetEditMode: (m: 'global' | 'org') => void;
 }> = ({ editMode, onSetEditMode }) => (
-  <div className="gap-4 bg-surface rounded-6 border" style={{ display: 'flex', padding: 'var(--space-1)' }}>
+  <div className={`gap-4 bg-surface rounded-6 border ${styles.scopeToggle}`}>
     {(['global', 'org'] as const).map((mode) => (
       <button
         key={mode}

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Card, Input } from '@django-core/design-system';
+import styles from './IdentitySettingsCard.module.css';
 
 export type IdentitySettingsValues = {
   logoUrl: string;
@@ -64,7 +65,7 @@ export default function IdentitySettingsCard({
     <Card className="p-16">
       <div className="flex items-start justify-between gap-12">
         <div className="min-w-0">
-          <div className="text-lg font-semibold" style={{ lineHeight: 1.2 }}>
+          <div className={`text-lg font-semibold ${styles.titleLine}`}>
             {title}
           </div>
           {description ? (
@@ -75,7 +76,7 @@ export default function IdentitySettingsCard({
         </div>
 
         {canEdit && (
-          <div className="gap-8 flex-wrap" style={{ display: 'flex' }}>
+          <div className={`gap-8 flex-wrap ${styles.editButtons}`}>
             {isEditing ? (
               <>
                 <Button
@@ -108,7 +109,7 @@ export default function IdentitySettingsCard({
         </div>
       )}
 
-      <div className="mt-12 grid" style={{ gridTemplateColumns: '140px 1fr', gap: 'var(--space-3) var(--space-4)' }}>
+      <div className={`mt-12 grid ${styles.settingsGrid}`}>
         <div className="text-sm fw-600">
           Logo
         </div>
@@ -119,8 +120,7 @@ export default function IdentitySettingsCard({
             <img
               src={current.logoUrl}
               alt="logo"
-              className="rounded-6 border"
-              style={{ width: 28, height: 28, objectFit: 'cover' }}
+              className={`rounded-6 border ${styles.logoImage}`}
               onError={(e) => {
                 try {
                   e.currentTarget.style.display = 'none';

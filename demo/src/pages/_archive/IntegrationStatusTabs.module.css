@@ -1,0 +1,382 @@
+/* IntegrationStatusTabs.module.css — extracted inline styles */
+
+/* Platform Roadmap Card */
+.roadmapCard {
+  padding: 24px;
+  background-color: var(--app-surface);
+  border: 2px solid #007bff;
+  border-radius: 12px;
+  margin-bottom: 32px;
+}
+
+.roadmapTitle {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #007bff;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.statBlock {
+  text-align: center;
+}
+
+.statValueSuccess {
+  font-size: 48px;
+  font-weight: bold;
+  color: #28a745;
+}
+
+.statValueWarning {
+  font-size: 48px;
+  font-weight: bold;
+  color: #fd7e14;
+}
+
+.statValueMuted {
+  font-size: 48px;
+  font-weight: bold;
+  color: #6c757d;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: var(--app-muted-text);
+}
+
+.statSublabel {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  margin-top: 4px;
+}
+
+.statusText {
+  font-size: 13px;
+  color: var(--app-text);
+  line-height: 1.6;
+}
+
+/* Module Status Breakdown */
+.sectionTitle {
+  margin-bottom: 20px;
+}
+
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.moduleCard {
+  padding: 20px;
+  background-color: var(--app-surface);
+  border-radius: 8px;
+}
+
+.moduleCardComplete {
+  composes: moduleCard;
+  border: 2px solid #28a745;
+}
+
+.moduleCardInProgress {
+  composes: moduleCard;
+  border: 2px solid #fd7e14;
+}
+
+.moduleCardPlanned {
+  composes: moduleCard;
+  border: 2px solid #6c757d;
+}
+
+.moduleCardLabel {
+  font-size: 14px;
+  color: var(--app-muted-text);
+  margin-bottom: 8px;
+}
+
+.moduleCardValue {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.moduleCardValueComplete {
+  composes: moduleCardValue;
+  color: #28a745;
+}
+
+.moduleCardValueInProgress {
+  composes: moduleCardValue;
+  color: #fd7e14;
+}
+
+.moduleCardValuePlanned {
+  composes: moduleCardValue;
+  color: #6c757d;
+}
+
+.moduleCardSublabel {
+  font-size: 12px;
+  color: var(--app-muted-text);
+  margin-top: 4px;
+}
+
+/* Phase Progress */
+.phaseSection {
+  margin-bottom: 40px;
+}
+
+.phaseSectionTitle {
+  margin-bottom: 20px;
+}
+
+.phaseItem {
+  margin-bottom: 16px;
+}
+
+.phaseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.phaseName {
+  font-weight: 600;
+}
+
+.phaseInfo {
+  color: var(--app-muted-text);
+}
+
+.phaseProgressTrack {
+  height: 8px;
+  background-color: var(--app-surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Quick Actions */
+.quickActionsCard {
+  background-color: #e7f3ff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.quickActionsTitle {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.quickActionsRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.quickActionLink {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.quickActionLinkSuccess {
+  composes: quickActionLink;
+  background-color: #28a745;
+}
+
+.quickActionLinkDanger {
+  composes: quickActionLink;
+  background-color: #dc3545;
+}
+
+/* Recent Updates */
+.recentUpdatesCard {
+  background-color: #d4edda;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.recentUpdatesTitle {
+  margin-top: 0;
+  font-size: 16px;
+  color: #28a745;
+}
+
+.recentUpdatesText {
+  font-size: 14px;
+  color: var(--app-muted-text);
+  line-height: 1.6;
+}
+
+/* All Modules Header */
+.allModulesHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.allModulesTitle {
+  margin: 0;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.viewToggleLabel {
+  font-size: 14px;
+  color: var(--app-muted-text);
+  margin-right: 8px;
+}
+
+.viewToggleButton {
+  padding: 6px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: 4px;
+  background-color: var(--app-surface);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.viewToggleButtonActive {
+  composes: viewToggleButton;
+  background-color: var(--app-primary);
+  border-color: var(--app-primary);
+  color: white;
+}
+
+/* Filter Summary */
+.filterSummary {
+  background-color: #d4edda;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.filterSummaryText {
+  font-size: 15px;
+  font-weight: 600;
+  color: #155724;
+  margin-bottom: 4px;
+}
+
+.filterSummarySubtext {
+  font-size: 13px;
+  color: #155724;
+}
+
+.filterSummaryPurple {
+  composes: filterSummary;
+  background-color: #e2d9f3;
+}
+
+.filterSummaryTextPurple {
+  font-size: 15px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 4px;
+}
+
+.filterSummarySubtextPurple {
+  font-size: 13px;
+  color: #495057;
+}
+
+/* Filter Options */
+.filterOptions {
+  background-color: var(--app-surface);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  margin-bottom: 24px;
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.filterLabel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--app-muted-text);
+}
+
+.filterSelect {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--app-border);
+  font-size: 14px;
+}
+
+/* Page Container */
+.pageContainer {
+  padding: 20px;
+}
+
+.pageSection {
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  color: var(--app-muted-text);
+  margin-bottom: 16px;
+}
+
+/* Cards and Grids */
+.cardGrid {
+  display: grid;
+  gridTemplateColumns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background-color: var(--app-surface);
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid var(--app-border);
+}
+
+.cardWithHover {
+  composes: card;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.cardWithHover:hover {
+  border-color: #007bff;
+}
+
+/* Links */
+.link {
+  color: #007bff;
+}
+
+.linkButton {
+  display: inline-block;
+  margin-top: 16px;
+}

@@ -319,9 +319,9 @@ export const ContentOverviewCard: React.FC = () => {
       {/* Loading */}
       {loading && (
         <div>
-          <div className={styles.shimmer} style={{ width: '60%' }} />
-          <div className={styles.shimmer} style={{ width: '80%' }} />
-          <div className={styles.shimmer} style={{ width: '45%' }} />
+          <div className={`${styles.shimmer} ${styles.shimmerWidth60}`} />
+          <div className={`${styles.shimmer} ${styles.shimmerWidth80}`} />
+          <div className={`${styles.shimmer} ${styles.shimmerWidth45}`} />
         </div>
       )}
 
@@ -372,7 +372,7 @@ export const ContentOverviewCard: React.FC = () => {
           )}
 
           {openSections.has(sec.key) && sec.items && (
-            <div className={styles.typeChips} style={{ paddingTop: 'var(--space-2)' }}>
+            <div className={`${styles.typeChips} ${styles.paddingTopSmall}`}>
               {sec.items.map(item => (
                 <span
                   key={item.subtype}
@@ -392,7 +392,7 @@ export const ContentOverviewCard: React.FC = () => {
       {/* Empty state */}
       {!loading && sections.length === 0 && (
         <div className={styles.emptyState}>
-          <Sparkles size={16} style={{ marginRight: 'var(--space-2)' }} />
+          <Sparkles size={16} className={styles.marginRightSmall} />
           Nog geen content gegenereerd
         </div>
       )}

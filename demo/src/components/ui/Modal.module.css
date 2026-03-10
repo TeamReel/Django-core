@@ -1,0 +1,31 @@
+/* Modal.module.css — extracted inline styles */
+
+.iconWrapper {
+  width: 36px;
+  height: 36px;
+  background: var(--app-primary);
+  color: var(--color-white, #fff);
+}
+
+.title {
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+  color: var(--app-text);
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--app-text-secondary);
+  margin-top: var(--space-1);
+}
+
+.closeButton {
+  color: var(--app-text-secondary);
+  line-height: 0;
+}
+
+.footer {
+  padding: var(--space-4) var(--space-5);
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

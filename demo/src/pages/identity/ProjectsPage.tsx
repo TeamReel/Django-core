@@ -8,6 +8,7 @@ import ProjectEditModal from './ProjectEditModal';
 import ProjectDetailModal from './ProjectDetailModal';
 import { useProjectsPageData } from './useProjectsPageData';
 import { ProjectsTable, filterProjects } from './ProjectsTable';
+import styles from './ProjectsPage.module.css';
 
 /**
  * T008 - Projects List Page
@@ -133,21 +134,19 @@ export const ProjectsPage: React.FC = () => {
       {/* Org Selection Modal */}
       {isOrgSelectionModalOpen && (
         <div
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 'var(--z-modal)' }}
+          className={styles.modalOverlay}
           onClick={() => setIsOrgSelectionModalOpen(false)}>
-          <div style={{ backgroundColor: 'var(--app-surface)', borderRadius: 'var(--radius-md)', padding: 'var(--space-6)', minWidth: 400, maxWidth: 500, boxShadow: 'var(--shadow-md)' }}
+          <div className={styles.modalContent}
             onClick={e => e.stopPropagation()}>
-            <h2 className="mb-16" style={{ marginTop: 0, color: 'var(--app-text)' }}>Select Organisation</h2>
+            <h2 className={`mb-16 ${styles.modalTitle}`}>Select Organisation</h2>
             <p className="text-muted mb-24">Choose an organisation to create the project in:</p>
             <div className="flex-col gap-8">
               {organisations.map(org => (
                 <button key={org.id}
                   onClick={() => { setIsOrgSelectionModalOpen(false); navigate(`/organisations/${org.slug}/projects/create`); }}
-                  style={{ padding: 'var(--space-3) var(--space-4)', border: '1px solid var(--app-border)', borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--app-surface-2)', cursor: 'pointer', textAlign: 'left', transition: 'all .2s', color: 'var(--app-text)' }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--app-table-row-hover-bg)'; e.currentTarget.style.borderColor = '#2196f3'; }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--app-surface-2)'; e.currentTarget.style.borderColor = 'var(--app-border)'; }}>
+                  className={styles.orgSelectButton}>
                   <div className="fw-500">{org.name}</div>
-                  {org.description && <div className="fs-12 mt-4" style={{ color: 'var(--app-muted-text)' }}>{org.description}</div>}
+                  {org.description && <div className={`fs-12 mt-4 ${styles.orgDescription}`}>{org.description}</div>}
                 </button>
               ))}
             </div>

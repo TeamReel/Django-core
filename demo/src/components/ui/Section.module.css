@@ -1,0 +1,10 @@
+/* Section — titled content section */
+
+.title {
+  color: var(--app-text);
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--app-text-secondary);
+}

@@ -111,7 +111,7 @@ export function LineupStep() {
           {guestPlayers.length > 0 && (
             <div className={styles.guestSection}>
               <div className="fs-12 fw-600 uppercase text-muted">Gasten</div>
-              <div className="flex-row gap-6" style={{ flexWrap: 'wrap' }}>
+              <div className={`flex-row gap-6 ${styles.flexWrap}`}>
                 {guestPlayers.map(g => (
                   <span key={g.id} className={styles.guestTag}>
                     {g.metadata?.shirt_number && <span className={styles.guestTagJersey}>#{g.metadata.shirt_number}</span>}
@@ -127,7 +127,7 @@ export function LineupStep() {
 
           {showGuestForm ? (
             <div className={styles.guestForm}>
-              <div className="fw-600 fs-13 text-primary" style={{ marginBottom: 'var(--space-2)' }}>Gast toevoegen</div>
+              <div className={`fw-600 fs-13 text-primary ${styles.guestFormHeader}`}>Gast toevoegen</div>
               <div className="flex-row gap-8">
                 <input
                   className={styles.guestInput}
@@ -138,15 +138,14 @@ export function LineupStep() {
                   autoFocus
                 />
                 <input
-                  className={styles.guestInput}
+                  className={`${styles.guestInput} ${styles.guestInputSmall}`}
                   placeholder="#"
                   value={guestJersey}
                   onChange={e => setGuestJersey(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddGuest()}
-                  style={{ maxWidth: 56 }}
                 />
               </div>
-              <div className="flex-row gap-8" style={{ marginTop: 'var(--space-2)' }}>
+              <div className={`flex-row gap-8 ${styles.guestFormActions}`}>
                 <button onClick={handleAddGuest} disabled={!guestName.trim()} className={styles.guestAddBtn}>
                   Toevoegen
                 </button>
@@ -183,7 +182,7 @@ export function LineupStep() {
                       Annuleren
                     </button>
                   </div>
-                  <div className="flex-col gap-4 overflow-y-auto" style={{ maxHeight: 200 }}>
+                  <div className={`flex-col gap-4 overflow-y-auto ${styles.playerOptionsScroll}`}>
                     <button
                       onClick={() => { handleSelectPlayer(positionIdx, isGoalkeeper, null); setEditingPosition(null); }}
                       className={styles.playerOption}

@@ -1,0 +1,8 @@
+.filterInput {
+  border: 1px solid var(--app-border);
+}
+
+.filterInputNarrow {
+  border: 1px solid var(--app-border);
+  max-width: 150px;
+}

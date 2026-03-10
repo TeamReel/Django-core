@@ -13,6 +13,7 @@ import type {
   SavedAssetPreview,
 } from './types';
 import { ContentRow, getSyntheticTemplate } from './MatchContentComponents';
+import styles from './MatchContentTab.module.css';
 
 interface MatchContentTabProps {
   match: MatchDetail;
@@ -91,8 +92,8 @@ export default function MatchContentTab({
 
   if (matchMediaLoading) {
     return (
-      <div className="text-center text-muted" style={{ padding: '32px 0' }}>
-        <div className="mb-8" style={{ fontSize: 28 }}></div>
+      <div className={`text-center text-muted ${styles.loadingContainer}`}>
+        <div className={`mb-8 ${styles.loadingIcon}`}></div>
         <div>Media laden...</div>
       </div>
     );
@@ -107,21 +108,12 @@ export default function MatchContentTab({
         return (
           <div key={categoryKey}>
             {/* Section header */}
-            <div className="fs-11 fw-700 mb-8" style={{
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              color: 'var(--app-muted-text, #888)',
-              paddingLeft: 'var(--space-1)',
-            }}>
+            <div className={`fs-11 fw-700 mb-8 ${styles.sectionHeader}`}>
               {category.label}
             </div>
 
             {/* Content rows */}
-            <div className="overflow-hidden" style={{
-              borderRadius: 'var(--radius-lg)',
-              border: '1px solid var(--app-border, #333)',
-              background: 'var(--app-surface, #1e1e1e)',
-            }}>
+            <div className={`overflow-hidden ${styles.contentRowsContainer}`}>
               {category.items.map((item, idx) => {
                 const existingItem = getContentItemForSubtype(item.subtype);
                 const isGenerating = existingItem != null && ['queued', 'generating'].includes(existingItem.status);

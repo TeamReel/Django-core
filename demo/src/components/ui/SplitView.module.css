@@ -1,0 +1,21 @@
+/* SplitView – CSS Module */
+
+.container {
+  display: flex;
+  min-height: 0;
+}
+
+.containerReverse {
+  flex-direction: row-reverse;
+}
+
+.sidebar {
+  flex-shrink: 0;
+  overflow: auto;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}

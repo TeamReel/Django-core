@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text } from '@django-core/design-system';
+import styles from './SectionPageLayout.module.css';
 
 interface SectionPageLayoutProps {
   title: string;
@@ -9,10 +10,10 @@ interface SectionPageLayoutProps {
 
 export function SectionPageLayout({ title, description, children }: SectionPageLayoutProps) {
   return (
-    <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
+    <div className={styles.container}>
       {/* Header */}
-      <div style={{ marginBottom: 'var(--space-8)' }}>
-        <Text size="xl" weight="bold" style={{ marginBottom: 'var(--space-2)' }}>
+      <div className={styles.header}>
+        <Text size="xl" weight="bold" className={styles.titleMargin}>
           {title}
         </Text>
         {description && (

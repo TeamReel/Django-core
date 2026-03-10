@@ -13,6 +13,7 @@ import {
   updateOrgOverride,
   ScopeType
 } from '../../utils/featureFlagsApi';
+import styles from './FeatureFlagsCard.module.css';
 
 interface FeatureFlag {
   id: string;
@@ -216,7 +217,7 @@ const FeatureFlagsCard: React.FC<FeatureFlagsCardProps> = ({
                 </Badge>
               ),
               actions: (
-                <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+                <div className={styles.actionsRow}>
                   <Button
                     size="sm"
                     variant={effectiveValue ? 'outline' : 'primary'}

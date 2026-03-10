@@ -1,0 +1,23 @@
+/* KitsTab.module.css — extracted inline styles */
+
+.sectionTitle {
+  margin-top: 0;
+}
+
+.kitImageContainer {
+  aspect-ratio: 3/4;
+  background-color: var(--app-surface-secondary);
+}
+
+.kitImagePlaceholder {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.kitImage {
+  object-fit: contain;
+}
+
+.instructionsList {
+  padding-left: var(--space-5);
+}

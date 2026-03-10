@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@django-core/design-system';
 import { api } from '../../api';
+import styles from './OrgEditMemberRoleModal.module.css';
 
 export interface OrgEditMemberRoleModalProps {
   opened: boolean;
@@ -25,24 +26,10 @@ export function OrgEditMemberRoleModal({
 
   return (
     <div
-      className="flex-center"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        zIndex: 'var(--z-toast)',
-      }}
+      className={`flex-center ${styles.overlay}`}
     >
       <div
-        className="bg-surface p-24 rounded-8 text-primary border"
-        style={{
-          width: '520px',
-          maxWidth: '95%',
-          boxShadow: 'var(--shadow-md)',
-        }}
+        className={`bg-surface p-24 rounded-8 text-primary border ${styles.modal}`}
       >
         <div className="flex-between gap-12">
           <h2 className="m-0">Edit Member</h2>
@@ -61,28 +48,25 @@ export function OrgEditMemberRoleModal({
         </div>
 
         {error ? (
-          <div className="mt-12 rounded-6" style={{ padding: 'var(--space-3) var(--space-3)', backgroundColor: 'var(--color-red-100)', color: 'var(--color-red-500)' }}>
+          <div className={`mt-12 rounded-6 ${styles.errorBox}`}>
             {error}
           </div>
         ) : null}
 
         <div className="mt-16">
-          <label className="block fw-600" style={{ marginBottom: 'var(--space-2)' }}>Role</label>
+          <label className={`block fw-600 ${styles.label}`}>Role</label>
           <select
             value={editingMemberRole}
             onChange={(e) => setEditingMemberRole(e.target.value as any)}
             disabled={saving}
-            className="w-full rounded-6 border bg-surface-2 text-primary"
-            style={{
-              padding: 'var(--space-2) var(--space-3)',
-            }}
+            className={`w-full rounded-6 border bg-surface-2 text-primary ${styles.selectInput}`}
           >
             <option value="member">Member</option>
             <option value="admin">Admin</option>
           </select>
         </div>
 
-        <div className="gap-8" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '18px' }}>
+        <div className={`gap-8 ${styles.footer}`}>
           <Button
             variant="secondary"
             onClick={onClose}

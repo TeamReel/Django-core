@@ -4,6 +4,7 @@
  * Unifies the shimmed PageHeader from page-templates and ad-hoc h1 headers.
  */
 import React from 'react';
+import styles from './PageHeader.module.css';
 
 export interface PageHeaderProps {
   /** Page title */
@@ -20,11 +21,11 @@ export interface PageHeaderProps {
 export function PageHeader({ title, subtitle, actions, children, className = '' }: PageHeaderProps) {
   return (
     <div className={className}>
-      <div className="flex-row gap-12" style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+      <div className={`flex-row gap-12 ${styles.headerRow}`}>
         <div>
-          <h1 className="m-0 fw-800" style={{ fontSize: 'var(--text-xl)', color: 'var(--app-text)' }}>{title}</h1>
+          <h1 className={`m-0 fw-800 ${styles.title}`}>{title}</h1>
           {subtitle && (
-            <p className="m-0 mt-4" style={{ fontSize: 'var(--text-sm)', color: 'var(--app-text-secondary)' }}>{subtitle}</p>
+            <p className={`m-0 mt-4 ${styles.subtitle}`}>{subtitle}</p>
           )}
         </div>
         {actions && <div className="flex-row gap-8 flex-wrap">{actions}</div>}

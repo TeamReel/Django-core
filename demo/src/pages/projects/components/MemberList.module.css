@@ -1,0 +1,13 @@
+/* MemberList — Team roster table */
+
+.seasonSelect {
+  min-width: 200px;
+}
+
+.numberColumn {
+  width: 50px;
+}
+
+.mutedText {
+  color: var(--app-muted-text);
+}

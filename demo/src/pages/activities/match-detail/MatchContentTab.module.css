@@ -1,0 +1,22 @@
+/* MatchContentTab – CSS Module */
+
+.loadingContainer {
+  padding: 32px 0;
+}
+
+.loadingIcon {
+  font-size: 28px;
+}
+
+.sectionHeader {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--app-muted-text, #888);
+  padding-left: var(--space-1);
+}
+
+.contentRowsContainer {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border, #333);
+  background: var(--app-surface, #1e1e1e);
+}

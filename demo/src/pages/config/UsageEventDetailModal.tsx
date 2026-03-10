@@ -1,5 +1,6 @@
 import React from 'react';
 import type { UsageEvent } from './usageEvents.types';
+import styles from './UsageEventDetailModal.module.css';
 
 interface UsageEventDetailModalProps {
   event: UsageEvent;
@@ -8,29 +9,18 @@ interface UsageEventDetailModalProps {
 
 export const UsageEventDetailModal: React.FC<UsageEventDetailModalProps> = ({ event, onClose }) => (
   <div
-    className="flex-center"
-    style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 'var(--z-modal)',
-    }}
+    className={`flex-center ${styles.overlay}`}
     onClick={onClose}
   >
     <div
-      className="bg-surface rounded-8 max-w-800 overflow-auto p-24"
-      style={{ width: '90%', maxHeight: '80vh', boxShadow: 'var(--shadow-md)' }}
+      className={`bg-surface rounded-8 max-w-800 overflow-auto p-24 ${styles.modal}`}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="flex-between" style={{ marginBottom: 'var(--space-5)' }}>
+      <div className={`flex-between ${styles.header}`}>
         <h2 className="m-0 fs-18 fw-600 text-primary">Usage Event Details</h2>
         <button
           onClick={onClose}
-          className="fs-24 border-none bg-transparent cursor-pointer text-primary"
-          style={{ padding: '0 var(--space-2)' }}
+          className={`fs-24 border-none bg-transparent cursor-pointer text-primary ${styles.closeButton}`}
           aria-label="Close"
         >
           ×
@@ -62,8 +52,7 @@ export const UsageEventDetailModal: React.FC<UsageEventDetailModalProps> = ({ ev
           <div>
             <div className="fs-12 text-muted mb-4">Metadata</div>
             <pre
-              className="fs-12 bg-surface-2 p-12 rounded-4 overflow-auto text-primary border"
-              style={{ fontFamily: 'monospace', maxHeight: '300px' }}
+              className={`fs-12 bg-surface-2 p-12 rounded-4 overflow-auto text-primary border ${styles.jsonCode}`}
             >
               {JSON.stringify(event.metadata, null, 2)}
             </pre>

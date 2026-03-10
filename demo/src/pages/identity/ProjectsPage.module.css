@@ -1,0 +1,46 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+}
+
+.modalContent {
+  background-color: var(--app-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: var(--shadow-md);
+}
+
+.modalTitle {
+  margin-top: 0;
+  color: var(--app-text);
+}
+
+.orgSelectButton {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--app-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--app-surface-2);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  color: var(--app-text);
+}
+
+.orgSelectButton:hover {
+  background-color: var(--app-table-row-hover-bg);
+  border-color: #2196f3;
+}
+
+.orgDescription {
+  color: var(--app-muted-text);
+}

@@ -72,7 +72,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
       <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
         <h2 className={s.editMemberTitle}>Edit Member Roles</h2>
 
-        <div style={{ marginBottom: 'var(--space-6)' }}>
+        <div className={s.marginBottomSpace6}>
           <div className={s.memberInfoRow}>
             <strong className={s.memberInfoLabel}>Name:</strong>{' '}
             {member.user?.name ||
@@ -86,7 +86,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
         </div>
 
         {/* Access Role Section */}
-        <div style={{ marginBottom: 'var(--space-6)' }}>
+        <div className={s.marginBottomSpace6}>
           <label className={s.fieldLabel}>Access Role</label>
           <div className={s.radioGroup}>
             {accessRoleOptions.map((opt) => {
@@ -120,7 +120,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
           </div>
         </div>
 
-        <div style={{ marginBottom: 'var(--space-6)' }}>
+        <div className={s.marginBottomSpace6}>
           <label className={s.fieldLabel}>Functional Roles</label>
           <div className={s.roleGrid}>
             {(['goalkeeper', 'player', 'coach', 'assistant'] as const).map((role) => {
@@ -158,7 +158,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
                         };
                       });
                     }}
-                    style={{ cursor: 'pointer' }}
+                    className={s.cursorPointer}
                   />
                   <span className={s.roleLabel}>{role}</span>
                 </label>

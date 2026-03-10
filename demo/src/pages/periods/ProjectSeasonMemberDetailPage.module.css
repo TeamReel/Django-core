@@ -160,3 +160,21 @@
 /* ── Mobile Action Bar ── */
 .mobileActionSave { flex: 2; }
 .mobileActionSquad { flex: 1; }
+
+/* ── Overview Tab Utilities ── */
+.phaseSection {
+  margin-bottom: var(--space-5);
+}
+
+.phaseHeader {
+  margin-bottom: var(--space-3);
+}
+
+.opacity60 {
+  opacity: 0.6;
+}
+
+.progressTrack {
+  height: 8px;
+  background: var(--app-border);
+}

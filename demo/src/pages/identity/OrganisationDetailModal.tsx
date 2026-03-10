@@ -1,5 +1,6 @@
 import { Badge } from '@django-core/design-system';
 import type { Organisation } from '../../types';
+import styles from './OrganisationDetailModal.module.css';
 
 interface OrganisationDetailModalProps {
   opened: boolean;
@@ -11,22 +12,9 @@ export default function OrganisationDetailModal({ opened, onClose, organisation 
   if (!opened || !organisation) return null;
 
   return (
-    <div className="flex-center" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 'var(--z-modal)'
-    }}>
-      <div className="bg-surface p-24 rounded-8 overflow-auto text-primary border" style={{
-        width: '600px',
-        maxWidth: '90%',
-        maxHeight: '80vh',
-        boxShadow: 'var(--shadow-md)'
-      }}>
-        <h2 className="text-primary" style={{ marginTop: 0, marginBottom: 'var(--space-5)' }}>Organisation Details</h2>
+    <div className={`flex-center ${styles.modalBackdrop}`}>
+      <div className={`bg-surface p-24 rounded-8 overflow-auto text-primary border ${styles.modalContent}`}>
+        <h2 className={`text-primary ${styles.modalTitle}`}>Organisation Details</h2>
 
         <div className="flex-col gap-20">
           {/* Organisation Information */}
@@ -81,7 +69,7 @@ export default function OrganisationDetailModal({ opened, onClose, organisation 
           </div>
         </div>
 
-        <div className="mt-24" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className={`mt-24 ${styles.modalFooter}`}>
           <button
             onClick={onClose}
             className="py-8 px-16 rounded-4 border bg-surface-2 text-primary cursor-pointer"

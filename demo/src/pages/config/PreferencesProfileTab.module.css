@@ -1,0 +1,24 @@
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.avatarPlaceholder {
+  width: 56px;
+  height: 56px;
+  background: var(--app-border);
+}
+
+.avatarImage {
+  object-fit: cover;
+}
+
+.actionsRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.textLink {
+  text-decoration: none;
+}

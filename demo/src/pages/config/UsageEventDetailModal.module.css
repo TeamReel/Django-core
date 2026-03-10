@@ -1,0 +1,28 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: var(--z-toast);
+}
+
+.modal {
+  width: 90%;
+  max-height: 80vh;
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  margin-bottom: var(--space-5);
+}
+
+.closeButton {
+  padding: 0 var(--space-2);
+}
+
+.jsonCode {
+  font-family: monospace;
+  max-height: 300px;
+}

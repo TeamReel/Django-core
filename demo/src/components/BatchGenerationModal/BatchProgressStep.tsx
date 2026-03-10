@@ -8,6 +8,7 @@ import { getAssetUrl } from '../../hooks/useBrandProfile';
 import type { AssetTemplate } from '../../constants/assetTemplates';
 import type { BatchMember, MemberJobStatus } from './batchTypes';
 import configStyles from './BatchConfigureStep.module.css';
+import styles from './BatchProgressStep.module.css';
 
 interface BatchProgressStepProps {
   step: 'running' | 'done';
@@ -33,15 +34,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
   <>
     {/* Background processing notice for video types */}
     {step === 'running' && (selectedTemplate?.category === 'intro' || selectedTemplate?.category === 'celebration') && (
-      <div style={{
-        padding: 'var(--space-3) var(--space-3)',
-        marginBottom: 'var(--space-3)',
-        background: 'rgba(59, 130, 246, 0.1)',
-        border: '1px solid rgba(59, 130, 246, 0.3)',
-        borderRadius: 'var(--radius-md)',
-        fontSize: 'var(--text-xs)',
-        color: 'var(--color-blue-400)',
-      }}>
+      <div className={styles.backgroundNotice}>
         Video processing draait op de server. Je kunt dit sluiten — de verwerking gaat door.
       </div>
     )}
@@ -56,17 +49,9 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
       </div>
 
       {/* Progress bar */}
-      <div style={{
-        height: '4px',
-        borderRadius: 'var(--radius-sm)',
-        background: 'var(--app-border, #333)',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          height: '100%',
+      <div className={styles.progressBarTrack}>
+        <div className={`${styles.progressBarFill} ${errorCount > 0 ? styles.progressBarFillWarning : styles.progressBarFillSuccess}`} style={{
           width: `${members.length > 0 ? (completedCount / members.length) * 100 : 0}%`,
-          background: errorCount > 0 ? 'var(--color-amber-400)' : 'var(--color-green-400)',
-          transition: 'width 0.3s ease',
         }} />
       </div>
     </div>
@@ -82,7 +67,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
         <span className="status-muted"><Circle size={14} /></span>;
 
       return (
-        <div key={member.id} className={configStyles.memberRow} style={{ cursor: 'default' }}>
+        <div key={member.id} className={`${configStyles.memberRow} ${styles.cursorDefault}`}>
           {member.profilePhotoUrl ? (
             <img src={getAssetUrl(member.profilePhotoUrl) || ''} alt="" className={configStyles.avatar} />
           ) : (
@@ -93,7 +78,7 @@ export const BatchProgressStep: React.FC<BatchProgressStepProps> = ({
           <div className="flex-1-min">
             <div className="fs-13 fw-500">{member.name}</div>
             {job?.error && (
-              <div className="fs-10" style={{ color: 'var(--color-red-500)' }}>{job.error}</div>
+              <div className={`fs-10 ${styles.errorText}`}>{job.error}</div>
             )}
             {job?.status === 'running' && (
               <div className="fs-10 status-running">

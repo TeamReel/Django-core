@@ -4,6 +4,7 @@
 import React from 'react';
 import { Button } from '@django-core/design-system';
 import type { ProjectOption } from './useUsersData';
+import styles from './UsersFilterBar.module.css';
 
 export interface UsersFilterState {
   statusFilter: string;
@@ -69,7 +70,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value); resetPageToFirst(); }}
-          className="p-8 rounded-4" style={{ border: '1px solid var(--app-border)' }}
+          className={`p-8 rounded-4 ${styles.filterInput}`}
         >
           <option value="all">All</option>
           <option value="active">Active</option>
@@ -80,7 +81,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
         <select
           value={roleFilter}
           onChange={(e) => { setRoleFilter(e.target.value); resetPageToFirst(); }}
-          className="p-8 rounded-4" style={{ border: '1px solid var(--app-border)' }}
+          className={`p-8 rounded-4 ${styles.filterInput}`}
         >
           <option value="">All Roles</option>
           {availableRoles.map(role => (
@@ -97,7 +98,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
             setSelectedTeamId(''); setSelectedTeamKey('');
             resetPageToFirst();
           }}
-          className="p-8 rounded-4" style={{ border: '1px solid var(--app-border)' }}
+          className={`p-8 rounded-4 ${styles.filterInput}`}
         >
           <option value="">All Organisations</option>
           {(isSuperAdmin ? organisations : myOrganisations).map(org => (
@@ -117,7 +118,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
             setSelectedTeamId(''); setSelectedTeamKey('');
             resetPageToFirst();
           }}
-          className="p-8 rounded-4" style={{ border: '1px solid var(--app-border)', maxWidth: '150px' }}
+          className={`p-8 rounded-4 ${styles.filterInputNarrow}`}
         >
           <option value="">All Clubs</option>
           {clubs
@@ -144,7 +145,7 @@ export const UsersFilterBar: React.FC<UsersFilterBarProps> = ({
             setSelectedTeamKey(teamKey);
             resetPageToFirst();
           }}
-          className="p-8 rounded-4" style={{ border: '1px solid var(--app-border)', maxWidth: '150px' }}
+          className={`p-8 rounded-4 ${styles.filterInputNarrow}`}
         >
           <option value="">All Teams</option>
           {teams

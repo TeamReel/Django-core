@@ -1,0 +1,27 @@
+/* UsersTable.module.css — extracted inline styles */
+
+.colUser {
+  width: 260px;
+}
+
+.colEmail {
+  width: 260px;
+}
+
+.colRole {
+  width: 140px;
+}
+
+.colFunctional {
+  width: 200px;
+}
+
+.colActions {
+  width: 330px;
+}
+
+.functionalRolesRow {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}

@@ -231,3 +231,14 @@
   color: var(--app-muted-text);
   margin-top: var(--space-1);
 }
+
+/* ── Icon variants ────────────────────────────────────────────────── */
+.iconPrimary {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--app-primary);
+}
+
+.iconRed {
+  background: rgba(236, 72, 153, 0.1);
+  color: var(--color-red-400);
+}

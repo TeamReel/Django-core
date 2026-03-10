@@ -1,0 +1,33 @@
+.grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.link {
+  text-decoration: none;
+}
+
+.card {
+  padding: var(--space-6);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--duration-fast) var(--ease-default);
+  cursor: pointer;
+  border: 1px solid var(--app-border);
+}
+
+.iconContainer {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.title {
+  margin-bottom: var(--space-1);
+}

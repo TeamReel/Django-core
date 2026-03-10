@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card, Input, Alert } from '@django-core/design-system';
+import styles from './ClubHierarchyTab.module.css';
 
 type Period = {
   id: string;
@@ -155,8 +156,8 @@ export function ClubHierarchyTab({
       ) : (
         <div className="mt-12 flex-col gap-10">
           {/* Club summary row */}
-          <div className="border bg-surface overflow-hidden" style={{ borderRadius: 'var(--radius-lg)' }}>
-            <div className="flex-between gap-12 border-bottom bg-surface-2" style={{ padding: 'var(--space-3) var(--space-3)' }}>
+          <div className={`border bg-surface overflow-hidden ${styles.cardWrapper}`}>
+            <div className={`flex-between gap-12 border-bottom bg-surface-2 ${styles.cardHeader}`}>
               <div className="flex-col gap-2 min-w-0">
                 <div className="fw-800 fs-14 text-primary">{club?.name || 'Club'}</div>
               </div>
@@ -189,15 +190,14 @@ export function ClubHierarchyTab({
             const matchesCount = hierarchyMatchesCountByTeamId[String(team.id)] ?? 0;
 
             return (
-              <div key={team.id} className="border bg-surface overflow-hidden" style={{ borderRadius: 'var(--radius-lg)' }}>
-                <div className="flex-between gap-12 border-bottom bg-surface-2" style={{ padding: 'var(--space-3) var(--space-3)' }}>
+              <div key={team.id} className={`border bg-surface overflow-hidden ${styles.cardWrapper}`}>
+                <div className={`flex-between gap-12 border-bottom bg-surface-2 ${styles.cardHeader}`}>
                   <div className="flex-col gap-2 min-w-0">
                     {teamPath ? (
                       <button
                         type="button"
-                        className="app-unstyled-button hover:underline text-left fw-800 fs-14"
+                        className={`app-unstyled-button hover:underline text-left fw-800 fs-14 ${styles.blueLink}`}
                         onClick={() => navigate(teamPath)}
-                        style={{ color: 'var(--color-blue-400)' }}
                       >
                         {team.name}
                       </button>
@@ -223,7 +223,7 @@ export function ClubHierarchyTab({
                   </div>
                 </div>
 
-                <div style={{ padding: 'var(--space-3) var(--space-3)' }}>
+                <div className={styles.cardBody}>
                   {seasons.length === 0 ? (
                     <div className="text-sm text-gray-500 py-2">No seasons.</div>
                   ) : (
@@ -245,9 +245,8 @@ export function ClubHierarchyTab({
                               {seasonPath ? (
                                 <button
                                   type="button"
-                                  className="app-unstyled-button hover:underline text-left fw-700 fs-13"
+                                  className={`app-unstyled-button hover:underline text-left fw-700 fs-13 ${styles.blueLink}`}
                                   onClick={() => navigate(seasonPath)}
-                                  style={{ color: 'var(--color-blue-400)' }}
                                 >
                                   {String(s?.name || 'Season')}
                                 </button>

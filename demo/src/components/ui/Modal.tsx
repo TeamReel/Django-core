@@ -10,6 +10,7 @@
  */
 import React, { useEffect, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
+import styles from './Modal.module.css';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -121,20 +122,19 @@ export function Modal({
             <div className="flex-row gap-12" style={{ alignItems: 'center' }}>
               {icon && (
                 <div
-                  className="flex-center rounded-8"
-                  style={{ width: 36, height: 36, background: 'var(--app-primary)', color: 'var(--color-white, #fff)' }}
+                  className={`flex-center rounded-8 ${styles.iconWrapper}`}
                 >
                   {icon}
                 </div>
               )}
               <div>
                 {title && (
-                  <div id="modal-title" style={{ fontWeight: 'var(--font-bold)', fontSize: 'var(--text-base)', color: 'var(--app-text)' }}>
+                  <div id="modal-title" className={styles.title}>
                     {title}
                   </div>
                 )}
                 {subtitle && (
-                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--app-text-secondary)', marginTop: 'var(--space-1)' }}>
+                  <div className={styles.subtitle}>
                     {subtitle}
                   </div>
                 )}
@@ -144,8 +144,7 @@ export function Modal({
             {!preventClose && (
               <button
                 onClick={onClose}
-                className="bg-transparent border-none cursor-pointer p-8 rounded-6"
-                style={{ color: 'var(--app-text-secondary)', lineHeight: 0 }}
+                className={`bg-transparent border-none cursor-pointer p-8 rounded-6 ${styles.closeButton}`}
                 aria-label="Close"
               >
                 <X size={20} />
@@ -160,8 +159,7 @@ export function Modal({
         {/* Footer */}
         {footer && (
           <div
-            className="flex-row border-top"
-            style={{ padding: 'var(--space-4) var(--space-5)', justifyContent: 'flex-end', gap: 'var(--space-2)' }}
+            className={`flex-row border-top ${styles.footer}`}
           >
             {footer}
           </div>

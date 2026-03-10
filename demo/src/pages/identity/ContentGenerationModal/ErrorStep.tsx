@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { Button, Alert } from '@django-core/design-system';
+import styles from './ErrorStep.module.css';
 
 interface ErrorStepProps {
   error: string | null;
@@ -12,13 +13,13 @@ interface ErrorStepProps {
 
 export default function ErrorStep({ error, onRetry, onClose }: ErrorStepProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', paddingTop: 'var(--space-12)', paddingBottom: 'var(--space-12)', textAlign: 'center' }}>
-      <div style={{ fontSize: '60px', marginBottom: 'var(--space-4)' }}>!</div>
-      <h3 style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--font-bold)', marginBottom: 'var(--space-2)', color: 'var(--app-error, #E63946)' }}>Generatie mislukt</h3>
-      <Alert variant="error" style={{ maxWidth: '448px', marginBottom: 'var(--space-6)' }}>
+    <div className={styles.container}>
+      <div className={styles.errorIcon}>!</div>
+      <h3 className={styles.errorTitle}>Generatie mislukt</h3>
+      <Alert variant="error" className={styles.alertBox}>
         {error || 'Er is een onbekende fout opgetreden'}
       </Alert>
-      <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+      <div className={styles.actions}>
         <Button variant="secondary" onClick={onRetry}>
           Opnieuw proberen
         </Button>

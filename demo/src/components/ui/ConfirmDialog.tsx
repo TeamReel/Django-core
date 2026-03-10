@@ -10,6 +10,7 @@
  */
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { Modal } from './Modal';
+import styles from './ConfirmDialog.module.css';
 
 export interface ConfirmOptions {
   /** Dialog title */
@@ -63,35 +64,23 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
           title={state.title || 'Confirm'}
           size="sm"
         >
-          <div style={{ padding: '8px 0 24px' }}>
-            <p className="m-0 fs-14" style={{ color: 'var(--app-text)', lineHeight: 1.5 }}>
+          <div className={styles.contentWrapper}>
+            <p className={`m-0 fs-14 ${styles.message}`}>
               {state.message}
             </p>
           </div>
-          <div className="flex-row gap-8" style={{ justifyContent: 'flex-end' }}>
+          <div className={`flex-row gap-8 ${styles.footer}`}>
             <button
               type="button"
               onClick={() => handleClose(false)}
-              className="rounded-8 cursor-pointer fs-13 fw-600"
-              style={{
-                padding: 'var(--space-2) var(--space-4)',
-                border: '1px solid var(--app-border)',
-                background: 'var(--app-surface)',
-                color: 'var(--app-text)',
-              }}
+              className={`rounded-8 cursor-pointer fs-13 fw-600 ${styles.cancelButton}`}
             >
               {state.cancelLabel || 'Cancel'}
             </button>
             <button
               type="button"
               onClick={() => handleClose(true)}
-              className="rounded-8 cursor-pointer fs-13 fw-600"
-              style={{
-                padding: 'var(--space-2) var(--space-4)',
-                border: 'none',
-                background: isDanger ? 'var(--color-red-500, #dc2626)' : 'var(--color-primary-400, #3B8EA5)',
-                color: 'var(--color-white, #fff)',
-              }}
+              className={`rounded-8 cursor-pointer fs-13 fw-600 ${styles.confirmButton} ${isDanger ? styles.confirmButtonDanger : styles.confirmButtonPrimary}`}
             >
               {state.confirmLabel || 'Confirm'}
             </button>

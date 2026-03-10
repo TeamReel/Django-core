@@ -1,0 +1,46 @@
+/* IntegrationStatusPage.module.css — extracted inline styles */
+
+.pageContainer {
+  padding: 20px;
+}
+
+.pageHeader {
+  margin-bottom: 24px;
+}
+
+.pageTitle {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.pageSubtitle {
+  color: var(--app-muted-text);
+  margin-bottom: 16px;
+}
+
+.tabBar {
+  display: flex;
+  gap: 4px;
+  border-bottom: 2px solid var(--app-border);
+  margin-bottom: 32px;
+}
+
+.tabButton {
+  padding: 12px 24px;
+  background-color: transparent;
+  color: var(--app-muted-text);
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 400;
+  transition: all 0.2s;
+}
+
+.tabButtonActive {
+  composes: tabButton;
+  background-color: #007bff;
+  color: white;
+  border-bottom-color: #007bff;
+  font-weight: 600;
+}

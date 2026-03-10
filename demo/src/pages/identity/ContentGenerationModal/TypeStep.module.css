@@ -1,0 +1,46 @@
+.container {
+  gap: var(--space-6);
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionHeading {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--app-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.typeCard {
+  padding: var(--space-4);
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--app-border, #e5e5e5);
+  border-radius: var(--radius-md);
+  background: var(--app-surface-2, #f9fafb);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.typeIcon {
+  font-size: 30px;
+  margin-bottom: var(--space-2);
+}
+
+.typeLabel {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}

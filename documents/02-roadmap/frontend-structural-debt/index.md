@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔴 In Progress (16/18 fases done)
+**Status:** 🔴 In Progress (17/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -90,7 +90,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 | Fase | Naam | Scope | Geschat | Effort |
 |------|------|-------|---------|--------|
 | **CSS1** | ✅ `!important` Elimination | 269 → 0 (100% elimination) | `pending` | 3 uur |
-| **CSS2** | Static Inline → CSS Modules | `style={{}}` met vaste waarden → CSS module classes | ~400 (van 854) | 4 uur |
+| **CSS2** | ✅ Static Inline → CSS Modules | Static: 715 → 102 (excl archive) | `done` | 4 uur |
 
 ### Track Q — Quality & Testing
 

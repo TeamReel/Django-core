@@ -469,6 +469,27 @@
   background-color: var(--app-surface-2);
 }
 
+/* ── LineupStep utilities ───────────────────────────── */
+.flexWrap {
+  flex-wrap: wrap;
+}
+
+.guestFormHeader {
+  margin-bottom: var(--space-2);
+}
+
+.guestInputSmall {
+  max-width: 56px;
+}
+
+.guestFormActions {
+  margin-top: var(--space-2);
+}
+
+.playerOptionsScroll {
+  max-height: 200px;
+}
+
 /* ── Mobile overrides ───────────────────────────────── */
 @media (max-width: 639px) {
   .matchCard,

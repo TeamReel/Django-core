@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ModuleInfo, TabId } from './integrationStatusData';
 import { getStatusColor, getStatusLabel } from './integrationStatusData';
+import styles from './IntegrationStatusTabs.module.css';
 
 // ─── 1. OverviewTab ───────────────────────────────────────────────────────────
 
@@ -20,46 +21,35 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ allModules, setActiveT
   return (
     <div>
       {/* Platform Roadmap Progress */}
-      <div style={{
-        padding: '24px',
-        backgroundColor: 'var(--app-surface)',
-        border: '2px solid #007bff',
-        borderRadius: '12px',
-        marginBottom: '32px'
-      }}>
-        <h2 style={{ marginTop: 0, marginBottom: '16px', color: '#007bff' }}>
+      <div className={styles.roadmapCard}>
+        <h2 className={styles.roadmapTitle}>
           🗺️ Platform Roadmap Progress
         </h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '16px',
-          marginBottom: '20px'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>{platformCompletion}%</div>
-            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Platform Complete</div>
-            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>
+        <div className={styles.statsGrid}>
+          <div className={styles.statBlock}>
+            <div className={styles.statValueSuccess}>{platformCompletion}%</div>
+            <div className={styles.statLabel}>Platform Complete</div>
+            <div className={styles.statSublabel}>
               {completedModules}/{totalPlatformModules} modules
             </div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#28a745' }}>7</div>
-            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phases Complete</div>
-            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Fase 1-7 ✅</div>
+          <div className={styles.statBlock}>
+            <div className={styles.statValueSuccess}>7</div>
+            <div className={styles.statLabel}>Phases Complete</div>
+            <div className={styles.statSublabel}>Fase 1-7 ✅</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#fd7e14' }}>1</div>
-            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phase In Progress</div>
-            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Fase 8 🚧</div>
+          <div className={styles.statBlock}>
+            <div className={styles.statValueWarning}>1</div>
+            <div className={styles.statLabel}>Phase In Progress</div>
+            <div className={styles.statSublabel}>Fase 8 🚧</div>
           </div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#6c757d' }}>10</div>
-            <div style={{ fontSize: '14px', color: 'var(--app-muted-text)' }}>Phases Planned</div>
-            <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Fase 9-18 📋</div>
+          <div className={styles.statBlock}>
+            <div className={styles.statValueMuted}>10</div>
+            <div className={styles.statLabel}>Phases Planned</div>
+            <div className={styles.statSublabel}>Fase 9-18 📋</div>
           </div>
         </div>
-        <div style={{ fontSize: '13px', color: 'var(--app-text)', lineHeight: '1.6' }}>
+        <div className={styles.statusText}>
           <strong>Current Status:</strong> Core backend (B01-B21) and frontend foundations (F01-F07, F09) complete.
           Demo foundation (F10) in progress. Next: Infrastructure extensions (B22-B25), Advanced UI (F11-F15),
           Data Platform (D01-D16), Quality Gates (P01-P05).
@@ -67,53 +57,30 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ allModules, setActiveT
       </div>
 
       {/* Module Status Breakdown */}
-      <h2 style={{ marginBottom: '20px' }}>Module Status Breakdown</h2>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '16px',
-        marginBottom: '40px'
-      }}>
-        <div style={{
-          padding: '20px',
-          backgroundColor: 'var(--app-surface)',
-          border: '2px solid #28a745',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '8px' }}>✅ Complete</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#28a745' }}>{completedModules}</div>
-          <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Tested & deployed</div>
+      <h2 className={styles.sectionTitle}>Module Status Breakdown</h2>
+      <div className={styles.moduleGrid}>
+        <div className={styles.moduleCardComplete}>
+          <div className={styles.moduleCardLabel}>✅ Complete</div>
+          <div className={styles.moduleCardValueComplete}>{completedModules}</div>
+          <div className={styles.moduleCardSublabel}>Tested & deployed</div>
         </div>
 
-        <div style={{
-          padding: '20px',
-          backgroundColor: 'var(--app-surface)',
-          border: '2px solid #fd7e14',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '8px' }}>🚧 In Progress</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#fd7e14' }}>{inProgressModules}</div>
-          <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>Under development</div>
+        <div className={styles.moduleCardInProgress}>
+          <div className={styles.moduleCardLabel}>🚧 In Progress</div>
+          <div className={styles.moduleCardValueInProgress}>{inProgressModules}</div>
+          <div className={styles.moduleCardSublabel}>Under development</div>
         </div>
 
-        <div style={{
-          padding: '20px',
-          backgroundColor: 'var(--app-surface)',
-          border: '2px solid #6c757d',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '14px', color: 'var(--app-muted-text)', marginBottom: '8px' }}>📋 Planned</div>
-          <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#6c757d' }}>{plannedModules}</div>
-          <div style={{ fontSize: '12px', color: 'var(--app-muted-text)', marginTop: '4px' }}>On roadmap</div>
+        <div className={styles.moduleCardPlanned}>
+          <div className={styles.moduleCardLabel}>📋 Planned</div>
+          <div className={styles.moduleCardValuePlanned}>{plannedModules}</div>
+          <div className={styles.moduleCardSublabel}>On roadmap</div>
         </div>
       </div>
 
       {/* Platform Phase Progress (All 18 Phases) */}
-      <div style={{ marginBottom: '40px' }}>
-        <h2 style={{ marginBottom: '20px' }}>Platform Phase Progress (Fase 1-18)</h2>
+      <div className={styles.phaseSection}>
+        <h2 className={styles.phaseSectionTitle}>Platform Phase Progress (Fase 1-18)</h2>
         {[
           { name: 'Fase 1: Foundation & Governance', modules: 4, complete: 4, status: '✅' },
           { name: 'Fase 2: Identity & Hierarchy', modules: 4, complete: 4, status: '✅' },
@@ -152,12 +119,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ allModules, setActiveT
                   {phase.complete}/{phase.modules} modules ({percentage}%)
                 </span>
               </div>
-              <div style={{
-                height: '8px',
-                backgroundColor: 'var(--app-surface)',
-                borderRadius: '4px',
-                overflow: 'hidden'
-              }}>
+              <div className={styles.phaseProgressTrack}>
                 <div style={{
                   height: '100%',
                   width: `${percentage}%`,
@@ -171,34 +133,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ allModules, setActiveT
       </div>
 
       {/* Quick Links */}
-      <div style={{
-        padding: '20px',
-        backgroundColor: 'var(--app-surface)',
-        borderRadius: '8px',
-        borderLeft: '4px solid #2196f3'
-      }}>
-        <h3 style={{ marginTop: 0, fontSize: '16px' }}>🚀 Quick Actions</h3>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <a href="/status/health" style={{
-            padding: '8px 16px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: 600
-          }}>
+      <div className={styles.quickActionsCard}>
+        <h3 className={styles.quickActionsTitle}>🚀 Quick Actions</h3>
+        <div className={styles.quickActionsRow}>
+          <a href="/status/health" className={styles.quickActionLink}>
             View Health Status
           </a>
-          <a href="/status/permissions" style={{
-            padding: '8px 16px',
-            backgroundColor: '#007bff',
-            color: 'white',
-            textDecoration: 'none',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: 600
-          }}>
+          <a href="/status/permissions" className={styles.quickActionLink}>
             Check Permissions
           </a>
           <button

@@ -1,0 +1,17 @@
+/* PageHeader – CSS Module */
+
+.headerRow {
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: var(--text-xl);
+  color: var(--app-text);
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--app-text-secondary);
+}

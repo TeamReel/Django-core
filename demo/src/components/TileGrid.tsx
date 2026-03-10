@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { LucideIcon } from 'lucide-react';
 import { Card, Text } from '@django-core/design-system';
 import { AppIcon } from './AppIcon';
+import styles from './TileGrid.module.css';
 
 export interface TileItem {
   path: string;
@@ -25,44 +26,21 @@ export function TileGrid({ items, columns = 3 }: TileGridProps) {
   }[columns];
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns,
-      gap: 'var(--space-4)',
-    }}>
+    <div className={styles.grid} style={{ gridTemplateColumns }}>
       {items.map((item) => (
         <Link
           key={item.path}
           to={item.path}
-          style={{ textDecoration: 'none' }}
+          className={styles.link}
         >
           <Card
-            style={{
-              padding: 'var(--space-6)',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--space-3)',
-              transition: 'all var(--duration-fast) var(--ease-default)',
-              cursor: 'pointer',
-              border: '1px solid var(--app-border)',
-            }}
-            className="tile-card"
+            className={`tile-card ${styles.card}`}
           >
-            <div style={{
-              width: 48,
-              height: 48,
-              borderRadius: 'var(--radius-lg)',
-              backgroundColor: item.color || 'var(--app-link)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-            }}>
+            <div className={styles.iconContainer} style={{ backgroundColor: item.color || 'var(--app-link)' }}>
               <AppIcon icon={item.icon} size={24} />
             </div>
             <div>
-              <Text weight="bold" size="md" style={{ marginBottom: 'var(--space-1)' }}>
+              <Text weight="bold" size="md" className={styles.title}>
                 {item.label}
               </Text>
               {item.description && (

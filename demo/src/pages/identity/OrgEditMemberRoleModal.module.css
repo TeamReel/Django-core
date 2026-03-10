@@ -1,0 +1,35 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: var(--z-toast);
+}
+
+.modal {
+  width: 520px;
+  max-width: 95%;
+  box-shadow: var(--shadow-md);
+}
+
+.errorBox {
+  padding: var(--space-3) var(--space-3);
+  background-color: var(--color-red-100);
+  color: var(--color-red-500);
+}
+
+.label {
+  margin-bottom: var(--space-2);
+}
+
+.selectInput {
+  padding: var(--space-2) var(--space-3);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}

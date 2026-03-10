@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react';
 import { Button } from '@django-core/design-system';
+import styles from './WorkFilterBar.module.css';
 
 export type OrganisationOption = {
   id: string;
@@ -71,18 +71,12 @@ export default function WorkFilterBar({
   onTeamChange,
   onClear,
 }: Props) {
-  const selectStyle: CSSProperties = {
-    padding: 'var(--space-2)',
-    borderRadius: 'var(--radius-sm)',
-    border: '1px solid #ccc',
-  };
-
   return (
     <>
       {showStatus && (
         <>
-          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Status:</label>
-          <select value={statusFilter} onChange={(e) => onStatusChange(e.target.value)} style={selectStyle}>
+          <label className={styles.label}>Status:</label>
+          <select value={statusFilter} onChange={(e) => onStatusChange(e.target.value)} className={styles.select}>
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
@@ -92,11 +86,11 @@ export default function WorkFilterBar({
 
       {showOrganisation && (
         <>
-          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Organisation:</label>
+          <label className={styles.label}>Organisation:</label>
           <select
             value={selectedOrgId}
             onChange={(e) => onOrganisationChange(e.target.value)}
-            style={selectStyle}
+            className={styles.select}
           >
             <option value="">All Organisations</option>
             {organisations.map((org) => (
@@ -110,11 +104,11 @@ export default function WorkFilterBar({
 
       {showClub && (
         <>
-          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Club:</label>
+          <label className={styles.label}>Club:</label>
           <select
             value={selectedClubId}
             onChange={(e) => onClubChange(e.target.value)}
-            style={{ ...selectStyle, maxWidth: '150px' }}
+            className={styles.selectNarrow}
           >
             <option value="">All Clubs</option>
             {clubs
@@ -136,11 +130,11 @@ export default function WorkFilterBar({
 
       {showTeam && (
         <>
-          <label style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--font-medium)' }}>Team:</label>
+          <label className={styles.label}>Team:</label>
           <select
             value={selectedTeamId}
             onChange={(e) => onTeamChange(e.target.value)}
-            style={{ ...selectStyle, maxWidth: '150px' }}
+            className={styles.selectNarrow}
           >
             <option value="">All Teams</option>
             {teams

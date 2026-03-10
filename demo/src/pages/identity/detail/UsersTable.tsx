@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Badge, Card } from '@django-core/design-system';
 import { Table } from '../../../shims/design-system';
+import styles from './UsersTable.module.css';
 
 /** Project membership record from the API */
 interface ProjectMembershipRecord {
@@ -222,18 +223,18 @@ export default function UsersTable({
         <colgroup>
           {isTeamRoute ? (
             <>
-              <col style={{ width: '260px' }} />
-              <col style={{ width: '260px' }} />
-              <col style={{ width: '140px' }} />
-              <col style={{ width: '200px' }} />
-              <col style={{ width: '330px' }} />
+              <col className={styles.colUser} />
+              <col className={styles.colEmail} />
+              <col className={styles.colRole} />
+              <col className={styles.colFunctional} />
+              <col className={styles.colActions} />
             </>
           ) : (
             <>
-              <col style={{ width: '260px' }} />
-              <col style={{ width: '260px' }} />
-              <col style={{ width: '140px' }} />
-              <col style={{ width: '330px' }} />
+              <col className={styles.colUser} />
+              <col className={styles.colEmail} />
+              <col className={styles.colRole} />
+              <col className={styles.colActions} />
             </>
           )}
         </colgroup>
@@ -345,7 +346,7 @@ export default function UsersTable({
                 {isTeamRoute ? (
                   <td className="detail-td">
                     {functionalRoles.length ? (
-                      <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap' }}>
+                      <div className={styles.functionalRolesRow}>
                         {functionalRoles.map((r) => (
                           <Badge key={r} variant="default" style={noBorderBadgeStyle}>
                             {r}

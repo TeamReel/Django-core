@@ -1,0 +1,33 @@
+.contentWrapper {
+  padding: 8px 0 24px;
+}
+
+.message {
+  color: var(--app-text);
+  line-height: 1.5;
+}
+
+.footer {
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text);
+}
+
+.confirmButton {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  color: var(--color-white, #fff);
+}
+
+.confirmButtonDanger {
+  background: var(--color-red-500, #dc2626);
+}
+
+.confirmButtonPrimary {
+  background: var(--color-primary-400, #3B8EA5);
+}

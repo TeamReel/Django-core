@@ -7,6 +7,7 @@ import { Badge, Button, Text } from '@django-core/design-system';
 import { Palette, Plus, Trash2 } from 'lucide-react';
 import type { BrandProfile, DesignToken } from './entityEditTypes';
 import { TOKEN_TYPES } from './entityEditTypes';
+import styles from './EntityBrandTab.module.css';
 
 // ── Token Editor (shared row) ────────────────────────────────────────
 
@@ -23,12 +24,7 @@ function TokenEditor({
 
   return (
     <div
-      className="grid gap-8 p-8 rounded-6"
-      style={{
-        gridTemplateColumns: '1fr 120px 1fr auto',
-        alignItems: 'center',
-        backgroundColor: 'var(--app-surface-alt, rgba(0,0,0,0.02))',
-      }}
+      className={`grid gap-8 p-8 rounded-6 ${styles.tokenEditorRow}`}
     >
       <input
         type="text"
@@ -52,8 +48,7 @@ function TokenEditor({
             type="color"
             value={token.value.startsWith('#') ? token.value : '#000000'}
             onChange={(e) => onUpdate({ value: e.target.value })}
-            className="p-0 border rounded-4 cursor-pointer"
-            style={{ width: '32px', height: '32px' }}
+            className={`p-0 border rounded-4 cursor-pointer ${styles.colorInput}`}
           />
         )}
         <input
@@ -61,14 +56,12 @@ function TokenEditor({
           value={token.value}
           onChange={(e) => onUpdate({ value: e.target.value })}
           placeholder="Value"
-          className="flex-1 p-8 rounded-4 border bg-surface text-primary fs-13"
-          style={{ fontFamily: 'monospace' }}
+          className={`flex-1 p-8 rounded-4 border bg-surface text-primary fs-13 ${styles.monoInput}`}
         />
       </div>
       <button
         onClick={onDelete}
-        className="p-8 border-none cursor-pointer rounded-4"
-        style={{ background: 'none', color: 'var(--app-error, #dc2626)' }}
+        className={`p-8 border-none cursor-pointer rounded-4 ${styles.deleteButton}`}
         title="Delete token"
       >
         <Trash2 size={16} />
@@ -120,7 +113,7 @@ export function EntityBrandTab({
   if (!brandProfile) {
     return (
       <div className="p-32 text-center">
-        <Palette size={48} className="mb-16" style={{ opacity: 0.3 }} />
+        <Palette size={48} className={`mb-16 ${styles.iconFaded}`} />
         <Text weight="bold">No Brand Profile</Text>
         <Text color="secondary" size="sm" className="mt-8">
           This entity doesn't have a brand profile configured yet.
@@ -154,7 +147,7 @@ export function EntityBrandTab({
       ))}
 
       {tokens.length === 0 && newTokens.length === 0 && (
-        <div className="p-24 text-center rounded-8" style={{ border: '1px dashed var(--app-border)' }}>
+        <div className={`p-24 text-center rounded-8 ${styles.emptyTokensBox}`}>
           <Text color="secondary">No design tokens yet</Text>
           <Text size="sm" color="secondary">Click "Add Token" to create your first design token</Text>
         </div>

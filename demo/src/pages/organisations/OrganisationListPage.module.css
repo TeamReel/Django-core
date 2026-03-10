@@ -1,0 +1,33 @@
+/* OrganisationListPage.module.css — extracted inline styles */
+
+.subtitle {
+  color: var(--app-muted-text);
+}
+
+.errorBanner {
+  background-color: var(--color-red-100);
+  border: 1px solid #fcc;
+  color: var(--color-red-500);
+}
+
+.grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.card {
+  box-shadow: var(--shadow-xs);
+}
+
+.statsGrid {
+  grid-template-columns: 1fr 1fr 1fr;
+  margin: 16px 0;
+  background-color: var(--app-bg-subtle, rgba(0, 0, 0, 0.03));
+}
+
+.primaryButton {
+  background-color: var(--app-primary);
+}
+
+.secondaryButton {
+  background-color: var(--color-neutral-400);
+}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Button, Card } from '@django-core/design-system';
 import { api } from '@/api';
 import { KIT_TYPES, type Project, type KitAsset } from './clubOrgDetailHelpers';
+import styles from './ClubKitsTab.module.css';
 
 /* ─── ClubKitsTab ──────────────────────────────────────────── */
 
@@ -113,7 +114,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
 
         {error && <Alert variant="error" className="mb-16">{error}</Alert>}
 
-        <div className="grid gap-20" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+        <div className={`grid gap-20 ${styles.kitsGrid}`}>
           {KIT_TYPES.map((kitType) => {
             const kit = getKitForType(kitType.id);
             const imageUrl = getKitImageUrl(kit);
@@ -121,17 +122,17 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
               <div key={kitType.id} className="border rounded-12 p-16 bg-surface">
                 <div className="fw-600 mb-4">{kitType.label}</div>
                 <div className="fs-12 text-muted mb-16">{kitType.description}</div>
-                <div className="w-full rounded-8 flex-center overflow-hidden mb-12" style={{ aspectRatio: '3/4', backgroundColor: 'var(--app-surface-secondary)' }}>
+                <div className={`w-full rounded-8 flex-center overflow-hidden mb-12 ${styles.kitImageContainer}`}>
                   {uploadingType === kitType.id ? (
                     <div className="text-center text-muted">
-                      <div className="mb-8 fs-24">{'\u23f3'}</div>
+                      <div className="mb-8 fs-24">{'⏳'}</div>
                       <div className="fs-12">Uploading...</div>
                     </div>
                   ) : imageUrl ? (
-                    <img src={imageUrl} alt={kitType.label} className="w-full h-full" style={{ objectFit: 'contain' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <img src={imageUrl} alt={kitType.label} className={`w-full h-full ${styles.kitImage}`} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                   ) : (
                     <div className="text-center text-muted">
-                      <div className="mb-8" style={{ fontSize: 48, opacity: 0.3 }}>{'\ud83d\udc55'}</div>
+                      <div className={`mb-8 ${styles.kitPlaceholderIcon}`}>{'⏳'}</div>
                       <div className="fs-12">No image uploaded</div>
                     </div>
                   )}
@@ -159,7 +160,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
           Kit images should be high-quality photos or renders showing the complete kit design.
           Recommended image size: 600x800 pixels (3:4 aspect ratio).
         </p>
-        <ul className="m-0 text-muted fs-13" style={{ paddingLeft: 'var(--space-5)' }}>
+        <ul className={`m-0 text-muted fs-13 ${styles.instructionsList}`}>
           <li>Use PNG or JPEG format for best quality</li>
           <li>Include front view of the full kit (shirt, shorts, socks)</li>
           <li>Keep background transparent or neutral for cleaner display</li>

@@ -1,0 +1,18 @@
+.filterRow {
+  display: flex;
+}
+
+.filterField200 {
+  min-width: 200px;
+  flex: 0 0 200px;
+}
+
+.filterField150 {
+  min-width: 150px;
+  flex: 0 0 150px;
+}
+
+.clearButtonWrapper {
+  display: flex;
+  align-items: flex-end;
+}

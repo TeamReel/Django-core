@@ -4,6 +4,7 @@ import type { ModuleInfo, TabId } from './integrationStatusData';
 import { getAllModules } from './integrationStatusData';
 import { OverviewTab, ModulesTab, RoadmapTab, ArchitectureTab, VisionTab, MetricsTab } from './IntegrationStatusTabs';
 import { ModuleDetailModal } from './IntegrationStatusModals';
+import styles from './IntegrationStatusPage.module.css';
 
 export default function IntegrationStatusPage() {
   const [allModules] = useState<ModuleInfo[]>(getAllModules());
@@ -30,38 +31,23 @@ export default function IntegrationStatusPage() {
 
   return (
     <AppShell>
-      <div style={{ padding: '20px' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <h1 style={{ marginTop: 0, marginBottom: '8px' }}>
+      <div className={styles.pageContainer}>
+        <div className={styles.pageHeader}>
+          <h1 className={styles.pageTitle}>
             🔬 Integration Status Dashboard
           </h1>
-          <p style={{ color: 'var(--app-muted-text)', marginBottom: '16px' }}>
+          <p className={styles.pageSubtitle}>
             Complete overview of django-core platform development (Modules 001-055)
           </p>
         </div>
 
         {/* Tab Bar */}
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          borderBottom: '2px solid var(--app-border)',
-          marginBottom: '32px',
-        }}>
+        <div className={styles.tabBar}>
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '12px 24px',
-                backgroundColor: activeTab === tab.id ? '#007bff' : 'transparent',
-                color: activeTab === tab.id ? 'white' : 'var(--app-muted-text)',
-                border: 'none',
-                borderBottom: activeTab === tab.id ? '2px solid #007bff' : '2px solid transparent',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: activeTab === tab.id ? 600 : 400,
-                transition: 'all 0.2s',
-              }}
+              className={activeTab === tab.id ? styles.tabButtonActive : styles.tabButton}
             >
               {tab.label}
             </button>

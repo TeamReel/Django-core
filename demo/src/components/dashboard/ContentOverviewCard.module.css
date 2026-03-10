@@ -211,3 +211,12 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Shimmer width variants */
+.shimmerWidth60 { width: 60%; }
+.shimmerWidth80 { width: 80%; }
+.shimmerWidth45 { width: 45%; }
+
+/* Utilities */
+.paddingTopSmall { padding-top: var(--space-2); }
+.marginRightSmall { margin-right: var(--space-2); }

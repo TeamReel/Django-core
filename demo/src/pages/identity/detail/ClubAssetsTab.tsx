@@ -9,6 +9,7 @@ import {
 } from '../../../constants/clubAssets';
 import { projectsApi } from '../../../api';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import styles from './ClubAssetsTab.module.css';
 
 interface ClubAssetsTabProps {
   clubId: string;
@@ -152,7 +153,7 @@ export default function ClubAssetsTab({
           {inputSlots.map((slot) => (
             <div key={slot.id} className="space-y-1">
               <label htmlFor={`asset-${slot.id}`} className="block text-sm font-medium text-gray-700">
-                <SlotIcon name={slot.icon} size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> {slot.label}
+                <SlotIcon name={slot.icon} size={14} className={styles.inlineIcon} /> {slot.label}
                 {slot.required && <span className="text-red-500 ml-1">*</span>}
               </label>
               <Input
@@ -228,7 +229,7 @@ export default function ClubAssetsTab({
                 </div>
                 <div className="flex-1">
                   <div className="font-medium">
-                    <SlotIcon name={slot.icon} size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> {slot.label}
+                    <SlotIcon name={slot.icon} size={14} className={styles.inlineIcon} /> {slot.label}
                   </div>
                   <p className="text-sm text-gray-500">{slot.description}</p>
                   {missingDeps.length > 0 && (

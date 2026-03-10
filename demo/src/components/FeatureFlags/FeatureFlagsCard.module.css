@@ -1,0 +1,6 @@
+/* FeatureFlagsCard.module.css — extracted inline styles */
+
+.actionsRow {
+  display: flex;
+  gap: var(--space-2);
+}

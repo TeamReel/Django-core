@@ -1,0 +1,21 @@
+.kitsGrid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.kitImageContainer {
+  aspect-ratio: 3 / 4;
+  background-color: var(--app-surface-secondary);
+}
+
+.kitImage {
+  object-fit: contain;
+}
+
+.kitPlaceholderIcon {
+  font-size: 48px;
+  opacity: 0.3;
+}
+
+.instructionsList {
+  padding-left: var(--space-5);
+}

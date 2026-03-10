@@ -4,6 +4,7 @@ import { Clock, Star, Trash2, X } from 'lucide-react';
 import { AppIcon } from '../components/AppIcon';
 import { useNavRecents, useNavFavorites } from '../hooks/useNavItems';
 import { clearRecents, removeRecent, toggleFavorite, type NavStoredItem } from '../utils/navStorage';
+import s from './RecentsPage.module.css';
 
 export default function RecentsPage() {
   const recents = useNavRecents();
@@ -16,7 +17,7 @@ export default function RecentsPage() {
   };
 
   return (
-    <div className="bg-primary" style={{ minHeight: '100%' }}>
+    <div className={`bg-primary ${s.page}`}>
       <div className="flex-between gap-12 mb-16">
         <div>
           <h1 className="m-0 text-primary">Recents</h1>
@@ -28,11 +29,7 @@ export default function RecentsPage() {
         <div className="flex-row gap-8">
           <Link
             to="/favorites"
-            className="inline-flex gap-8 rounded-8 border bg-surface text-primary fs-13 fw-600"
-            style={{
-              padding: 'var(--space-2) var(--space-3)',
-              textDecoration: 'none',
-            }}
+            className={`inline-flex gap-8 rounded-8 border bg-surface text-primary fs-13 fw-600 ${s.favoritesLink}`}
           >
             <AppIcon icon={Star} size={16} /> Favorites
           </Link>
@@ -40,10 +37,7 @@ export default function RecentsPage() {
           <button
             type="button"
             onClick={() => clearRecents()}
-            className="inline-flex gap-8 rounded-8 border bg-surface text-primary cursor-pointer fs-13 fw-600"
-            style={{
-              padding: 'var(--space-2) var(--space-3)',
-            }}
+            className={`inline-flex gap-8 rounded-8 border bg-surface text-primary cursor-pointer fs-13 fw-600 ${s.clearButton}`}
             title="Clear recents"
           >
             <AppIcon icon={Trash2} size={16} /> Clear
@@ -64,17 +58,11 @@ export default function RecentsPage() {
             return (
               <div
                 key={item.path}
-                className="flex-between gap-12 border-top"
-                style={{
-                  padding: 'var(--space-3) var(--space-4)',
-                }}
+                className={`flex-between gap-12 border-top ${s.itemRow}`}
               >
                 <Link
                   to={item.path}
-                  className="flex-row gap-10 text-primary min-w-0"
-                  style={{
-                    textDecoration: 'none',
-                  }}
+                  className={`flex-row gap-10 text-primary min-w-0 ${s.itemLink}`}
                 >
                   <AppIcon icon={Clock} size={16} />
                   <span className="fw-600 fs-14 truncate">
@@ -87,11 +75,8 @@ export default function RecentsPage() {
                   <button
                     type="button"
                     onClick={() => onToggleFavorite(item)}
-                    className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600"
-                    style={{
-                      padding: 'var(--space-2) var(--space-2)',
-                      color: isFav ? 'var(--color-amber-400)' : 'var(--app-text)',
-                    }}
+                    className={`border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600 ${s.favoriteButton}`}
+                    data-active={isFav}
                     title={isFav ? 'Unfavorite' : 'Add to favorites'}
                   >
                     <AppIcon icon={Star} size={14} />
@@ -101,10 +86,7 @@ export default function RecentsPage() {
                   <button
                     type="button"
                     onClick={() => removeRecent(item.path)}
-                    className="border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600 text-primary"
-                    style={{
-                      padding: 'var(--space-2) var(--space-2)',
-                    }}
+                    className={`border bg-surface-2 rounded-8 cursor-pointer inline-flex gap-6 fs-12 fw-600 text-primary ${s.removeButton}`}
                     title="Remove"
                   >
                     <AppIcon icon={X} size={14} />

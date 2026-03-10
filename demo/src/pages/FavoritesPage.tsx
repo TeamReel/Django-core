@@ -5,6 +5,7 @@ import { AppIcon } from '../components/AppIcon';
 import { PageHeader } from '../components/ui/PageHeader';
 import { useNavFavorites } from '../hooks/useNavItems';
 import { clearFavorites, removeFavorite } from '../utils/navStorage';
+import styles from './FavoritesPage.module.css';
 
 export default function FavoritesPage() {
   const favorites = useNavFavorites();
@@ -14,7 +15,7 @@ export default function FavoritesPage() {
   }, [favorites]);
 
   return (
-    <div style={{ backgroundColor: 'var(--app-bg)', minHeight: '100%' }}>
+    <div className={styles.page}>
       <PageHeader
         title="Favorites"
         subtitle="Your pinned shortcuts."
@@ -23,8 +24,7 @@ export default function FavoritesPage() {
           <div className="flex-row gap-8">
             <Link
               to="/recents"
-              className="inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600"
-              style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--app-text)', textDecoration: 'none' }}
+              className={`inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600 ${styles.navLink}`}
             >
               Back to Recents
             </Link>
@@ -32,8 +32,7 @@ export default function FavoritesPage() {
             <button
               type="button"
               onClick={() => clearFavorites()}
-              className="inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600 cursor-pointer"
-              style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--app-text)' }}
+              className={`inline-flex gap-8 rounded-8 border bg-surface fs-13 fw-600 cursor-pointer ${styles.clearButton}`}
               title="Clear favorites"
             >
               <AppIcon icon={Trash2} size={16} /> Clear
@@ -51,25 +50,11 @@ export default function FavoritesPage() {
           sorted.map((item) => (
             <div
               key={item.path}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 'var(--space-3)',
-                padding: 'var(--space-3) var(--space-4)',
-                borderTop: '1px solid var(--app-border)',
-              }}
+              className={styles.itemRow}
             >
               <Link
                 to={item.path}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--space-3)',
-                  color: 'var(--app-text)',
-                  textDecoration: 'none',
-                  minWidth: 0,
-                }}
+                className={styles.itemLink}
               >
                 <AppIcon icon={Star} size={16} />
                 <span className="fw-600 fs-14 truncate">
@@ -81,8 +66,7 @@ export default function FavoritesPage() {
               <button
                 type="button"
                 onClick={() => removeFavorite(item.path)}
-                className="inline-flex gap-6 rounded-8 border bg-surface-2 cursor-pointer fs-12 fw-600"
-                style={{ padding: 'var(--space-2) var(--space-2)', color: 'var(--app-text)' }}
+                className={`inline-flex gap-6 rounded-8 border bg-surface-2 cursor-pointer fs-12 fw-600 ${styles.removeButton}`}
                 title="Remove"
               >
                 <AppIcon icon={X} size={14} />

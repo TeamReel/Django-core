@@ -4,6 +4,7 @@ import TopNavbar from '../components/TopNavbar';
 import Sidebar from '../components/Sidebar';
 import MobileBottomNav from '../components/MobileBottomNav';
 import OnboardingWizard from '../components/OnboardingWizard';
+import styles from './MainLayout.module.css';
 
 export default function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -141,14 +142,7 @@ export default function MainLayout() {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'row',
-      height: '100vh',
-      backgroundColor: 'var(--app-bg)',
-      color: 'var(--app-text)',
-      overflow: 'hidden'
-    }}>
+    <div className={styles.root}>
       {/* Mobile Overlay */}
       {isMobile && mobileMenuOpen && (
         <div
@@ -167,16 +161,9 @@ export default function MainLayout() {
       </div>
 
       {/* Main Content Column (Navbar + Page) */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
-        minWidth: 0,
-        position: 'relative',
-        width: '100%'
-      }}>
+      <div className={styles.mainColumn}>
         {/* TopNavbar */}
-        <div style={{ flexShrink: 0 }}>
+        <div className={styles.topNavWrapper}>
           <TopNavbar
             isSidebarOpen={sidebarOpen}
             onToggleSidebar={toggleSidebar}

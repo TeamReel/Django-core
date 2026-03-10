@@ -1,0 +1,28 @@
+/* ConfirmStep – CSS Module */
+
+.iconContainer {
+  width: 64px;
+  height: 64px;
+  background-color: var(--app-primary-light, rgba(59, 142, 165, 0.1));
+  color: var(--app-primary, #3b8ea5);
+}
+
+.matchInfoCard {
+  padding: 14px 18px;
+}
+
+.sectionHeader {
+  padding: var(--space-4) var(--space-5);
+}
+
+.scoreInput {
+  width: 60px;
+  padding: var(--space-3);
+  font-size: 28px;
+  font-weight: var(--font-bold);
+  text-align: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface-2, #f3f4f6);
+  color: var(--app-text, #111);
+}

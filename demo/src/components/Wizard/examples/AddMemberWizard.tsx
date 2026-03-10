@@ -18,6 +18,7 @@ import {
   wizardStyles,
   type WizardStepConfig,
 } from '..';
+import styles from './AddMemberWizard.module.css';
 import { User, Users, Shield, Check } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────
@@ -64,8 +65,7 @@ function InfoStep() {
           value={name}
           onChange={(e) => setData('name', e.target.value)}
           placeholder="Volledige naam"
-          className={`w-full rounded-10 border p-12 fs-15 ${wizardStyles.card}`}
-          style={{ border: '1px solid var(--app-border)' }}
+          className={`w-full rounded-10 border p-12 fs-15 ${wizardStyles.card} ${styles.inputBorder}`}
         />
       </div>
       <div className="flex-col gap-8">
@@ -75,8 +75,7 @@ function InfoStep() {
           value={email}
           onChange={(e) => setData('email', e.target.value)}
           placeholder="email@voorbeeld.nl"
-          className={`w-full rounded-10 border p-12 fs-15 ${wizardStyles.card}`}
-          style={{ border: '1px solid var(--app-border)' }}
+          className={`w-full rounded-10 border p-12 fs-15 ${wizardStyles.card} ${styles.inputBorder}`}
         />
       </div>
       <WizardFooterPrimary disabled={!isValid} onClick={() => { if (isValid) next(); }} />
@@ -114,12 +113,7 @@ function RoleStep() {
           data-selected={role === key}
         >
           <div
-            className="flex-center rounded-10"
-            style={{
-              width: 44,
-              height: 44,
-              backgroundColor: 'var(--app-surface-2)',
-            }}
+            className={`flex-center rounded-10 ${styles.roleIconContainer}`}
           >
             <Icon size={20} />
           </div>
@@ -150,8 +144,7 @@ function DetailsStep() {
           onChange={(e) => setData('jerseyNumber', e.target.value.replace(/\D/g, ''))}
           placeholder="bijv. 10"
           maxLength={2}
-          className={`w-full rounded-10 border p-12 fs-15 ${wizardStyles.card}`}
-          style={{ border: '1px solid var(--app-border)', width: 100 }}
+          className={`w-full rounded-10 border p-12 fs-15 ${wizardStyles.card} ${styles.inputBorderSmall}`}
         />
       </div>
       <div className="flex-col gap-8">
@@ -194,14 +187,9 @@ function ConfirmStep({ onSubmit }: { onSubmit: () => void }) {
 
   return (
     <div className="flex-col gap-16">
-      <div className={wizardStyles.card} style={{ cursor: 'default' }}>
+      <div className={`${wizardStyles.card} ${styles.cursorDefault}`}>
         <div
-          className="flex-center rounded-full text-white fw-600 fs-18"
-          style={{
-            width: 48,
-            height: 48,
-            backgroundColor: 'var(--app-primary)',
-          }}
+          className={`flex-center rounded-full text-white fw-600 fs-18 ${styles.confirmAvatar}`}
         >
           {name[0]?.toUpperCase() || '?'}
         </div>

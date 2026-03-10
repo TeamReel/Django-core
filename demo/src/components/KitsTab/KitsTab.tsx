@@ -10,6 +10,7 @@ import { Card, Alert, Button } from '@django-core/design-system';
 import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import { api } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import styles from './KitsTab.module.css';
 
 // ============================================================================
 // Types & Constants
@@ -201,7 +202,7 @@ export function KitsTab({
   return (
     <div className="space-y-6">
       <Card className="p-24">
-        <h3 className="mb-8" style={{ marginTop: 0 }}>Kits / Tenues</h3>
+        <h3 className={`mb-8 ${styles.sectionTitle}`}>Kits / Tenues</h3>
         <p className="text-muted fs-13 mb-24">
           Manage kit designs for different roles and occasions.
         </p>
@@ -228,11 +229,7 @@ export function KitsTab({
                 </div>
 
                 <div
-                  className="w-full flex-center rounded-8 overflow-hidden mb-12"
-                  style={{
-                    aspectRatio: '3/4',
-                    backgroundColor: 'var(--app-surface-secondary)',
-                  }}
+                  className={`w-full flex-center rounded-8 overflow-hidden mb-12 ${styles.kitImageContainer}`}
                 >
                   {uploadingType === kitType.id ? (
                     <div className="text-center text-muted">
@@ -243,13 +240,12 @@ export function KitsTab({
                     <img
                       src={imageUrl}
                       alt={kitType.label}
-                      className="w-full h-full"
-                      style={{ objectFit: 'contain' }}
+                      className={`w-full h-full ${styles.kitImage}`}
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
                   ) : (
                     <div className="text-center text-muted">
-                      <div className="mb-8" style={{ fontSize: 48, opacity: 0.3 }}></div>
+                      <div className={`mb-8 ${styles.kitImagePlaceholder}`}></div>
                       <div className="fs-12">No image uploaded</div>
                     </div>
                   )}
@@ -313,12 +309,12 @@ export function KitsTab({
 
       {!readOnly && (
         <Card className="p-24">
-          <h4 className="mb-8" style={{ marginTop: 0 }}>How to add kits</h4>
+          <h4 className={`mb-8 ${styles.sectionTitle}`}>How to add kits</h4>
           <p className="text-muted fs-13 mb-12">
             Kit images should be high-quality photos or renders showing the complete kit design.
             Recommended image size: 600x800 pixels (3:4 aspect ratio).
           </p>
-          <ul className="m-0 fs-13 text-muted" style={{ paddingLeft: 'var(--space-5)' }}>
+          <ul className={`m-0 fs-13 text-muted ${styles.instructionsList}`}>
             <li>Use PNG or JPEG format for best quality</li>
             <li>Include front view of the full kit (shirt, shorts, socks)</li>
             <li>Keep background transparent or neutral for cleaner display</li>

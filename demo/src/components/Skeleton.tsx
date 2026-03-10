@@ -323,7 +323,7 @@ export function SkeletonDetailPage({
           <Skeleton width="100%" height="200px" borderRadius="12px" className={styles.mb6} />
         )}
         <SkeletonList count={2} variant="row" gap={12} />
-        <div style={{ marginTop: 'var(--space-4)' }}>
+        <div className={styles.marginTopSpace4}>
           <Skeleton variant="text" lines={contentLines} />
         </div>
       </div>
@@ -357,7 +357,7 @@ export function SkeletonTablePage({
       )}
       <div className={styles.tableContainer}>
         {/* Table header */}
-        <div className={styles.tableRow} style={{ opacity: 0.7 }}>
+        <div className={`${styles.tableRow} ${styles.tableHeaderRow}`}>
           {Array.from({ length: columns }).map((_, i) => (
             <Skeleton key={i} width={i === 0 ? '30%' : `${70 / (columns - 1)}%`} height="14px" />
           ))}

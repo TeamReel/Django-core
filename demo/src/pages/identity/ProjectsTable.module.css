@@ -1,0 +1,19 @@
+/* ProjectsTable – CSS Module */
+
+.viewButton {
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+}
+
+.editButton {
+  border: 1px solid var(--app-warning);
+  background-color: var(--app-surface);
+  color: var(--app-warning);
+}
+
+.deleteButton {
+  border: 1px solid #dc3545;
+  background-color: var(--app-surface);
+  color: var(--app-error);
+}

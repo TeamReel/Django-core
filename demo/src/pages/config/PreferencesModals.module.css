@@ -1,0 +1,13 @@
+.footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.marginTopSpace2 {
+  margin-top: var(--space-2);
+}

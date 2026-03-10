@@ -61,7 +61,7 @@ export const SquadReadinessCard: React.FC = () => {
       role="button"
       tabIndex={0}
     >
-      <div className={styles.cardIcon} style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--app-primary)' }}>
+      <div className={`${styles.cardIcon} ${styles.iconPrimary}`}>
         <Users size={18} />
       </div>
       <div className={styles.cardContent}>
@@ -106,7 +106,7 @@ export const ContentStatsCard: React.FC = () => {
       role="button"
       tabIndex={0}
     >
-      <div className={styles.cardIcon} style={{ background: 'rgba(236, 72, 153, 0.1)', color: 'var(--color-red-400)' }}>
+      <div className={`${styles.cardIcon} ${styles.iconRed}`}>
         <Image size={18} />
       </div>
       <div className={styles.cardContent}>

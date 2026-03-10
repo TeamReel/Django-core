@@ -7,6 +7,7 @@ import IdentitySettingsCard from '../../components/IdentitySettings/IdentitySett
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
 import { periodsApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
+import styles from './CompetitionOverviewTab.module.css';
 
 export interface CompetitionOverviewMatchModals {
   setSelectedDetailMatch: (m: any) => void;
@@ -59,19 +60,19 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
       </Card>
       <Card className="p-16">
         <div className="text-sm font-medium text-gray-500">Sport Variant</div>
-        <div className="text-sm font-semibold mt-1" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+        <div className={`text-sm font-semibold mt-1 ${styles.sportVariantDisplay}`}>
           {competition?.sport ? (
             <>
               <span>{competition.sport.sport_icon}</span>
               <span>{competition.sport.name}</span>
               {competition.sport.category_name && (
-                <span style={{ color: 'var(--app-muted-text)', fontSize: 'var(--text-xs)' }}>
+                <span className={styles.sportCategoryName}>
                   ({competition.sport.category_name})
                 </span>
               )}
             </>
           ) : (
-            <span style={{ color: 'var(--app-muted-text)' }}>—</span>
+            <span className={styles.mutedText}>—</span>
           )}
         </div>
       </Card>
@@ -103,7 +104,7 @@ export const CompetitionOverviewTab: React.FC<CompetitionOverviewTabProps> = ({
       <div className="space-y-6">
         <Card className="p-16">
           <h3 className="text-lg font-semibold mb-2">Quick Links</h3>
-          <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+          <div className={styles.quickLinksGrid}>
             <Button variant="secondary" onClick={() => navigateToTab('hierarchy')}>View Hierarchy</Button>
             <Button variant="secondary" onClick={() => navigateToTab('users')}>View Users</Button>
             <Button variant="secondary" onClick={() => navigateToTab('audit')}>View Audit</Button>

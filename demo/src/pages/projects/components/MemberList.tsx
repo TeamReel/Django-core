@@ -4,6 +4,7 @@ import { Table } from '@/shims/design-system';
 import SmartEmptyState from '../../../components/SmartEmptyState';
 import { api, projectsApi } from '../../../api';
 import { getApiBaseUrl } from '../../../utils/apiBase';
+import styles from './MemberList.module.css';
 
 interface Member {
   id: string;
@@ -123,7 +124,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                Players and Staff for the selected season.
             </p>
          </div>
-         <div style={{ minWidth: '200px' }}>
+         <div className={styles.seasonSelect}>
             {periods.length > 0 && (
                 <select
                    value={selectedPeriod}
@@ -144,7 +145,7 @@ export const MemberList: React.FC<MemberListProps> = ({
            <Table>
               <thead>
                 <tr>
-                  <th style={{ width: '50px' }}>#</th>
+                  <th className={styles.numberColumn}>#</th>
                   <th>Name</th>
                   <th>Position</th>
                   <th>Access</th>
@@ -168,7 +169,7 @@ export const MemberList: React.FC<MemberListProps> = ({
 
                   return (
                     <tr key={user.id}>
-                      <td className="fw-700" style={{ color: 'var(--app-muted-text)' }}>
+                      <td className={`fw-700 ${styles.mutedText}`}>
                          {shirtNumber}
                       </td>
                       <td>

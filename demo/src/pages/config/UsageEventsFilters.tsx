@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Button, Input } from '@django-core/design-system';
 import { EVENT_TYPE_OPTIONS } from './usageEvents.types';
+import styles from './UsageEventsFilters.module.css';
 
 interface UsageEventsFiltersProps {
   eventType: string;
@@ -39,8 +40,8 @@ export const UsageEventsFilters: React.FC<UsageEventsFiltersProps> = ({
 
   return (
     <Card className="mb-4 min-w-0">
-      <div className="flex-wrap gap-12 overflow-x-auto" style={{ display: 'flex' }}>
-        <div style={{ minWidth: '200px', flex: '0 0 200px' }}>
+      <div className={`flex-wrap gap-12 overflow-x-auto ${styles.filterRow}`}>
+        <div className={styles.filterField200}>
           <label className="block text-sm font-medium mb-1">Event Type</label>
           <select
             value={eventType}
@@ -56,7 +57,7 @@ export const UsageEventsFilters: React.FC<UsageEventsFiltersProps> = ({
           </select>
         </div>
 
-        <div style={{ minWidth: '200px', flex: '0 0 200px' }}>
+        <div className={styles.filterField200}>
           <label className="block text-sm font-medium mb-1">User Email</label>
           <Input
             type="text"
@@ -66,7 +67,7 @@ export const UsageEventsFilters: React.FC<UsageEventsFiltersProps> = ({
           />
         </div>
 
-        <div style={{ minWidth: '150px', flex: '0 0 150px' }}>
+        <div className={styles.filterField150}>
           <label className="block text-sm font-medium mb-1">From Date</label>
           <Input
             type="date"
@@ -75,7 +76,7 @@ export const UsageEventsFilters: React.FC<UsageEventsFiltersProps> = ({
           />
         </div>
 
-        <div style={{ minWidth: '150px', flex: '0 0 150px' }}>
+        <div className={styles.filterField150}>
           <label className="block text-sm font-medium mb-1">To Date</label>
           <Input
             type="date"
@@ -85,7 +86,7 @@ export const UsageEventsFilters: React.FC<UsageEventsFiltersProps> = ({
         </div>
 
         {hasFilters && (
-          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+          <div className={styles.clearButtonWrapper}>
             <Button
               variant="secondary"
               onClick={() => {

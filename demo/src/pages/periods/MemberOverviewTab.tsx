@@ -56,11 +56,11 @@ export function MemberOverviewTab({
   const totalCount = allItems.length;
 
   const renderPhase = (title: string, emoji: string, items: typeof inputItems) => (
-    <div style={{ marginBottom: 'var(--space-5)' }}>
-      <div className={`${s.flexCenterGap8}`} style={{ marginBottom: 'var(--space-3)' }}>
+    <div className={s.phaseSection}>
+      <div className={`${s.flexCenterGap8} ${s.phaseHeader}`}>
         <span className="fs-18">{emoji}</span>
         <div className={s.sectionTitle}>{title}</div>
-        <div className="fs-12" style={{ opacity: 0.6 }}>
+        <div className={`fs-12 ${s.opacity60}`}>
           {items.filter(i => i.hasContent).length}/{items.length}
         </div>
       </div>
@@ -112,7 +112,7 @@ export function MemberOverviewTab({
           <div className="fs-13 fw-600">
             Voortgang: {completedCount} / {totalCount} assets
           </div>
-          <div className="mt-8 rounded-4 overflow-hidden" style={{ height: '8px', background: 'var(--app-border)' }}>
+          <div className={`mt-8 rounded-4 overflow-hidden ${s.progressTrack}`}>
             <div
               style={{
                 height: '100%',

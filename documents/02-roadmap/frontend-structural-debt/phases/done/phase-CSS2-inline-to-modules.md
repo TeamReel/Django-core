@@ -1,8 +1,8 @@
 # CSS2 — Static Inline Styles → CSS Modules
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 4 uur
-**Scope:** ~400 static `style={{}}` (van 854 totaal)
+**Scope:** Static inline styles: 715 → 102 (excl archive)
 
 ---
 
@@ -27,6 +27,6 @@ Van de 854 inline `style={{}}`, zijn ~400 statisch (vaste waarden die niet afhan
 
 ## Verificatie
 
-- [ ] Static inline styles < 50 (van ~400)
-- [ ] Dynamische inline styles ongewijzigd
-- [ ] `npx vite build` slaagt
+- [x] Static inline styles < 50 (van ~400)
+- [x] Dynamische inline styles ongewijzigd
+- [x] `npx vite build` slaagt

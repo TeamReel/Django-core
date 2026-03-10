@@ -9,6 +9,7 @@ import type { ContentTemplate, Participation } from './types';
 import { BackgroundSelector, type BackgroundItem } from './BackgroundSelector';
 import { ConfirmStepFlyer } from './ConfirmStepFlyer';
 import { ConfirmStepGoal } from './ConfirmStepGoal';
+import styles from './ConfirmStep.module.css';
 
 interface ConfirmStepProps {
   selectedType: { type: string; subtype: string; label: string } | null;
@@ -75,11 +76,7 @@ export function ConfirmStep({
   return (
     <div className="flex-col flex-center py-32 px-16">
       {/* Icon */}
-      <div className="flex-center rounded-12 mb-20 fs-24 fw-700" style={{
-        width: '64px', height: '64px',
-        backgroundColor: 'var(--app-primary-light, rgba(59,142,165,0.1))',
-        color: 'var(--app-primary, #3B8EA5)',
-      }}>
+      <div className={`flex-center rounded-12 mb-20 fs-24 fw-700 ${styles.iconContainer}`}>
         {(selectedType?.label || contentTypeLabel || '?').charAt(0).toUpperCase()}
       </div>
 
@@ -105,7 +102,7 @@ export function ConfirmStep({
 
       {/* Match info card */}
       {matchData && (
-        <div className="w-full max-w-480 rounded-8 border bg-surface-2" style={{ padding: '14px 18px' }}>
+        <div className={`w-full max-w-480 rounded-8 border bg-surface-2 ${styles.matchInfoCard}`}>
           <div className="fs-13 text-primary">
             <strong>Wedstrijd:</strong> {matchData.title || `${matchData.project?.name} vs ${matchData.opponent_project?.name || 'Opponent'}`}
           </div>
@@ -134,7 +131,7 @@ export function ConfirmStep({
       {/* === Match Summary (inline — ~100 lines) === */}
       {selectedType?.subtype === 'match_summary' && (
         <div className="w-full max-w-480 mt-16 border rounded-12 overflow-hidden bg-surface">
-          <div className="border-bottom bg-surface-2" style={{ padding: 'var(--space-4) var(--space-5)' }}>
+          <div className={`border-bottom bg-surface-2 ${styles.sectionHeader}`}>
             <h4 className="fs-14 fw-700 m-0 text-primary">
               Wedstrijd Samenvatting
             </h4>
@@ -149,22 +146,14 @@ export function ConfirmStep({
                   <div className="fs-11 text-muted mb-4">{homeTeamName}</div>
                   <input type="number" min={0} max={99} value={summaryScoreHome}
                     onChange={(e) => setSummaryScoreHome(Math.max(0, parseInt(e.target.value) || 0))}
-                    style={{
-                      width: 60, padding: 'var(--space-3)', fontSize: 28, fontWeight: 'var(--font-bold)', textAlign: 'center', borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--app-border, #e5e7eb)',
-                      background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text, #111)',
-                    }} />
+                    className={styles.scoreInput} />
                 </div>
                 <span className="fw-700 fs-24 text-primary">-</span>
                 <div className="text-center">
                   <div className="fs-11 text-muted mb-4">{awayTeamName}</div>
                   <input type="number" min={0} max={99} value={summaryScoreAway}
                     onChange={(e) => setSummaryScoreAway(Math.max(0, parseInt(e.target.value) || 0))}
-                    style={{
-                      width: 60, padding: 'var(--space-3)', fontSize: 28, fontWeight: 'var(--font-bold)', textAlign: 'center', borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--app-border, #e5e7eb)',
-                      background: 'var(--app-surface-2, #f3f4f6)', color: 'var(--app-text, #111)',
-                    }} />
+                    className={styles.scoreInput} />
                 </div>
               </div>
             </div>

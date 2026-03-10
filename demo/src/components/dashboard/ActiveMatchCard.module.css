@@ -222,3 +222,8 @@
 .actionBtn:active {
   transform: scale(0.97);
 }
+
+/* Shimmer width variants */
+.shimmerWidth40 { width: 40%; }
+.shimmerWidth70Tall { width: 70%; height: 24px; }
+.shimmerWidth55 { width: 55%; }

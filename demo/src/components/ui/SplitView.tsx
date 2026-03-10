@@ -5,6 +5,7 @@
  * Mobile: full-width stacked layout.
  */
 import React from 'react';
+import styles from './SplitView.module.css';
 
 export interface SplitViewProps {
   /** Sidebar content */
@@ -32,21 +33,16 @@ export function SplitView({
 
   return (
     <div
-      className={`split-view ${className}`}
-      style={{
-        display: 'flex',
-        flexDirection: isRight ? 'row-reverse' : 'row',
-        gap,
-        minHeight: 0,
-      }}
+      className={`split-view ${styles.container} ${isRight ? styles.containerReverse : ''} ${className}`}
+      style={{ gap }}
     >
       <aside
-        className="split-view__sidebar"
-        style={{ width: sidebarWidth, flexShrink: 0, overflow: 'auto' }}
+        className={`split-view__sidebar ${styles.sidebar}`}
+        style={{ width: sidebarWidth }}
       >
         {sidebar}
       </aside>
-      <main className="split-view__main" style={{ flex: 1, minWidth: 0, overflow: 'auto' }}>
+      <main className={`split-view__main ${styles.main}`}>
         {children}
       </main>
     </div>

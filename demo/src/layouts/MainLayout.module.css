@@ -1,0 +1,23 @@
+/* MainLayout — Root layout with sidebar + main content */
+
+.root {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  overflow: hidden;
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  width: 100%;
+}
+
+.topNavWrapper {
+  flex-shrink: 0;
+}

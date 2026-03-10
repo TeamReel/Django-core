@@ -7,6 +7,7 @@ import { Table } from '../../shims/design-system';
 import { Project } from '../../types';
 import { canEditProject, canDeleteProject } from '../../utils/permissions';
 import type { useProjectsPageData } from './useProjectsPageData';
+import styles from './ProjectsTable.module.css';
 
 type Data = ReturnType<typeof useProjectsPageData>;
 
@@ -108,21 +109,18 @@ export function ProjectsTable({ d }: { d: Data }) {
                 <td>
                   <div className="flex-row gap-8">
                     <button onClick={() => { setDetailProject(project); setIsDetailModalOpen(true); }}
-                      className="py-4 px-12 rounded-4 cursor-pointer fs-12 fw-500"
-                      style={{ border: '1px solid var(--app-border)', backgroundColor: 'var(--app-surface-2)', color: 'var(--app-text)' }}>
+                      className={`py-4 px-12 rounded-4 cursor-pointer fs-12 fw-500 ${styles.viewButton}`}>
                       View
                     </button>
                     {canEdit && (
                       <button onClick={() => { setSelectedProject(project); setIsEditModalOpen(true); }}
-                        className="p-4 px-8 rounded-4 cursor-pointer fs-12"
-                        style={{ border: '1px solid var(--app-warning)', backgroundColor: 'var(--app-surface)', color: 'var(--app-warning)' }}>
+                        className={`p-4 px-8 rounded-4 cursor-pointer fs-12 ${styles.editButton}`}>
                         Edit
                       </button>
                     )}
                     {canDel && (
                       <button onClick={() => handleDelete(project.id)}
-                        className="p-4 px-8 rounded-4 cursor-pointer fs-12"
-                        style={{ border: '1px solid #dc3545', backgroundColor: 'var(--app-surface)', color: 'var(--app-error)' }}>
+                        className={`p-4 px-8 rounded-4 cursor-pointer fs-12 ${styles.deleteButton}`}>
                         Delete
                       </button>
                     )}

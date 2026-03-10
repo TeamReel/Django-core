@@ -1,0 +1,39 @@
+/* BatchProgressStep – CSS Module */
+
+.backgroundNotice {
+  padding: var(--space-3) var(--space-3);
+  margin-bottom: var(--space-3);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--color-blue-400);
+}
+
+.progressBarTrack {
+  height: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--app-border, #333);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.progressBarFillSuccess {
+  background: var(--color-green-400);
+}
+
+.progressBarFillWarning {
+  background: var(--color-amber-400);
+}
+
+.cursorDefault {
+  cursor: default;
+}
+
+.errorText {
+  color: var(--color-red-500);
+}

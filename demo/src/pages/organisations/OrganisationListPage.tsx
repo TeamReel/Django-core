@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { organisationsApi } from '../../api';
 import type { Organisation } from '../../types';
+import styles from './OrganisationListPage.module.css';
 
 type OrganisationCard = Organisation & {
   slug: string;
@@ -32,16 +33,12 @@ export default function OrganisationListPage() {
     <>
       <div>
         <h1>Organisations</h1>
-        <p className="mb-24" style={{ color: 'var(--app-muted-text)' }}>Select an organisation to view its projects and resources.</p>
+        <p className={`mb-24 ${styles.subtitle}`}>Select an organisation to view its projects and resources.</p>
 
         {isLoading && <p>Loading organisations...</p>}
 
         {error && (
-          <div className="p-12 rounded-4 mb-16" style={{
-            backgroundColor: 'var(--color-red-100)',
-            border: '1px solid #fcc',
-            color: 'var(--color-red-500)'
-          }}>
+          <div className={`p-12 rounded-4 mb-16 ${styles.errorBanner}`}>
             {error}
           </div>
         )}
@@ -55,16 +52,11 @@ export default function OrganisationListPage() {
           />
         )}
 
-        <div className="grid gap-20" style={{
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
-        }}>
+        <div className={`grid gap-20 ${styles.grid}`}>
           {organisations.map(org => (
             <div
               key={org.id}
-              className="border rounded-8 p-20 bg-surface"
-              style={{
-                boxShadow: 'var(--shadow-xs)'
-              }}
+              className={`border rounded-8 p-20 bg-surface ${styles.card}`}
             >
               <h3 className="text-primary mt-0">{org.name}</h3>
               {org.description && (
@@ -72,11 +64,7 @@ export default function OrganisationListPage() {
               )}
 
               {/* Data Overview Stats */}
-              <div className="grid gap-12 p-12 rounded-6 fs-13" style={{
-                gridTemplateColumns: '1fr 1fr 1fr',
-                margin: '16px 0',
-                backgroundColor: 'var(--app-bg-subtle, rgba(0,0,0,0.03))'
-              }}>
+              <div className={`grid gap-12 p-12 rounded-6 fs-13 ${styles.statsGrid}`}>
                  <div title="Root Projects (Clubs)">
                    <div className="text-muted fs-11 uppercase tracking-wide">Clubs</div>
                    <div className="fs-18 fw-600 text-primary">{org.clubs_count ?? '-'}</div>
@@ -106,19 +94,13 @@ export default function OrganisationListPage() {
               <div className="flex-row gap-8 mt-16">
                 <Link
                   to={`/organisations/${org.slug}`}
-                  className="py-8 px-16 rounded-4 fs-14 text-white text-decoration-none"
-                  style={{
-                    backgroundColor: 'var(--app-primary)',
-                  }}
+                  className={`py-8 px-16 rounded-4 fs-14 text-white text-decoration-none ${styles.primaryButton}`}
                 >
                   View Details
                 </Link>
                 <Link
                   to={`/organisations/${org.slug}/projects`}
-                  className="py-8 px-16 rounded-4 fs-14 text-white text-decoration-none"
-                  style={{
-                    backgroundColor: 'var(--color-neutral-400)',
-                  }}
+                  className={`py-8 px-16 rounded-4 fs-14 text-white text-decoration-none ${styles.secondaryButton}`}
                 >
                   View Projects
                 </Link>
