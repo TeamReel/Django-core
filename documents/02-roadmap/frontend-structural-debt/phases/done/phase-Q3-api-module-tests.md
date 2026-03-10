@@ -1,8 +1,8 @@
 # Q3 — API Module Tests
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 4 uur
-**Scope:** ~10 test files voor domain API modules
+**Scope:** 10 API module test files, 51 new tests (167 total)
 **Vereist:** Q1, A2
 
 ---
@@ -49,7 +49,7 @@ describe('activitiesApi', () => {
 
 ## Verificatie
 
-- [ ] 10+ API module test files
-- [ ] Happy path + error paths getest
-- [ ] MSW handlers matchen productie API structuur
-- [ ] `npx vitest run` passing
+- [x] 10+ API module test files
+- [x] Happy path + error paths getest
+- [x] MSW handlers matchen productie API structuur
+- [x] `npx vitest run` passing

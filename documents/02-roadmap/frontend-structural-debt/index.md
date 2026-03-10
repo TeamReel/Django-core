@@ -1,6 +1,6 @@
 # Frontend Structural Debt — Roadmap
 
-**Status:** 🔴 In Progress (15/18 fases done)
+**Status:** 🔴 In Progress (16/18 fases done)
 **Aangemaakt:** 2026-03-08
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -100,7 +100,7 @@ De vorige twee roadmaps hebben de **oppervlakte** opgeknapt: ~4.800 CSS-waarden 
 |------|------|-------|---------|--------|
 | **Q1** | Test Infrastructure | Vitest + React Testing Library setup, test utilities, mock API | Setup | 2 uur |
 | **Q2** | ✅ Hook Tests | 15 test files, 116 total tests | `pending` | 6 uur |
-| **Q3** | API Module Tests | Tests voor domain API modules (na A2) | ~10 test files | 4 uur |
+| **Q3** | ✅ API Module Tests | 10 test files, 51 new tests (167 total) | `pending` | 4 uur |
 
 ---
 
