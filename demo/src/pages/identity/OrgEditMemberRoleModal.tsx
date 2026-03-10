@@ -4,12 +4,19 @@ import { api } from '../../api';
 import styles from './OrgEditMemberRoleModal.module.css';
 import { logger } from '@/utils/logger';
 
+interface OrgMemberLike {
+  id?: string | number;
+  email?: string;
+  user?: { email?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
 export interface OrgEditMemberRoleModalProps {
   opened: boolean;
   onClose: () => void;
-  editingMember: any;
+  editingMember: OrgMemberLike | null;
   currentOrgSlug: string | undefined;
-  onSaved: (updated: any, role: string) => void;
+  onSaved: (updated: OrgMemberLike, role: string) => void;
 }
 
 export function OrgEditMemberRoleModal({
@@ -83,7 +90,7 @@ export function OrgEditMemberRoleModal({
                 setError(null);
                 const updated = await api.patch(`/organisations/${currentOrgSlug}/members/${editingMember.id}/`, { role: editingMemberRole });
 
-                onSaved(updated, editingMemberRole);
+                onSaved(updated as OrgMemberLike, editingMemberRole);
               } catch (e) {
                 logger.error('Failed to update member role', e);
                 setError(e instanceof Error ? e.message : 'Failed to update member');

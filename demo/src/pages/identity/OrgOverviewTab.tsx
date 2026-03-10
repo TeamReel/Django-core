@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { Activity, Organisation, Project } from '../../types';
+import { Activity, Organisation, Project, User } from '../../types';
 import ov from './OrgOverviewTab.module.css';
 
 export interface OrgLoadingState {
@@ -20,7 +20,7 @@ export interface OrgOverviewTabProps {
   org: Organisation;
   clubs: Project[];
   teams: Project[];
-  members: any[];
+  members: User[];
   loadingState: OrgLoadingState;
   countsData: OrgCountsData;
   scheduledMatches: Activity[];
@@ -29,7 +29,7 @@ export interface OrgOverviewTabProps {
   getBestMatchDetailPath: (m: Record<string, unknown>) => string;
   currentOrgSlug: string | undefined;
   id: string | undefined;
-  permissionContext: any;
+  permissionContext: Record<string, unknown> | null;
   setIsOrgEditModalOpen: (v: boolean) => void;
 }
 
@@ -151,13 +151,12 @@ export function OrgOverviewTab({
           <div className={ov.emptyText}>Geen leden gevonden.</div>
         ) : (
           members.slice(0, 6).map((m) => {
-            const u = m?.user || m;
             const label =
-              `${String(u?.first_name || '').trim()} ${String(u?.last_name || '').trim()}`.trim() ||
-              String(u?.email || '').trim() ||
-              `User ${String(u?.id || m?.id)}`;
+              `${String(m?.first_name || '').trim()} ${String(m?.last_name || '').trim()}`.trim() ||
+              String(m?.email || '').trim() ||
+              `User ${String(m?.id)}`;
             return (
-              <div key={String(u?.id || m?.id || label)} className={ov.itemRow} style={{ cursor: 'default' }}>
+              <div key={String(m?.id || label)} className={ov.itemRow} style={{ cursor: 'default' }}>
                 <span className={ov.itemName}>{label}</span>
               </div>
             );

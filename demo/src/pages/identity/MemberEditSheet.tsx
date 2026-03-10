@@ -29,7 +29,16 @@ const ROLE_COLORS: Record<string, string> = {
   supporter: 'var(--color-neutral-300)',
 };
 
-function readFunctionalRoles(m: any): string[] {
+interface MembershipLike {
+  id?: string | number;
+  role?: string;
+  functional_roles?: string[];
+  functionalRoles?: string[];
+  user?: { name?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+function readFunctionalRoles(m: MembershipLike | null): string[] {
   const direct = m?.functional_roles ?? m?.functionalRoles;
   if (Array.isArray(direct)) {
     return direct.map((r) => String(r || '').trim()).filter(Boolean);
@@ -40,7 +49,7 @@ function readFunctionalRoles(m: any): string[] {
 interface MemberEditSheetProps {
   opened: boolean;
   onClose: () => void;
-  membership: any | null;
+  membership: MembershipLike | null;
   apiBaseUrl: string;
   teamId: string;
   /** Callback after successful save so parent can refresh data */

@@ -45,10 +45,10 @@ export const PermissionsPage: React.FC = () => {
         if (Array.isArray(tree?.global)) keys.push(...tree.global);
         const orgs = tree?.organizations || tree?.organisations;
         if (orgs && typeof orgs === 'object') {
-          Object.values(orgs as any).forEach((orgNode: any) => {
-            if (Array.isArray(orgNode?.permissions)) keys.push(...orgNode.permissions);
+          Object.values(orgs as Record<string, Record<string, unknown>>).forEach((orgNode: Record<string, unknown>) => {
+            if (Array.isArray(orgNode?.permissions)) keys.push(...(orgNode.permissions as string[]));
             if (orgNode?.projects && typeof orgNode.projects === 'object') {
-              Object.values(orgNode.projects).forEach((pNode: any) => {
+              Object.values(orgNode.projects as Record<string, Record<string, unknown>>).forEach((pNode: Record<string, unknown>) => {
                 if (Array.isArray(pNode?.permissions)) keys.push(...pNode.permissions);
               });
             }

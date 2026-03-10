@@ -11,8 +11,8 @@ type Period = {
   parent_period_id?: string | number | null;
   parent_period?: { id?: string | number } | null;
   type?: string;
-  data?: any;
-  metadata?: any;
+  data?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 };
 
 type Project = {

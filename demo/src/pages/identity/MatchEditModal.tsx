@@ -19,7 +19,7 @@ interface MatchActivity {
   period_id?: string | number;
   organisation_id?: string | number;
 
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 interface MatchEditModalProps {
@@ -52,8 +52,8 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
 
   if (!opened || !match) return null;
 
-  const idsFromMetadata = match?.metadata?.teamreel?.match_context || {};
-  const identityFromMetadata = match?.metadata?.identity || {};
+  const idsFromMetadata = (match?.metadata as Record<string, Record<string, unknown>> | undefined)?.teamreel?.match_context as Record<string, unknown> || {};
+  const identityFromMetadata = (match?.metadata as Record<string, Record<string, unknown>> | undefined)?.identity || {} as Record<string, unknown>;
 
   const organisationId =
     (match.organisation?.id != null ? String(match.organisation.id) : '') ||
@@ -111,7 +111,7 @@ export default function MatchEditModal({ opened, onClose, match, onSave, apiBase
         description: match.description ?? '',
       }}
       onCreate={async (payload: MatchCreatePayload) => {
-        const patch: any = {
+        const patch: Record<string, unknown> = {
           title: payload.title,
           start_time: payload.start_time,
           end_time: payload.end_time,

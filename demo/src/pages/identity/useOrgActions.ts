@@ -1,5 +1,5 @@
 import React from 'react';
-import type { Organisation, Project } from '../../types';
+import type { Organisation, Project, User } from '../../types';
 import { fetchAllPages, invalidateFetchAllPagesCache } from '../../utils/fetchAllPages';
 import { setActiveContext, getActiveContext } from '../../utils/activeContext';
 import { getApiV1BaseUrl } from './orgDataHelpers';
@@ -25,7 +25,7 @@ interface UseOrgActionsParams {
   setEditType: (v: string) => void;
   setEditCountry: (v: string) => void;
   setSaving: (v: boolean) => void;
-  setMembers: (v: any[]) => void;
+  setMembers: (v: User[]) => void;
   setClubs: React.Dispatch<React.SetStateAction<Project[]>>;
   setTeams: React.Dispatch<React.SetStateAction<Project[]>>;
   setAllClubsForTeams: React.Dispatch<React.SetStateAction<Project[]>>;
@@ -136,7 +136,7 @@ export function useOrgActions(params: UseOrgActionsParams) {
 
   const saveOrganisationEdits = async (orgData: Partial<Organisation> & { sport_id?: string | null }) => {
     if (!org) throw new Error('Missing organisation');
-    const patch: any = { ...orgData };
+    const patch: Record<string, unknown> = { ...orgData as Record<string, unknown> };
     delete patch.slug;
     delete patch.sport;
     const updatedOrg = await api.patch<Organisation>(`/organisations/${currentOrgSlug}/`, patch);
