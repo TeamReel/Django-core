@@ -1,6 +1,6 @@
 # Frontend Final Cleanup — Roadmap
 
-**Status:** 🔴 In Progress (10/12 fases done)
+**Status:** 🔴 In Progress (11/12 fases done)
 **Aangemaakt:** 2026-03-10
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -70,7 +70,7 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 | **Q1** | ✅ Console Cleanup | 544 → 0 (+ logger utility) | `done` | 3 uur |
 | **Q2** | ✅ ESLint Cleanup | 44 → 36 eslint-disable | `done` | 2 uur |
 | **Q3** | ✅ Component Tests | 46 test files voor UI components | `done` | 12 uur |
-| **Q4** | Page Tests | Tests voor page components | +50 test files | 12 uur |
+| **Q4** | ✅ Page Tests | 49 test files voor page components | `done` | 12 uur |
 
 ### Track DX — Developer Experience
 
