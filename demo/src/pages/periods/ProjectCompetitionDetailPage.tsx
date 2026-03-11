@@ -22,6 +22,7 @@ import { CompetitionContentTab } from './CompetitionContentTab';
 import { CompetitionOverviewTab } from './CompetitionOverviewTab';
 import { CompetitionMatchesTable } from './CompetitionMatchesTable';
 import { useCompetitionDetailData } from './useCompetitionDetailData';
+import pc from './ProjectCompetitionDetailPage.module.css';
 
 export const ProjectCompetitionDetailPage: React.FC = () => {
   const { competitionId } = useParams<{ competitionId: string }>();
@@ -65,7 +66,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <Button variant="secondary" size="sm" onClick={() => d.setIsMatchCreateModalOpen(true)}>Create Match</Button>
             <Button variant="secondary" size="sm" onClick={() => { d.setSelectedDetailPeriod(d.competition); d.setIsPeriodDetailModalOpen(true); }}>View</Button>
             <Button variant="secondary" size="sm" onClick={() => { d.setSelectedEditPeriod(d.competition); d.setIsPeriodEditModalOpen(true); }}>Edit</Button>
-            <Button variant="secondary" size="sm" onClick={d.deleteCompetition} style={{ color: 'var(--color-red-500)' }}>Delete</Button>
+            <Button variant="secondary" size="sm" onClick={d.deleteCompetition} className={pc.dangerText}>Delete</Button>
           </div>
         }
       />

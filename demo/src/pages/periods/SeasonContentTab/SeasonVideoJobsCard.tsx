@@ -89,7 +89,7 @@ export function SeasonVideoJobsCard({
                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
               >
                 {stableUrl && (
-                  <div className={s.videoThumbnail} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div className={`${s.videoThumbnail} flex-center`}>
                     <video
                       src={stableUrl}
                       preload="metadata"

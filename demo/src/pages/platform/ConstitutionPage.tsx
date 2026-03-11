@@ -166,7 +166,7 @@ export const ConstitutionPage: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-800">{category}</h3>
                       <Badge variant="info">{categoryRules.length} Rules</Badge>
                     </div>
-                    <div style={{ overflowX: 'auto' }}>
+                    <div className="overflow-x-auto">
                       <Table
                         columns={[
                           { key: 'id', label: 'Rule Identifier' },

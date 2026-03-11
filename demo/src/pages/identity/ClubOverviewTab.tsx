@@ -135,7 +135,7 @@ export function ClubOverviewTab({
           <div className={ov.emptyText}>Geen seizoenen gevonden.</div>
         ) : (
           overviewSeasons.map((s) => (
-            <div key={String(s.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
+            <div key={String(s.id)} className={`${ov.itemRow} cursor-default`}>
               <span className={ov.itemName}>{String(s.name || 'Seizoen')}</span>
               <span className={ov.itemMeta}>{s.type || ''}</span>
             </div>
@@ -162,7 +162,7 @@ export function ClubOverviewTab({
               String(m?.email || '').trim() ||
               `User ${m.id}`;
             return (
-              <div key={String(m.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
+              <div key={String(m.id)} className={`${ov.itemRow} cursor-default`}>
                 <span className={ov.itemName}>{label}</span>
               </div>
             );

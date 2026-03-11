@@ -11,7 +11,7 @@ interface ApprovalsToastContainerProps {
 
 export function ApprovalsToastContainer({ toasts }: ApprovalsToastContainerProps) {
   return (
-    <div className={s.toastContainer} style={{ pointerEvents: 'none' }}>
+    <div className={`${s.toastContainer} pointer-events-none`}>
       {toasts.map(t => (
         <div
           key={t.id}

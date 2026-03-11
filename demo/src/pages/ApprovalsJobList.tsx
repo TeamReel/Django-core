@@ -128,7 +128,7 @@ export function ApprovalsJobList({
                   <div className={s.errorInline}>{job.error_message}</div>
                 )}
                 {job.status === 'retrying' && (
-                  <div className={s.errorInline} style={{ color: 'var(--app-warning, #F59E0B)' }}>
+                  <div className={`${s.errorInline} ${styles.warningText}`}>
                     🔄 AI model tijdelijk niet beschikbaar — wordt automatisch opnieuw geprobeerd…
                     {job.error_message && <> ({job.error_message.slice(0, 100)})</>}
                   </div>

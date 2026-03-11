@@ -156,7 +156,7 @@ export const ContentList: React.FC = () => {
       {/* ── Filter bar ──────────────────────────────────────────────────────────── */}
       <div className="flex-row gap-8 flex-wrap">
         <input type="text" placeholder="Search label, member, model…" value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)} className={cl.filterSelect} style={{ minWidth: 180 }} />
+          onChange={(e) => setSearchQuery(e.target.value)} className={`${cl.filterSelect} ${cl.filterSearch}`} />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className={cl.filterSelect}>
           <option value="">All Status</option>
           {filterOptions.statuses.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -223,7 +223,7 @@ export const ContentList: React.FC = () => {
               {filtered.map((job) => (
                 <tr key={job.task_id} className={cl.tableRow}>
                   <td className="dir-td">
-                    <span style={{ fontSize: 'var(--text-base)', marginRight: 'var(--space-1)' }}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
+                    <span className={cl.typeIcon}>{job.output_type === 'image' ? '🖼️' : '🎬'}</span>
                     <span className="fs-11 text-muted">{job.output_asset_type || job.output_type}</span>
                   </td>
                   <td className="dir-td-text">{job.label || '—'}</td>

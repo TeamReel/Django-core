@@ -575,3 +575,7 @@
     padding: var(--space-2) var(--space-5);
   }
 }
+
+.sectionPad {
+  padding: var(--space-3);
+}

@@ -88,3 +88,8 @@
     font-size: var(--text-sm);
   }
 }
+
+.txnCard {
+  padding: var(--space-3) var(--space-3);
+  border: 1px solid var(--border-color, #e0e0e0);
+}

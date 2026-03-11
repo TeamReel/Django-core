@@ -146,7 +146,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
           <div className={`${styles.mediaCard} ${styles.mediaCardGuest}`}>
             <div className={styles.mediaCardBody}>
               <div className={styles.mediaCardTop}>
-                <span className={styles.mediaCardName}><UserRound size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> Gast</span>
+                <span className={styles.mediaCardName}><UserRound size={11} className={styles.iconInlineSm} /> Gast</span>
                 <span className={styles.mediaCardScore}>{guestFilledCount}/4</span>
                 <button
                   type="button"

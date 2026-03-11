@@ -7,6 +7,7 @@ import { Badge } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
+import ct from './CompetitionMatchesTable.module.css';
 import { activitiesApi } from '../../api';
 import type { Activity } from '../../types/api/activity';
 import type { MatchRef } from './useCompetitionMutations';
@@ -61,8 +62,7 @@ export const CompetitionMatchesTable: React.FC<CompetitionMatchesTableProps> = (
               <td className="detail-td-text">
                 <Link
                   to={matchDetailPath(String(m.id))}
-                  className="hover:underline"
-                  style={{ textDecoration: 'none', color: 'var(--app-link)' }}
+                  className={`hover:underline ${ct.matchLink}`}
                 >
                   {matchDisplayTitle(m)}
                 </Link>

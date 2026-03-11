@@ -99,7 +99,7 @@ const GuestPlayerRow: React.FC<GuestPlayerRowProps> = ({ guestPlayer, openGuestA
       {/* No batch checkbox for guest */}
     </td>
     <td className={`detail-td-text ${styles.guestStickyCol}`}>
-      <span className={s.guestLabel}><UserRound size={14} style={{ display: 'inline', verticalAlign: '-2px' }} /> Gast Speler</span>
+      <span className={s.guestLabel}><UserRound size={14} className={s.iconInline} /> Gast Speler</span>
     </td>
     {MEDIA_SLOTS.map((slot) => {
       const guestSlotMap: Record<string, { has: boolean; templateId: string; label: string }> = {

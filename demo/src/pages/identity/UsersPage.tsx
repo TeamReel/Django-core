@@ -8,6 +8,7 @@ import UserEditModal from './UserEditModal';
 import UserDetailModal from './UserDetailModal';
 import InviteMemberModal from './InviteMemberModal';
 import AddMemberModal from './AddMemberModal';
+import up from './UsersPage.module.css';
 import AssignUserToOrgModal from './AssignUserToOrgModal';
 import LinkUserModal from './LinkUserModal';
 import { SkeletonTablePage } from '../../components/Skeleton';
@@ -77,7 +78,7 @@ export default function UsersPage() {
       />
 
       {d.error && (
-        <div className="p-12 rounded-4 mb-24" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)', color: 'var(--app-error)', border: '1px solid rgba(220, 53, 69, 0.3)' }}>
+        <div className={`p-12 rounded-4 mb-24 ${up.errorBanner}`}>
           {d.error}
         </div>
       )}

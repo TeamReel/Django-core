@@ -1,0 +1,14 @@
+.modalCloseBtn {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--app-border);
+  background-color: var(--app-surface-2);
+  color: var(--app-text);
+  cursor: pointer;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}

@@ -20,11 +20,7 @@ export function SeasonContentTypesCard({
 }: SeasonContentTypesCardProps) {
   return (
     <Card title="Season Content">
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 'var(--space-3)',
-      }}>
+      <div className={s.tilesGrid}>
         {CONTENT_TYPES.season?.items.map(item => {
           const templates = availableTemplates[item.subtype] || [];
           const matchedTemplate = templates[0];

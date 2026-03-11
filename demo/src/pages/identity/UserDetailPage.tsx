@@ -8,6 +8,7 @@ import { PageContent, PageHeader } from '@django-core/page-templates';
 
 import { SkeletonDetailPage } from '../../components/Skeleton';
 import TransactionsPanel from '../../components/transactions/TransactionsPanel';
+import ud from './UserDetailPage.module.css';
 import { useUserDetailData } from './useUserDetailData';
 import { UserDetailModals } from './UserDetailModals';
 import { UserDetailOverviewTab } from './UserDetailOverviewTab';
@@ -69,10 +70,10 @@ const UserDetailPage: React.FC = () => {
                 <button type="button" onClick={() => setUserBalanceReloadToken((n) => n + 1)} className="action-btn" disabled={userBalanceLoading}>Refresh</button>
               </div>
               {userBalanceError && <div className="mt-12"><Alert variant="warning">{userBalanceError}</Alert></div>}
-              <div className="mt-12 grid gap-12" style={{ gridTemplateColumns: '1fr 1fr' }}>
+              <div className="mt-12 grid gap-12 grid-cols-2">
                 <Card>
                   <div className="text-muted fs-12">Current balance</div>
-                  <div style={{ fontWeight: 900, fontSize: '28px', marginTop: 'var(--space-2)' }}>
+                  <div className={ud.balanceValue}>
                     {userBalanceLoading ? 'Loading…' : userBalance != null ? userBalance : '—'}
                   </div>
                 </Card>

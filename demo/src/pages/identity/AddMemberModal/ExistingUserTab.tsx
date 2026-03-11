@@ -31,7 +31,7 @@ export function ExistingUserTab({
 }: ExistingUserTabProps) {
   return (
     <>
-      <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+      <div className="flex-1 overflow-y-auto min-h-0">
         {/* Role selector */}
         <div className="mb-16 flex-row gap-16">
           <div className="flex-1">

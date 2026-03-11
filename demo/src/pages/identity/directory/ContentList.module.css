@@ -34,6 +34,10 @@
   min-width: 100px;
 }
 
+.filterSearch {
+  min-width: 180px;
+}
+
 /* Table row separator */
 .tableRow {
   border-bottom: 1px solid var(--app-border-light, var(--color-neutral-100));
@@ -49,4 +53,9 @@
 .dash {
   font-size: var(--text-xs);
   color: var(--color-neutral-300);
+}
+
+.typeIcon {
+  font-size: var(--text-base);
+  margin-right: var(--space-1);
 }

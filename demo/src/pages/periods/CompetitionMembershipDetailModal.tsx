@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Modal } from '../../components/ui';
+import cm from './CompetitionMembershipDetailModal.module.css';
 import { getUserDisplayName, roleLabel } from './competitionDetailUtils';
 import type { MemberRef } from './useCompetitionMutations';
 
@@ -32,20 +33,13 @@ export function CompetitionMembershipDetailModal({
         <button
           type="button"
           onClick={onClose}
-          style={{
-            padding: 'var(--space-2) var(--space-3)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--app-border)',
-            backgroundColor: 'var(--app-surface-2)',
-            color: 'var(--app-text)',
-            cursor: 'pointer',
-          }}
+          className={cm.modalCloseBtn}
         >
           Close
         </button>
       }
     >
-      <div style={{ display: 'grid', gap: 'var(--space-2)' }}>
+      <div className="grid gap-8">
         <div>
           <div className="text-muted fs-12">Name</div>
           <div className="fw-600">{name}</div>
@@ -60,7 +54,7 @@ export function CompetitionMembershipDetailModal({
             <Badge variant="default">{roleLabel(role)}</Badge>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>
+        <div className={cm.detailGrid}>
           <div>
             <div className="text-muted fs-12">Position</div>
             <div className="fw-600">{position}</div>

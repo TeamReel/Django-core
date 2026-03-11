@@ -18,6 +18,7 @@ import type { Activity, Period } from '../../types';
 import type { WalletOption } from '../../components/transactions/CreateTransactionModal';
 import type { UserDetailDataReturn } from './userDetailTypes';
 import { useUserDetailApi } from './useUserDetailApi';
+import udStyles from './useUserDetailData.module.css';
 
 // Re-export so consumers keep the same import path
 export type { UserDetailDataReturn } from './userDetailTypes';
@@ -135,8 +136,7 @@ export function useUserDetailData(): UserDetailDataReturn {
             <a
                 href={href}
                 onClick={(e: React.MouseEvent) => { e.preventDefault(); navigate(href); }}
-                className="fw-600"
-                style={{ color: 'var(--app-primary)', textDecoration: 'none' }}
+                className={`fw-600 ${udStyles.navLink}`}
             >
                 {safe || '—'}
             </a>

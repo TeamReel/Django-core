@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Card } from '@django-core/design-system';
 import { logger } from '@/utils/logger';
 import { SkeletonList } from '../../../components/Skeleton';
+import co from './ContentOverview.module.css';
 import { generativeApi } from '../../../api';
 import type { GenerationJob } from '../../../hooks/useGenerationJobs';
 
@@ -145,7 +146,7 @@ export const ContentOverview: React.FC = () => {
 
       {/* ── Status / Approval side-by-side ────────────────────────────── */}
       <div className="flex-row gap-16 flex-wrap">
-        <Card style={{ flex: '1 1 300px' }}>
+        <Card className={co.flexPanel}>
           <div className="overflow-x-auto">
             <table className="dir-table">
               <thead><tr><th className="dir-th">Job Status</th><th className="dir-th text-right">Count</th></tr></thead>
@@ -157,7 +158,7 @@ export const ContentOverview: React.FC = () => {
             </table>
           </div>
         </Card>
-        <Card style={{ flex: '1 1 300px' }}>
+        <Card className={co.flexPanel}>
           <div className="overflow-x-auto">
             <table className="dir-table">
               <thead><tr><th className="dir-th">Approval Status</th><th className="dir-th text-right">Count</th></tr></thead>
@@ -202,7 +203,7 @@ export const ContentOverview: React.FC = () => {
               ))}
               {/* Totals row */}
               {byProvider.length > 1 && (
-                <tr className="fw-600" style={{ borderTop: '2px solid #e5e7eb' }}>
+                <tr className={`fw-600 ${co.totalRow}`}>
                   <td className="dir-td">Total</td>
                   <td className="dir-td"></td>
                   <td className="dir-td text-right tabular-nums">{summary.total}</td>

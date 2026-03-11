@@ -130,7 +130,7 @@ export function OrgOverviewTab({
           <div className={ov.emptyText}>Geen teams gevonden.</div>
         ) : (
           teams.slice(0, 6).map((t) => (
-            <div key={String(t?.id)} className={ov.itemRow} style={{ cursor: 'default' }}>
+            <div key={String(t?.id)} className={`${ov.itemRow} cursor-default`}>
               <span className={ov.itemName}>{String(t?.name || 'Team')}</span>
             </div>
           ))
@@ -156,7 +156,7 @@ export function OrgOverviewTab({
               String(m?.email || '').trim() ||
               `User ${String(m?.id)}`;
             return (
-              <div key={String(m?.id || label)} className={ov.itemRow} style={{ cursor: 'default' }}>
+              <div key={String(m?.id || label)} className={`${ov.itemRow} cursor-default`}>
                 <span className={ov.itemName}>{label}</span>
               </div>
             );

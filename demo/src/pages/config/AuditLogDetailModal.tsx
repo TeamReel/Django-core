@@ -1,6 +1,7 @@
 import React from 'react';
 import type { AuditEvent } from '../../types';
 import { Modal } from '../../components/ui';
+import am from './AuditLogDetailModal.module.css';
 
 interface AuditLogDetailModalProps {
   event: AuditEvent | null;
@@ -32,8 +33,7 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({ event,
           <div>
             <div className="fs-12 text-muted mb-4">Metadata</div>
             <pre
-              className="fs-12 bg-surface-2 p-12 rounded-4 overflow-auto text-primary border"
-              style={{ fontFamily: 'monospace', maxHeight: '300px' }}
+              className={`fs-12 bg-surface-2 p-12 rounded-4 overflow-auto text-primary border ${am.metadataBlock}`}
             >
               {JSON.stringify(event.metadata, null, 2)}
             </pre>
@@ -47,6 +47,6 @@ export const AuditLogDetailModal: React.FC<AuditLogDetailModalProps> = ({ event,
 const Field: React.FC<{ label: string; value: string; mono?: boolean }> = ({ label, value, mono }) => (
   <div>
     <div className="fs-12 text-muted mb-4">{label}</div>
-    <div className="fs-14 text-primary" style={mono ? { fontFamily: 'monospace' } : undefined}>{value}</div>
+    <div className={`fs-14 text-primary${mono ? ` ${am.monoFont}` : ''}`}>{value}</div>
   </div>
 );

@@ -2,6 +2,7 @@
  * UserDetailOverviewTab — Summary cards for federations, clubs, teams, matches.
  */
 import { Badge, Card } from '@django-core/design-system';
+import uo from './UserDetailOverviewTab.module.css';
 import type { UserDetailDataReturn } from './useUserDetailData';
 
 interface Props {
@@ -132,9 +133,9 @@ export function UserDetailOverviewTab({ data }: Props) {
 
       {/* User info card */}
       <Card>
-        <h3 style={{ marginTop: 0 }}>User</h3>
+        <h3 className="mt-0">User</h3>
         {data.user && (
-          <div className="grid" style={{ gridTemplateColumns: '160px 1fr', gap: 'var(--space-2) var(--space-4)' }}>
+          <div className={`grid ${uo.userInfoGrid}`}>
             <div className="text-muted">Name</div>
             <div className="fw-600">{data.userDisplayName}</div>
             <div className="text-muted">Email</div>

@@ -205,7 +205,7 @@ export function UserDetailActivityTabs({ data }: Props) {
                   <tr key={String(m?.id)}>
                     <td className="detail-td-text">
                       {matchPath ? (
-                        <a href={matchPath} className="text-blue-600 hover:underline fw-700 inline-block truncate text-decoration-none" style={{ maxWidth: '100%' }} onClick={(e) => { e.preventDefault(); navigate(matchPath); }} title="Open match details">
+                        <a href={matchPath} className="text-blue-600 hover:underline fw-700 inline-block truncate text-decoration-none" onClick={(e) => { e.preventDefault(); navigate(matchPath); }} title="Open match details">
                           {String(m?.title || '') || '—'}
                         </a>
                       ) : <span className="text-muted">—</span>}

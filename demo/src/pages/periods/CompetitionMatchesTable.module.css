@@ -1,0 +1,4 @@
+.matchLink {
+  text-decoration: none;
+  color: var(--app-link);
+}

@@ -569,3 +569,29 @@
 .sportVariantText {
   font-size: var(--text-xs);
 }
+
+.dialogShadow {
+  box-shadow: var(--shadow-lg);
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.closeBtnCompact {
+  line-height: 1;
+  padding: var(--space-1) var(--space-2);
+}
+
+.tilesGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.iconInline {
+  display: inline;
+  vertical-align: -2px;
+}

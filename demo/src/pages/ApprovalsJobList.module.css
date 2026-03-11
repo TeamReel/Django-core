@@ -304,3 +304,7 @@
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.7; }
 }
+
+.warningText {
+  color: var(--app-warning, #F59E0B);
+}

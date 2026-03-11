@@ -192,8 +192,7 @@ const PersonalWalletView: React.FC<PersonalWalletViewProps> = ({
               {personalRecentTransactions.map((txn) => (
                 <div
                   key={txn.id}
-                  className="flex-between rounded-8"
-                  style={{ padding: 'var(--space-3) var(--space-3)', border: '1px solid var(--border-color, #e0e0e0)' }}
+                  className={`flex-between rounded-8 ${styles.txnCard}`}
                 >
                   <div className="flex-col gap-2">
                     <div className="fw-600 fs-13">{txn.source_type}</div>

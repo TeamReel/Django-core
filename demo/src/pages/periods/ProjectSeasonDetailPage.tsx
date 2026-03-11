@@ -356,7 +356,7 @@ export const ProjectSeasonDetailPage: React.FC = () => {
                 background: toast.type === 'success' ? 'var(--color-green-800)' : toast.type === 'error' ? 'var(--color-red-800)' : toast.type === 'warning' ? 'var(--color-amber-700)' : 'var(--color-blue-800)',
               }}
             >
-              <span style={{ flex: 1 }}>{toast.message}</span>
+              <span className="flex-1">{toast.message}</span>
               <button
                 onClick={() => d.dismissToast(toast.id)}
                 className={s.toastDismiss}
