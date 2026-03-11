@@ -13,7 +13,10 @@
     "test:e2e:ui": "playwright test --ui",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "lint:css": "stylelint \"src/**/*.css\" \"src/**/*.module.css\"",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "generate:page": "node scripts/generate.mjs page",
+    "generate:modal": "node scripts/generate.mjs modal",
+    "generate:hook": "node scripts/generate.mjs hook"
   },
   "dependencies": {
     "@django-core/api-client": "workspace:*",
