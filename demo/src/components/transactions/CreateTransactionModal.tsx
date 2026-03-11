@@ -81,8 +81,7 @@ export default function CreateTransactionModal(props: {
     setNotes((prev) => (prev ? prev : defaultNotesForScope(scope)));
     setAmount('-1.00');
     setWalletIdx(0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, scope]);
 
   if (!isOpen) return null;
 

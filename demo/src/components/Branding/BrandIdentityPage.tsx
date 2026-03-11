@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { Card, Text, Stack, Alert } from '@django-core/design-system';
 import { api } from '@/api';
 import { EntityEditModal } from '../EntityEditModal';
@@ -40,7 +40,7 @@ export default function BrandIdentityPage({
     }
   };
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -65,13 +65,12 @@ export default function BrandIdentityPage({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, organisationId]);
 
   useEffect(() => {
     if (projectId || organisationId) fetchProfile();
     else setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, organisationId]);
+  }, [fetchProfile, projectId, organisationId]);
 
   const tokensByType = useMemo(() => {
     if (!profile?.tokens) return new Map<string, DesignToken[]>();

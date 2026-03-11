@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Badge, Button, Card } from '@django-core/design-system';
 import { Table } from '../../shims/design-system';
 import SmartEmptyState from '../SmartEmptyState';
@@ -68,8 +68,9 @@ export default function TransactionsPanel(props: {
   const [creating, setCreating] = useState(false);
 
   const apiBaseUrl = getApiBaseUrl();
+  const filtersKey = JSON.stringify(filters);
 
-  const fetchList = async () => {
+  const fetchList = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -92,12 +93,11 @@ export default function TransactionsPanel(props: {
     } finally {
       setLoading(false);
     }
-  };
+  }, [apiBaseUrl, filtersKey]);
 
   useEffect(() => {
     fetchList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiBaseUrl, reloadToken, JSON.stringify(filters)]);
+  }, [fetchList, reloadToken]);
 
   return (
     <Card className="p-16">

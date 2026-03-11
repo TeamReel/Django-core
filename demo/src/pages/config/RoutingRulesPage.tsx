@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Card,
   Badge,
@@ -85,7 +85,7 @@ export const RoutingRulesPage: React.FC = () => {
   });
   const [creating, setCreating] = useState(false);
 
-  async function fetchRules() {
+  const fetchRules = useCallback(async function fetchRules() {
     try {
       setLoading(true);
       setError(null);
@@ -112,12 +112,11 @@ export const RoutingRulesPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }
+  }, [currentOrgId, isSystemAdmin]);
 
   useEffect(() => {
     fetchRules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentOrgId]);
+  }, [fetchRules]);
 
   async function createRule() {
     if (!currentOrgId) {

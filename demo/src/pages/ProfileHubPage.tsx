@@ -61,7 +61,6 @@ export default function ProfileHubPage() {
       setBackTarget(null);
     }
   }, [anyModalOpen, setBackTarget]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 
   /* ── Derived user info ─────────────────────────────────────────────── */
   const fullName = user

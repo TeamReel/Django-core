@@ -147,7 +147,7 @@ export function MediaAssetsCard({ assetStats, loading, onNavigate }: MediaAssets
 // ── Seasons Card ──
 interface SeasonsCardProps {
   seasons: Array<{ id?: string | number; slug?: string; name?: string }>;
-  competitionsBySeasonId: Record<string, any[]>;
+  competitionsBySeasonId: Record<string, Record<string, unknown>[]>;
   matchesCountBySeasonId: Record<string, number>;
   loading: boolean;
   routeKeys: { orgKey: string; clubKey: string; teamKey: string };

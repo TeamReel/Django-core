@@ -13,7 +13,7 @@ interface SquadMemberUser {
   email?: string;
 }
 
-interface SquadMember {
+export interface SquadMember {
   id: string;
   isGuest?: boolean;
   user?: SquadMemberUser;

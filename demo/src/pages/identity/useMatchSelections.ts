@@ -139,7 +139,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
     const load = async () => {
       setLoadingTeams(true);
       try {
-        let rawList: any[];
+        let rawList: Record<string, unknown>[];
         if (clubId) {
           rawList = await api.listAll<any>('/projects/', {
             params: { parent_project: clubId },

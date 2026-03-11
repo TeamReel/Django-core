@@ -1,6 +1,6 @@
 # Frontend Final Cleanup — Roadmap
 
-**Status:** 🔴 In Progress (3/12 fases done)
+**Status:** 🔴 In Progress (5/12 fases done)
 **Aangemaakt:** 2026-03-10
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -57,8 +57,8 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 
 | Fase | Naam | Scope | Target | Effort |
 |------|------|-------|--------|--------|
-| **T1** | `: any` Parameters | 404 function params zonder type | <50 | 6 uur |
-| **T2** | `as any` Casts | 287 unsafe casts | <30 | 4 uur |
+| **T1** | ✅ `: any` Parameters | 404 → 47 function params | `done` | 6 uur |
+| **T2** | ✅ `as any` Casts | 233 → 23 unsafe casts | `done` | 4 uur |
 | **T3** | `any[]` Arrays | 64 untyped arrays | 0 | 2 uur |
 
 ### Track Q — Quality & Testing

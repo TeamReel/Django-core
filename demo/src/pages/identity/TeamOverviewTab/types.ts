@@ -33,7 +33,7 @@ export interface HierarchyData {
     slug?: string;
     name?: string;
   }>;
-  competitionsBySeasonId: Record<string, any[]>;
+  competitionsBySeasonId: Record<string, Record<string, unknown>[]>;
   matchesCountBySeasonId: Record<string, number>;
   loading: boolean;
   error: string | null;

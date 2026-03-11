@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { creditsApi, transactionsApi } from '../../../api';
 import { logger } from '@/utils/logger';
 
@@ -135,7 +135,7 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     return (transactions || []).slice(0, 5);
   }, [transactions]);
 
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     setBalanceLoading(true);
     setBalanceError(null);
 
@@ -149,9 +149,9 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     } finally {
       setBalanceLoading(false);
     }
-  };
+  }, [projectId]);
 
-  const fetchUserBalance = async () => {
+  const fetchUserBalance = useCallback(async () => {
     if (!organisationId) {
       setUserBalance(null);
       return;
@@ -170,9 +170,9 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     } finally {
       setUserBalanceLoading(false);
     }
-  };
+  }, [organisationId]);
 
-  const fetchTransactionsList = async () => {
+  const fetchTransactionsList = useCallback(async () => {
     setTransactionsLoading(true);
     setTransactionsError(null);
 
@@ -186,27 +186,24 @@ export function useTeamCreditsData(props: TeamCreditsTabProps): UseTeamCreditsDa
     } finally {
       setTransactionsLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
     fetchBalance();
     fetchUserBalance();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, organisationId, reloadToken]);
+  }, [fetchBalance, fetchUserBalance, reloadToken]);
 
   useEffect(() => {
     if (view === 'transactions') {
       fetchTransactionsList();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, projectId, organisationId, reloadToken]);
+  }, [view, fetchTransactionsList, reloadToken]);
 
   useEffect(() => {
     if (view === 'balance') {
       fetchTransactionsList();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, projectId, organisationId, reloadToken]);
+  }, [view, fetchTransactionsList, reloadToken]);
 
   return {
     balance,

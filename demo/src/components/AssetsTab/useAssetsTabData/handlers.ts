@@ -7,6 +7,7 @@ import { useCallback } from 'react';
 import { getAssetUrl, MULTI_INSTANCE_TYPES, type BrandAsset } from '../../../hooks/useBrandProfile';
 import { UPLOAD_OUTPUT_TYPE, UPLOAD_TO_AI_TEMPLATE } from '../assetsTabHelpers';
 import type { AssetsLevel } from './types';
+import type { HistoryItem } from '../AssetSubComponents';
 
 interface UseAssetHandlersParams {
   level: AssetsLevel;
@@ -17,7 +18,7 @@ interface UseAssetHandlersParams {
   uploadAsset: (file: File, assetType: string, prefix: string, label?: string) => Promise<BrandAsset | null>;
   deleteAsset: (assetType: string) => Promise<boolean>;
   deleteAssetById: (assetId: string) => Promise<boolean>;
-  fetchHistory: (assetType: string) => Promise<any[]>;
+  fetchHistory: (assetType: string) => Promise<HistoryItem[]>;
   restoreAsset: (fileAssetId: string, assetType: string) => Promise<boolean>;
   refresh: () => Promise<void>;
   getAsset: (assetType: string) => BrandAsset | undefined;
@@ -34,7 +35,7 @@ interface UseAssetHandlersParams {
   setAiLabel: (v: string | undefined) => void;
   setShowHistoryModal: (v: boolean) => void;
   setHistoryAssetType: (v: string | null) => void;
-  setHistoryList: (v: any[]) => void;
+  setHistoryList: (v: HistoryItem[]) => void;
   setLoadingHistory: (v: boolean) => void;
   historyAssetType: string | null;
 }
