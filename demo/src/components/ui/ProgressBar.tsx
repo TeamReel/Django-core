@@ -56,7 +56,7 @@ export function ProgressBar({
         />
       </div>
       {showLabel && (
-        <div className="fs-12 text-muted mt-4" style={{ textAlign: 'right' }}>
+        <div className="fs-12 text-muted mt-4 text-right">
           {Math.round(clamped)}%
         </div>
       )}

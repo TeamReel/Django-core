@@ -60,7 +60,7 @@ export const AssetsTabSeasonLevel: React.FC<Props> = ({ d, readOnly }) => (
       {/* Kits - combined with this season's sponsor */}
       <div className="mt-24">
         <div className={s.seasonSubtitle}>Tenues (dit seizoen)</div>
-        <div className={s.kitsGrid} style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
+        <div className={s.kitsGridWide}>
           {KIT_ROLES.map((role) => {
             const uploadType = `kit_${role.id}_upload`;
             const processedType = `kit_${role.id}`;

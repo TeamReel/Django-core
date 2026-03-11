@@ -265,6 +265,12 @@
   gap: var(--space-4);
 }
 
+.kitsGridWide {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--space-4);
+}
+
 .bgPairsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

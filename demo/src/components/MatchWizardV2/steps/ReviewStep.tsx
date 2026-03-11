@@ -58,7 +58,7 @@ export function ReviewStep({ onGenerate, saveError }: ReviewStepProps) {
       {/* Content type label */}
       <div className="text-center">
         <div className="fw-700 text-primary fs-18">{ct.label}</div>
-        <div className="fs-13 text-muted" style={{ marginTop: 'var(--space-1)' }}>{ct.description}</div>
+        <div className="fs-13 text-muted mt-4">{ct.description}</div>
       </div>
 
       {/* Summary card */}

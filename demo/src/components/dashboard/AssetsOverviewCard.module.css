@@ -324,3 +324,7 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+.shimmerHalf { width: 50%; }
+.shimmerWide { width: 70%; }
+.shimmerNarrow { width: 40%; }

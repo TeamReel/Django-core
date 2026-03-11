@@ -5,6 +5,7 @@
  * Part of the UI Primitives layer (components/ui/).
  */
 import React from 'react';
+import styles from './Avatar.module.css';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -122,7 +123,7 @@ export const Avatar: React.FC<AvatarProps> = ({
           src={src}
           alt={alt || name || ''}
           onError={() => setImgError(true)}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          className={styles.image}
         />
       ) : (
         <span aria-hidden="true">{getInitials(name)}</span>

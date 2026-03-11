@@ -1,0 +1,10 @@
+.shell {
+  min-height: 100vh;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}
+
+.main {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+}

@@ -126,6 +126,18 @@
   max-width: 280px;
 }
 
+.stubButton {
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--app-border, #e5e7eb);
+  background: var(--app-surface, #fff);
+  color: var(--app-text-primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
 /* ── SmartMatchStep ─────────────────────────────────── */
 .smartMatchWrap {
   display: flex;

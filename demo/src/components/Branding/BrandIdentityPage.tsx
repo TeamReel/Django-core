@@ -7,6 +7,7 @@ import type { BrandProfile, BrandIdentityPageProps, DesignToken } from './brandI
 import { ColorPaletteSection, TypographySection, OtherTokensSection, BrandAssetsSection } from './BrandTokenSections';
 import { ProfileHeader, EmptyState } from './BrandProfileChrome';
 import { logger } from '@/utils/logger';
+import s from './BrandIdentityPage.module.css';
 
 export default function BrandIdentityPage({
   projectId,
@@ -88,10 +89,9 @@ export default function BrandIdentityPage({
 
   if (loading) {
     return (
-      <div className="text-center" style={{ padding: 'var(--space-12)' }}>
-        <Loader2 size={32} className="opacity-50" style={{ animation: 'spin 1s linear infinite' }} />
+      <div className={`text-center ${s.loadingWrap}`}>
+        <Loader2 size={32} className={`opacity-50 ${s.spinner}`} />
         <Text color="secondary" className="mt-16">Loading brand identity...</Text>
-        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }

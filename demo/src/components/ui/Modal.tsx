@@ -119,7 +119,7 @@ export function Modal({
         {/* Header */}
         {(title || !preventClose) && (
           <div className="flex-between border-bottom" style={headerPadding}>
-            <div className="flex-row gap-12" style={{ alignItems: 'center' }}>
+            <div className="flex-row gap-12">
               {icon && (
                 <div
                   className={`flex-center rounded-8 ${styles.iconWrapper}`}

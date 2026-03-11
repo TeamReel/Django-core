@@ -1,4 +1,5 @@
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import styles from './OfflineBanner.module.css';
 
 /**
  * OfflineBanner — shows a slim fixed banner when the browser is offline.
@@ -15,19 +16,9 @@ export function OfflineBanner() {
   return (
     <div
       role="alert"
-      className="flex-row flex-center gap-8 fw-600 fs-13"
+      className={`flex-row flex-center gap-8 fw-600 fs-13 ${styles.banner}`}
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 'var(--z-max)',
-        padding: 'var(--space-2) var(--space-4)',
-        textAlign: 'center',
         backgroundColor: isOnline ? 'var(--color-green-600)' : 'var(--color-red-600)',
-        color: 'white',
-        transition: 'background-color 0.3s, opacity 0.3s',
-        opacity: 1,
       }}
     >
       {isOnline ? (

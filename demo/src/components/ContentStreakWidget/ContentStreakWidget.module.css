@@ -104,3 +104,8 @@
 .widget[data-level="3"] .dot[data-active="true"] {
   background: var(--color-error, #ef4444);
 }
+
+.trophyIcon {
+  margin-left: var(--space-1);
+  vertical-align: middle;
+}

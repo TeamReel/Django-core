@@ -9,6 +9,7 @@
 import React from 'react';
 import { Button } from '@django-core/design-system';
 import { filterSelectStyle, getTeamParentId } from '../utils/directoryHelpers';
+import styles from './DirectoryFilterBar.module.css';
 import type { DirectoryFiltersState } from '../hooks/useDirectoryFilters';
 import type { ProjectOption } from '../pages/work/WorkFilterBar';
 import type { SeasonOption } from '../utils/directoryHelpers';
@@ -76,13 +77,7 @@ export const DirectoryFilterBar: React.FC<DirectoryFilterBarProps> = ({
 
   return (
     <div
-      style={{
-        display: 'flex',
-        gap: 'var(--space-3)',
-        alignItems: 'center',
-        marginBottom: 'var(--space-4)',
-        flexWrap: 'wrap',
-      }}
+      className={styles.filterBar}
     >
       {/* Federation */}
       {isSuperAdmin && !orgLocked && (
@@ -232,7 +227,7 @@ export const DirectoryFilterBar: React.FC<DirectoryFilterBarProps> = ({
       )}
 
       {/* Actions */}
-      <div style={{ marginLeft: 'auto', display: 'flex', gap: 'var(--space-2)' }}>
+      <div className={styles.actions}>
         {extraActions}
         <Button variant="secondary" size="md" onClick={clearAll}>
           Clear

@@ -486,6 +486,7 @@
 .text-white             { color: white; }
 .text-decoration-none   { text-decoration: none; }
 .leading-tight          { line-height: var(--leading-tight); }
+.leading-body           { line-height: 1.4; }
 .leading-snug           { line-height: var(--leading-normal); }
 .pointer-events-none    { pointer-events: none; }
 

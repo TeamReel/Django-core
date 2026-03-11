@@ -198,9 +198,9 @@ export const AssetsOverviewCard: React.FC = () => {
       {/* Loading */}
       {loading && (
         <div>
-          <div className={styles.shimmer} style={{ width: '50%' }} />
-          <div className={styles.shimmer} style={{ width: '70%' }} />
-          <div className={styles.shimmer} style={{ width: '40%' }} />
+          <div className={`${styles.shimmer} ${styles.shimmerHalf}`} />
+          <div className={`${styles.shimmer} ${styles.shimmerWide}`} />
+          <div className={`${styles.shimmer} ${styles.shimmerNarrow}`} />
         </div>
       )}
 

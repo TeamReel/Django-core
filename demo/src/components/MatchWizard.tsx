@@ -197,7 +197,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                       </div>
                       <div className="flex-1-min">
                         <div className="fw-600 text-primary fs-15">{content.label}</div>
-                        <div className="fs-12 text-muted" style={{ lineHeight: 1.4 }}>
+                        <div className="fs-12 text-muted leading-body">
                           {content.description}{needsLineup && ' · Opstelling nodig'}
                         </div>
                       </div>
@@ -339,7 +339,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 {/* Content type label */}
                 <div className="text-center">
                   <div className="fw-700 text-primary fs-18">{ct.label}</div>
-                  <div className="fs-13 text-muted" style={{ marginTop: 'var(--space-1)' }}>{ct.description}</div>
+                  <div className="fs-13 text-muted mt-4">{ct.description}</div>
                 </div>
 
                 {/* Summary card */}
