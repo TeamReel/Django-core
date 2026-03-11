@@ -199,7 +199,6 @@ export function useContentGeneration({
       autoGenerateRef.current = false;
       handleGenerateInternal();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
   // ─── Fetch templates ────────────────────────────────────
   const doFetchTemplates = async (templateType: string, templateSubtype: string) => {

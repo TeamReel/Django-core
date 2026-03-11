@@ -10,7 +10,6 @@ import styles from './UsersTable.module.css';
 
 interface UserActionsProps {
   item: UserRowItem;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any;
   userOrgs: Array<{ id?: string; slug?: string; name?: string; membership_id?: string }>;
   isMembership: boolean;

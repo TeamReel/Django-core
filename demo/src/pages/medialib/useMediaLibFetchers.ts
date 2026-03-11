@@ -34,7 +34,6 @@ interface MembershipRef {
   id: string | number;
   user?: { name?: string; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
   /** Dynamic metadata — `any` kept for deeply nested TeamReel asset traversal. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   joined_at?: string;
   created_at?: string;

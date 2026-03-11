@@ -132,7 +132,6 @@ export function useAssetGenModal(props: AssetGenerationModalProps): UseAssetGenM
       });
       setParams(defaults);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTemplate, initialParamsKey]);
 
   // Auto-select first variant when generation completes with exactly 1 variant
@@ -170,7 +169,6 @@ export function useAssetGenModal(props: AssetGenerationModalProps): UseAssetGenM
       setSelectedModel('');
       generation.reset();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, preSelectedTemplate]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────

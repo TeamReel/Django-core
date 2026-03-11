@@ -6,14 +6,12 @@ import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
 import styles from './CompetitionContentTab.module.css';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Matches are polymorphic API shapes
 type MatchRecord = Record<string, any>;
 
 export interface CompetitionContentTabProps {
   matches: MatchRecord[];
   matchMediaMap: Record<string, Record<string, unknown>[]>;
   matchMediaLoading: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matchDisplayTitle: (m: any) => string;
   isTeamRoute: boolean;
   orgSlugOrId: string;

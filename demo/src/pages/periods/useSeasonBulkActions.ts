@@ -21,7 +21,6 @@ interface UseSeasonBulkActionsParams {
   // State setters
   setCompetitions: Setter<Period[]>;
   setCompetitionsLoading: Setter<boolean>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Matches are polymorphic API records
   setMatches: Setter<any[]>;
   setMatchesLoading: Setter<boolean>;
   setMembersReloadToken: Setter<number>;

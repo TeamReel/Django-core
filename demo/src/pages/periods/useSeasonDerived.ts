@@ -22,7 +22,6 @@ interface SeasonMember {
   shirt_number?: string | number;
   position?: string;
   /** Deeply nested dynamic metadata — `any` kept for TeamReel asset traversal. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 
@@ -35,7 +34,6 @@ interface SeasonMatch {
   period?: string | { id?: string } | null;
   opponent_project?: { name?: string } | null;
   /** Dynamic metadata — `any` kept for deeply nested access. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
 }
 

@@ -9,7 +9,6 @@ export interface TeamMemberRecord {
   id?: string | number;
   user?: { id?: string | number; avatar_url?: string | null; first_name?: string; last_name?: string; email?: string; [key: string]: unknown };
   /** Dynamic metadata — `any` kept for deep TeamReel asset traversal. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata?: Record<string, any>;
   functional_roles?: string[];
   role?: string;

@@ -33,7 +33,6 @@ export function useOverviewMembers({
   useEffect(() => {
     let cancelled = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deeply nested API envelope
     const extractMembersCount = (raw: Record<string, any>, list: OverviewMember[]): number => {
       const metaTotal = raw?.meta?.pagination?.total;
       if (typeof metaTotal === 'number') return metaTotal;

@@ -16,7 +16,7 @@ interface MatchCardMatch {
   start_time?: string;
   location?: string;
   period?: { id?: string; name?: string } | null;
-  metadata?: Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested dynamic metadata
+  metadata?: Record<string, any>;
 }
 
 // ── Helper re-exports used by the card ──

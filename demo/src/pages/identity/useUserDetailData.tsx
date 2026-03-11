@@ -271,13 +271,12 @@ export function useUserDetailData(): UserDetailDataReturn {
             loadData();
         }
         return () => { isMounted = false; };
-    }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [userId]);
 
     // Link modal options
     useEffect(() => {
         if (!isLinkModalOpen) return;
         void api.ensureLinkOptionsLoaded();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isLinkModalOpen]);
 
     // Balance
@@ -321,7 +320,6 @@ export function useUserDetailData(): UserDetailDataReturn {
         };
         run();
         return () => { cancelled = true; controller.abort(); };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeTab, apiBaseUrl, userBalanceReloadToken]);
 
     // Relations (clubs, competitions, matches)

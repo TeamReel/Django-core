@@ -18,7 +18,6 @@ export default function MainLayout() {
     if (isMobile && mobileMenuOpen) {
       setMobileMenuOpen(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, location.search]);
 
   // Store the openSearch function from TopNavbar

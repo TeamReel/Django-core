@@ -145,7 +145,7 @@ export function useMemberMediaActions({
   }, [presignedCache]);
 
   // ── Profile photo upload ──
-  const profileInputRef = useRef<HTMLInputElement>(null!);  // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  const profileInputRef = useRef<HTMLInputElement | null>(null);
   const [profileUploading, setProfileUploading] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
 
@@ -169,7 +169,7 @@ export function useMemberMediaActions({
   }, [apiBaseUrl, membership, membershipId, project?.id, setMembership]);
 
   // ── Legacy photo upload ──
-  const legacyPhotoInputRef = useRef<HTMLInputElement>(null!);  // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  const legacyPhotoInputRef = useRef<HTMLInputElement | null>(null);
   const [legacyPhotoUploading, setLegacyPhotoUploading] = useState(false);
   const [legacyPhotoPreview, setLegacyPhotoPreview] = useState<string | null>(null);
 

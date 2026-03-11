@@ -345,7 +345,7 @@ export function useMatchDataFetching(params: UseMatchDataFetchingParams): UseMat
     } else if (match?.metadata?.formation) {
       setLineupFormation(match.metadata.formation);
     }
-  }, [match?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [match?.id]);
 
   // ── Refresh match from API ──
   const refreshMatch = useCallback(async () => {

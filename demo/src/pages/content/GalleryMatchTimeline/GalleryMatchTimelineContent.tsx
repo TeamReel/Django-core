@@ -27,7 +27,7 @@ export function GalleryMatchTimelineContent({
     const set = new Set<string>();
     groups.slice(0, 3).forEach(g => set.add(g.activityId));
     return set;
-  }, [groups.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [groups.length]);
 
   // Combine: auto-expanded + manually expanded
   const isExpanded = (id: string) => expandedGroups.has(id) || initialExpanded.has(id);

@@ -92,6 +92,5 @@ export function useSetBackNavigation(target: BackTarget) {
   useEffect(() => {
     setBackTarget(target);
     return () => setBackTarget(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target.label, target.path, setBackTarget]);
 }

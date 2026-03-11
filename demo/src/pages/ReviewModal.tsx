@@ -28,7 +28,6 @@ export function ReviewModal({ job, reviewList, onClose, onReviewed }: ReviewModa
   };
   const [selections, setSelections] = useState<Record<number, boolean | null>>(initSelections);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { setSelections(initSelections()); setReviewError(null); }, [job.task_id]);
 
   const currentIdx = reviewList.findIndex(j => j.task_id === job.task_id);

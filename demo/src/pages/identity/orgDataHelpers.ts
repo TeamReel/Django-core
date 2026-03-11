@@ -65,7 +65,6 @@ export interface MatchPathDeps {
  * Build the best deep-link path for a given match, using club/team/period
  * hierarchy data when available.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- polymorphic match/activity record with deep property chains
 export const getBestMatchDetailPath = (m: any, deps: MatchPathDeps): string => {
   const matchSlugOrId = String(m?.slug || m?.id || '').trim();
   if (!matchSlugOrId) return '/matches';

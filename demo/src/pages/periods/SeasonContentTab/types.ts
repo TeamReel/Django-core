@@ -13,7 +13,6 @@ export interface SquadMember {
   user_id?: string;
   shirt_number?: string | number;
   position?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- teamreel_assets is deeply nested polymorphic data
   metadata?: { teamreel_assets?: Record<string, any>; shirt_number?: string | number; position?: string; [key: string]: unknown };
   [key: string]: unknown;
 }

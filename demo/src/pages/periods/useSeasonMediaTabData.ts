@@ -21,7 +21,7 @@ export interface SquadMember {
   first_name?: string;
   last_name?: string;
   email?: string;
-  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested dynamic metadata
+  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };
   [key: string]: unknown;
 }
 
@@ -30,7 +30,7 @@ export interface GuestPlayerState {
   has_closeup: boolean;
   has_intro: boolean;
   has_celebration: boolean;
-  guest_player: Record<string, any> | null;  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested dynamic metadata
+  guest_player: Record<string, any> | null;
 }
 
 interface UseSeasonMediaTabDataParams {

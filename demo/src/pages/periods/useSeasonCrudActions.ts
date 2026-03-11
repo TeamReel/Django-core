@@ -17,7 +17,7 @@ interface MatchRecord {
   slug?: string;
   title?: string;
   start_time?: string;
-  metadata?: Record<string, any>;  // eslint-disable-line @typescript-eslint/no-explicit-any -- deeply nested metadata
+  metadata?: Record<string, any>;
 }
 
 interface UseSeasonCrudActionsParams {

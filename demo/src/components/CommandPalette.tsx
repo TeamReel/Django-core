@@ -129,7 +129,6 @@ export default function CommandPalette({
   useEffect(() => {
     if (!isOpen) return;
     onClose();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, location.search]);
 
   if (!isOpen) return null;

@@ -149,17 +149,14 @@ export const fetchWithThrottleRetry = async (
   const maxAttempts = opts?.maxAttempts ?? 6;
   const baseDelayMs = opts?.baseDelayMs ?? 500;
 
-  let attempt = 0;
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    attempt += 1;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const res = await fetch(input, init);
 
-    if (res.status !== 429) return res;
-
-    if (attempt >= maxAttempts) return res;
+    if (res.status !== 429 || attempt === maxAttempts) return res;
 
     const retryDelayMs = (await getRetryDelayMsFromResponse(res)) ?? baseDelayMs * attempt;
     await sleep(Math.min(60_000, retryDelayMs));
   }
+  // Unreachable — loop always returns
+  throw new Error('fetchWithRetry: exhausted all attempts');
 };

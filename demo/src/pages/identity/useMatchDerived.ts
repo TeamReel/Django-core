@@ -79,7 +79,6 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
     void load(String(resolvedOpponentClubIdLocal || ''));
 
     return () => { cancelled = true; abortController.abort(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, apiBaseUrl, selectedTeamId, selectedOpponentTeamId, selectedClubId, selectedOpponentClubId, opponentTeams, teamsOptions]);
 
   // ── Detail memos ──
