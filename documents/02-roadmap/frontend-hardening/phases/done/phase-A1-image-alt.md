@@ -1,7 +1,7 @@
 # A1 — Image Alt Text
 
-**Status:** 🔲 Todo
-**Effort:** 2 uur
+**Status:** ✅ Done
+**Effort:** 0 uur (al voldaan)
 **Scope:** 41 `<img>` tags zonder `alt` attribute → WCAG-compliant
 
 ---
@@ -10,11 +10,11 @@
 
 Elke `<img>` tag heeft een descriptief `alt` attribute (of `alt=""` voor decoratieve images).
 
-## Current State
+## Resultaat
 
 - 80 totale `<img>` tags in de codebase
-- 41 zonder `alt` attribute (51%)
-- WCAG 2.1 AA vereist: elk `<img>` MOET `alt` hebben
+- **0 zonder `alt` attribute** — alle 80 hebben al `alt`
+- Originele meting (41) was een false positive door line-based grep (multi-line JSX tags)
 
 ## Aanpak
 
@@ -31,7 +31,7 @@ Elke `<img>` tag heeft een descriptief `alt` attribute (of `alt=""` voor decorat
 
 ## Verificatie
 
-- [ ] 0 `<img>` tags zonder `alt` attribute
-- [ ] `jsx-a11y/alt-text` ESLint rule actief
-- [ ] `tsc --noEmit` clean
-- [ ] `vitest run` all green
+- [x] 0 `<img>` tags zonder `alt` attribute (al voldaan: 80/80 hebben alt)
+- [ ] `jsx-a11y/alt-text` ESLint rule actief (toekomstige guard)
+- [x] `tsc --noEmit` clean
+- [x] `vitest run` all green

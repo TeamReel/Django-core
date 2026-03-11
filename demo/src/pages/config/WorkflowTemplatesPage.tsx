@@ -121,14 +121,14 @@ export default function WorkflowTemplatesPage() {
                         <div
                           className={`grid gap-8 ${styles.transitionsGrid}`}
                         >
-                          {transitions.map((t, idx) => {
+                          {transitions.map((t) => {
                             const actionStyle = getActionDisplay(t.action);
                             const fromStyle = getStateDisplay(t.from_state);
                             const toStyle = getStateDisplay(t.to_state);
 
                             return (
                               <div
-                                key={idx}
+                                key={`${t.from_state}-${t.action}-${t.to_state}`}
                                 className="p-10 bg-surface-2 rounded-6 fs-12"
                               >
                                 <div className="flex-row gap-6 mb-6">

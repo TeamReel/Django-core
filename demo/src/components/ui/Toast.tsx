@@ -104,9 +104,9 @@ export function ToastContainer() {
           </div>
           {t.actions && t.actions.length > 0 && (
             <div className={styles.actions}>
-              {t.actions.map((action, i) => (
+              {t.actions.map((action) => (
                 <button
-                  key={i}
+                  key={action.label}
                   onClick={(e) => {
                     e.stopPropagation();
                     removeToast(t.id);

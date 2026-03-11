@@ -254,7 +254,7 @@ export function MembersStep({
                 const ineligibleMembers = available.filter(p => !memberHasRequiredAssets(p, assetTypes, role));
 
                 return (
-                    <div key={idx} className={`grid gap-12 items-center ${styles.memberRow}`}>
+                    <div key={`${role}-${idx}`} className={`grid gap-12 items-center ${styles.memberRow}`}>
                     <label className="fs-14 text-secondary fw-500 truncate" title={positionLabel}>
                       {positionLabel}
                     </label>

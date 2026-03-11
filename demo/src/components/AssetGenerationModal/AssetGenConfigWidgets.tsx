@@ -67,7 +67,7 @@ export function BackgroundSelector({
       <div className="flex-row gap-8 flex-wrap">
         {backgrounds.map((bg, idx) => (
           <button
-            key={idx}
+            key={bg.url}
             onClick={() => onSelect(idx)}
             className={styles.backgroundButton}
             data-selected={idx === selectedIdx}

@@ -67,8 +67,8 @@ const PatternSection = ({
           ✅ Best Practices
         </h3>
         <ul className={`m-0 text-secondary ${styles.practiceList}`}>
-          {bestPractices.map((practice, index) => (
-            <li key={index} className="mb-8">{practice}</li>
+          {bestPractices.map((practice) => (
+            <li key={practice} className="mb-8">{practice}</li>
           ))}
         </ul>
       </Card>
@@ -79,8 +79,8 @@ const PatternSection = ({
             ⚠️ Common Pitfalls
           </h3>
           <ul className={`m-0 text-secondary ${styles.practiceList}`}>
-            {pitfalls.map((pitfall, index) => (
-              <li key={index} className="mb-8">{pitfall}</li>
+            {pitfalls.map((pitfall) => (
+              <li key={pitfall} className="mb-8">{pitfall}</li>
             ))}
           </ul>
         </Card>

@@ -110,7 +110,7 @@ export default function OnboardingWizard({ forceShow = false, onComplete }: Onbo
         <div className="flex-row gap-8 mb-24">
           {steps.map((_, index) => (
             <div
-              key={index}
+              key={`step-${index}`}
               className={`rounded-full transition ${styles.stepDot}`}
               data-active={String(index === currentStep)}
             />

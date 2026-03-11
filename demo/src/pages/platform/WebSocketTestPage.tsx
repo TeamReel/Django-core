@@ -15,6 +15,7 @@ import styles from './WebSocketTestPage.module.css';
 // import AppShell from '../../components/AppShell';
 
 interface LogMessage {
+  id: number;
   timestamp: string;
   type: 'sent' | 'received' | 'info' | 'error';
   data: string;
@@ -28,9 +29,11 @@ export const WebSocketTestPage: React.FC = () => {
   const [messageInput, setMessageInput] = useState('');
   const [wsUrl, setWsUrl] = useState('ws://localhost:8000/ws/test/');
   const socketRef = useRef<WebSocket | null>(null);
+  const logIdRef = useRef(0);
 
   const addLog = (type: LogMessage['type'], data: unknown) => {
     setLogs(prev => [{
+      id: ++logIdRef.current,
       timestamp: new Date().toLocaleTimeString(),
       type,
       data: typeof data === 'string' ? data : JSON.stringify(data)
@@ -255,7 +258,7 @@ export const WebSocketTestPage: React.FC = () => {
                   </div>
                 ) : (
                   logs.map((log, i) => (
-                    <div key={i} className={`mb-8 border-bottom ${styles.logEntry}`}>
+                    <div key={log.id} className={`mb-8 border-bottom ${styles.logEntry}`}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
                         <span className={`fw-700 ${styles.logType}`} data-type={log.type}>
@@ -313,7 +316,7 @@ export const WebSocketTestPage: React.FC = () => {
                   </div>
                 ) : (
                   logs.filter(l => l.data.includes('presence') || l.data.includes('"type":"presence"')).map((log, i) => (
-                    <div key={i} className={`mb-8 border-bottom ${styles.logEntry}`}>
+                    <div key={log.id} className={`mb-8 border-bottom ${styles.logEntry}`}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
                         <span className={`fw-700 ${styles.logType}`} data-type={log.type}>
@@ -371,7 +374,7 @@ export const WebSocketTestPage: React.FC = () => {
                   </div>
                 ) : (
                   logs.filter(l => l.data.includes('activity') || l.data.includes('"type":"activity"')).map((log, i) => (
-                    <div key={i} className={`mb-8 border-bottom ${styles.logEntry}`}>
+                    <div key={log.id} className={`mb-8 border-bottom ${styles.logEntry}`}>
                       <div className="flex-row gap-8 mb-4">
                         <span className="text-muted">[{log.timestamp}]</span>
                         <span className={`fw-700 ${styles.logType}`} data-type={log.type}>

@@ -79,6 +79,7 @@ export const Table = ({ children, columns, rows, loading, style, responsive = tr
         </thead>
         <tbody>
           {rows.map((row, i) => (
+            // key={i} acceptable: generic rows without guaranteed unique field
             <tr key={i} className={styles.dataRow}>
               {columns.map((col) => (
                 <td key={col.key} className={styles.tableCell}>

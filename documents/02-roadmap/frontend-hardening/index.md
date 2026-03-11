@@ -1,6 +1,6 @@
 # Frontend Hardening — Roadmap
 
-**Status:** 🔴 In Progress (1/12 fases done)
+**Status:** 🔴 In Progress (3/12 fases done)
 **Aangemaakt:** 2026-03-11
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -19,7 +19,7 @@ Na 4 afgeronde roadmaps is de codebase duidelijk verbeterd, maar een grondige an
 | Files >300 lines | **74** (excl `_archive`) | n.v.t. (zie NB) |
 | `_archive/` dode code | **5.404 regels** | 0 (verwijderd) |
 | Inline `style={{...}}` | **214** | <30 |
-| `<img>` zonder `alt` | **41** | 0 |
+| `<img>` zonder `alt` | ~~41~~ **0** (was false positive) | 0 |
 | `<div onClick>` (a11y) | **34** | 0 |
 | `key={index}` anti-pattern | **32** | 0 |
 | `eslint-disable` | **37** | 0 |

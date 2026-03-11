@@ -269,6 +269,7 @@ const DoneStep: React.FC<{ progress: HookData['progress']; errors: string[] }> =
             <div className={`mt-12 ${styles.card}`} data-variant="error">
                 <div className={`fs-13 fw-600 text-error ${styles.errorTitle}`}>Fouten:</div>
                 <ul className={`m-0 fs-12 text-muted ${styles.errorList}`}>
+                    {/* key={i}: error strings may duplicate */}
                     {errors.slice(0, 10).map((err, i) => <li key={i}>{err}</li>)}
                     {errors.length > 10 && <li>...en {errors.length - 10} meer</li>}
                 </ul>

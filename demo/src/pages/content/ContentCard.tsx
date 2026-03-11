@@ -105,8 +105,8 @@ export function ContentCard({
 
           {tags.length > 0 && (
             <div className="gallery-card-verbose flex-row flex-wrap gap-4">
-              {tags.slice(0, 3).map((tag, i) => (
-                <span key={i} className={`rounded-6 text-secondary fs-11 ${styles.tagChip}`}>#{tag}</span>
+              {tags.slice(0, 3).map((tag) => (
+                <span key={tag} className={`rounded-6 text-secondary fs-11 ${styles.tagChip}`}>#{tag}</span>
               ))}
               {tags.length > 3 && <span className="text-secondary fs-11">+{tags.length - 3}</span>}
             </div>
@@ -278,8 +278,8 @@ export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDele
             )}
             {tags.length > 0 && (
               <div className={styles.detailTags}>
-                {tags.map((tag, i) => (
-                  <span key={i} className={styles.detailTag}>#{tag}</span>
+                {tags.map((tag) => (
+                  <span key={tag} className={styles.detailTag}>#{tag}</span>
                 ))}
               </div>
             )}

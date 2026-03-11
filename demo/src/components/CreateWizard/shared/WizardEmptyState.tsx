@@ -52,9 +52,9 @@ export function WizardEmptyState({
       )}
       {actions && actions.length > 0 && (
         <div className={styles.wizardEmptyActions}>
-          {actions.map((action, i) => (
+          {actions.map((action) => (
             <button
-              key={i}
+              key={action.label}
               className={styles.wizardEmptyActionBtn}
               data-variant={action.variant || 'primary'}
               onClick={action.onClick}

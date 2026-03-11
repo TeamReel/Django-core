@@ -147,8 +147,8 @@ export function TasksPage() {
                           </tr>
                         </thead>
                         <tbody>
-                          {beatSchedule.map((task, index) => (
-                            <tr key={index} className="border-bottom">
+                          {beatSchedule.map((task) => (
+                            <tr key={task.name} className="border-bottom">
                               <td className={`p-12 fs-14 ${styles.monospace}`}>{task.name}</td>
                               <td className="p-12 fs-14 text-muted">{task.schedule || 'N/A'}</td>
                               <td className="p-12"><Badge variant="success">Enabled</Badge></td>

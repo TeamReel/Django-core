@@ -68,8 +68,8 @@ export const ModuleDetailModal: React.FC<ModuleDetailModalProps> = ({ module, on
               KEY FEATURES
             </h4>
             <ul className={`m-0 ${styles.featureList}`}>
-              {module.features.map((feature, idx) => (
-                <li key={idx} className={`mb-8 fs-14 ${styles.featureItem}`}>
+              {module.features.map((feature) => (
+                <li key={feature} className={`mb-8 fs-14 ${styles.featureItem}`}>
                   {feature}
                 </li>
               ))}
