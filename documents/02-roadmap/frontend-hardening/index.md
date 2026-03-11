@@ -1,6 +1,6 @@
 # Frontend Hardening — Roadmap
 
-**Status:** 🔴 In Progress (10/12 fases done)
+**Status:** 🔴 In Progress (11/12 fases done)
 **Aangemaakt:** 2026-03-11
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -25,7 +25,7 @@ Na 4 afgeronde roadmaps is de codebase duidelijk verbeterd, maar een grondige an
 | `eslint-disable` | ~~37~~ **0** | 0 |
 | `exhaustive-deps` warnings | ~~13 suppressed~~ **135 total** (122 pre-existing) | audit |
 | `dangerouslySetInnerHTML` | ~~3~~ **0** (sanitized) | 0 |
-| Test coverage | **14.7%** (123/836 files) | 40%+ |
+| Test coverage | ~~14.7%~~ **43%+** (362 suites, 801 tests) | 40%+ |
 | Hardcoded URLs | ~~17~~ **0** env-dependent | 0 |
 | `React.memo` usage | ~~0~~ **16** | 10+ (heavy components) |
 | Lazy routes | ~~7~~ **78** (was already done) | 30+ |
