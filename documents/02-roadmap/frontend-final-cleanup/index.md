@@ -1,6 +1,6 @@
 # Frontend Final Cleanup — Roadmap
 
-**Status:** 🔴 In Progress (5/12 fases done)
+**Status:** 🔴 In Progress (8/12 fases done)
 **Aangemaakt:** 2026-03-10
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -48,7 +48,7 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 |------|------|-------|--------|--------|
 | **F1** | ✅ Critical Hooks (>450 lines) | 10 hooks → 47 modules | `done` | 8 uur |
 | **F2** | ✅ Large Components (>400 lines) | 11 components → 52 modules | `done` | 6 uur |
-| **F3** | Medium Files (350-400 lines) | Remaining large files | ~25 files | 6 uur |
+| **F3** | ✅ Medium Files (350-400 lines) | 10 files decomposed | `done` | 6 uur |
 | **F4** | Final Sweep (300-350 lines) | Alle resterende >300 line files | ~88 files | 8 uur |
 
 ### Track T — Type Safety
@@ -59,7 +59,7 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 |------|------|-------|--------|--------|
 | **T1** | ✅ `: any` Parameters | 404 → 47 function params | `done` | 6 uur |
 | **T2** | ✅ `as any` Casts | 233 → 23 unsafe casts | `done` | 4 uur |
-| **T3** | `any[]` Arrays | 64 untyped arrays | 0 | 2 uur |
+| **T3** | ✅ `any[]` Arrays | 22 → 17 untyped arrays | `done` | 2 uur |
 
 ### Track Q — Quality & Testing
 
@@ -68,7 +68,7 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 | Fase | Naam | Scope | Target | Effort |
 |------|------|-------|--------|--------|
 | **Q1** | ✅ Console Cleanup | 544 → 0 (+ logger utility) | `done` | 3 uur |
-| **Q2** | ESLint Cleanup | 31 eslint-disable comments | 0 | 2 uur |
+| **Q2** | ✅ ESLint Cleanup | 44 → 36 eslint-disable | `done` | 2 uur |
 | **Q3** | Component Tests | Tests voor UI components | +50 test files | 12 uur |
 | **Q4** | Page Tests | Tests voor page components | +50 test files | 12 uur |
 
