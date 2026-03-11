@@ -9,12 +9,12 @@ import { logger } from '@/utils/logger';
 
 interface ContentOptionsConfig {
   isOpen: boolean;
-  matchData: any;
+  matchData: Record<string, unknown> | null;
 }
 
 export function useContentOptions({ isOpen, matchData }: ContentOptionsConfig) {
   // ─── Lineup options ─────────────────────────────────────
-  const [lineupFormation, setLineupFormation] = useState<string>(matchData?.metadata?.formation || '4-3-3');
+  const [lineupFormation, setLineupFormation] = useState<string>((matchData?.metadata as Record<string, unknown>)?.formation as string || '4-3-3');
   const [lineupCloseupStyle, setLineupCloseupStyle] = useState<'popout' | 'badge'>('popout');
   const [lineupAnimationStyle, setLineupAnimationStyle] = useState<'slide_up' | 'appear' | 'slide_in' | 'zoom' | 'fade'>('slide_up');
   const [lineupIntroStyle, setLineupIntroStyle] = useState<'per_line' | 'per_player'>('per_line');

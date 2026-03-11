@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { logger } from '@/utils/logger';
 import styles from './CompetitionMembershipEditModal.module.css';
 
+/** Minimal membership shape for the edit modal. */
+interface MembershipLike {
+  role?: string;
+  user?: { name?: string; first_name?: string; last_name?: string; email?: string };
+  functional_roles?: unknown;
+  functionalRoles?: unknown;
+  metadata?: Record<string, unknown>;
+}
+
 export function CompetitionMembershipEditModal({
   opened,
   onClose,
@@ -10,7 +19,7 @@ export function CompetitionMembershipEditModal({
 }: {
   opened: boolean;
   onClose: () => void;
-  membership: any | null;
+  membership: MembershipLike | null;
   onSave: (payload: { role: string; functional_roles: string[] }) => Promise<void>;
 }) {
   const [role, setRole] = useState('viewer');
@@ -28,7 +37,7 @@ export function CompetitionMembershipEditModal({
     { value: 'manager', label: 'Manager' },
   ];
 
-  const readFunctionalRolesFromMembership = (m: any): string[] => {
+  const readFunctionalRolesFromMembership = (m: MembershipLike): string[] => {
     const direct = m?.functional_roles ?? m?.functionalRoles;
     if (Array.isArray(direct)) {
       return direct.map((r) => String(r || '').trim()).filter(Boolean);

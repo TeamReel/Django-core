@@ -294,7 +294,7 @@ export function SeasonProvider({ children }: PropsWithChildren) {
 
   const orgForPermissions = useMemo(() => {
     const contextOrg = context?.organisation as any;
-    const orgIdMatches = (candidate: any) => {
+    const orgIdMatches = (candidate: Record<string, unknown> | null | undefined) => {
       if (!candidate) return false;
       const cid = String(candidate.id || '').trim();
       const cslug = String(candidate.slug || '').trim();

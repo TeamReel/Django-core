@@ -33,8 +33,8 @@ type CacheEntry<T> = {
 
 type JsonCacheEntry = {
   expiresAt: number;
-  value?: any;
-  inFlight?: Promise<any>;
+  value?: unknown;
+  inFlight?: Promise<unknown>;
 };
 
 const cache = new Map<string, CacheEntry<any>>();

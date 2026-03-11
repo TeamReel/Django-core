@@ -2,6 +2,7 @@ import React from 'react';
 import { Badge } from '@django-core/design-system';
 import { Modal } from '../../components/ui';
 import { getUserDisplayName, roleLabel } from './competitionDetailUtils';
+import type { MemberRef } from './useCompetitionMutations';
 
 export function CompetitionMembershipDetailModal({
   opened,
@@ -10,15 +11,16 @@ export function CompetitionMembershipDetailModal({
 }: {
   opened: boolean;
   onClose: () => void;
-  membership: any | null;
+  membership: MemberRef | null;
 }) {
   if (!membership) return null;
-  const user = membership.user || membership.user_detail || membership;
-  const name = getUserDisplayName(membership);
-  const email = user?.email || membership?.email || '—';
-  const role = membership?.role || membership?.project_memberships?.[0]?.role;
-  const position = membership?.metadata?.position || '—';
-  const shirtNumber = membership?.metadata?.shirt_number ?? '';
+  const user = membership.user || {};
+  const name = getUserDisplayName(membership as Record<string, unknown>);
+  const email = user?.email || '—';
+  const role = membership?.role || membership?.functional_roles?.[0];
+  const meta = (membership as Record<string, unknown>)?.metadata as Record<string, unknown> | undefined;
+  const position = String(meta?.position || '—');
+  const shirtNumber = meta?.shirt_number != null ? String(meta.shirt_number) : '';
 
   return (
     <Modal

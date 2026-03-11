@@ -38,6 +38,7 @@ export type TabType = 'balance' | 'transactions';
  * Parse DRF response envelope — handles all known wrapping shapes.
  * Eliminates 5× duplication of the same parsing logic.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- deeply introspected envelope
 export function parseTransactionEnvelope(rawData: any): Transaction[] {
   if (Array.isArray(rawData)) return rawData;
   if (Array.isArray(rawData.data?.data)) return rawData.data.data;

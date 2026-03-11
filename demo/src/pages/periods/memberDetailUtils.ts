@@ -14,8 +14,8 @@ import { logger } from '@/utils/logger';
 
 /** Minimal membership record shape for member-detail utilities. */
 export interface MembershipRecord {
-  id?: string;
-  user?: { id?: string; name?: string; first_name?: string; last_name?: string; email?: string; avatar_url?: string };
+  id?: string | number;
+  user?: { id?: string | number; name?: string; first_name?: string; last_name?: string; email?: string; avatar_url?: string };
   role?: string;
   metadata?: Record<string, any>; // Deeply nested, truly polymorphic structure
   [key: string]: unknown;

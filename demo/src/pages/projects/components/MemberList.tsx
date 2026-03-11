@@ -105,11 +105,11 @@ export const MemberList: React.FC<MemberListProps> = ({
       fetchMembers();
   }, [selectedPeriod, projectId, apiBaseUrl]);
 
-  const getFunctionalRoles = (m: any): string[] => {
-    const direct = m?.functional_roles ?? m?.functionalRoles;
+  const getFunctionalRoles = (m: Member): string[] => {
+    const direct = m?.functional_roles;
     if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
 
-    const meta = m?.metadata || {};
+    const meta = (m?.metadata || {}) as Record<string, unknown>;
     const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
     return legacy ? [legacy] : [];
   };

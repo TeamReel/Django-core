@@ -11,6 +11,8 @@ import type { SquadMember } from './squadTabTypes';
 import s from './ProjectSeasonDetailPage.module.css';
 import st from './SeasonSquadTab.module.css';
 
+type MemberUser = NonNullable<SquadMember['user']>;
+
 export interface SquadMemberTableProps {
   members: SquadMember[];
   memberDetailHref: (membershipId: string) => string;
@@ -51,7 +53,7 @@ const SquadMemberTable: React.FC<SquadMemberTableProps> = ({
           </thead>
           <tbody>
             {members.map((m) => {
-              const memberUser: any = m.user || m;
+              const memberUser = (m.user || m) as MemberUser;
               const name =
                 memberUser.name ||
                 `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
@@ -128,7 +130,7 @@ const SquadMemberTable: React.FC<SquadMemberTableProps> = ({
         </thead>
         <tbody>
           {members.map((m) => {
-            const memberUser: any = m.user || m;
+            const memberUser = (m.user || m) as MemberUser;
             const name =
               memberUser.name ||
               `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||

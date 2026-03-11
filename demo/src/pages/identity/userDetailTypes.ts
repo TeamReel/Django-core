@@ -18,8 +18,10 @@ export interface UserDetailDataReturn {
     backPath: string;
 
     /* core data */
-    user: any | null;
-    setUser: (u: Record<string, unknown> | null) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deeply accessed user record, typed properties impractical
+    user: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setUser: (u: any) => void;
     loading: boolean;
     error: string | null;
     apiBaseUrl: string;
@@ -84,7 +86,8 @@ export interface UserDetailDataReturn {
 
     /* handlers */
     fetchUser: () => Promise<void>;
-    handleSaveUser: (updatedUser: Record<string, unknown>) => Promise<void>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    handleSaveUser: (updatedUser: any) => Promise<void>;
     handleDeleteUser: () => Promise<void>;
     getCsrfToken: () => string;
     getPreferredOrganisationId: () => string;

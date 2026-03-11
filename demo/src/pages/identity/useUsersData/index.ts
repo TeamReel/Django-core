@@ -146,7 +146,7 @@ export function useUsersData(): UseUsersDataReturn {
   return {
     // Context + navigation
     navigate: state.navigate,
-    context: state.context,
+    context: { ...state.context, organisation: state.context.organisation ?? undefined },
     myOrganisations: state.myOrganisations,
     orgIdParam: state.orgIdParam,
     organisationOptions: state.organisationOptions,

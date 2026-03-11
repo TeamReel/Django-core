@@ -167,7 +167,7 @@ export default function ProjectSeasonSquadPage() {
                       </thead>
                       <tbody>
                         {d.members.map((m) => {
-                          const user: any = m.user || m;
+                          const user = (m.user || m) as { id?: string | number; name?: string; first_name?: string; last_name?: string; email?: string };
                           const name = user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || '—';
                           const email = user.email || '—';
 

@@ -5,6 +5,15 @@ import React, { useEffect, useState } from 'react';
 import styles from './MembershipEditModal.module.css';
 import { logger } from '@/utils/logger';
 
+/** Minimal membership shape for the edit modal. */
+interface MembershipLike {
+  role?: string;
+  user?: { name?: string; first_name?: string; last_name?: string; email?: string };
+  functional_roles?: unknown;
+  functionalRoles?: unknown;
+  metadata?: Record<string, unknown>;
+}
+
 const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'coach', label: 'Coach' },
   { value: 'player', label: 'Player' },
@@ -15,7 +24,7 @@ const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'manager', label: 'Manager' },
 ];
 
-export function readFunctionalRolesFromMembership(m: any): string[] {
+export function readFunctionalRolesFromMembership(m: MembershipLike): string[] {
   const direct = m?.functional_roles ?? m?.functionalRoles;
   if (Array.isArray(direct)) {
     return direct.map((r) => String(r || '').trim()).filter(Boolean);
@@ -28,7 +37,7 @@ export function readFunctionalRolesFromMembership(m: any): string[] {
 interface MembershipEditModalProps {
   opened: boolean;
   onClose: () => void;
-  membership: any | null;
+  membership: MembershipLike | null;
   onSave: (payload: { role: string; functional_roles: string[] }) => Promise<void>;
 }
 

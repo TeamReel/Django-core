@@ -9,6 +9,8 @@ import {
 import type { SquadMember } from './squadTabTypes';
 import st from './SeasonSquadTab.module.css';
 
+type MemberUser = NonNullable<SquadMember['user']>;
+
 export interface SquadMemberMobileListProps {
   members: SquadMember[];
   memberDetailHref: (membershipId: string) => string;
@@ -41,7 +43,7 @@ const SquadMemberMobileList: React.FC<SquadMemberMobileListProps> = ({
     return (
       <div className={st.mobileList}>
         {members.map((m) => {
-          const memberUser: any = m.user || m;
+          const memberUser = (m.user || m) as MemberUser;
           const name =
             memberUser.name ||
             `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||
@@ -94,7 +96,7 @@ const SquadMemberMobileList: React.FC<SquadMemberMobileListProps> = ({
   return (
     <div className={st.mobileList}>
       {members.map((m) => {
-        const memberUser: any = m.user || m;
+        const memberUser = (m.user || m) as MemberUser;
         const name =
           memberUser.name ||
           `${memberUser.first_name || ''} ${memberUser.last_name || ''}`.trim() ||

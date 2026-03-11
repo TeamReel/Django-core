@@ -21,7 +21,7 @@ export interface UseDirectoryFiltersConfig extends DirectoryListProps {
 export interface DirectoryFiltersState {
   // Auth
   isSuperAdmin: boolean;
-  user: any;
+  user: { id?: string | number; email?: string; is_superuser?: boolean } | null;
 
   // Lock flags
   orgLocked: boolean;

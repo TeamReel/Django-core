@@ -36,7 +36,7 @@ const SETTINGS_SECTIONS = [
 // ============================================================================
 
 interface ToastProps {
-  notification: any;
+  notification: { id?: string; message?: string; type?: string; [k: string]: unknown };
   onDismiss: (id: string) => void;
   variant?: string;
 }
@@ -46,7 +46,7 @@ export function Toast({ notification, onDismiss, variant }: ToastProps) {
   return (
     <div className={`px-4 py-2 rounded flex justify-between items-center ${colors[variant || 'success'] || colors.success}`}>
       <span className="text-sm">{notification.message}</span>
-      <button onClick={() => onDismiss(notification.id)} className="ml-2 opacity-60 hover:opacity-100">&times;</button>
+      <button onClick={() => onDismiss(notification.id || '')} className="ml-2 opacity-60 hover:opacity-100">&times;</button>
     </div>
   );
 }
@@ -407,7 +407,7 @@ export function NotificationsTabPanel() {
               {demoToasts.map(toast => (
                 <Toast
                   key={toast.id}
-                  notification={toast}
+                  notification={toast as unknown as ToastProps['notification']}
                   onDismiss={(id) => setDemoToasts(prev => prev.filter(t => t.id !== id))}
                   variant={toast.severity.toLowerCase() as any}
                 />

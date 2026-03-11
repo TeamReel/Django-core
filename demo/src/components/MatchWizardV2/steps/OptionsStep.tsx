@@ -17,10 +17,21 @@ import styles from '../MatchWizardV2.module.css';
 // Subtypes that show MembersStep (lineup config: formation, closeup, animation, background)
 const LINEUP_OPTIONS_SUBTYPES = new Set(['lineup', 'lineup_flyer', 'walkon', 'poster', 'match_intro']);
 
+interface MatchDataForApi {
+  id: string;
+  title?: string;
+  project?: { id: string; name: string; slug?: string; organisation_id?: string };
+  opponent_project?: { id: string; name: string; slug?: string };
+  participations?: unknown[];
+  start_time?: string;
+  location?: string;
+  metadata?: Record<string, unknown>;
+}
+
 export interface OptionsStepProps {
   selectedType: { type: string; subtype: string; label: string } | null;
   selectedTemplate: ContentTemplate | null;
-  matchDataForApi: any;
+  matchDataForApi: MatchDataForApi | null;
   seasonSquad: {
     seasonSquad: Record<string, Participation[]>;
     selectedMembers: Record<string, string[]>;

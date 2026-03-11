@@ -1,0 +1,113 @@
+﻿src/components/CreateWizard/flows/PeriodCreateFlow.tsx(206,46): error TS2345: Argument of type 'CreatePrefill' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'CreatePrefill'.
+src/components/CreateWizard/flows/PeriodCreateFlow.tsx(272,36): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/components/CreateWizard/flows/PeriodCreateFlow.tsx(273,36): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+src/components/matchWizardGeneration.ts(105,11): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; metadata?: Record<string, unknown> | undefined; }'.
+src/components/matchWizardGeneration.ts(105,39): error TS2322: Type 'unknown' is not assignable to type 'Record<string, string[]>'.
+src/components/matchWizardGeneration.ts(106,28): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(108,11): error TS2322: Type 'unknown' is not assignable to type 'string | null | undefined'.
+src/components/matchWizardGeneration.ts(112,11): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; metadata?: Record<string, unknown> | undefined; }'.
+src/components/matchWizardGeneration.ts(112,39): error TS2322: Type 'unknown' is not assignable to type 'Record<string, string[]>'.
+src/components/matchWizardGeneration.ts(117,11): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; }'.
+src/components/matchWizardGeneration.ts(118,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(119,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(120,11): error TS2322: Type 'unknown' is not assignable to type '{ member_id: string | null; style_variant: string; }[]'.
+src/components/matchWizardGeneration.ts(121,11): error TS2322: Type 'unknown' is not assignable to type 'string | null'.
+src/components/matchWizardGeneration.ts(122,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(123,11): error TS2322: Type 'unknown' is not assignable to type 'string | null | undefined'.
+src/components/matchWizardGeneration.ts(127,11): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; }'.
+src/components/matchWizardGeneration.ts(128,11): error TS2322: Type 'unknown' is not assignable to type 'number'.
+src/components/matchWizardGeneration.ts(129,11): error TS2322: Type 'unknown' is not assignable to type 'number'.
+src/components/matchWizardGeneration.ts(130,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(131,11): error TS2322: Type 'unknown' is not assignable to type 'string | null | undefined'.
+src/components/matchWizardGeneration.ts(149,11): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; }'.
+src/components/matchWizardGeneration.ts(149,39): error TS2322: Type 'unknown' is not assignable to type 'Record<string, string[]>'.
+src/components/matchWizardGeneration.ts(151,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(152,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(153,11): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/components/matchWizardGeneration.ts(154,11): error TS2322: Type 'unknown' is not assignable to type 'string | null | undefined'.
+src/components/matchWizardGeneration.ts(155,11): error TS2322: Type 'unknown' is not assignable to type '(id: string, assetType: string, role?: string | undefined) => string | null'.
+src/components/matchWizardGeneration.ts(156,11): error TS2322: Type 'unknown' is not assignable to type '(id: string) => string'.
+src/components/matchWizardGeneration.ts(160,11): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; }'.
+src/components/matchWizardGeneration.ts(161,11): error TS2322: Type 'unknown' is not assignable to type 'string | null'.
+src/components/matchWizardGeneration.ts(162,11): error TS2322: Type 'unknown' is not assignable to type 'number'.
+src/components/matchWizardGeneration.ts(163,11): error TS2322: Type 'unknown' is not assignable to type 'number'.
+src/components/matchWizardGeneration.ts(164,11): error TS2322: Type 'unknown' is not assignable to type 'string | null | undefined'.
+src/components/matchWizardGeneration.ts(167,30): error TS2741: Property 'id' is missing in type 'Record<string, unknown>' but required in type '{ id: string; project?: { id: string; } | undefined; }'.
+src/components/useMatchWizardData.ts(190,9): error TS2322: Type '{ id: string; title: string; project: { id: string; name: string; slug?: string | undefined; organisation_id?: string | undefined; }; opponent_project: { id: string; name: string; slug?: string | undefined; } | undefined; participations: { ...; }[] | undefined; start_time: string; location: string; metadata: { ...; ...' is not assignable to type 'Record<string, unknown>'.
+  Type 'null' is not assignable to type 'Record<string, unknown>'.
+src/components/useMatchWizardData.ts(190,26): error TS2322: Type 'UseSeasonSquadDataReturn' is not assignable to type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'UseSeasonSquadDataReturn'.
+src/pages/config/PreferencesProfileTab.tsx(128,51): error TS2339: Property 'id' does not exist on type '{}'.
+src/pages/config/PreferencesProfileTab.tsx(129,49): error TS2339: Property 'user' does not exist on type '{}'.
+src/pages/config/PreferencesProfileTab.tsx(129,75): error TS2339: Property 'user' does not exist on type '{}'.
+src/pages/config/PreferencesProfileTab.tsx(130,63): error TS2339: Property 'slug' does not exist on type '{}'.
+src/pages/config/PreferencesProfileTab.tsx(131,56): error TS2339: Property 'slug' does not exist on type '{}'.
+src/pages/config/PreferencesProfileTab.tsx(132,56): error TS2339: Property 'slug' does not exist on type '{}'.
+src/pages/config/PreferencesProfileTab.tsx(133,59): error TS2339: Property 'key' does not exist on type '{}'.
+src/pages/config/usePreferencesData.tsx(356,5): error TS2322: Type 'User | null' is not assignable to type 'Record<string, unknown> | null'.
+  Type 'User' is not assignable to type 'Record<string, unknown>'.
+    Index signature for type 'string' is missing in type 'User'.
+src/pages/config/usePreferencesData.tsx(356,11): error TS2322: Type '(user: User) => void' is not assignable to type '(u: Record<string, unknown> | null) => void'.
+  Types of parameters 'user' and 'u' are incompatible.
+    Type 'Record<string, unknown> | null' is not assignable to type 'User'.
+      Type 'null' is not assignable to type 'User'.
+src/pages/identity/OrgModals.tsx(295,22): error TS2345: Argument of type '(prev: Record<string, unknown>[]) => {}[]' is not assignable to parameter of type 'SetStateAction<Record<string, unknown>[]>'.
+  Type '(prev: Record<string, unknown>[]) => {}[]' is not assignable to type '(prevState: Record<string, unknown>[]) => Record<string, unknown>[]'.
+    Type '{}[]' is not assignable to type 'Record<string, unknown>[]'.
+      Type '{}' is not assignable to type 'Record<string, unknown>'.
+        Index signature for type 'string' is missing in type '{}'.
+src/pages/identity/OrgModals.tsx(298,41): error TS2339: Property 'id' does not exist on type '{}'.
+src/pages/identity/useOrgData.ts(54,5): error TS2322: Type 'User[]' is not assignable to type 'OrgMemberRecord[]'.
+  Type 'User' is not assignable to type 'OrgMemberRecord'.
+    Index signature for type 'string' is missing in type 'User'.
+src/pages/identity/useOrgData.ts(80,5): error TS2322: Type 'Dispatch<SetStateAction<User[]>>' is not assignable to type '(v: OrgMemberRecord[]) => void'.
+  Types of parameters 'value' and 'v' are incompatible.
+    Type 'OrgMemberRecord[]' is not assignable to type 'SetStateAction<User[]>'.
+      Type 'OrgMemberRecord[]' is not assignable to type 'User[]'.
+        Type 'OrgMemberRecord' is missing the following properties from type 'User': id, name, email, role, is_active
+src/pages/identity/useUserDetailApi.ts(106,14): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/pages/periods/MediaDesktopTable.tsx(197,9): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+src/pages/periods/MediaDesktopTable.tsx(202,13): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+src/pages/periods/ProjectCompetitionDetailPage.tsx(155,21): error TS2322: Type 'Dispatch<SetStateAction<MatchRef | null>>' is not assignable to type '(m: Activity | null) => void'.
+  Types of parameters 'value' and 'm' are incompatible.
+    Type 'Activity | null' is not assignable to type 'SetStateAction<MatchRef | null>'.
+      Type 'Activity' is not assignable to type 'SetStateAction<MatchRef | null>'.
+        Type 'Activity' is not assignable to type 'MatchRef'.
+          Index signature for type 'string' is missing in type 'Activity'.
+src/pages/periods/ProjectSeasonDetailPage.tsx(341,15): error TS2322: Type 'Dispatch<SetStateAction<Period | null>>' is not assignable to type '(updater: (prev: Period) => Period) => void'.
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: Period) => Period' is not assignable to type 'SetStateAction<Period | null>'.
+      Type '(prev: Period) => Period' is not assignable to type '(prevState: Period | null) => Period | null'.
+        Types of parameters 'prev' and 'prevState' are incompatible.
+          Type 'Period | null' is not assignable to type 'Period'.
+            Type 'null' is not assignable to type 'Period'.
+src/pages/periods/SeasonMediaTab.tsx(261,50): error TS2339: Property 'fullbody' does not exist on type '{}'.
+src/pages/periods/SeasonMediaTab.tsx(284,9): error TS2322: Type '{ logo: string | null; sponsor: string | null; kits: Record<string, unknown>; }' is not assignable to type '{ logo?: string | null | undefined; sponsor?: string | null | undefined; kits: Record<string, string | null>; }'.
+  Types of property 'kits' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, string | null>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'string | null'.
+src/pages/periods/useMemberMediaActions.ts(186,33): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(name: string, value: string | Blob): void', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type 'string | Blob'.
+  Overload 2 of 3, '(name: string, value: string): void', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type 'string'.
+  Overload 3 of 3, '(name: string, blobValue: Blob, filename?: string | undefined): void', gave the following error.
+    Argument of type '{}' is not assignable to parameter of type 'Blob'.
+      Type '{}' is missing the following properties from type 'Blob': size, type, arrayBuffer, slice, and 2 more.
+src/pages/periods/useSeasonMediaTabData.ts(138,39): error TS2339: Property 'profile' does not exist on type '{}'.
+src/pages/periods/useSeasonMediaTabData.ts(138,64): error TS2339: Property 'profile_photo_url' does not exist on type '{}'.
+src/pages/periods/useSeasonMediaTabData.ts(141,35): error TS2339: Property 'fullbody' does not exist on type '{}'.
+src/pages/periods/useSeasonMediaTabData.ts(142,35): error TS2339: Property 'closeup' does not exist on type '{}'.
+src/pages/periods/useSeasonMediaTabData.ts(157,49): error TS2339: Property 'kit' does not exist on type '{}'.
+src/pages/periods/useSeasonMediaTabData.ts(158,43): error TS2339: Property 'kit' does not exist on type '{}'.
+src/pages/ProfileHubPage.tsx(68,80): error TS2339: Property 'split' does not exist on type '{}'.
+src/pages/ProfileHubPage.tsx(71,10): error TS7053: Element implicitly has an 'any' type because expression of type '0' can't be used to index type '{}'.
+  Property '0' does not exist on type '{}'.
+src/pages/ProfileHubPage.tsx(71,31): error TS7053: Element implicitly has an 'any' type because expression of type '0' can't be used to index type '{}'.
+  Property '0' does not exist on type '{}'.
+src/pages/ProfileHubPage.tsx(72,28): error TS2339: Property 'slice' does not exist on type '{}'.
+src/pages/ProfileHubPage.tsx(159,34): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/pages/projects/components/MemberList.tsx(163,62): error TS2345: Argument of type 'Member' is not assignable to parameter of type 'Record<string, unknown>'.
+  Index signature for type 'string' is missing in type 'Member'.

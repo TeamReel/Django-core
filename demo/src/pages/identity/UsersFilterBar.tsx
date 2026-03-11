@@ -35,7 +35,7 @@ export interface UsersScopeOptions {
 interface UsersFilterBarProps {
   isSuperAdmin: boolean;
   orgIdParam: string | null | undefined;
-  context: any;
+  context: { organisation?: { id?: string | number } | null; [k: string]: unknown };
   navigate: (to: string) => void;
   canManageUsers: boolean;
   filterState: UsersFilterState;

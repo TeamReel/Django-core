@@ -39,7 +39,7 @@ export type ProjectOption = {
   organisation?: string | { id: string; name?: string; slug?: string };
   organisation_id?: string;
   parent_id?: string | number | null;
-  parent_project?: any;
+  parent_project?: { id?: string | number; name?: string } | null;
   parent_project_id?: string | number | null;
   is_active?: boolean;
   seasons_count?: number;

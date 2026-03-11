@@ -7,6 +7,7 @@ import ProjectDetailModal from '../ProjectDetailModal';
 import ProjectEditModal from '../ProjectEditModal';
 import ProjectCreateModal from '../ProjectCreateModal';
 import { useClubsData } from './useClubsData';
+import type { ProjectOption } from '../../work/WorkFilterBar';
 import styles from './ClubsList.module.css';
 import dp from './DirectoryPremium.module.css';
 
@@ -145,9 +146,12 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
 
 type HookData = ReturnType<typeof useClubsData>;
 
-function ClubRow({ club, d }: { club: any; d: HookData }) {
-  const orgIdFromProject = club.organisation?.id || (typeof club.organisation === 'string' ? club.organisation : undefined);
-  const orgSlugFromProject = club.organisation?.slug;
+type ClubRecord = ProjectOption & { sport_variants_count?: number; seasons_count?: number; competitions_count?: number; matches_count?: number; member_count?: number };
+
+function ClubRow({ club, d }: { club: ClubRecord; d: HookData }) {
+  const org = typeof club.organisation !== 'string' ? club.organisation : undefined;
+  const orgIdFromProject = org?.id || (typeof club.organisation === 'string' ? club.organisation : undefined);
+  const orgSlugFromProject = org?.slug;
   const orgFromList = orgIdFromProject
     ? d.organisations.find((o) => String(o.id) === String(orgIdFromProject))
     : undefined;
@@ -186,10 +190,10 @@ function ClubRow({ club, d }: { club: any; d: HookData }) {
                 d.navigate(`/organisations/${orgSlugOrId}`);
               }}
             >
-              {club.organisation?.name || 'Federation'}
+              {org?.name || 'Federation'}
             </a>
           ) : (
-            club.organisation?.name || '-'
+            org?.name || '-'
           )}
         </td>
       )}

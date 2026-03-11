@@ -3,7 +3,7 @@
  * Props and return type for the AssetsTab data hook.
  */
 
-import type { BrandAsset } from '../../../hooks/useBrandProfile';
+import type { BrandAsset, BrandProfile } from '../../../hooks/useBrandProfile';
 import type { HistoryItem } from '../AssetSubComponents';
 
 export type AssetsLevel = 'organisation' | 'club' | 'team' | 'season' | 'match' | 'member';
@@ -20,7 +20,7 @@ export interface UseAssetsTabDataProps {
 
 export interface AssetsTabData {
   // Brand profile
-  profile: any;
+  profile: BrandProfile | null;
   assets: BrandAsset[];
   loading: boolean;
   parentLoading: boolean;

@@ -21,13 +21,13 @@ interface SquadMember {
   first_name?: string;
   last_name?: string;
   email?: string;
-  metadata?: { teamreel_assets?: Record<string, any>; [key: string]: unknown };
-  [key: string]: any;
+  metadata?: { teamreel_assets?: Record<string, unknown>; [key: string]: unknown };
+  [key: string]: unknown;
 }
 
 export interface MediaMobileCardListProps {
   members: SquadMember[];
-  guestPlayer: { has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: any } | null;
+  guestPlayer: { has_avatar: boolean; has_closeup: boolean; has_intro: boolean; has_celebration: boolean; guest_player: unknown } | null;
   batchSelectedMemberIds: Set<string>;
   setBatchSelectedMemberIds: React.Dispatch<React.SetStateAction<Set<string>>>;
   expandedCards: Set<string>;
@@ -205,7 +205,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
         const isExpanded = expandedCards.has(membershipId);
 
         // Extract closeup-in-tenue photo
-        const tr = m.metadata?.teamreel_assets || {};
+        const tr = (m.metadata?.teamreel_assets || {}) as Record<string, Record<string, unknown>>;
         const extractFirst = (obj: unknown): string | null => {
           if (!obj || typeof obj !== 'object') return null;
           for (const v of Object.values(obj)) {
@@ -216,9 +216,9 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
           return null;
         };
         const avatarUrl =
-          extractFirst(tr?.images?.closeup) ||
-          extractFirst(tr?.images?.fullbody) ||
-          tr?.media?.kit?.url ||
+          extractFirst((tr?.images as Record<string, unknown>)?.closeup) ||
+          extractFirst((tr?.images as Record<string, unknown>)?.fullbody) ||
+          (tr?.media as Record<string, Record<string, unknown>>)?.kit?.url as string ||
           null;
 
         return (

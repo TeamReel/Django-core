@@ -194,13 +194,13 @@ export function useBrandAssets(): UseBrandAssetsReturn {
       }
 
       // Step 2: Get assets for each profile in parallel
-      const assetPromises = profiles.map(async (profile: any) => {
+      const assetPromises = profiles.map(async (profile) => {
         const items = await brandingApi.listAllProfileAssets(profile.id, {
           pageSize: 100,
           signal: controller.signal,
         });
         // Enrich with profile context
-        return (items as any[]).map((a) => ({
+        return items.map((a) => ({
           ...a,
           profile_name: profile.name,
           project_name: profile.project_name || undefined,
@@ -217,7 +217,7 @@ export function useBrandAssets(): UseBrandAssetsReturn {
         ? allAssets.filter((a) => getAssetCategory(a.asset_type) === category)
         : allAssets;
 
-      setAssets(filtered);
+      setAssets(filtered as unknown as BrandAsset[]);
     } catch (err: unknown) {
       logger.error('Failed to load brand assets', err);
       if (!(err instanceof Error && err.name === 'AbortError') && !(typeof err === 'object' && err !== null && 'name' in err && err.name === 'AbortError')) {

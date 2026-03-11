@@ -13,14 +13,15 @@ type Setter<T> = React.Dispatch<React.SetStateAction<T>>;
 
 interface UseSeasonBulkActionsParams {
   apiBaseUrl: string;
-  org: any;
-  project: any;
+  org: { id?: string | number; [k: string]: unknown } | null;
+  project: { id?: string | number; [k: string]: unknown } | null;
   season: Period | null;
   resolvedSeasonId: string | null;
   activeTab: string;
   // State setters
   setCompetitions: Setter<Period[]>;
   setCompetitionsLoading: Setter<boolean>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Matches are polymorphic API records
   setMatches: Setter<any[]>;
   setMatchesLoading: Setter<boolean>;
   setMembersReloadToken: Setter<number>;
@@ -202,7 +203,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     if (!teamIdValue) throw new Error('Select a team first');
     if (!seasonIdValue) throw new Error('Select a season first');
 
-    const created = await api.post<any>('/periods/', {
+    const created = await api.post<Period>('/periods/', {
       organisation_id: orgIdValue,
       project_id: teamIdValue ? Number(teamIdValue) : undefined,
       parent_period_id: seasonIdValue,
@@ -251,7 +252,7 @@ export function useSeasonBulkActions(params: UseSeasonBulkActionsParams) {
     if (!teamIdValue) throw new Error('Select a team first');
     if (!competitionIdValue) throw new Error('Select a competition first');
 
-    const created = await api.post<any>('/activities/', {
+    const created = await api.post<Record<string, unknown>>('/activities/', {
       title: payload.title,
       activity_type: 'match',
       project_id: teamIdValue ? Number(teamIdValue) : undefined,

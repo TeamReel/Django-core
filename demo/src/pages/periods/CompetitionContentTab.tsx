@@ -4,13 +4,16 @@ import { Alert, Card } from '@django-core/design-system';
 import SmartEmptyState from '../../components/SmartEmptyState';
 import { periodPathKey } from '../../utils/periodPath';
 import { CONTENT_TYPES } from '../identity/ContentGenerationModal';
-import type { Activity } from '../../types';
 import styles from './CompetitionContentTab.module.css';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Matches are polymorphic API shapes
+type MatchRecord = Record<string, any>;
+
 export interface CompetitionContentTabProps {
-  matches: any[];
+  matches: MatchRecord[];
   matchMediaMap: Record<string, Record<string, unknown>[]>;
   matchMediaLoading: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   matchDisplayTitle: (m: any) => string;
   isTeamRoute: boolean;
   orgSlugOrId: string;

@@ -11,7 +11,7 @@ export interface UseCompetitionsDataReturn {
   competitionsLoading: boolean;
   filteredCompetitions: Period[];
   sortedCompetitions: Period[];
-  savePeriodEdits: (periodId: string, payload: any) => Promise<void>;
+  savePeriodEdits: (periodId: string, payload: Record<string, unknown>) => Promise<void>;
   createCompetition: (payload: {
     name: string;
     description?: string;

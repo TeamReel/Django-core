@@ -28,14 +28,15 @@ interface Notification {
     body?: string;
     message?: string;
   };
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   status?: string;
   read_at?: string | null;
 }
 
-const unwrapResponseData = <T,>(raw: any): T => {
+const unwrapResponseData = <T,>(raw: unknown): T => {
   // Global renderer can wrap as { status, data, meta }
-  return (raw?.data ?? raw) as T;
+  const obj = raw as Record<string, unknown> | undefined;
+  return (obj?.data ?? raw) as T;
 };
 
 const safeSearchParams = (search: string) => {

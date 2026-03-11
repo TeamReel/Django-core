@@ -54,7 +54,7 @@ export const FALLBACK_ROLES = [
 export interface UseUsersDataReturn {
   // Context + navigation
   navigate: NavigateFunction;
-  context: any;
+  context: { organisation?: { id?: string; slug?: string; name?: string }; isLoading?: boolean };
   myOrganisations: Array<{ id: string; name: string; slug: string }>;
   orgIdParam: string | null;
   organisationOptions: BreadcrumbSwitcherOption[];

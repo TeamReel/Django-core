@@ -3,15 +3,16 @@ import { Alert, Badge, Button, Card, Input } from '@django-core/design-system';
 import { api, projectsApi } from '../../api';
 import type { SeasonProject as Project } from '../../types/season';
 import { getUserDisplayName } from './memberDetailUtils';
+import type { MembershipRecord } from './memberDetailUtils';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import styles from './MemberIdentityTab.module.css';
 import { logger } from '@/utils/logger';
 
 export interface MemberIdentityTabProps {
-  membership: any;
+  membership: MembershipRecord;
   project: Project | null;
   apiBaseUrl: string;
-  onMembershipUpdate: (updated: any) => void;
+  onMembershipUpdate: (updated: MembershipRecord) => void;
 }
 
 export function MemberIdentityTab({

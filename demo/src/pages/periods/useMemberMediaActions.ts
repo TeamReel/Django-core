@@ -23,11 +23,11 @@ import {
   readVideoVariantsFromMembership,
   pollProcessingResult,
 } from './memberDetailUtils';
-import type { AssetVariantsMap } from './memberDetailUtils';
+import type { AssetVariantsMap, MembershipRecord } from './memberDetailUtils';
 
 export interface MemberMediaActionsParams {
-  membership: any | null;
-  setMembership: React.Dispatch<React.SetStateAction<any | null>>;
+  membership: MembershipRecord | null;
+  setMembership: React.Dispatch<React.SetStateAction<MembershipRecord | null>>;
   membershipId: string;
   project: { id: string; organisation?: { id: string }; [k: string]: unknown } | null;
   org: { id: string; [k: string]: unknown } | null;

@@ -7,6 +7,15 @@
 import { ADMIN_LIKE_PROJECT_ROLES, TEAMREEL_ROLE_RANK } from './usersListTypes';
 import { getCsrfToken } from '../../../utils/csrf';
 
+/** Loose API user shape used by user-list helpers. */
+interface UserRow {
+  is_superuser?: boolean;
+  role?: string;
+  membership?: { source?: string; role?: string };
+  project_memberships?: Array<{ project?: Record<string, unknown>; project_id?: string; role?: string }>;
+  [key: string]: unknown;
+}
+
 // ────────────────────────────────────────────────────────────
 //  Token / ID helpers
 // ────────────────────────────────────────────────────────────
@@ -67,7 +76,7 @@ export const summarizeNames = (
  * currently selected team / club.
  */
 export const getUserTeamreelRoleNames = (
-  user: any,
+  user: UserRow | null | undefined,
   selectedTeamId: string,
   selectedClubId: string,
 ): string[] => {
@@ -124,7 +133,7 @@ export const getUserTeamreelRoleNames = (
  * Derive the best role label + tooltip for a user row.
  */
 export const getUserRoleDisplay = (
-  user: any,
+  user: UserRow | null | undefined,
   selectedTeamId: string,
   selectedClubId: string,
 ): { label: string; title: string } => {

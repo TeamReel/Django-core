@@ -278,7 +278,7 @@ export function useSeasonSquadAddMemberData({
       setLoadingUsers(true);
       setError(null);
       try {
-        let usersRaw: any[] = [];
+        let usersRaw: unknown[] = [];
         if (teamId) {
           if (!season) throw new Error('Missing season context');
           const queryParams: Record<string, string | number | boolean | undefined> = { period: season, scope_project_id: clubId || undefined };
@@ -292,7 +292,7 @@ export function useSeasonSquadAddMemberData({
           usersRaw = data.results.map((m: { user?: unknown }) => m?.user).filter(Boolean);
         }
 
-        const normalized = usersRaw.map(normalizeUser).filter(Boolean) as UserOption[];
+        const normalized = usersRaw.map((u) => normalizeUser(u as RawUserRecord)).filter(Boolean) as UserOption[];
         const unique = [...new Map(normalized.map((u) => [String(u.id), u])).values()];
         if (!cancelled) {
           setUserOptions(unique);

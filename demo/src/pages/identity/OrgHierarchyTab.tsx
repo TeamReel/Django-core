@@ -7,7 +7,7 @@ export interface OrgHierarchyTabProps {
   hierarchySearch: string;
   setHierarchySearch: (v: string) => void;
   teams: Project[];
-  clubsForHierarchy: any[];
+  clubsForHierarchy: Project[];
   membershipUserCounts: { clubUsersCountById: Record<string, number>; teamUsersCountById: Record<string, number> };
   teamSeasonsCountById: Record<string, number>;
   teamCompetitionsCountById: Record<string, number>;
@@ -58,8 +58,8 @@ export function OrgHierarchyTab({
 }: OrgHierarchyTabProps) {
   const hierarchyGroups = useMemo((): ClubRow[] => {
     const q = String(hierarchySearch || '').trim().toLowerCase();
-    const toSlugOrId = (p: Record<string, unknown>) => String(p?.slug || p?.id || '').trim();
-    const toName = (p: Record<string, unknown>) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
+    const toSlugOrId = (p: { slug?: string; id?: string | number }) => String(p?.slug || p?.id || '').trim();
+    const toName = (p: { name?: string; title?: string; slug?: string; id?: string | number }) => String(p?.name || p?.title || p?.slug || p?.id || '').trim();
 
     const clubUsersCountById = membershipUserCounts?.clubUsersCountById || {};
     const teamUsersCountById = membershipUserCounts?.teamUsersCountById || {};

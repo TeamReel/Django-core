@@ -3,7 +3,7 @@ import { logger } from '@/utils/logger';
 import styles from './ProjectCreateModal.module.css';
 
 type OrgOption = { id: string; name: string; slug?: string };
-type ProjectOption = { id: string | number; name: string; slug?: string; organisation?: any };
+type ProjectOption = { id: string | number; name: string; slug?: string; organisation?: string | { id?: string | number; name?: string; slug?: string } };
 
 interface ProjectCreateModalProps {
   opened: boolean;

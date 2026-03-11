@@ -46,11 +46,11 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
           ) as any;
 
           // Find active policy for low balance
-          const activePolicy = (policies as any[]).find((p: any) => p.is_active && p.min_threshold > 0);
+          const activePolicy = (policies as Array<{ is_active?: boolean; min_threshold?: number }>).find((p) => p.is_active && (p.min_threshold ?? 0) > 0);
 
           if (activePolicy) {
-            setThreshold(activePolicy.min_threshold);
-            if (currentBalance < activePolicy.min_threshold) {
+            setThreshold(activePolicy.min_threshold ?? 0);
+            if (currentBalance < (activePolicy.min_threshold ?? 0)) {
               setLowBalanceAlert(true);
             } else {
               setLowBalanceAlert(false);

@@ -21,13 +21,14 @@ export const addHoursToIsoLike = (isoLike: string, hours: number): string => {
 };
 
 /** Display name for a membership/user object. */
-export const getUserDisplayName = (member: any): string => {
+export const getUserDisplayName = (member: Record<string, unknown>): string => {
   const user = member?.user || member?.user_id || member?.user_detail;
   if (user && typeof user === 'object') {
-    const full = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+    const u = user as Record<string, unknown>;
+    const full = `${u.first_name || ''} ${u.last_name || ''}`.trim();
     if (full) return full;
-    if (user.email) return String(user.email);
-    if (user.username) return String(user.username);
+    if (u.email) return String(u.email);
+    if (u.username) return String(u.username);
   }
   const full = `${member?.first_name || ''} ${member?.last_name || ''}`.trim();
   if (full) return full;

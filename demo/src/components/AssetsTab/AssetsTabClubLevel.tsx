@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { getAssetUrl, KIT_ROLES } from '../../hooks/useBrandProfile';
+import { getAssetUrl, KIT_ROLES, type BrandAsset } from '../../hooks/useBrandProfile';
 import { AssetCard, Section, AssetGrid } from './AssetSubComponents';
 import { SharedAssetModals, AiButtonsRow } from './AssetsTabShared';
 import type { AssetsTabData } from './useAssetsTabData';
@@ -97,7 +97,7 @@ const ClubBackgrounds: React.FC<{ d: AssetsTabData }> = ({ d }) => {
   // Group by label: match uploads with their AI-processed counterparts
   const matchedProcessedIds = new Set<string>();
   const matchedUploadIds = new Set<string>();
-  const bgPairs: { label: string; upload?: any; processed?: any }[] = [];
+  const bgPairs: { label: string; upload?: BrandAsset; processed?: BrandAsset }[] = [];
 
   // Pass 1: exact label match
   for (const upload of bgUploads) {

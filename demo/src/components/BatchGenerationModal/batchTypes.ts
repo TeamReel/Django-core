@@ -13,6 +13,7 @@ export interface BatchMember {
   fullbodyUrls: Record<string, string>;
   /** Per-kit-type closeup URLs */
   closeupUrls: Record<string, string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deeply nested teamreel_assets
   metadata?: any;
 }
 

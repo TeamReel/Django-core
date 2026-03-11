@@ -122,6 +122,7 @@ export function resolveMediaUrl(m: MemberRecord, slotId: string): string | null 
   if (flat) return toFullUrl(flat);
 
   // 2) Per-variant structure
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deeply nested polymorphic metadata
   const tr: any = m?.metadata?.teamreel_assets || {};
   const VARIANT_MAP: Record<string, { branch: string; category: string }> = {
     closeup: { branch: 'images', category: 'closeup' },

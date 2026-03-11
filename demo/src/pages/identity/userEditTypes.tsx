@@ -81,8 +81,8 @@ export function RbacBadge({ label }: { label: string }) {
   );
 }
 
-export const readFunctionalRolesFromMembership = (m: any): string[] => {
-  const direct = (m as any)?.functional_roles ?? (m as any)?.functionalRoles;
+export const readFunctionalRolesFromMembership = (m: Record<string, unknown>): string[] => {
+  const direct = (m as Record<string, unknown>)?.functional_roles ?? (m as Record<string, unknown>)?.functionalRoles;
   if (Array.isArray(direct)) return direct.map((r) => String(r || '').trim()).filter(Boolean);
   const meta = (m as any)?.metadata || {};
   const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();

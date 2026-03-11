@@ -8,7 +8,7 @@ import { SkeletonDetailPage } from '../../components/Skeleton';
 import { api } from '@/api';
 import { looksLikeUuid, periodPathKey } from '../../utils/periodPath';
 
-const getEnvelopeData = <T,>(raw: any): T => raw as T;
+const getEnvelopeData = <T,>(raw: unknown): T => raw as T;
 
 const looksLikeIdentifier = (value: string) => {
   const v = String(value || '').trim();
@@ -143,28 +143,28 @@ export default function LegacyMatchRedirectPage() {
 
         try {
           // First try org-scoped project endpoint, then fall back to global project endpoint.
-          let project: any | null = null;
+          let project: Record<string, unknown> | null = null;
           try {
-            project = await api.get<any>(
+            project = await api.get<Record<string, unknown>>(
               `/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(teamSlugOrId)}/`,
             );
           } catch {
             try {
-              project = await api.get<any>(`/projects/${encodeURIComponent(teamSlugOrId)}/`);
+              project = await api.get<Record<string, unknown>>(`/projects/${encodeURIComponent(teamSlugOrId)}/`);
             } catch {
               // ignore
             }
           }
 
           if (!clubSlugOrId) {
-            const parent = project?.parent_project || project?.parent;
+            const parent = (project?.parent_project || project?.parent) as Record<string, unknown> | undefined;
             const parentId = String(project?.parent_project_id || project?.parent_id || '').trim();
 
             if (parent) {
               clubSlugOrId = String(parent.slug || parent.id || '').trim() || null;
             } else if (parentId) {
               try {
-                const club = await api.get<any>(`/projects/${encodeURIComponent(parentId)}/`);
+                const club = await api.get<Record<string, unknown>>(`/projects/${encodeURIComponent(parentId)}/`);
                 clubSlugOrId = String(club?.slug || club?.id || parentId).trim() || null;
               } catch {
                 clubSlugOrId = parentId;
@@ -179,14 +179,14 @@ export default function LegacyMatchRedirectPage() {
         if (clubSlugOrId && looksLikeIdentifier(clubSlugOrId)) {
           try {
             try {
-              const club = await api.get<any>(
+              const club = await api.get<Record<string, unknown>>(
                 `/organisations/${encodeURIComponent(orgKeyOrId)}/projects/${encodeURIComponent(clubSlugOrId)}/`,
               );
               const resolved = String(club?.slug || '').trim();
               if (resolved) clubSlugOrId = resolved;
             } catch {
               try {
-                const club = await api.get<any>(`/projects/${encodeURIComponent(clubSlugOrId)}/`);
+                const club = await api.get<Record<string, unknown>>(`/projects/${encodeURIComponent(clubSlugOrId)}/`);
                 const resolved = String(club?.slug || '').trim();
                 if (resolved) clubSlugOrId = resolved;
               } catch {

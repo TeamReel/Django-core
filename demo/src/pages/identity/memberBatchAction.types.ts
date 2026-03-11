@@ -30,7 +30,7 @@ export interface TeamOption {
     id: string | number;
     name: string;
     parent_id?: string | number | null;
-    parent_project?: any;
+    parent_project?: { id?: string | number; name?: string } | null;
 }
 
 export interface MemberBatchActionModalProps {

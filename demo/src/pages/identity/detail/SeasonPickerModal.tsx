@@ -15,14 +15,14 @@ type Props = {
   open: boolean;
   mode: Mode;
   seasons: Season[];
-  member: any | null;
+  member: Record<string, unknown> | null;
   projectId: string;
   projectName?: string;
   onClose: () => void;
   onConfirm: (seasonId: string) => Promise<void>;
 };
 
-function getMemberProjectMemberships(member: Record<string, unknown>): Record<string, unknown>[] {
+function getMemberProjectMemberships(member: Record<string, unknown> | null): Record<string, unknown>[] {
   return (member?.project_memberships || member?.projectMemberships || []) as Record<string, unknown>[];
 }
 
@@ -60,7 +60,7 @@ export default function SeasonPickerModal({ open, mode, seasons, member, project
   if (!open) return null;
 
   const title = mode === 'assign' ? 'Assign to season' : 'Unassign from season';
-  const email = String(member?.email || member?.user?.email || '');
+  const email = String(member?.email || (member?.user as Record<string, unknown>)?.email || '');
   const teamLabel = String(projectName || '').trim();
 
   return (

@@ -13,7 +13,7 @@ interface UsersOrganisation {
 }
 
 interface UseUsersFetchersParams {
-  user: any;
+  user: { id?: string | number; is_superuser?: boolean } | null;
   isSuperAdmin: boolean;
   waitingForOrgContext: boolean;
   context: { organisation?: { id?: string; slug?: string } | null; isLoading?: boolean };
