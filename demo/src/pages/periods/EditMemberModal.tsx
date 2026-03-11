@@ -3,6 +3,7 @@ import { logger } from '@/utils/logger';
 import s from './ProjectSeasonDetailPage.module.css';
 import { getFunctionalRolesFromMembership, type AccessRoleOption } from './seasonDetailUtils';
 import { projectsApi } from '../../api';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 /** Minimal member/membership shape for the edit modal */
 interface EditableMember {
@@ -41,6 +42,7 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   onSaved,
   onClose,
 }) => {
+  useEscapeKey(onClose);
   const handleSave = async () => {
     try {
       const membershipId = String(member.id || '').trim();
@@ -79,8 +81,8 @@ const EditMemberModal: React.FC<EditMemberModalProps> = ({
   };
 
   return (
-    <div className={s.modalOverlay} onClick={onClose} role="button" tabIndex={0}>
-      <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
+    <div className={s.modalOverlay} onClick={onClose}>
+      <div className={s.editMemberModal} onClick={(e) => e.stopPropagation()} role="dialog">
         <h2 className={s.editMemberTitle}>Edit Member Roles</h2>
 
         <div className={s.marginBottomSpace6}>

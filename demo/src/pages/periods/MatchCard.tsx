@@ -89,7 +89,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   return (
     <div className={`${styles.card} ${isActive ? styles.cardActive : ''}`} data-expanded={expanded}>
       {/* Header row — always visible */}
-      <div className={styles.cardHeader} onClick={onToggle} role="button" tabIndex={0}>
+      <button className={styles.cardHeader} onClick={onToggle} type="button" aria-expanded={expanded}>
         {/* Date badge */}
         {date ? (
           <div className={styles.dateBadge}>
@@ -122,7 +122,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
         </div>
 
         <ChevronRight size={16} className={styles.chevron} data-expanded={expanded} />
-      </div>
+      </button>
 
       {/* Expanded body */}
       {expanded && (

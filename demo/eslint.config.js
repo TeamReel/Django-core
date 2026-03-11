@@ -60,6 +60,8 @@ export default [
         "warn",
         { allowConstantExport: true },
       ],
+
+      "jsx-a11y/click-events-have-key-events": "warn",
     },
   },
 ];

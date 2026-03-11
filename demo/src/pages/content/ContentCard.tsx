@@ -8,6 +8,7 @@
 import React, { useRef, useState } from 'react';
 import { Card, Text, Badge, Button } from '@django-core/design-system';
 import { Download, Share2, Trash2, X, Play, Pause, Maximize2, Clock, FileText, Tag, Calendar } from 'lucide-react';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { formatFileSize } from '../../hooks/useFileAssets';
 import { getAssetTypeLabel, getAssetTypeIcon, type ContentItem } from './contentLibraryTypes';
@@ -187,6 +188,7 @@ export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDele
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  useEscapeKey(onClose);
 
   const assetType = ((item.extraction_metadata?.asset_type as string) || 'other').replace(/_[a-f0-9]{8}$/i, '');
   const activityTitle = (item.extraction_metadata?.activity_title as string) || (typeof item.activity === 'object' ? item.activity?.title : '');
@@ -200,8 +202,8 @@ export function ContentPreviewModal({ item, onClose, onDownload, onShare, onDele
   };
 
   return (
-    <div className={styles.detailOverlay} onClick={onClose} role="button" tabIndex={0}>
-      <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
+    <div className={styles.detailOverlay} onClick={onClose}>
+      <div className={styles.detailPanel} onClick={(e) => e.stopPropagation()} role="dialog">
 
         {/* Header */}
         <div className={styles.detailHeader}>

@@ -1,3 +1,4 @@
+import { useEscapeKey } from '../hooks/useEscapeKey';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 
@@ -8,9 +9,10 @@ export interface NotificationsModalProps {
 }
 
 export function NavbarNotificationsModal({ notificationsList, onClose, onNavigate }: NotificationsModalProps) {
+  useEscapeKey(onClose);
   return (
-    <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`} role="button" tabIndex={0}>
+    <div onClick={onClose} className={s.modalOverlay}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.notificationsPanel}`} role="dialog">
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Notificaties</div>

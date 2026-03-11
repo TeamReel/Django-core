@@ -7,6 +7,7 @@ import { X, Shield, Users, Check, Loader2 } from 'lucide-react';
 import { api } from '@/api';
 import st from './MemberEditSheet.module.css';
 import { logger } from '@/utils/logger';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 /* ── Functional role definitions (must match backend valid choices) ── */
 const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string; emoji: string }> = [
@@ -67,8 +68,7 @@ export function MemberEditSheet({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  // Initialize from membership
+  useEscapeKey(opened ? onClose : undefined);
   useEffect(() => {
     if (!opened || !membership) return;
     setAccessRole(String(membership?.role || 'viewer'));
@@ -163,8 +163,8 @@ export function MemberEditSheet({
   };
 
   return (
-    <div className={st.overlay} onClick={onClose} role="button" tabIndex={0}>
-      <div className={st.sheet} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
+    <div className={st.overlay} onClick={onClose}>
+      <div className={st.sheet} onClick={(e) => e.stopPropagation()} role="dialog">
         {/* ── Handle ── */}
         <div className={st.handleRow}>
           <div className={st.handle} />

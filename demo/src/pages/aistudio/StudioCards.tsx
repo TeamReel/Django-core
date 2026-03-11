@@ -8,6 +8,7 @@ import { Play, Download, Share2, X } from 'lucide-react';
 import { getAssetUrl } from '../../hooks/useBrandProfile';
 import { getAssetTypeLabel } from '../content/contentLibraryTypes';
 import type { ContentItem } from '../content/contentLibraryTypes';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import styles from './AIStudioPage.module.css';
 
 export type ViewMode = 'type' | 'match';
@@ -85,6 +86,7 @@ export function StudioPreviewModal({
   onClose: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  useEscapeKey(onClose);
   const url = item.file_url || getAssetUrl(item.storage_path);
   const isVideo = Boolean(
     item.mime_type?.startsWith('video/') ||
@@ -116,7 +118,7 @@ export function StudioPreviewModal({
   };
 
   return (
-    <div className={styles.previewOverlay} onClick={onClose} role="button" tabIndex={0}>
+    <div className={styles.previewOverlay} onClick={onClose}>
       <div className={styles.previewContent} onClick={(e) => e.stopPropagation()}>
         {/* Close button */}
         <button className={styles.previewClose} onClick={onClose} type="button">

@@ -8,6 +8,7 @@ import { NewUserTab } from './NewUserTab';
 import { LEVEL_LABEL } from './types';
 import type { AddMemberModalProps } from './types';
 import modalStyles from './AddMemberModal.module.css';
+import { useEscapeKey } from '../../../hooks/useEscapeKey';
 
 // Re-export types for backward compatibility
 export type { AddMemberModalProps, ContextLevel, UserResult, NewUserFormData } from './types';
@@ -15,14 +16,15 @@ export type { AddMemberModalProps, ContextLevel, UserResult, NewUserFormData } f
 export default function AddMemberModal(props: AddMemberModalProps) {
   const { isOpen, onClose, contextLevel } = props;
   const data = useAddMemberData(props);
+  useEscapeKey(isOpen ? onClose : undefined);
 
   if (!isOpen) return null;
 
   const levelLabel = LEVEL_LABEL[contextLevel];
 
   return (
-    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose} role="button" tabIndex={0}>
-      <div onClick={(e) => e.stopPropagation()} className={`bg-surface p-24 rounded-12 text-primary flex-col ${modalStyles.panel}`} role="button" tabIndex={0}>
+    <div className={`modal-backdrop overflow-y-auto p-16 ${modalStyles.backdrop}`} onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className={`bg-surface p-24 rounded-12 text-primary flex-col ${modalStyles.panel}`} role="dialog">
         {/* Header */}
         <div className="flex-between mb-4">
           <h2 className="m-0 fs-20 fw-700">

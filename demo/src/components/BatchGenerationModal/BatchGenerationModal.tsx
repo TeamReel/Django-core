@@ -17,18 +17,20 @@ import { useBatchGeneration } from './useBatchGeneration';
 import { BatchConfigureStep } from './BatchConfigureStep';
 import { BatchProgressStep } from './BatchProgressStep';
 import styles from './BatchGenerationModal.module.css';
+import { useEscapeKey } from '../../hooks/useEscapeKey';
 
 export type { BatchMember } from './batchTypes';
 
 export const BatchGenerationModal: React.FC<BatchGenerationModalProps> = (props) => {
   const { isOpen, onClose, members, onBatchComplete } = props;
   const batch = useBatchGeneration(props);
+  useEscapeKey(isOpen ? onClose : undefined);
 
   if (!isOpen) return null;
 
   return (
-    <div style={overlayStyle} onClick={onClose} className={styles.overlay} role="button" tabIndex={0}>
-      <div style={modalStyle} onClick={(e) => e.stopPropagation()} className={styles.modal} role="button" tabIndex={0}>
+    <div style={overlayStyle} onClick={onClose} className={styles.overlay}>
+      <div style={modalStyle} onClick={(e) => e.stopPropagation()} className={styles.modal} role="dialog">
         {/* Drag handle (mobile) */}
         <div className={styles.dragHandle}><div className={styles.dragHandleBar} /></div>
 

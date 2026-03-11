@@ -8,6 +8,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import {
   ChevronLeft, ChevronRight, X,
 } from 'lucide-react';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 import { Badge, Button, Card } from '@django-core/design-system';
 
 import { unwrapEnvelope as unwrap } from '../../types/season';
@@ -83,6 +84,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
   const [activeTab, setActiveTab] = useState('assets');
   const [saving, setSaving] = useState(false);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
+  useEscapeKey(onClose);
 
   // AI modal
   const aiModalRef = useRef<MemberAiModalHandle | null>(null);
@@ -298,7 +300,7 @@ export const MemberDetailPanel: React.FC<MemberDetailPanelProps> = ({
 
       {/* Video preview overlay */}
       {videoPreviewUrl && (
-        <div className={styles.videoOverlay} onClick={() => setVideoPreviewUrl(null)} role="button" tabIndex={0}>
+        <div className={styles.videoOverlay} onClick={() => setVideoPreviewUrl(null)}>
           <video src={videoPreviewUrl} controls autoPlay className={styles.videoPlayer} onClick={(e) => e.stopPropagation()} />
         </div>
       )}

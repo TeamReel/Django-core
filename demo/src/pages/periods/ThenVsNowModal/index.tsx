@@ -10,6 +10,7 @@ import { VIDEO_TYPE_LABELS, STEP_SUBTITLES } from './types';
 import type { ThenVsNowModalProps } from './types';
 import s from '../ProjectSeasonDetailPage.module.css';
 import styles from '../ThenVsNowModal.module.css';
+import { useEscapeKey } from '../../../hooks/useEscapeKey';
 
 // Re-export types
 export type { ThenVsNowMember, ThenVsNowVideoType, ThenVsNowModalProps } from './types';
@@ -17,13 +18,14 @@ export type { ThenVsNowMember, ThenVsNowVideoType, ThenVsNowModalProps } from '.
 const ThenVsNowModal: React.FC<ThenVsNowModalProps> = (props) => {
   const data = useThenVsNowData(props);
   const { step, videoType, onClose } = data;
+  useEscapeKey(step !== 'generating' ? onClose : undefined);
 
   return (
     <div
       className={s.thenNowBackdrop}
       onClick={() => { if (step !== 'generating') onClose(); }}
     >
-      <div className={s.thenNowModal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
+      <div className={s.thenNowModal} onClick={(e) => e.stopPropagation()} role="dialog">
         {/* Header */}
         <div className={s.thenNowHeader}>
           <div>

@@ -1,3 +1,4 @@
+import { useEscapeKey } from '../hooks/useEscapeKey';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 import type { GenerationJob } from '../hooks/useGenerationJobs';
@@ -31,14 +32,15 @@ export function NavbarQuickReviewModal({
   onClose,
   onNavigate,
 }: QuickReviewModalProps) {
+  useEscapeKey(onClose);
   const jobsToShow = queueModalTab === 'review' ? pendingReviewJobs : inProgressJobs;
   const job = queueModalTab === 'review' ? jobsToShow[quickReviewIdx] : null;
 
   // Empty state
   if (jobsToShow.length === 0) {
     return (
-      <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
-        <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered} role="button" tabIndex={0}>
+      <div onClick={onClose} className={s.modalOverlay}>
+        <div onClick={e => e.stopPropagation()} className={s.modalPanelCentered} role="dialog">
           <div className={s.tabsRowCenter}>
             <button
               onClick={() => { setQueueModalTab('review'); setQuickReviewIdx(0); }}
@@ -74,8 +76,8 @@ export function NavbarQuickReviewModal({
   // In-progress tab: list view
   if (queueModalTab === 'in-progress') {
     return (
-      <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`} role="button" tabIndex={0}>
+      <div onClick={onClose} className={s.modalOverlay}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.inProgressPanel}`} role="dialog">
           <div className={s.modalHeader}>
             <div className="flex-between mb-12">
               <div className={s.modalTitle}>Queue</div>
@@ -125,8 +127,8 @@ export function NavbarQuickReviewModal({
   // Review tab: no current job
   if (!job) {
     return (
-      <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
-        <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge} role="button" tabIndex={0}>
+      <div onClick={onClose} className={s.modalOverlay}>
+        <div onClick={e => e.stopPropagation()} className={s.modalPanelCenteredLarge} role="dialog">
           <div className={`mb-12 ${s.emptyIcon}`}>{'\u2705'}</div>
           <div className={`mb-8 ${s.modalTitle}`}>Alles beoordeeld!</div>
           <div className="fs-13 mb-8 text-secondary">Er zijn geen items meer die review nodig hebben.</div>
@@ -147,7 +149,7 @@ export function NavbarQuickReviewModal({
     v.mime_type?.startsWith('video/') || v.filename?.endsWith('.mp4') || job.output_type === 'video';
 
   return (
-    <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
+    <div onClick={onClose} className={s.modalOverlay}>
       <div
         onClick={e => e.stopPropagation()}
         className={`w-full ${s.modalPanel} ${styles.reviewPanel}`} data-multi={variants.length > 1}

@@ -1,6 +1,6 @@
 # Frontend Hardening — Roadmap
 
-**Status:** 🔴 In Progress (5/12 fases done)
+**Status:** 🔴 In Progress (6/12 fases done)
 **Aangemaakt:** 2026-03-11
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -20,7 +20,7 @@ Na 4 afgeronde roadmaps is de codebase duidelijk verbeterd, maar een grondige an
 | `_archive/` dode code | **5.404 regels** | 0 (verwijderd) |
 | Inline `style={{...}}` | **214** | <30 |
 | `<img>` zonder `alt` | ~~41~~ **0** (was false positive) | 0 |
-| `<div onClick>` (a11y) | **34** | 0 |
+| `<div onClick>` (a11y) | ~~34~~ **0** (`role="button"` removed, `useEscapeKey` added) | 0 |
 | `key={index}` anti-pattern | **32** | 0 |
 | `eslint-disable` | ~~37~~ **0** | 0 |
 | `exhaustive-deps` warnings | ~~13 suppressed~~ **135 total** (122 pre-existing) | audit |
@@ -138,7 +138,7 @@ Q2 (integration tests) ───────────────────
 | Files >300 lines | 74 | 74 | 74 | 74 | 74 | 74 |
 | `_archive/` lines | 5.404 | 0 | 0 | 0 | 0 | 0 |
 | Inline styles | 214 | 214 | 214 | <30 | <30 | <30 |
-| A11y violations | 107 | 34 | 0 | 0 | 0 | 0 |
+| A11y violations | 107 | 34 | **0** | 0 | 0 | 0 |
 | `eslint-disable` | 37 | 37 | 0 | 0 | 0 | 0 |
 | Test file ratio | 14.7% | 14.7% | 14.7% | 14.7% | 14.7% | 40%+ |
 | Lazy routes | 7 | 7 | 7 | 7 | 30+ | 30+ |

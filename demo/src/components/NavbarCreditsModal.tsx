@@ -1,3 +1,4 @@
+import { useEscapeKey } from '../hooks/useEscapeKey';
 import s from './TopNavbar.module.css';
 import styles from './NavbarModals.module.css';
 
@@ -8,9 +9,10 @@ export interface CreditsModalProps {
 }
 
 export function NavbarCreditsModal({ myCreditsBalance, onClose, onNavigate }: CreditsModalProps) {
+  useEscapeKey(onClose);
   return (
-    <div onClick={onClose} className={s.modalOverlay} role="button" tabIndex={0}>
-        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`} role="button" tabIndex={0}>
+    <div onClick={onClose} className={s.modalOverlay}>
+        <div onClick={e => e.stopPropagation()} className={`w-full ${s.modalPanel} ${styles.creditsPanel}`} role="dialog">
         <div className={s.modalHeaderRow}>
           <div className="flex-1">
             <div className={s.modalTitle15}>Credits</div>

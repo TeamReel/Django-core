@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { logger } from '@/utils/logger';
 import styles from './CompetitionMembershipEditModal.module.css';
+import { useEscapeKey } from '@/hooks/useEscapeKey';
 
 /** Minimal membership shape for the edit modal. */
 interface MembershipLike {
@@ -26,6 +27,7 @@ export function CompetitionMembershipEditModal({
   const [functionalRoles, setFunctionalRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useEscapeKey(opened ? onClose : undefined);
 
   const FUNCTIONAL_ROLE_OPTIONS: Array<{ value: string; label: string }> = [
     { value: 'coach', label: 'Coach' },
@@ -62,8 +64,8 @@ export function CompetitionMembershipEditModal({
     user.name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email || 'Member';
 
   return (
-    <div className={styles.overlay} onClick={onClose} role="button" tabIndex={0}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="button" tabIndex={0}>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog">
         <div className="flex-between gap-12">
           <h2 className="m-0 fs-16 fw-700">Edit user role</h2>
           <button

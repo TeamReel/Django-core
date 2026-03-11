@@ -142,8 +142,7 @@ export default function ProfileHubPage() {
     <div className={s.page}>
       {/* ── Avatar + name header ─────────────────────────────────────── */}
       <div className={s.header}>
-        <div className={s.avatar} role="button" tabIndex={0} onClick={openAvatarUpload}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAvatarUpload(); } }}
+        <button className={s.avatar} type="button" onClick={openAvatarUpload}
           aria-label="Change profile photo"
         >
           {avatarUrl ? (
@@ -152,7 +151,7 @@ export default function ProfileHubPage() {
             <span className={s.avatarInitials}>{initials}</span>
           )}
           <span className={s.avatarBadge}><Camera size={14} /></span>
-        </div>
+        </button>
         <div className={s.headerText}>
           <h1 className={s.name}>{fullName}</h1>
           <p className={s.email}>{user.email}</p>

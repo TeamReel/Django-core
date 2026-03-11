@@ -307,8 +307,8 @@ export default function ProjectSeasonMemberDetailPage() {
 
       {/* Video Preview Modal */}
       {videoPreviewUrl && (
-        <div onClick={() => setVideoPreviewUrl(null)} className={s.videoModalOverlay} role="button" tabIndex={0}>
-          <div onClick={e => e.stopPropagation()} className={s.videoModalContent} role="button" tabIndex={0}>
+        <div onClick={() => setVideoPreviewUrl(null)} className={s.videoModalOverlay}>
+          <div onClick={e => e.stopPropagation()} className={s.videoModalContent} role="dialog">
             <video src={videoPreviewUrl} className={s.videoPlayer} controls autoPlay loop playsInline />
             <button onClick={() => setVideoPreviewUrl(null)} className={s.videoModalClose}>✕</button>
           </div>
