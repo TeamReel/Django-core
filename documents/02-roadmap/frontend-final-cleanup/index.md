@@ -1,6 +1,6 @@
 # Frontend Final Cleanup — Roadmap
 
-**Status:** 🔴 In Progress (11/12 fases done)
+**Status:** ✅ Complete (12/12 fases done)
 **Aangemaakt:** 2026-03-10
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -78,7 +78,7 @@ Na 3 afgeronde roadmaps is de codebase significant verbeterd, maar een grondige 
 
 | Fase | Naam | Scope | Target | Effort |
 |------|------|-------|--------|--------|
-| **DX1** | Scaffolding CLI | `npm run generate:page|modal|hook` commands | 3 generators | 4 uur |
+| **DX1** | ✅ Scaffolding CLI | `npm run generate:page|modal|hook` commands | 3 generators | 4 uur |
 
 ---
 
