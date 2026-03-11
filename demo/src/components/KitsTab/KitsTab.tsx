@@ -10,6 +10,7 @@ import { Card, Alert, Button } from '@django-core/design-system';
 import { ResponsiveGrid } from '../ui/ResponsiveGrid';
 import { api } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
+import { getAssetUrl } from '@/hooks/brandProfileConstants';
 import styles from './KitsTab.module.css';
 import { logger } from '@/utils/logger';
 
@@ -176,11 +177,7 @@ export function KitsTab({
 
   const getKitForType = (typeId: string): KitAsset | undefined => kits.find((k) => k.asset_type === typeId);
 
-  const getKitImageUrl = (kit: KitAsset | undefined): string | null => {
-    if (!kit?.url) return null;
-    if (kit.url.startsWith('http')) return kit.url;
-    return `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${kit.url}`;
-  };
+  const getKitImageUrl = (kit: KitAsset | undefined): string | null => getAssetUrl(kit?.url);
 
   if (loading) {
     return (

@@ -1,4 +1,5 @@
 import { getMediaUrl } from '../../utils/mediaHelpers';
+import { getAssetUrl } from '../../hooks/brandProfileConstants';
 
 /** Member/membership record from the API. */
 export interface MemberRecord {
@@ -103,15 +104,6 @@ export function getAccessRoleColor(m: MemberRecord): string {
 
 /* ── Media URL resolution ── */
 
-const S3_BASE = 'https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/';
-
-/** Turn a relative S3 path into a full URL; pass through already-full URLs */
-export function toFullUrl(path: string | null | undefined): string | null {
-  if (!path) return null;
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
-  return `${S3_BASE}${path}`;
-}
-
 /**
  * Resolve the best URL for a media slot, checking both flat and per-variant structures.
  * Per-variant: metadata.teamreel_assets.images.[category].[variant].processed|raw
@@ -119,7 +111,7 @@ export function toFullUrl(path: string | null | undefined): string | null {
 export function resolveMediaUrl(m: MemberRecord, slotId: string): string | null {
   // 1) Flat media URL
   const flat = (m?.metadata?.teamreel_assets as Record<string, any>)?.media?.[slotId]?.url;
-  if (flat) return toFullUrl(flat);
+  if (flat) return getAssetUrl(flat);
 
   // 2) Per-variant structure
   const tr: any = m?.metadata?.teamreel_assets || {};
@@ -135,8 +127,8 @@ export function resolveMediaUrl(m: MemberRecord, slotId: string): string | null 
       for (const [_key, val] of Object.entries(branch)) {
         if (!val || typeof val !== 'object') continue;
         const v = val as Record<string, any>;
-        if (v.processed && typeof v.processed === 'string') return toFullUrl(v.processed);
-        if (v.raw && typeof v.raw === 'string') return toFullUrl(v.raw);
+        if (v.processed && typeof v.processed === 'string') return getAssetUrl(v.processed);
+        if (v.raw && typeof v.raw === 'string') return getAssetUrl(v.raw);
       }
     }
   }
@@ -151,7 +143,7 @@ export function getMemberPhoto(m: MemberRecord): string | null {
   const kit = resolveMediaUrl(m, 'kit');
   if (kit) return kit;
   const profile = getMediaUrl(m, 'profile');
-  if (profile) return toFullUrl(profile);
+  if (profile) return getAssetUrl(profile);
   const avatarUrl = m?.user?.avatar_url;
   if (avatarUrl) return avatarUrl;
   return null;

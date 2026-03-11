@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button, Input, Alert } from '@django-core/design-system';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { getAssetUrl } from '@/hooks/brandProfileConstants';
 import styles from './EditClubModal.module.css';
 
 interface Club {
@@ -78,7 +79,7 @@ export default function EditClubModal({
       }
 
       // Construct the S3 URL
-      const s3Url = `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${storagePath}`;
+      const s3Url = getAssetUrl(storagePath)!;
 
       setLogoUrl(s3Url);
       setPreviewUrl(s3Url);

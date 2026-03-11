@@ -6,6 +6,7 @@ import type React from 'react';
 import { api, ApiError } from '@/api';
 import { getApiBaseUrl } from '../../utils/apiBase';
 import { getCsrfToken } from '../../utils/csrf';
+import { getAssetUrl } from '../../hooks/brandProfileConstants';
 import type { EntityType, EntityData, BrandProfile, DesignToken } from './entityEditTypes';
 
 // ============================================================================
@@ -86,7 +87,7 @@ export function useEntityEditData(
         const fileData = await fileRes.json();
         const storagePath = fileData?.data?.storage_path || fileData?.storage_path;
         if (!storagePath) throw new Error('No storage path returned from upload');
-        return `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${storagePath}`;
+        return getAssetUrl(storagePath);
       } catch (e) { setError(e instanceof Error ? e.message : 'Upload failed'); return null; }
       finally { setUploading(false); }
     },

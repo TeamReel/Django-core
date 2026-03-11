@@ -3,6 +3,7 @@ import { Alert, Button, Card } from '@django-core/design-system';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
 import { KIT_TYPES, type Project, type KitAsset } from './clubOrgDetailHelpers';
+import { getAssetUrl } from '@/hooks/brandProfileConstants';
 import styles from './ClubKitsTab.module.css';
 
 /* ─── ClubKitsTab ──────────────────────────────────────────── */
@@ -94,11 +95,7 @@ export function ClubKitsTab({ club, apiBaseUrl, brandProfileId, orgId, onKitUplo
 
   const getKitForType = (typeId: string): KitAsset | undefined => kits.find((k) => k.asset_type === typeId);
 
-  const getKitImageUrl = (kit: KitAsset | undefined): string | null => {
-    if (!kit?.url) return null;
-    if (kit.url.startsWith('http')) return kit.url;
-    return `https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${kit.url}`;
-  };
+  const getKitImageUrl = (kit: KitAsset | undefined): string | null => getAssetUrl(kit?.url);
 
   if (loading) {
     return (<Card className="p-24"><div className="text-center text-muted">Loading kits...</div></Card>);

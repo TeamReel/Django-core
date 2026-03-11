@@ -5,6 +5,9 @@ import { PageContent } from '@django-core/page-templates';
 import { Card, Badge, Spinner } from '@django-core/design-system';
 import styles from './DocsPage.module.css';
 
+const DOCS_URL = import.meta.env.VITE_DOCS_URL || (import.meta.env.DEV ? 'http://localhost:8001/docs' : '/docs');
+const GITHUB_URL = import.meta.env.VITE_GITHUB_URL || 'https://github.com/TeamReel/Django-core';
+
 interface ModuleStatus {
   id: string;
   name: string;
@@ -66,11 +69,11 @@ export function DocsPage() {
               <Card className="p-24 mb-24 bg-surface border">
                 <h3 className={`fs-18 fw-600 text-primary ${styles.sectionHeading}`}>Documentation Resources</h3>
                 <div className={styles.linkButtonGroup}>
-                  <button onClick={() => window.open('http://localhost:8001/docs', '_blank')} className={styles.linkButtonPrimary}>
+                  <button onClick={() => window.open(DOCS_URL, '_blank')} className={styles.linkButtonPrimary}>
                     📚 MkDocs Site
                   </button>
                   <button onClick={() => window.location.href = '/api-docs'} className={styles.linkButton}>📖 API Documentation</button>
-                  <button onClick={() => window.open('https://github.com', '_blank')} className={styles.linkButton}>🔗 GitHub Repository</button>
+                  <button onClick={() => window.open(GITHUB_URL, '_blank')} className={styles.linkButton}>🔗 GitHub Repository</button>
                 </div>
               </Card>
 

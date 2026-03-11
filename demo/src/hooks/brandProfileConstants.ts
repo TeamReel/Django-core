@@ -160,6 +160,9 @@ export const MULTI_INSTANCE_TYPES = new Set(['club_background', 'club_background
 const S3_BUCKET = 'teamreel-assets-demo';
 const S3_REGION = 'eu-north-1';
 
+/** Base URL prefix for S3 assets — use `getAssetUrl()` to build full URLs. */
+export const S3_ASSET_BASE_URL = `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/`;
+
 export function getAssetUrl(storagePath: string | null | undefined): string | null {
   if (!storagePath) return null;
   if (storagePath.startsWith('http')) return storagePath;

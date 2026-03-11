@@ -6,6 +6,7 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { api } from '@/api';
 import { logger } from '@/utils/logger';
+import { getAssetUrl } from '@/hooks/brandProfileConstants';
 import { getActiveContext } from '../../../utils/activeContext';
 import { isSeasonPeriod } from '../orgDetailUtils';
 import {
@@ -235,8 +236,7 @@ export function useClubOrgEffects({
         const logoAsset = assetList.find((a: { asset_type?: string; url?: string }) => a.asset_type === 'logo' || String(a.asset_type || '').includes('logo'));
         if (logoAsset?.url && !cancelled) {
           const url = logoAsset.url;
-          if (url.startsWith('http')) setBrandLogoUrl(url);
-          else setBrandLogoUrl(`https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/${url}`);
+          setBrandLogoUrl(getAssetUrl(url)!);
         }
       } catch (e) { logger.debug('Failed to load brand logo', e); }
     };

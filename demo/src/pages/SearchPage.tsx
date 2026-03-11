@@ -5,6 +5,7 @@ import AppShell from '../components/AppShell';
 import HierarchyTreeView from '../components/HierarchyTreeView';
 import { BottomSheet, Button } from '@django-core/design-system';
 import SmartEmptyState from '../components/SmartEmptyState';
+import { sanitizeHighlight } from '../utils/sanitize';
 import styles from './SearchPage.module.css';
 
 export default function SearchPage() {
@@ -234,7 +235,7 @@ export default function SearchPage() {
                         {result.highlight && (
                           <div
                             className={`fs-13 ${styles.resultHighlight}`}
-                            dangerouslySetInnerHTML={{ __html: result.highlight }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlight) }}
                           />
                         )}
                       </Link>
@@ -266,7 +267,7 @@ export default function SearchPage() {
                   {result.highlight && (
                     <div
                       className={`fs-13 ${styles.resultHighlight}`}
-                      dangerouslySetInnerHTML={{ __html: result.highlight }}
+                      dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlight) }}
                     />
                   )}
                 </Link>

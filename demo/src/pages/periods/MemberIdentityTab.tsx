@@ -7,6 +7,7 @@ import type { MembershipRecord } from './memberDetailUtils';
 import s from './ProjectSeasonMemberDetailPage.module.css';
 import styles from './MemberIdentityTab.module.css';
 import { logger } from '@/utils/logger';
+import { S3_ASSET_BASE_URL } from '@/hooks/brandProfileConstants';
 
 export interface MemberIdentityTabProps {
   membership: MembershipRecord;
@@ -70,9 +71,8 @@ export function MemberIdentityTab({
     if (!profileMediaUrl) return;
 
     let path = profileMediaUrl;
-    const s3Prefix = 'https://teamreel-assets-demo.s3.eu-north-1.amazonaws.com/';
-    if (path.startsWith(s3Prefix)) {
-      path = path.replace(s3Prefix, '');
+    if (path.startsWith(S3_ASSET_BASE_URL)) {
+      path = path.replace(S3_ASSET_BASE_URL, '');
     }
 
     setSettingAsProfilePhoto(true);

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearch, useDebounce, type GroupedSearchResults, type SearchResult } from '../hooks/useSearch';
+import { sanitizeHighlight } from '../utils/sanitize';
 import styles from './SearchBar.module.css';
 
 interface SearchBarProps {
@@ -184,7 +185,7 @@ export function SearchBar({ placeholder = 'Search...', className = '', onQueryCh
                         {result.highlight && (
                           <div
                             className={`fs-13 text-secondary ${styles.highlight}`}
-                            dangerouslySetInnerHTML={{ __html: result.highlight }}
+                            dangerouslySetInnerHTML={{ __html: sanitizeHighlight(result.highlight) }}
                           />
                         )}
                       </button>
