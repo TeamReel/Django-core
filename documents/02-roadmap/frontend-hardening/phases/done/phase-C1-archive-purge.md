@@ -1,6 +1,6 @@
 # C1 — Archive Purge
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 1 uur
 **Scope:** Verwijder `_archive/` directory + controleer unused imports
 
@@ -29,8 +29,8 @@ Verwijder 5.404 regels dode code in `pages/_archive/`. Deze files zijn niet geï
 
 ## Verificatie
 
-- [ ] `_archive/` directory bestaat niet meer
-- [ ] Geen imports naar `_archive` in codebase
-- [ ] `tsc --noEmit` clean
-- [ ] `vitest run` all green
-- [ ] Gecommit + gepusht
+- [x] `_archive/` directory bestaat niet meer
+- [x] Geen imports naar `_archive` in codebase
+- [x] `tsc --noEmit` clean
+- [x] `vitest run` all green (123 files, 529 tests)
+- [x] Gecommit + gepusht

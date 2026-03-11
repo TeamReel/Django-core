@@ -1,6 +1,6 @@
 # Frontend Hardening — Roadmap
 
-**Status:** 🔴 In Progress (0/12 fases done)
+**Status:** 🔴 In Progress (1/12 fases done)
 **Aangemaakt:** 2026-03-11
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
