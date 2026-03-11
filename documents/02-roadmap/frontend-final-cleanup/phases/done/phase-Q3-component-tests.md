@@ -1,8 +1,8 @@
 # Q3 — Component Tests
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done
 **Effort:** 12 uur
-**Scope:** +50 test files voor UI components
+**Scope:** +46 test files voor UI components (28→74 suites, 167→446 tests)
 
 ---
 
