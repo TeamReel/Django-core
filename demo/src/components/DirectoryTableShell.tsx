@@ -5,7 +5,7 @@
  * directory page only provides the `<thead>` and `<tbody>` content.
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Alert, Card } from '@django-core/design-system';
 import { SkeletonTablePage } from './Skeleton';
 import SmartEmptyState from './SmartEmptyState';
@@ -35,7 +35,7 @@ export interface DirectoryTableShellProps {
   children: React.ReactNode;
 }
 
-export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
+export const DirectoryTableShell = memo(function DirectoryTableShell({
   isLoading,
   error,
   domainLoading,
@@ -45,7 +45,8 @@ export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
   hideActions,
   itemCount,
   children,
-}) => (
+}: DirectoryTableShellProps) {
+  return (
   <>
     {isLoading && <SkeletonTablePage rows={4} columns={4} showFilters={false} />}
     {error && <Alert variant="error">{error}</Alert>}
@@ -70,5 +71,6 @@ export const DirectoryTableShell: React.FC<DirectoryTableShellProps> = ({
         </div>
       </Card>
     )}
-  </>
-);
+    </>
+  );
+});

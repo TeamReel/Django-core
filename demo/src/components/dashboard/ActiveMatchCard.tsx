@@ -5,7 +5,7 @@
  * start_time is closest to Date.now(). This ensures match-day content
  * creation always has the right match in focus.
  */
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { memo, useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Zap, ChevronRight, MapPin, Clock, CheckCircle2,
@@ -33,7 +33,7 @@ interface Match {
 
 /* ── Component ─────────────────────────────────────────────────────── */
 
-export const ActiveMatchCard: React.FC = () => {
+export const ActiveMatchCard = memo(function ActiveMatchCard() {
   const { context } = useContextSwitcher();
   const [match, setMatch] = useState<Match | null>(null);
   const [contentCount, setContentCount] = useState(0);
@@ -225,4 +225,4 @@ export const ActiveMatchCard: React.FC = () => {
       </div>
     </div>
   );
-};
+});

@@ -5,7 +5,7 @@
  * ContentCard, FilterChip, EmptyState, ContentPreviewModal.
  */
 
-import React, { useRef, useState } from 'react';
+import React, { memo, useRef, useState } from 'react';
 import { Card, Text, Badge, Button } from '@django-core/design-system';
 import { Download, Share2, Trash2, X, Play, Pause, Maximize2, Clock, FileText, Tag, Calendar } from 'lucide-react';
 import { useEscapeKey } from '@/hooks/useEscapeKey';
@@ -18,7 +18,7 @@ import styles from './ContentCard.module.css';
 // ContentCard
 // ============================================================================
 
-export function ContentCard({
+export const ContentCard = memo(function ContentCard({
   item,
   onPreview,
   onDownload,
@@ -132,7 +132,7 @@ export function ContentCard({
       </div>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // FilterChip

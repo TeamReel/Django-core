@@ -11,7 +11,7 @@
  * History is the list of older MediaItems for the same subtype.
  */
 
-import React, { useMemo, useState } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import styles from './MediaAssetCard.module.css';
 import { getAssetUrl } from '../hooks/useBrandProfile';
 import { getStateDisplay } from '../hooks/useWorkflows';
@@ -67,7 +67,7 @@ interface MediaAssetCardProps {
 // MediaAssetCard
 // ============================================================================
 
-export function MediaAssetCard({
+export const MediaAssetCard = memo(function MediaAssetCard({
   label,
   subtype,
   mediaItem,
@@ -353,7 +353,7 @@ export function MediaAssetCard({
       )}
     </>
   );
-}
+});
 
 // ============================================================================
 // MediaAssetGrid — Consistent grid wrapper (matches AssetsTab AssetGrid)

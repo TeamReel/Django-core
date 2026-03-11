@@ -5,7 +5,7 @@
  * Re-exports the design-system Badge for direct use, plus a thin
  * StatusBadge helper for status-to-variant mapping.
  */
-import React from 'react';
+import React, { memo } from 'react';
 import { Badge } from '@django-core/design-system';
 
 // ---------------------------------------------------------------------------
@@ -68,7 +68,7 @@ function resolveVariant(status?: string, variant?: StatusVariant): StatusVariant
 // Component
 // ---------------------------------------------------------------------------
 
-export function StatusBadge({
+export const StatusBadge = memo(function StatusBadge({
   children,
   variant,
   status,
@@ -84,7 +84,7 @@ export function StatusBadge({
       {children}
     </Badge>
   );
-}
+});
 
 // Re-export core Badge for direct use
 export { Badge } from '@django-core/design-system';

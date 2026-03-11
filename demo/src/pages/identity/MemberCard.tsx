@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Camera, Pencil } from 'lucide-react';
 import { getMediaUrl, countFilledMediaSlots, memberHasMedia } from '../../utils/mediaHelpers';
@@ -26,7 +26,7 @@ export interface MemberCardProps {
   expandRef?: React.Ref<HTMLDivElement>;
 }
 
-export function MemberCard({
+export const MemberCard = memo(function MemberCard({
   member: m,
   isExpanded,
   onToggleExpand,
@@ -181,4 +181,4 @@ export function MemberCard({
       )}
     </div>
   );
-}
+});

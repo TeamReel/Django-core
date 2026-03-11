@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Text, Badge } from '@django-core/design-system';
 import { getContentType, getHierarchyLevel, CONTENT_TYPE_LABELS, type BrandAsset } from '../../hooks/useBrandAssets';
@@ -92,7 +92,7 @@ export function PreviewModal({ item, onClose }: { item: PreviewItem; onClose: ()
 // Asset Card
 // ============================================================================
 
-export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSlugOrId?: string; onPreview: (item: PreviewItem) => void }) {
+export const AssetCard = memo(function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset; orgSlugOrId?: string; onPreview: (item: PreviewItem) => void }) {
   const level = getHierarchyLevel(asset);
   const contentType = getContentType(asset.asset_type);
   const isVideo = asset.file_details?.content_type?.startsWith('video/');
@@ -184,13 +184,13 @@ export function AssetCard({ asset, orgSlugOrId, onPreview }: { asset: BrandAsset
       </div>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // File Card
 // ============================================================================
 
-export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: string) => void }) {
+export const FileCard = memo(function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (id: string) => void }) {
   return (
     <Card className="p-0 overflow-hidden flex-col">
       <div className={`flex-center border-bottom ${styles.fileIconContainer}`}>
@@ -217,13 +217,13 @@ export function FileCard({ file, onDownload }: { file: FileAsset; onDownload: (i
       </div>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // Member Media Card
 // ============================================================================
 
-export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
+export const MemberMediaCard = memo(function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
   item: MemberMediaItem;
   orgSlugOrId?: string;
   onPreview: (item: PreviewItem) => void;
@@ -309,7 +309,7 @@ export function MemberMediaCard({ item, orgSlugOrId, onPreview }: {
       </div>
     </Card>
   );
-}
+});
 
 // ============================================================================
 // Filter Chip

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { PanelLeftClose, PanelLeft } from 'lucide-react';
 import { AppIcon } from './AppIcon';
@@ -14,7 +15,7 @@ interface SidebarProps {
     toggle: () => void;
 }
 
-export default function Sidebar({ isOpen, toggle }: SidebarProps) {
+const Sidebar = memo(function Sidebar({ isOpen, toggle }: SidebarProps) {
     const {
         isSystemAdmin,
         isOrgAdmin,
@@ -339,4 +340,6 @@ export default function Sidebar({ isOpen, toggle }: SidebarProps) {
             )}
         </div>
     );
-}
+});
+
+export default Sidebar;

@@ -1,7 +1,7 @@
 /**
  * MatchCard — expandable card for a single match in SeasonMatchesTab.
  */
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronRight, ChevronDown, Users, Clapperboard,
@@ -68,10 +68,10 @@ const CONTENT_PHASES: { key: string; label: string; items: typeof CONTENT_TYPES.
   { key: 'post', label: 'Na afloop', items: CONTENT_TYPES.post },
 ];
 
-const MatchCard: React.FC<MatchCardProps> = ({
+const MatchCard = memo(function MatchCard({
   match, expanded, onToggle, contentDetail, contentLoading, matchDisplayTitle, matchPath,
   isActive, onSetActive,
-}) => {
+}: MatchCardProps) {
   const [contentExpanded, setContentExpanded] = useState(false);
   const date = match.start_time ? new Date(match.start_time) : null;
   const lineup = getLineupInfo(match);
@@ -274,6 +274,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default MatchCard;

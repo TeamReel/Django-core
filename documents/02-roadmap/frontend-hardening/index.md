@@ -1,6 +1,6 @@
 # Frontend Hardening — Roadmap
 
-**Status:** 🔴 In Progress (8/12 fases done)
+**Status:** 🔴 In Progress (10/12 fases done)
 **Aangemaakt:** 2026-03-11
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)
@@ -27,8 +27,8 @@ Na 4 afgeronde roadmaps is de codebase duidelijk verbeterd, maar een grondige an
 | `dangerouslySetInnerHTML` | ~~3~~ **0** (sanitized) | 0 |
 | Test coverage | **14.7%** (123/836 files) | 40%+ |
 | Hardcoded URLs | ~~17~~ **0** env-dependent | 0 |
-| `React.memo` usage | **0** | 10+ (heavy components) |
-| Lazy routes | **7** | 30+ |
+| `React.memo` usage | ~~0~~ **16** | 10+ (heavy components) |
+| Lazy routes | ~~7~~ **78** (was already done) | 30+ |
 | Console statements | ~~9~~ **0** (was al opgelost) | 0 |
 
 ---

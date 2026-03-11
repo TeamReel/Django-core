@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Card, Text, Stack, Alert, Badge } from '@django-core/design-system';
 import { api } from '@/api';
 import { Palette, Image, Type, Circle, Square, Hash } from 'lucide-react';
@@ -62,7 +62,7 @@ const isColorValue = (value: string): boolean => {
   return /^#[0-9A-Fa-f]{3,8}$/.test(value) || /^rgb/.test(value) || /^hsl/.test(value);
 };
 
-export default function BrandProfileCard({
+const BrandProfileCard = memo(function BrandProfileCard({
   projectId,
   projectName,
   organisationId,
@@ -340,4 +340,6 @@ export default function BrandProfileCard({
       </Stack>
     </Card>
   );
-}
+});
+
+export default BrandProfileCard;

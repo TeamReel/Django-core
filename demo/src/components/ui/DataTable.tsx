@@ -6,7 +6,7 @@
  *
  * Uses CSS utility classes + CSS custom properties from the app theme.
  */
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { memo, useState, useMemo, useCallback } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import styles from './DataTable.module.css';
 
@@ -54,7 +54,7 @@ export interface DataTableProps<T> {
 // Component
 // ---------------------------------------------------------------------------
 
-export function DataTable<T>({
+function DataTableInner<T>({
   columns,
   data,
   rowKey,
@@ -158,3 +158,5 @@ export function DataTable<T>({
     </div>
   );
 }
+
+export const DataTable = memo(DataTableInner) as typeof DataTableInner;

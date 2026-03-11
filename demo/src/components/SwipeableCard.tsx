@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { memo, useState, useRef, useCallback } from 'react';
 import { useSwipeToDismiss } from '@django-core/design-system';
 
 export interface SwipeableCardProps {
@@ -40,7 +40,7 @@ export interface SwipeableCardProps {
  * </SwipeableCard>
  * ```
  */
-export default function SwipeableCard({
+const SwipeableCard = memo(function SwipeableCard({
   children,
   onDismiss,
   direction = 'left',
@@ -238,4 +238,6 @@ export default function SwipeableCard({
       </div>
     </div>
   );
-}
+});
+
+export default SwipeableCard;

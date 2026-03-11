@@ -11,7 +11,7 @@
  * Match access: via Dashboard card + floating banner on matchday.
  * Only visible on mobile (<640px).
  */
-import { useState, useEffect, useCallback } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, CalendarDays, Plus, Images, UserCircle } from 'lucide-react';
 import { getActiveContext, ACTIVE_CONTEXT_CHANGED_EVENT } from '../utils/activeContext';
@@ -22,7 +22,7 @@ import CreateWizard from './CreateWizard';
 import type { CreateFlowType } from './CreateWizard/CreateWizardContext';
 import styles from './MobileBottomNav.module.css';
 
-export default function MobileBottomNav() {
+const MobileBottomNav = memo(function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const haptic = useHapticFeedback();
@@ -208,4 +208,6 @@ export default function MobileBottomNav() {
       />
     </>
   );
-}
+});
+
+export default MobileBottomNav;

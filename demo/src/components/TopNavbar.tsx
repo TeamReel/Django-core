@@ -6,7 +6,7 @@
  * - All state, effects, handlers \u2192 useTopNavbarData.tsx
  * - Modal components \u2192 NavbarModals.tsx
  */
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Menu, ChevronDown, ChevronUp, Sun, Moon,
@@ -30,7 +30,7 @@ import {
 } from './NavbarModals';
 import { MobileMenuOverlay, MobileSearchOverlay, NAV_INLINE_STYLES } from './TopNavbarMobile';
 
-export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
+const TopNavbar = memo(function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const d = useTopNavbarData(onOpenSearchRef);
   const { backTarget, goBack } = useBackNavigation();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -384,4 +384,6 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
       )}
     </div>
   );
-}
+});
+
+export default TopNavbar;
