@@ -175,7 +175,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       return;
     }
     const load = async () => {
@@ -293,7 +293,7 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
     if (sportFilter !== 'all') {
       list = list.filter((team) => {
         const nestedOrg = team?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as any)?.sport?.id : undefined;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as { sport?: { id?: string } })?.sport?.id : undefined;
         if (nestedSportId) return String(nestedSportId) === String(sportFilter);
         const orgId =
           (nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.id : nestedOrg) ||
@@ -350,17 +350,17 @@ export function useTeamsListData({ preselectedOrgId, preselectedClubId }: TeamsL
 
     const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
     const created = await organisationsApi.createProject(orgSlug, {
-      name: projectData.name,
-      description: projectData.description || '',
+      name: String(projectData.name || ''),
+      description: String(projectData.description || ''),
       parent_project_id: clubId,
-    } as any);
+    });
     if (created && typeof created === 'object') {
-      const createdKey = String((created as any)?.slug || (created as any)?.id || '').trim();
+      const createdKey = String(created?.slug || created?.id || '').trim();
       if (createdKey) {
         setTeams((prev) => {
           const list = Array.isArray(prev) ? prev : [];
           if (list.some((p) => String(p?.slug || p?.id || '').trim() === createdKey)) return list;
-          return [created, ...list];
+          return [created as unknown as ProjectOption, ...list];
         });
       }
     }

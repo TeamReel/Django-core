@@ -336,7 +336,7 @@ export async function pollProcessingResult(
       }
 
       if (checkVal && typeof checkVal === 'object') {
-        const state = (checkVal as any).processing_state;
+        const state = (checkVal as Record<string, unknown>).processing_state;
         if (state === 'processed' || state === 'failed' || state === 'cancelled') {
           setMembershipFn(mData);
           return;

@@ -100,7 +100,7 @@ export default function ClubOrganisationDetailPage() {
     );
   }
 
-  const isActive = !!club && String((activeContext as any)?.club?.id ?? '') === String(club.id ?? '');
+  const isActive = !!club && String(((activeContext as Record<string, any>)?.club as Record<string, unknown>)?.id ?? '') === String(club.id ?? '');
 
   return (
     <>

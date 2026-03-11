@@ -63,7 +63,7 @@ export function useLinkUserModal({
     const org = p?.organisation;
     if (!org) return '';
     if (typeof org === 'string' || typeof org === 'number') return String(org);
-    return String((org as any)?.id || '');
+    return String(org.id || '');
   };
 
   const filteredClubs = useMemo(() => {

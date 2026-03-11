@@ -138,7 +138,7 @@ function getTypeInfo(subtype: string): { label: string; icon: string } {
     ...CONTENT_TYPES.post_match.items,
     ...CONTENT_TYPES.season.items,
     ...CONTENT_TYPES.member.items,
-    ...(CONTENT_TYPES as any).custom?.items || [],
+    ...CONTENT_TYPES.custom?.items || [],
   ];
   const found = allItems.find((item) => item.subtype === subtype);
   return { label: found?.label || subtype, icon: found?.icon || '📄' };
@@ -151,7 +151,7 @@ function getTypeInfo(subtype: string): { label: string; icon: string } {
 export function useStudioData(): StudioData {
   const { context } = useContextSwitcher();
   const { teamIdForApi } = useAppSelection();
-  const orgSlug = (context as any)?.organisation?.slug as string | undefined;
+  const orgSlug = context?.organisation?.slug;
 
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,7 +193,7 @@ export function useStudioData(): StudioData {
         status: j.status,
         progress_percent: j.progress_percent || 0,
         error_message: j.error_message,
-        output_url: j.output_url || (j.output_file as any)?.url,
+        output_url: j.output_url || (j.output_file as { url?: string } | null)?.url,
         thumbnail_url: j.thumbnail_url,
         created_at: j.created_at,
         completed_at: j.completed_at,

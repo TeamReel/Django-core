@@ -148,8 +148,8 @@ export function useSeasonsData(filters: Filters): UseSeasonsDataReturn {
               t.parent_id ??
               t.parent_project_id ??
               (typeof t.parent_project === 'object' && t.parent_project !== null ? t.parent_project.id : t.parent_project) ??
-              (typeof (t as any).parent === 'object' && (t as any).parent !== null ? (t as any).parent.id : (t as any).parent);
-            const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as any).id : parent);
+              t.parent;
+            const parentId = parent == null ? '' : String(parent);
             return parentId && parentId === String(selectedClubId);
           });
           if (clubTeams.length > 0) {

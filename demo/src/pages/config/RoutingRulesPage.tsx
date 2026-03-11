@@ -235,7 +235,7 @@ export const RoutingRulesPage: React.FC = () => {
                   Channel
                   <select
                     value={createDraft.channel}
-                    onChange={(e) => setCreateDraft({ ...createDraft, channel: e.target.value as any })}
+                    onChange={(e) => setCreateDraft({ ...createDraft, channel: e.target.value as 'in_app' | 'email' | 'push' })}
                     className={`rounded-6 border bg-surface text-primary ${styles.formInput}`}
                   >
                     <option value="in_app">In-app</option>

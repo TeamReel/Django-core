@@ -5,6 +5,7 @@ export type ProjectOption = {
   name: string;
   slug?: string;
   organisation?: { id?: string | number; name?: string; slug?: string } | string | number;
+  parent?: { id?: string | number; name?: string } | string | number | null;
   parent_id?: string | number | null;
   parent_project_id?: string | number | null;
   parent_project?: { id?: string | number; name?: string } | string | number | null;

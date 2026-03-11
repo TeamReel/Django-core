@@ -14,7 +14,7 @@ interface SuccessStepProps {
   savedVariantIndices: Set<number>;
   selectedType: { type: string; subtype: string; label: string } | null;
   selectedTemplate: ContentTemplate | null;
-  matchData: { id: string; title?: string; project?: { id: string; name: string }; opponent_project?: { id: string; name: string } } | null;
+  matchData: { id: string; title?: string; project?: { id: string; name: string }; opponent_project?: { id: string; name: string } | null } | null;
   handleSaveAsAsset: () => void;
   handleSaveAllAsAssets: () => void;
   handleSaveVariantByIndex: (index: number, opts?: { skipAutoClose?: boolean }) => void;

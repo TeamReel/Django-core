@@ -48,6 +48,7 @@ import type {
   SeasonProject,
   SeasonOrganisation,
 } from '../types/season';
+import type { Organisation } from '../types';
 
 // Re-export for backward compatibility
 export { isSeasonPeriod } from './seasonProviderHelpers';
@@ -293,8 +294,8 @@ export function SeasonProvider({ children }: PropsWithChildren) {
     userRole === 'super admin';
 
   const orgForPermissions = useMemo(() => {
-    const contextOrg = context?.organisation as any;
-    const orgIdMatches = (candidate: Record<string, unknown> | null | undefined) => {
+    const contextOrg = context?.organisation as unknown as Organisation | null;
+    const orgIdMatches = (candidate: { id?: unknown; slug?: unknown } | null | undefined) => {
       if (!candidate) return false;
       const cid = String(candidate.id || '').trim();
       const cslug = String(candidate.slug || '').trim();

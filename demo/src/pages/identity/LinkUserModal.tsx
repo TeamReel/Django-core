@@ -89,7 +89,7 @@ export default function LinkUserModal(props: LinkUserModalProps) {
                 <label className="form-label-upper">Federation Role</label>
                 <select
                   value={d.orgRole}
-                  onChange={(e) => d.setOrgRole(e.target.value as any)}
+                  onChange={(e) => d.setOrgRole(e.target.value as 'admin' | 'member')}
                   className="form-input fs-14"
                   disabled={!d.organisationId}
                 >
@@ -144,7 +144,7 @@ export default function LinkUserModal(props: LinkUserModalProps) {
               <label className="form-label-upper">Access Role (permissions)</label>
               <select
                 value={d.accessRole}
-                onChange={(e) => d.setAccessRole((e.target.value as any) || 'viewer')}
+                onChange={(e) => d.setAccessRole((e.target.value as 'viewer' | 'editor' | 'admin') || 'viewer')}
                 className="form-input fs-14"
                 disabled={!d.clubId && !d.teamId}
               >

@@ -118,7 +118,7 @@ export default function ProfileAvatarDropdown({ onLogout, isMobile, onOpenSearch
 
   if (!user) return null;
 
-  const avatarUrl = String((user as any)?.avatar_url || '').trim();
+  const avatarUrl = String(user?.avatar_url || '').trim();
 
   // Keyboard handling
   const handleKeyDown = (e: React.KeyboardEvent) => {

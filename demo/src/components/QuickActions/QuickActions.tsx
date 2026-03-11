@@ -76,7 +76,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ roleLevel = 'org' })
   const navigate = useNavigate();
   const { context } = useContextSwitcher();
   const { matchId } = useAppSelection();
-  const orgSlug = (context.organisation as any)?.slug || '';
+  const orgSlug = context.organisation?.slug || '';
 
   return (
     <div className={styles.bar}>

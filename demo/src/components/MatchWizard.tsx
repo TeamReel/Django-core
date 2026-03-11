@@ -271,7 +271,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
                 selectedType={selectedType}
                 selectedTemplate={selectedTemplate}
                 contentTypeLabel={selectedContentTypeLabel}
-                matchData={matchDataForApi as any}
+                matchData={matchDataForApi}
                 seasonSquad={seasonSquad.seasonSquad}
                 matchFlyerVariant={options.matchFlyerVariant}
                 setMatchFlyerVariant={options.setMatchFlyerVariant}
@@ -431,7 +431,7 @@ export default function MatchWizard({ isOpen, onClose, initialMatchId }: MatchWi
               savedVariantIndices={savedVariantIndices}
               selectedType={selectedType}
               selectedTemplate={selectedTemplate}
-              matchData={matchDataForApi as any}
+              matchData={matchDataForApi}
               handleSaveAsAsset={handleSaveAsAsset}
               handleSaveAllAsAssets={handleSaveAllAsAssets}
               handleSaveVariantByIndex={handleSaveVariantByIndex}

@@ -18,7 +18,7 @@ export type ProjectOption = {
   id: string | number;
   name: string;
   slug?: string;
-  organisation?: string | { id: string; name?: string; slug?: string };
+  organisation?: string | { id: string; name?: string; slug?: string; sport?: { id: string | number; name?: string; sport_icon?: string } | null };
   organisation_id?: string | number;
   parent_id?: string | number | null;
   parent?: string | number | null;

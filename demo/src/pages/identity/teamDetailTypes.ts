@@ -10,6 +10,10 @@ export type Project = {
   id: string;
   name: string;
   slug?: string;
+  description?: string;
+  is_active?: boolean;
+  team_type?: string;
+  metadata?: Record<string, unknown>;
   organisation_id?: string;
   organisation?: { id?: string; slug?: string };
 };

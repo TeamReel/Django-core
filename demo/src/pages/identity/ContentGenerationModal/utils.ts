@@ -21,7 +21,7 @@ export const getSecureMimeType = (base64: string | null, declaredType: string | 
 export function memberHasAsset(member: Participation, assetType: string, role?: string): boolean {
   const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
   const meta = member.metadata || {};
-  const tr = (meta as any)?.teamreel_assets || {};
+  const tr = (meta as Record<string, any>)?.teamreel_assets || {};
 
   const media = tr?.media || {};
   const videos = tr?.videos || {};

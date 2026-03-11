@@ -108,7 +108,7 @@ export const ContentOverviewCard: React.FC = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['match']));
   const [loading, setLoading] = useState(true);
-  const project = context.project as any;
+  const project = context.project;
 
   const toggleSection = useCallback((key: string) => {
     setOpenSections(prev => {

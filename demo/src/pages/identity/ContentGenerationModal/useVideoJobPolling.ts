@@ -94,7 +94,7 @@ export function useVideoJobPolling({
       while (!controller.signal.aborted && attempts < maxAttempts) {
         attempts++;
         try {
-          const job = await videoApi.getJob(videoJobId, controller.signal) as any;
+          const job = await videoApi.getJob(videoJobId, controller.signal);
 
           setVideoJobStatus(job.status);
           setVideoJobProgressRaw(job.progress_percent || 0);
@@ -113,7 +113,7 @@ export function useVideoJobPolling({
           logger.error('Video job polling error', err);
           if (err instanceof Error && err.name === 'AbortError') return;
           // HTTP errors (ApiError) → stop polling; network errors → retry
-          if (typeof (err as any)?.status === 'number') break;
+          if (typeof (err as { status?: number })?.status === 'number') break;
           logger.warn('Poll error', err);
         }
         await new Promise(r => setTimeout(r, 5000));

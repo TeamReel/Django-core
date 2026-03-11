@@ -32,10 +32,10 @@ export const OrganisationCreatePage: React.FC = () => {
     setError(null);
 
     try {
-      const newOrg = await organisationsApi.create({ name, description } as any);
+      const newOrg = await organisationsApi.create({ name, description } as Partial<import('../../types/api').OrganisationDetail>);
       // Navigate to the new organisation's dashboard
-      if ((newOrg as any)?.slug || (newOrg as any)?.id) {
-        navigate(`/organisations/${(newOrg as any).slug || (newOrg as any).id}`);
+      if (newOrg?.slug || newOrg?.id) {
+        navigate(`/organisations/${newOrg.slug || newOrg.id}`);
       } else {
         // Fallback if ID is missing
         navigate('/federations');

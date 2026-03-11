@@ -43,7 +43,7 @@ export const NotificationRoutingLogsPage: React.FC = () => {
 
   const currentOrgId = context.organisation?.id ? String(context.organisation.id) : null;
   const currentOrgName = context.organisation?.name || '';
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const isSuperAdmin = Boolean(user?.is_superuser) || user?.role === 'superadmin';
 
   // Breadcrumb context switcher setup
   const {

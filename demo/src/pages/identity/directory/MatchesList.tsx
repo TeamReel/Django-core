@@ -5,6 +5,7 @@ import { DirectoryFilterBar } from '../../../components/DirectoryFilterBar';
 import { DirectoryTableShell } from '../../../components/DirectoryTableShell';
 import { invalidateFetchAllPagesCache } from '../../../utils/fetchAllPages';
 import { activitiesApi } from '../../../api';
+import type { ActivityWritePayload } from '../../../api/activities';
 import MatchDetailModal from '../MatchDetailModal';
 import MatchEditModal from '../MatchEditModal';
 import MatchCreateModal from '../MatchCreateModal';
@@ -85,7 +86,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
 
   const handleSaveMatch = async (payload: Record<string, any>) => {
     if (!editMatch) return;
-    const res = await activitiesApi.update(String(editMatch.id), payload as any);
+    const res = await activitiesApi.update(String(editMatch.id), payload);
     triggerRefresh();
   };
 
@@ -98,7 +99,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
     const created = await activitiesApi.create({
       title: payload.title,
       activity_type: 'match',
-      project_id: Number(teamId) as any,
+      project_id: Number(teamId),
       opponent_project_id: payload.opponent_project_id ? Number(payload.opponent_project_id) : undefined,
       period_id: competitionId,
       start_time: payload.start_time,
@@ -110,7 +111,7 @@ export const MatchesList: React.FC<DirectoryListProps> = (props) => {
         is_home: (payload.venue || 'Home') === 'Home',
         ...payload?.metadata,
       },
-    } as any) as any;
+    } satisfies ActivityWritePayload);
 
     if (created && typeof created === 'object') {
       const createdId = String(created?.id || '').trim();

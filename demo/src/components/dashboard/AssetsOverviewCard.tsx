@@ -88,7 +88,7 @@ export const AssetsOverviewCard: React.FC = () => {
         // ── 1. Fetch brand assets ──
         const { results: brandItems } = await api.list<any>('/branding/assets/', {
           params: { organisation_scope: org.slug || org.id },
-        }).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
+        }).catch(() => ({ results: [] as unknown[], count: 0, next: null, previous: null }));
 
         // Determine which are present (only active assets)
         const activeTypes = new Set(
@@ -110,14 +110,14 @@ export const AssetsOverviewCard: React.FC = () => {
           const { results: memberList } = await api.list<any>(
             `/organisations/${org.slug}/projects/${project.slug}/members/`,
             { pageSize: 50 },
-          ).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
+          ).catch(() => ({ results: [] as unknown[], count: 0, next: null, previous: null }));
 
           if (memberList.length > 0) {
             // Fetch completed generation requests
             const { results: genItems } = await api.list<any>('/generative/requests/', {
               params: { status: 'completed', project: project.id },
               pageSize: 500,
-            }).catch(() => ({ results: [] as any[], count: 0, next: null, previous: null }));
+            }).catch(() => ({ results: [] as unknown[], count: 0, next: null, previous: null }));
 
             // Build member → completed subtypes map
             const memberContentMap = new Map<string, Set<string>>();

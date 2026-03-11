@@ -18,7 +18,7 @@ export const looksLikeUuid = (value: string): boolean => {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 };
 
-export const periodPathKey = (period: { id?: string; name?: string } | null | undefined): string => {
+export const periodPathKey = (period: { id?: string | number; name?: string; slug?: string; [k: string]: unknown } | null | undefined): string => {
   if (!period) return '';
   const name = String(period.name || '').trim();
   const byName = slugify(name);

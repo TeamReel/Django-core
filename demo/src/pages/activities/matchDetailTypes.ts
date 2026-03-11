@@ -336,7 +336,7 @@ export interface MatchDetailDataReturn {
   matchEvents: ActivityEvent[];
 
   /* CRUD */
-  saveMatchEdits: (matchToEdit: Record<string, unknown>, patch: Record<string, unknown>) => Promise<void>;
+  saveMatchEdits: (matchToEdit: MatchDetail | Record<string, unknown>, patch: Record<string, unknown>) => Promise<void>;
   handleDeleteMatch: () => Promise<void>;
   createParticipation: (memberId: string, side: 'home' | 'away') => Promise<void>;
   updateParticipation: (p: Participation, patch: Record<string, unknown>) => Promise<void>;

@@ -51,7 +51,7 @@ export function useMatchDerived({ opened, apiBaseUrl, form }: UseMatchDerivedPro
       if (!key) return;
       if (projectDetailsById[key]) return;
       try {
-        const raw = await projectsApi.get(key) as any;
+        const raw = await projectsApi.get(key) as Record<string, any>;
         const data = raw?.data?.data || raw?.data || raw;
         if (!cancelled && data && typeof data === 'object') {
           setProjectDetailsById((prev) => ({ ...prev, [key]: data }));

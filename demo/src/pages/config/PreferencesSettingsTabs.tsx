@@ -24,7 +24,7 @@ export function PersonalisationTab({ d }: { d: Data }) {
           <div className="flex-row gap-12 mb-24" role="group" aria-label="Theme selection">
             {['light', 'dark', 'auto'].map((t) => (
               <Button key={t} variant={preferences?.theme === t ? 'primary' : 'outline'}
-                onClick={() => setPreferences((prev) => prev ? ({ ...prev, theme: t as any }) : null)}>
+                onClick={() => setPreferences((prev) => prev ? ({ ...prev, theme: t as 'light' | 'dark' | 'auto' }) : null)}>
                 {t === 'auto' ? 'Auto (System)' : t.charAt(0).toUpperCase() + t.slice(1)}
               </Button>
             ))}

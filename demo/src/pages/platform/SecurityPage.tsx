@@ -94,7 +94,7 @@ export const SecurityPage: React.FC = () => {
 
   // Fix: Check 'role' property from API (UserListSerializer)
   // The API returns 'superadmin' for superusers, 'admin' for staff, 'user' for others
-  const isSystemAdmin = Boolean(user?.is_superuser) || (user as any)?.role === 'Superadmin';
+  const isSystemAdmin = Boolean(user?.is_superuser) || user?.role === 'superadmin';
 
   // Check for admin OR coach role
   const isOrgAdmin = user?.organisations?.some((org) =>

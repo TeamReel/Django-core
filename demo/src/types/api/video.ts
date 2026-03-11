@@ -82,6 +82,7 @@ export interface VideoJobOutputFile {
   storage_path: string;
   mime_type: string;
   file_size: number;
+  url?: string;
 }
 
 export interface VideoJob {

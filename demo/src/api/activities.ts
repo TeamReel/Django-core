@@ -46,6 +46,26 @@ function toActivityQuery(p?: ActivityListParams): Record<string, string | number
 }
 
 /* ------------------------------------------------------------------ */
+/*  Write-side payload                                                 */
+/* ------------------------------------------------------------------ */
+
+/** Write-side payload for creating/updating activities (flat ID fields). */
+export interface ActivityWritePayload {
+  title?: string;
+  activity_type?: 'match' | 'training' | 'event' | string;
+  project_id?: string | number;
+  opponent_project_id?: string | number;
+  period_id?: string;
+  start_time?: string;
+  end_time?: string | null;
+  location?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  venue?: string;
+  [key: string]: unknown;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Activities                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -66,12 +86,12 @@ export const activitiesApi = {
   },
 
   /** Create an activity (match, training, event). */
-  create(data: Partial<Activity>) {
+  create(data: Partial<Activity> | ActivityWritePayload) {
     return api.post<Activity>('/activities/', data);
   },
 
   /** Update an activity. */
-  update(id: string, data: Partial<Activity>) {
+  update(id: string, data: Partial<Activity> | ActivityWritePayload) {
     return api.patch<Activity>(`/activities/${id}/`, data);
   },
 

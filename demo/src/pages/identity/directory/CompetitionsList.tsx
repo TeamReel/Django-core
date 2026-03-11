@@ -120,7 +120,7 @@ export const CompetitionsList: React.FC<DirectoryListProps> = (props) => {
                     const compSlugOrId = periodPathKey(comp) || comp.id;
 
                     // Competition shows its own sport VARIANT only (not org category as fallback)
-                    const compSport = (comp as any).sport;
+                    const compSport = comp.sport;
                     const sportDisplay = compSport || null;
 
                     return (

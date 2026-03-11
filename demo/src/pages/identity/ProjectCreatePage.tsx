@@ -58,7 +58,7 @@ export const ProjectCreatePage: React.FC = () => {
         slug: slug || undefined,
         description,
         organisation_id: currentOrgId,
-      } as any) as any;
+      });
       navigate(`/organisations/${currentOrgSlug}/projects/${project.slug || project.id}`);
     } catch (err) {
       logger.error('An error occurred', err);

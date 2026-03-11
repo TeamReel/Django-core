@@ -47,7 +47,7 @@ export interface VideoJob {
   status: VideoJobStatus;
   progress_percent: number;
   input_file?: string | null;
-  output_file?: string | null;
+  output_file?: string | { file_size?: number; url?: string; original_name?: string; storage_path?: string } | null;
   preset?: string | null;
   preset_name?: string;
   workflow_instance?: VideoJobWorkflowInfo | null;

@@ -88,7 +88,7 @@ export function useOrgFormState() {
   /* ── Permissions ── */
   const userRole = String(user?.role || '').toLowerCase();
   const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
-  const permissionContext = { currentOrganisation: (org || resolvedOrg) as any, isSuperAdmin };
+  const permissionContext = { currentOrganisation: (org || resolvedOrg) as Organisation, isSuperAdmin };
   const userCanEditOrg = canEditOrganisation(permissionContext);
   const userCanDeleteOrg = canDeleteOrganisation(permissionContext);
   const userCanInvite = canInviteMembers(permissionContext);

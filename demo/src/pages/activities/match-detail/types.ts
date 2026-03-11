@@ -8,10 +8,10 @@ export type Organisation = {
   name: string;
   slug?: string;
   sport?: {
-    id: number;
+    id: string | number;
     name: string;
     slug?: string;
-    sport_icon?: string;
+    sport_icon?: string | null;
     parent_sport_id?: number | null;
   } | null;
 };
@@ -102,10 +102,10 @@ export type Period = {
   name: string;
   parent_period?: { id: string; name: string } | null;
   sport?: {
-    id: number;
+    id: string | number;
     name: string;
     slug?: string;
-    sport_icon?: string;
+    sport_icon?: string | null;
     parent_sport_id?: number | null;
   } | null;
 };

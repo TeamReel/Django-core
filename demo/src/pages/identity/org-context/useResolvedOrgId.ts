@@ -38,7 +38,7 @@ export const useResolvedOrgId = (orgIdOrSlug?: string): ResolvedOrgIdState => {
       setState((prev) => ({ ...prev, orgId: k, loading: true, error: undefined }));
       try {
         const org = await organisationsApi.get(encodeURIComponent(k));
-        const resolved = String((org as any)?.id || k).trim();
+        const resolved = String(org?.id || k).trim();
 
         if (cancelled) return;
         setState({ orgId: resolved || k, loading: false });

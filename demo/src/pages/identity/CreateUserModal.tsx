@@ -53,7 +53,7 @@ export default function CreateUserModal({ opened, onClose, onSuccess }: CreateUs
     } catch (err) {
       logger.error('Create user error', err);
       if (err instanceof ApiError) {
-        const body = err.body as any;
+        const body = err.body as { email?: string[]; password?: string[]; password_confirm?: string[]; detail?: string };
         setError(
           body?.email?.[0] ||
             body?.password?.[0] ||

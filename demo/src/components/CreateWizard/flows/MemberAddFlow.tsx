@@ -26,6 +26,17 @@ import { MemberRoleStep, type MemberRoleData, type MemberRole, type PositionOpti
 import { MemberConfirmStep, type MemberConfirmData } from '../steps/MemberConfirmStep';
 import { api, ApiError } from '@/api';
 
+/** Shape of DRF error response bodies used by the member add cascade. */
+interface ApiErrorBody {
+  error?: { message?: string; details?: Record<string, string[]> };
+  detail?: string;
+  non_field_errors?: string[];
+  email?: string[];
+  password?: string[];
+  user_id?: string[];
+  [key: string]: unknown;
+}
+
 // ─── Step config ──────────────────────────────────────────
 
 const MEMBER_ADD_STEPS: WizardStepConfig[] = [
@@ -145,7 +156,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
           userEmail = email.trim();
         } catch (e) {
           if (e instanceof ApiError) {
-            const d = e.body as any;
+            const d = e.body as ApiErrorBody;
             const err = d?.error?.details || d;
             throw new Error(
               err?.email?.[0] || err?.password?.[0] || d?.error?.message || d?.detail || 'Gebruiker aanmaken mislukt',
@@ -169,7 +180,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
           });
         } catch (e) {
           if (e instanceof ApiError) {
-            const d = e.body as any;
+            const d = e.body as ApiErrorBody;
             const details = d?.error?.details || d;
             const msg = details?.email?.[0] || d?.error?.message || d?.detail || details?.non_field_errors?.[0] || '';
             if (!isAlreadyExistsError(msg)) throw new Error(msg || 'Toevoegen aan federatie mislukt');
@@ -186,7 +197,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
           });
         } catch (e) {
           if (e instanceof ApiError) {
-            const d = e.body as any;
+            const d = e.body as ApiErrorBody;
             const details = d?.error?.details || d;
             const msg = details?.user_id?.[0] || d?.error?.message || d?.detail || details?.non_field_errors?.[0] || '';
             if (!isAlreadyExistsError(msg)) throw new Error(msg || 'Toevoegen aan club mislukt');
@@ -218,7 +229,7 @@ export function MemberAddFlow({ isOpen, onClose }: MemberAddFlowProps) {
           await api.post(`/projects/${teamId}/members/`, body);
         } catch (e) {
           if (e instanceof ApiError) {
-            const d = e.body as any;
+            const d = e.body as ApiErrorBody;
             const details = d?.error?.details || d;
             const msg = details?.user_id?.[0] || d?.error?.message || d?.detail || details?.non_field_errors?.[0] || '';
             if (!isAlreadyExistsError(msg)) throw new Error(msg || 'Toevoegen aan team mislukt');

@@ -54,7 +54,7 @@ export function useSeasonContentData({
       const params: Record<string, string> = { is_active: 'true' };
       if (org?.id) params.organisation = String(org.id);
 
-      const data = await contentApi.listTemplates(params as any) as any;
+      const data = await contentApi.listTemplates(params as Record<string, string>) as Record<string, any>;
       const rawResults = data?.results || data?.data?.results || data?.data || data || [];
       const allTemplates: ContentTemplate[] = Array.isArray(rawResults) ? rawResults : [];
 

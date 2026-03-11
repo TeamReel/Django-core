@@ -81,10 +81,11 @@ export function useTopNavbarEffects(params: UseTopNavbarEffectsParams) {
       if (document.hidden) return;
       try {
         const data = await api.get<NotificationResponse>('/user-notifications/');
+        const wrapped = data as unknown as { data?: { results?: unknown[]; data?: unknown[] } };
         const notifications = data.results
-          || (data as any).data?.results
-          || (data as any).data?.data
-          || (data as any).data
+          || wrapped.data?.results
+          || wrapped.data?.data
+          || wrapped.data
           || [];
         const unread = Array.isArray(notifications) ? notifications.filter(n => !n.is_read).length : 0;
         setUnreadCount(unread);

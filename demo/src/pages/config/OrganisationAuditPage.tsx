@@ -14,7 +14,7 @@ export const OrganisationAuditPage: React.FC = () => {
   const { context } = useContextSwitcher();
 
   const organisationId = String(context?.organisation?.id || '').trim();
-  const organisationName = String(context?.organisation?.name || (context?.organisation as any)?.title || '').trim();
+  const organisationName = String(context?.organisation?.name || (context?.organisation as unknown as Record<string, unknown>)?.title || '').trim();
 
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [loading, setLoading] = useState(false);

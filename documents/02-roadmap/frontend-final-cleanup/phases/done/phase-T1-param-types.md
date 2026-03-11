@@ -1,8 +1,9 @@
 # T1 — Function Parameter Types
 
-**Status:** 🔲 Todo
+**Status:** ✅ Done (2025-03-11)
 **Effort:** 6 uur
-**Scope:** 404 `: any` parameters → <50
+**Scope:** 404 `: any` parameters → 47 (target <50)
+**Commits:** `14901155` → `8e7234b7` (batches D–G)
 
 ---
 
@@ -90,13 +91,13 @@ function process(data: unknown): unknown { ... }
 
 ## Verificatie
 
-- [ ] `: any` count <50
-- [ ] Remaining `: any` gedocumenteerd met reden
-- [ ] `npx tsc --noEmit` passing
-- [ ] `npx vitest run` passing
+- [x] `: any` count <50 (47 remaining)
+- [x] Remaining `: any` gedocumenteerd met eslint-disable comments
+- [x] `npx tsc --noEmit` passing
+- [x] `npx vitest run` passing (28/28, 167/167)
 
 ## Acceptatiecriteria
 
 Na T1:
-- **`: any` parameters:** <50 (van 404)
-- **Remaining cases:** Justified met comments
+- **`: any` parameters:** 47 (van 404) ✅
+- **Remaining cases:** Justified met eslint-disable comments (6 cases)

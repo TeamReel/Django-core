@@ -57,7 +57,7 @@ if (!selectedOrg?.slug) return;
     } catch (err) {
       logger.error('Assign user error', err);
       if (err instanceof ApiError) {
-        const body = err.body as any;
+        const body = err.body as { email?: string[]; detail?: string } | undefined;
         setError(body?.email?.[0] || body?.detail || 'Failed to assign user to organisation');
       } else {
         setError(err instanceof Error ? err.message : 'Failed to assign user');

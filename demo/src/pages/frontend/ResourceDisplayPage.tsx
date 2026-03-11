@@ -146,7 +146,7 @@ export function ResourceDisplayPage() {
     setSortBy('name');
   };
 
-  const getStatusBadgeType = (status: string) => {
+  const getStatusBadgeType = (status: string): 'success' | 'default' | 'warning' | 'error' | 'info' => {
     switch (status) {
       case 'active': return 'success';
       case 'inactive': return 'default';
@@ -233,7 +233,7 @@ export function ResourceDisplayPage() {
                     <h3 className={`font-medium ${selectedId === resource.id ? 'text-blue-700' : 'text-gray-900'}`}>
                       {resource.name}
                     </h3>
-                    <Badge variant={getStatusBadgeType(resource.status) as any} size="sm">
+                    <Badge variant={getStatusBadgeType(resource.status)} size="sm">
                       {resource.status}
                     </Badge>
                   </div>
@@ -267,7 +267,7 @@ export function ResourceDisplayPage() {
                     </button>
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">{selectedResource.name}</h1>
                     <div className="flex gap-2 items-center">
-                      <Badge variant={getStatusBadgeType(selectedResource.status) as any}>
+                      <Badge variant={getStatusBadgeType(selectedResource.status)}>
                         {selectedResource.status}
                       </Badge>
                       <span className="text-gray-400">|</span>

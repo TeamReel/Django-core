@@ -76,13 +76,13 @@ export const TeamsList: React.FC<TeamsListProps> = ({ preselectedOrgId, preselec
       <ProjectDetailModal
         opened={d.isDetailModalOpen}
         onClose={() => d.setIsDetailModalOpen(false)}
-        project={d.detailProject as any}
+        project={d.detailProject}
       />
 
       <ProjectEditModal
         opened={d.isEditModalOpen}
         onClose={() => d.setIsEditModalOpen(false)}
-        project={d.editProject as any}
+        project={d.editProject}
         onSave={d.handleEditSave}
       />
 

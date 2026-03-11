@@ -409,7 +409,7 @@ export function NotificationsTabPanel() {
                   key={toast.id}
                   notification={toast as unknown as ToastProps['notification']}
                   onDismiss={(id) => setDemoToasts(prev => prev.filter(t => t.id !== id))}
-                  variant={toast.severity.toLowerCase() as any}
+                  variant={toast.severity.toLowerCase()}
                 />
               ))}
               {demoToasts.length === 0 && (

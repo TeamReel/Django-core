@@ -110,8 +110,8 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
     } catch (e: unknown) {
       logger.error('Failed to save balance policy', e);
       if (e instanceof ApiError) {
-        const body = e.body as any;
-        setBalanceSaveError(body?.detail || body?.error || `Failed to save balance policy (HTTP ${e.status})`);
+        const body = e.body as Record<string, unknown>;
+        setBalanceSaveError(String(body?.detail || body?.error || `Failed to save balance policy (HTTP ${e.status})`));
       } else {
         setBalanceSaveError(getErrorMessage(e) || 'Failed to save');
       }
@@ -193,7 +193,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({ organisationId }) => {
                       Enforcement mode
                       <select
                         value={balanceDraft.enforcement_mode}
-                        onChange={(e) => setBalanceDraft({ ...balanceDraft, enforcement_mode: e.target.value as any })}
+                        onChange={(e) => setBalanceDraft({ ...balanceDraft, enforcement_mode: e.target.value as BalancePolicy['enforcement_mode'] })}
                         className={`rounded-6 border bg-surface text-primary ${styles.formControl}`}
                       >
                         <option value="block">BLOCK</option>

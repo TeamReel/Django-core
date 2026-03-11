@@ -304,7 +304,7 @@ export default function ProfileHubPage() {
             />
             <CascadeRow label="Match" value={d.selectedMatchId}
               disabled={!d.selectedCompetitionId || d.loadingMatches || d.savingContext}
-              options={d.matches.map((m) => ({ id: m.id, name: (m as any).title || m.name }))} loading={d.loadingMatches}
+              options={d.matches.map((m) => ({ id: m.id, name: m.title || m.name || '' }))} loading={d.loadingMatches}
               onChange={(v) => { d.setHasEditedContext(true); d.setSelectedMatchId(v); applyContext({ matchId: v }); }}
             />
           </div>

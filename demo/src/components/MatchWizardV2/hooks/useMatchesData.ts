@@ -33,7 +33,7 @@ export function useMatchesData(isOpen: boolean, initialMatchId?: string): void {
     if (!isOpen || selectedMatch) return;
 
     if (initialMatchId) {
-      const m = activities.find(a => a.id === initialMatchId || (a as any).slug === initialMatchId);
+      const m = activities.find(a => a.id === initialMatchId || a.slug === initialMatchId);
       if (m) {
         setSelectedMatch(m);
         return;

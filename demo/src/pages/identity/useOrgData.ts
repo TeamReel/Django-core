@@ -16,6 +16,7 @@ import type { OrgDataReturn } from './orgDataTypes';
 import { getActiveContext } from '../../utils/activeContext';
 import { DEBUG_LOGS, getApiV1BaseUrl, getCsrfToken } from './orgDataHelpers';
 import { organisationsApi } from '../../api';
+import type { Organisation } from '../../types';
 import { logger } from '@/utils/logger';
 import { useOrgFormState } from './useOrgFormState';
 import { useOrgDerived } from './useOrgDerived';
@@ -160,7 +161,7 @@ export function useOrgData(): OrgDataReturn {
       try {
         s.setLoading(true);
         s.setError(null);
-        const orgData = await organisationsApi.get(s.currentOrgSlug) as any;
+        const orgData = await organisationsApi.get(s.currentOrgSlug) as unknown as Organisation;
         s.setOrg(orgData);
         const organisationIdForCounts = String(orgData.id || s.currentOrgId || '');
         if (organisationIdForCounts) fetching.fetchFederationCounts(organisationIdForCounts);

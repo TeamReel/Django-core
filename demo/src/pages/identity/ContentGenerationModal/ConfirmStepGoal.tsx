@@ -177,7 +177,7 @@ function buildScorerOptions(uniqueMembers: Participation[]): ScorerOption[] {
       ? (('name' in user && user.name) || ('user_name' in user && user.user_name) || `${user.first_name || ''} ${user.last_name || ''}`.trim())
       : 'Unknown';
 
-    const tr = (member.metadata as any)?.teamreel_assets || {};
+    const tr = ((member.metadata as Record<string, unknown>)?.teamreel_assets || {}) as Record<string, any>;
     const videos = tr?.videos || {};
     const celebrationObj = videos?.celebration || {};
     const celebrationKeys = Object.keys(celebrationObj).filter(k => {

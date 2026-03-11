@@ -55,8 +55,8 @@ export async function fetchSeasons({
         t.parent_id ??
         t.parent ??
         t.parent_project_id ??
-        (typeof t.parent_project === 'object' && t.parent_project !== null ? (t.parent_project as any).id : t.parent_project);
-      const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as any).id : parent);
+        (typeof t.parent_project === 'object' && t.parent_project !== null ? (t.parent_project as { id: string }).id : t.parent_project);
+      const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as { id: string }).id : parent);
       return parentId && parentId === String(selectedClubId);
     });
 
@@ -173,8 +173,8 @@ export async function fetchCompetitions({
           t.parent_id ??
           t.parent ??
           t.parent_project_id ??
-          (typeof t.parent_project === 'object' && t.parent_project !== null ? (t.parent_project as any).id : t.parent_project);
-        const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as any).id : parent);
+          (typeof t.parent_project === 'object' && t.parent_project !== null ? (t.parent_project as { id: string }).id : t.parent_project);
+        const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null ? (parent as { id: string }).id : parent);
         return parentId && parentId === String(selectedClubId);
       })
       .map((t) => String(t.id));

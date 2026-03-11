@@ -41,7 +41,7 @@ export function ThemePage() {
               <Button
                 key={b}
                 variant={brand === b ? 'primary' : 'outline'}
-                onClick={() => setTheme({ brand: b as any })}
+                onClick={() => setTheme({ brand: b })}
               >
                 {b.charAt(0).toUpperCase() + b.slice(1)}
               </Button>

@@ -173,7 +173,7 @@ export const ContentLibraryView: React.FC<ContentLibraryViewProps> = ({ embedded
           }
         >
           <label className="fs-12 fw-600 text-muted">Sortering</label>
-          <select value={data.sortBy} onChange={(e) => data.setSortBy(e.target.value as any)} className={`rounded-6 border bg-surface fs-13 w-full ${styles.sortSelect}`}>
+          <select value={data.sortBy} onChange={(e) => data.setSortBy(e.target.value as 'newest' | 'oldest' | 'title' | 'type')} className={`rounded-6 border bg-surface fs-13 w-full ${styles.sortSelect}`}>
             <option value="newest">Nieuwste eerst</option>
             <option value="oldest">Oudste eerst</option>
             <option value="title">A-Z op titel</option>

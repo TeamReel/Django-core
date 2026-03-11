@@ -7,7 +7,7 @@ interface Project {
   name: string;
   description?: string;
   is_active?: boolean;
-  organisation?: {
+  organisation?: string | {
     id?: string;
     name?: string;
     slug?: string;
@@ -53,7 +53,7 @@ export default function ProjectDetailModal({ opened, onClose, project }: Project
               {project.organisation && (
                 <div>
                 <label className="label-muted mb-4">Organisation</label>
-                <div className="fw-500 text-primary">{project.organisation.name || project.organisation.slug || project.organisation.id || '—'}</div>
+                <div className="fw-500 text-primary">{typeof project.organisation === 'string' ? project.organisation : (project.organisation.name || project.organisation.slug || project.organisation.id || '—')}</div>
                 </div>
               )}
 

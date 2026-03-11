@@ -207,7 +207,7 @@ export function useBreadcrumbsData({
             p?.parent_project_id ??
             (typeof p?.parent_project === 'object' ? p?.parent_project?.id : p?.parent_project) ??
             (typeof p?.parent === 'object' ? p?.parent?.id : p?.parent);
-          const parentId = parent == null ? '' : String(typeof parent === 'object' ? (parent as any).id : parent);
+          const parentId = parent == null ? '' : String(typeof parent === 'object' && parent !== null && 'id' in parent ? (parent as { id?: unknown }).id : parent);
           return parentId && parentId === clubIdForQuery;
         });
         setTeamOptions(
@@ -256,7 +256,7 @@ export function useBreadcrumbsData({
 
   const findSeasonId = (rootPeriods: ApiPeriod[], seasonKey: string): string => {
     const found = (rootPeriods || []).find((p: ApiPeriod) => {
-      const key = periodPathKey(p as any) || String(p?.id || '');
+      const key = periodPathKey(p) || String(p?.id || '');
       return String(p?.id || '') === seasonKey || key === seasonKey;
     });
     return String(found?.id || '').trim();
@@ -280,7 +280,7 @@ export function useBreadcrumbsData({
         const opts: BreadcrumbSwitcherOption[] = seasons.map((p: ApiPeriod) => ({
           id: String(p.id),
           label: String(p.name || p.slug || p.id),
-          slug: periodPathKey(p as any) || String(p.id),
+          slug: periodPathKey(p) || String(p.id),
         }));
         if (!cancelled) setSeasonOptions(opts);
       } catch { /* ignore */ } finally {
@@ -312,7 +312,7 @@ export function useBreadcrumbsData({
         const opts: BreadcrumbSwitcherOption[] = (competitionPeriods || []).map((p: ApiPeriod) => ({
           id: String(p.id),
           label: String(p.name || p.slug || p.id),
-          slug: periodPathKey(p as any) || String(p.id),
+          slug: periodPathKey(p) || String(p.id),
         }));
         if (!cancelled) setCompetitionOptions(opts);
       } catch { /* ignore */ } finally {
@@ -393,7 +393,7 @@ export function useBreadcrumbsData({
         if (!seasonId || cancelled) return;
         const competitionPeriods = await fetchChildPeriods(seasonId);
         const competitionFromList = (competitionPeriods || []).find((p: ApiPeriod) => {
-          const key = periodPathKey(p as any) || String(p?.id || '');
+          const key = periodPathKey(p) || String(p?.id || '');
           return String(p?.id || '') === effectiveComp || key === effectiveComp;
         });
         const competitionId = String(competitionFromList?.id || '').trim();

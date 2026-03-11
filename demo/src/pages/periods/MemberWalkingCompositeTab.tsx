@@ -7,7 +7,7 @@ import {
   isLineupReady,
   isProcessing,
 } from '../../constants/assetProcessingSpecs';
-import type { MemberTabCommonProps } from './memberDetailUtils';
+import type { MemberTabCommonProps, MembershipRecord } from './memberDetailUtils';
 import {
   getVariantRawUrl,
   triggerAssetProcessing,
@@ -53,7 +53,7 @@ export function MemberWalkingCompositeTab({
   const hasWalkingVideo = Boolean(walkingVideoData && getBestUrl(walkingVideoData));
   const walkingVideoLineupReady = isLineupReady(walkingVideoData);
   const walkingVideoProcessing = isProcessing(walkingVideoData);
-  const walkingVideoNormalized = normalizeVariantValue(walkingVideoData as any);
+  const walkingVideoNormalized = normalizeVariantValue(walkingVideoData);
   const walkingVideoCancellingOrProcessing =
     walkingVideoNormalized?.processing_state === 'processing' ||
     walkingVideoNormalized?.processing_state === 'cancelling';
@@ -189,7 +189,7 @@ export function MemberWalkingCompositeTab({
                             if (isCancelling) {
                               try {
                                 const memberData = await projectsApi.getMember(project?.id || '', membershipId!);
-                                setMembership(memberData as any);
+                                setMembership(memberData as unknown as MembershipRecord);
                               } catch { /* best-effort */ }
                             } else {
                               const rawUrl = getVariantRawUrl(walkingVideoData) || '';

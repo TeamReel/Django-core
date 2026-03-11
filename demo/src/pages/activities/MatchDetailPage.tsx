@@ -20,7 +20,7 @@ export default function HierarchyMatchDetailPage() {
   const location = useLocation();
 
   /* ---- back navigation: smart source detection ---- */
-  const cameFromDashboard = (location.state as any)?.from === 'dashboard';
+  const cameFromDashboard = (location.state as { from?: string })?.from === 'dashboard';
   const backPath = cameFromDashboard ? '/dashboard' : (d.seasonBasePath || d.seasonsBasePath || '/');
   const backLabel = cameFromDashboard ? 'Dashboard' : 'Seizoen';
   useSetBackNavigation({ label: backLabel, path: backPath });
@@ -164,15 +164,15 @@ export default function HierarchyMatchDetailPage() {
         <MatchDetailModal
           opened={d.isMatchDetailModalOpen}
           onClose={() => d.setIsMatchDetailModalOpen(false)}
-          match={match as any}
+          match={match}
         />
 
         <MatchEditModal
           opened={d.isMatchEditModalOpen}
           onClose={() => d.setIsMatchEditModalOpen(false)}
-          match={match as any}
+          match={match}
           onSave={async (payload) => {
-            await d.saveMatchEdits(match as any, payload);
+            await d.saveMatchEdits(match, payload);
           }}
         />
 
@@ -219,8 +219,8 @@ export default function HierarchyMatchDetailPage() {
           {d.activeTab === 'overview' && (
             <MatchOverviewTab
               match={match}
-              org={d.org as any}
-              competition={d.competition as any}
+              org={d.org}
+              competition={d.competition}
               teamDisplay={{
                 isHome: d.isHome,
                 homeTeamName: d.homeTeamName,
@@ -268,8 +268,8 @@ export default function HierarchyMatchDetailPage() {
           {d.activeTab === 'content' && (
             <MatchContentTab
               match={match}
-              org={d.org as any}
-              competition={d.competition as any}
+              org={d.org}
+              competition={d.competition}
               templatesLoading={d.templatesLoading}
               matchMediaLoading={d.matchMediaLoading}
               availableTemplates={d.availableTemplates}

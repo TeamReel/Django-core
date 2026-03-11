@@ -110,7 +110,7 @@ export function useProjectsPageData(): UseProjectsPageDataReturn {
 
   // Breadcrumb context
   const { organisationOptions, handleOrganisationSwitch } = useBreadcrumbContextSwitcher({
-    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug, description: (o as any).description })),
+    organisations: organisations.map(o => ({ id: String(o.id), name: o.name, slug: o.slug, description: o.description })),
     projects: [],
     users: [],
     context: { currentOrgId: resolvedOrg?.id ? String(resolvedOrg.id) : undefined },

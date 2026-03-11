@@ -8,6 +8,17 @@
 // Types
 // ============================================================================
 
+/** All possible fields from any parseAppPath variant. */
+export type ParsedPathFields = {
+  type: string;
+  orgSlug?: string;
+  clubSlugOrId?: string;
+  teamSlugOrId?: string;
+  seasonSlugOrId?: string;
+  competitionSlugOrId?: string;
+  matchId?: string;
+};
+
 export type AppProjectRow = {
   id: string | number;
   name: string;

@@ -40,7 +40,7 @@ export function memberHasMedia(membership: MembershipWithMedia, slotId: MediaSlo
   if (media?.[slotId]?.url || media?.[slotId]?.caption) return true;
   // Legacy slot: also check images.fullbody.legacy
   if (slotId === 'legacy') {
-    const legacyVariant = (tr as any)?.images?.fullbody?.legacy;
+    const legacyVariant = (tr as Record<string, any>)?.images?.fullbody?.legacy;
     if (legacyVariant?.raw || legacyVariant?.processed) return true;
   }
   return false;

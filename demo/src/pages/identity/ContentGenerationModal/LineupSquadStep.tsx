@@ -34,7 +34,7 @@ export function LineupSquadStep({
   const playerReq = selectedTemplate.input_requirements?.members?.player;
   const gkReq = selectedTemplate.input_requirements?.members?.goalkeeper;
   const playerAssetTypes = (playerReq && typeof playerReq !== 'boolean' && playerReq.asset_types) || [];
-  const gkAssetTypes = (gkReq && typeof gkReq !== 'boolean' && (gkReq as any).asset_types) || playerAssetTypes;
+  const gkAssetTypes = (gkReq && typeof gkReq !== 'boolean' && gkReq.asset_types) || playerAssetTypes;
 
   // Eligible/ineligible split per role
   const eligibleGks = gkPool.filter(p => memberHasRequiredAssets(p, gkAssetTypes, 'goalkeeper'));

@@ -82,7 +82,7 @@ export function useMatchSelections({ opened, apiBaseUrl, mode, form }: UseMatchS
   }, [opened, apiBaseUrl]);
 
   const organisationsOptions = useMemo(
-    () => (remoteOrganisations.length ? remoteOrganisations : (form as any).organisations || []) as OrgOption[],
+    () => (remoteOrganisations.length ? remoteOrganisations : ((form as unknown as Record<string, unknown>).organisations || [])) as OrgOption[],
     [remoteOrganisations]
   );
 

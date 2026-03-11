@@ -25,7 +25,7 @@ export const ContentBreakdownCard: React.FC = () => {
   const [categories, setCategories] = useState<CategoryCount[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const project = context.project as any;
+  const project = context.project;
 
   useEffect(() => {
     let cancelled = false;

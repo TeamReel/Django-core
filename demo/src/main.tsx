@@ -54,7 +54,7 @@ function AppWithProviders() {
     onContextError: (error: unknown) => {
       logger.warn('Context switch error', error);
       // Handle 401 Unauthorized by redirecting to login
-      if ((error as any)?.code === 401 || (error as any)?.status === 401) {
+      if ((error as Record<string, unknown>)?.code === 401 || (error as Record<string, unknown>)?.status === 401) {
         window.location.href = '/login';
         return;
       }

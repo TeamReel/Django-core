@@ -76,7 +76,7 @@ export const ProjectEditPage: React.FC = () => {
           ? await organisationsApi.getProject(resolvedOrg.slug, currentProjectSlug)
           : await projectsApi.get(currentProjectSlug);
         // Handle B13 envelope pattern: {status: 'success', data: {...}}
-        const data: Project = (rawData as any).data || rawData;
+        const data: Project = ((rawData as unknown as Record<string, unknown>).data || rawData) as Project;
         setName(data.name);
         setSlug(data.slug || '');
         setDescription(data.description || '');

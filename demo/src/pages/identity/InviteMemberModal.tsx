@@ -41,7 +41,7 @@ export default function InviteMemberModal({ opened, onClose, orgSlug, onInviteSu
     } catch (err) {
       logger.error('Invite error', err);
       if (err instanceof ApiError) {
-        const body = err.body as any;
+        const body = err.body as { email?: string[]; detail?: string } | undefined;
         setError(body?.email?.[0] || body?.detail || 'Failed to invite member');
       } else {
         setError(err instanceof Error ? err.message : 'Failed to invite member');

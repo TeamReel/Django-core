@@ -233,7 +233,7 @@ export const OrganisationsPage: React.FC = () => {
                 // Check if user can edit/delete this specific org
                 const orgWithRole = myOrganisations.find(o => o.id === org.id);
                 const permissionContext = {
-                  currentOrganisation: (orgWithRole || org) as any,
+                  currentOrganisation: (orgWithRole || org) as Organisation,
                   isSuperAdmin,
                 };
                 const userCanEdit = canPerformAction('update', 'organisation', permissionContext);

@@ -84,7 +84,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
     if (!selectedOrganisationId) return [];
     return allClubs
       .filter((c: Record<string, unknown>) => {
-        const orgId = typeof c.organisation === 'object' ? (c.organisation as any)?.id : c.organisation;
+        const orgId = typeof c.organisation === 'object' ? (c.organisation as Record<string, unknown>)?.id : c.organisation;
         return String(orgId) === selectedOrganisationId;
       })
       .map((c: Record<string, unknown>) => ({ id: String(c.id), name: String(c.name || '') }))
@@ -141,7 +141,7 @@ export function ProjectCreateFlow({ isOpen, onClose }: ProjectCreateFlowProps) {
     } catch (err: unknown) {
       logger.error('Failed to create project', err);
       const msg = err instanceof ApiError
-        ? ((err.body as any)?.detail || (err.body as any)?.message || `${projectTypeLabel} aanmaken mislukt`)
+        ? (((err.body as Record<string, unknown>)?.detail || (err.body as Record<string, unknown>)?.message || `${projectTypeLabel} aanmaken mislukt`) as string)
         : getErrorMessage(err) || `${projectTypeLabel} aanmaken mislukt`;
       setError(msg);
       setIsSaving(false);

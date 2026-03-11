@@ -14,6 +14,7 @@ import {
   reviewJob,
   type GenerationJob,
   type GenJobStatus,
+  type GenJobApprovalStatus,
 } from '../../hooks/useGenerationJobs';
 import {
   useVideoJobs,
@@ -98,7 +99,7 @@ export function useApprovalsData() {
 
   const mergedJobs = aiJobs.map(j =>
     optimisticApprovals[j.task_id]
-      ? { ...j, approval_status: optimisticApprovals[j.task_id] as any }
+      ? { ...j, approval_status: optimisticApprovals[j.task_id] as GenJobApprovalStatus }
       : j
   );
 

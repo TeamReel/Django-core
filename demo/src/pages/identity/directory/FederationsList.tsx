@@ -239,7 +239,7 @@ export const FederationsList: React.FC = () => {
                           )}
                         </td>
                         <td className="dir-td">
-                          <Badge variant="default">{(org as any).sport_variants_count || 0}</Badge>
+                          <Badge variant="default">{org.sport_variants_count || 0}</Badge>
                         </td>
                         <td className="dir-td">
                           <Badge variant="default">
@@ -253,7 +253,7 @@ export const FederationsList: React.FC = () => {
                         </td>
                         <td className="dir-td">
                           <Badge variant="default">
-                            {(org as any).competitions_count || 0}
+                            {org.competitions_count || 0}
                           </Badge>
                         </td>
                         <td className="dir-td">

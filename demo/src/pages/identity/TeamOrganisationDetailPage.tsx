@@ -19,6 +19,7 @@ import { AssetsTab } from '../../components/AssetsTab';
 import { KitsTab } from '../../components/KitsTab';
 
 import { useTeamDetailData } from './useTeamDetailData';
+import type { Project } from './teamDetailTypes';
 import { useTeamTabData } from './useTeamTabData';
 import { TeamOverviewTab } from './TeamOverviewTab';
 import { TeamHierarchyTab } from './TeamHierarchyTab';
@@ -151,7 +152,7 @@ export default function TeamOrganisationDetailPage() {
     );
   }
 
-  const isActive = !!team && String((activeContextState as any)?.team?.id ?? '') === String(team.id ?? '');
+  const isActive = !!team && String((activeContextState as { team?: { id?: string } } | null)?.team?.id ?? '') === String(team.id ?? '');
 
   return (
     <>
@@ -163,7 +164,7 @@ export default function TeamOrganisationDetailPage() {
               {club?.name || 'Club'}
             </Link>
             <h1>{team.name}</h1>
-            <p>{(team as any)?.team_type === 'legends' ? 'Legends Team' : 'Team'}</p>
+            <p>{team?.team_type === 'legends' ? 'Legends Team' : 'Team'}</p>
           </div>
 
           <div className={s.actions}>
@@ -215,7 +216,7 @@ export default function TeamOrganisationDetailPage() {
                     <button
                       type="button"
                       onClick={async () => {
-                        const newType = (team as any)?.team_type === 'legends' ? 'regular' : 'legends';
+                        const newType = team?.team_type === 'legends' ? 'regular' : 'legends';
                         try {
                           await api.patch(`/projects/${encodeURIComponent(String(team.id))}/`, { team_type: newType });
                           setTeam((prev) => prev ? { ...prev, team_type: newType } : prev);
@@ -225,7 +226,7 @@ export default function TeamOrganisationDetailPage() {
                         setOverflowOpen(false);
                       }}
                     >
-                      {(team as any)?.team_type === 'legends' ? '⚽ Maak Regulier' : '⭐ Maak Legends'}
+                      {team?.team_type === 'legends' ? '⚽ Maak Regulier' : '⭐ Maak Legends'}
                     </button>
                   )}
                   {!isPlayer && (
@@ -325,7 +326,7 @@ export default function TeamOrganisationDetailPage() {
 
           {activeTabFromUrl === 'members' && teamIdForDirectoryLists && (
             <TeamSelectieTab
-              members={tabData.fullMembers as any}
+              members={tabData.fullMembers as unknown as import('./teamSelectieHelpers').MemberRecord[]}
               membersLoading={tabData.fullMembersLoading}
               memberDetailHref={!isPlayer ? (m) => {
                 const memberId = String(m?.id || m?.user?.id || '');
@@ -379,11 +380,11 @@ export default function TeamOrganisationDetailPage() {
                   projectId={String(team.id)}
                   parentProjectId={club ? String(club.id) : undefined}
                   entityName={team.name}
-                  sponsorMode={((team as any)?.metadata?.sponsor_mode as 'club' | 'custom') || 'club'}
+                  sponsorMode={((team?.metadata as Record<string, unknown>)?.sponsor_mode as 'club' | 'custom') || 'club'}
                   onSponsorModeChange={async (mode) => {
                     if (!team) return;
                     try {
-                      const updated = await api.patch<any>(`/projects/${encodeURIComponent(String(team.id))}/`, { metadata: { ...((team as any)?.metadata || {}), sponsor_mode: mode } });
+                      const updated = await api.patch<Project>(`/projects/${encodeURIComponent(String(team.id))}/`, { metadata: { ...(team?.metadata || {}), sponsor_mode: mode } });
                       setTeam((prev) => ({ ...prev, ...updated }));
                     } catch {
                       // Silently ignore — matches original behaviour
@@ -423,8 +424,8 @@ export default function TeamOrganisationDetailPage() {
           id: String(team.id),
           name: team.name || '',
           slug: team.slug,
-          description: (team as any).description,
-          is_active: (team as any).is_active ?? true,
+          description: team.description,
+          is_active: team.is_active ?? true,
         } : undefined}
         canEditGeneral={true}
         canEditBrand={true}

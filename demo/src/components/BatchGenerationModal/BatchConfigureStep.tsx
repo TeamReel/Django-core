@@ -137,7 +137,7 @@ export const BatchConfigureStep: React.FC<BatchConfigureStepProps> = ({
           const videoCategory = (tr.videos || {})[selectedTemplate.category] || {};
           for (const [key, val] of Object.entries(videoCategory)) {
             if (!val || typeof val !== 'object') continue;
-            const v = val as any;
+            const v = val as Record<string, unknown>;
             const state = v.processing_state || 'raw';
             if (v.raw && state !== 'processed' && state !== 'processing' && state !== 'cancelling') {
               existingVideoVariant = key;

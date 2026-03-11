@@ -1,7 +1,7 @@
 /**
  * Event handlers for useTopNavbarData hook
  */
-import { useCallback, type RefObject, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, type MutableRefObject, type Dispatch, type SetStateAction } from 'react';
 import type { GenerationJob } from '../../hooks/useGenerationJobs';
 import type { QueueCounts } from '../../hooks/useQueueCounts';
 import { reviewJob } from '../../hooks/useGenerationJobs';
@@ -11,8 +11,8 @@ import { logger } from '@/utils/logger';
 
 interface UseTopNavbarHandlersParams {
   isTouchDevice: boolean;
-  closeTimerRef: RefObject<ReturnType<typeof setTimeout> | null>;
-  isDropdownHoveredRef: RefObject<boolean>;
+  closeTimerRef: MutableRefObject<ReturnType<typeof setTimeout> | null>;
+  isDropdownHoveredRef: MutableRefObject<boolean>;
   pendingReviewJobs: GenerationJob[];
   quickReviewIdx: number;
   quickReviewBusy: boolean;
@@ -44,26 +44,26 @@ export function useTopNavbarHandlers(params: UseTopNavbarHandlersParams) {
 
   const handleMouseEnterTrigger = useCallback((groupId: string) => {
     if (isTouchDevice) return;
-    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); (closeTimerRef as any).current = null; }
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
     setOpenDropdown(groupId);
   }, [isTouchDevice, closeTimerRef, setOpenDropdown]);
 
   const handleMouseLeaveTrigger = useCallback((_groupId: string) => {
     if (isTouchDevice) return;
     if (isDropdownHoveredRef.current) return;
-    (closeTimerRef as any).current = setTimeout(() => { setOpenDropdown(null); }, 300);
+    closeTimerRef.current = setTimeout(() => { setOpenDropdown(null); }, 300);
   }, [isTouchDevice, closeTimerRef, isDropdownHoveredRef, setOpenDropdown]);
 
   const handleMouseEnterDropdown = useCallback((_groupId: string) => {
     if (isTouchDevice) return;
-    (isDropdownHoveredRef as any).current = true;
-    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); (closeTimerRef as any).current = null; }
+    isDropdownHoveredRef.current = true;
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null; }
   }, [isTouchDevice, closeTimerRef, isDropdownHoveredRef]);
 
   const handleMouseLeaveDropdown = useCallback((_groupId: string) => {
     if (isTouchDevice) return;
-    (isDropdownHoveredRef as any).current = false;
-    (closeTimerRef as any).current = setTimeout(() => { setOpenDropdown(null); }, 200);
+    isDropdownHoveredRef.current = false;
+    closeTimerRef.current = setTimeout(() => { setOpenDropdown(null); }, 200);
   }, [isTouchDevice, closeTimerRef, isDropdownHoveredRef, setOpenDropdown]);
 
   const handleClickTrigger = useCallback((groupId: string, e: React.MouseEvent) => {

@@ -81,7 +81,7 @@ export function useCompetitionDerived(params: UseDerivedParams) {
 
   const competitionMatchesCount = useMemo(() => {
     if (matches.length) return matches.length;
-    const annotated = Number(competition?.matches_count ?? (competition as any)?.children_matches_count);
+    const annotated = Number(competition?.matches_count ?? competition?.children_matches_count);
     return Number.isFinite(annotated) && annotated >= 0 ? annotated : 0;
   }, [competition, matches.length]);
 

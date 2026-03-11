@@ -63,7 +63,7 @@ export function SeasonVideoJobsCard({
               return `${Math.floor(hrs / 24)}d ago`;
             })();
             const fileSize = (() => {
-              const bytes = (job.output_file as any)?.file_size;
+              const bytes = typeof job.output_file === 'object' ? job.output_file?.file_size : undefined;
               if (!bytes) return null;
               if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
               return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;

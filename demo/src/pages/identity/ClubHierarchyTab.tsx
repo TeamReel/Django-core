@@ -136,7 +136,7 @@ export function ClubHierarchyTab({
         </div>
         <Input
           value={hierarchySearch}
-          onChange={(e) => setHierarchySearch((e.target as any).value)}
+          onChange={(e) => setHierarchySearch((e.target as HTMLInputElement).value)}
           placeholder="Search teams / seasons…"
         />
       </div>

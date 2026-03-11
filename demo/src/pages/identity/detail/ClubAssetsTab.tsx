@@ -9,6 +9,7 @@ import {
   canGenerateClubTenue,
 } from '../../../constants/clubAssets';
 import { projectsApi } from '../../../api';
+import type { ProjectDetail } from '../../../types/api';
 import { getApiBaseUrl } from '../../../utils/apiBase';
 import styles from './ClubAssetsTab.module.css';
 
@@ -86,7 +87,7 @@ export default function ClubAssetsTab({
           ...clubMetadata,
           teamreel_assets: newAssets,
         },
-      } as any);
+      } as Partial<ProjectDetail>);
 
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);

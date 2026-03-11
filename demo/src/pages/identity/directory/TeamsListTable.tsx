@@ -14,7 +14,6 @@ type TeamRecord = ProjectOption & {
   matches_count?: number;
   member_count?: number;
   is_active?: boolean;
-  organisation?: string | { id: string; name?: string; slug?: string; sport?: Record<string, unknown> };
   parent_project?: string | number | { id: string; name?: string; slug?: string } | null;
   parent_project_id?: string | number | null;
   [key: string]: unknown;

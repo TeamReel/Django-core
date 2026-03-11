@@ -14,6 +14,7 @@ import {
 import { api } from '@/api';
 import { useCreditBalance } from '../../hooks/useCreditBalance';
 import { useQueueCounts } from '../../hooks/useQueueCounts';
+import type { Organisation } from '../../types';
 import styles from './DashboardSummaries.module.css';
 
 /* ── Squad Readiness ──────────────────────────────────────────────── */
@@ -21,7 +22,7 @@ import styles from './DashboardSummaries.module.css';
 export const SquadReadinessCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const org = context.organisation as any;
+  const org = context.organisation as Organisation | null;
   const project = context.project;
   const [memberCount, setMemberCount] = useState<number>(0);
 
@@ -291,7 +292,7 @@ export const CreditsTrendCard: React.FC = () => {
 export const OrgStatsCard: React.FC = () => {
   const { context } = useContextSwitcher();
   const navigate = useNavigate();
-  const org = context.organisation as any;
+  const org = context.organisation as Organisation | null;
 
   if (!org) return null;
 

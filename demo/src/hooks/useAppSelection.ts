@@ -9,6 +9,7 @@ import {
   type AppProjectRow,
   type AppPeriodRow,
   type AppSelection,
+  type ParsedPathFields,
   APP_LAST_CTX_KEY,
   parseAppPath,
 } from './appSelectionParser';
@@ -106,13 +107,14 @@ export function useAppSelection(): AppSelection {
     // Common write for all other types that have orgSlug
     if ('orgSlug' in parsedPath && parsedPath.orgSlug) {
         // Construct the object dynamically based on what's available
+        const p = parsedPath as ParsedPathFields;
         writeLastAppContext({
             orgSlug: parsedPath.orgSlug,
-            clubSlugOrId: (parsedPath as any).clubSlugOrId,
-            teamSlugOrId: (parsedPath as any).teamSlugOrId,
-            seasonSlugOrId: (parsedPath as any).seasonSlugOrId,
-            competitionSlugOrId: (parsedPath as any).competitionSlugOrId,
-            matchId: (parsedPath as any).matchId,
+            clubSlugOrId: p.clubSlugOrId,
+            teamSlugOrId: p.teamSlugOrId,
+            seasonSlugOrId: p.seasonSlugOrId,
+            competitionSlugOrId: p.competitionSlugOrId,
+            matchId: p.matchId,
         });
     }
   }, [parsedPath]);
@@ -169,7 +171,7 @@ export function useAppSelection(): AppSelection {
           const searchParams = new URLSearchParams(location.search || '');
           const orgFromQueryRaw = String(searchParams.get('org_id') || searchParams.get('orgId') || searchParams.get('org') || '').trim();
 
-        const orgFromPath = parsedPath && 'orgSlug' in parsedPath ? (parsedPath as any).orgSlug : null;
+        const orgFromPath = parsedPath && 'orgSlug' in parsedPath ? (parsedPath as ParsedPathFields).orgSlug : null;
         const orgFromPathStr = String(orgFromPath || '');
 
         const ctxOrgSlugStr = String(contextOrgSlug || '');
@@ -206,9 +208,9 @@ export function useAppSelection(): AppSelection {
         }
 
         // Determine target slugs from URL if present
-        const urlClubSlug = parsedPath && 'clubSlugOrId' in parsedPath ? (parsedPath as any).clubSlugOrId : null;
-        const urlTeamSlug = parsedPath && 'teamSlugOrId' in parsedPath ? (parsedPath as any).teamSlugOrId : null;
-        const urlSeasonSlug = parsedPath && 'seasonSlugOrId' in parsedPath ? (parsedPath as any).seasonSlugOrId : null;
+        const urlClubSlug = parsedPath && 'clubSlugOrId' in parsedPath ? (parsedPath as ParsedPathFields).clubSlugOrId : null;
+        const urlTeamSlug = parsedPath && 'teamSlugOrId' in parsedPath ? (parsedPath as ParsedPathFields).teamSlugOrId : null;
+        const urlSeasonSlug = parsedPath && 'seasonSlugOrId' in parsedPath ? (parsedPath as ParsedPathFields).seasonSlugOrId : null;
 
         // Fetch accessible clubs + teams for this organisation.
         const [clubs, teams] = await Promise.all([

@@ -53,7 +53,7 @@ export function MemberIdentityTab({
         jersey_number: editJerseyNumber.trim() || null,
       };
 
-      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: newMeta }) as any;
+      const updated = await projectsApi.updateMember(project.id, membership.id, { metadata: newMeta }) as Record<string, any>;
       onMembershipUpdate(updated);
       setIsEditing(false);
       setSuccess('Identity updated successfully');

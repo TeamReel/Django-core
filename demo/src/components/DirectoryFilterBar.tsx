@@ -115,7 +115,7 @@ export const DirectoryFilterBar: React.FC<DirectoryFilterBarProps> = ({
             .filter((c: ProjectOption) => {
               if (!selectedOrgId) return true;
               const cOrg =
-                typeof c.organisation === 'string' ? c.organisation : (c.organisation as any)?.id;
+                typeof c.organisation === 'string' ? c.organisation : c.organisation?.id;
               return String(cOrg) === String(selectedOrgId);
             })
             .sort((a: ProjectOption, b: ProjectOption) => String(a.name).localeCompare(String(b.name)))

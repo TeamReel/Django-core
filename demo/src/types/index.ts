@@ -16,6 +16,7 @@ export interface User {
   last_name?: string;
   role: 'admin' | 'member' | 'viewer';
   is_active: boolean;
+  is_superuser?: boolean;
   created_at?: string;
   updated_at?: string;
   last_login?: string;
@@ -54,8 +55,10 @@ export interface Organisation {
   metadata?: {
     type?: string;
     country?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
+  sport_variants_count?: number;
+  competitions_count?: number;
 }
 
 /**
@@ -81,12 +84,20 @@ export interface Project {
   };
   // Parent project references (may vary by API endpoint)
   parent_id?: string | number | null;
-  parent?: any;
-  parent_project?: any;
+  parent?: { id: string; name?: string; slug?: string } | string | number | null;
+  parent_project?: { id: string; name?: string; slug?: string } | string | number | null;
   parent_project_id?: string | number | null;
   parent_name?: string | null;
   parent_project_name?: string | null;
   membership_id?: string;
+  // Extended fields from API responses
+  team_type?: string;
+  metadata?: Record<string, unknown>;
+  period_type?: string;
+  sport_variants_count?: number;
+  seasons_count?: number;
+  competitions_count?: number;
+  matches_count?: number;
 }
 
 /**
@@ -101,6 +112,9 @@ export interface AuditEvent {
   project_id?: string;
   resource_type?: string;
   resource_id?: string;
+  resource_display?: string;
+  outcome?: string;
+  result?: string;
   metadata?: Record<string, unknown>;
   details?: string;
 }

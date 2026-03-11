@@ -14,6 +14,7 @@ type Period = { id: string; name: string; parent_period?: { id: string; name: st
 
 type Match = {
   id: string;
+  slug?: string;
   title: string;
   start_time: string;
   project: { id: string; name: string };
@@ -247,7 +248,7 @@ export const ProjectCompetitionMatchesPage: React.FC = () => {
                               size="sm"
                               variant="secondary"
                               onClick={() => {
-                                const matchKeyOrId = String((match as any).slug || match.id || '').trim();
+                                const matchKeyOrId = String(match.slug || match.id || '').trim();
                                 if (!matchKeyOrId) return;
 
                                 if (isTeamRoute && orgSlugOrId && clubSlugOrId && projectSlugOrId && seasonPathKey && competitionPathKey) {

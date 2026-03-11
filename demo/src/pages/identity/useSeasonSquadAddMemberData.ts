@@ -123,7 +123,7 @@ export function useSeasonSquadAddMemberData({
   };
 
   const getTeamParentId = (t: ProjectOption): string | null => {
-    const parent = t.parent_id ?? (t as any).parent ?? t.parent_project_id
+    const parent = t.parent_id ?? t.parent ?? t.parent_project_id
       ?? (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
     if (parent == null) return null;
     return String(typeof parent === 'object' ? parent.id : parent);

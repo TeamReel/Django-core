@@ -118,7 +118,7 @@ export function toFullUrl(path: string | null | undefined): string | null {
  */
 export function resolveMediaUrl(m: MemberRecord, slotId: string): string | null {
   // 1) Flat media URL
-  const flat = (m?.metadata?.teamreel_assets as any)?.media?.[slotId]?.url;
+  const flat = (m?.metadata?.teamreel_assets as Record<string, any>)?.media?.[slotId]?.url;
   if (flat) return toFullUrl(flat);
 
   // 2) Per-variant structure

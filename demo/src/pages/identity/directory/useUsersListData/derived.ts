@@ -91,8 +91,8 @@ export function useUsersListDerived(
       if (!teamId) continue;
       const clubId = String(
         t?.parent_id ??
-        (t as any)?.parent_project?.id ??
-        (t as any)?.parent_project_id ?? '',
+        t?.parent_project?.id ??
+        t?.parent_project_id ?? '',
       ).trim();
       if (!clubId) continue;
       const existing = map.get(clubId);

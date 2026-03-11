@@ -142,7 +142,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
               }
 
               const usernameLabel =
-                String((u as any)?.username || '').trim() ||
+                String(u?.username || '').trim() ||
                 `${u.first_name || ''} ${u.last_name || ''}`.trim() ||
                 (String(u.email || '').includes('@')
                   ? String(u.email || '').split('@')[0]
@@ -225,7 +225,7 @@ export const UsersListTable: React.FC<UsersListTableProps> = ({ data }) => {
                       <button
                         className={styles.linkButton}
                         onClick={() => {
-                          const href = getUserDetailHrefForRow(u as any);
+                          const href = getUserDetailHrefForRow({ id: u.id });
                           if (href) navigate(href);
                         }}
                         title="Open user"

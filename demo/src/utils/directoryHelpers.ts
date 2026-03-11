@@ -11,7 +11,7 @@ import type { OrganisationOption, ProjectOption } from '../pages/work/WorkFilter
 export type DirectoryRow = {
   organisation?: { id: string; name: string; slug?: string; sport?: { id: string | number; name?: string } | null } | string | null;
   organisation_id?: string | null;
-  project?: { id: string; name: string; slug?: string; parent_id?: string; parent_project_id?: string } | string | null;
+  project?: { id: string | number; name: string; slug?: string; parent_id?: string; parent_project_id?: string } | string | null;
   project_id?: string | null;
   parent_period?: { id: string; name: string; slug?: string; start_date?: string; end_date?: string } | null;
   parent_period_id?: string | null;
@@ -270,12 +270,12 @@ export type Activity = {
   title: string;
   activity_type: string;
   start_time?: string;
-  end_time?: string;
-  project?: { id: string; name: string; slug?: string; organisation_id?: string } | null;
+  end_time?: string | null;
+  project?: { id: string | number; name: string; slug?: string; organisation_id?: string } | null;
   period?: {
     id: string;
     name: string;
-    parent_period?: { id: string; name: string; slug?: string };
+    parent_period?: { id: string; name: string; slug?: string } | null;
     slug?: string;
     sport?: {
       id: string | number;
@@ -286,9 +286,9 @@ export type Activity = {
       parent_sport_id?: string | number | null;
     } | null;
   } | null;
-  organisation?: { id: string; name: string; slug: string } | null;
+  organisation?: { id: string; name: string; slug: string; sport?: { id: string | number; name?: string } | null } | null;
   organisation_id?: string;
-  opponent_project?: { id: string; name: string; slug?: string } | null;
+  opponent_project?: { id: string | number; name: string; slug?: string } | null;
   metadata?: Record<string, unknown>;
   data?: Record<string, unknown>;
   location?: string;

@@ -68,7 +68,7 @@ export function VideoFollowUpModal({ info, onClose, onSubmitted }: VideoFollowUp
           require_approval: true,
         };
         if (info.organisationId) body.organisation_id = info.organisationId;
-        await generativeApi.generate(body as any);
+        await generativeApi.generate(body);
         succeeded++;
       } catch (e) {
         logger.error(`Failed to submit ${job.templateId}`, e);
@@ -188,7 +188,7 @@ export function PhotoCompositeFollowUpModal({ info, onClose, onSubmitted }: Phot
         body.input_image_urls = { person_photo: info.approvedImageUrl, background: info.backgroundUrl };
       }
 
-      await generativeApi.generate(body as any);
+      await generativeApi.generate(body);
       setSubmitted(true);
     } catch (e) {
       logger.error('Failed to submit photo_composite_video', e);

@@ -74,7 +74,7 @@ export function useDerivedMatches({
         if (periodSportCategoryId && String(periodSportCategoryId) === String(sportFilter)) return true;
 
         const nestedOrg = match?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as any)?.sport?.id : undefined;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? nestedOrg?.sport?.id : undefined;
         if (nestedSportId && String(nestedSportId) === String(sportFilter)) return true;
 
         const orgId =

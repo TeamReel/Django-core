@@ -119,13 +119,13 @@ export const ClubsList: React.FC<ClubsListProps> = ({ preselectedOrgId }) => {
       <ProjectDetailModal
         opened={d.isDetailModalOpen}
         onClose={() => d.setIsDetailModalOpen(false)}
-        project={d.detailProject as any}
+        project={d.detailProject}
       />
 
       <ProjectEditModal
         opened={d.isEditModalOpen}
         onClose={() => d.setIsEditModalOpen(false)}
-        project={d.editProject as any}
+        project={d.editProject}
         onSave={d.handleSaveProject}
       />
 
@@ -166,13 +166,13 @@ function ClubRow({ club, d }: { club: ClubRecord; d: HookData }) {
     selectedOrg?.id ||
     d.selectedOrgId;
   const clubSlugOrId = club.slug || club.id;
-  const orgSport = (club.organisation as any)?.sport || orgFromList?.sport;
+  const orgSport = (typeof club.organisation === 'object' ? club.organisation?.sport : undefined) || orgFromList?.sport;
 
   const teamsForClub = d.teams.filter((t) => {
     const parent =
       t.parent_id ??
       t.parent_project_id ??
-      (typeof t.parent_project === 'object' ? (t.parent_project as any)?.id : t.parent_project);
+      (typeof t.parent_project === 'object' ? t.parent_project?.id : t.parent_project);
     const parentId = parent == null ? '' : String(parent);
     return parentId && parentId === String(club.id);
   });

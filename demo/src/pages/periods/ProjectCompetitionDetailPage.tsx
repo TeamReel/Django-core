@@ -34,7 +34,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
     return <ProjectSeasonMemberDetailPage />;
   }
 
-  const isActiveCtx = !!d.competition && String((d.activeContext as any)?.competition?.id ?? '') === String(d.competition?.id ?? '');
+  const isActiveCtx = !!d.competition && String((d.activeContext as { competition?: { id?: string } } | null)?.competition?.id ?? '') === String(d.competition?.id ?? '');
 
   return (
     <div>
@@ -177,7 +177,7 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <PeriodEditModal
               opened={d.isPeriodEditModalOpen}
               onClose={() => d.setIsPeriodEditModalOpen(false)}
-              period={d.selectedEditPeriod as any}
+              period={d.selectedEditPeriod as unknown as import('../identity/PeriodEditModal').PeriodLike | null}
               showDates={false}
               organisationSportId={d.org?.sport?.id ? String(d.org.sport.id) : null}
               onSave={async (patch) => { if (d.selectedEditPeriod) await d.savePeriodEdits(d.selectedEditPeriod, patch); }}
@@ -186,14 +186,14 @@ export const ProjectCompetitionDetailPage: React.FC = () => {
             <MatchEditModal
               opened={d.isMatchEditModalOpen}
               onClose={() => d.setIsMatchEditModalOpen(false)}
-              match={d.selectedEditMatch as any}
+              match={d.selectedEditMatch as unknown as Parameters<typeof MatchEditModal>[0]['match']}
               mode={d.isTeamRoute ? 'team-context' : 'default'}
               onSave={async (patch) => { if (d.selectedEditMatch) await d.saveMatchEdits(d.selectedEditMatch, patch); }}
             />
             <MatchDetailModal
               opened={d.isMatchDetailModalOpen}
               onClose={() => { d.setIsMatchDetailModalOpen(false); d.setSelectedDetailMatch(null); }}
-              match={d.selectedDetailMatch as any}
+              match={d.selectedDetailMatch}
             />
             <MatchCreateModal
               opened={d.isMatchCreateModalOpen}

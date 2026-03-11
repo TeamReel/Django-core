@@ -9,6 +9,7 @@ import { logger } from '@/utils/logger';
 
 interface Match {
   id: string;
+  slug?: string;
   title: string;
   start_time: string;
   end_time: string;
@@ -144,7 +145,7 @@ export const ProjectMatches: React.FC<ProjectMatchesProps> = ({
                    </Badge>
                 </td>
                  <td className="text-right">
-                   <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${(match as any).slug || match.id}`)}>View</Button>
+                   <Button size="sm" variant="secondary" onClick={() => navigate(`/matches/${match.slug || match.id}`)}>View</Button>
                  </td>
               </tr>
             );

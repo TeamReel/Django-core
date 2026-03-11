@@ -26,7 +26,7 @@ export function UserDetailActivityTabs({ data }: Props) {
       <div className="card">
         <div className="flex-between gap-12">
           <h3 className="m-0">Hierarchy</h3>
-          <Input value={hierarchySearch} onChange={(e) => setHierarchySearch((e.target as any).value)} placeholder="Search…" />
+          <Input value={hierarchySearch} onChange={(e) => setHierarchySearch((e.target as HTMLInputElement).value)} placeholder="Search…" />
         </div>
         <div className="mt-12">
           <Table className="detail-table">

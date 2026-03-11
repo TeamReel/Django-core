@@ -19,7 +19,7 @@ interface ConfirmStepProps {
     id: string;
     title?: string;
     project?: { id: string; name: string };
-    opponent_project?: { id: string; name: string };
+    opponent_project?: { id: string; name: string } | null;
     start_time?: string;
   } | null;
   seasonSquad: Record<string, Participation[]>;

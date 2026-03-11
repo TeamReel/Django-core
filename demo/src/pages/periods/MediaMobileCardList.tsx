@@ -8,7 +8,7 @@ import {
   CheckCircle2, Circle, Clock, AlertTriangle,
   ChevronUp, ChevronDown, Zap, UserRound,
 } from 'lucide-react';
-import { MEDIA_SLOTS } from '../../constants/mediaSlots';
+import { MEDIA_SLOTS, type MediaSlotId } from '../../constants/mediaSlots';
 import { countProcessedMediaSlots, getMediaProcessingState } from '../../utils/mediaHelpers';
 import styles from './SeasonMediaTab.module.css';
 
@@ -77,7 +77,7 @@ const MediaMobileCardList: React.FC<MediaMobileCardListProps> = ({
       {/* ── Smart batch suggestions ── */}
       {(() => {
         const hasKit = (m: Record<string, unknown>) => getMediaProcessingState(m, 'kit') === 'processed';
-        const missingSlot = (m: Record<string, unknown>, slotId: string) => getMediaProcessingState(m, slotId as any) === 'empty';
+        const missingSlot = (m: Record<string, unknown>, slotId: string) => getMediaProcessingState(m, slotId as MediaSlotId) === 'empty';
         const suggestions = [
           { slotId: 'intro', label: "Intro's", templateId: 'member_intro', count: members.filter(m => hasKit(m) && missingSlot(m, 'intro')).length },
           { slotId: 'celebration', label: 'Celebrations', templateId: 'member_goal_celebration', count: members.filter(m => hasKit(m) && missingSlot(m, 'celebration')).length },

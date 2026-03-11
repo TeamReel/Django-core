@@ -39,7 +39,7 @@ export default function ProjectHierarchySeasonRedirectPage() {
         // Try organisation-scoped endpoint first (works with slugs and honours org context).
         if (orgSlugOrId) {
           try {
-            const project = await organisationsApi.getProject(orgSlugOrId, projectSlugOrId) as any;
+            const project = await organisationsApi.getProject(orgSlugOrId, projectSlugOrId);
             const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
             if (clubKey) {
               setClubSlugOrId(clubKey);
@@ -50,7 +50,7 @@ export default function ProjectHierarchySeasonRedirectPage() {
 
         // Fallback: global project endpoint (often available when org endpoint fails).
         try {
-          const project = await projectsApi.get(projectSlugOrId) as any;
+          const project = await projectsApi.get(projectSlugOrId);
           const clubKey = String(project?.parent?.slug || project?.parent?.id || project?.parent_id || '').trim();
           if (clubKey) setClubSlugOrId(clubKey);
         } catch { /* ignore */ }

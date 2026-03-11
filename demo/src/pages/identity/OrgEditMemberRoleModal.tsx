@@ -65,7 +65,7 @@ export function OrgEditMemberRoleModal({
           <label className={`block fw-600 ${styles.label}`}>Role</label>
           <select
             value={editingMemberRole}
-            onChange={(e) => setEditingMemberRole(e.target.value as any)}
+            onChange={(e) => setEditingMemberRole(e.target.value as 'admin' | 'member')}
             disabled={saving}
             className={`w-full rounded-6 border bg-surface-2 text-primary ${styles.selectInput}`}
           >

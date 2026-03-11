@@ -118,7 +118,7 @@ export function MatchCreateFlow({ isOpen, onClose }: MatchCreateFlowProps) {
     const id = d.selectedOpponentTeamId;
     if (!id) return '';
     const found = d.opponentTeamOptions.find((t) => String(t.id) === id);
-    return found ? String((found as any).name || '') : '';
+    return found ? String(found.name || '') : '';
   }, [d.selectedOpponentTeamId, d.opponentTeamOptions]);
 
   const confirmData: MatchConfirmData = useMemo(() => ({

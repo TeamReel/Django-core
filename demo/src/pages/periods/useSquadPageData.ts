@@ -20,6 +20,7 @@ export type Project = {
   id: string;
   slug?: string;
   name: string;
+  organisation?: { id?: string; slug?: string; name?: string; user_role?: string } | null;
   parent_project?: { id: string; slug?: string; name: string } | null;
 };
 
@@ -27,6 +28,7 @@ export type Organisation = {
   id: string;
   slug?: string;
   name: string;
+  user_role?: 'admin' | 'member';
 };
 
 export interface UseSquadPageDataReturn {
@@ -175,17 +177,17 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     };
     const fromList = (myOrganisations as Array<{ id?: string; slug?: string; user_role?: string }>)?.find((o) => orgIdMatches(o));
     if (fromList?.user_role) return fromList;
-    if (orgIdMatches(contextOrg) && (contextOrg as any)?.user_role) return contextOrg;
-    const projectOrg = (project as any)?.organisation;
+    if (orgIdMatches(contextOrg) && (contextOrg as { user_role?: string } | undefined)?.user_role) return contextOrg as { id?: string; slug?: string; user_role?: string };
+    const projectOrg = project?.organisation;
     if (projectOrg?.user_role) return projectOrg;
-    if ((organisation as any)?.user_role) return organisation as any;
+    if (organisation?.user_role) return organisation;
     if (fromList) return fromList;
     if (orgIdMatches(contextOrg)) return contextOrg;
     return projectOrg || organisation || fromList || contextOrg || null;
   }, [context?.organisation, myOrganisations, orgSlugOrId, organisation, project]);
 
   const permissionContext = useMemo(
-    () => ({ currentOrganisation: orgForPermissions as any, isSuperAdmin }),
+    () => ({ currentOrganisation: orgForPermissions as Organisation | undefined, isSuperAdmin }),
     [orgForPermissions, isSuperAdmin],
   );
 
@@ -285,7 +287,7 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     if (slugOrId) navigate(`${seasonsBasePath}/${slugOrId}/squad`);
   };
 
-  const seasonKeyOrId = periodPathKey(season as any) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
+  const seasonKeyOrId = periodPathKey(season) || String(effectiveSeasonId || resolvedSeasonId || '').trim();
 
   // ── Mutations ──────────────────────────────────────────────────────
 
@@ -318,9 +320,9 @@ export function useSquadPageData(): UseSquadPageDataReturn {
     if (!selectedEditPeriod) return;
     const periodId = String(selectedEditPeriod?.id || '').trim();
     if (!periodId) return;
-    const res = await api.patch<any>(`/periods/${encodeURIComponent(periodId)}/`, payload);
-    const updated = res ?? { ...selectedEditPeriod, ...payload };
-    setSeason((prev) => (prev ? ({ ...(prev as any), ...(updated as any) } as any) : (updated as any)));
+    const res = await api.patch<Partial<Period>>(`/periods/${encodeURIComponent(periodId)}/`, payload);
+    const updated: Period = { ...selectedEditPeriod, ...(res ?? payload) } as Period;
+    setSeason((prev) => (prev ? { ...prev, ...updated } : updated));
   };
 
   const saveMembershipEdit = async ({ role, functional_roles }: { role: string; functional_roles: string[] }) => {

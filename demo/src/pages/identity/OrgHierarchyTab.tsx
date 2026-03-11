@@ -68,9 +68,9 @@ export function OrgHierarchyTab({
     const teamCompetitions = teamCompetitionsCountById || {};
     const teamMatches = teamMatchesCountById || {};
 
-    const teamsByClubId = new Map<string, any[]>();
+    const teamsByClubId = new Map<string, Project[]>();
     for (const t of teams || []) {
-      const parent = (t as any)?.parent_id ?? (t as any)?.parent ?? (t as any)?.parent_project_id ?? (t as any)?.parent_project?.id ?? null;
+      const parent = t?.parent_id ?? (typeof t?.parent === 'object' && t?.parent !== null ? t.parent.id : t?.parent) ?? t?.parent_project_id ?? (typeof t?.parent_project === 'object' && t?.parent_project !== null ? t.parent_project.id : t?.parent_project) ?? null;
       const clubId = parent != null ? String(parent) : '';
       if (!clubId) continue;
       if (!teamsByClubId.has(clubId)) teamsByClubId.set(clubId, []);
@@ -152,7 +152,7 @@ export function OrgHierarchyTab({
         </div>
         <Input
           value={hierarchySearch}
-          onChange={(e) => setHierarchySearch((e.target as any).value)}
+          onChange={(e) => setHierarchySearch(e.target.value)}
           placeholder="Search clubs / teams…"
         />
       </div>

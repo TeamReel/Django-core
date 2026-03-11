@@ -44,7 +44,7 @@ export default function TeamDetailPage() {
         // Try organisation-scoped endpoint first.
         if (orgSlugOrId) {
           try {
-            const project = await organisationsApi.getProject(orgSlugOrId, clubSlugOrId) as any;
+            const project = await organisationsApi.getProject(orgSlugOrId, clubSlugOrId);
             const slug = String(project?.slug || '').trim();
             if (slug) {
               setResolvedClubSlug(slug);
@@ -55,7 +55,7 @@ export default function TeamDetailPage() {
 
         // Fallback: global project endpoint.
         try {
-          const project = await projectsApi.get(clubSlugOrId) as any;
+          const project = await projectsApi.get(clubSlugOrId);
           const slug = String(project?.slug || '').trim();
           if (slug) setResolvedClubSlug(slug);
         } catch { /* ignore */ }

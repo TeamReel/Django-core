@@ -56,7 +56,7 @@ export function useMediaLibEffects({
         myOrganisations.map((o) => ({
           id: String(o.id),
           name: o.name,
-          slug: (o as any).slug || '',
+          slug: o.slug || '',
         })),
       );
       return;

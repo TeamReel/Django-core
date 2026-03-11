@@ -86,7 +86,7 @@ export function useSeasonSquadData({
       if (member) {
         const mediaKey = ASSET_TYPE_TO_MEDIA_KEY[assetType] || assetType;
         const meta = member.metadata || {};
-        const tr = (meta as any)?.teamreel_assets || {};
+        const tr = ((meta as Record<string, unknown>)?.teamreel_assets || {}) as Record<string, any>;
         const media = tr?.media || {};
         const videos = tr?.videos || {};
         const images = tr?.images || {};

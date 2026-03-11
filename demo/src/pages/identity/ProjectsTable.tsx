@@ -77,9 +77,14 @@ export function ProjectsTable({ d }: { d: Data }) {
         </thead>
         <tbody>
           {filtered.map((project) => {
-            const projectOrgSlug = (project as any).organisation?.slug || resolvedOrg?.slug || currentOrgId;
-            const projectOrg = (project as any).organisation;
-            const pCtx = { currentOrganisation: projectOrg ? { ...projectOrg, user_role: projectOrg.user_role } : resolvedOrg, isSuperAdmin };
+            const projectOrgSlug = project.organisation?.slug || resolvedOrg?.slug || currentOrgId;
+            const projectOrg = project.organisation;
+            const pCtx = {
+              currentOrganisation: projectOrg
+                ? { ...projectOrg, name: projectOrg.name || '', user_role: projectOrg.user_role as 'admin' | 'member' | undefined }
+                : resolvedOrg,
+              isSuperAdmin,
+            };
             const canEdit = canEditProject(pCtx);
             const canDel = canDeleteProject(pCtx);
 
@@ -93,7 +98,7 @@ export function ProjectsTable({ d }: { d: Data }) {
                     {project.name}
                   </a>
                 </td>
-                {!currentOrgSlug && <td className="fs-sm">{(project as any).organisation?.name || '-'}</td>}
+                {!currentOrgSlug && <td className="fs-sm">{project.organisation?.name || '-'}</td>}
                 <td className="fs-sm" data-testid={`project-desc-${project.id}`}>{project.description || '-'}</td>
                 <td>
                   <Badge variant="default" data-testid={`project-members-${project.id}`}>{project.member_count || 0}</Badge>

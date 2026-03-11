@@ -16,6 +16,7 @@ import {
 import { useContextSwitcher } from '@django-core/context-switcher';
 import AppShell from '../../components/AppShell';
 import { Organisation } from '../../types';
+import type { OrganisationDetail } from '../../types/api';
 import { organisationsApi } from '../../api';
 import styles from './OrganisationEditPage.module.css';
 
@@ -57,7 +58,7 @@ export const OrganisationEditPage: React.FC = () => {
 
       try {
         setLoading(true);
-        const data = await organisationsApi.get(currentOrgSlug) as any;
+        const data = await organisationsApi.get(currentOrgSlug);
         setName(data.name);
         setDescription(data.description || '');
         setIsActive(data.is_active !== undefined ? data.is_active : true);
@@ -84,7 +85,7 @@ export const OrganisationEditPage: React.FC = () => {
         name,
         description,
         is_active: isActive,
-      } as any) as any;
+      } as Partial<OrganisationDetail>);
       const slugOrId = updated?.slug || updated?.id || resolvedOrg?.slug || id;
       navigate(`/organisations/${slugOrId}`);
     } catch (err: unknown) {

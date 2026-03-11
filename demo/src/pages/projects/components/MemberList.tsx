@@ -93,7 +93,7 @@ export const MemberList: React.FC<MemberListProps> = ({
 
              // Let's assume we re-fetch project members, but ideally we want specific season roster.
              // If the backend doesn't filter memberships by period yet, this might just return all.
-             const data = await projectsApi.listMembers(projectId, { periodId: selectedPeriod }) as any;
+             const data = await projectsApi.listMembers(projectId, { periodId: selectedPeriod }) as Record<string, any>;
              setMembers(data.results || data || []);
           } catch (e) {
             logger.error('Failed to fetch members', e);

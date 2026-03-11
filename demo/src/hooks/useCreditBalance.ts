@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { organisationsApi, transactionsApi } from '@/api';
+import type { OrganisationDetail } from '@/types/api/organisation';
 import { logger } from '@/utils/logger';
 
 interface BalancePolicy {
@@ -36,14 +37,14 @@ export function useCreditBalance(organisationSlug?: string, organisationId?: str
 
         // 1. Fetch Organisation for Balance
         const orgData = await organisationsApi.get(organisationSlug!);
-        const currentBalance = (orgData as any).credit_balance || 0;
+        const currentBalance = (orgData as OrganisationDetail & { credit_balance?: number }).credit_balance || 0;
         setBalance(currentBalance);
 
         // 2. Fetch Policies
         try {
           const { results: policies } = await transactionsApi.listBalancePolicies(
             { organisation: organisationId },
-          ) as any;
+          );
 
           // Find active policy for low balance
           const activePolicy = (policies as Array<{ is_active?: boolean; min_threshold?: number }>).find((p) => p.is_active && (p.min_threshold ?? 0) > 0);

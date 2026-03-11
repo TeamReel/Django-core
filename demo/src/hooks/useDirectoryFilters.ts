@@ -49,8 +49,8 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
   const { categories, variants, getVariantsForCategory } = useSports();
 
   // Auth
-  const userRole = String((user as any)?.role || '').toLowerCase();
-  const isSuperAdmin = Boolean((user as any)?.is_superuser) || userRole === 'superadmin';
+  const userRole = String(user?.role || '').toLowerCase();
+  const isSuperAdmin = Boolean(user?.is_superuser) || userRole === 'superadmin';
 
   // Lock flags
   const orgLocked = Boolean(preselectedOrgId);
@@ -180,8 +180,8 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
     const orgSlugOrId = selectedOrg?.slug || selectedOrg?.id || selectedOrgId;
     return String(
       orgSlugOrId ||
-        (context as any)?.organisation?.slug ||
-        (context as any)?.organisation?.id ||
+        context?.organisation?.slug ||
+        context?.organisation?.id ||
         '',
     ).trim();
   }, [selectedOrgId, organisations, context]);
@@ -317,13 +317,16 @@ export function useDirectoryFilters(config: UseDirectoryFiltersConfig): Director
         );
       } catch {
         setOrganisations(
-          myOrganisations.map((o) => ({
-            id: String(o.id),
-            name: o.name,
-            slug: (o as any).slug,
-            sport: (o as any).sport,
-            sport_variants_count: (o as any).sport_variants_count,
-          })),
+          myOrganisations.map((o) => {
+            const ext = o as unknown as { id: string; name: string; slug: string; sport?: { id: string; name: string }; sport_variants_count?: number };
+            return {
+              id: String(ext.id),
+              name: ext.name,
+              slug: ext.slug,
+              sport: ext.sport,
+              sport_variants_count: ext.sport_variants_count,
+            };
+          }),
         );
       }
     };

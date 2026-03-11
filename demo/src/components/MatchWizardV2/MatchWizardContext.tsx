@@ -233,7 +233,7 @@ export function MatchWizardProvider({ children }: MatchWizardProviderProps) {
   ], [squadGroups, guestPlayers]);
 
   const homeTeamName = selectedMatch?.project?.name || 'Thuis';
-  const awayTeamName = (selectedMatch as any)?.opponent_project?.name || 'Uit';
+  const awayTeamName = selectedMatch?.opponent_project?.name || 'Uit';
 
   const isLineupRequired = pendingContent
     ? LINEUP_REQUIRED_SUBTYPES.has(pendingContent.subtype)

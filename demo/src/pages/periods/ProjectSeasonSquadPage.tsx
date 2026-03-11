@@ -62,7 +62,7 @@ export default function ProjectSeasonSquadPage() {
             onSelect={d.handleSeasonSwitch}
             hasDropdown={d.seasonsForSwitcher.length > 1}
           />
-        ) as any,
+        ),
         current: true,
       },
     ];

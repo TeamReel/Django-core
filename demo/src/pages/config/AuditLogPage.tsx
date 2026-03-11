@@ -212,7 +212,7 @@ export default AuditLogPage;
 
 const AuditRow: React.FC<{ event: AuditEvent; onSelect: () => void }> = ({ event, onSelect }) => {
   const permissionGranted = event.event_type === 'permission.checked' ? event.metadata?.granted : null;
-  const outcomeField = (event as any).outcome || (event as any).result || event.metadata?.decision || null;
+  const outcomeField = event.outcome || event.result || (event.metadata?.decision as string | undefined) || null;
 
   const outcomeBadge = (() => {
     if (permissionGranted !== null && permissionGranted !== undefined) {
@@ -229,9 +229,9 @@ const AuditRow: React.FC<{ event: AuditEvent; onSelect: () => void }> = ({ event
   })();
 
   const target = (() => {
-    if ((event as any).resource_display) return (event as any).resource_display;
+    if (event.resource_display) return event.resource_display;
     if (event.metadata?.resource_type) {
-      return event.metadata.resource_id ? `${event.metadata.resource_type} #${event.metadata.resource_id}` : event.metadata.resource_type;
+      return event.metadata.resource_id ? `${event.metadata.resource_type} #${event.metadata.resource_id}` : String(event.metadata.resource_type);
     }
     return '–';
   })();
@@ -240,7 +240,7 @@ const AuditRow: React.FC<{ event: AuditEvent; onSelect: () => void }> = ({ event
     <tr>
       <td className="fs-sm whitespace-nowrap">{new Date(event.timestamp).toLocaleString()}</td>
       <td>
-        <Badge variant={eventTypeColorMap[event.event_type] || 'secondary' as any} data-testid={`audit-type-${event.id}`}>
+        <Badge variant={(eventTypeColorMap[event.event_type] || 'secondary') as 'success' | 'warning' | 'error' | 'info' | 'default'} data-testid={`audit-type-${event.id}`}>
           {event.event_type.replace(/_/g, ' ')}
         </Badge>
       </td>

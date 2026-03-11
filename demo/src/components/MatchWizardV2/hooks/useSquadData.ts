@@ -23,6 +23,7 @@ export function useSquadData(): UseSquadDataReturn {
     setSquadGroups,
     setSquadLoading,
     setSquadError,
+    lineupFormation,
     lineupSlots,
     setLineupSlots,
     setLineupFormation,
@@ -89,8 +90,8 @@ export function useSquadData(): UseSquadDataReturn {
           player: saved.player || [],
         });
       }
-    } else if ((metadata as any)?.formation) {
-      setLineupFormation((metadata as any).formation);
+    } else if (metadata?.formation) {
+      setLineupFormation(metadata.formation as string);
     }
   }, [selectedMatch, setLineupFormation, setLineupSlots]);
 
@@ -107,7 +108,7 @@ export function useSquadData(): UseSquadDataReturn {
           ...existingMetadata,
           formation: lineupSlots,
           lineup: {
-            formation: (lineupSlots as any).formation || '4-3-3',
+            formation: lineupFormation || '4-3-3',
             goalkeeper: lineupSlots.goalkeeper,
             player: lineupSlots.player,
           },

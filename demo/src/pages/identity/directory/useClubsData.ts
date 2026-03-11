@@ -134,7 +134,7 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
 
   useEffect(() => {
     if (!isSuperAdmin) {
-      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: (o as any).slug })));
+      setOrganisations(myOrganisations.map((o) => ({ id: String(o.id), name: o.name, slug: o.slug })));
       return;
     }
 
@@ -182,15 +182,15 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
               include_archived: true,
             }, { pageSize: 500 }),
           ]);
-          setClubs(allClubs as any);
-          setTeams(allTeams as any);
+          setClubs(allClubs as unknown as ClubProject[]);
+          setTeams(allTeams as unknown as ProjectOption[]);
         } else {
           const [allClubs, allTeams] = await Promise.all([
             projectsApi.listAll({ parentProjectIsNull: true, includeArchived: true }, { pageSize: 200 }),
             projectsApi.listAll({ parentProjectIsNull: false, includeArchived: true }, { pageSize: 200 }),
           ]);
-          setClubs(allClubs as any);
-          setTeams(allTeams as any);
+          setClubs(allClubs as unknown as ClubProject[]);
+          setTeams(allTeams as unknown as ProjectOption[]);
         }
       } catch (e) {
         logger.error('Failed to load clubs', e);
@@ -242,7 +242,7 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
     if (sportFilter !== 'all') {
       list = list.filter((club) => {
         const nestedOrg = club?.organisation;
-        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as any)?.sport?.id : undefined;
+        const nestedSportId = nestedOrg && typeof nestedOrg === 'object' ? (nestedOrg as { sport?: { id?: string } })?.sport?.id : undefined;
         if (nestedSportId) return String(nestedSportId) === String(sportFilter);
 
         const orgId =
@@ -301,16 +301,16 @@ export function useClubsData(preselectedOrgId?: string): UseClubsDataReturn {
 
     const orgSlug = organisations.find((o) => String(o.id) === String(orgId))?.slug || orgId;
     const created = await organisationsApi.createProject(orgSlug, {
-      name: projectData.name,
-      description: projectData.description || '',
-    } as any) as any;
+      name: String(projectData.name || ''),
+      description: String(projectData.description || ''),
+    });
 
     if (created && typeof created === 'object') {
       const createdKey = String(created?.slug || created?.id || '');
       if (createdKey) {
         setClubs((prev) => {
           if (prev.some((p) => String(p?.slug || p?.id || '') === createdKey)) return prev;
-          return [created, ...prev];
+          return [created as unknown as ClubProject, ...prev];
         });
       }
     }
