@@ -28,6 +28,7 @@ import {
   NavbarNotificationsModal,
   NavbarCreditsModal,
 } from './NavbarModals';
+import { MobileMenuOverlay, MobileSearchOverlay, NAV_INLINE_STYLES } from './TopNavbarMobile';
 
 export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, onOpenSearchRef }: TopNavbarProps) {
   const d = useTopNavbarData(onOpenSearchRef);
@@ -319,121 +320,25 @@ export default function TopNavbar({ isSidebarOpen, onToggleSidebar, isMobile, on
           )}
         </div>
 
-        <style>{`
-          .nav-icon-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid var(--nav-icon-border);
-            background: transparent;
-            color: var(--app-text);
-            border-radius: 6px;
-            cursor: pointer;
-            line-height: 1;
-          }
-          .nav-icon-button:hover {
-            background: var(--nav-icon-hover-bg);
-          }
-          .nav-icon-button:active {
-            transform: translateY(0.5px);
-          }
-          .nav-icon-button:focus-visible {
-            outline: 2px solid rgba(37, 99, 235, 0.45);
-            outline-offset: 2px;
-          }
-          .nav-right-fixed.nav-icon-button,
-          .nav-credits-button.nav-icon-button {
-            border-radius: 6px;
-          }
-          .nav-search-container {
-            transition: max-width 160ms ease, flex-basis 160ms ease;
-          }
-          @media (min-width: 1025px) {
-            .nav-search-container:focus-within {
-              max-width: 820px !important;
-              flex-basis: 640px;
-            }
-          }
-          @media (max-width: 1024px) {
-            .mobile-menu-button { display: flex !important; }
-            .desktop-nav { display: none !important; }
-            .desktop-only { display: none !important; }
-            .nav-credits-button { display: none !important; }
-            #mega-menu-panel { display: none !important; }
-            .nav-search-container {
-              width: auto !important; flex: 0 1 170px !important;
-              min-width: 120px !important; max-width: 190px !important;
-            }
-            .nav-search-container.has-query {
-              flex: 1 1 260px !important;
-              max-width: min(520px, 58vw) !important;
-            }
-            .nav-right-fixed { flex-shrink: 0 !important; }
-          }
-          @media (max-width: 480px) {
-            .language-menu-container { display: none !important; }
-            .hide-on-mobile { display: none !important; }
-            .nav-search-container { min-width: 110px !important; max-width: 150px !important; }
-            .nav-search-container.has-query { max-width: 60vw !important; }
-          }
-        `}</style>
+        <style>{NAV_INLINE_STYLES}</style>
       </nav>
 
       {/* Mobile menu overlay */}
       {d.mobileMenuOpen && (
-        <div className={s.mobileOverlay}>
-          <Link
-            to={d.dashboardItem.path}
-            className={s.mobileDashLink}
-            data-active={d.isItemActive(d.dashboardItem.path)}
-          >
-            <AppIcon icon={d.dashboardItem.icon!} size={16} />
-            <span>{d.dashboardItem.label}</span>
-          </Link>
-          {d.filteredNavGroups.map(group => (
-            <div key={group.id} className="mb-16">
-              <div className={s.mobileGroupLabel}>{group.label}</div>
-              {group.items.map(item => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={s.mobileGroupItem}
-                  data-active={d.isItemActive(item.path)}
-                >
-                  {item.icon && <AppIcon icon={item.icon} size={16} />}
-                  <span>{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          ))}
-          {d.user && (
-            <div className="border-top mt-16 p-16">
-              <ProfileAvatarDropdown />
-            </div>
-          )}
-        </div>
+        <MobileMenuOverlay
+          dashboardItem={d.dashboardItem}
+          filteredNavGroups={d.filteredNavGroups}
+          isItemActive={d.isItemActive}
+          user={Boolean(d.user)}
+        />
       )}
 
       {/* ── Mobile Search Overlay ── */}
       {mobileSearchOpen && (
-        <div className={s.mobileSearchOverlay}>
-          <div className={s.mobileSearchHeader}>
-            <div className={s.mobileSearchInputWrap}>
-              <SearchBar
-                placeholder="Zoeken..."
-                onQueryChange={(q) => d.setNavSearchHasQuery(Boolean(String(q || '').trim()))}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setMobileSearchOpen(false)}
-              className={s.mobileSearchClose}
-              aria-label="Sluiten"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
+        <MobileSearchOverlay
+          onClose={() => setMobileSearchOpen(false)}
+          onQueryChange={(q) => d.setNavSearchHasQuery(Boolean(String(q || '').trim()))}
+        />
       )}
 
       {/* ── Modals ── */}

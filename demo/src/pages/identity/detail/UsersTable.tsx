@@ -3,83 +3,17 @@ import { Link } from 'react-router-dom';
 import { Badge, Card } from '@django-core/design-system';
 import { Table } from '../../../shims/design-system';
 import styles from './UsersTable.module.css';
-
-/** Project membership record from the API */
-interface ProjectMembershipRecord {
-  project_id?: string;
-  project?: {
-    id?: string;
-    name?: string;
-    slug?: string;
-    title?: string;
-    parent_id?: string;
-    parent_project_id?: string;
-    parent?: { id?: string };
-  };
-  project_name?: string;
-  project_slug?: string;
-  club_id?: string;
-  club?: { id?: string };
-  role?: string;
-  functional_roles?: string[];
-  functionalRoles?: string[];
-  metadata?: Record<string, unknown>;
-}
-
-/** User nested within an org membership row */
-interface MembershipItemUser {
-  id: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  is_superuser?: boolean;
-  role?: string;
-  project_memberships?: ProjectMembershipRecord[];
-  project_membership_details?: ProjectMembershipRecord[];
-}
-
-/** A single row in the users table (org membership + nested user) */
-interface MembershipItem {
-  id: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  user?: MembershipItemUser;
-  organisation_membership_id?: string;
-  organisationMembershipId?: string;
-  role?: string;
-  is_superuser?: boolean;
-  project_memberships?: ProjectMembershipRecord[];
-  project_membership_details?: ProjectMembershipRecord[];
-}
-
-/** Team record from the teamById lookup map */
-interface TeamRecord {
-  id: string;
-  slug?: string;
-  name?: string;
-  parent_id?: string;
-  parent_project_id?: string;
-  parent?: { id?: string };
-}
-
-type Props = {
-  isTeamRoute: boolean;
-  pageItems: MembershipItem[];
-  currentOrgSlug: string;
-  currentClubSlugOrId: string;
-  currentClubId: string;
-  currentProjectId: string;
-  teamById: Map<string, TeamRecord>;
-  userCanManageMembers: boolean;
-  seasonId?: string;
-  onOpenAssignSeason?: (item: MembershipItem) => void;
-  onOpenUnassignSeason?: (item: MembershipItem) => void;
-  onViewUser?: (user: MembershipItemUser) => void;
-  onViewMembership: (membershipId: string) => void;
-  onEditMembership: (args: { item: MembershipItem; teamId?: string }) => void;
-  onRemoveMembership: (membershipId: string, email: string) => Promise<void>;
-};
+import type { UsersTableProps } from './UsersTable.types';
+import {
+  noBorderBadgeStyle,
+  looksLikeUuid,
+  getRoleDisplay,
+  getMemberProjectMemberships,
+  getPmTeamId,
+  getFunctionalRolesForProjectMembership,
+  getTeamNameFromPm,
+  getTeamSlugFromPm,
+} from './UsersTable.helpers';
 
 export default function UsersTable({
   isTeamRoute,
@@ -97,126 +31,7 @@ export default function UsersTable({
   onViewMembership,
   onEditMembership,
   onRemoveMembership,
-}: Props) {
-  const noBorderBadgeStyle: React.CSSProperties = {
-    border: 'none',
-    borderColor: 'transparent',
-    boxShadow: 'none',
-    outline: 'none',
-  };
-
-  const looksLikeUuid = (value: string): boolean => {
-    const v = String(value || '').trim();
-    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
-  };
-  const normalizeRoleName = (value: unknown) => String(value ?? '').trim().toLowerCase();
-  const TEAMREEL_ROLE_RANK: Record<string, number> = {
-    superadmin: 100,
-    'land admin': 90,
-    'club admin': 80,
-    'team admin': 70,
-    'team member': 60,
-    supporter: 50,
-    user: 10,
-  };
-
-  const ADMIN_LIKE_PROJECT_ROLES = new Set(['owner', 'admin', 'manager', 'coach']);
-
-  const mapMembershipToTeamreelRole = (membershipRoleRaw: unknown, kind: 'team' | 'club') => {
-    const membershipRole = normalizeRoleName(membershipRoleRaw);
-    const isAdminLike = ADMIN_LIKE_PROJECT_ROLES.has(membershipRole);
-    if (kind === 'team') return isAdminLike ? 'Team Admin' : 'Team Member';
-    return isAdminLike ? 'Club Admin' : 'Supporter';
-  };
-
-  const getMemberProjectMemberships = (item: MembershipItem): ProjectMembershipRecord[] => {
-    const u = item?.user || item;
-    const list =
-      item?.project_memberships ||
-      u?.project_memberships ||
-      item?.project_membership_details ||
-      u?.project_membership_details ||
-      [];
-    return Array.isArray(list) ? list : [];
-  };
-
-  const getPmTeamId = (pm: ProjectMembershipRecord) => String(pm?.project_id ?? pm?.project?.id ?? '');
-  const getPmClubId = (pm: ProjectMembershipRecord) =>
-    String(
-      pm?.club_id ??
-        pm?.club?.id ??
-        pm?.project?.parent_id ??
-        pm?.project?.parent?.id ??
-        pm?.project?.parent_project_id ??
-        ''
-    );
-
-  // seasonId is optional context (e.g. current filter) but the actual Assign/Unassign
-  // selection happens in the modal, not inline.
-
-  const getRoleDisplay = (item: MembershipItem): { label: string; title: string } => {
-    const userObj = item?.user || item;
-    if (!userObj) return { label: '-', title: '' };
-
-    const roles: string[] = [];
-
-    const isSuper = Boolean(userObj?.is_superuser) || normalizeRoleName(userObj?.role) === 'superadmin';
-    if (isSuper) return { label: 'Superadmin', title: 'Superadmin' };
-
-    // Organisation membership role: admin == Land Admin
-    const orgMembershipRole = normalizeRoleName(item?.role);
-    if (orgMembershipRole === 'admin') roles.push('Land Admin');
-
-    const pms = getMemberProjectMemberships(item);
-    const scopedPms = pms.filter((pm) => {
-      if (isTeamRoute && currentProjectId) {
-        return getPmTeamId(pm) === String(currentProjectId);
-      }
-      if (currentClubId) {
-        const teamId = getPmTeamId(pm);
-        const clubId = getPmClubId(pm);
-        return String(teamId) === String(currentClubId) || String(clubId) === String(currentClubId);
-      }
-      return true;
-    });
-
-    for (const pm of scopedPms) {
-      const roleRaw = pm?.role;
-      if (!String(roleRaw ?? '').trim()) continue;
-      const teamId = getPmTeamId(pm);
-      const team = teamId ? teamById.get(String(teamId)) : null;
-      const hasParent = Boolean(
-        team?.parent_id ?? team?.parent_project_id ?? team?.parent?.id
-      );
-      roles.push(mapMembershipToTeamreelRole(roleRaw, hasParent ? 'team' : 'club'));
-    }
-
-    const uniqueByKey = new Map<string, string>();
-    for (const r of roles) {
-      const key = normalizeRoleName(r);
-      if (!key) continue;
-      if (!uniqueByKey.has(key)) uniqueByKey.set(key, r);
-    }
-    const unique = Array.from(uniqueByKey.values());
-    if (unique.length === 0) return { label: 'User', title: 'User' };
-
-    const best = [...unique].sort(
-      (a, b) => (TEAMREEL_ROLE_RANK[normalizeRoleName(b)] ?? 0) - (TEAMREEL_ROLE_RANK[normalizeRoleName(a)] ?? 0)
-    )[0];
-    const title = [...unique].sort((a, b) => a.localeCompare(b)).join(', ');
-    const label = unique.length === 1 ? best : `${best} +${unique.length - 1}`;
-    return { label, title };
-  };
-
-  const getFunctionalRolesForProjectMembership = (pm: ProjectMembershipRecord): string[] => {
-    const roles = pm?.functional_roles ?? pm?.functionalRoles;
-    if (Array.isArray(roles)) return roles.map((r) => String(r || '').trim()).filter(Boolean);
-
-    const meta = pm?.metadata || {};
-    const legacy = String(meta?.team_role ?? meta?.character_role ?? '').trim();
-    return legacy ? [legacy] : [];
-  };
-
+}: UsersTableProps) {
   return (
     <Card>
       <Table className="detail-table">
@@ -253,18 +68,9 @@ export default function UsersTable({
             const membershipId = String(item?.organisation_membership_id || item?.organisationMembershipId || item.id);
             const hasOrgMembership = looksLikeUuid(membershipId);
 
-            const roleDisplay = getRoleDisplay(item);
+            const roleDisplay = getRoleDisplay(item, isTeamRoute, currentProjectId, currentClubId, teamById);
 
-            const pms = (() => {
-              const u = item?.user || item;
-              const list =
-                item?.project_memberships ||
-                u?.project_memberships ||
-                item?.project_membership_details ||
-                u?.project_membership_details ||
-                [];
-              return Array.isArray(list) ? list : [];
-            })();
+            const pms = getMemberProjectMemberships(item);
 
             const rawProjectIds = Array.from(
               new Set(pms.map((pm) => String(pm?.project_id ?? pm?.project?.id ?? '')).filter(Boolean))
@@ -293,11 +99,6 @@ export default function UsersTable({
             });
 
             const teamId = teamIds.length === 1 ? teamIds[0] : '';
-
-            const getTeamNameFromPm = (pm: ProjectMembershipRecord): string =>
-              String(pm?.project?.name ?? pm?.project_name ?? pm?.project?.title ?? '').trim();
-            const getTeamSlugFromPm = (pm: ProjectMembershipRecord): string =>
-              String(pm?.project?.slug ?? pm?.project_slug ?? '').trim();
 
             const team = teamId ? teamById.get(String(teamId)) : null;
             const pmForTeam = teamId ? pms.find((pm) => String(pm?.project_id ?? pm?.project?.id ?? '') === String(teamId)) : null;
