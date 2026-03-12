@@ -247,3 +247,5 @@ export function ResourceDisplayPage() {
     </AppShell>
   );
 }
+
+export default ResourceDisplayPage;

@@ -125,3 +125,4 @@ export const OrganisationAuditPage: React.FC = () => {
     </>
   );
 };
+export default OrganisationAuditPage;

@@ -110,3 +110,5 @@ export const OrganisationCreatePage: React.FC = () => {
     </>
   );
 };
+
+export default OrganisationCreatePage;

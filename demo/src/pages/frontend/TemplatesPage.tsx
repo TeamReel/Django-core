@@ -60,3 +60,5 @@ export function TemplatesPage() {
     </AppShell>
   );
 }
+
+export default TemplatesPage;

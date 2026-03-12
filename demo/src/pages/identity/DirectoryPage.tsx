@@ -74,3 +74,5 @@ export const DirectoryPage: React.FC = () => {
       </div>
   );
 };
+
+export default DirectoryPage;

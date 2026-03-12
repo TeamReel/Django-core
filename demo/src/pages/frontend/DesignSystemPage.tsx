@@ -339,3 +339,5 @@ export function DesignSystemPage() {
     </AppShell>
   );
 }
+
+export default DesignSystemPage;

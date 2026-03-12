@@ -239,3 +239,5 @@ function IntegrityRow({ label, count, min }: { label: string, count?: number, mi
     </div>
   );
 }
+
+export default HealthCheckPage;

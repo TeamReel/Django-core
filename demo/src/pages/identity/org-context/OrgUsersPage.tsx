@@ -11,3 +11,5 @@ export const OrgUsersPage: React.FC = () => {
     if (loading) return <div className="text-sm text-gray-500 py-2">Loading...</div>;
     return <UsersList preselectedOrgId={resolvedOrgId} />;
 };
+
+export default OrgUsersPage;

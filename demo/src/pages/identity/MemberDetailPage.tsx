@@ -313,3 +313,5 @@ export const MemberDetailPage: React.FC = () => {
     </>
   );
 };
+
+export default MemberDetailPage;

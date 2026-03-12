@@ -11,3 +11,5 @@ export const OrgTeamsPage: React.FC = () => {
 
     return <TeamsList preselectedOrgId={resolvedOrgId} />;
 };
+
+export default OrgTeamsPage;

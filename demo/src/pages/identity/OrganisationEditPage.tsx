@@ -200,3 +200,5 @@ export const OrganisationEditPage: React.FC = () => {
     </>
   );
 };
+
+export default OrganisationEditPage;

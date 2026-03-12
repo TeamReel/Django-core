@@ -167,3 +167,5 @@ export function TasksPage() {
     </AppShell>
   );
 }
+
+export default TasksPage;

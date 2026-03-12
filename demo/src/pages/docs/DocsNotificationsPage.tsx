@@ -142,3 +142,5 @@ export function DocsNotificationsPage() {
     </AppShell>
   );
 }
+
+export default DocsNotificationsPage;

@@ -38,3 +38,5 @@ export function ContextSwitcherPage() {
     </AppShell>
   );
 }
+
+export default ContextSwitcherPage;

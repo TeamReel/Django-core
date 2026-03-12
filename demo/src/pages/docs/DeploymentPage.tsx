@@ -113,3 +113,5 @@ export function DeploymentPage() {
     </AppShell>
   );
 }
+
+export default DeploymentPage;

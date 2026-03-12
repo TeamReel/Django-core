@@ -256,3 +256,5 @@ export const FeatureFlagsPage: React.FC = () => {
     </>
   );
 };
+
+export default FeatureFlagsPage;

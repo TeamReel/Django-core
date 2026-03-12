@@ -109,3 +109,5 @@ export function DocsPage() {
     </AppShell>
   );
 }
+
+export default DocsPage;

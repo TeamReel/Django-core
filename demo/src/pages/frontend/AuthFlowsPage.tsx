@@ -57,3 +57,5 @@ export function AuthFlowsPage() {
     </AppShell>
   );
 }
+
+export default AuthFlowsPage;

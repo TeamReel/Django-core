@@ -11,3 +11,5 @@ export const OrgSeasonsPage: React.FC = () => {
 
     return <SeasonsList preselectedOrgId={resolvedOrgId} />;
 };
+
+export default OrgSeasonsPage;

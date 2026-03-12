@@ -149,3 +149,5 @@ export function IntegrationPatternsPage() {
     </AppShell>
   );
 }
+
+export default IntegrationPatternsPage;

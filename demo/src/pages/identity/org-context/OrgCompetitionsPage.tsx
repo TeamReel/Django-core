@@ -11,3 +11,5 @@ export const OrgCompetitionsPage: React.FC = () => {
 
     return <CompetitionsList preselectedOrgId={resolvedOrgId} />;
 };
+
+export default OrgCompetitionsPage;
