@@ -1,5 +1,7 @@
 # Database Schema
 
+> ⚠️ **STALE** — Auto-generated 2026-02-04. Ontbreekt: `GenerationJob`, `rtc_websockets` models, recente migraties. Moet opnieuw gegenereerd worden vanuit productie-DB.
+
 > Auto-generated: 2026-02-04 20:26:45
 
 **Database**: postgresql (switchback.proxy.rlwy.net)

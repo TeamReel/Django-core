@@ -1,5 +1,7 @@
 # Compact Hierarchy Reference
 
+> ⚠️ **STALE** — Laatste update 2026-02-09. Structuur is mogelijk verouderd. Controleer met productie-data.
+
 > Last updated: 2026-02-09
 > Full version: [hierarchy.md](hierarchy.md)
 

@@ -1,5 +1,7 @@
 # Frontend Integration Status
 
+> ⚠️ **STALE** — Laatste update 2026-02-13. Significant werk sindsdien (design-system adoptie, tech-debt cleanup, structural refactoring). Veel secties hieronder zijn achterhaald.
+
 > Last updated: 2026-02-13 (UX Rebuild: Media Library + AI Studio + Content Library removal)
 
 Dit document toont welke backend functionaliteit al in de frontend is geïntegreerd en wat nog moet worden toegevoegd.

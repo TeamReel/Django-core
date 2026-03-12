@@ -2,6 +2,8 @@
 
 **Date:** 2026-03-02
 **Scope:** All 9 packages in `packages/` vs actual `demo/src/` usage
+
+> ⚠️ **UPDATE 2026-03-12:** `notifications-hub`, `permissions` en `resource-display-alerts` zijn inmiddels gearchiveerd naar `archive/packages/`. Er zijn nu **6 actieve packages** in `packages/`: api-client, auth, context-switcher, design-system, page-templates, theme-system. De audit-conclusies voor die 3 (ARCHIVE) zijn uitgevoerd. `page-templates` REWORK is nog openstaand.
 **Method:** Direct source code reading, not guessing
 
 ---

@@ -1,5 +1,7 @@
 # Database Model Counts
 
+> ⚠️ **STALE** — Laatste update was 2026-02-12. Counts zijn mogelijk verouderd door nieuwe migraties en data-imports sindsdien. Regenereer vanuit productie-DB voor actuele cijfers.
+
 > Last updated: 2026-02-12 (B55 Video Frontend Integration + Root Cleanup)
 
 **Database**: postgresql (switchback.proxy.rlwy.net)
@@ -162,9 +164,9 @@
 | audit | AuditEvent | 6,156 | 🟢 OK |
 | navigation | UserRecent | 0 | 🔴 EMPTY |
 | navigation | UserFavorite | 0 | 🔴 EMPTY |
-| generative | GenerationTemplate | - | ⚪ NOT MIGRATED |
-| generative | GenerationRequest | - | ⚪ NOT MIGRATED |
-| generative | GenerationOutput | - | ⚪ NOT MIGRATED |
+| generative | GenerationTemplate | - | 🟢 MIGRATED (8 migrations) |
+| generative | GenerationRequest | - | 🟢 MIGRATED (8 migrations) |
+| generative | GenerationOutput | - | 🟢 MIGRATED (8 migrations) |
 | workflows | WorkflowTemplate | 3 | 🟢 OK |
 | workflows | WorkflowInstance | 0 | 🔴 EMPTY |
 | workflows | TransitionHistory | 0 | 🔴 EMPTY |

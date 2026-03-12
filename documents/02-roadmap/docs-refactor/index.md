@@ -1,6 +1,6 @@
 # Docs Refactor 05-demo — Roadmap
 
-**Status:** 🔨 In Progress (0/5 fases done)
+**Status:** ✅ Compleet (5/5 fases done)
 **Aangemaakt:** 2026-03-12
 **Vorige roadmaps:**
 - `design-system-adoption/` (11/11 ✅)

@@ -167,11 +167,11 @@ Seed in this order to respect FK constraints:
 4. Project (Team)     (FK: Organisation, parent_project)
 5. Period (Season)    (FK: Project)
 6. Period (Competition) (FK: Project, parent_period)
-7. Match              (FK: home_project, away_project, period)
-8. MatchTemplate      (FK: organisation)
-9. Roster             (FK: match, project)
-10. RosterEntry       (FK: roster, user)
+7. Activity           (FK: project, period — activity_type: "match", "training", "event")
+8. ActivityParticipation (FK: activity, membership)
 ```
+
+> **Note:** Eerdere versie refereerde `Match`, `MatchTemplate`, `Roster`, `RosterEntry` — deze modellen bestaan niet. Gebruik `Activity` (met `activity_type`) en `ActivityParticipation` in plaats.
 
 ---
 
