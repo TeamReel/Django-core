@@ -1,8 +1,8 @@
 # Database Schema
 
-> Auto-generated: 2026-03-12 10:04:14
+> Auto-generated: 2026-03-12 11:21:01
 
-**Database**: postgresql (maglev.proxy.rlwy.net)
+**Database**: postgresql (switchback.proxy.rlwy.net)
 
 ## FK Relationship Summary
 
