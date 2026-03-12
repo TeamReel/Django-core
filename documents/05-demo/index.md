@@ -1,7 +1,7 @@
 # TeamReel Web Application — Documentation
 
 **Last Updated:** 2026-03-12
-**Status:** v4.3
+**Status:** v4.5
 
 ---
 
@@ -43,6 +43,14 @@ Complete documentation for the TeamReel web application — frontend design syst
 | [features/seeding-guide.md](features/seeding-guide.md) | Idempotent seeding patterns + FK dependency order |
 | [features/credits-transactions.md](features/credits-transactions.md) | Credits & Transactions — 3-tier balance, signed ledger, GenerationCreditService |
 | [features/active-context.md](features/active-context.md) | UserActiveContext — 8-FK navigation state, cascade resolution, context-switcher |
+| [features/generative-pipeline.md](features/generative-pipeline.md) | **AI generative engine** — 4 models, executor architecture, provider cascade, asset pipeline |
+| [features/video-processing.md](features/video-processing.md) | **Video pipeline** — 7 job types, Builder→Composer, FFmpeg processors, content generators |
+| [features/notification-routing.md](features/notification-routing.md) | **Notification routing** — 2-app event→routing→delivery pipeline, preferences, suppression |
+| [features/branding-tokens.md](features/branding-tokens.md) | **Branding & tokens** — BrandProfile, DesignToken inheritance, auto-color extraction |
+| [features/workflow-engine.md](features/workflow-engine.md) | **Workflow engine** — state machine, atomic transitions, validator/hook registries |
+| [features/project-hierarchy.md](features/project-hierarchy.md) | **Project hierarchy** — club→team nesting, membership, invites, functional roles |
+| [features/rbac-permissions.md](features/rbac-permissions.md) | **RBAC permissions** — Permission registry, role scopes, hierarchical evaluator |
+| [features/content-templates.md](features/content-templates.md) | **Content templates** — 25+ subtypes, generation lifecycle, approval workflow |
 
 ### Media & AI Pipeline
 
@@ -93,14 +101,22 @@ Complete documentation for the TeamReel web application — frontend design syst
 │   ├── mobile-app-blueprint.md
 │   ├── refactoring-status.md
 │   └── code-conventions.md
-├── features/                 # Features & architecture (7 docs)
+├── features/                 # Features & architecture (15 docs)
 │   ├── application-architecture.md
 │   ├── generation-queue.md
 │   ├── member-asset-save-flow.md
 │   ├── members-batch-actions.md
 │   ├── seeding-guide.md
 │   ├── credits-transactions.md
-│   └── active-context.md
+│   ├── active-context.md
+│   ├── generative-pipeline.md
+│   ├── video-processing.md
+│   ├── notification-routing.md
+│   ├── branding-tokens.md
+│   ├── workflow-engine.md
+│   ├── project-hierarchy.md
+│   ├── rbac-permissions.md
+│   └── content-templates.md
 ├── media/                    # Media & AI pipeline (6 docs)
 │   ├── media-architecture.md
 │   ├── media-templates.md
@@ -148,6 +164,7 @@ Archived docs in [archive/](archive/) — implemented plans, superseded data dum
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 4.5.0 | 2026-03-12 | 8 new feature docs: generative pipeline, video processing, notifications, branding, workflows, projects, RBAC, content templates |
 | 4.4.0 | 2026-03-12 | Data docs regenerated (maglev DB), credits-transactions + active-context feature docs, Laag 5 alignment fixed, infra apps expanded |
 | 4.3.0 | 2026-03-12 | Deep audit: phantom models fixed, 33 apps/40 ViewSets/~35 tasks verified, seeding-guide→features/, frontend-integration→archive/, stale markers |
 | 4.2.0 | 2026-03-12 | Docs-hygiene: dead code verwijderd, metrics 179→276 CSS Modules, xrefs fixed, plans/features gereorganiseerd |
